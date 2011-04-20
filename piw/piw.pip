@@ -1,0 +1,2843 @@
+<<<
+#include <piembedded/pie_message.h>
+#include <piw/piw_output.h>
+#include <piw/piw_canchor.h>
+#include <piw/piw_anchor.h>
+#include <piw/piw_data.h>
+#include <piw/piw_server.h>
+#include <piw/piw_client.h>
+#include <piw/piw_gate.h>
+#include <piw/piw_index.h>
+#include <piw/piw_table.h>
+#include <piw/piw_midi_from_belcanto.h>
+#include <piw/piw_midi_decoder.h>
+#include <piw/piw_bundle.h>
+#include <piw/piw_aggregator.h>
+#include <piw/piw_clone.h>
+#include <piw/piw_sclone.h>
+#include <piw/piw_slowchange.h>
+#include <piw/piw_multiplexer.h>
+#include <piw/piw_function1.h>
+#include <piw/piw_function2.h>
+#include <piw/piw_selector.h>
+#include <piw/piw_pitchbender.h>
+#include <piw/piw_polyctl.h>
+#include <piw/piw_cycler.h>
+#include <piw/piw_stringer.h>
+#include <piw/piw_thing.h>
+#include <piw/piw_address.h>
+#include <piw/piw_fastdata.h>
+#include <piw/piw_clock.h>
+#include <piw/piw_normalize.h>
+#include <piw/piw_policy.h>
+#include <piw/piw_gain.h>
+#include <piw/piw_panner.h>
+#include <piw/piw_velocitydetect.h>
+#include <piw/piw_scroller.h>
+#include <piw/piw_scroller2.h>
+#include <piw/piw_scheduler.h>
+#include <piw/piw_controller.h>
+#include <piw/piw_backend.h>
+#include <piw/piw_sample.h>
+#include <piw/piw_sampler.h>
+#include <piw/piw_rpc.h>
+#include <piw/piw_scaler.h>
+#include <piw/piw_kgroup.h>
+#include <piw/piw_correlator.h>
+#include <piw/piw_connector.h>
+#include <piw/piw_ranger.h>
+#include <piw/piw_lights.h>
+#include <piw/piw_dumper.h>
+#include <piw/piw_mixer.h>
+#include <piw/piw_evtdump.h>
+#include <piw/piw_capture.h>
+#include <piw/piw_delay.h>
+#include <piw/piw_wavrecorder.h>
+#include <piw/piw_termparse.h>
+#include <piw/piw_state.h>
+#include <piw/piw_window.h>
+#include <piw/piw_status.h>
+#include <piw/piw_controllerdict.h>
+#include <piw/piw_midi_converter.h>
+#include <piw/piw_gui_mapper.h>
+#include <piw/piw_control_mapping.h>
+#include <piw/piw_strummer.h>
+>>>
+
+from picross_native[picross/picross.pip] import notify, f_string, f2f, status
+
+class event[piw::event_t]: controlled /gc/
+{
+    event(scheduler *, bool, const change &)
+
+    void event_enable()
+    void event_disable()
+    void event_clear()
+    void lower_bound(unsigned,float)
+    void upper_bound(unsigned,float)
+    void modulo(unsigned,unsigned,float)
+    void zone(unsigned,unsigned,float,float)
+}
+
+class scheduler[piw::scheduler_t]
+{
+    scheduler(unsigned)
+    cookie cookie()
+}
+
+class rpctoken[piw::rpctoken_t]
+{
+    rpctoken()
+    rpctoken(const rpctoken &)
+}
+
+class rpcserver[piw::rpcserver_t]
+{
+    rpcserver()
+    void completed(const rpctoken &,bool,const data &)
+    bool open()
+    bool opening()
+    bool closing()
+    bool running()
+    void close_rpcserver()
+    virtual void rpcserver_invoke(const rpctoken &,const data &,const data &, const data &)
+    virtual void rpcserver_closed()
+}
+
+class rpcclient[piw::rpcclient_t]
+{
+    rpcclient()
+    bool open()
+    void close_rpcclient()
+    virtual void rpcclient_complete(int,const data &)
+}
+
+class samplearray[piw::samplearrayref_t]
+{
+    samplearray(const samplearray &)
+}
+
+samplearray create_samplearray[piw::create_samplearray](const char *,unsigned, unsigned)
+
+class sample[piw::sampleref_t]
+{
+    sample(const sample &)
+}
+
+sample create_sample[piw::create_sample](const samplearray &,unsigned,unsigned,unsigned,unsigned,float,float,float)
+
+class zone[piw::zoneref_t]
+{
+    zone(const zone &)
+}
+
+zone create_zone[piw::create_zone](float,float,float,float,float,float,float,float,float,float,float,const sample &)
+
+class preset[piw::presetref_t]
+{
+    preset()
+    preset(const preset &)
+    void add_zone(const zone &) [ptr,locked]
+}
+
+preset create_preset[piw::create_preset]()
+
+class clockref[bct_clocksink_t]
+{
+}
+
+class strummer[piw::strummer_t]
+{
+    strummer(const cookie &, clockdomain_ctl *)
+    cookie data_cookie()
+    cookie ctl_cookie()
+    void enable(bool)
+    void set_key_mix(float)
+    void set_on_threshold(float)
+    void set_off_threshold(float)
+    void set_trigger_window(unsigned)
+}
+
+class stringer[piw::stringer_t]
+{
+    stringer(const cookie &)
+    cookie data_cookie()
+    cookie ctl_cookie()
+    void enable(bool)
+}
+
+class cycler[piw::cycler_t]
+{
+    cycler(clockdomain_ctl *, int, const cookie &, const cookie &, bool)
+    void set_poly(unsigned)
+    void set_cycle(bool)
+    void set_maxdamp(float)
+    void set_invert(bool)
+    void set_curve(float)
+    cookie main_cookie()
+    cookie feedback_cookie()
+}
+
+class polyctl[piw::polyctl_t]
+{
+    polyctl(unsigned, const cookie &, bool, unsigned)
+    void set_poly(unsigned)
+    void set_cycle(bool)
+    cookie cookie()
+}
+
+d2d_nb root_filter[piw::root_filter]()
+d2d_nb null_filter[piw::null_filter]()
+d2d_nb signal_dsc_filter[piw::signal_dsc_filter](unsigned,unsigned,const char *)
+d2d_nb signal_cnc_filter[piw::signal_cnc_filter](unsigned,unsigned)
+d2d_nb aggregation_filter[piw::aggregation_filter](unsigned)
+d2d_nb aggregation_filter3[piw::aggregation_filter3](unsigned,unsigned,unsigned)
+d2d_nb deaggregation_filter[piw::deaggregation_filter](unsigned)
+d2d_nb grist_aggregation_filter[piw::grist_aggregation_filter](unsigned)
+d2d_nb gristchaff_aggregation_filter[piw::gristchaff_aggregation_filter](unsigned,unsigned)
+d2d_nb grist_deaggregation_filter[piw::grist_deaggregation_filter](unsigned)
+d2d_nb grist_deaggregation_filter2[piw::grist_deaggregation_filter2](unsigned,unsigned)
+d2d_nb last_gt_filter[piw::last_gt_filter](unsigned)
+d2d_nb last_lt_filter[piw::last_lt_filter](unsigned)
+d2d_nb last_filter[piw::last_filter]()
+d2d_nb grist_filter[piw::grist_filter]()
+
+d2d_nb dict_merger[piw::dict_merger](const data &)
+
+class stereomixer[piw::stereomixer_t] /gc/
+{
+    stereomixer(const f2f &, const f2f &, clockdomain_ctl *, const cookie &)
+    cookie cookie()
+}
+
+class stereosummer[piw::stereosummer_t]
+{
+    stereosummer(clockdomain_ctl *, const cookie &,unsigned)
+    cookie cookie()
+    void set_channels(unsigned);
+}
+
+class monomixer[piw::monomixer_t]
+{
+    monomixer(clockdomain_ctl *, const cookie &)
+    cookie cookie()
+}
+
+class consolemixer[piw::consolemixer_t]
+{
+    consolemixer(const f2f &, const f2f &, clockdomain_ctl *, const cookie &)
+    cookie create_channel(unsigned)
+    void remove_channel(unsigned)
+    cookie create_fx_channel(unsigned, const cookie &)
+    void remove_fx_channel(unsigned)
+    void set_fx_send_enable(bool, unsigned, unsigned, bool)
+    void set_fx_send_prefader(bool, unsigned, unsigned, bool)
+    cookie master_controls_cookie()
+    void set_curves(const f2f &, const f2f &)
+}
+
+class gate[piw::gate_t]
+{
+    gate(const cookie &,bool)
+    cookie cookie()
+    change_nb gate()
+    void enable(bool)
+}
+
+class correlator[piw::correlator_t] /gc/
+{
+    correlator(clockdomain_ctl *, const stdstr &, const d2d_nb &, const cookie &,unsigned,unsigned)
+    clocksink *clocksink()
+    void clock_plumbed(unsigned,bool)
+    void plumb_input(unsigned,unsigned,const data &,int,unsigned,fastdata *, const converter_ref &, const d2d_nb &)
+    void unplumb_input(unsigned,unsigned,const data &,int)
+    void set_latency(unsigned,unsigned,unsigned);
+    void remove_latency(unsigned,unsigned);
+    void kill()
+}
+
+class connector[piw::connector_t]: client /gc/
+{
+    connector(correlator *, unsigned, unsigned, int, unsigned,const d2d_nb &,bool)
+    virtual converter_ref create_converter() = 0
+    void client_opened()
+    void client_clock()
+    void close_client()
+    void set_clocked(bool)
+}
+
+class converter_ref[piw::converter_ref_t]
+{
+    converter_ref(const converter_ref &)
+}
+
+converter_ref null_converter[piw::null_converter]()
+converter_ref throttling_converter[piw::throttling_converter](unsigned long long)
+converter_ref triggering_converter[piw::triggering_converter]()
+converter_ref impulse_converter[piw::impulse_converter]()
+converter_ref resampling_converter[piw::resampling_converter]()
+converter_ref interpolating_converter[piw::interpolating_converter](float,float,float)
+converter_ref lopass_converter[piw::lopass_converter](float,float)
+
+class capture_backend[piw::capture_backend_t]
+{
+    capture_backend(const stdstr &,unsigned,bool,bool)
+    cookie cookie()
+}
+
+class functor_backend[piw::functor_backend_t] /gc/
+{
+    functor_backend(unsigned,bool)
+    void set_functor(const data &, const change_nb &)
+    void clear_functor(const data &)
+    void set_efunctor(const change_nb &)
+    void clear_efunctor()
+    void set_gfunctor(const change_nb &)
+    void clear_gfunctor()
+    cookie cookie()
+    clockref *get_clock()
+    void send_duplicates(bool)
+}
+
+class controller[piw::controller_t]
+{
+    controller(const cookie &,const stdstr &)
+    cookie cookie()
+    virtual void controller_clock(clockref *)
+    virtual void controller_latency(unsigned)
+}
+
+class xxcontrolled[piw::xxcontrolled_t]
+{
+    xcontrolled()
+    void attach(controller *)
+    bool attach_to(controller *,unsigned)
+    void detach()
+    int ordinal()
+    fastdata *fastdata()
+}
+
+class controlled[piw::controlled_t]: xxcontrolled
+{
+    controlled(bool)
+    void attach(controller *)
+    bool attach_to(controller *,unsigned)
+    void detach()
+    void enable()
+    void disable()
+    int ordinal()
+}
+
+class fasttrigger[piw::fasttrigger_t]: xxcontrolled
+{
+    fasttrigger(unsigned)
+    void attach(controller *)
+    bool attach_to(controller *,unsigned)
+    void detach()
+    void ping()
+    int ordinal()
+    change_nb trigger()
+}
+
+class cookie[piw::cookie_t]
+    """
+    Opaque handle for a stream consumer.
+    
+    Producers use the cookie to create a bundle structure through which the
+    consumer receives data.  A cookie can be null, using a null cookie for
+    connection will throw away any data sent.  Ony null cookies can be created
+    from python, normally cookies are obtained from libpiw stream classes.
+    
+    Note that the existance of a cookie doesn't count as a reference to the 
+    source object.  If the object goes away, the cookie becomes a null cookie.
+    You should arrange to keep the stream object providing the cookie alive
+    by other means.
+    
+    Initialisers
+    ============
+    
+    cookie(root *)
+    """
+{
+    cookie()
+    cookie(root *)
+    cookie(const cookie &)
+}
+
+class decode_ctl[piw::decode_ctl_t]
+{
+    decode_ctl()
+    virtual wire *wire_create(const event_data_source &) = 0
+    virtual void set_clock(clockref *) = 0
+    virtual void set_latency(unsigned) = 0
+}
+
+class decoder[piw::decoder_t]
+{
+    decoder(decode_ctl *)
+    cookie cookie()
+    clockref *get_clock()
+    void disconnect()
+    unsigned get_latency()
+    void shutdown()
+}
+
+class event_data_buffer[piw::xevent_data_buffer_t]
+{
+    event_data_buffer()
+    void set_signal(unsigned,const dataqueue &)
+}
+
+class event_data_source[piw::event_data_source_t]
+{
+    event_data_source(const event_data_source &)
+}
+
+class event_data_source_real[piw::event_data_source_real_t]
+{
+    event_data_source_real(const data &)
+    event_data_source source()
+    void start_slow(const data &, const event_data_buffer &)
+    void end_slow(unsigned long long)
+}
+
+class wire_ctl[piw::wire_ctl_t]
+{
+    wire_ctl()
+    void disconnect()
+    wire *get_wire()
+    void set_wire(wire *)
+}
+
+class root_ctl[piw::root_ctl_t]
+{
+    root_ctl()
+    void connect(const cookie &)
+    void connect_wire(wire_ctl *,const event_data_source &)
+    void disconnect()
+    void set_clock(clockref *)
+    void set_latency(unsigned)
+}
+
+class wire[piw::wire_t]
+{
+    wire()
+    void disconnect()
+    virtual void wire_closed() = 0
+}
+
+class root[piw::root_t]
+{
+    root(unsigned)
+    void disconnect()
+    clockref *get_clock()
+    unsigned get_latency()
+    virtual wire *root_wire(const event_data_source &) = 0
+    virtual void root_closed() = 0
+    virtual void root_clock() = 0
+    virtual void root_opened() = 0
+    virtual void root_latency() = 0
+}
+
+change_nb deferred_sender[piw::deferred_sender](const change_nb &, const data &)
+change slowchange[piw::slowchange](const change &)
+change_nb slowchange_polled[piw::slowchange_polled](const change &,unsigned)
+change slowtrigger[piw::slowtrigger](const change &)
+change make_change_normal[piw::make_change_normal](const change_nb &)
+change_nb make_change_nb[piw::make_change_nb](const change &)
+
+class multiplexer[piw::multiplexer_t]
+{
+    multiplexer(const cookie &,clockdomain_ctl *)
+    cookie get_input(unsigned)
+    void clear_input(unsigned)
+    change_nb gate_input()
+}
+
+class ranger[piw::ranger_t]
+{
+    ranger(clockdomain_ctl *, const cookie &)
+    cookie ctl_cookie()
+    cookie data_cookie()
+    void set_sticky(bool)
+    void set_mono(bool)
+    void set_absolute(bool)
+    void set_curve(float)
+    void reset()
+}
+
+class lightconvertor[piw::lightconvertor_t]
+{
+    lightconvertor(const cookie &)
+    cookie cookie()
+    void set_status_handler(unsigned, change)
+    void remove_status_handler(unsigned)
+    unsigned char get_status(unsigned)
+    void set_default_color(unsigned,unsigned);
+}
+
+class statusbuffer[piw::statusbuffer_t] /gc/
+{
+    statusbuffer(const change_nb &, unsigned, const cookie &)
+    void send()
+    void override(bool)
+    void autosend(bool)
+    void clear()
+    void set_status(unsigned,unsigned char)
+    unsigned char get_status(unsigned)
+    void set_blink_time(float)
+    void set_blink_size(unsigned)
+    change_nb enabler()
+    void enable(unsigned)
+    change_nb blinker()
+}
+
+class lightsource[piw::lightsource_t] /gc/
+{
+    lightsource(const change_nb &, unsigned, const cookie &)
+    void set_size(unsigned)
+    unsigned get_size()
+    change_nb lightswitch()
+    change_nb blinker()
+    void enable(unsigned)
+    void set_color(unsigned,unsigned)
+    void set_status(unsigned,unsigned)
+    void override(bool)
+}
+
+class statusmixer[piw::statusmixer_t]
+{
+    statusmixer(const cookie &)
+    void autoupdate(bool);
+    void update();
+    cookie cookie()
+}
+
+class controllerdict[piw::controllerdict_t]
+{
+    controllerdict(const cookie &)
+    data get_ctl_value(const stdstr &)
+    data get_ctl_dict()
+    void put_ctl(const stdstr &,const data &)
+    void put(const stdstr &,const data &)
+    change changetonic(unsigned)
+    change changescale(const stdstr &)
+}
+
+class mapping_info[piw::mapping_info_t]
+{
+    mapping_info(const mapping_info &)
+    mapping_info(unsigned short)
+    mapping_info(unsigned short, bool, float, float, float, float, bool, float, unsigned, unsigned, unsigned, int, unsigned)
+
+    mapping_info clone_with_enabled(bool)
+    mapping_info clone_with_scale(float)
+    mapping_info clone_with_lo(float)
+    mapping_info clone_with_base(float)
+    mapping_info clone_with_hi(float)
+    mapping_info clone_with_origin_return(bool)
+    mapping_info clone_with_decimation(float)
+    mapping_info clone_with_scope(unsigned)
+    mapping_info clone_with_channelscope(unsigned)
+    mapping_info clone_with_resolution(unsigned)
+    mapping_info clone_with_secondarycc(int)
+    mapping_info clone_with_curve(unsigned)
+}
+
+class midi_converter[piw::midi_converter_t]
+{
+    midi_converter(mapping_observer &, midi_channel_delegate &, clockdomain_ctl *, midi_from_belcanto &, const stdstr &)
+
+    clockdomain_ctl *clock_domain()
+
+    cookie parameter_input(unsigned)
+    void set_mapping(const stdstr &)
+    stdstr get_mapping()
+    void parameter_name_changed(unsigned)
+    void map_param(unsigned,mapping_info)
+    void map_midi(unsigned,mapping_info)
+    void unmap_param(unsigned,unsigned short)
+    void unmap_midi(unsigned,unsigned short)
+    bool is_mapped_param(unsigned, unsigned short)
+    bool is_mapped_midi(unsigned, unsigned short)
+    mapping_info get_info_param(unsigned, unsigned short)
+    mapping_info get_info_midi(unsigned, unsigned short)
+    void set_minimum_decimation(float)
+    void set_midi_notes(bool)
+    void set_midi_pitchbend(bool)
+    void set_midi_channel(unsigned)
+    void set_min_midi_channel(unsigned)
+    void set_max_midi_channel(unsigned)
+
+    void close()
+}
+
+class mapping_observer[piw::mapping_observer_t]
+{
+    mapping_observer()
+    virtual void mapping_changed(const stdstr &) = 0
+    virtual void settings_changed() = 0
+    virtual void parameter_changed(unsigned) = 0
+    virtual stdstr get_parameter_name(unsigned) = 0
+}
+
+class kgroup_mapper[piw::kgroup_mapper_t]
+{
+    kgroup_mapper()
+    d2d_nb key_filter()
+    d2d_nb light_filter()
+    void clear_mapping()
+    void activate_mapping()
+    void set_mapping(unsigned, unsigned)
+}
+
+class sclone[piw::sclone_t] /gc/
+{
+    sclone()
+    void set_output(unsigned,const cookie &)
+    void set_filtered_output(unsigned,const cookie &, const d2b &)
+    void clear_output(unsigned)
+    cookie cookie()
+}
+
+d2b first_filter[piw::first_filter](unsigned)
+
+class clone[piw::clone_t] /gc/
+{
+    clone(bool)
+    void set_policy(bool)
+    void set_output(unsigned,const cookie &)
+    void set_filtered_output(unsigned,const cookie &, const d2d_nb &)
+    void clear_output(unsigned)
+    cookie cookie()
+    change_nb gate(unsigned)
+    void enable(unsigned,bool)
+}
+
+class aggregator[piw::aggregator_t] /gc/
+    """
+    Aggregator stream class.
+    
+    Aggregate a number of streams into one, which each stream appearing in
+    the output at a specified name.  The streams to aggregate may be dynamically
+    changed.
+    
+    Initialisers
+    ============
+    
+    aggregator(cookie, clockdomain)
+        cookie: cookie from downstream
+    """
+{
+    aggregator(const cookie &,clockdomain_ctl *)
+    cookie get_filtered_output(unsigned, const d2d_nb &)
+    cookie get_output(unsigned)
+        """
+        self.get_output(output_name) -> cookie for new output
+        
+        Create a new output bundle named output_name (integer)
+        the output will appear as a bundle named output_name in
+        the top level of the aggregators output.  The output
+        must currently not exist.
+        """
+        
+    void clear_output(unsigned)
+        """
+        self.clear_output(output_name) -> .
+        
+        Clear the given output from the aggregated output.  Any
+        user of the output will continue but output data will be
+        thrown away.
+        """
+
+    unsigned size()
+}
+
+class scrolldelegate[piw::scrolldelegate_t]
+{
+    scrolldelegate()
+    virtual void scroll(float,float) = 0;
+    virtual void tap() = 0;
+}
+
+class scroller[piw::scroller_t]
+{
+    scroller(scrolldelegate *,float,float,unsigned)
+    cookie cookie()
+    void reset(float,float)
+    void reset_v(float)
+    void reset_h(float)
+    void enable()
+    void disable()
+    void set_scheme(unsigned)
+}
+
+class scroller2[piw::scroller2_t]
+{
+    scroller2(const change &)
+    cookie cookie()
+    void enable()
+    void disable()
+}
+
+class splitter_node[piw::splitter_node_t]: server
+{
+    splitter_node()
+}
+
+class splitter[piw::splitter_t]
+{
+    splitter()
+    cookie cookie()
+    void add_signal(unsigned, splitter_node *);
+    void remove_signal(unsigned);
+    virtual void set_latency(unsigned)
+    virtual void set_clock(clockref *)
+    clockref *get_clock()
+    unsigned get_latency()
+}
+
+class d2b[piw::d2b_t] /gc/
+    """
+    Functor with 1 data argument and bool return value.
+    
+    Initialisers
+    ============
+      
+    d2b() - creates a null functor which does nothing
+    """
+{
+    d2b()
+    d2b(const d2b &)
+    void set(const d2b &)
+    bool invoke(const data &)
+        """
+        self.invoke(data) -> 
+        
+        invoke the functor with a data argument
+        """
+    bool __call__[invoke](const data &)
+}
+
+<<<
+static PyObject *piw_make_d2b_functor(PyObject *args);
+>>>
+
+inline make_d2b_functor(args)
+    """
+    make_d2b_functor(callable) -> new d2b functor
+    
+    Make d2b functor from python callable
+    """
+<<<
+   return piw_make_d2b_functor(args);
+>>>
+
+class d2b_nb[piw::d2b_nb_t] /gc/
+    """
+    Functor with 1 data_nb argument and bool return value.
+    
+    Initialisers
+    ============
+      
+    d2b_nb() - creates a null functor which does nothing
+    """
+{
+    d2b_nb()
+    d2b_nb(const d2b_nb &)
+    void set(const d2b_nb &)
+    bool invoke(const data_nb &)
+        """
+        self.invoke(data_nb) -> 
+        
+        invoke the functor with a data_nb argument
+        """
+    bool __call__[invoke](const data_nb &)
+}
+
+<<<
+static PyObject *piw_make_d2b_nb_functor(PyObject *args);
+>>>
+
+inline make_d2b_nb_functor(args)
+    """
+    make_d2b_nb_functor(callable) -> new d2b_nb functor
+    
+    Make d2b_nb functor from python callable
+    """
+<<<
+   return piw_make_d2b_nb_functor(args);
+>>>
+
+class d2d[piw::d2d_t] /gc/
+    """
+    Functor with 1 data argument and data return value.
+    
+    Initialisers
+    ============
+      
+    d2d() - creates a null functor which does nothing
+    """
+{
+    d2d()
+    d2d(const d2d &)
+    void set(const d2d &)
+    data invoke(const data &)
+        """
+        self.invoke(data) -> 
+        
+        invoke the functor with a data argument
+        """
+    data __call__[invoke](const data &)
+}
+
+<<<
+static PyObject *piw_make_d2d_functor(PyObject *args);
+>>>
+
+inline make_d2d_functor(args)
+    """
+    make_d2d_functor(callable) -> new d2d functor
+    
+    Make d2d functor from python callable
+    """
+<<<
+   return piw_make_d2d_functor(args);
+>>>
+
+class d2d_nb[piw::d2d_nb_t] /gc/
+    """
+    Functor with 1 data argument and data return value.
+    
+    Initialisers
+    ============
+      
+    d2d_nb() - creates a null functor which does nothing
+    """
+{
+    d2d_nb()
+    d2d_nb(const d2d_nb &)
+    void set(const d2d_nb &)
+    data_nb invoke(const data_nb &)
+        """
+        self.invoke(data_nb) -> 
+        
+        invoke the functor with a data argument
+        """
+    data_nb __call__[invoke](const data_nb &)
+}
+
+<<<
+static PyObject *piw_make_d2d_nb_functor(PyObject *args);
+>>>
+
+inline make_d2d_nb_functor(args)
+    """
+    make_d2d_nb_functor(callable) -> new d2d_nb functor
+    
+    Make d2d_nb functor from python callable
+    """
+<<<
+   return piw_make_d2d_nb_functor(args);
+>>>
+
+class dd2d[piw::dd2d_t] /gc/
+    """
+    Functor that takes 2 datas and returns a datas
+    
+    Initialisers
+    ============
+      
+    dd2d() - creates a null functor which returns 0.0
+    """
+{
+    dd2d()
+    dd2d(const dd2d &)
+    data invoke(data,data)
+        """
+        self.invoke(data,data) -> data
+        invoke the functor
+        """
+    data __call__[invoke](data,data)
+}
+
+<<<
+static PyObject *piw_make_dd2d_functor(PyObject *args);
+>>>
+
+inline make_dd2d_functor(args)
+    """
+    make_dd2d_functor(callable) -> new dd2d functor
+    
+    Make dd2d functor from python callable
+    """
+<<<
+   return piw_make_dd2d_functor(args);
+>>>
+
+class dd2d_nb[piw::dd2d_nb_t] /gc/
+    """
+    Functor that takes 2 datas and returns a datas
+    
+    Initialisers
+    ============
+      
+    dd2d_nb() - creates a null functor which returns 0.0
+    """
+{
+    dd2d_nb()
+    dd2d_nb(const dd2d_nb &)
+    data_nb invoke(data_nb,data_nb)
+        """
+        self.invoke(data_nb,data_nb) -> data_nb
+        invoke the functor
+        """
+    data_nb __call__[invoke](data_nb,data_nb)
+}
+
+<<<
+static PyObject *piw_make_dd2d_nb_functor(PyObject *args);
+>>>
+
+inline make_dd2d_nb_functor(args)
+    """
+    make_dd2d_nb_functor(callable) -> new dd2d functor
+    
+    Make dd2d_nb functor from python callable
+    """
+<<<
+   return piw_make_dd2d_nb_functor(args);
+>>>
+
+class change[piw::change_t] /gc/
+    """
+    Functor with 1 data argument and no return value.
+    
+    Change functors can be obtained from libpiw c++ objects or
+    created from python callables using make_change_functor
+    
+    Initialisers
+    ============
+      
+    change() - creates a null functor which does nothing
+    """
+{
+    change()
+    change(const change &)
+    void invoke(const data &)
+        """
+        self.invoke(data) -> 
+        
+        invoke the functor with a data argument
+        """
+    void __call__[invoke](const data &)
+}
+
+<<<
+static PyObject *piw_make_change_functor(PyObject *args);
+>>>
+
+inline make_change_functor(args)
+    """
+    make_change_functor(callable) -> new change functor
+    
+    Make change functor from python callable
+    """
+<<<
+   return piw_make_change_functor(args);
+>>>
+
+class change_nb[piw::change_nb_t] /gc/
+    """
+    Functor with 1 data_nb argument and no return value.
+    
+    Change functors can be obtained from libpiw c++ objects or
+    created from python callables using make_change_functor
+    
+    Initialisers
+    ============
+      
+    change_nb() - creates a null functor which does nothing
+    """
+{
+    change_nb()
+    change_nb(const change_nb &)
+    void invoke(const data_nb &)
+        """
+        self.invoke(data_nb) -> 
+        
+        invoke the functor with a data_nb argument
+        """
+    void __call__[invoke](const data_nb &)
+}
+
+<<<
+static PyObject *piw_make_change_nb_functor(PyObject *args);
+>>>
+
+inline make_change_nb_functor(args)
+    """
+    make_change_nb_functor(callable) -> new change_nb functor
+    
+    Make change_nb functor from python callable
+    """
+<<<
+   return piw_make_change_nb_functor(args);
+>>>
+
+change indirectchange[piw::indirectchange]()
+void indirectchange_set(change &, const change &)
+void indirectchange_clear(change &)
+
+change_nb indirectchange_nb[piw::indirectchange_nb]()
+void indirectchange_set_nb(change_nb &, const change_nb &)
+void indirectchange_clear_nb(change_nb &)
+
+change changelist[piw::changelist]()
+void changelist_connect(change &, const change &)
+void changelist_disconnect(change &, const change &)
+
+change_nb changelist_nb[piw::changelist_nb]()
+void changelist_connect_nb(change_nb &, const change_nb &)
+void changelist_disconnect_nb(change_nb &, const change_nb &)
+
+change change2[piw::change2](const change &, const change &)
+change_nb change2_nb[piw::change2_nb](const change_nb &, const change_nb &)
+change_nb trigger[piw::trigger](const change_nb &, const data_nb &)
+
+class function1[piw::function1_t] /gc/
+    """
+    Filter stream class.
+    
+    function1 applies a filter to every wire in its input bundle.  The filter
+    is represented by a d2d functor.  The input signals may be passed thru
+    intact, with the output signal added, or may be blocked, so that the output
+    of the filter contains just one signal.  The filter can be driver from 
+    any input signal, or by the name of the wire within the enclosing bundle.
+    
+    Note that the functor should be implemented in C.  If you want to use a
+    python callable, you can use make_d2d_table to sample the function into
+    a table for linear interpolation.
+    
+    Initialisers
+    ============
+    
+    function(thru,input,output,downstream)
+       - thru: bool thru mode
+       - input: signal to use as filter input (0 to use wire name)
+       - output: signal name for output
+       - downstream: cookie from downstream object
+    """
+{
+    function1(bool, unsigned, unsigned, const data &,const cookie &)
+    void set_functor(const d2d_nb &)
+        """
+        self.set_functor(d2d) -> .
+        
+        change the functor being used.  All outputs will be udated to
+        the value of this functor as applied to current inputs.
+        """
+    cookie cookie()
+        """
+        self.cookie() -> cookie to pass to upstream
+        """
+}
+
+class function2[piw::function2_t] /gc/
+{
+    function2(bool, unsigned, unsigned, unsigned, const data &,const data &,const cookie &)
+    void set_functor(const dd2d_nb &)
+    cookie cookie()
+}
+
+class window[piw::window_t] /gc/
+{
+    window()
+    void set_window_state(bool)
+    void set_window_title(const char *)
+    void set_state_handler(status)
+    void clear_state_handler()
+    virtual void window_state(bool)
+    virtual void window_closed()
+    bool open()
+    bool opening()
+    bool closing()
+    bool running()
+    void close_window()
+}
+
+class thing[piw::thing_t] /gc/
+{
+    thing()
+
+    notify trigger_fast_functor()
+    notify trigger_slow_functor()
+    change_nb enqueue_fast_functor()
+    change enqueue_slow_functor()
+    change_nb enqueue_slow_nb_functor()
+
+    void set_slow_timer_handler(notify)
+    void set_fast_timer_handler(notify)
+    void set_slow_trigger_handler(notify)
+    void set_fast_trigger_handler(notify)
+    void set_slow_dequeue_handler(change)
+    void set_fast_dequeue_handler(change_nb)
+
+    void clear_slow_timer_handler()
+    void clear_slow_trigger_handler()
+
+    void timer_slow(unsigned)
+    void cancel_timer_slow()
+    void trigger_slow()
+    void enqueue_slow(const data &)
+    void enqueue_fast(const data_nb &)
+    void flush_slow()
+
+    virtual void thing_timer_slow()
+    virtual void thing_trigger_slow()
+    virtual void thing_dequeue_slow(const data &)
+    virtual void thing_closed()
+
+    bool open()
+    bool opening()
+    bool closing()
+    bool running()
+    void close_thing()
+}
+
+class index[piw::index_t] /gc/
+    """
+    Indexes
+
+    Servers can advertise themselves on an index.  This class allows an index
+    to be monitored.  It's activated using tsd_index and the servers can be
+    enumerated using member_count() and member_name()
+
+    Whenever the index changes, the index_changed() method gets called
+    """
+{
+    index()
+    bool open()
+    bool opening()
+    bool closing()
+    bool running()
+    void set_change_handler(const notify &)
+    void clear_change_handler()
+    data index_name()
+    data member_name(int)
+    int member_count()
+    unsigned short member_cookie(int)
+    void member_died(data,unsigned short)
+    virtual void close_index()
+    virtual void index_opened()
+    virtual void index_closed()
+    virtual void index_changed()
+}
+
+class server[piw::server_t] /gc/
+    """
+    State variable tree base class
+    
+    server is the base class of all state variables and idioms.
+    It represents a single state variable, which is the root of it's
+    subtree.  When a server is created,
+    it is closed.  It can be opened either by being made a
+    child of another server, or by being made a root of a state variable
+    tree.  When a server is opened, the server_opened method is called
+    which can be overridden if desired.
+    
+    Servers have a type which cannot be changed.  The value of the server
+    is set only by this class.  When a client requests a change, server_change
+    is called, which can be overridden.  Unless set() is called to update
+    the value, the change will not be visible to clients.
+    
+    The default value of a server is an appropraite null of the correct type,
+    such as 0, 0.0, empty string, false, etc.
+    
+    When a server is opened, it may add child servers to itself to form
+    a tree.  Various classes derived from server allow tree's to be formed
+    in different ways.
+    
+    Changes can be responded to in one of two ways.  If one is deriving from
+    server, the most convenient way is to implement server_changed.  Otherwise,
+    (typically when server is part of a larger aggregate) one may register a
+    change functor which will be invoked upon a change request.
+    
+    Initialisers
+    ============
+    
+    server(flags)
+       - flags: compination of server_ro,server_fast etc
+    """
+{
+    server()
+    server(unsigned)
+    virtual void server_opened()
+        """
+        self.server_opened() -> .
+        
+        abstract method invoked when the server is opened.  Can be used
+        for initialisation actions which depend on the server being open.
+        
+        When implementing this action, you should call server.server_opened
+        to perform the default actions
+        """
+    virtual void server_closed()
+        """
+        self.server_closed() -> .
+        
+        abstract method invoked when the server is closed.  When this 
+        method is called, the server is still partially open, in that the
+        servername() and path() methods are still valid.
+        
+        When implementing this action, you should call server.server_closed
+        to perform the default actions.
+        
+        Note that this method is invoked only when the server is closed by 
+        outside agency.
+        """
+    virtual void server_change(const data &)
+        """
+        self.server_change(requested_data) -> .
+        
+        abstract method invoked when a belcanto client requests a data change.
+        When implementing this action, you should call server.server_closed
+        to perform the default actions.
+        """
+    virtual void close_server()
+        """
+        self.close_server() -> .
+        
+        Call to close a server.  This method can be overidden to perform 
+        extra cleanup actions, but the default implementation should always
+        be called with server.close_server.
+        
+        After the default implementation is called, many server methods are
+        no longer available, such as servername() and path()
+        """
+    virtual void server_tree(const data &)
+    void set_data(data)
+        """
+        self.set(data) -> .
+        
+        Change the value of this server.  The server need not be open.  The
+        current value will be applied when the server is opened.
+        """
+    data get_data()
+        """
+        self.get() -> current value
+        
+        returns the current value of the server as changed with set()
+        """
+    bool has_value()
+        """
+        self.has_value() -> .
+        
+        Does the server currently have a non-null value?
+        """
+    void advertise(const char *)
+        """
+        self.advertise(name) -> .
+
+        Advertise this server on index name
+        """
+    void unadvertise(const char *)
+        """
+        self.unadvertise(name) -> .
+
+        Stop advertising this server on index name
+        """
+    data servername()
+        """
+        self.servername() -> belcanto name of state tree
+        returns the belcanto name of the state variable tree of which this
+        server is part.  The server must be open
+        """
+    data path()
+        """
+        self.path() -> state variable name within server tree
+        
+        returns the name of this server within the tree of which it is
+        a part.  the server must be open.
+        """
+    void set_change_handler(const change &)
+        """
+        self.set_change_handler(change_functor) -> .
+        
+        Install a functor which will be called when a client requests 
+        a change of value.  Only one functor at a time can be installed
+        """
+    void clear_change_handler()
+        """
+        self.clear_change_handler() -> .
+        
+        clear the change handler
+        """
+    bool open()
+        """
+        open() -> current state
+        
+        returns whether the server is open
+        """
+    void child_add(unsigned char, server *)
+        """
+        child_add(name,server) -> .  
+
+        add server as child of his one
+        """
+    bool opening()
+    bool closing()
+    bool running()
+    void set_source(fastdata *)
+    void clear_source()
+    void set_flags(unsigned)
+    unsigned get_flags()
+    void set_readonly()
+    void set_readwrite()
+    void set_clock(clockref *)
+    void clear_clock()
+    stdstr id()
+}
+
+class client[piw::client_t] /gc/
+{
+    client(unsigned)
+    const data &get_data()
+    void set_data(const data &)
+    bool open()
+    bool opening()
+    bool closing()
+    bool running()
+    unsigned short cookie()
+
+    unsigned get_host_flags()
+    unsigned get_plug_flags()
+
+    data servername()
+    data path()
+
+    void sync()
+
+    unsigned char enum_child(unsigned char)
+
+    void clone(client *)
+    void child_add(unsigned char, client *)
+
+    void child_add_str(const unsigned char *, unsigned, client *)
+    unsigned child_flags_str(const unsigned char *, unsigned)
+    data child_data_str(const unsigned char *, unsigned)
+    bool child_exists_str(const unsigned char *, unsigned)
+    void child_change_str(const unsigned char *, unsigned, const data &)
+    unsigned char child_enum_child_str(const unsigned char *, unsigned, unsigned char)
+    unsigned long child_dcrc(const unsigned char *, unsigned)
+    unsigned long child_tcrc(const unsigned char *, unsigned)
+    unsigned long child_ncrc(const unsigned char *, unsigned)
+
+    void set_tree(const data &)
+
+    void set_change_handler(const change &)
+    void clear_change_handler()
+    void set_sink(fastdata *)
+    void clear_sink()
+    bool set_downstream(clockref *)
+    void clear_downstream()
+
+    unsigned long dcrc()
+    unsigned long tcrc()
+    unsigned long ncrc()
+    stdstr id()
+
+    virtual void close_client()
+    virtual void client_tree()
+    virtual void client_child()
+    virtual void client_data(const data &)
+    virtual void client_opened()
+    virtual void client_closed()
+    virtual void client_sync()
+    virtual void client_clock()
+}
+
+class subcanchor[piw::subcanchor_t]: client /gc/
+{
+    subcanchor()
+    bool set_path(const stdstr &)
+    stdstr get_path()
+    bool clear_path();
+    void set_client(client *)
+    void clear_client()
+    void close_client()
+}
+
+class canchor[piw::canchor_t]
+{
+    canchor()
+    bool set_address(const data_nb &)
+    bool set_address_str(const stdstr &)
+    stdstr get_address()
+    void set_client(client *)
+    void set_slow_client(client *)
+}
+
+class anchor[piw::anchor_t]
+{
+    anchor()
+    void set_address_str(const stdstr &)
+    void set_server(server *)
+}
+
+class f_event_sender[piw::f_event_sender_t]
+{
+    f_event_sender()
+    f_event_sender(const f_event_sender &)
+}
+
+class f_event_receiver[piw::f_event_receiver_t]
+{
+    f_event_receiver()
+    f_event_receiver(const f_event_receiver &)
+}
+
+class dataqueue[piw::dataqueue_t]
+{
+    dataqueue(const dataqueue &)
+    void write_slow(const data &)
+    void trigger_slow()
+    change_nb sender_fast()
+    change sender_slow()
+}
+
+class fastdata[piw::fastdata_t] /gc/
+{
+    fastdata(unsigned short)
+    void set_upstream(fastdata *)
+    void clear_upstream()
+    void enable(bool,bool,bool)
+    data_nb current(bool)
+    bool open()
+    f_event_sender id_sender()
+    void send_slow(const data &,const dataqueue &)
+
+    void set_change_handler(const change_nb &)
+    void clear_change_handler()
+    void set_id_change_handler(const f_event_receiver &)
+    void clear_id_change_handler()
+
+    virtual void close_fastdata()
+    virtual void fastdata_closed()
+}
+
+class fastdata_receiver[piw::fastdata_receiver_t]: fastdata
+{
+    fastdata_receiver(const change_nb &)
+}
+
+class term[piw::term_t]
+{
+    term()
+    term(const data &)
+    term(unsigned)
+    term(const char *,unsigned)
+    term(const term &)
+
+    unsigned type()
+    unsigned arity()
+    const char *pred()
+    data value()
+    term arg(unsigned)
+    void set_arg(unsigned,const term &)
+    void append_arg(const term &)
+    void add_arg(int,const term &)
+    stdstr render()
+}
+
+term parse_state_term[piw::parse_state_term](const stdstr &)
+
+class data_base[piw::data_base_t]
+    """
+    Belcanto data
+    
+    All belcanto data is stored in a data object.  A data is immutable
+    once created, and the representation will be shared even between
+    agents.
+    
+    Every data contains a timestamp
+    """
+{
+    unsigned long long time()
+        """
+        self.time() -> data timestamp
+        """
+    unsigned type()
+        """
+        self.type() -> data type
+        """
+    bool is_array()
+        """
+        self.is_array() -> True if data is a buffer
+        """
+    bool is_string()
+        """
+        self.is_string() -> True if data is a string, False otherwise
+        """
+    bool is_float()
+        """
+        self.is_float() -> True if data is a float, False otherwise
+        """
+    bool is_long()
+        """
+        self.is_long() -> True if data is an integer, False otherwise
+        """
+    bool is_null()
+        """
+        self.is_null() -> True if data is an null, False otherwise
+        """
+    bool is_bool()
+        """
+        self.is_bool() -> True if data is a bool, False otherwise
+        """
+    bool is_path()
+        """
+        self.is_path() -> True if data is a path, False otherwise
+        """
+    bool is_dict()
+        """
+        self.is_dict() -> True if data is a dict, False otherwise
+        """
+    bool is_blob()
+        """
+        self.is_blob() -> True if data is a blob, False otherwise
+        """
+
+    stdstr __str__[repr]()
+    stdstr __repr__[repr]()
+    int __cmp__[compare](const data_base &)
+    long __hash__[hash]()
+
+    stdstr as_stdstr()
+    stdstr as_blob2()
+    stdstr as_pathstr()
+
+    const char *as_string()
+        """
+        self.as_string() -> string value
+        
+        If data is not a string, an exception is thrown
+        """
+
+    unsigned as_stringlen()
+
+    float as_float()
+        """
+        self.as_float() -> float value
+        
+        If data is not a float, an exception is thrown
+        """
+    long as_long()
+        """
+        self.as_long() -> long value
+        
+        If data is not a long, an exception is thrown
+        """
+    bool as_bool()
+        """
+        self.as_bool() -> bool value
+        
+        If data is not a bool, an exception is thrown
+        """
+
+    unsigned as_dict_nkeys()
+    stdstr as_dict_key(unsigned)
+
+    int compare(const data_base &)
+        """
+        self.compare(other) -> int
+        
+        compare self with other
+        """
+    stdstr repr()
+        """
+        self.repr() -> string
+        
+        convert to string representation
+        """
+    float as_norm()
+    float as_denorm()
+    float as_renorm(float,float,float)
+    float as_array_ubound()
+    float as_array_lbound()
+    float as_array_rest()
+    unsigned as_arraylen()
+    float as_array_member(unsigned)
+
+    unsigned data_type()
+}
+
+class data[piw::data_t]: data_base
+{
+    data()
+    data(const data &)
+
+    data as_dict_lookup(const stdstr &)
+    data as_dict_value(unsigned)
+    data restamp(unsigned long long)
+
+    data_nb make_nb();
+    data make_normal();
+}
+
+class data_nb[piw::data_nb_t]: data_base
+{
+    data_nb()
+    data_nb(const data_nb &)
+
+    data_nb as_dict_lookup(const stdstr &)
+    data_nb as_dict_value(unsigned)
+    data_nb restamp(unsigned long long)
+
+    data_nb make_nb();
+    data make_normal();
+}
+
+data_nb makefloat_nb[piw::makefloat_nb](float,unsigned long long)
+    """
+    makefloat(value,timestamp) -> data
+    
+    make a float data value
+    """
+
+data_nb makenull_nb[piw::makenull_nb](unsigned long long)
+
+data_nb makestring_len_nb[piw::makestring_len_nb](const char *,unsigned,unsigned long long)
+    """
+    makestring(value,timestamp) -> data
+    
+    make a string data value
+    """
+
+data_nb makestring_nb[piw::makestring_nb](const char *,unsigned long long)
+    """
+    makestring(value,timestamp) -> data
+    
+    make a string data value
+    """
+
+data_nb makebool_nb[piw::makebool_nb](bool,unsigned long long)
+    """
+    makebool(value,timestamp) -> data
+    
+    make a bool data value
+    """
+
+data_nb makelong_nb[piw::makelong_nb](long,unsigned long long)
+    """
+    makelong(value,timestamp) -> data
+    
+    make a long data value
+    """
+
+data_nb pathone_nb[piw::pathone_nb](unsigned,unsigned long long)
+    """
+    pathnull(value,timestamp) -> data
+ 
+    make a path of length 1
+    """
+ 
+data_nb pathnull_nb[piw::pathnull_nb](unsigned long long)
+    """
+    pathnull(timestamp) -> data
+ 
+    make a null path
+    """
+
+data dictnull[piw::dictnull](unsigned long long)
+data dictset[piw::dictset](const data &,const stdstr &,const data &)
+data dictupdate(const data &,const data &)
+data dictdel(const data &,const stdstr &)
+
+data_nb dictnull_nb[piw::dictnull_nb](unsigned long long)
+data_nb dictset_nb[piw::dictset_nb](const data_nb &,const stdstr &,const data_nb &)
+
+data_nb parsepath_nb[piw::parsepath_nb](const char *, unsigned long long)
+    """
+    parsepath(string,timestamp) ->data
+
+    parse a dotted notation path 
+    """
+
+data_nb makepath_nb[piw::makepath_nb](const unsigned char *, unsigned, unsigned long long)
+    """
+    makepath(value,len,timestamp) -> data
+
+    make a path from a string
+    """
+
+data_nb makedouble_bounded_units_nb[piw::makedouble_bounded_units_nb](unsigned,float, float, float, double, unsigned long long)
+data_nb makefloat_bounded_units_nb[piw::makefloat_bounded_units_nb](unsigned,float, float, float, float, unsigned long long)
+data_nb makelong_bounded_units_nb[piw::makelong_bounded_units_nb](unsigned,float, float, float, long, unsigned long long)
+
+data_nb makedouble_bounded_nb[piw::makedouble_bounded_nb](float, float, float, double, unsigned long long)
+data_nb makefloat_bounded_nb[piw::makefloat_bounded_nb](float, float, float, float, unsigned long long)
+data_nb makelong_bounded_nb[piw::makelong_bounded_nb](float, float, float, long, unsigned long long)
+
+data makefloat[piw::makefloat](float,unsigned long long)
+    """
+    makefloat(value,timestamp) -> data
+    
+    make a float data value
+    """
+
+data makenull[piw::makenull](unsigned long long)
+
+data makestring_len[piw::makestring_len](const char *,unsigned,unsigned long long)
+    """
+    makestring(value,timestamp) -> data
+    
+    make a string data value
+    """
+
+data makestring[piw::makestring](const char *,unsigned long long)
+    """
+    makestring(value,timestamp) -> data
+    
+    make a string data value
+    """
+
+data makeblob2[piw::makeblob2](const stdstr &,unsigned long long)
+    """
+    makeblob(value,timestamp) -> data
+    
+    make a blob data value
+    """
+
+data makebool[piw::makebool](bool,unsigned long long)
+    """
+    makebool(value,timestamp) -> data
+    
+    make a bool data value
+    """
+
+data makelong[piw::makelong](long,unsigned long long)
+    """
+    makelong(value,timestamp) -> data
+    
+    make a long data value
+    """
+
+data pathone[piw::pathone](unsigned,unsigned long long)
+    """
+    pathone(value,timestamp) -> data
+
+    make a path of length 1
+    """
+
+data pathnull[piw::pathnull](unsigned long long)
+    """
+    pathnull(timestamp) -> data
+
+    make a null path
+    """
+
+data parsepath[piw::parsepath](const char *, unsigned long long)
+    """
+    parsepath(string,timestamp) ->data
+
+    parse a dotted notation path 
+    """
+
+data makepath[piw::makepath](const unsigned char *, unsigned, unsigned long long)
+    """
+    makepath(value,len,timestamp) -> data
+
+    make a path from a string
+    """
+
+data makedouble_bounded[piw::makedouble_bounded](float, float, float, double, unsigned long long)
+data makefloat_bounded[piw::makefloat_bounded](float, float, float, float, unsigned long long)
+data makelong_bounded[piw::makelong_bounded](float, float, float, long, unsigned long long)
+
+data makedouble_bounded_units[piw::makedouble_bounded_units](unsigned,float, float, float, double, unsigned long long)
+data makefloat_bounded_units[piw::makefloat_bounded_units](unsigned,float, float, float, float, unsigned long long)
+data makelong_bounded_units[piw::makelong_bounded_units](unsigned,float, float, float, long, unsigned long long)
+
+float normalise[piw::normalise](float,float,float,float)
+    """
+    normalise(upper-bound, lower-bound, zero, denorm) -> norm
+    convert float to normalised form (-1,1)
+    """
+
+float denormalise[piw::denormalise](float,float,float,float)
+    """
+    denormalise(upper-bound, lower-bound, zero, norm) -> denorm
+    convert float from normalised form to given range
+    """
+
+stdstr address2server[piw::address2server](const stdstr &)
+    """
+    parse an address and return the server part as a string
+    """
+
+d2d_nb bint_normalizer[piw::bint_normalizer](int,int,int)
+d2d_nb bint_denormalizer[piw::bint_denormalizer](int,int,int)
+d2d_nb bfloat_normalizer[piw::bfloat_normalizer](float,float,float)
+d2d_nb bfloat_denormalizer[piw::bfloat_denormalizer](float,float,float)
+d2d_nb bool_normalizer[piw::bool_normalizer]()
+d2d_nb bool_denormalizer[piw::bool_denormalizer]()
+d2d_nb null_normalizer[piw::null_normalizer]()
+d2d_nb null_denormalizer[piw::null_denormalizer]()
+d2d_nb string_normalizer[piw::string_normalizer]()
+d2d_nb string_denormalizer[piw::string_denormalizer]()
+change_nb d2d_chain[piw::d2d_chain](const d2d_nb &, const d2d_nb &, const change_nb &)
+change_nb d2d_convert[piw::d2d_convert](const d2d_nb &, const change_nb &)
+change fastchange[piw::fastchange](const change_nb &)
+dd2d_nb add[piw::add](float)
+
+class clockdomain_ctl[piw::clockdomain_ctl_t] /gc/
+{
+    clockdomain_ctl()
+    void set_source(const data &)
+    void sink(clockref *, const char *)
+    unsigned long get_sample_rate()
+    unsigned get_buffer_size()
+    data get_source()
+    void add_listener(const notify &)
+    void remove_listener(const notify &)
+}
+
+class clocksink[piw::clocksink_t]: clockref
+{
+    clocksink()
+    void add_upstream(clockref *)
+    void remove_upstream(clockref *)
+    void add_downstream(clockref *)
+    void remove_downstream(clockref *)
+    void tick_enable(bool)
+    void tick_disable()
+    void close_sink()
+    bool open()
+    bool opening()
+    bool closing()
+    bool running()
+}
+
+class clocksource[piw::clocksource_t]
+{
+    clocksource()
+    void tick_slow(unsigned long long)
+    void set_details(unsigned,unsigned long)
+    void close_source()
+    bool open()
+    bool opening()
+    bool closing()
+    bool running()
+}
+
+d2d_nb make_d2d_const[piw::make_d2d_const](float,float,float,float)
+f2f make_f2f_identity[piw::make_f2f_identity]()
+
+f2f make_f2f_table[piw::make_f2f_table](float,float,unsigned,const f2f &)
+    """
+    make_f2f_table(low,high,samples,functor) -> functor
+    
+    Convert f2f functor into table form.  The function is
+    sampled at samples intervals between low and high values.
+    The resulting functor linearly interpolates between samples
+    
+    This function can be used to convert a python callable into
+    a functor which is usable from the high speed thread
+    """
+
+d2d_nb make_d2d_table[piw::make_d2d_table](float,float,float,unsigned,const d2d_nb &)
+    """
+    make_d2d_table(low,high,zero,samples,functor) -> functor
+    
+    Convert d2d functor into table form.  The function is
+    sampled at samples intervals between low and high values.
+    The resulting functor linearly interpolates between samples
+    
+    This function can be used to convert a python callable into
+    a functor which is usable from the high speed thread
+    """
+
+dd2d_nb make_pitchbender[piw::make_pitchbender](float,float)
+
+class fast_pitchbender[piw::fast_pitchbender_t]
+{
+    fast_pitchbender_t()
+    change_nb set_range()
+    change_nb set_offset()
+    dd2d_nb bend_functor()
+}
+
+class panner[piw::panner_t] /gc/
+{
+    panner(const f2f &,const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class gain[piw::gain_t] /gc/
+{
+    gain(const f2f &,const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class delay[piw::delay_t]
+{
+    delay(const cookie &, clockdomain_ctl *)
+    cookie audio_cookie()
+	cookie tap_cookie()  
+	void reset_delay_lines()
+    void set_enable(bool)
+    void set_enable_time(float)
+}
+
+class linear_gain[piw::linear_gain_t]
+{
+    linear_gain(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class selector[piw::selector_t] /gc/
+{
+    selector(const cookie &, const change_nb &, unsigned, bool)
+
+    void gate_output(unsigned, const change_nb &, const change_nb &)
+    change_nb gate_input(unsigned)
+    change_nb mode_input()
+    void clear_output(unsigned)
+    void choose(bool)
+    void activate(unsigned)
+    void select(unsigned,bool)
+}
+
+class velocitydetect[piw::velocitydetect_t]
+{
+    velocitydetect(const cookie &, unsigned, unsigned)
+    cookie cookie()
+    void set_samples(unsigned)
+    void set_curve(float)
+    void set_scale(float)
+}
+
+class scaler_controller[piw::scaler_controller_t]
+{
+    scaler_controller()
+    cookie cookie()
+}
+
+class scaler[piw::scaler_t] /gc/
+{
+    scaler(scaler_controller *,const cookie &,const f2f &)
+    cookie cookie()
+    void set_bend_curve(const f2f &);
+}
+
+f2f step_bucket[piw::step_bucket]()
+
+class evtdump[piw::evtdump_t]
+{
+    evtdump(const stdstr &, const cookie &, clockdomain_ctl *)
+    cookie cookie()
+}
+
+class wavrecorder[piw::wavrecorder_t]
+{
+    wavrecorder(clockdomain_ctl *)
+    cookie cookie()
+    void setfile(const char *)
+    change_nb record()
+}
+
+void dump_client[piw::dump_client](client *, unsigned, bool);
+
+class python_delegate[piw::python_delegate_t]
+{
+    python_delegate_t()
+    virtual void py_destroy_any(PyObject *) [locked] = 0;
+    virtual PyObject *py_make_term(PyObject *,PyObject *) [locked] = 0;
+    virtual PyObject *py_make_list(PyObject *) [locked] = 0;
+    virtual PyObject *py_make_collection() [locked] = 0;
+    virtual PyObject *py_make_split(PyObject *, PyObject *) [locked] = 0;
+    virtual void py_add_arg(PyObject *, PyObject *) [locked] = 0;
+    virtual PyObject *py_make_long(long) [locked] = 0;
+    virtual PyObject *py_make_float(float) [locked] = 0;
+    virtual PyObject *py_make_bool(bool) [locked] = 0;
+    virtual PyObject *py_make_none() [locked] = 0;
+    virtual PyObject *py_make_string(PyObject *) [locked] = 0;
+    virtual PyObject *py_make_variable(PyObject *) [locked] = 0;
+    virtual PyObject *py_make_subst1(PyObject *) [locked] = 0;
+    virtual PyObject *py_make_subst2(PyObject *, PyObject *) [locked] = 0;
+}
+
+class midi_channel_delegate[piw::midi_channel_delegate_t]
+{
+    midi_channel_delegate()
+    virtual void set_midi_channel(unsigned) = 0
+    virtual void set_min_channel(unsigned) = 0
+    virtual void set_max_channel(unsigned) = 0
+    virtual unsigned get_midi_channel() = 0
+    virtual unsigned get_min_channel() = 0
+    virtual unsigned get_max_channel() = 0
+}
+
+class midi_from_belcanto[piw::midi_from_belcanto_t]
+{
+    midi_from_belcanto(const cookie &, clockdomain_ctl *)
+    cookie cookie()
+    void set_midi_channel(unsigned)   
+    void set_min_midi_channel(unsigned)   
+    void set_max_midi_channel(unsigned)   
+    void set_program_change(unsigned)
+    void set_bank_change(unsigned)
+    void set_omni(bool)
+}
+
+PyObject *parse_clause[piw::py_parse_clause](python_delegate *, const char *) [locked]
+PyObject *parse_clauselist[piw::py_parse_clauselist](python_delegate *, const char *) [locked]
+PyObject *parse_term[piw::py_parse_term](python_delegate *, const char *) [locked]
+PyObject *parse_termlist[piw::py_parse_termlist](python_delegate *, const char *) [locked]
+
+inline setenv(args)
+    """
+    setenv(environment) -> .
+    
+    Initialise piw during instance creation.  libpiw requires certain
+    thread specific data to have been initialised in order to function.
+    Normally, this is taken care of automatically, but during agent 
+    initialisation this is not the case.
+    
+    This function should always be called by an agents main function 
+    prior to doing anything else, using the environment supplied to main
+    """
+<<<
+   PyObject *o; bct_entity_t e;
+   if(!PyArg_ParseTuple(args,"O",&o)) { return 0; }
+   if(!(e=(bct_entity_t)PyCObject_AsVoidPtr(o))) { PyErr_SetString(PyExc_TypeError,"expected CObject"); return 0; }
+   piw::tsd_setcontext(e);
+   Py_INCREF(Py_None); return Py_None;
+>>>
+
+bool tsd_killed[piw::tsd_killed]()
+void tsd_exit[piw::tsd_exit]()
+void tsd_dump[piw::tsd_dump]()
+void tsd_lock[piw::tsd_lock]()
+void tsd_unlock[piw::tsd_unlock]()
+void tsd_client[piw::tsd_client](const char *,client *,bool)
+void tsd_server[piw::tsd_server](const char *,server *)
+void tsd_fastdata[piw::tsd_fastdata](fastdata *)
+dataqueue tsd_dataqueue[piw::tsd_dataqueue](unsigned)
+void tsd_thing[piw::tsd_thing](thing *)
+void tsd_window[piw::tsd_window](window *)
+void tsd_index[piw::tsd_index](const char *,index *)
+void tsd_log[piw::tsd_log](const char *)
+void tsd_alert[piw::tsd_alert](const char *,const char *, const char *)
+void tsd_rpcserver[piw::tsd_rpcserver](rpcserver *,const char *)
+void tsd_rpcclient[piw::tsd_rpcclient](rpcclient *,const char *, const data &, const data &, const data &, unsigned long)
+stdstr tsd_user[piw::tsd_user]()
+unsigned long long tsd_time[piw::tsd_time]()
+void tsd_clocksource(const data &,unsigned,unsigned,clocksource *);
+void tsd_clearcontext[piw::tsd_clearcontext]()
+
+class tsd_snapshot[piw::tsd_snapshot_t]
+    """
+    Saves the current global environment for later restore, usually in a different
+    thread.
+    """
+{
+    tsd_snapshot()
+    void log(const char *)
+    void save()
+    void install()
+}
+
+epilog <<<
+struct piw_change_sink_t: public piw::change_t::sinktype_t
+{
+    piw_change_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~piw_change_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return true;
+    }
+
+    void invoke(const piw::data_t &d) const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&",tpcvt_data_copy,&d);
+
+        if(r) Py_DECREF(r);
+        else PyErr_Print();
+
+        if(!r)
+        {
+            std::cerr << "Functor with exception " ;
+            PyObject_Print(_callable,stderr,0);
+            std::cerr << std::endl;
+            PIC_THROW("python exception inside functor ");
+        }
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+PyObject *piw_make_change_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make change functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    piw::change_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new piw::change_t(pic::ref(new piw_change_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return change_wrap_(c,true);
+}
+
+struct piw_change_nb_sink_t: public piw::change_nb_t::sinktype_t
+{
+    piw_change_nb_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~piw_change_nb_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return true;
+    }
+
+    void invoke(const piw::data_nb_t &d) const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&",tpcvt_data_copy,&d);
+
+        if(r) Py_DECREF(r);
+        else PyErr_Print();
+
+        if(!r)
+        {
+            std::cerr << "Functor with exception " ;
+            PyObject_Print(_callable,stderr,0);
+            std::cerr << std::endl;
+            PIC_THROW("python exception inside functor ");
+        }
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+PyObject *piw_make_change_nb_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make change functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    piw::change_nb_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new piw::change_nb_t(pic::ref(new piw_change_nb_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return change_nb_wrap_(c,true);
+}
+
+struct piw_d2d_sink_t: public piw::d2d_t::sinktype_t
+{
+    piw_d2d_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~piw_d2d_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return true;
+    }
+
+    piw::data_t invoke(const piw::data_t &d) const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&",tpcvt_data_copy,&d);
+
+        if(!r)
+        {
+            PyErr_Print();
+            PIC_THROW("python exception inside functor");
+        }
+
+        piw::data_t *rvp;
+
+        if(!fpcvt_data(r,&rvp))
+        {
+            Py_DECREF(r);
+            PyErr_Print();
+            PIC_THROW("incorrect (non data) return type from functor");
+        }
+
+        {   unlock_p2c unlock;
+            {
+                piw::data_t rv(*rvp);
+                {   relock_p2c relock(unlock);
+                    Py_DECREF(r);
+                }
+                return rv;
+            }
+        }
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+PyObject *piw_make_d2d_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make d2d functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    piw::d2d_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new piw::d2d_t(pic::ref(new piw_d2d_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return d2d_wrap_(c,true);
+}
+
+struct piw_d2d_nb_sink_t: public piw::d2d_nb_t::sinktype_t
+{
+    piw_d2d_nb_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~piw_d2d_nb_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return true;
+    }
+
+    piw::data_nb_t invoke(const piw::data_nb_t &d) const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&",tpcvt_data_copy,&d);
+
+        if(!r)
+        {
+            PyErr_Print();
+            PIC_THROW("python exception inside functor");
+        }
+
+        piw::data_nb_t *rvp;
+
+        if(!fpcvt_data(r,&rvp))
+        {
+            Py_DECREF(r);
+            PyErr_Print();
+            PIC_THROW("incorrect (non data) return type from functor");
+        }
+
+        {   unlock_p2c unlock;
+            {
+                piw::data_nb_t rv(*rvp);
+                {   relock_p2c relock(unlock);
+                    Py_DECREF(r);
+                }
+                return rv;
+            }
+        }
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+PyObject *piw_make_d2d_nb_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make d2d functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    piw::d2d_nb_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new piw::d2d_nb_t(pic::ref(new piw_d2d_nb_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return d2d_nb_wrap_(c,true);
+}
+
+struct piw_d2b_sink_t: public piw::d2b_t::sinktype_t
+{
+    piw_d2b_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~piw_d2b_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return true;
+    }
+
+    bool invoke(const piw::data_t &d) const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&",tpcvt_data_copy,&d);
+
+        if(!r)
+        {
+            PyErr_Print();
+            PIC_THROW("python exception inside functor");
+        }
+
+        bool rv;
+
+        if(!fpcvt_b(r,&rv))
+        {
+            Py_DECREF(r);
+            PyErr_Print();
+            PIC_THROW("incorrect (non bool) return type from functor");
+        }
+
+        Py_DECREF(r);
+        return rv;
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+PyObject *piw_make_d2b_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make d2b functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    piw::d2b_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new piw::d2b_t(pic::ref(new piw_d2b_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return d2b_wrap_(c,true);
+}
+
+struct piw_d2b_nb_sink_t: public piw::d2b_nb_t::sinktype_t
+{
+    piw_d2b_nb_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~piw_d2b_nb_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return true;
+    }
+
+    bool invoke(const piw::data_nb_t &d) const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&",tpcvt_data_copy,&d);
+
+        if(!r)
+        {
+            PyErr_Print();
+            PIC_THROW("python exception inside functor");
+        }
+
+        bool rv;
+
+        if(!fpcvt_b(r,&rv))
+        {
+            Py_DECREF(r);
+            PyErr_Print();
+            PIC_THROW("incorrect (non bool) return type from functor");
+        }
+
+        Py_DECREF(r);
+        return rv;
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+PyObject *piw_make_d2b_nb_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make d2b functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    piw::d2b_nb_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new piw::d2b_nb_t(pic::ref(new piw_d2b_nb_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return d2b_nb_wrap_(c,true);
+}
+
+struct piw_dd2d_sink_t: public piw::dd2d_t::sinktype_t
+{
+    piw_dd2d_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~piw_dd2d_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return true;
+    }
+
+    piw::data_t invoke(const piw::data_t &d1, const piw::data_t &d2) const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&O&",tpcvt_data,&d1,tpcvt_data,&d2);
+
+        if(!r)
+        {
+            PyErr_Print();
+            PIC_THROW("python exception inside functor");
+        }
+
+        piw::data_t *rvp;
+
+        if(!fpcvt_data(r,&rvp))
+        {
+            Py_DECREF(r);
+            PyErr_Print();
+            PIC_THROW("incorrect (non data) return type from functor");
+        }
+
+        {   unlock_p2c unlock;
+            {
+                piw::data_t rv(*rvp);
+                {   relock_p2c relock(unlock);
+                    Py_DECREF(r);
+                }
+                return rv;
+            }
+        }
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+static PyObject *piw_make_dd2d_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make dd2d functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    piw::dd2d_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new piw::dd2d_t(pic::ref(new piw_dd2d_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return dd2d_wrap_(c,true);
+}
+
+struct piw_dd2d_nb_sink_t: public piw::dd2d_nb_t::sinktype_t
+{
+    piw_dd2d_nb_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~piw_dd2d_nb_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return true;
+    }
+
+    piw::data_nb_t invoke(const piw::data_nb_t &d1, const piw::data_nb_t &d2) const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&O&",tpcvt_data,&d1,tpcvt_data,&d2);
+
+        if(!r)
+        {
+            PyErr_Print();
+            PIC_THROW("python exception inside functor");
+        }
+
+        piw::data_nb_t *rvp;
+
+        if(!fpcvt_data(r,&rvp))
+        {
+            Py_DECREF(r);
+            PyErr_Print();
+            PIC_THROW("incorrect (non data) return type from functor");
+        }
+
+        {   unlock_p2c unlock;
+            {
+                piw::data_nb_t rv(*rvp);
+                {   relock_p2c relock(unlock);
+                    Py_DECREF(r);
+                }
+                return rv;
+            }
+        }
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+static PyObject *piw_make_dd2d_nb_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make dd2d functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    piw::dd2d_nb_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new piw::dd2d_nb_t(pic::ref(new piw_dd2d_nb_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return dd2d_nb_wrap_(c,true);
+}
+
+>>>

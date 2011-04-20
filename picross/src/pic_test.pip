@@ -1,0 +1,217 @@
+<<<
+#include <picross/pic_atomic.h>
+#include <picross/pic_thread.h>
+#include <picross/pic_time.h>
+#include <picross/pic_error.h>
+#include <picross/pic_float.h>
+
+static PyObject *__test_atomic_basic(PyObject *args);
+static PyObject *__test_atomic_threaded(PyObject *args);
+static PyObject *__test_gate(PyObject *args);
+static PyObject *__test_dotprod(PyObject *args);
+>>>
+
+
+inline test_atomic_basic(args)
+<<<
+    return __test_atomic_basic(args);
+>>>
+
+inline test_atomic_threaded(args)
+<<<
+    return __test_atomic_threaded(args);
+>>>
+
+inline test_gate(args)
+<<<
+    return __test_gate(args);
+>>>
+
+inline test_dotprod(args)
+<<<
+    return __test_dotprod(args);
+>>>
+
+epilog<<<
+static PyObject *__test_atomic_basic(PyObject *args)
+{
+    {
+        unlock_p2c ul;
+
+        pic_atomic_t a = 1000;
+        PIC_ASSERT(pic_atomicinc(&a)==1001);
+        PIC_ASSERT(a==1001);
+        PIC_ASSERT(pic_atomicdec(&a)==1000);
+        PIC_ASSERT(a==1000);
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+struct __threaded_fixture_t
+{
+    __threaded_fixture_t()
+    {
+        pic_thread_create(&thread1_, 1, __main1, this);
+        pic_thread_create(&thread2_, 1, __main2, this);
+    }
+
+    virtual ~__threaded_fixture_t()
+    {
+        pic_thread_destroy(&thread1_);
+        pic_thread_destroy(&thread2_);
+    }
+
+    virtual void main1() {}
+    virtual void main2() {}
+
+    static void __main1(void *self)
+    {
+        ((__threaded_fixture_t *)self)->main1();
+    }
+
+    static void __main2(void *self)
+    {
+        ((__threaded_fixture_t *)self)->main2();
+    }
+
+    void wait()
+    {
+        PIC_ASSERT(pic_thread_wait(&thread2_)>=0);
+        PIC_ASSERT(pic_thread_wait(&thread1_)>=0);
+    }
+
+    void run_threads()
+    {
+        PIC_ASSERT(!pic_thread_isrunning(&thread1_,0));
+        PIC_ASSERT(!pic_thread_isrunning(&thread2_,0));
+
+        PIC_ASSERT(pic_thread_run(&thread1_)>=0);
+        PIC_ASSERT(pic_thread_run(&thread2_)>=0);
+
+        wait();
+    }
+
+    pic_thread_t thread1_, thread2_;
+};
+
+struct __atomic_threaded_test_t: __threaded_fixture_t
+{
+    static unsigned const TEST_ITERATIONS = 1000;
+    static unsigned const TEST_START = 1000;
+    static unsigned const TEST_LIMITS = 50;
+    static unsigned const TEST_ATTEMPTS = 100;
+
+    void main1()
+    {
+        pic_atomic_t cur=counter_, min=cur*2, max=0;
+
+        for(unsigned i=0;i<TEST_ITERATIONS;i++)
+        {
+            pic_atomicinc(&counter_);
+            pic_nanosleep(1);
+            if(cur>max) max=cur;
+            if(cur<min) min=cur;
+        }
+
+        min_ = min;
+        max_ = max;
+    }
+
+    void main2()
+    {
+        pic_atomic_t cur=counter_, min=cur, max=cur;
+
+        for(unsigned i=0;i<TEST_ITERATIONS;i++)
+        {
+            pic_atomicdec(&counter_);
+            pic_nanosleep(1);
+            if(cur>max) max=cur;
+            if(cur<min) min=cur;
+        }
+
+    }
+
+    void incdec_test()
+    {
+        max_ = TEST_START, min_ = TEST_START;
+        counter_ = TEST_START;
+
+        run_threads();
+
+        PIC_ASSERT(counter_==TEST_START);
+        PIC_ASSERT(max_<TEST_START+TEST_LIMITS);
+        PIC_ASSERT(min_>TEST_START-TEST_LIMITS);
+    }
+
+    void test_incdec()
+    {
+        unsigned attempt = TEST_ATTEMPTS;
+
+    retry:
+
+        try
+        {
+            incdec_test();
+            return;
+        }
+        catch(...)
+        {
+            if(attempt-->0)
+            {
+                goto retry;
+            }
+
+            throw;
+        }
+    }
+
+    pic_atomic_t counter_, min_, max_;
+};
+
+static PyObject *__test_atomic_threaded(PyObject *args)
+{
+    {
+        unlock_p2c ul;
+        __atomic_threaded_test_t t;
+        t.test_incdec();
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *__test_gate(PyObject *args)
+{
+    {
+        unlock_p2c ul;
+        pic_gate_t g;
+        pic_gate_create(&g);
+        pic_gate_shut(&g);
+        PIC_ASSERT(pic_gate_isopen(&g)==0);
+        PIC_ASSERT(pic_gate_open(&g)==1);
+        PIC_ASSERT(pic_gate_isopen(&g)==1);
+        PIC_ASSERT(pic_gate_open(&g)==0);
+        PIC_ASSERT(pic_gate_isopen(&g)==1);
+        PIC_ASSERT(pic_gate_shut(&g)==1);
+        PIC_ASSERT(pic_gate_isopen(&g)==0);
+        PIC_ASSERT(pic_gate_shut(&g)==0);
+        PIC_ASSERT(pic_gate_isopen(&g)==0);
+        pic_gate_destroy(&g);
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *__test_dotprod(PyObject *args)
+{
+    float x[5] = { 0.1, 0.2, -0.4, 0.6, 2.0 };
+    float y[5] = { 1.0, 3.0, 0.3, -2.0, 10.0 };
+    PIC_ASSERT(pic::tolerates(0.1+0.6-0.12-1.2+20.0, pic::dotprod(x,1,y,1,5),1e-5));
+    PIC_ASSERT(pic::tolerates(0.1+0.06-4.0, pic::dotprod(x,1,y,2,3),1e-5));
+    Py_INCREF(Py_None); return Py_None;
+}
+
+>>>

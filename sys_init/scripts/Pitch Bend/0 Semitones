@@ -1,0 +1,6 @@
+description
+    Set key pitch bend ranges to 0 semi tones,
+    effectively disabling pitch bend.
+    This will affect all scalers in the system.
+script
+    all scaler hey all k  range to 0 set

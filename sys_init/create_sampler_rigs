@@ -1,0 +1,57 @@
+agent manager use
+
+
+rig create
+it with sampler autonumber
+recorder create
+scaler create
+cycler create
+ahdsr create
+gain create
+sampler oscillator create
+summer create
+scaler to octave 3 set
+sampler , recorder add
+sampler , scaler add
+sampler , cycler add
+sampler , ahdsr add
+sampler , gain add
+sampler , oscillator oscillator add
+sampler , summer add
+recorder to scaler connect
+scaler to cycler connect
+cycler to ahdsr connect
+cycler to oscillator connect
+oscillator to gain connect
+oscillator pressure input un connect
+ahdsr pressure output to oscillator pressure input connect
+ahdsr volume output to gain volume input connect
+gain to summer connect
+summer output audio to sampler join
+oscillator detune to sampler join
+recorder input activation to sampler join
+recorder input roll to sampler join
+recorder input yaw to sampler join
+recorder input pressure to sampler join
+recorder song beat to sampler join
+recorder bar beat to sampler join
+recorder running to sampler join
+recorder input auxilliary 1 to sampler join
+recorder input auxilliary 1 to strip position input type ify
+recorder output auxilliary 1 to scaler global pitch bend connect
+recorder input auxilliary 2 to sampler join
+recorder input auxilliary 2 to controller input type ify
+recorder output auxilliary 2 to scaler controller connect
+ahdsr attack to sampler join
+ahdsr decay to sampler join
+ahdsr sustain to sampler join
+ahdsr release to sampler join
+ahdsr velocity sensitivity to sampler join
+oscillator sample to sampler join
+oscillator transpose to sampler join
+recorder output roll to scaler k pitch bend connect
+scaler base note to sampler join
+scaler tonic to sampler join
+scaler input scale to sampler join
+sampler as sampler remember
+sampler un create

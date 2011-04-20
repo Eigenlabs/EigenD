@@ -1,0 +1,40 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+env.PiSharedLibrary('alpha1',Split('alpha1_passive.cpp alpha1_active.cpp alpha1_download.cpp alpha1_fastmark.cpp'),libraries=Split('pic'),package='eigend')
+
+env.PiPipBinding('alpha1_native',env.Pipfile('alpha1.pip'),libraries=Split('pic alpha1'),package='eigend')
+
+kbd_lib = Split('alpha1 pic')
+
+env.PiProgram('kbddump','kbddump.cpp',libraries=kbd_lib)
+env.PiProgram('kbdraw','kbdraw.cpp',libraries=kbd_lib)
+env.PiProgram('kbdsnap','kbdsnap.cpp',libraries=kbd_lib)
+env.PiProgram('kbdtail','kbdtail.cpp',libraries=kbd_lib)
+env.PiProgram('kbdrange','kbdrange.cpp',libraries=kbd_lib)
+
+kbd_lod_env=env.Clone();
+
+if env['IS_MACOSX']:
+    kbd_lod_env.Append(LINKFLAGS='-framework CoreServices -framework CoreFoundation -framework IOKit -framework CoreAudio')
+
+kbd_lod_env.PiProgram('tmsload',Split('tmsload.cpp'),libraries=Split('alpha1 pic'))

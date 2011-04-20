@@ -1,0 +1,32 @@
+<<<
+#include "pistk.h"
+#include "Cello.h"
+>>>
+
+
+from piw[piw/piw.pip] import clockdomain_ctl, cookie
+
+class blownstring[stk::blownstring_t]
+{
+    blownstring(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class panpipe[stk::panpipe_t]
+{
+    panpipe(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class clarinet[stk::clarinet_t]
+{
+    clarinet(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class cello[stk::cello_t]
+{
+    cello(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+    cookie bow_cookie()
+}

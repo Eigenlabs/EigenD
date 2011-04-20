@@ -1,0 +1,18 @@
+
+verb:
+    A language verb
+    private data is schema
+    rpc 1 is invoke
+    rpc 2 is defer
+    rpc 3 is find
+
+mode:
+    A language mode
+    private data is schema
+    rpc 1 is invoke
+    rpc 2 is find
+
+langagent:
+    A language agent
+    child 1 is word input
+    child 2 is message output

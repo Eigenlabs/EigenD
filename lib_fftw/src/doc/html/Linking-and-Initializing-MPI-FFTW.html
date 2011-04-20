@@ -1,0 +1,84 @@
+<html lang="en">
+<head>
+<title>Linking and Initializing MPI FFTW - FFTW 3.2alpha3</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="FFTW 3.2alpha3">
+<meta name="generator" content="makeinfo 4.8">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Distributed_002dmemory-FFTW-with-MPI.html#Distributed_002dmemory-FFTW-with-MPI" title="Distributed-memory FFTW with MPI">
+<link rel="prev" href="FFTW-MPI-Installation.html#FFTW-MPI-Installation" title="FFTW MPI Installation">
+<link rel="next" href="Simple-MPI-example.html#Simple-MPI-example" title="Simple MPI example">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<!--
+This manual is for FFTW
+(version 3.2alpha3, 14 August 2007).
+
+Copyright (C) 2003 Matteo Frigo.
+
+Copyright (C) 2003 Massachusetts Institute of Technology.
+
+     Permission is granted to make and distribute verbatim copies of
+     this manual provided the copyright notice and this permission
+     notice are preserved on all copies.
+
+     Permission is granted to copy and distribute modified versions of
+     this manual under the conditions for verbatim copying, provided
+     that the entire resulting derived work is distributed under the
+     terms of a permission notice identical to this one.
+
+     Permission is granted to copy and distribute translations of this
+     manual into another language, under the above conditions for
+     modified versions, except that this permission notice may be
+     stated in a translation approved by the Free Software Foundation.
+   -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<p>
+<a name="Linking-and-Initializing-MPI-FFTW"></a>
+Next:&nbsp;<a rel="next" accesskey="n" href="Simple-MPI-example.html#Simple-MPI-example">Simple MPI example</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="FFTW-MPI-Installation.html#FFTW-MPI-Installation">FFTW MPI Installation</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Distributed_002dmemory-FFTW-with-MPI.html#Distributed_002dmemory-FFTW-with-MPI">Distributed-memory FFTW with MPI</a>
+<hr>
+</div>
+
+<h3 class="section">6.2 Linking and Initializing MPI FFTW</h3>
+
+<p>Programs using the MPI FFTW routines should be linked with
+<code>-lfftw3_mpi -lfftw3 -lm</code> on Unix. You will also need to link
+with whatever library is responsible for MPI on your system; in most
+MPI implementations, there is a special compiler alias named
+<code>mpicc</code> to compile and link MPI code. 
+<a name="index-mpicc-336"></a><a name="index-linking-on-Unix-337"></a>
+Before calling any FFTW routines, but after calling <code>MPI_Init</code>,
+you should call the function:
+
+<pre class="example">     void fftw_mpi_init(void);
+</pre>
+   <p><a name="index-fftw_005fmpi_005finit-338"></a>
+If, at the end of your program, you want to get rid of all memory and
+other resources allocated internally by FFTW, for both the serial and
+MPI routines, you can call:
+
+<pre class="example">     void fftw_mpi_cleanup(void);
+</pre>
+   <p><a name="index-fftw_005fmpi_005fcleanup-339"></a>
+which is much like the <code>fftw_cleanup()</code> function except that it
+also gets rid of FFTW's MPI-related data.  You must <em>not</em> execute
+any previously created plans after calling this function.
+
+<!--  -->
+</body></html>
+

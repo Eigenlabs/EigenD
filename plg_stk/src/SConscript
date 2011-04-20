@@ -1,0 +1,43 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+pistk_files=Split("""
+    Stk.cpp Generator.cpp Noise.cpp SubNoise.cpp Blit.cpp BlitSaw.cpp BlitSquare.cpp 
+    Envelope.cpp ADSR.cpp Asymp.cpp Modulate.cpp SingWave.cpp SineWave.cpp Granulate.cpp 
+    FileRead.cpp FileWrite.cpp WvIn.cpp FileWvIn.cpp WaveLoop.cpp WvOut.cpp FileWvOut.cpp 
+    Filter.cpp OneZero.cpp OnePole.cpp PoleZero.cpp TwoZero.cpp TwoPole.cpp 
+    BiQuad.cpp FormSwep.cpp Delay.cpp DelayL.cpp DelayA.cpp 
+    Effect.cpp PRCRev.cpp JCRev.cpp NRev.cpp 
+    Chorus.cpp Echo.cpp PitShift.cpp 
+    Function.cpp ReedTable.cpp JetTable.cpp BowTable.cpp 
+    Voicer.cpp Vector3D.cpp Sphere.cpp 
+    Instrmnt.cpp Clarinet.cpp Clarinet2.cpp BlowHole.cpp Saxofony.cpp Flute.cpp Brass.cpp BlowBotl.cpp 
+    Bowed.cpp Cello.cpp Plucked.cpp StifKarp.cpp Sitar.cpp PluckTwo.cpp Mandolin.cpp Mesh2D.cpp 
+    FM.cpp Rhodey.cpp Wurley.cpp TubeBell.cpp HevyMetl.cpp PercFlut.cpp BeeThree.cpp FMVoices.cpp 
+    Sampler.cpp Moog.cpp Simple.cpp Drummer.cpp Shakers.cpp 
+    Modal.cpp ModalBar.cpp BandedWG.cpp Resonate.cpp VoicForm.cpp Phonemes.cpp Whistle.cpp 
+    Messager.cpp Skini.cpp MidiFileIn.cpp
+    pistk.cpp stk_fastmark.cpp
+    """)
+
+#env.PiSharedLibrary('pistk',pistk_files,libraries=Split('pic piw pie pia'),package='eigend')
+env.PiPipBinding('stk_native','stk.pip',sources=pistk_files,libraries=Split('pic piw pie pia'),package='eigend')

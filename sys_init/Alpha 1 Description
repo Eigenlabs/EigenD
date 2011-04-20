@@ -1,0 +1,97 @@
+This setup is distributed by Eigenlabs with the EigenD software and is designed for use with the Eigenharp Alpha only. It contains one keygroup with 35 destinations (13 instruments and 22 'control' modes) and two Arrangers (the EigenD step sequencer). Controls to record and unplay/cancel recording as well as changing the octave are provided at the base of the keygroup.
+
+There are also two Audio Units and an EigenD delay connect to Mixer effect sends, and each instrument contains an inline audio unit effect. The Eigenharp Alpha headphone output is connected to a mixer send, and the microphone input is connected to a regular mixer channel. 
+
+The instruments are:
+ 
+ 1. Sampler 1 
+    * Default SoundFont: Sampletekk Black Grand Medium (Grand Piano)
+    * Key pressure -> note activation/velocity/aftertouch
+    * Strip controller 1 -> pitch bend (range 12 semitones)
+    * Pedal 1 (Volume Pedal 1) -> sustain
+
+ 2. Sampler 2
+    * Default SoundFont: Sampletekk Tubed Rhodes (Fender Rhodes)
+    * Key pressure -> note velocity/aftertouch
+    * Key roll -> pitch bend (range 1 semitone)
+    * Strip controller -> pitch bend (range 12 semitones)
+    * Breath controller -> note volume
+
+ 3. Sampler 3 (two oscillators)
+    * Default SoundFont: CS 80 Pad 1/2
+    * Key pressure -> note activation/velocity/aftertouch
+    * Key roll -> pitch bend (range 1 semitones)
+    * Key yaw -> crossfade between SoundFonts
+    * Strip controller -> pitch bend (range 12 semitones)
+
+ 4. Audio Unit 1 (default Audio Unit: Camel Audio Alchemy - Eigenlabs Player)
+
+ 5. Audio Unit 2 (default Audio Unit: empty)
+
+ 6. Audio Unit 3 (default Audio Unit: empty)
+
+ 7. Audio Unit 4 (default Audio Unit: empty)
+
+ * Default Audio Unit instrument configuration:- 
+
+    * Key pressure: note activation/velocity/aftertouch & AU parameter 3
+    * Key roll: pitch bend (range 1 semitone) & AU parameter 4
+    * Key yaw: AU parameter 5
+    * Strip controller: AU parameter 1
+    * Breath controller: AU parameter 2
+    * Absolute strip position: AU parameter 6
+
+ 8. 'Cello physical model  
+    * Strip controller -> bow position
+    * Breath controller -> bow velocity
+    * Key pressure -> bow force
+    * Key roll -> pitch bend (range 1 semitone)
+
+ 9. Clarinet physical model     
+    * Breath controller -> breath pressure (note activation/pressure)
+    * Strip controller -> pitch bend (range 12 semitones)
+    * Key pressure -> note frequency 
+    * Key roll -> pitch bend (range 1 semitone)
+    * Key yaw -> breath noise
+
+ 10. MIDI output 1
+    * Key pressure -> MIDI note on/off/channel aftertouch
+    * Key roll -> MIDI pitch bend
+    * Key yaw -> poly aftertouch
+    * Strip controller -> MIDI CC 16
+    * Breath controller -> MIDI CC 17
+
+ 11. MIDI output 1
+    * Key pressure -> MIDI note on/off/channel aftertouch
+    * Key roll -> MIDI pitch bend
+    * Key yaw -> poly aftertouch
+    * Strip controller -> MIDI CC 16
+    * Breath controller -> MIDI CC 17
+
+The control modes available are:
+
+ 1. Drummer Control
+    * Drummer voices on/off
+    * Drummer loop browse
+    * Metronome start/stop 
+    * Clicker on/off
+    * Tap tempo bar/beat key
+
+ 2. Scheduler Control
+    * This mode allows you to toggle the playback of scheduled events (e.g. recordings)
+
+ 3. Recorder Control
+    * This mode contains a talker which defines a variable bar length
+
+ 4. Scale & Key Control
+    * This mode changes the kgroup tonic & scale to one of the eight defined scales:
+        * Major
+        * Harmonic Minor
+        * Melodic Minor
+        * Chromatic
+        * Blues
+        * Pentatonic Major
+        * Diminished
+        * Whole Tone
+
+ Each instrument also has its own Advanced Control Mode.

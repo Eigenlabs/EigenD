@@ -1,0 +1,28 @@
+<<<
+#include "clk_transport.h"
+#include "clk_clock.h"
+>>>
+
+
+from piw[piw/piw.pip] import cookie,clockdomain_ctl,data,wire,clockref,fastdata
+
+"""
+"""
+
+class transport[clocks::transport_t]
+{
+    transport(const cookie &)
+    void start()
+    void stop()
+    void rewind()
+}
+
+class clock[clocks::clock_t]
+{
+    clock(unsigned,float,float,const cookie &, clockdomain_ctl *)
+    cookie cookie()
+    void add_change(float,float)
+    bool del_change(float,float)
+    float convert_i2o(float)
+    float convert_o2i(float)
+}

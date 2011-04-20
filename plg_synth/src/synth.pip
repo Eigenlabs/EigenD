@@ -1,0 +1,80 @@
+<<<
+#include "synth.h"
+>>>
+
+
+from piw[piw/piw.pip] import decode_ctl,clockdomain_ctl,clockref,wire,wire_ctl,cookie,d2d_nb,dd2d_nb
+
+class sine[synth::sine_t]
+    """
+    Sine wave oscillator.
+    """
+{
+    sine(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class adsr[synth::adsr_t]
+    """
+    Envelope generator.
+    """
+{
+    adsr(const cookie &, clockdomain_ctl *)
+    cookie cookie()
+}
+
+class adsr2[synth::adsr2_t]
+{
+    adsr2(const cookie &, clockdomain_ctl *)
+    cookie cookie()
+}
+
+class sawtooth[synth::sawtooth_t]
+    """
+    sawtooth wave oscillator.
+    """
+{
+    sawtooth(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class rect[synth::rect_t]
+    """
+    rectangle (pulse-width) wave oscillator.
+    """
+{
+    rect(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class triangle[synth::triangle_t]
+    """
+    triangle oscillator.
+    """
+{
+    triangle(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class synthfilter[synth::synthfilter_t]
+    """
+    Emulation of the Moog 4 pole filter.
+    """
+{
+    synthfilter(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+class synthfilter2[synth::synthfilter2_t]
+    """
+    Emulation of the Moog 4 pole filter which models
+    transistor nonlinearities.
+    """
+{
+    synthfilter2(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
+d2d_nb compressor[synth::compressor](float)
+dd2d_nb sharpener[synth::sharpener](float)
+

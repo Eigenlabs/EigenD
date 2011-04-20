@@ -1,0 +1,26 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+#env.Append(CCFLAGS='-F/System/Library/PrivateFrameworks')
+#env.Append(LINKFLAGS='-F/System/Library/PrivateFrameworks -framework CHUD')
+env.PiSharedLibrary('pikeyboardplg',Split('kbd_fastmark.cpp kbd_converter.cpp kbd_bundle.cpp kbd_bundle2.cpp'),libraries=Split('piw pia pic alpha1 alpha2 pie pisamplerate'),package='eigend')
+env.PiPipBinding('keyboard_native','keyboard.pip',libraries=Split('pikeyboardplg pisamplerate piw pia pic alpha1 alpha2 pie'),package='eigend')

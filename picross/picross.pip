@@ -1,0 +1,782 @@
+<<<
+#include <picross/pic_usb.h>
+#include <picross/pic_functor.h>
+#include <picross/pic_thread.h>
+#include <picross/pic_error.h>
+#include <picross/pic_platform.h>
+#include <picross/pic_power.h>
+#include <picross/pic_mlock.h>
+#include <picross/pic_table.h>
+#include <picross/pic_time.h>
+#include <picross/pic_resources.h>
+>>>
+
+
+"""
+Python interface to libpic tools
+================================
+
+Functors
+--------
+
+These are templated classes which can represent anything callable. 
+Each type of functor is individually wrapped here.  A functor object
+obtained from c++ is called from python with the objects's invoke() method.
+Any python callable can be turned into a functor usable by c++ with one of
+the make...functor functions.
+
+"""
+
+class notify[pic::notify_t] /gc/
+    """
+    Functor with no argument and no return value.
+    
+    Notify functors can be obtained from libpic c++ objects or
+    created from python callables using make_notify_functor
+    
+    Initialisers
+    ============
+      
+    notify() - creates a null functor which does nothing
+    """
+{
+    notify()
+    notify(const notify &)
+    void invoke()
+        """
+        self.invoke() -> 
+        
+        invoke the functor.
+        """
+    void __call__[invoke]()
+}
+
+<<<
+static PyObject *pic_make_notify_functor(PyObject *args);
+>>>
+
+inline make_notify_functor(args)
+    """
+    make_notify_functor(callable) -> new notify functor
+    
+    Make notify functor from python callable
+    """
+<<<
+    return pic_make_notify_functor(args);
+>>>
+
+class status[pic::status_t] /gc/
+    """
+    Functor with bool argument and no return value.
+    """
+{
+    status()
+    status(const status &)
+    void invoke(bool)
+        """
+        self.invoke(bool) ->
+
+        invoke the functor.
+        """
+    void __call__[invoke](bool)
+}
+
+<<<
+static PyObject *pic_make_status_functor(PyObject *args);
+>>>
+
+inline make_status_functor(args)
+    """
+    make_status_functor(callable) -> new status functor
+
+    Make status functor from python callable
+    """
+<<<
+    return pic_make_status_functor(args);
+>>>
+
+class f_string[pic::f_string_t] /gc/
+    """
+    Functor with 1 string argument and no return value.
+    
+    
+    Initialisers
+    ============
+      
+    f_string() - creates a null functor
+    """
+{
+    f_string()
+    f_string(const f_string &)
+    void invoke(const char *)
+        """
+        self.invoke(const char *) -> .
+
+        invoke the functor with a string argument.
+        """
+    void __call__[invoke](const char *)
+}
+
+<<<
+static PyObject *pic_make_f_string_functor(PyObject *args);
+>>>
+
+inline make_string_functor(args)
+    """
+    make_string_functor(callable) -> new f_string tunctor
+    Make f_string functor from python callable
+    """
+    <<<
+       return pic_make_f_string_functor(args);
+    >>>
+
+class ff2f[pic::ff2f_t] /gc/
+    """
+    Functor that takes 2 floats and returns a float
+    
+    Initialisers
+    ============
+      
+    ff2f() - creates a null functor which returns 0.0
+    """
+{
+    ff2f()
+    ff2f(const ff2f &)
+    float invoke(float,float)
+        """
+        self.invoke(float,float) -> float
+        invoke the functor
+        """
+    float __call__[invoke](float,float)
+}
+
+<<<
+static PyObject *pic_make_ff2f_functor(PyObject *args);
+>>>
+
+inline make_ff2f_functor(args)
+    """
+    make_ff2f_functor(callable) -> new ff2f functor
+    
+    Make ff2f functor from python callable
+    """
+    <<<
+       return pic_make_ff2f_functor(args);
+    >>>
+
+class f2f[pic::f2f_t] /gc/
+    """
+    Functor that takes a float and returns a float
+    
+    Initialisers
+    ============
+      
+    f2f() - creates a null functor which returns 0.0
+    """
+{
+    f2f()
+    f2f(const f2f &)
+    float invoke(float)
+        """
+        self.invoke(float,float) -> float
+        invoke the functor
+        """
+    float __call__[invoke](float)
+}
+
+<<<
+static PyObject *pic_make_f2f_functor(PyObject *args);
+>>>
+
+inline make_f2f_functor(args)
+    """
+    make_f2f_functor(callable) -> new f2f functor
+    
+    Make f2f functor from python callable
+    """
+    <<<
+       return pic_make_f2f_functor(args);
+    >>>
+
+unsigned enumerate[pic::usbenumerator_t::enumerate](unsigned short, unsigned short, const f_string &)
+    """
+    enumerate(vendor,product,functor) -> number.
+
+    Enumerate USB devices on the bus.  The functor is called with a device name
+    for each device of the specified type.  The number of such devices is returned.
+    """
+
+stdstr find[pic::usbenumerator_t::find](unsigned short, unsigned short)
+    """
+    find(vendor,product) -> name.
+
+    Find a particular device on the bus.  Throws an exception if no device is found.
+    returns the name of the first device found
+    """
+
+stdstr find2[pic::usbenumerator_t::find](unsigned short, unsigned short, bool)
+
+stdstr release_resource_dir[pic::release_resource_dir]()
+stdstr global_resource_dir[pic::global_resource_dir]()
+stdstr release_library_dir[pic::release_library_dir]()
+stdstr release_root_dir[pic::release_root_dir]()
+stdstr global_library_dir[pic::global_library_dir]()
+stdstr python_prefix_dir[pic::python_prefix_dir]()
+stdstr public_tools_dir[pic::public_tools_dir]()
+stdstr private_tools_dir[pic::private_tools_dir]()
+stdstr release[pic::release]()
+
+class in_pipe[pic::usbdevice_t::in_pipe_t]
+{
+}
+
+class usbdevice[pic::usbdevice_t]
+{
+    usbdevice(const char *, unsigned)
+    bool add_inpipe(in_pipe *)
+    void control(unsigned char, unsigned char, unsigned short, unsigned short)
+    void control_out(unsigned char, unsigned char, unsigned short, unsigned short, const stdstr &)
+    stdstr control_in(unsigned char, unsigned char, unsigned short, unsigned short, unsigned)
+    void bulk_write(unsigned, const stdstr &)
+    void start_pipes()
+    void stop_pipes()
+}
+
+class enumerator[pic::usbenumerator_t] /gc/
+    """
+    enumerator(vendor,product,functor) -> enumerator object.
+
+    Watch a bus for device insertions.  As each device matching vendor and product
+    is attached, call the functor with the device name. 
+
+    When the enumerator is started, all currently attached devices will be 
+    reported.  Then new devices will be reported when they are attached.  
+    """
+{
+    enumerator(unsigned short, unsigned short, const f_string &)
+    enumerator(unsigned short, unsigned short, const f_string &, const f_string &)
+    void start()
+        """
+        enumerator.start() -> .
+        start the enumeration process.  All existing devices will be reported first
+        """
+    void stop()
+        """
+        enumerator.stop() -> .
+        stop the enumeration process.  After stop() returns, no new devices will be reported.
+        """
+}
+
+bool is_linux[pic::is_linux]()
+bool is_macosx[pic::is_macosx]()
+bool is_windows[pic::is_windows]()
+void display_active[pic::display_active]()
+void disk_active[pic::display_active]()
+void to_front[pic::to_front]()
+void pic_init_time[pic_init_time]()
+
+void pic_mlock_code()
+
+class gate[pic::gate_t]
+{
+    gate()
+    bool open()
+    bool shut()
+    void untimedpass()
+    bool timedpass(unsigned long long)
+    bool isopen()
+}
+
+class mutex[pic::mutex_t]
+{
+    mutex()
+    void lock()
+    void unlock()
+    bool trylock()
+}
+
+class thread[pic::thread_t]
+{
+    thread()
+    thread(unsigned)
+
+    void wait()
+    void run()
+    bool isrunning()
+
+    virtual void thread_init()
+    virtual void thread_main()
+    virtual void thread_term()
+}
+
+void exit[pic::exit](int)
+void pic_set_foreground(bool)
+void pic_set_fpu()
+void pic_set_interrupt()
+void pic_set_core_unlimited()
+
+class ftable[pic::ftable_t]
+{
+    ftable(unsigned)
+    float interp(float)
+    void set_bounds(float,float)
+    void set_entry(unsigned,float)
+}
+
+epilog <<<
+struct pic_notify_sink_t: public pic::notify_t::sinktype_t
+{
+    pic_notify_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~pic_notify_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return _callable;
+    }
+
+    void invoke() const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"");
+
+        if(r) Py_DECREF(r);
+        else PyErr_Print();
+
+        if(!r) PIC_THROW("python exception inside functor");
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+static PyObject *pic_make_notify_functor(PyObject *args)
+{
+    PyObject *o;
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make notify functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    pic::notify_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new pic::notify_t(pic::ref(new pic_notify_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return notify_wrap_(c,true);
+}
+
+struct pic_status_sink_t: public pic::status_t::sinktype_t
+{
+    pic_status_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~pic_status_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return _callable;
+    }
+
+    void invoke(bool b) const
+    {
+        lock_c2p lock(_interp);
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&",tpcvt_b,&b);
+
+        if(r) Py_DECREF(r);
+        else PyErr_Print();
+
+        if(!r) PIC_THROW("python exception inside functor");
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+static PyObject *pic_make_status_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make status functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    pic::status_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new pic::status_t(pic::ref(new pic_status_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return status_wrap_(c,true);
+}
+
+struct pic_f_string_sink_t: public pic::f_string_t::sinktype_t
+{
+    pic_f_string_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~pic_f_string_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return _callable;
+    }
+
+    void invoke(const char *d) const
+    {
+        lock_c2p lock(_interp);
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&",tpcvt_str,&d);
+
+        if(r) Py_DECREF(r);
+        else PyErr_Print();
+
+        if(!r) PIC_THROW("python exception inside functor");
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+static PyObject *pic_make_f_string_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make f_string functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    pic::f_string_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new pic::f_string_t(pic::ref(new pic_f_string_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return f_string_wrap_(c,true);
+}
+
+struct pic_ff2f_sink_t: public pic::ff2f_t::sinktype_t
+{
+    pic_ff2f_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~pic_ff2f_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return _callable;
+    }
+
+    float invoke(float f1, float f2) const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&O&",tpcvt_f,&f1,tpcvt_f,&f2);
+
+        if(!r)
+        {
+            PyErr_Print();
+            PIC_THROW("python exception inside functor");
+        }
+
+        float rv;
+
+        if(!fpcvt_f(r,&rv))
+        {
+            Py_DECREF(r);
+            PyErr_Print();
+            PIC_THROW("incorrect (non data) return type from functor");
+        }
+
+        {   unlock_p2c unlock;
+            {
+                {   relock_p2c relock(unlock);
+                    Py_DECREF(r);
+                }
+                return rv;
+            }
+        }
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+static PyObject *pic_make_ff2f_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make ff2f functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    pic::ff2f_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new pic::ff2f_t(pic::ref(new pic_ff2f_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return ff2f_wrap_(c,true);
+}
+
+struct pic_f2f_sink_t: public pic::f2f_t::sinktype_t
+{
+    pic_f2f_sink_t(PyInterpreterState *i, PyObject *c): _interp(i), _callable(c)
+    {
+    }
+
+    ~pic_f2f_sink_t()
+    {
+        if(_callable)
+        {
+            lock_c2p lock(_interp);
+            Py_CLEAR(_callable);
+        }
+    }
+
+    int gc_visit(void *visit, void *arg) const
+    {
+        if(_callable)
+        {
+            return ((visitproc)visit)(_callable,arg);
+        }
+
+        return 0;
+    }
+
+    bool iscallable() const 
+    {
+        return _callable;
+    }
+
+    float invoke(float f) const
+    {
+        lock_c2p lock(_interp);
+
+        PyObject *r = PyObject_CallFunction(_callable,(char *)"O&",tpcvt_f,&f);
+
+        if(!r)
+        {
+            PyErr_Print();
+            PIC_THROW("python exception inside functor");
+        }
+
+        float rv;
+
+        if(!fpcvt_f(r,&rv))
+        {
+            Py_DECREF(r);
+            PyErr_Print();
+            PIC_THROW("incorrect (non data) return type from functor");
+        }
+
+        {   unlock_p2c unlock;
+            {
+                {   relock_p2c relock(unlock);
+                    Py_DECREF(r);
+                }
+                return rv;
+            }
+        }
+    }
+
+    PyInterpreterState *_interp;
+    PyObject *_callable;
+};
+
+static PyObject *pic_make_f2f_functor(PyObject *args)
+{
+    PyObject *o;
+
+    PyEval_InitThreads();
+
+    if(!PyArg_ParseTuple(args,"O",&o))
+    {
+        return 0;
+    }
+
+    if(!PyCallable_Check(o))
+    {
+        PyErr_SetString(PyExc_TypeError,"can't make f2f functor from non callable");
+        return 0;
+    }
+
+    Py_INCREF(o);
+
+    pic::f2f_t *c = 0;
+
+    try
+    {
+        PyInterpreterState *interp = PyThreadState_Get()->interp;
+        {   unlock_p2c unlock;
+            c = new pic::f2f_t(pic::ref(new pic_f2f_sink_t(interp,o)));
+        }
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
+        Py_DECREF(o);
+        return 0;
+    }
+
+    return f2f_wrap_(c,true);
+}
+
+>>>

@@ -1,0 +1,61 @@
+This is EigenD.
+
+The open source release includes all of EigenD except Stage.
+
+Contibuting
+-----------
+
+If you would like to contribute to EigenD, we will gladly accept
+patches against this git repository.  You must sign the Eigenlabs
+Contributor Agreement before we can accept anything from you.
+
+Please email software@eigenlabs.com if you are interested in signing
+the agreement and submitting changes.
+
+Building EigenD
+---------------
+
+In order to build EigenD, simply type 'make' in this directory,
+or './bld.cmd' on windows.  All build products will be placed
+in a tmp/ directory off the top level.
+
+Under windows, EigenD is tmp/bin/eigend.exe, under MacOS it's
+an application bundle in tmp/app/EigenD.app
+
+In order to build, you will need the following:
+
+Runtime Files
+-------------
+
+You will need to have the stock EigenD installed to get the
+runtime support (which is a vanilla Python install) and the
+Windows device drivers.
+
+Steinberg SDK
+-------------
+
+You will need to obtain the Asio and VST headers from the
+Steinberg site.  Place these in a directory called
+'steinberg' as follows:
+
+    asio.h
+    asiodrvr.h
+    asiosys.h
+    combase.h
+    iasiodrv.h
+    pluginterfaces/vst2.x/aeffect.h
+    pluginterfaces/vst2.x/aeffectx.h
+    pluginterfaces/vst2.x/vstfxstore.h
+
+Windows
+-------
+
+Visual Studio 2008
+NSIS
+WiX
+Direct X SDK (June 2010)
+
+MacOSX
+------
+
+The Apple development kit, with the 10.4 build support installed.

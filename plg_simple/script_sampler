@@ -1,0 +1,8 @@
+addr %target% , all mixer channel to which addr %target% s summer connect , language agent hey
+scope
+summer channel count to 2 set gain channel count to 2 set
+mixer channel right input un connect
+1 wait 
+oscillator right output to gain right input connect
+gain right output to summer right input connect
+summer right output to mixer channel right input connect

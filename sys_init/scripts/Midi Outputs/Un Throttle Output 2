@@ -1,0 +1,6 @@
+
+description
+    remove rate limits from midi output 2
+    
+script
+    midi converter 2 hey minimum decimation to 0 set

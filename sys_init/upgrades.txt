@@ -1,0 +1,44 @@
+upgrade scripts
+===============
+
+---------------------------------------------------------------------------------
+factory setup       | upgrade version         | filename
+---------------------------------------------------------------------------------
+                    |                         |
+pico                | 1.0.0                   | 3ff1b8b9ecf9d2fe9b77a5252e72d2d5 (5cd572cea65b5e95a05a243d300f2f81)
+pico                | 1.0.7                   | 180534c41b6f221416113c3d2999e5f7 (e6437946a19ed92878cd0a88cf9cc9ce)
+pico                | 1.0.10                  | 7a490363ea20ca06487d301315f15f53 (17901b3642f9b1805b5ddab81aa46986)
+pico                | 1.1.21-testing          | c7164d3385c927b2cc3aaf26421927f1 (0bd33a5639680de658fc81c7be15f9c2)
+                    |                         |
+---------------------------------------------------------------------------------
+                    |                         |
+alpha 1             | 1.0.10                  | 19918847b2277ea9d95e40baf2c9bf28 (0b1964c26ed4ce98899724a1ea1065f4) (bdfc577a9cab9ea1c1f7e78edd7c2873)
+alpha 1             | 1.1.2-testing           | 10247ef0ff49f78f5d5f45ae11b62a33 (2cabe72ec76067ab933b853f6675e173)
+alpha 1             | 1.1.7-testing           | f32de36056990740df770c49f60cbe06 (56d4a8c3571c582038125a21f2778935)
+alpha 1             | 1.1.19-testing          | 9fa9f683e70bf5a2664a9156ce7a3f22 (710a445ed214ab009dc0153c2fd7ec22)
+alpha 1             | 1.1.21-testing          | bbb923319e565bf73064d3d0d56447cd (edfd0658a995c0e12a8548b83109f53d)
+                    |                         |
+---------------------------------------------------------------------------------
+                    |                         |
+alpha 2             | 1.0.10                  | 60b565ca2105382abf486cdcfdeec1ec (565d2163ba71a36ec417becc0e4c03fd) (1458e0c1f0326150536d9d26696a917e)
+alpha 2             | 1.1.2-testing           | db69a0954a0543b71365d9ef9f3ef3c0 (842866a9ef55a449b50046741746d7b9)
+alpha 2             | 1.1.7-testing           | cce9d180e32ef34e69ee498f7982f788 (a6cd97bfec9f1b69251ec89cd63446a0)
+alpha 2             | 1.1.19-testing          | f075e49f86bfc2298210c649b2fb3d2f (42e766b86de3eb4d26f19406d62d5e4e)
+alpha 2             | 1.1.21-testing          | 7fe01cb16188aedf0416454f4f57c876 (3f33a75b0ee2aebb00ca2567093e5ebb)
+                    |                         |
+---------------------------------------------------------------------------------
+                    |                         |
+alpha 3             | 1.0.10                  | f1d53a09402683e8682af5fb97cf8869 (9ec65d797448ccda4356431e99d340ca) (d1b2ff75db7e4e3bde07a6fe3146ded4) 
+alpha 3             | 1.1.2-testing           | 16f07da592c5d18d35e09b9dcd076deb (4765ec548920765c78bb5cfe83f6b50f)
+alpha 3             | 1.1.7-testing           | b4ee2cc276e29fdd7ca7f93c36cbf017 (4bd1a6f92df239957ad65e2f6ce52be6)
+alpha 3             | 1.1.19-testing          | 63f8af6f1bb0bd02babc87d8c41b1a84 (2371eabf6ab72762fc4b43ab444807d0)
+alpha 3             | 1.1.21-testing          | 92a97dbfd280757d050bcbbf983e93f2 (757e964076e9b95138365af005b6b95b)
+alpha 3             | 1.2.6-testing           | b8132492e50b82457c00e023b0bba7cd
+                    |                         |
+---------------------------------------------------------------------------------
+                    |                         |
+tau 1               | 1.1.7-testing           | 69232eddc4018b852a4eff484a9b053c (a6ae950cb2de89b96eb53b1520e09146)
+tau 1               | 1.1.20-testing          | b1668457bcce7caeb39637a8a68b4af0 (4946c4d05f468840ca8d26d75f507571)
+                    |                         |
+---------------------------------------------------------------------------------
+

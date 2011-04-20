@@ -1,0 +1,5 @@
+description
+    Sets the double tap delay on all arrangers to 2 seconds
+
+script
+    empty join all arranger hey all doubletap to 2 set

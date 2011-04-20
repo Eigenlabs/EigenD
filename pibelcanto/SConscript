@@ -1,0 +1,85 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+import SCons
+
+env.PiPythonPackage('0.0',package='eigend')
+
+def build_lex(target,source,env):
+    e2m=dict()
+    m2e=dict()
+    input=file(source[0].abspath)
+    lineno=0
+
+    for line in input:
+        lineno=lineno+1
+
+        fields = line.split(':')
+
+        if len(fields) != 4:
+            continue
+
+        music = ''.join(fields[0].split())
+        classification = fields[2].strip().lower()
+        english = fields[1].strip().lower()
+
+        if english == '' or english == 'unused' or classification == 'unused' or classification == '':
+            continue
+
+        if music:
+            if not music.isdigit():
+                raise SCons.Errors.BuildError(node=source,errstr='line %d invalid music word: %s' % (lineno,music))
+
+            if music in m2e:
+                raise SCons.Errors.BuildError(node=source,errstr='line %d duplicate music word: %s' % (lineno,music))
+        else:
+            music = None
+
+        if english in e2m:
+            raise SCons.Errors.BuildError(node=source,errstr='line %d duplicate english word: %s' % (lineno,english))
+
+        e2m[english]=(music,classification)
+
+        if music:
+            m2e[music]=(english,classification)
+
+    output=file(target[0].abspath,'w')
+
+    output.write('lexicon={\n')
+    for (e,(m,c)) in e2m.iteritems():
+        e = e.replace("'","\\'")
+        if m is not None:
+            output.write("    '%s': ('%s','%s'),\n" % (e,m,c))
+        else:
+            output.write("    '%s': (None,'%s'),\n" % (e,c))
+    output.write("}\n");
+
+    output.write('reverse_lexicon={\n')
+    for (e,(m,c)) in e2m.iteritems():
+        e = e.replace("'","\\'")
+        if m is not None:
+            output.write("    '%s': ('%s','%s'),\n" % (m,e,c))
+    output.write("}\n");
+
+    output.close()
+
+env.PiDynamicPython('lexicon.py','lexicon.txt',build_lex,package='eigend')

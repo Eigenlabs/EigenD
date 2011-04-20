@@ -1,0 +1,40 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+env.PiPythonPackage('0.0',package='eigend',natives=Split('synth_native'), resources=Split('mixer.png'),pi='0.0')
+
+env.PiAgent('ahdsr','plg_synth.ahdsr_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('bleeper','plg_synth.bleeper_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('envelope','plg_synth.envelope_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('gain','plg_synth.gain_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('panner','plg_synth.panner_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('rectangle_oscillator','plg_synth.rectangle_oscillator_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('sawtooth_oscillator','plg_synth.sawtooth_oscillator_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('shaper','plg_synth.shaper_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('summer','plg_synth.summer_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('synth_filter','plg_synth.synth_filter_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('ladder_filter','plg_synth.ladder_filter_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('triangle_oscillator','plg_synth.triangle_oscillator_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('sine_oscillator','plg_synth.sine_oscillator_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('stereo_mixer','plg_synth.stereo_mixer_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('delay','plg_synth.delay_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('console_mixer','plg_synth.console_mixer_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')

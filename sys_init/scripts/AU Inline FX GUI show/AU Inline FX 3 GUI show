@@ -1,0 +1,6 @@
+description
+    Show AU Inline FX 3 (for Sampler 3)
+script
+    audio unit 8 hey show
+
+

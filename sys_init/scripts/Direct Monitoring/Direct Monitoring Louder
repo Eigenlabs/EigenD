@@ -1,0 +1,7 @@
+description
+    This script increases the gain of the direct monitor
+script
+    keyboard 1 hey loop gain up
+
+ 
+ 

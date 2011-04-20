@@ -1,0 +1,10 @@
+#!/bin/sh
+
+su $USER -c $PI_PREFIX/bin/upgrade_user
+
+rm -rf "/Applications/EigenD.app" 
+rm -rf "/Applications/EigenBrowser.app" 
+mkdir -p "/Applications/Eigenlabs"
+cp -R "/Applications/Eigenlabs/$PI_RELEASE/EigenD.app" "/Applications/EigenDx.app" 
+mv "/Applications/EigenDx.app" "/Applications/EigenD.app" 
+

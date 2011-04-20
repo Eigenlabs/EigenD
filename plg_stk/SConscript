@@ -1,0 +1,26 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+env.PiPythonPackage('0.0',package='eigend',natives=Split('stk_native'),pi='0.0')
+env.PiAgent('panpipe_oscillator','plg_stk.panpipe_oscillator_plg','plg_stk:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('clarinet_oscillator','plg_stk.clarinet_oscillator_plg','plg_stk:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('sax_oscillator','plg_stk.blownstring_oscillator_plg','plg_stk:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('cello_oscillator','plg_stk.cello_oscillator_plg','plg_stk:0.0',cversion='1.0.0',package='eigend')

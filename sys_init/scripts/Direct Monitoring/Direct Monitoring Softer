@@ -1,0 +1,7 @@
+description
+    This script decreases the gain of the direct monitor
+script
+    keyboard 1 hey loop gain down
+
+ 
+ 

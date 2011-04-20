@@ -1,0 +1,26 @@
+<<<
+#include "audio.h"
+>>>
+
+
+from piw_native[piw/piw.pip] import cookie,data,change,clockdomain_ctl
+
+class audioctl[pi_audio::audioctl_t]
+{
+    audioctl(clockdomain_ctl *,const stdstr &)
+    cookie cookie()
+    bool open_device(const stdstr &, unsigned long, unsigned, bool)
+    void close_device()
+    void mute()
+    void unmute()
+    unsigned num_devices();
+    stdstr device_name(unsigned)
+    stdstr device_uid(unsigned)
+    stdstr get_uid()
+    void reset_dropout_count()
+    unsigned long get_dropout_count()
+    virtual void device_changed(const char *,unsigned long,unsigned)
+    virtual void device_list_changed()
+    void enable_callbacks(bool)
+    void show_gui(bool)
+}

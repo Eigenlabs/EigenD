@@ -1,0 +1,157 @@
+
+keyboard create
+kgroup create
+
+keyboard k 1 to it connect
+keyboard k 2 to it connect
+keyboard k 3 to it connect
+keyboard k 4 to it connect
+keyboard k 5 to it connect
+keyboard k 6 to it connect
+keyboard k 7 to it connect
+keyboard k 8 to it connect
+keyboard k 9 to it connect
+keyboard k 10 to it connect
+keyboard k 11 to it connect
+keyboard k 12 to it connect
+keyboard k 13 to it connect
+keyboard k 14 to it connect
+keyboard k 15 to it connect
+keyboard k 16 to it connect
+keyboard k 17 to it connect
+keyboard k 18 to it connect
+keyboard k 19 to it connect
+keyboard k 20 to it connect
+keyboard k 21 to it connect
+keyboard k 22 to it connect
+keyboard k 23 to it connect
+
+keyboard k 25 to it connect
+keyboard k 26 to it connect
+keyboard k 27 to it connect
+keyboard k 28 to it connect
+keyboard k 29 to it connect
+keyboard k 30 to it connect
+keyboard k 31 to it connect
+keyboard k 32 to it connect
+keyboard k 33 to it connect
+keyboard k 34 to it connect
+keyboard k 35 to it connect
+keyboard k 36 to it connect
+keyboard k 37 to it connect
+keyboard k 38 to it connect
+keyboard k 39 to it connect
+keyboard k 40 to it connect
+keyboard k 41 to it connect
+keyboard k 42 to it connect
+keyboard k 43 to it connect
+keyboard k 44 to it connect
+keyboard k 45 to it connect
+keyboard k 46 to it connect
+keyboard k 47 to it connect
+
+keyboard k 49 to it connect
+keyboard k 50 to it connect
+keyboard k 51 to it connect
+keyboard k 52 to it connect
+keyboard k 53 to it connect
+keyboard k 54 to it connect
+keyboard k 55 to it connect
+keyboard k 56 to it connect
+keyboard k 57 to it connect
+keyboard k 58 to it connect
+keyboard k 59 to it connect
+keyboard k 60 to it connect
+keyboard k 61 to it connect
+keyboard k 62 to it connect
+keyboard k 63 to it connect
+keyboard k 64 to it connect
+keyboard k 65 to it connect
+keyboard k 66 to it connect
+keyboard k 67 to it connect
+keyboard k 68 to it connect
+keyboard k 69 to it connect
+keyboard k 70 to it connect
+keyboard k 71 to it connect
+
+keyboard k 73 to it connect
+keyboard k 74 to it connect
+keyboard k 75 to it connect
+keyboard k 76 to it connect
+keyboard k 77 to it connect
+keyboard k 78 to it connect
+keyboard k 79 to it connect
+keyboard k 80 to it connect
+keyboard k 81 to it connect
+keyboard k 82 to it connect
+keyboard k 83 to it connect
+keyboard k 84 to it connect
+keyboard k 85 to it connect
+keyboard k 86 to it connect
+keyboard k 87 to it connect
+keyboard k 88 to it connect
+keyboard k 89 to it connect
+keyboard k 90 to it connect
+keyboard k 91 to it connect
+keyboard k 92 to it connect
+keyboard k 93 to it connect
+keyboard k 94 to it connect
+keyboard k 95 to it connect
+
+keyboard k 97 to it connect
+keyboard k 98 to it connect
+keyboard k 99 to it connect
+keyboard k 100 to it connect
+keyboard k 101 to it connect
+keyboard k 102 to it connect
+keyboard k 103 to it connect
+keyboard k 104 to it connect
+keyboard k 105 to it connect
+keyboard k 106 to it connect
+keyboard k 107 to it connect
+keyboard k 108 to it connect
+keyboard k 109 to it connect
+keyboard k 110 to it connect
+keyboard k 111 to it connect
+keyboard k 112 to it connect
+keyboard k 113 to it connect
+keyboard k 114 to it connect
+keyboard k 115 to it connect
+keyboard k 116 to it connect
+keyboard k 117 to it connect
+keyboard k 118 to it connect
+keyboard k 119 to it connect
+
+keyboard k 24 to kgroup mode connect
+
+kgroup create
+kgroup 1 , output 1 create
+
+kgroup 1 output 1 k 1 to kgroup 2 connect
+kgroup 1 output 1 k 2 to kgroup 2 connect
+kgroup 1 output 1 k 3 to kgroup 2 connect
+kgroup 1 output 1 k 4 to kgroup 2 connect
+
+kgroup 1 output 1 k 24 to kgroup 2 connect
+kgroup 1 output 1 k 25 to kgroup 2 connect
+kgroup 1 output 1 k 26 to kgroup 2 connect
+kgroup 1 output 1 k 27 to kgroup 2 connect
+
+kgroup 1 output 1 k 47 to kgroup 2 connect
+kgroup 1 output 1 k 48 to kgroup 2 connect
+kgroup 1 output 1 k 49 to kgroup 2 connect
+kgroup 1 output 1 k 50 to kgroup 2 connect
+
+kgroup 1 output 1 k 70 to kgroup 2 connect
+kgroup 1 output 1 k 71 to kgroup 2 connect
+kgroup 1 output 1 k 72 to kgroup 2 connect
+kgroup 1 output 1 k 73 to kgroup 2 connect
+
+kgroup 1 output 1 k 93 to kgroup 2 connect
+kgroup 1 output 1 k 94 to kgroup 2 connect
+kgroup 1 output 1 k 95 to kgroup 2 connect
+kgroup 1 output 1 k 96 to kgroup 2 connect
+
+kgroup 1 output 1 k 5 to kgroup 2 mode connect
+kgroup 2 , output 17 create it to language agent connect
+

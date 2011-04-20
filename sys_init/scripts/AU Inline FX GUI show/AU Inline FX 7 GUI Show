@@ -1,0 +1,5 @@
+description
+    Show AU Inline FX 7 (for Clarinet)
+script
+    audio unit 12 hey show
+

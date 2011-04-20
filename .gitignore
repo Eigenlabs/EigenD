@@ -1,0 +1,13 @@
+env.sh
+env.cmd
+*.pyc
+tags
+tmp
+tools/.sconsign.dblite
+*.lnk
+.DS_Store
+vc100.pdb
+vc90.pdb
+*.swp
+eigend-gpl
+steinberg

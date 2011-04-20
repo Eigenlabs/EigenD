@@ -1,0 +1,165 @@
+# Scale Talkers
+# =============
+
+# This script creates the talkers which change the scales of individual kgroups. The number of the talker corresponds to the number of the kgroup that it changes the scale for (e.g. 'scale talker 1' changes the scale for 'kgroup 1').
+
+    global scale talker hey
+    all phrase cancel
+
+	# Create Global scale talker
+	#talker create
+	#it to global scale talker name ify
+
+	# Define scales as variables
+	empty join
+	kgroup 1 listen
+	kgroup 2 listen
+	kgroup 3 listen
+	kgroup 4 listen
+	kgroup 5 listen
+	kgroup 6 listen
+	global scale talker listen
+	interpreter listen
+
+	#major as scalev1 define
+	#harmonic minor as scalev2 define
+	#melodic minor as scalev3 define
+	#chromatic as scalev4 define
+	#blues as scalev5 define
+	#pentatonic major as scalev6 define
+	#diminished as scalev7 define
+	#whole tone as scalev8 define
+
+	# Set phrases to global kgroup scales
+
+	all scale to major when 9 called 1 set
+	all scale to harmonic minor when 10 called 1 set
+	all scale to melodic minor when 11 called 1 set
+	all scale to chromatic when 12 called 1 set
+	all scale to blues when 13 called 1 set
+	all scale to pentatonic major when 14 called 1 set
+	all scale to diminished when 15 called 1 set
+	all scale to whole tone when 16 called 1 set
+
+	# Set talker colours to red
+	9 to 2 colour ify
+	10 to 2 colour ify
+	11 to 2 colour ify
+	12 to 2 colour ify
+	13 to 2 colour ify
+	14 to 2 colour ify
+	15 to 2 colour ify
+	16 to 2 colour ify
+
+	# Set colours to change on keypress
+	empty join interpreter listen global scale talker listen
+
+	" global scale talker hey 9 to 1 from 2 colour ify " when 9 called 100 do
+	" global scale talker hey 10 to 1 from 2 colour ify " when 10 called 100 do
+	" global scale talker hey 11 to 1 from 2 colour ify " when 11 called 100 do
+	" global scale talker hey 12 to 1 from 2 colour ify " when 12 called 100 do
+	" global scale talker hey 13 to 1 from 2 colour ify " when 13 called 100 do
+	" global scale talker hey 14 to 1 from 2 colour ify " when 14 called 100 do
+	" global scale talker hey 15 to 1 from 2 colour ify " when 15 called 100 do
+	" global scale talker hey 16 to 1 from 2 colour ify " when 16 called 100 do
+
+	# Connect scale kgroups to global scale talker
+	all join
+
+	#scale kgroup 1 hey output 8 create
+	#scale kgroup 1 output 8 to global scale talker connect
+	#scale kgroup 2 hey output 8 create
+	#scale kgroup 2 output 8 to global scale talker connect
+	#scale kgroup 3 hey output 8 create
+	#scale kgroup 3 output 8 to global scale talker connect
+	#scale kgroup 4 hey output 8 create
+	#scale kgroup 4 output 8 to global scale talker connect
+	#scale kgroup 5 hey output 8 create
+	#scale kgroup 5 output 8 to global scale talker connect
+	#scale kgroup 6 hey output 8 create
+	#scale kgroup 6 output 8 to global scale talker connect
+
+
+# Tonic Talkers
+# =============
+
+# This script creates the talkers which change the tonics of individual kgroups. The number of the talker corresponds to the number of the kgroup that it changes the tonic for (e.g. 'tonic talker 1' changes the tonic for 'kgroup 1').
+
+	# Create Global tonic talker
+	#talker create
+	#it to global tonic talker name ify
+
+    global tonic talker hey
+    all phrase cancel
+
+	# Define tonics as variables
+	empty join
+	kgroup 1 listen
+	kgroup 2 listen
+	kgroup 3 listen
+	kgroup 4 listen
+	kgroup 5 listen
+	kgroup 6 listen
+	global tonic talker listen
+	interpreter listen
+
+	# Set phrases to global kgroup tonics
+
+	all tonic to notec when 1 set
+	all tonic to notecsharp when 2 set
+	all tonic to noted when 3 set
+	all tonic to notedsharp when 4 set
+	all tonic to notee when 5 set
+	all tonic to notef when 6 set
+	all tonic to notefsharp when 7 set
+	all tonic to noteg when 8 set
+	all tonic to notegsharp when 9 set
+	all tonic to notea when 10 set
+	all tonic to noteasharp when 11 set
+	all tonic to noteb when 12 set
+
+	# Set talker colours to red
+	1 to 2 colour ify
+	2 to 2 colour ify
+	3 to 2 colour ify
+	4 to 2 colour ify
+	5 to 2 colour ify
+	6 to 2 colour ify
+	7 to 2 colour ify
+	8 to 2 colour ify
+	9 to 2 colour ify
+	10 to 2 colour ify
+	11 to 2 colour ify
+	12 to 2 colour ify
+	
+	# Set colours to change on keypress
+	empty join interpreter listen global tonic talker listen
+
+	" global tonic talker hey 1 to 1 from 2 colour ify " when 1 do
+	" global tonic talker hey 2 to 1 from 2 colour ify " when 2 do
+	" global tonic talker hey 3 to 1 from 2 colour ify " when 3 do
+	" global tonic talker hey 4 to 1 from 2 colour ify " when 4 do
+	" global tonic talker hey 5 to 1 from 2 colour ify " when 5 do
+	" global tonic talker hey 6 to 1 from 2 colour ify " when 6 do
+	" global tonic talker hey 7 to 1 from 2 colour ify " when 7 do
+	" global tonic talker hey 8 to 1 from 2 colour ify " when 8 do
+	" global tonic talker hey 9 to 1 from 2 colour ify " when 9 do
+	" global tonic talker hey 10 to 1 from 2 colour ify " when 10 do
+	" global tonic talker hey 11 to 1 from 2 colour ify " when 11 do
+	" global tonic talker hey 12 to 1 from 2 colour ify " when 12 do
+
+	# Connect tonic kgroups to global tonic talker
+	all join
+
+#	tonic kgroup 1 hey output 8 create
+#	tonic kgroup 1 output 8 to global tonic talker connect
+#	tonic kgroup 2 hey output 8 create
+#	tonic kgroup 2 output 8 to global tonic talker connect
+#	tonic kgroup 3 hey output 8 create
+#	tonic kgroup 3 output 8 to global tonic talker connect
+#	tonic kgroup 4 hey output 8 create
+#	tonic kgroup 4 output 8 to global tonic talker connect
+#	tonic kgroup 5 hey output 8 create
+#	tonic kgroup 5 output 8 to global tonic talker connect
+#	tonic kgroup 6 hey output 8 create
+#	tonic kgroup 6 output 8 to global tonic talker connect

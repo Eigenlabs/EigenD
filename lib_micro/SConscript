@@ -1,0 +1,30 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+env.PiPythonPackage('0.0',natives=Split('micro_native'),package='eigend',picross='0.0')
+env.PiPythonWrapper('uezq','lib_micro','ezq','main')
+env.PiPythonWrapper('uezload','lib_micro','ezload','main')
+env.PiPythonWrapper('uled','lib_micro','uled','main')
+env.PiPythonWrapper('utest','lib_micro','userial','test')
+env.PiPythonWrapper('ufilt','lib_micro','ufilt','main')
+env.PiPythonWrapper('uwritecal','lib_micro','uwritecal','cli')
+env.PiPythonWrapper('ureadcal','lib_micro','ureadcal','cli')

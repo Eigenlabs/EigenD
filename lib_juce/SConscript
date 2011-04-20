@@ -1,0 +1,56 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+juce_env = env.Clone()
+
+me = env.Dir('.').abspath
+
+if env['IS_WINDOWS']:
+    juce_files = Split('juce_LibrarySource.cpp')
+    juce_env.Append(CCFLAGS='-DWINDOWS=1 -DJUCE_DLL -DJUCE_DLL_BUILD -DNDEBUG=1')
+
+if env['IS_LINUX']:
+    juce_files = Split('juce_LibrarySource.cpp')
+    juce_env.Append(CCFLAGS='-Wno-multichar -Wno-reorder -Wno-sign-compare -DLINUX=1 -DNDEBUG=1')
+    juce_env.Append(CPPPATH='/usr/include/freetype2')
+    juce_env.Append(LIBS=Split('X11 freetype Xext asound'))
+
+if env['IS_MACOSX']:
+    juce_files = Split('juce_LibrarySource.mm')
+    juce_env.Append(CCFLAGS='-Wno-deprecated-declarations -Wno-sign-compare -Wno-reorder -Wno-unused-function -Wno-uninitialized -DJUCE_DLL_BUILD')
+    juce_env.Append(LINKFLAGS='-framework CoreAudio -framework CoreMIDI -framework AudioUnit -framework IOKit')
+    juce_env.Append(LINKFLAGS='-framework Cocoa -framework Carbon -framework AppKit')
+    juce_env.Append(LINKFLAGS='-framework CoreFoundation -framework CoreAudioKit')
+    juce_env.Append(LINKFLAGS='-framework WebKit -framework OpenGL')
+
+juce_env.Append(CPPPATH=me)
+juce_env.PiSharedLibrary('juce',juce_files,package='eigend')
+
+ejuce_env = env.Clone()
+ejuce_files = Split('ejuce.cpp ejuce_laf.cpp')
+ejuce_libraries = Split('juce pia pic')
+ejuce_env.PiSharedLibrary('ejuce',ejuce_files,libraries=ejuce_libraries,package='eigend')
+
+epython_env = env.Clone()
+epython_files = Split('epython.cpp')
+epython_libraries = Split('pia pie pic')
+epython_env.PiSharedLibrary('epython',epython_files,libraries=epython_libraries,package='eigend')

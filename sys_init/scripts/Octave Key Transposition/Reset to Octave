@@ -1,0 +1,15 @@
+
+description
+    Remap octave talkers.  Makes the octave up and
+    down buttons reset back to being octave up and
+    down keys.
+    
+    This script should be run with pico setups
+    only
+
+script
+    empty join kgroup 1 listen talker 6 listen
+    all phrase cancel
+    octave to 3 set
+    octave by 1 when 1 up
+    octave by 1 when 2 down

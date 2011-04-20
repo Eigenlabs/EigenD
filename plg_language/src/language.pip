@@ -1,0 +1,54 @@
+<<<
+#include "lng_wordrec.h"
+#include "lng_controls.h"
+#include "lng_osc.h"
+#include "lng_bonjour.h"
+>>>
+
+
+from piw[piw/piw.pip] import change,change_nb,cookie,data,data_nb,xxcontrolled,fastdata
+
+class bonjour[language::bonjour_t]
+{
+    bonjour(unsigned)
+    void service_register()
+}
+
+class oscserver[language::oscserver_t]
+{
+    oscserver(const char *, const char *);
+    void startup();
+    void shutdown();
+    unsigned add_widget(const char *, fastdata *, fastdata *)
+    void del_widget(unsigned);
+    void del_widget_by_name(const char *);
+    void send(const char *, float);
+    void set_connected(unsigned, bool);
+}
+
+class wordrec[language::wordrec_t] /gc/
+{
+    wordrec(change)
+    cookie cookie()
+}
+
+class toggle[language::toggle_t]: xxcontrolled /gc/
+{
+    toggle(const data &)
+    void reset(const data &)
+}
+
+class updown[language::updown_t]: xxcontrolled /gc/
+{
+    updown(const data &,float,float)
+    void reset(const data &)
+}
+
+class xselector[language::xselector_t]: xxcontrolled /gc/
+{
+    xselector(const change_nb &,const data &)
+    void set_choice(unsigned,const data &)
+    cookie cookie()
+    void reset(const data &)
+}
+

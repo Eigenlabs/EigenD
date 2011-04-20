@@ -1,0 +1,7 @@
+description
+    This script is used to rescan your plug-in database when a new AU/VST plug-in is added - it applies to both the Pico and Alpha Factory Setups.
+script
+    audio unit 1 hey scan
+
+ 
+ 

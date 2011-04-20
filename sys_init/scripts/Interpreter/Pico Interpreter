@@ -1,0 +1,10 @@
+description
+    This script connects the kgroup output that was previously connected to the scheduler to the Belcanto interpreter in Factory Pico Setup 1
+script
+    all join
+    scheduler from kgroup 1 output 11 un connect
+    kgroup 1 output 11 to kmapper 1 connect
+    pico keyboard k 9 yaw output to eigencommander sideways nudger 1 connect
+    pico keyboard k 9 roll output to eigencommander vertical nudger 2 connect 
+    pico keyboard soft threshold to 0.024 set
+    

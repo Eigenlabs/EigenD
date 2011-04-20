@@ -1,0 +1,42 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+env.PiPythonPackage('0.0',resources=Split('agentd.png'),pi='0.0',pisession='0.0',package='eigend')
+env.PiPythonWrapper('cheatsheet','app_cmdline','cheat','main',package='eigend')
+env.PiPythonWrapper('brexec','app_cmdline','rexec','main',package='eigend')
+env.PiPythonWrapper('bscript','app_cmdline','script','main',package='eigend')
+env.PiPythonWrapper('brpc','app_cmdline','rpc','main',package='eigend')
+env.PiPythonWrapper('bdownload','app_cmdline','download','main')
+env.PiPythonWrapper('brsh','app_cmdline','rsh','main')
+env.PiPythonWrapper('bls','app_cmdline','bls','cli',package='eigend')
+env.PiPythonWrapper('brelease','app_cmdline','release','main',package='eigend')
+env.PiPythonWrapper('bbrowse','app_cmdline','rbrowse','main')
+env.PiPythonWrapper('bcat2','app_cmdline','bcat2','main',package='eigend')
+env.PiPythonWrapper('capture','app_cmdline','capture','main')
+env.PiPythonWrapper('bcopyrel','app_cmdline','bcopyrel','cli')
+env.PiPythonWrapper('mirror','app_cmdline','mirror','main')
+env.PiPythonWrapper('bstdump','app_cmdline','bstdump','cli',package='eigend')
+env.PiPythonWrapper('bstlist','app_cmdline','bstlist','cli',package='eigend')
+env.PiPythonWrapper('upgrade_user','app_cmdline','upgrade_user','cli',package='eigend')
+env.PiPythonWrapper('annotate','app_cmdline','annotate','cli',package='eigend')
+env.PiPythonWrapper('signature','app_cmdline','signature','cli',package='eigend')
+env.PiPythonWrapper('upgrade34','app_cmdline','upgrade34','cli')

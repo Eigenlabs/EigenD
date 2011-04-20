@@ -1,0 +1,30 @@
+<<<
+#include <lib_micro/micro_passive.h>
+>>>
+
+
+class passive[micro::passive_t]
+{
+    passive(const char *,unsigned)
+    unsigned short get_rawkey(unsigned,unsigned)
+    unsigned short get_strip()
+    bool wait()
+    void sync()
+    void set_ledcolour(unsigned,unsigned)
+    void set_ledrgb(unsigned,unsigned,unsigned,unsigned)
+    stdstr debug()
+    void start_calibration_row(unsigned,unsigned)
+    void set_calibration_range(unsigned short,unsigned short)
+    void set_calibration_point(unsigned,unsigned short)
+    void write_calibration_row()
+    void commit_calibration()
+    void clear_calibration()
+    void read_calibration_row()
+    unsigned short get_calibration_min()
+    unsigned short get_calibration_max()
+    unsigned short get_calibration_point(unsigned)
+    unsigned get_temperature()
+    void start()
+    void stop()
+}
+

@@ -1,0 +1,98 @@
+
+<<<
+#include "host.h"
+>>>
+
+from picross[picross/picross.pip] import notify,status
+from piw[piw/piw.pip] import cookie,clockdomain_ctl,data,mapping_info,midi_channel_delegate
+
+class plugin_description[host::plugin_description_t]
+{
+    plugin_description(const plugin_description &)
+    plugin_description(const stdstr &,const stdstr &)
+    plugin_description()
+    stdstr name()
+    stdstr format()
+    stdstr manufacturer()
+    stdstr id()
+    stdstr description()
+    stdstr __str__[id]()
+    stdstr __repr__[id]()
+    stdstr to_xml()
+    bool from_xml(const stdstr &)
+}
+
+plugin_description create_plugin_description[host::create_plugin_description](const stdstr &)
+
+class plugin_list[host::plugin_list_t] /gc/
+{
+    plugin_list(const stdstr &,const notify &)
+    unsigned num_plugins()
+    plugin_description get_plugin(unsigned)
+    int find_plugin(const plugin_description &)
+}
+
+class plugin_observer[host::plugin_observer_t]
+{
+    plugin_observer()
+    virtual void description_changed(const stdstr &) = 0
+    virtual void showing_changed(bool) = 0
+    virtual void bypassed_changed(bool) = 0
+    virtual void mapping_changed(const stdstr &) = 0
+    virtual stdstr get_parameter_name(unsigned) = 0
+}
+
+class plugin_instance[host::plugin_instance_t] /gc/
+{
+    plugin_instance(plugin_observer *, midi_channel_delegate *, clockdomain_ctl *, const cookie &, const cookie &, const status &)
+
+    clockdomain_ctl *clock_domain()
+
+    cookie metronome_input()
+    cookie midi_from_belcanto()
+    cookie midi_aggregator()
+    cookie audio_input()
+
+    void set_midi_channel(unsigned)
+    void set_min_midi_channel(unsigned)
+    void set_max_midi_channel(unsigned)
+
+    cookie parameter_input(unsigned)
+    void set_mapping(const stdstr &)
+    stdstr get_mapping()
+    void parameter_name_changed(unsigned)
+    void map_param(unsigned,mapping_info)
+    void map_midi(unsigned,mapping_info)
+    void unmap_param(unsigned,unsigned short)
+    void unmap_midi(unsigned,unsigned short)
+    bool is_mapped_param(unsigned, unsigned short)
+    bool is_mapped_midi(unsigned, unsigned short)
+    mapping_info get_info_param(unsigned, unsigned short)
+    mapping_info get_info_midi(unsigned, unsigned short)
+    void set_minimum_decimation(float)
+    void set_midi_notes(bool)
+    void set_midi_pitchbend(bool)
+
+    bool open(const plugin_description &)
+    void close()
+
+    unsigned input_channel_count()
+    unsigned output_channel_count()
+
+    void set_showing(bool)
+    bool is_showing()
+    void set_title(const stdstr &)
+
+    void set_bypassed(bool)
+    bool is_bypassed()
+
+    plugin_description get_description()
+    data get_state()
+    void set_state(const data &)
+    data get_bounds()
+    void set_bounds(const data &)
+
+    void set_idle_time(float)
+    void disable_idling()
+}
+

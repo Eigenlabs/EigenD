@@ -1,0 +1,8 @@
+description
+    This script is enables automatic muting of the mic when the breath
+    pipe is used.
+script
+    keyboard 1 hey automute set
+
+ 
+ 

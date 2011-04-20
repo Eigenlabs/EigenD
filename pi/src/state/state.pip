@@ -1,0 +1,102 @@
+<<<
+#include "sng_database.h"
+#include "sng_mirror.h"
+#include "sng_file.h"
+#include "sng_mapping.h"
+>>>
+
+from piw_native[piw/piw.pip] import data,client,term
+
+class Mapping[pi::state::mapref_t]
+{
+    Mapping()
+    Mapping(const Mapping &)
+    void add(const char *,const char *) [locked,ptr]
+    data substitute(const data &) [locked,ptr]
+    stdstr render() [locked,ptr]
+}
+
+class Manager[pi::state::manager_t]: client /gc/
+{
+    Manager(const Node &)
+    virtual void manager_checkpoint()
+    void save_template(const Node &, const Mapping &)
+    term get_diff(const Node &, const Mapping &)
+}
+
+class File[pi::state::fileref_t]
+{
+    File(const File &)
+    unsigned long checkpoint() [ptr,locked]
+    stdstr read_payload_string(unsigned long) [ptr,locked]
+    unsigned long write_payload_string(const stdstr &, bool) [ptr,locked]
+    void flush() [ptr,locked]
+    void close() [ptr,locked]
+    bool isopen() [ptr,locked]
+    stdstr name() [ptr,locked]
+}
+
+class Node[pi::state::noderef_t]
+{
+    Node()
+    Node(const Node &)
+    unsigned char enum_children(unsigned char) [ptr]
+    data get_data() [ptr,locked]
+    Node get_child(unsigned char) [ptr]
+    bool set_data(const data &) [ptr]
+    void erase_child(unsigned char) [ptr]
+    void erase() [ptr]
+    stdstr list_children() [ptr]
+    Node snapshot() [ptr]
+    void copy(const Node &, const Mapping &) [ptr]
+}
+
+class Agent[pi::state::agentref_t]
+{
+    Agent()
+    Agent(const Agent &)
+    stdstr get_address() [ptr,locked]
+    unsigned get_type() [ptr,locked]
+    Node get_root() [ptr]
+    unsigned long set_checkpoint() [ptr]
+    unsigned long get_checkpoint() [ptr,locked]
+    bool isdirty() [ptr,locked]
+    Agent checkpoint() [ptr]
+    void set_type(unsigned) [ptr]
+    bool isvalid() [locked]
+    stdstr get_name() [ptr,locked]
+    stdstr get_plugin() [ptr,locked]
+}
+
+class Snapshot[pi::state::snapref_t]
+{
+    Snapshot()
+    Snapshot(const Snapshot &)
+    Snapshot clone(unsigned long long, const char *) [ptr,locked]
+    unsigned agent_count() [ptr,locked]
+    Agent get_agent_index(unsigned) [ptr]
+    Agent get_agent_address(unsigned,const stdstr &,bool) [ptr]
+    Agent set_agent(const Agent &) [ptr]
+    bool erase_agent(const Agent &) [ptr]
+    void erase() [ptr]
+    unsigned long version() [ptr,locked]
+    unsigned long previous() [ptr,locked]
+    unsigned long save(unsigned long long, const char *) [ptr]
+    unsigned long long timestamp() [ptr,locked]
+    stdstr tag() [ptr,locked]
+    void copy(const Snapshot &, const Mapping &, bool) [ptr]
+}
+
+class Database[pi::state::dbref_t]
+{
+    Database(const Database &)
+    Snapshot get_trunk() [ptr]
+    Snapshot get_version(unsigned long) [ptr]
+    File get_file() [ptr]
+    void close() [ptr]
+    void flush() [ptr]
+}
+
+Database open_database[pi::state::open_database](const char *, bool)
+File open_file[pi::state::open_file](const char *, bool)
+Mapping create_mapping[pi::state::create_mapping](bool)

@@ -1,0 +1,5 @@
+description
+    Turns the flashing of the metronome key off.
+
+script
+    empty join metronome hey beat flash persistence to 0 set

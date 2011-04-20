@@ -1,0 +1,6 @@
+description
+    This script is enables the direct mic to headphone monitoring on an
+    Alpha
+script
+    keyboard 1 hey loop set
+	console mixer channel 23 hey headphone enable un set

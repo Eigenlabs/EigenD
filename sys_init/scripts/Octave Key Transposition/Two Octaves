@@ -1,0 +1,13 @@
+
+description
+    Remap octave talkers.  Makes the octave up and
+    down buttons go up and down by two octaves
+    (perfect 15th)    
+
+    This script should be run with pico setups only
+
+script
+    empty join kgroup 1 listen talker 6 listen
+    all phrase cancel
+    octave by 2 when 1 up
+    octave by 2 when 2 down

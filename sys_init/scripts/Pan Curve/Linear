@@ -1,0 +1,10 @@
+description
+    Set the Mixer's Pan law to Linear,
+
+    This is has a linear taper crossing at -6dB in the
+    center.
+
+    This is the default value.
+
+script
+    console mixer hey pan curve to linear set

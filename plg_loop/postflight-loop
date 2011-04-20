@@ -1,0 +1,2 @@
+#!/bin/sh
+su $USER -c $PI_PREFIX/bin/loopdb_create
