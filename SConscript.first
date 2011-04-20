@@ -1,0 +1,49 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('master_env')
+
+import os.path
+
+release = '2.0.23'
+
+status = {
+    'windows': 'unstable',
+    'linux': 'unstable',
+    'macosx': 'unstable'
+}
+
+tag = '%s-%s' % (release,status[master_env['PI_PLATFORMTYPE']])
+
+master_env.Prepend(CPPPATH=[master_env.Dir('.').srcnode().abspath])
+master_env.Prepend(CPPPATH=[os.path.join(master_env.Dir('.').srcnode().abspath,'steinberg')])
+master_env.PiRelease('release',tag)
+master_env.PiPackageDescription('eigend',desc='EigenD Application',groups=('app',))
+
+if master_env['IS_WINDOWS']:
+    prereq = [
+        ('runtime-1.0.0',"Please install the EigenD Resources package before installing EigenD.")
+    ]
+
+if master_env['IS_MACOSX']:
+    prereq = [
+    ]
+
+master_env.PiPackageCollection('EigenD-gpl',groups=('app',),prereq=prereq)

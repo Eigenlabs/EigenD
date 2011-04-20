@@ -1,0 +1,5 @@
+description
+    Set key pitch bend ranges to 2 semi tones.
+    This will affect all scalers in the system.
+script
+    all scaler hey all k  range to 2 set

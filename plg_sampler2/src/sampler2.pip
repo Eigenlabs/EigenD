@@ -1,0 +1,21 @@
+<<<
+#include <plg_sampler2/smp_loader.h>
+#include <plg_sampler2/smp_player.h>
+>>>
+
+
+from piw[piw/piw.pip] import cookie,clockdomain_ctl,preset
+
+class player[sampler2::player_t]
+{
+    player(const cookie &,clockdomain_ctl *)
+    void set_fade(bool)
+    cookie cookie()
+}
+
+class loader[sampler2::loader_t]
+{
+    loader(player *,const cookie &,clockdomain_ctl *)
+    void load(const preset &);
+    cookie cookie()
+}

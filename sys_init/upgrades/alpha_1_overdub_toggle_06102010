@@ -1,0 +1,7 @@
+# Adding a recorder overdub toggle to scheduler keygroup
+# ------------------------------------------------------
+
+empty join
+all recorder listen
+light recorder talker 1 listen
+all overdub when 19 toggle set

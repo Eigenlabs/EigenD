@@ -1,0 +1,5 @@
+description
+    Sets the double tap delay on all arrangers to 0.5s, which is the default
+
+script
+    empty join all arranger hey all doubletap to 0.5 set

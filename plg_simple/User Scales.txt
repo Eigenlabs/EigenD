@@ -1,0 +1,4 @@
+[17-tone equal temperament]
+;This is the 17-tone equal temperament scale. If the intervals of your scale do not all fit on one line, you need to indent your line by;putting at least one space or tab at the beginning of the line.
+intervals=0 0.7059 1.4118 2.1177 2.8236 3.5295 4.2354 4.9413 5.6472 6.3531 7.0588 
+    7.7649 8.4708 9.1767 9.8826 10.5885 11.2944 12

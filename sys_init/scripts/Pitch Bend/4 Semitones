@@ -1,0 +1,5 @@
+description
+    Set all k pitch bend ranges to 4 semi tones.
+    This will affect all scalers in the system
+script
+    all scaler hey all k  range to 4 set

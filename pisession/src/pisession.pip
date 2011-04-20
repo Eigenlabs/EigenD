@@ -1,0 +1,25 @@
+<<<
+#include "pis_python.h"
+>>>
+
+
+from piagent_native[piagent/piagent.pip] import context
+
+class interpreter[pisession::interpreter_t]
+{
+    interpreter()
+    interpreter(const interpreter &)
+    void release()
+    agent create_agent(const context &, const char *, const char *) [ptr]
+}
+
+class agent[pisession::agent_t]
+{
+    agent()
+    agent(const agent &)
+    void release()
+    context env() [ptr]
+    stdstr unload() [ptr,locked]
+}
+
+interpreter create_interpreter[pisession::create_interpreter](const char *, const char *, const char *)

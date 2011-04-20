@@ -1,0 +1,41 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+env.PiPythonPackage('0.0',resources=Split('*.png'),pi='0.0',package='eigend')
+
+env.PiResources('eigend','upgrade_manager','script_*')
+env.PiResources('eigend','scale_manager','User Scales.txt')
+
+env.PiAgent('channeliser','plg_simple.channeliser_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('cycler','plg_simple.cycler_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('scaler','plg_simple.scaler_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('stringer','plg_simple.stringer_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('scheduler','plg_simple.scheduler_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('kgroup','plg_simple.kgroup_plg','plg_simple:0.0',cversion='1.0.2',package='eigend')
+env.PiAgent('rig_manager','plg_simple.rig_manager_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('scale_manager','plg_simple.scale_manager_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('talker','plg_simple.talker_plg','plg_simple:0.0',cversion='1.0.1',package='eigend')
+env.PiAgent('kmapper','plg_simple.kmapper_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('upgrade_manager','plg_simple.upgrade_manager_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('ranger','plg_simple.ranger_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('icon_manager','plg_simple.icon_manager_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('strummer','plg_simple.strummer_plg','plg_strummer:0.0',cversion='1.0.0',package='eigend')

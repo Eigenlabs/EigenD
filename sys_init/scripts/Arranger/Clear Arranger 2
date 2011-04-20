@@ -1,0 +1,5 @@
+description
+    Clear the events on Arranger 2
+
+script
+    empty join arranger 2 hey clear

@@ -1,0 +1,53 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+piw_files=Split("""
+    piw_client.cpp piw_clock.cpp piw_address.cpp piw_index.cpp piw_server.cpp
+    piw_tsd.cpp piw_canchor.cpp piw_bundle.cpp piw_clone.cpp piw_controller.cpp
+    piw_table.cpp piw_thing.cpp piw_midi_decoder.cpp piw_data.cpp piw_output.cpp
+    piw_aggregator.cpp piw_function1.cpp piw_resampler.cpp piw_slowchange.cpp
+    piw_pitchbender.cpp piw_function2.cpp piw_fastdata.cpp piw_dumper.cpp
+    piw_normalize.cpp piw_logtable.cpp piw_powtable.cpp piw_policy.cpp piw_delay.cpp
+    piw_interpolator.cpp piw_selector.cpp piw_sampler.cpp piw_scaler.cpp piw_panner.cpp
+    piw_gate.cpp piw_resource.cpp piw_gain.cpp piw_rpc.cpp piw_lights.cpp
+    piw_clockclient.cpp piw_velocitydetect.cpp piw_lopass.cpp piw_scroller2.cpp
+    piw_scroller.cpp piw_trigger.cpp piw_sclone.cpp piw_kgroup.cpp piw_stereosummer.cpp
+    piw_throttler.cpp piw_connector.cpp piw_backend.cpp piw_multiplexer.cpp
+    piw_sample.cpp piw_scheduler.cpp piw_monomixer.cpp piw_capture.cpp piw_stringer.cpp
+    piw_ufilter.cpp piw_stereomixer.cpp piw_evtdump.cpp piw_cycler.cpp piw_window.cpp
+    piw_polyctl.cpp piw_correlator.cpp piw_cfilter.cpp piw_phase.cpp piw_fastmark.cpp
+    piw_dataqueue.cpp piw_wavrecorder.cpp piw_consolemixer.cpp piw_ranger.cpp
+    piw_termparse.cpp piw_state.cpp piw_midi_from_belcanto.cpp piw_strummer.cpp
+    piw_lightconvertor.cpp piw_statusbuffer.cpp piw_statusmixer.cpp piw_statusledconvertor.cpp
+	piw_controllerdict.cpp piw_gui_mapper.cpp piw_midi_converter.cpp piw_control_mapping.cpp
+    piw_control_params.cpp JucerPopupDialogComponent.cpp JucerCellPopupComponent.cpp
+    JucerGlobalSettingsComponent.cpp JucerHelpComponent.cpp
+    """)
+
+piw_env=env.Clone()
+
+if piw_env['IS_MACOSX']:
+    piw_env.Append(LINKFLAGS='-framework vecLib')
+
+piw_env.PiSharedLibrary('piw',piw_files,libraries=Split('pia pic pie pisamplerate juce'),package='eigend')
+
+env.PiPipBinding('piw_native',env.Pipfile('piw.pip'),libraries=Split('pic piw pia pie juce'),package='eigend')

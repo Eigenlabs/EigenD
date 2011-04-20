@@ -1,0 +1,9 @@
+description
+    This script connects the scroll keys for use with the commander in the Alpha Factory Setups
+script
+    all join
+    alpha keyboard k 72 yaw output to eigencommander sideways nudger 1 connect 
+    alpha keyboard k 72 roll output to eigencommander vertical nudger 2 connect
+ 
+ 
+ 

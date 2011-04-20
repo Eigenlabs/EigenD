@@ -1,0 +1,38 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+import os
+
+# Bonjour build for windows
+#
+#if env['IS_WINDOWS']:
+#	ebonjour = os.environ['BONJOUR_SDK_HOME']
+#	bonjour_inc = os.path.join(ebonjour,'Include')
+#	bonjour_lib = os.path.join(ebonjour,'lib\\Win32')
+#	env.Append(CPPPATH=bonjour_inc)
+#	env.Append(LIBPATH=Split(''))
+#	env.Append(LIBPATH=bonjour_lib)
+#	env.Append(LIBS=Split('dnssd'))
+#	env.Append(LIBS=Split('Ws2_32'))
+
+env.PiSharedLibrary('pilanguage',Split('lng_bonjour.cpp lng_osc.cpp lng_wordrec.cpp lng_controls.cpp lng_fastmark.cpp'),libraries=Split('piw pie pia pic pilo'),package='eigend')
+env.PiPipBinding('language_native','language.pip',libraries=Split('pilanguage pilo piw pie pia pic'),package='eigend')

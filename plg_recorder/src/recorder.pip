@@ -1,0 +1,87 @@
+
+<<<
+#include "rec_recorder.h"
+#include "rec_recording.h"
+#include "rec_player.h"
+#include "rec_nplayer.h"
+>>>
+
+
+from piw[piw/piw.pip] import clockdomain_ctl,cookie,change,change_nb,data,data_nb,clockref
+
+class readevent[recorder::readevent_t]
+{
+    readevent(const readevent &)
+
+    data_nb evt_id() [locked]
+    unsigned long long evt_time() [locked]
+    float evt_beat() [locked]
+
+    data_nb cur_value() [locked]
+    unsigned long long cur_time() [locked]
+    float cur_beat() [locked]
+    unsigned cur_signal() [locked]
+
+    bool isvalid() [locked]
+    void reset() [locked]
+    void next() [locked]
+    void clear() [locked]
+}
+
+class recording[recorder::recording_t]
+{
+    recording()
+    recording(const recording &)
+
+    unsigned signals() [locked]
+    unsigned wires() [locked]
+    unsigned events() [locked]
+
+    bool isvalid() [locked]
+    void reset() [locked]
+    void next() [locked]
+
+    data get_tag(unsigned char) [locked]
+
+    readevent cur_event() [locked]
+
+    void write(const char *) [locked]
+}
+
+recording read[recorder::read](const char *) [locked]
+recording read_meta[recorder::read_meta](const char *) [locked]
+
+class recorder[recorder::recorder_t]
+{
+    recorder(clockdomain_ctl *, unsigned)
+
+    int record(unsigned)
+    virtual void record_started(const recording &) = 0
+    virtual void record_done(const recording &) = 0
+    virtual void record_aborted() = 0
+    void abort()
+    cookie cookie()
+}
+
+class kplayer[recorder::player_t]
+{
+    kplayer(clockdomain_ctl *, unsigned, unsigned, const cookie &)
+    cookie cookie()
+
+    unsigned long load(const stdstr &, const recording &, unsigned)
+    void unload(unsigned long, bool)
+    void abort(const stdstr &)
+    void abortcookie(unsigned long)
+    void abortall()
+    change player(unsigned long, unsigned)
+    unsigned long getcookie(const stdstr &)
+    unsigned long clonecookie(const stdstr &, unsigned)
+    stdstr cookiename(unsigned long)
+}
+
+class nplayer[recorder::nplayer_t]
+{
+    nplayer(const cookie &,unsigned,unsigned,clockdomain_ctl *)
+    change play(unsigned,unsigned,unsigned long long)
+    clockref *get_clock()
+}

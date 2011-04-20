@@ -1,0 +1,47 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+pia_files=Split("""
+    pia_buffer.cpp pia_clock.cpp pia_data.cpp pia_eventq.cpp
+    pia_fastalloc.cpp pia_fastdata.cpp pia_scaffold.cpp
+    pia_index.cpp pia_local.cpp pia_glue.cpp pia_bkernel.cpp
+    pia_proxy.cpp pia_server.cpp pia_thing.cpp pia_rpc.cpp
+    pia_fastmark.cpp pia_dataqueue.cpp pia_bclock.cpp
+    pia_window.cpp
+    """)
+
+pia_env = env.Clone()
+
+if env['IS_MACOSX']:
+    pia_files=pia_files+Split('pia_udpnet_macosx.cpp')
+    pia_env.Append(CCFLAGS='-DALIGN_16')
+if env['IS_LINUX']:
+    pia_files=pia_files+Split('pia_udpnet_linux.cpp')
+if env['IS_WINDOWS']:
+    pia_files=pia_files+Split('pia_udpnet_windows.cpp')
+    pia_env.Append(LINKFLAGS=' WS2_32.Lib ')
+
+pia_env.PiSharedLibrary('pia',pia_files,libraries=Split('pic pie'),package='eigend')
+
+binding_env=env.Clone()
+binding_env.PiPipBinding('piagent_native',env.Pipfile('piagent.pip'),libraries=Split('pic pia pie'),package='eigend')
+

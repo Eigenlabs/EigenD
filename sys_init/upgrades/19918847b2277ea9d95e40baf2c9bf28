@@ -1,0 +1,523 @@
+# alpha 1 upgrade script
+# 1.0.10 -> 1.0.11 and above
+
+# v2 cello upgrade
+
+# fix strip connection bug
+alpha 1 absolute strip output 1 to kgroup 99 absolute strip input 1 connect
+alpha 1 absolute strip output 2 to kgroup 99 absolute strip input 2 connect
+kgroup 1 output 63 absolute strip output 2 to recorder 6 auxilliary input 8 connect
+cello oscillator 7 bow position input un connect
+recorder 6 auxilliary output 8 to cello oscillator 7 bow position input connect
+
+# cello oscillator
+cello cello bow velocity factor to 2 set
+cello cello pitch time input to 34 set
+cello cello low filter gain to 0 set
+
+# convolver
+cello convolver mix to 0.57 set
+
+# ----This talker sets up the radio talkers for the scaler----
+
+# -------------use brpc instead of bscript for this one
+
+all join
+
+empty join ultra scale talker listen interpreter listen
+all phrase cancel
+
+" empty join scale manager hey cancel scale manager hey variable scalev1 choose when activation using scale manager ` empty join scale manager activation scale as scalev1 define scale talker 1 hey 13 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev1 when 13 called 1 set ` do ` scale manager scale browse ` do " when 85 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev2 choose when activation using scale manager ` empty join scale manager activation scale as scalev2 define scale talker 1 hey 14 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev2 when 14 called 1 set ` do ` scale manager scale browse ` do " when 86 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev3 choose when activation using scale manager ` empty join scale manager activation scale as scalev3 define scale talker 1 hey 15 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev3 when 15 called 1 set ` do ` scale manager scale browse ` do " when 87 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev4 choose when activation using scale manager ` empty join scale manager activation scale as scalev4 define scale talker 1 hey 16 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev4 when 16 called 1 set ` do ` scale manager scale browse ` do " when 88 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev5 choose when activation using scale manager ` empty join scale manager activation scale as scalev5 define scale talker 1 hey 17 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev5 when 17 called 1 set ` do ` scale manager scale browse ` do " when 107 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev6 choose when activation using scale manager ` empty join scale manager activation scale as scalev6 define scale talker 1 hey 18 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev6 when 18 called 1 set ` do ` scale manager scale browse ` do " when 108 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev7 choose when activation using scale manager ` empty join scale manager activation scale as scalev7 define scale talker 1 hey 19 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev7 when 19 called 1 set ` do ` scale manager scale browse ` do " when 109 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev8 choose when activation using scale manager ` empty join scale manager activation scale as scalev8 define scale talker 1 hey 20 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev8 when 20 called 1 set ` do ` scale manager scale browse ` do " when 110 do
+
+" ultra scale talker hey 85 to 1 from 3 colour ify " when 85 do 
+" ultra scale talker hey 86 to 1 from 3 colour ify " when 86 do 
+" ultra scale talker hey 87 to 1 from 3 colour ify " when 87 do 
+" ultra scale talker hey 88 to 1 from 3 colour ify " when 88 do 
+" ultra scale talker hey 107 to 1 from 3 colour ify " when 107 do 
+" ultra scale talker hey 108 to 1 from 3 colour ify " when 108 do 
+" ultra scale talker hey 109 to 1 from 3 colour ify " when 109 do 
+" ultra scale talker hey 110 to 1 from 3 colour ify " when 110 do 
+
+all join
+
+# bar beat input to AU, needed for trac ticket #2155
+empty join plumber listen
+metronome bar beat output to audio unit 1 bar beat input connect
+metronome bar beat output to ultra audio unit 1 bar beat input connect
+metronome bar beat output to effect audio unit 1 bar beat input connect
+metronome bar beat output to audio unit 2 bar beat input connect
+metronome bar beat output to ultra audio unit 2 bar beat input connect
+metronome bar beat output to effect audio unit 2 bar beat input connect
+metronome bar beat output to audio unit 3 bar beat input connect
+metronome bar beat output to effect audio unit 3 bar beat input connect
+metronome bar beat output to audio unit 4 bar beat input connect
+metronome bar beat output to effect audio unit 4 bar beat input connect
+metronome bar beat output to effect audio unit 5 bar beat input connect
+metronome bar beat output to effect audio unit 6 bar beat input connect
+metronome bar beat output to effect audio unit 7 bar beat input connect
+metronome bar beat output to effect audio unit 8 bar beat input connect
+metronome bar beat output to effect audio unit 9 bar beat input connect
+metronome bar beat output to effect audio unit 10 bar beat input connect
+metronome bar beat output to effect audio unit 11 bar beat input connect
+metronome bar beat output to drummer audio unit 12 bar beat input connect
+metronome bar beat output to effect audio unit 13 bar beat input connect
+all join
+
+
+# Script for MIDI input talkers - Alpha Setup 1 (1.1.0-unstable8)
+
+all join
+midi input create
+
+talker create it to midi input talker name ify
+midi input to it connect
+
+# Tonic
+
+empty join kgroup 1 listen midi input talker listen midi input listen
+tonic to notec when 60 set
+tonic to notecsharp when 61 set
+tonic to noted when 62 set
+tonic to notedsharp when 63 set
+tonic to notee when 64 set
+tonic to notef when 65 set
+tonic to notefsharp when 66 set
+tonic to noteg when 67 set
+tonic to notegsharp when 68 set
+tonic to notea when 69 set
+tonic to noteasharp when 70 set
+tonic to noteb when 71 set
+
+# Scale
+
+scale to major when 72 called 1 set
+scale to harmonic minor when 73 called 1 set
+scale to melodic minor when 74 called 1 set
+scale to chromatic when 75 called 1 set
+scale to blues when 76 called 1 set
+scale to pentatonic major when 77 called 1 set
+scale to diminished when 78 called 1 set
+scale to whole tone when 79 called 1 set
+
+# Metronome
+
+empty join metronome listen midi input talker listen midi input listen
+when 59 toggle start
+
+# Lights
+
+empty join interpreter listen midi input talker listen
+
+" tonic talker 1 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 1 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 1 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 1 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 1 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 1 hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 1 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 1 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 1 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 1 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 1 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 1 hey 12 to 1 from 2 colour ify " when 71 do
+
+" scale talker 1 hey 13 to 1 from 2 colour ify " when 72 called 100 do
+" scale talker 1 hey 14 to 1 from 2 colour ify " when 73 called 100 do
+" scale talker 1 hey 15 to 1 from 2 colour ify " when 74 called 100 do
+" scale talker 1 hey 16 to 1 from 2 colour ify " when 75 called 100 do
+" scale talker 1 hey 17 to 1 from 2 colour ify " when 76 called 100 do
+" scale talker 1 hey 18 to 1 from 2 colour ify " when 77 called 100 do
+" scale talker 1 hey 19 to 1 from 2 colour ify " when 78 called 100 do
+" scale talker 1 hey 20 to 1 from 2 colour ify " when 79 called 100 do
+
+# MIDI clock
+
+all join
+midi input to metronome connect
+
+# MIDI talker phrases
+
+empty join midi talker 1 listen interpreter listen 
+" eigenbrowser , midi input hey midi port browse " when 41 do
+empty join midi talker 1 listen metronome listen
+midi clock enable when 42 toggle set
+
+# Create MIDI clock latency controller
+
+all join
+
+controller create
+it to midi latency controller name ify
+kgroup 1 output 23 to it connect
+
+empty join midi latency controller listen metronome listen 
+midi clock latency with 43 control
+
+# Upgrade Script for ultra scale talkers to contain MIDI talker  - Alpha Setup 1 (1.1.0-unstable8)
+
+#all join
+
+#talker create it to ultra scale talker name ify
+#kgroup 1 output 4 to it connect
+
+empty join ultra scale talker listen interpreter listen
+all phrase cancel
+
+" empty join scale manager hey cancel scale manager hey variable scalev1 choose when activation using scale manager ` empty join scale manager activation scale as scalev1 define scale talker 1 hey 13 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev1 when 13 called 1 set midi input talker hey 72 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev1 when 72 called 1 set ` do ` scale manager scale browse ` do " when 85 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev2 choose when activation using scale manager ` empty join scale manager activation scale as scalev2 define scale talker 1 hey 14 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev2 when 14 called 1 set midi input talker hey 73 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev2 when 73 called 1 set ` do ` scale manager scale browse ` do " when 86 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev3 choose when activation using scale manager ` empty join scale manager activation scale as scalev3 define scale talker 1 hey 15 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev3 when 15 called 1 set midi input talker hey 74 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev3 when 74 called 1 set ` do ` scale manager scale browse ` do " when 87 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev4 choose when activation using scale manager ` empty join scale manager activation scale as scalev4 define scale talker 1 hey 16 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev4 when 16 called 1 set midi input talker hey 75 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev4 when 75 called 1 set ` do ` scale manager scale browse ` do " when 88 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev5 choose when activation using scale manager ` empty join scale manager activation scale as scalev5 define scale talker 1 hey 17 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev5 when 17 called 1 set midi input talker hey 76 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev5 when 76 called 1 set ` do ` scale manager scale browse ` do " when 107 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev6 choose when activation using scale manager ` empty join scale manager activation scale as scalev6 define scale talker 1 hey 18 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev6 when 18 called 1 set midi input talker hey 77 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev6 when 77 called 1 set ` do ` scale manager scale browse ` do " when 108 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev7 choose when activation using scale manager ` empty join scale manager activation scale as scalev7 define scale talker 1 hey 19 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev7 when 19 called 1 set midi input talker hey 78 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev7 when 78 called 1 set ` do ` scale manager scale browse ` do " when 109 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev8 choose when activation using scale manager ` empty join scale manager activation scale as scalev8 define scale talker 1 hey 20 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev8 when 20 called 1 set midi input talker hey 79 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev8 when 79 called 1 set ` do ` scale manager scale browse ` do " when 110 do
+
+" ultra scale talker hey 85 to 1 from 3 colour ify " when 85 do 
+" ultra scale talker hey 86 to 1 from 3 colour ify " when 86 do 
+" ultra scale talker hey 87 to 1 from 3 colour ify " when 87 do 
+" ultra scale talker hey 88 to 1 from 3 colour ify " when 88 do 
+" ultra scale talker hey 107 to 1 from 3 colour ify " when 107 do 
+" ultra scale talker hey 108 to 1 from 3 colour ify " when 108 do 
+" ultra scale talker hey 109 to 1 from 3 colour ify " when 109 do 
+" ultra scale talker hey 110 to 1 from 3 colour ify " when 110 do 
+
+all join
+
+# insert script browser key
+pedal talker 1 , interpreter hey " eigenbrowser , interpreter hey script browse " when 1 do
+
+# user setup talkers alpha
+
+empty join midi input talker listen eigend listen
+user 1 when 12 load
+user 2 when 13 load
+user 3 when 14 load
+user 4 when 15 load
+user 5 when 16 load
+user 6 when 17 load
+user 7 when 18 load
+user 8 when 19 load
+user 9 when 20 load
+user 10 when 21 load
+
+# Audio Unit Parameter naming script - Alpha
+# ===========================================
+
+all join
+audio unit 1 parameter 1 to strip controller 1 name ify
+audio unit 2 parameter 1 to strip controller 1 name ify
+audio unit 3 parameter 1 to strip controller 1 name ify
+audio unit 4 parameter 1 to strip controller 1 name ify
+effect audio unit 1 parameter 1 to strip controller 1 name ify
+effect audio unit 2 parameter 1 to strip controller 1 name ify
+effect audio unit 3 parameter 1 to strip controller 1 name ify
+effect audio unit 4 parameter 1 to strip controller 1 name ify
+effect audio unit 5 parameter 1 to strip controller 1 name ify
+effect audio unit 6 parameter 1 to strip controller 1 name ify
+effect audio unit 7 parameter 1 to strip controller 1 name ify
+effect audio unit 8 parameter 1 to strip controller 1 name ify
+effect audio unit 9 parameter 1 to strip controller 1 name ify
+effect audio unit 10 parameter 1 to strip controller 1 name ify
+effect audio unit 11 parameter 1 to strip controller 1 name ify
+drummer audio unit parameter 1 to strip controller 1 name ify
+effect audio unit 13 parameter 1 to strip controller 1 name ify
+ultra audio unit 1 parameter 1 to strip controller 1 name ify
+ultra audio unit 2 parameter 1 to strip controller 1 name ify
+
+audio unit 1 parameter 2 to strip controller 2 name ify
+audio unit 2 parameter 2 to strip controller 2 name ify
+audio unit 3 parameter 2 to strip controller 2 name ify
+audio unit 4 parameter 2 to strip controller 2 name ify
+effect audio unit 1 parameter 2 to strip controller 2 name ify
+effect audio unit 2 parameter 2 to strip controller 2 name ify
+effect audio unit 3 parameter 2 to strip controller 2 name ify
+effect audio unit 4 parameter 2 to strip controller 2 name ify
+effect audio unit 5 parameter 2 to strip controller 2 name ify
+effect audio unit 6 parameter 2 to strip controller 2 name ify
+effect audio unit 7 parameter 2 to strip controller 2 name ify
+effect audio unit 8 parameter 2 to strip controller 2 name ify
+effect audio unit 9 parameter 2 to strip controller 2 name ify
+effect audio unit 10 parameter 2 to strip controller 2 name ify
+effect audio unit 11 parameter 2 to strip controller 2 name ify
+drummer audio unit parameter 2 to strip controller 2 name ify
+effect audio unit 13 parameter 2 to strip controller 2 name ify
+ultra audio unit 1 parameter 2 to strip controller 2 name ify
+ultra audio unit 2 parameter 2 to strip controller 2 name ify
+
+audio unit 1 parameter 3 to breath blow name ify
+audio unit 2 parameter 3 to breath blow name ify
+audio unit 3 parameter 3 to breath blow name ify
+audio unit 4 parameter 3 to breath blow name ify
+effect audio unit 1 parameter 3 to breath blow name ify
+effect audio unit 2 parameter 3 to breath blow name ify
+effect audio unit 3 parameter 3 to breath blow name ify
+effect audio unit 4 parameter 3 to breath blow name ify
+effect audio unit 5 parameter 3 to breath blow name ify
+effect audio unit 6 parameter 3 to breath blow name ify
+effect audio unit 7 parameter 3 to breath blow name ify
+effect audio unit 8 parameter 3 to breath blow name ify
+effect audio unit 9 parameter 3 to breath blow name ify
+effect audio unit 10 parameter 3 to breath blow name ify
+effect audio unit 11 parameter 3 to breath blow name ify
+drummer audio unit parameter 3 to breath blow name ify
+effect audio unit 13 parameter 3 to breath blow name ify
+ultra audio unit 1 parameter 3 to breath blow name ify
+ultra audio unit 2 parameter 3 to breath blow name ify
+
+audio unit 1 parameter 4 to breath suck name ify
+audio unit 2 parameter 4 to breath suck name ify
+audio unit 3 parameter 4 to breath suck name ify
+audio unit 4 parameter 4 to breath suck name ify
+effect audio unit 1 parameter 4 to breath suck name ify
+effect audio unit 2 parameter 4 to breath suck name ify
+effect audio unit 3 parameter 4 to breath suck name ify
+effect audio unit 4 parameter 4 to breath suck name ify
+effect audio unit 5 parameter 4 to breath suck name ify
+effect audio unit 6 parameter 4 to breath suck name ify
+effect audio unit 7 parameter 4 to breath suck name ify
+effect audio unit 8 parameter 4 to breath suck name ify
+effect audio unit 9 parameter 4 to breath suck name ify
+effect audio unit 10 parameter 4 to breath suck name ify
+effect audio unit 11 parameter 4 to breath suck name ify
+drummer audio unit parameter 4 to breath suck name ify
+effect audio unit 13 parameter 4 to breath suck name ify
+ultra audio unit 1 parameter 4 to breath suck name ify
+ultra audio unit 2 parameter 4 to breath suck name ify
+
+audio unit 1 parameter 5 to key pressure name ify
+audio unit 2 parameter 5 to key pressure name ify
+audio unit 3 parameter 5 to key pressure name ify
+audio unit 4 parameter 5 to key pressure name ify
+effect audio unit 1 parameter 5 to key pressure name ify
+effect audio unit 2 parameter 5 to key pressure name ify
+effect audio unit 3 parameter 5 to key pressure name ify
+effect audio unit 4 parameter 5 to key pressure name ify
+effect audio unit 5 parameter 5 to key pressure name ify
+effect audio unit 6 parameter 5 to key pressure name ify
+effect audio unit 7 parameter 5 to key pressure name ify
+effect audio unit 8 parameter 5 to key pressure name ify
+effect audio unit 9 parameter 5 to key pressure name ify
+effect audio unit 10 parameter 5 to key pressure name ify
+effect audio unit 11 parameter 5 to key pressure name ify
+drummer audio unit parameter 5 to key pressure name ify
+effect audio unit 13 parameter 5 to key pressure name ify
+ultra audio unit 1 parameter 5 to key pressure name ify
+ultra audio unit 2 parameter 5 to key pressure name ify
+
+
+audio unit 1 parameter 6 to key roll name ify
+audio unit 2 parameter 6 to key roll name ify
+audio unit 3 parameter 6 to key roll name ify
+audio unit 4 parameter 6 to key roll name ify
+effect audio unit 1 parameter 6 to key roll name ify
+effect audio unit 2 parameter 6 to key roll name ify
+effect audio unit 3 parameter 6 to key roll name ify
+effect audio unit 4 parameter 6 to key roll name ify
+effect audio unit 5 parameter 6 to key roll name ify
+effect audio unit 6 parameter 6 to key roll name ify
+effect audio unit 7 parameter 6 to key roll name ify
+effect audio unit 8 parameter 6 to key roll name ify
+effect audio unit 9 parameter 6 to key roll name ify
+effect audio unit 10 parameter 6 to key roll name ify
+effect audio unit 11 parameter 6 to key roll name ify
+drummer audio unit parameter 6 to key roll name ify
+effect audio unit 13 parameter 6 to key roll name ify
+ultra audio unit 1 parameter 6 to key roll name ify
+ultra audio unit 2 parameter 6 to key roll name ify
+
+audio unit 1 parameter 7 to key yaw name ify
+audio unit 2 parameter 7 to key yaw name ify
+audio unit 3 parameter 7 to key yaw name ify
+audio unit 4 parameter 7 to key yaw name ify
+effect audio unit 1 parameter 7 to key yaw name ify
+effect audio unit 2 parameter 7 to key yaw name ify
+effect audio unit 3 parameter 7 to key yaw name ify
+effect audio unit 4 parameter 7 to key yaw name ify
+effect audio unit 5 parameter 7 to key yaw name ify
+effect audio unit 6 parameter 7 to key yaw name ify
+effect audio unit 7 parameter 7 to key yaw name ify
+effect audio unit 8 parameter 7 to key yaw name ify
+effect audio unit 9 parameter 7 to key yaw name ify
+effect audio unit 10 parameter 7 to key yaw name ify
+effect audio unit 11 parameter 7 to key yaw name ify
+drummer audio unit parameter 7 to key yaw name ify
+effect audio unit 13 parameter 7 to key yaw name ify
+ultra audio unit 1 parameter 7 to key yaw name ify
+ultra audio unit 2 parameter 7 to key yaw name ify
+
+audio unit 1 parameter 8 to pedal 1 name ify
+audio unit 2 parameter 8 to pedal 1 name ify
+audio unit 3 parameter 8 to pedal 1 name ify
+audio unit 4 parameter 8 to pedal 1 name ify
+effect audio unit 1 parameter 8 to pedal 1 name ify
+effect audio unit 2 parameter 8 to pedal 1 name ify
+effect audio unit 3 parameter 8 to pedal 1 name ify
+effect audio unit 4 parameter 8 to pedal 1 name ify
+effect audio unit 5 parameter 8 to pedal 1 name ify
+effect audio unit 6 parameter 8 to pedal 1 name ify
+effect audio unit 7 parameter 8 to pedal 1 name ify
+effect audio unit 8 parameter 8 to pedal 1 name ify
+effect audio unit 9 parameter 8 to pedal 1 name ify
+effect audio unit 10 parameter 8 to pedal 1 name ify
+effect audio unit 11 parameter 8 to pedal 1 name ify
+drummer audio unit parameter 8 to pedal 1 name ify
+effect audio unit 13 parameter 8 to pedal 1 name ify
+ultra audio unit 1 parameter 8 to pedal 1 name ify
+ultra audio unit 2 parameter 8 to pedal 1 name ify
+
+audio unit 1 parameter 9 to pedal 2 name ify
+audio unit 2 parameter 9 to pedal 2 name ify
+audio unit 3 parameter 9 to pedal 2 name ify
+audio unit 4 parameter 9 to pedal 2 name ify
+effect audio unit 1 parameter 9 to pedal 2 name ify
+effect audio unit 2 parameter 9 to pedal 2 name ify
+effect audio unit 3 parameter 9 to pedal 2 name ify
+effect audio unit 4 parameter 9 to pedal 2 name ify
+effect audio unit 5 parameter 9 to pedal 2 name ify
+effect audio unit 6 parameter 9 to pedal 2 name ify
+effect audio unit 7 parameter 9 to pedal 2 name ify
+effect audio unit 8 parameter 9 to pedal 2 name ify
+effect audio unit 9 parameter 9 to pedal 2 name ify
+effect audio unit 10 parameter 9 to pedal 2 name ify
+effect audio unit 11 parameter 9 to pedal 2 name ify
+drummer audio unit parameter 9 to pedal 2 name ify
+effect audio unit 13 parameter 9 to pedal 2 name ify
+ultra audio unit 1 parameter 9 to pedal 2 name ify
+ultra audio unit 2 parameter 9 to pedal 2 name ify
+
+audio unit 1 parameter 10 to absolute strip 1 name ify
+audio unit 2 parameter 10 to absolute strip 1 name ify
+audio unit 3 parameter 10 to absolute strip 1 name ify
+audio unit 4 parameter 10 to absolute strip 1 name ify
+effect audio unit 1 parameter 10 to absolute strip 1 name ify
+effect audio unit 2 parameter 10 to absolute strip 1 name ify
+effect audio unit 3 parameter 10 to absolute strip 1 name ify
+effect audio unit 4 parameter 10 to absolute strip 1 name ify
+effect audio unit 5 parameter 10 to absolute strip 1 name ify
+effect audio unit 6 parameter 10 to absolute strip 1 name ify
+effect audio unit 7 parameter 10 to absolute strip 1 name ify
+effect audio unit 8 parameter 10 to absolute strip 1 name ify
+effect audio unit 9 parameter 10 to absolute strip 1 name ify
+effect audio unit 10 parameter 10 to absolute strip 1 name ify
+effect audio unit 11 parameter 10 to absolute strip 1 name ify
+drummer audio unit parameter 10 to absolute strip 1 name ify
+effect audio unit 13 parameter 10 to absolute strip 1 name ify
+ultra audio unit 1 parameter 10 to absolute strip 1 name ify
+ultra audio unit 2 parameter 10 to absolute strip 1 name ify
+
+audio unit 1 parameter 11 to absolute strip 2 name ify
+audio unit 2 parameter 11 to absolute strip 2 name ify
+audio unit 3 parameter 11 to absolute strip 2 name ify
+audio unit 4 parameter 11 to absolute strip 2 name ify
+effect audio unit 1 parameter 11 to absolute strip 2 name ify
+effect audio unit 2 parameter 11 to absolute strip 2 name ify
+effect audio unit 3 parameter 11 to absolute strip 2 name ify
+effect audio unit 4 parameter 11 to absolute strip 2 name ify
+effect audio unit 5 parameter 11 to absolute strip 2 name ify
+effect audio unit 6 parameter 11 to absolute strip 2 name ify
+effect audio unit 7 parameter 11 to absolute strip 2 name ify
+effect audio unit 8 parameter 11 to absolute strip 2 name ify
+effect audio unit 9 parameter 11 to absolute strip 2 name ify
+effect audio unit 10 parameter 11 to absolute strip 2 name ify
+effect audio unit 11 parameter 11 to absolute strip 2 name ify
+drummer audio unit parameter 11 to absolute strip 2 name ify
+effect audio unit 13 parameter 11 to absolute strip 2 name ify
+ultra audio unit 1 parameter 11 to absolute strip 2 name ify
+ultra audio unit 2 parameter 11 to absolute strip 2 name ify
+
+# rearrange arranger keys, using an intermediate keygroup
+
+all join
+arranger 1 un connect
+kgroup 99 output 22 light input un connect
+kgroup create
+it to arranger kgroup 1 name ify
+kgroup 99 output 22 to arranger kgroup 1 connect
+
+empty join
+arranger kgroup 1 listen
+k 2  add
+k 25  add
+k 48  add
+k 71  add
+k 94  add
+
+k 1  add
+k 24  add
+k 47  add
+k 70  add
+k 93  add
+
+k 3 to k 23 as course 2 add
+k 26 to k 46 as course 3 add
+k 49 to k 69 as course 4 add
+k 72 to k 92 as course 5 add
+k 95 to k 115 as course 6 add
+
+all join
+arranger kgroup 1 hey output 1 create
+arranger kgroup 1 output 1 to arranger 1 connect
+metronome to arranger 1 connect
+
+all join
+arranger 2 un connect
+kgroup 99 output 23 light input un connect
+kgroup create
+it to arranger kgroup 2 name ify
+kgroup 99 output 23 to arranger kgroup 2 connect
+
+empty join
+arranger kgroup 2 listen
+k 2  add
+k 25  add
+k 48  add
+k 71  add
+k 94  add
+
+k 1  add
+k 24  add
+k 47  add
+k 70  add
+k 93  add
+
+k 3 to k 23 as course 2 add
+k 26 to k 46 as course 3 add
+k 49 to k 69 as course 4 add
+k 72 to k 92 as course 5 add
+k 95 to k 115 as course 6 add
+
+all join
+arranger kgroup 2 hey output 1 create
+arranger kgroup 2 output 1 to arranger 2 connect
+metronome to arranger 2 connect
+
+# Fix to AU rig 4 recorder (in 1.1.8-testing)
+
+all join
+metronome to audio unit rig 4 recorder connect
+audio unit rig 4 recorder hey scheduler use
+
+#include alpha_1_fix_27092010
+#include alpha_1_pedal_fix_27092010
+#include alpha_1_overdub_toggle_06102010

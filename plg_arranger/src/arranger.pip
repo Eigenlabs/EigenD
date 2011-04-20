@@ -1,0 +1,51 @@
+
+<<<
+#include "arranger_view.h"
+#include "arranger_model.h"
+>>>
+
+
+from piw[piw/piw.pip] import change,change_nb,data_nb,cookie,clockdomain_ctl,clockref
+
+class view[arranger::view_t]
+{
+    view(model *,const cookie &)
+    cookie cookie()
+    change_nb control()
+    void clear_events()
+
+    change_nb set_doubletap()
+    void doubletap_set(const change_nb &)
+}
+
+class model[arranger::model_t] /gc/
+{
+    model(clockdomain_ctl *)
+    cookie cookie()
+
+    clockref *get_clock()
+
+    void set_target(unsigned, const change &)
+    void clear_target(unsigned)
+
+    change_nb set_event()
+    void event_set(const change_nb &)
+
+    change_nb set_loopstart()
+    void loopstart_set(const change_nb &)
+
+    change_nb set_loopend()
+    void loopend_set(const change_nb &)
+
+    change_nb set_position()
+    void position_set(const change_nb &)
+
+    change_nb set_stepnumerator()
+    void stepnumerator_set(const change_nb &)
+
+    change_nb set_stepdenominator()
+    void stepdenominator_set(const change_nb &)
+
+    change_nb set_playstop()
+    void playstop_set(const change_nb &)
+}

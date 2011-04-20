@@ -1,0 +1,8 @@
+description
+    Set the Mixer's Pan law to Flattened Sine.
+    
+    This is 0dB in the center, and fades out one side with
+    a Sine curve taper, leaving the other side at 0dB.
+
+script
+    console mixer hey pan curve to flattened sine set

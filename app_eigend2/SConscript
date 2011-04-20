@@ -1,0 +1,50 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+widget_files = Split("""
+    eigend.cpp
+    jucer/StatusComponent.cpp
+    jucer/LoadDialogComponent.cpp
+    jucer/LoadProgressComponent.cpp
+    jucer/SaveDialogComponent.cpp
+    jucer/EditDialogComponent.cpp
+    jucer/AboutComponent.cpp
+    jucer/BugComponent.cpp
+    jucer/AlertComponent1.cpp
+    jucer/AlertComponent2.cpp
+    jucer/HelpComponent.cpp
+    jucer/InfoComponent.cpp
+""")
+
+widget_libs = Split('pic pia piw pie ejuce epython juce')
+
+env.Append(CCFLAGS='-DPI_RELEASE=\\"$PI_RELEASE\\"')
+env.Append(CCFLAGS='-DPI_COLLECTION=\\"$PI_COLLECTION\\"')
+env.PiGuiProgram('eigend',widget_files,libraries=widget_libs,appname='EigenD',package='eigend')
+env.PiPipBinding('eigend_native','eigend.pip',libraries=widget_libs,package='eigend')
+env.PiPythonPackage('0.0',package='eigend')
+
+if env['IS_MACOSX']:
+    env.PiEtc('eigend',Split('postflight-eigend'))
+
+if env['IS_WINDOWS']:
+    env.PiPackageInit('eigend','upgrade_user',as_user=True)

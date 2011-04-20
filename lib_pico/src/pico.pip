@@ -1,0 +1,37 @@
+<<<
+#include <lib_pico/pico_passive.h>
+>>>
+
+
+
+class passive[pico::passive_t]
+{
+    passive(const char *,unsigned)
+    unsigned short get_rawkey(unsigned,unsigned)
+    unsigned short get_strip()
+    unsigned short get_breath()
+    unsigned short get_button(unsigned)
+    bool wait()
+    bool is_kbd_died()
+    void sync()
+    void set_ledcolour(unsigned,unsigned)
+    stdstr debug()
+    void start_calibration_row(unsigned,unsigned)
+    void set_calibration_range(unsigned short,unsigned short)
+    void set_calibration_point(unsigned,unsigned short)
+    void write_calibration_row()
+    void commit_calibration()
+    void clear_calibration()
+    void read_calibration_row()
+    unsigned short get_calibration_min()
+    unsigned short get_calibration_max()
+    unsigned short get_calibration_point(unsigned)
+    unsigned get_temperature()
+    void start()
+    void stop()
+    void start_collecting()
+    void stop_collecting()
+    unsigned collect_count()
+    unsigned short get_collected_key(unsigned, unsigned, unsigned)
+}
+

@@ -1,0 +1,58 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+env.PiResources('eigend','rig','rigs/*')
+env.PiResources('eigend','upgrades','upgrades/*')
+env.PiResources('eigend','audiounit','aupresets/*')
+
+env.PiResources('eigend','Scripts/Interpreter','scripts/Interpreter/*')
+env.PiResources('eigend','Scripts/Pitch Bend','scripts/Pitch Bend/*')
+env.PiResources('eigend','Scripts/Keyboard Layout','scripts/Keyboard Layout/*')
+env.PiResources('eigend','Scripts/Sampler Release','scripts/Sampler Release/*')
+env.PiResources('eigend','Scripts/Octave Key Transposition','scripts/Octave Key Transposition/*')
+env.PiResources('eigend','Scripts/AU Inline FX GUI show','scripts/AU Inline FX GUI show/*')
+env.PiResources('eigend','Scripts/Plug-in','scripts/Plug-in/*')
+env.PiResources('eigend','Scripts/Midi Outputs','scripts/Midi Outputs/*') 
+env.PiResources('eigend','Scripts/Direct Monitoring','scripts/Direct Monitoring/*') 
+env.PiResources('eigend','Scripts/Arranger','scripts/Arranger/*') 
+env.PiResources('eigend','Scripts/Metronome','scripts/Metronome/*') 
+env.PiResources('eigend','Scripts/K Group','scripts/K Group/*') 
+env.PiResources('eigend','Scripts/Pan Curve','scripts/Pan Curve/*') 
+env.PiResources('eigend','Scripts/Strummer','scripts/Strummer/*') 
+
+env.PiResources('eigend','Help','documentation.xml') 
+
+if env['IS_WINDOWS']:
+    env.PiResources('eigend','state','states_win/*')
+    env.PiReleaseFile('eigend','releasenotes.pdf','Release Notes')
+    env.PiReleaseFile('eigend','pico-setup.pdf','Pico Setup Guide')
+else:
+    env.PiResources('eigend','state','states/*')
+
+if env['IS_MACOSX']:
+    env.PiEtc('eigend',Split('global-postflight'))
+    env.PiEtc('eigend',Split('releasenotes.pdf'))
+    env.PiEtc('eigend',Split('pico-setup.pdf'))
+    env.PiEtc('eigend',Split('alpha-setup.pdf'))
+    env.PiEtc('eigend',Split('tau-setup.pdf'))
+    env.PiEtc('eigend',Split('sfpatch'))
+

@@ -1,0 +1,1745 @@
+#include <Python.h>
+#include <structmember.h>
+#include <map>
+#include <climits>
+#include <stdexcept>
+#include <string>
+#include <set>
+
+<<prolog>>
+
+#ifdef __GNUC__
+#pragma GCC visibility push(hidden)
+#endif
+
+namespace
+{
+
+#if PY_VERSION_HEX >= 0x02050000
+    typedef Py_ssize_t pip_ssize_t;
+#else
+    typedef int pip_ssize_t;
+#endif
+
+    static bool pip_usegil = false;
+
+    // unlocks python and relocks it on dtor
+    class unlock_p2c
+    {
+        public:
+            unlock_p2c(bool fake=false): t_(0), f_(fake) { unlock(); }
+            ~unlock_p2c() { lock(); }
+
+            void unlock()
+            {
+                if(f_ || t_) return;
+                t_=PyEval_SaveThread();
+            }
+            void lock() 
+            {
+                if(f_ || !t_) return;
+                PyEval_RestoreThread(t_);
+                t_=0;
+            }
+        private:
+            PyThreadState *t_;
+            bool f_;
+    };
+
+    // locks python and unlocks it on dtor
+    class lock_c2p
+    {
+        public:
+            lock_c2p(PyInterpreterState *interp, bool fake=false): t_(0), gs_(PyGILState_LOCKED), f_(fake)
+            {
+                if(!f_)
+                {
+                    if(!pip_usegil)
+                    {
+                        PyEval_AcquireLock();
+                        t_=PyThreadState_New(interp);
+                        PyEval_ReleaseLock();
+                        PyEval_AcquireThread(t_);
+                        return;
+                    }
+
+                    gs_ = PyGILState_Ensure();
+                }
+             }
+
+            ~lock_c2p()
+            {
+                if(!f_)
+                {
+                    if(!pip_usegil)
+                    {
+                        PyEval_ReleaseThread(t_);
+                        PyEval_AcquireLock();
+                        PyThreadState_Delete(t_);
+                        PyEval_ReleaseLock();
+                        return;
+                    }
+
+                    PyGILState_Release(gs_);
+                }
+            }
+
+        private:
+            PyThreadState *t_;
+            PyGILState_STATE gs_;
+            bool f_;
+    };
+
+    // relocks python inside an unlock_p2c and unlocks afterwards
+    class relock_p2c
+    {
+        public:
+            relock_p2c(unlock_p2c &u): u_(u) { u_.lock(); }
+            ~relock_p2c() { u_.unlock(); }
+        private:
+            unlock_p2c &u_;
+    };
+
+struct pip_err_t: std::exception
+{
+    pip_err_t(const char *x) : what_(x) {}
+    ~pip_err_t() throw() {}
+    const char *what() const throw() { return what_.c_str(); }
+    std::string what_;
+};
+
+static const char *module_docstring = <<moddoc>>;
+
+
+PyObject *tpcvt_uc(void *a)
+{
+    return PyInt_FromLong(*((unsigned char *)a));
+}
+
+PyObject *tpcvt_s(void *a)
+{
+    return PyInt_FromLong(*((short *)a));
+}
+
+PyObject *tpcvt_us(void *a)
+{
+    return PyInt_FromLong(*((unsigned short *)a));
+}
+
+PyObject *tpcvt_i(void *a)
+{
+    return PyInt_FromLong(*((int *)a));
+}
+
+PyObject *tpcvt_ui(void *a)
+{
+    return PyInt_FromLong(*((unsigned int *)a));
+}
+
+PyObject *tpcvt_l(void *a)
+{
+    return PyInt_FromLong(*((long *)a));
+}
+
+PyObject *tpcvt_ul(void *a)
+{
+    return PyLong_FromUnsignedLong(*((unsigned long *)a));
+}
+
+PyObject *tpcvt_ll(void *a)
+{
+    return PyLong_FromLongLong(*((long long *)a));
+}
+
+PyObject *tpcvt_ull(void *a)
+{
+    return PyLong_FromUnsignedLongLong(*((unsigned long long *)a));
+}
+
+PyObject *tpcvt_f(void *a)
+{
+    return PyFloat_FromDouble(*((float *)a));
+}
+
+PyObject *tpcvt_d(void *a)
+{
+    return PyFloat_FromDouble(*((double *)a));
+}
+
+PyObject *tpcvt_b(void *a)
+{
+    return PyBool_FromLong(*((bool *)a));
+}
+
+PyObject *tpcvt_c(void *a)
+{
+    char c = *((const char *)a);
+    return PyString_FromStringAndSize(&c,1);
+}
+
+PyObject *tpcvt_strset(void *a)
+{
+    std::set<std::string> *s = (std::set<std::string> *)a;
+    std::set<std::string>::iterator i;
+
+    PyObject *o = PySet_New(NULL);
+
+    for(i=s->begin(); i!= s->end(); i++)
+    {
+        PySet_Add(o,PyString_FromStringAndSize(i->c_str(),i->length()));
+    }
+
+    return o;
+}
+
+PyObject *tpcvt_stdstr(void *a)
+{
+    std::string *s = (std::string *)a;
+    return PyString_FromStringAndSize(s->c_str(),s->length());
+}
+
+PyObject *tpcvt_str(void *a)
+{
+    return PyString_FromString(*((const char **)a));
+}
+
+PyObject *tpcvt_ustr(void *a)
+{
+    return PyString_FromString((const char *)*((const unsigned char **)a));
+}
+
+PyObject *tpcvt_py(void *a)
+{
+    PyObject *o = *((PyObject **)a);
+    if(o) Py_INCREF(o);
+    return o;
+}
+
+static long fplong(PyObject *o)
+{
+    if(PyInt_Check(o))
+    {
+        return PyInt_AsLong(o);
+    }
+
+    if(PyLong_Check(o))
+    {
+        return PyLong_AsLong(o);
+    }
+
+    if(PyFloat_Check(o))
+    {
+        return (long)PyFloat_AsDouble(o);
+    }
+
+    PyErr_SetString(PyExc_TypeError,"bad type supplied for conversion to unsigned");
+    return 0;
+}
+
+static long long fplonglong(PyObject *o)
+{
+    if(PyInt_Check(o))
+    {
+        return PyInt_AsLong(o);
+    }
+
+    if(PyLong_Check(o))
+    {
+        return PyLong_AsLongLong(o);
+    }
+
+    if(PyFloat_Check(o))
+    {
+        return (long long)PyFloat_AsDouble(o);
+    }
+
+    PyErr_SetString(PyExc_TypeError,"bad type supplied for conversion to unsigned");
+    return 0;
+}
+
+static unsigned long fpulong(PyObject *o)
+{
+    if(PyInt_Check(o))
+    {
+        long v = PyInt_AsLong(o);
+
+        if(v<0)
+        {
+            PyErr_SetString(PyExc_OverflowError,"negative value supplied for conversion to unsigned");
+            return 0;
+        }
+
+        return v;
+    }
+
+    if(PyLong_Check(o))
+    {
+        return PyLong_AsUnsignedLong(o);
+    }
+
+    if(PyFloat_Check(o))
+    {
+		double v = PyFloat_AsDouble(o);
+
+        if(v<0)
+        {
+            PyErr_SetString(PyExc_OverflowError,"negative value supplied for conversion to unsigned");
+            return 0;
+        }
+
+        return (unsigned long)v;
+    }
+
+    PyErr_SetString(PyExc_TypeError,"bad type supplied for conversion to unsigned");
+    return 0;
+}
+
+static unsigned long long fpulonglong(PyObject *o)
+{
+    if(PyInt_Check(o))
+    {
+        long v = PyInt_AsLong(o);
+
+        if(v<0)
+        {
+            PyErr_SetString(PyExc_OverflowError,"negative value supplied for conversion to unsigned");
+            return 0;
+        }
+
+        return v;
+    }
+
+    if(PyLong_Check(o))
+    {
+        return PyLong_AsUnsignedLongLong(o);
+    }
+
+    if(PyFloat_Check(o))
+    {
+        double v = PyFloat_AsDouble(o);
+
+        if(v<0)
+        {
+            PyErr_SetString(PyExc_OverflowError,"negative value supplied for conversion to unsigned");
+            return 0;
+        }
+
+        return (unsigned long long)v;
+    }
+
+    PyErr_SetString(PyExc_TypeError,"bad type supplied for conversion to unsigned");
+    return 0;
+}
+
+static double fpdouble(PyObject *o)
+{
+    if(PyFloat_Check(o))
+    {
+        return PyFloat_AsDouble(o);
+    }
+
+    if(PyInt_Check(o))
+    {
+        return (double)PyInt_AsLong(o);
+    }
+
+    if(PyLong_Check(o))
+    {
+        return (double)PyLong_AsLongLong(o);
+    }
+
+    PyErr_SetString(PyExc_TypeError,"bad type supplied for conversion to double");
+    return 0;
+}
+
+int fpcvt_uc(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    unsigned long val = fpulong(o);
+    if(!PyErr_Occurred())
+    {
+        if(val<=UCHAR_MAX) { *((unsigned char *)a) = (unsigned char)val; return 1; }
+        else PyErr_SetString(PyExc_TypeError,"expected small int");
+    }
+    return 0;
+}
+
+int fpcvt_s(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    long val = fplong(o);
+    if(!PyErr_Occurred())
+    {
+        if(val>=SHRT_MIN && val<=SHRT_MAX) { *((short *)a) = (short)val; return 1; }
+        else PyErr_SetString(PyExc_TypeError,"expected int");
+    }
+    return 0;
+}
+
+int fpcvt_us(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    unsigned long val = fpulong(o);
+    if(!PyErr_Occurred())
+    {
+        if(val<=USHRT_MAX) { *((unsigned short *)a) = (unsigned short)val; return 1; }
+        else PyErr_SetString(PyExc_TypeError,"expected int");
+    }
+    return 0;
+}
+
+int fpcvt_i(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    long val = fplong(o);
+    if(!PyErr_Occurred())
+    {
+        if(val>=INT_MIN && val<=INT_MAX) { *((int *)a) = (int)val; return 1; }
+        else PyErr_SetString(PyExc_TypeError,"expected int");
+    }
+    return 0;
+}
+
+int fpcvt_ui(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    unsigned long val = fpulong(o);
+    if(!PyErr_Occurred())
+    {
+        if(val<=UINT_MAX) { *((unsigned int *)a) = (unsigned int)val; return 1; }
+        else PyErr_SetString(PyExc_TypeError,"expected int");
+    }
+    return 0;
+}
+
+int fpcvt_l(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    long val = fplong(o);
+    if(!PyErr_Occurred()) { *((long *)a) = (long)val; return 1; }
+    return 0;
+}
+
+int fpcvt_ul(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    unsigned long val = fpulong(o);
+    if(!PyErr_Occurred()) { *((unsigned long *)a) = (unsigned long)val; return 1; }
+    return 0;
+}
+
+int fpcvt_ll(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    long long val = fplonglong(o);
+    if(!PyErr_Occurred()) { *((long long *)a) = (long long)val; return 1; }
+    return 0;
+}
+
+int fpcvt_ull(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    unsigned long long val = fpulonglong(o);
+    if(!PyErr_Occurred()) { *((unsigned long long *)a) = (unsigned long long)val; return 1; }
+    return 0;
+}
+
+int fpcvt_f(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    double val = fpdouble(o);
+    if(!PyErr_Occurred()) { *((float *)a) = (float)val; return 1; }
+    return 0;
+}
+
+int fpcvt_d(PyObject *o, void *a)
+{
+    PyErr_Clear();
+    double val = fpdouble(o);
+    if(!PyErr_Occurred()) { *((double *)a) = (double)val; return 1; }
+    return 0;
+}
+
+int fpcvt_b(PyObject *o, void *a)
+{
+    if(o==Py_True) { *((bool *)a)=true; return 1; }
+    if(o==Py_False) { *((bool *)a)=false; return 1; }
+    PyErr_SetString(PyExc_TypeError,"expected bool");
+    return 0;
+}
+
+int fpcvt_c(PyObject *o, void *a)
+{
+    char *s; pip_ssize_t l;
+    if(PyString_AsStringAndSize(o,&s,&l)>=0)
+    {
+        if(l==1)
+        {
+            *((char *)a)=s[0];
+            return 1;
+        }
+
+        PyErr_SetString(PyExc_TypeError,"expected character");
+    }
+    return 0;
+}
+
+int fpcvt_stdstr(PyObject *o, void *a)
+{
+    char *s; pip_ssize_t l;
+    if(PyString_AsStringAndSize(o,&s,&l)>=0)
+    {
+        *((std::string *)a) = std::string(s,l);
+        return 1;
+    }
+    return 0;
+}
+
+int fpcvt_strset(PyObject *o, void *a)
+{
+    std::set<std::string> *s = (std::set<std::string> *)a;
+    Py_ssize_t pos = 0;
+    PyObject *e;
+
+    s->clear();
+
+    while(_PySet_Next(o,&pos,&e))
+    {
+        char *ss; pip_ssize_t sl;
+
+        if(PyString_AsStringAndSize(e,&ss,&sl)<0)
+        {
+            return 0;
+        }
+
+        s->insert(std::string(ss,sl));
+    }
+
+    return 1;
+}
+
+int fpcvt_str(PyObject *o, void *a)
+{
+    const char *s = PyString_AsString(o);
+    if(s) { *((const char **)a) = s; return 1; }
+    return 0;
+}
+
+int fpcvt_ustr(PyObject *o, void *a)
+{
+    const unsigned char *s = (unsigned char *)PyString_AsString(o);
+    if(s) { *((const unsigned char **)a) = s; return 1; }
+    return 0;
+}
+
+int fpcvt_py(PyObject *o, void *a)
+{
+    if(o) Py_INCREF(o);
+    *((PyObject **)a) = o; return 1;
+}
+
+<<loop(classes){
+
+<<ifdef(implname){typedef <<implname>> <<name>>_type_; }ifdef>>
+<<ifndef(implname){typedef <<name>> <<name>>_type_; }ifndef>>
+
+<<ifndef_imported(imported){ <<ifndef(base){
+static std::map<<<name>>_type_ *, PyObject *> <<name>>_wrapped_;
+}ifndef>> }ifndef_imported>>
+
+
+struct <<name>>_dispatch_
+{
+    PyTypeObject *type;
+    PyObject *(*wrap)(<<name>>_type_ *, bool owned);
+    PyObject *(*wrapcopy)(<<name>>_type_ *);
+    <<name>>_type_ *(*unwrap)(PyObject *);
+    void (*insert)(const std::pair< <<name>>_type_ *, PyObject * > &);
+    void (*erase)(<<name>>_type_ *);
+    PyObject *(*find)(<<name>>_type_ *);
+};
+
+struct <<name>>_dispatch_ *<<name>>_dispatcher_;
+
+}loop>>
+
+<<loop(classes){
+
+int fpcvt_<<name>>(PyObject *o, void *a)
+{
+    <<name>>_type_ *object;
+    if(o == Py_None)
+    {
+        *((<<name>>_type_ **)a) = 0;
+        return 1;
+    }
+    object = <<name>>_dispatcher_->unwrap(o);
+    *((<<name>>_type_ **)a) = object;
+    return object?1:0;
+}
+
+#define fpcvt_<<name>>_copy fpcvt_<<name>>
+
+PyObject *tpcvt_<<name>>(void *a)
+{
+    <<name>>_type_ *o = *((<<name>>_type_ **)a);
+    return <<name>>_dispatcher_->wrap(o,false);
+}
+
+PyObject *tpcvt_<<name>>_copy(void *a)
+{
+    <<name>>_type_ *o = (<<name>>_type_ *)a;
+    return <<name>>_dispatcher_->wrapcopy(o);
+}
+
+}loop>>
+
+<<loop_classes(classes){ <<ifndef_imported(imported){
+
+struct <<name>>_object_ {
+    PyObject_HEAD
+    <<root>>_type_ *object;
+    unsigned short wrapped;
+    unsigned short locked;
+    bool owned;
+};
+
+
+struct <<name>>_wrapper_: public <<name>>_type_ <<ifdef(isabstract){ // ABSTRACT }ifdef>>
+{
+
+    static void __deleter__(<<name>>_type_ *o)
+    {
+        delete o;
+    }
+
+/*
+    void init_cache()
+    {
+    <<loop_handlers(handlers){
+        cache_<<index>>_ = 0;
+    }loop_handlers>>
+    }
+*/
+
+/*
+    void clear_cache()
+    {
+    <<loop_handlers(handlers){
+        if(cache_<<index>>_)
+        {
+            Py_DECREF(cache_<<index>>_);
+            cache_<<index>>_ = 0;
+        }
+    }loop_handlers>>
+    }
+*/
+
+<<loop_ctors(ctors){
+
+    <<parent.name>>_wrapper_( PyObject *o, PyInterpreterState *i <<loop2(args){ ,<<rtype>> a<<index>> }loop2>> ): <<parent.name>>_type_( <<loop2(args){ <<comma>>a<<index>>}loop2>> ), object(o), _interp(i)
+    {
+        //init_cache();
+    }
+
+}loop_ctors>>
+
+    void __safe_dtors()
+    {
+        <<loop_dtors(dtors){ <<body>> }loop_dtors>>
+    }
+
+    virtual ~<<name>>_wrapper_()
+    {
+        //clear_cache();
+
+        //PyThreadState *thread=PyEval_SaveThread();
+
+        try
+        {
+            __safe_dtors();
+        }
+        catch(...)
+        {
+        }
+
+        //PyEval_RestoreThread(thread);
+    }
+
+<<loop_handlers(handlers){
+    //PyObject *cache_<<index>>_;
+ 
+    <<returns.rtype>> <<name>>( <<loop2(args){ <<comma>><<rtype>> a<<index>> }loop2>> )
+    {
+        lock_c2p lock(_interp<<ifdeflock(flags.locked){,true}ifdeflock>>);
+
+        //PyObject *method = cache_<<index>>_;
+        PyObject *method = 0;
+
+        if(!method)
+        {
+            method = PyObject_GetAttrString(object,"<<name>>");
+
+            if(!method)
+            {
+                throw pip_err_t("pure virtual called");
+            }
+
+            //cache_<<index>>_ = method;
+        }
+        else
+        {
+        }
+
+        PyObject *result = PyObject_CallFunction(method,(char *)"(<<loop2(args){O&}loop2>>)" <<loop2(args){,tpcvt_<<cvt>>,&a<<index>>}loop2>>);
+        //printf("<<name>> before decref %ld\n",method->ob_refcnt); fflush(stdout);
+        Py_DECREF(method);
+        //printf("<<name>> after decref\n"); fflush(stdout);
+
+        if(!result)
+        {
+            PyErr_Print();
+            throw pip_err_t("call problem");
+        }
+
+        <<ifdefxcf(returns.isvoid){
+            Py_DECREF(result);
+            return;
+        }ifdefxcf>>
+
+        <<ifndefxcf(returns.isvoid){
+        {
+            <<returns.ctype>> rptr;
+
+            if(!fpcvt_<<returns.cvt>>(result,&rptr))
+            {
+                throw pip_err_t("wrong type result converting <<returns.cvt>>");
+            }
+
+            try
+            {
+                {   unlock_p2c unlock;
+                    {
+                        <<returns.rtype>> rcopy(<<returns.c2r>>rptr);
+                        {   relock_p2c relock(unlock);
+                            Py_DECREF(result);
+                            return rcopy;
+                        }
+                    }
+                }
+            }
+            catch(...)
+            {
+                Py_DECREF(result);
+                throw;
+            }
+        }
+
+        }ifndefxcf>>
+    }
+
+}loop_handlers>>
+
+<<ifdefstr(__str__){
+    // special method __str__ returning <<__str__.returns.ctype>> doc <<__str__.docstring>>
+
+    <<__str__.returns.rtype>> special_str_call_()
+    {
+        return
+            <<ifndefptr(__str__.flags.ptr){ <<__str__.implname>> }ifndefptr>>
+            <<ifdefptr(__str__.flags.ptr){ (operator->())-><<__str__.implname>> }ifdefptr>>
+                ();
+    }
+
+    static PyObject *special_str_method_(<<name>>_object_ *self)
+    {
+        <<name>>_wrapper_ *o = (<<name>>_wrapper_ *)(self->object);
+
+        if(!o)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"null <<name>> c++ object, probably forgot to __init__");
+            return 0;
+        }
+
+        try
+        {
+            PyObject *ro;
+            {   unlock_p2c unlock <<ifdeflock(__str__.flags.locked){(true)}ifdeflock>>;
+                {   
+                    <<__str__.returns.rtype>> r = o->special_str_call_();
+                    {   relock_p2c relock(unlock);
+                        ro = tpcvt_<<__str__.returns.cvt>>((void *)&r);
+                    }
+                } // r dtor runs here
+            }
+
+            return ro;
+        }
+        catch(const std::exception &e)
+        {
+            PyErr_SetString(PyExc_RuntimeError,e.what());
+        }
+        catch(...)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"c++ exception in <<name>>::__str__");
+        }
+
+        return 0;
+    }
+
+}ifdefstr>>
+
+<<ifdefcmp(__cmp__){
+    // special method __cmp__ returning int doc <<__cmp__.docstring>>
+
+    int special_cmp_call_(<<__cmp__.arg.rtype>> a)
+    {
+        <<__cmp__.returns.rtype>> r =
+            <<ifndefptr(__cmp__.flags.ptr){ <<__cmp__.implname>> }ifndefptr>>
+            <<ifdefptr(__cmp__.flags.ptr){ (operator->())-><<__cmp__.implname>> }ifdefptr>>
+                (a);
+
+        if(r<0) return -1;
+        if(r>0) return 1;
+        return 0;
+    }
+
+    static int special_cmp_method_(<<name>>_object_ *self, <<name>>_object_ *other)
+    {
+        <<name>>_wrapper_ *o = (<<name>>_wrapper_ *)(self->object);
+        PyObject *oo = <<name>>_dispatcher_->wrap(other->object,false);
+        <<__cmp__.arg.ctype>> ooa;
+
+        if(!o || !oo)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"null <<name>> c++ object in __cmp__, probably forgot to __init__");
+            Py_DECREF(oo);
+            return -1;
+        }
+
+        if(!fpcvt_<<__cmp__.arg.cvt>>(oo,&ooa))
+        {
+            Py_DECREF(oo);
+            return -1;
+        }
+
+        try
+        {
+            {   unlock_p2c unlock <<ifdeflock(__cmp__.flags.locked){(true)}ifdeflock>>;
+                int r = o->special_cmp_call_(<<__cmp__.arg.c2r>>ooa);
+                {   relock_p2c relock(unlock);
+                    Py_DECREF(oo);
+                    return r;
+                }
+            }
+        }
+        catch(const std::exception &e)
+        {
+            PyErr_SetString(PyExc_RuntimeError,e.what());
+            Py_DECREF(oo);
+            return -1;
+        }
+        catch(...)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"c++ exception in <<name>>::__cmp__");
+            Py_DECREF(oo);
+            return -1;
+        }
+    }
+
+}ifdefcmp>>
+
+<<ifdefhash(__hash__){
+    // special method __hash__ returning long doc <<__hash__.docstring>>
+
+    long special_hash_call_()
+    {
+        return
+            <<ifndefptr(__hash__.flags.ptr){ <<__hash__.implname>> }ifndefptr>>
+            <<ifdefptr(__hash__.flags.ptr){ (operator->())-><<__hash__.implname>> }ifdefptr>>
+                ();
+    }
+
+    static long special_hash_method_(<<name>>_object_ *self)
+    {
+        <<name>>_wrapper_ *o = (<<name>>_wrapper_ *)(self->object);
+
+        if(!o)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"null <<name>> c++ object, probably forgot to __init__");
+            return 0;
+        }
+
+        try
+        {
+            {   unlock_p2c unlock  <<ifdeflock(__hash__.flags.locked){(true)}ifdeflock>>;
+                long r = o->special_hash_call_();
+                return r;
+            }
+        }
+        catch(const std::exception &e)
+        {
+            PyErr_SetString(PyExc_RuntimeError,e.what());
+        }
+        catch(...)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"c++ exception in <<name>>::__hash__");
+        }
+
+        return 0;
+    }
+
+}ifdefhash>>
+
+<<ifdefrepr(__repr__){
+    // special method __repr__ returning <<__repr__.returns.ctype>> doc <<__repr__.docstring>>
+
+    <<__repr__.returns.rtype>> special_repr_call_()
+    {
+        return
+            <<ifndefptr(__repr__.flags.ptr){ <<__repr__.implname>> }ifndefptr>>
+            <<ifdefptr(__repr__.flags.ptr){ (operator->())-><<__repr__.implname>> }ifdefptr>>
+                ();
+    }
+
+    static PyObject *special_repr_method_(<<name>>_object_ *self)
+    {
+        <<name>>_wrapper_ *o = (<<name>>_wrapper_ *)(self->object);
+
+        if(!o)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"null <<name>> c++ object, probably forgot to __init__");
+            return 0;
+        }
+
+        try
+        {
+            PyObject *ro;
+            {   unlock_p2c unlock  <<ifdeflock(__repr__.flags.locked){(true)}ifdeflock>>;
+                {
+                    <<__repr__.returns.rtype>> r = o->special_repr_call_();
+                    {   relock_p2c relock(unlock);
+                        ro = tpcvt_<<__repr__.returns.cvt>>((void *)&r);
+                    }
+                } // r dtor runs here
+            } 
+
+            return ro;
+        }
+        catch(const std::exception &e)
+        {
+            PyErr_SetString(PyExc_RuntimeError,e.what());
+        }
+        catch(...)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"c++ exception in <<name>>::__repr__");
+        }
+
+        return 0;
+    }
+
+}ifdefrepr>>
+
+<<ifdefgc(isgc){
+
+    static int gc_traverse_method_(<<name>>_object_ *self, visitproc visit, void *arg)
+    {
+        <<name>>_wrapper_ *o = (<<name>>_wrapper_ *)(self->object);
+
+        if(!o)
+        {
+            return 0;
+        }
+
+        return o->gc_traverse((void *)visit,(void *)arg);
+    }
+
+    static int gc_clear_method_(<<name>>_object_ *self)
+    {
+        <<name>>_wrapper_ *o = (<<name>>_wrapper_ *)(self->object);
+
+        if(!o)
+        {
+            return 0;
+        }
+
+        {   unlock_p2c unlock(false);
+            return o->gc_clear();
+        }
+    }
+
+}ifdefgc>>
+
+<<ifdefcall(__call__){
+    // special method __call__ returning <<__call__.returns.ctype>> doc <<__call__.docstring>>
+
+    <<__call__.returns.rtype>> special_call_call_(<<loop2(__call__.args){ <<comma>><<rtype>> a<<index>> }loop2>>)
+    {
+        return
+            <<ifndefptr(__call__.flags.ptr){ <<__call__.implname>> }ifndefptr>>
+            <<ifdefptr(__call__.flags.ptr){ (operator->())-><<__call__.implname>> }ifdefptr>>
+                (<<loop2(__call__.args){ <<comma>>a<<index>> }loop2>>);
+    }
+
+    static PyObject *special_call_method_(<<name>>_object_ *self, PyObject *args, PyObject *kwds)
+    {
+        if(kwds)
+        {
+            PyErr_SetString(PyExc_TypeError,"<<name>>::__call__ doesn't support keywords");
+            return 0;
+        }
+
+        <<loop_args(__call__.args){ <<ctype>> a<<index>>; }loop_args>>
+
+        <<name>>_wrapper_ *o = (<<name>>_wrapper_ *)(self->object);
+
+        if(!o)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"null <<name>> c++ object, probably forgot to __init__");
+            return 0;
+        }
+
+        if(!PyArg_ParseTuple(args,"<<loop1(__call__.args){O&}loop1>>" <<loop_args(__call__.args){ ,fpcvt_<<cvt>>,&a<<index>> }loop_args>>))
+        {
+            return 0;
+        }
+
+        try
+        {
+
+        <<ifdef(__call__.returns.isvoid){
+            {   unlock_p2c unlock  <<ifdeflock(__call__.flags.locked){(true)}ifdeflock>>;
+                o->special_call_call_ (<<loop1(__call__.args){<<comma>><<c2r>>a<<index>>}loop1>> );
+                {   relock_p2c relock(unlock);
+                    Py_INCREF(Py_None);
+                    return Py_None;
+                }
+            }
+
+        }ifdef>>
+
+        <<ifndef(__call__.returns.isvoid){
+
+            PyObject *ro;
+
+            {   unlock_p2c unlock  <<ifdeflock(__call__.flags.locked){(true)}ifdeflock>>;
+                {
+                    <<__call__.returns.rtype>> r = o->special_call_call_ (<<loop1(__call__.args){<<comma>><<c2r>>a<<index>> }loop1>> );
+                    {   relock_p2c relock(unlock);
+                        ro = tpcvt_<<__call__.returns.cvt>>((void *)&r);
+                    }
+                } // r dtor runs here
+            }
+
+            return ro;
+
+        }ifndef>>
+
+        }
+        catch(const std::exception &e)
+        {
+            PyErr_SetString(PyExc_RuntimeError,e.what());
+        }
+        catch(...)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"c++ exception in <<name>>::__call__");
+        }
+
+        return 0;
+    }
+}ifdefcall>>
+
+<<loop_methods(methods){
+
+    <<returns.rtype>> <<name>>_call_(bool owned <<loop2(args){,<<rtype>> a<<index>> }loop2>>)
+    {
+        if(owned)
+        {
+            <<ifndefxx(flags.ptr){
+                <<ifdef(ispure){
+                    throw pip_err_t("calling pure virtual method <<parent.name>>::<<name>>");
+                }ifdef>>
+                <<ifndef(ispure){
+                    return <<parent.name>>_type_::<<name>>(<<loop2(args){ <<comma>>a<<index>> }loop2>>);
+                }ifndef>>
+            }ifndefxx>>
+            <<ifdefxx(flags.ptr){
+                return (operator->())-><<name>>(<<loop2(args){ <<comma>>a<<index>> }loop2>>);
+            }ifdefxx>>
+        }
+
+        return
+            <<ifndefxx(flags.ptr){
+                <<name>>
+            }ifndefxx>>
+            <<ifdefxx(flags.ptr){
+                (operator->())-><<name>>
+            }ifdefxx>>
+                (<<loop2(args){ <<comma>>a<<index>> }loop2>>);
+    }
+
+    static PyObject *<<name>>_method_(<<parent.name>>_object_ *self, PyObject *args)
+    {
+        <<loop_args(args){ <<ctype>> a<<index>>; }loop_args>>
+
+        <<parent.name>>_wrapper_ *o = (<<parent.name>>_wrapper_ *)(self->object);
+
+        if(!o)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"null <<parent.name>> c++ object, probably forgot to __init__");
+            return 0;
+        }
+
+        if(!PyArg_ParseTuple(args,"<<loop1(args){O&}loop1>>" <<loop_args(args){ ,fpcvt_<<cvt>>,&a<<index>> }loop_args>>))
+        {
+            return 0;
+        }
+
+        try
+        {
+
+        <<ifdef(returns.isvoid){
+            {   unlock_p2c unlock <<ifdeflock(flags.locked){(true)}ifdeflock>>;
+                o-><<name>>_call_ (self->owned <<loop1(args){,<<c2r>>a<<index>>}loop1>> );
+                {   relock_p2c relock(unlock);
+                    Py_INCREF(Py_None);
+                    return Py_None;
+                }
+            }
+        }ifdef>>
+
+        <<ifndef(returns.isvoid){
+            PyObject *ro;
+
+            {   unlock_p2c unlock  <<ifdeflock(flags.locked){(true)}ifdeflock>>;
+                {
+                    <<returns.rtype>> r = o-><<name>>_call_ (self->owned <<loop1(args){,<<c2r>>a<<index>> }loop1>> );
+                    {   relock_p2c relock(unlock);
+                        ro = tpcvt_<<returns.cvt>>((void *)&r);
+                    }
+                } // r dtor runs here
+            }
+
+            return ro;
+
+        }ifndef>>
+
+        }
+        catch(const std::exception &e)
+        {
+            PyErr_SetString(PyExc_RuntimeError,e.what());
+        }
+        catch(...)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"c++ exception in <<parent.name>>::<<name>>");
+        }
+
+        return 0;
+    }
+
+}loop_methods>>
+
+<<loop_inlines(inlines){
+
+    static PyObject *_method_inner_<<name>>(<<parent.name>>_object_ *_self_, PyObject *<<args>>)
+    {
+        <<parent.name>>_type_ *<<self>> = _self_->object;
+        <<body>>
+    }
+
+    static PyObject *_method_<<name>>(<<parent.name>>_object_ *self, PyObject *args)
+    {
+        try
+        {
+            PyObject *rv = _method_inner_<<name>>(self,args);
+            return rv;
+        }
+        catch(const std::exception &e)
+        {
+            PyErr_SetString(PyExc_RuntimeError,e.what());
+        }
+        catch(...)
+        {
+            PyErr_SetString(PyExc_RuntimeError,"c++ exception in <<parent.name>>::<<name>>");
+        }
+
+        return 0;
+    }
+
+}loop_inlines>>
+
+    static PyObject *_method_lock(<<name>>_object_ *self, PyObject *args)
+    {
+        if(!PyArg_ParseTuple(args,""))
+        {
+            return 0;
+        }
+
+        if(self->locked++ == 0)
+        {
+            Py_INCREF(self);
+        }
+
+        //Py_INCREF(self);
+        //return (PyObject *)self;
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    static PyObject *_method_unlock(<<name>>_object_ *self, PyObject *args)
+    {
+        if(!PyArg_ParseTuple(args,""))
+        {
+            return 0;
+        }
+
+        if(--self->locked == 0)
+        {
+            Py_DECREF(self);
+        }
+
+        //Py_INCREF(self);
+        //return (PyObject *)self;
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    PyObject *object;
+    PyInterpreterState *_interp;
+};
+
+static void <<name>>_delete_(<<name>>_object_* self)
+{
+    if(self->object)
+    {
+        if(self->owned)
+        {
+            <<root>>_dispatcher_->erase(self->object);
+
+            try
+            {
+                if(self->wrapped)
+                {
+                    {   unlock_p2c unlock;
+                        delete (<<name>>_wrapper_ *)self->object;
+                    }
+                }
+                else
+                {
+                    {   unlock_p2c unlock;
+                        <<name>>_wrapper_::__deleter__((<<name>>_type_ *)self->object);
+                    }
+                }
+            }
+            catch(...)
+            {
+            }
+        }
+
+        self->object = 0;
+    }
+}
+
+static void <<name>>_dealloc_(<<name>>_object_* self)
+{
+    <<ifdefgc(isgc){PyObject_GC_UnTrack((PyObject *)self); }ifdefgc>>
+    <<name>>_delete_(self);
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static PyObject * <<name>>_new_(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    <<name>>_object_ *self;
+
+    if(!(self = (<<name>>_object_ *)type->tp_alloc(type, 0)))
+    {
+        return 0;
+    }
+
+    self->object=0;
+    self->locked=0;
+    self->wrapped=0;
+    self->owned=true;
+    return (PyObject *)self;
+}
+
+static int <<name>>_init_(<<name>>_object_ *self, PyObject *args, PyObject *kwds)
+{
+    <<name>>_delete_(self);
+
+    <<loop_ctors(ctors){
+
+    {
+        <<loop_args(args){ <<ctype>> a<<index>>; }loop_args>>
+
+        if(PyArg_ParseTuple(args,"<<loop2(args){O&}loop2>>" <<loop_args(args){,fpcvt_<<cvt>>,&a<<index>>}loop_args>>))
+        {
+            try
+            {
+                PyInterpreterState *interp = PyThreadState_Get()->interp;
+                {   unlock_p2c unlock;
+                    self->object = new <<parent.name>>_wrapper_((PyObject *)self,interp <<loop2(args){,<<c2r>>a<<index>>}loop2>>);
+                }
+            }
+            catch(const std::exception &e)
+            {
+                PyErr_SetString(PyExc_RuntimeError,e.what());
+                return -1;
+            }
+            catch(...)
+            {
+                PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception constructing <<parent.name>>");
+                return -1;
+            }
+
+            self->wrapped=1;
+            self->locked=0;
+            self->owned=true;
+            <<parent.root>>_dispatcher_->insert(std::make_pair(self->object,(PyObject *)self));
+            return 0;
+        }
+    }
+
+    }loop_ctors>>
+
+    PyErr_SetString(PyExc_RuntimeError,"<<name>> invalid arguments");
+    return -1;
+
+}
+
+<<loop_methods(methods){
+static const char *<<parent.name>>_<<name>>_docstring_ = <<docstring>>;
+}loop_methods>>
+
+<<loop_inlines(inlines){
+static const char *<<parent.name>>_<<name>>_docstring_ = <<docstring>>;
+}loop_inlines>>
+
+static PyMethodDef <<name>>_methods_[] = {
+    <<loop_methods(methods){
+        { "<<name>>",(PyCFunction)<<parent.name>>_wrapper_::<<name>>_method_,METH_VARARGS,(char *)<<parent.name>>_<<name>>_docstring_ },
+    }loop_methods>>
+    <<loop_inlines(inlines){
+        { "<<name>>",(PyCFunction)<<parent.name>>_wrapper_::_method_<<name>>,METH_VARARGS,(char *)<<parent.name>>_<<name>>_docstring_ },
+    }loop_inlines>>
+        { "py_lock",(PyCFunction)<<name>>_wrapper_::_method_lock,METH_VARARGS,"increment python reference count" },
+        { "py_unlock",(PyCFunction)<<name>>_wrapper_::_method_unlock,METH_VARARGS,"decrement python reference count" },
+    {NULL}  /* Sentinel */
+};
+
+static const char *<<name>>_docstring_ = <<docstring>>;
+
+PyTypeObject <<name>>_typeobject_ = 
+{
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "<<parent.module>>.<<name>>",/*tp_name*/
+    sizeof(<<name>>_object_),          /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor)<<name>>_dealloc_, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    <<ifdefcmp(__cmp__){ (cmpfunc)<<name>>_wrapper_::special_cmp_method_ }ifdefcmp>> <<ifndefcmp(__cmp__){ 0 }ifndefcmp>>, /* tp_cmp */
+    <<ifdefrepr(__repr__){ (reprfunc)<<name>>_wrapper_::special_repr_method_ }ifdefrepr>> <<ifndefrepr(__repr__){ 0 }ifndefrepr>>, /* tp_repr */
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    <<ifdefhash(__hash__){ (hashfunc)<<name>>_wrapper_::special_hash_method_ }ifdefhash>> <<ifndefhash(__hash__){ 0 }ifndefhash>>, /* tp_hash */
+    <<ifdefcall(__call__){ (ternaryfunc)<<name>>_wrapper_::special_call_method_ }ifdefcall>> <<ifndefcall(__call__){ 0 }ifndefcall>>, /* tp_call */
+    <<ifdefstr(__str__){ (reprfunc)<<name>>_wrapper_::special_str_method_ }ifdefstr>> <<ifndefstr(__str__){ 0 }ifndefstr>>, /* tp_str */
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE <<ifdefgc(isgc){| Py_TPFLAGS_HAVE_GC }ifdefgc>>, /*tp_flags*/
+    (char *)<<name>>_docstring_,       /* tp_doc */
+    <<ifdefgc(isgc){(traverseproc)<<name>>_wrapper_::gc_traverse_method_ }ifdefgc>> <<ifndefgc(isgc){0 }ifndefgc>>,   /* tp_traverse */
+    <<ifdefgc(isgc){(inquiry)<<name>>_wrapper_::gc_clear_method_ }ifdefgc>> <<ifndefgc(isgc){0 }ifndefgc>>,           /* tp_clear */
+    0,                         /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */
+    <<name>>_methods_,         /* tp_methods */
+    0,                         /* tp_members */
+    0,                         /* tp_getset */
+    0,                         /* tp_base fixed up dynamically */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    (initproc)<<name>>_init_,  /* tp_init */
+    0,                         /* tp_alloc */
+    <<name>>_new_,             /* tp_new */
+};
+
+PyObject *<<name>>_wrapcopy_(<<name>>_type_ *o)
+{
+    if(!o)
+    {
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    <<ifdef(isabstract){
+        PyErr_SetString(PyExc_RuntimeError,"passing abstract class by value");
+        return 0;
+    }ifdef>>
+
+    <<ifndef_isabstract(isabstract){
+        <<ifndef_iscopyable(iscopyable){
+            PyErr_SetString(PyExc_RuntimeError,"passing non copyable class by value");
+            return 0;
+        }ifndef_iscopyable>>
+
+        <<ifdef_iscopyable(iscopyable){
+
+            <<name>>_object_ *obj = 
+                <<ifndefgc(isgc){PyObject_NEW(<<name>>_object_, <<name>>_dispatcher_->type); }ifndefgc>>
+                <<ifdefgc(isgc){PyObject_GC_New(<<name>>_object_, <<name>>_dispatcher_->type); }ifdefgc>>
+
+            if(!obj)
+            {
+                return 0;
+            }
+
+            <<ifdefgc(isgc){PyObject_GC_Track((PyObject *)obj); }ifdefgc>>
+
+            obj->wrapped=0;
+            obj->locked=0;
+            obj->owned=true;
+
+            try
+            {
+                {   unlock_p2c unlock;
+                    obj->object = new <<name>>_type_(*o);
+                }
+
+                try
+                {
+                    <<root>>_dispatcher_->insert(std::make_pair(obj->object,(PyObject *)obj));
+                }
+                catch(...)
+                {
+                }
+
+                return (PyObject *)obj;
+            }
+            catch(const std::exception &e)
+            {
+                Py_DECREF(obj);
+                PyErr_SetString(PyExc_RuntimeError,e.what());
+                return 0;
+            }
+            catch(...)
+            {
+                Py_DECREF(obj);
+                PyErr_SetString(PyExc_RuntimeError,"c++ exception copying <<name>>");
+                return 0;
+            }
+        }ifdef_iscopyable>>
+
+    }ifndef_isabstract>>
+}
+
+PyObject *<<name>>_wrap_(<<name>>_type_ *o, bool owned)
+{
+    if(!o)
+    {
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    PyObject *po = <<root>>_dispatcher_->find(o);
+    if(po != 0)
+    {
+        Py_INCREF(po);
+        return po;
+    }
+
+    <<name>>_object_ *self = 
+        <<ifndefgc(isgc){PyObject_NEW(<<name>>_object_, &<<name>>_typeobject_); }ifndefgc>>
+        <<ifdefgc(isgc){PyObject_GC_New(<<name>>_object_, &<<name>>_typeobject_); }ifdefgc>>
+
+    if(!self) return 0;
+
+    <<ifdefgc(isgc){PyObject_GC_Track((PyObject *)self); }ifdefgc>>
+
+    self->object = o;
+    self->wrapped = 0;
+    self->locked = 0;
+    self->owned = owned;
+
+    if(self->owned)
+    {
+        <<root>>_dispatcher_->insert(std::make_pair(self->object,(PyObject *)self));
+    }
+
+    return (PyObject *)self;
+}
+
+<<name>>_type_ *<<name>>_unwrap_(PyObject *o)
+{
+    if(o == Py_None)
+    {
+        return 0;
+    }
+
+    if(!PyType_IsSubtype(o->ob_type, &<<name>>_typeobject_))
+    {
+        PyErr_SetString(PyExc_TypeError,"expected <<name>> object");
+        return 0;
+    }
+
+    <<name>>_type_ *object = static_cast<<<name>>_type_ *>(((<<name>>_object_ *)o)->object);
+
+    if(!object)
+    {
+        PyErr_SetString(PyExc_TypeError,"null <<name>> object in unwrap");
+        return 0;
+    }
+
+    return object;
+}
+
+void <<name>>_insert_(const std::pair< <<name>>_type_ *, PyObject *> &p)
+{
+
+<<ifdef(base){
+    <<root>>_dispatcher_->insert(p);
+}ifdef>>
+
+<<ifndef(base){
+    <<name>>_wrapped_.insert(p);
+}ifndef>>
+
+}
+
+void <<name>>_erase_(<<name>>_type_ *p)
+{
+
+<<ifdef(base){
+    <<root>>_dispatcher_->erase(p);
+}ifdef>>
+
+<<ifndef(base){
+    <<name>>_wrapped_.erase(p);
+}ifndef>>
+
+}
+
+PyObject * <<name>>_find_(<<name>>_type_ *p)
+{
+
+<<ifdef(base){
+    return <<root>>_dispatcher_->find(p);
+}ifdef>>
+
+<<ifndef(base){
+    PyObject *ret = 0;
+    std::map< <<name>>_type_ *, PyObject *>::iterator where = <<name>>_wrapped_.find(p);
+    if(where != <<name>>_wrapped_.end())
+    {
+        ret = where->second;
+    }
+    return ret;
+}ifndef>>
+
+}
+
+static struct <<name>>_dispatch_ <<name>>_realdispatcher_ =
+{
+    &<<name>>_typeobject_,
+    <<name>>_wrap_,
+    <<name>>_wrapcopy_,
+    <<name>>_unwrap_,
+    <<name>>_insert_,
+    <<name>>_erase_,
+    <<name>>_find_
+};
+
+}ifndef_imported>> }loop_classes>>
+
+<<loop_functions(functions){
+static const char *module_method_<<name>>_docstring_ = <<docstring>>;
+
+static PyObject *module_method_<<name>>(PyObject *self, PyObject *args)
+{
+    <<loop_args(args){ <<ctype>> a<<index>>; }loop_args>>
+
+    if(!PyArg_ParseTuple(args,"<<loop1(args){O&}loop1>>" <<loop_args(args){,fpcvt_<<cvt>>,&a<<index>>}loop_args>>))
+    {
+        return 0;
+    }
+
+    try
+    {
+
+    <<ifdef(returns.isvoid){
+        {   unlock_p2c unlock<<ifdeflock(flags.locked){(true)}ifdeflock>>;
+            <<ifdef_implname(implname){<<implname>>}ifdef_implname>> <<ifndef_implname(implname){<<name>>}ifndef_implname>> ( <<loop1(args){ <<comma>><<c2r>>a<<index>> }loop1>> );
+        }
+        Py_INCREF(Py_None);
+        return Py_None;
+    }ifdef>>
+
+    <<ifndef(returns.isvoid){
+
+        PyObject *ro;
+        {
+            {   unlock_p2c unlock<<ifdeflock(flags.locked){(true)}ifdeflock>>;
+                {
+                    <<returns.rtype>> r = <<ifdef_implname(implname){<<implname>>}ifdef_implname>> <<ifndef_implname(implname){<<name>>}ifndef_implname>> ( <<loop1(args){ <<comma>><<c2r>>a<<index>> }loop1>>);
+                    {   relock_p2c relock(unlock);
+                        ro = tpcvt_<<returns.cvt>>((void *)&r);
+                        return ro;
+                    }
+                }
+            }
+        }
+
+    }ifndef>>
+
+    }
+    catch(const std::exception &e)
+    {
+        PyErr_SetString(PyExc_RuntimeError,e.what());
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"c++ exception in <<name>>");
+    }
+
+    return 0;
+}
+
+}loop_functions>>
+
+<<loop_inlines(inlines){
+static const char *module_method_<<name>>_docstring_ = <<docstring>>;
+
+static PyObject *module_method_inner_<<name>>(PyObject *self, PyObject *<<args>>)
+{
+<<body>>
+}
+
+static PyObject *module_method_<<name>>(PyObject *self, PyObject *args)
+{
+    try
+    {
+        PyObject *rv = module_method_inner_<<name>>(self,args);
+        return rv;
+    }
+    catch(const std::exception &e)
+    {
+        PyErr_SetString(PyExc_RuntimeError,e.what());
+        return 0;
+    }
+    catch(...)
+    {
+        PyErr_SetString(PyExc_RuntimeError,"c++ exception in <<parent.name>>::<<name>>");
+        return 0;
+    }
+}
+
+}loop_inlines>>
+
+static PyMethodDef module_method_table[] = {
+    <<loop_functions(functions){<<nl>>{ "<<name>>",module_method_<<name>>,METH_VARARGS, (char *)module_method_<<name>>_docstring_ }, }loop_functions>>
+    <<loop_inlines(inlines){<<nl>>{ "<<name>>",module_method_<<name>>,METH_VARARGS, (char *)module_method_<<name>>_docstring_ }, }loop_inlines>>
+    {0}
+};
+};
+
+<<epilog>>
+
+#ifdef __GNUC__
+  #pragma GCC visibility pop
+  #pragma GCC visibility push(default)
+  #define MODULE_VISIBILITY __attribute__ ((visibility("default")))
+#else
+  #define MODULE_VISIBILITY
+#endif
+
+
+PyMODINIT_FUNC MODULE_VISIBILITY init<<module>>(void)
+{
+    PyObject *m;
+    PyObject *s;
+
+    PyEval_InitThreads();
+
+    pip_usegil = (getenv("PIP_USEGIL")!=0);
+
+    <<loop(classes){
+        <<ifndef_imported(imported){
+            <<name>>_dispatcher_ = &<<name>>_realdispatcher_;
+        }ifndef_imported>>
+    }loop>>
+
+    <<loop(imports){
+        if(!(m=PyImport_ImportModule("<<name>>")))
+        {
+            return;
+        }
+
+        <<loop_classes(classes){
+            if(!(s=PyObject_GetAttrString(m,"pip_<<name>>_dispatch")) || !PyCObject_Check(s))
+            {
+                PyErr_SetString(PyExc_RuntimeError,"incorrect or missing pip_<<name>>_dispatch in module <<parent.name>>");
+                return;
+            }
+
+            <<name>>_dispatcher_ = (<<name>>_dispatch_ *)PyCObject_AsVoidPtr(s);
+            Py_DECREF(s);
+        }loop_classes>>
+
+    }loop>>
+
+    <<loop(classes){
+        <<ifndef_imported(imported){
+            <<ifdef(base){
+                <<name>>_typeobject_.tp_base = <<base>>_dispatcher_->type;
+            }ifdef>>
+        }ifndef_imported>>
+    }loop>>
+
+    <<loop(classes){
+        <<ifndef_imported(imported){
+            if(PyType_Ready(&<<name>>_typeobject_)<0)
+                return;
+        }ifndef_imported>>
+    }loop>>
+
+    if(!(m=Py_InitModule("<<module>>",module_method_table)))
+    {
+        return;
+    }
+
+    if(!(s=PyString_FromString(module_docstring)))
+    {
+        return;
+    }
+
+    PyModule_AddObject(m,"__doc__",s);
+
+    <<loop(classes){
+        <<ifndef_imported(imported){
+            if(!(s=PyCObject_FromVoidPtr(<<name>>_dispatcher_,0)))
+            {
+                return;
+            }
+
+            PyModule_AddObject(m,"pip_<<name>>_dispatch",s);
+            Py_INCREF(&<<name>>_typeobject_);
+            PyModule_AddObject(m,"<<name>>",(PyObject *)&<<name>>_typeobject_);
+        }ifndef_imported>>
+    }loop>>
+
+    <<loop(classes){
+    }loop>>
+}
+
+#ifdef __GNUC__
+#pragma GCC visibility pop
+#endif
+

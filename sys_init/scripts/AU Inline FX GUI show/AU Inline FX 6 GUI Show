@@ -1,0 +1,5 @@
+description
+    Show AU Inline FX 6 (for Cello)
+script
+    audio unit 11 hey show
+

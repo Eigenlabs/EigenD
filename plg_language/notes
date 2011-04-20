@@ -1,0 +1,122 @@
+
+The Interpreter
+
+    The interpreter is a simple stack based system.  The object at the top of
+    the stack controls the current context.  As words are typed, they are
+    lexically classified and passed to the top object for processing.  If the
+    top object refuses them or there is no top object, a generic routine for
+    the class is run.
+
+    In this way, words can create a new interpretive context which processes
+    subsequent words.
+
+Nouns and Atoms
+
+    There are 3 types of noun phrase.
+
+    Concrete NP's start with an article.  They may have a number immediately
+    following the article which is used as a count.  Words then select the
+    object(s).  Concrete NP's refer to specific atoms in the belcanto
+    universe.
+
+        example: the guitar, all guitar, the 3 guitar
+
+    Mass NP's start with a number.  subsequent words and numbers are
+    descriptive.
+
+        example: 3 db, 14, 7 seconds
+
+    Abstract NP's start with a noun, and have no article They are mostly used
+    for 'ideal' objects or templating.
+
+        example: guitar, feeling
+
+    Any non noun or number word terminates the NP.  An article terminates the
+    previous NP and starts a new one.  To separate NP's explicitly, the comma
+    word may be used, which tells an NP to finish
+
+    Articles act as a filter for concrete NP's specifying a particular subset
+    of selected objects.  They may work in conjunction with a count.
+
+        example: any 2 guitar, my guitar
+
+    Some articles work in concert with the context set (see later)
+
+    Atoms are the smallest thing which can be manipulated by language.  An
+    Atom has some names, a value, and a domain.  The domain is the 'type'
+    of the atom.
+
+    Atoms are grouped into a hierarchy.  Belcanto objects are aggregations of
+    atoms, with each atom 'containing' other atoms.
+
+    Noun phrases match atoms by matching their names.  Logically, a noun matches
+    a whole tree of atoms rooted at the named atom.  Concatenating nouns selects
+    the named atoms from the tree selected by the previous atoms.
+
+    suppose we have 2 atoms named 'piano' each of which contains two volume
+    control atoms.  Each piano has its own name as well (say '1' and '2')  Also,
+    the volume controls in each piano are named '1' and '2'.  Then:
+
+    'piano' refers to the 2 trees rooted at the piano atoms.
+    'piano 1' refers to the tree rooted at the atom called 'piano 1'
+    'piano volume' refers to the 4 trees rooted at the volume contols
+    'piano 1 volume' refers to the 2 trees rooted at piano 1's volume controls
+    'piano 1 volume 2' refers to the piano 1's first volume control
+
+
+Context and Feedback
+
+    The stack, of course, is the primary context.  This can be viewed as short
+    term memory.
+
+    A concrete NP refers to 1 or more objects.  The 'show' word moves these
+    objects into the feedback set where the user interface allows them to be
+    inspected.  The User Interface also provides ways of moving the objects
+    back from the feedback set to the top of stack
+
+    Special articles are used to retrieve objects from context.  For example,
+    suppose a particular set of guitars were identified and used.  The NP
+    'those guitar' referes to the most recently used group of guitars.  'the
+    guitar' refers to the most recently used single guitar.
+
+    Articles that use history look first on the main stack, then on a special
+    context stack.  As NP's are consumed (by verbs, for instance) they are
+    pushed onto the context stack.
+
+Finalisation
+
+    Concrete NP's have a set of potential objects and an article.  The article
+    constrains the set of objects.  Articles are evaluated lazily.  The
+    filtering is defered until the NP is actually used.  This stops the
+    selection of indefinite objects from being completely out to lunch.  If I
+    say 'any guitar' then I really mean 'any appropriate guitar'
+
+    Finalisation means the applicaton of the article to the base object set.
+    An NP can be finalised explicitly with the 'find' word, or it may be
+    finalised when used in a verb
+
+Schema
+
+    A verb has a subject, and objects.  it is invoked using a verb word, which
+    collects nouns from the stack.
+
+    role words (prepositions) push a marker onto the stack which applies to the
+    next noun to be pushed.  No role means a direct object.
+
+    The subject of the verb is the belcanto object to which the verb belongs.  It
+    is implicit; the most appropriate subject is selected
+
+    The sentence 'my guitar to any amp connect' results in the following
+    stack when 'connect' is seen:
+
+        top: NP: <any amp>
+             role: to
+             NP: <my guitar>
+
+    A verb is described using a schema.  A schema details the objects which can
+    fulfil the roles of the verb.
+
+        abstract([words])       supplied noun has no words not in this set
+        mass([words])           supplied noun has no words not in this set
+        object([conditions])
+            words([words])      object has no words not in this set

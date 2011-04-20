@@ -1,0 +1,40 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+import os,glob
+
+samplerate_dirs = Split("""
+    src/src .
+""")
+
+samplerate_files = Split("""
+    src/src/samplerate.c src/src/src_linear.c src/src/src_sinc.c src/src/src_zoh.c
+""")
+
+samplerate_env = env.Clone()
+samplerate_env.Append(CPPPATH=samplerate_dirs)
+
+if env['IS_WINDOWS']:
+   def_file = samplerate_env.File('src\\win32\\libsamplerate.def').srcnode().abspath
+   samplerate_env.Append(LINKFLAGS='/DEF:%s'%def_file)
+
+samplerate_env.PiSharedLibrary('pisamplerate',samplerate_files,package='eigend',hidden=False)

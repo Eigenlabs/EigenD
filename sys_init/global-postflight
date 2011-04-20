@@ -1,0 +1,10 @@
+#!/bin/sh
+
+export PATH=$PI_PREFIX/bin:/usr/bin:/bin:$PATH
+export USER=`basename $HOME`
+
+chmod -R a+rX "/Applications/Eigenlabs/$PI_RELEASE" "$PI_PREFIX"
+cp "$PI_PREFIX/etc/eigend/releasenotes.pdf" "/Applications/Eigenlabs/$PI_RELEASE/Release Notes.pdf"
+cp "$PI_PREFIX/etc/eigend/pico-setup.pdf" "/Applications/Eigenlabs/$PI_RELEASE/Pico Quick Reference Guide.pdf"
+cp "$PI_PREFIX/etc/eigend/tau-setup.pdf" "/Applications/Eigenlabs/$PI_RELEASE/Tau Quick Reference Guide.pdf"
+cp "$PI_PREFIX/etc/eigend/alpha-setup.pdf" "/Applications/Eigenlabs/$PI_RELEASE/Alpha Quick Reference Guide.pdf"

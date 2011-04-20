@@ -1,0 +1,8 @@
+#Fix to audio unit rig 4 recorder (1.1.8-testing)
+all join
+metronome to audio unit rig 4 recorder connect
+audio unit rig 4 recorder hey scheduler use
+
+#include alpha_1_fix_27092010
+#include alpha_1_pedal_fix_27092010
+#include alpha_1_overdub_toggle_06102010

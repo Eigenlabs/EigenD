@@ -1,0 +1,24 @@
+<<<
+#include "pkbd_bundle.h"
+>>>
+
+
+from piw_native[piw/piw.pip] import cookie,change_nb,change
+from picross_native[picross/picross.pip] import notify
+
+class bundle[pkbd::bundle_t]
+{
+    bundle(const char *,const cookie &, const notify &, const change &)
+    void close()
+    stdstr name()
+    change_nb led_functor()
+    void set_threshold1(float)
+    float get_threshold1()
+    void set_threshold2(float)
+    float get_threshold2()
+    void set_roll_axis_window(float)
+    float get_roll_axis_window()
+    void set_yaw_axis_window(float)
+    float get_yaw_axis_window()
+    void enable_key_logging(bool)
+}

@@ -1,0 +1,7 @@
+description
+    set samplers to fully damp an existing note
+    when the same key is played.  This is the
+    factory setting.
+
+script
+    all cycler hey all damper maximum to 1.0 set

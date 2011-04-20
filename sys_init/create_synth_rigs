@@ -1,0 +1,336 @@
+agent manager use
+
+rig create
+it with soupytwo autonumber
+recorder create
+scaler create
+summer create
+channeliser create
+sawtooth oscillator create
+synth filter create
+envelope create
+envelope attack to 0.03 set
+scaler to octave 1 set
+soupytwo , recorder add
+soupytwo , scaler add
+soupytwo , channeliser add
+soupytwo , summer add
+soupytwo , oscillator add
+soupytwo , filter filter add
+soupytwo , envelope add
+recorder to scaler connect
+scaler to channeliser connect
+channeliser to envelope connect
+
+channeliser to oscillator connect
+envelope to oscillator connect
+
+oscillator to filter connect
+filter low pass to summer connect
+channeliser output frequency to filter cutoff frequency connect
+filter bend un connect
+channeliser output yaw to filter bend connect
+recorder output roll to scaler k pitch bend connect
+recorder input auxilliary 1 to soupytwo join
+recorder input auxilliary 1 to strip position input type ify
+recorder output auxilliary 1 to scaler global pitch bend connect
+recorder input auxilliary 2 to soupytwo join
+recorder input auxilliary 2 to controller input type ify
+recorder output auxilliary 2 to scaler controller connect
+summer output audio to soupytwo join
+recorder input activation to soupytwo join
+recorder input roll to soupytwo join
+recorder input yaw to soupytwo join
+recorder input pressure to soupytwo join
+recorder song beat to soupytwo join
+recorder bar beat to soupytwo join
+recorder running to soupytwo join
+scaler base note to soupytwo join
+scaler tonic to soupytwo join
+scaler input scale to soupytwo join
+filter filterq to soupytwo join
+soupytwo as soupytwo remember
+recorder un create
+scaler un create
+summer un create
+channeliser un create
+sawtooth oscillator un create
+synth filter un create
+envelope un create
+
+
+rig create
+it with soupythree autonumber
+recorder create
+scaler create
+summer create
+channeliser create
+rectangle oscillator create
+envelope create
+scaler to octave 3 set
+soupythree , recorder add
+soupythree , scaler add
+soupythree , channeliser add
+soupythree , summer add
+soupythree , rectangle oscillator add
+soupythree , envelope add
+recorder to scaler connect
+scaler to channeliser connect
+channeliser to envelope connect
+channeliser to oscillator connect
+envelope to oscillator connect
+channeliser output yaw to oscillator pulse width connect
+oscillator to summer connect
+recorder output roll to scaler k pitch bend connect
+recorder input auxilliary 1 to soupythree join
+recorder input auxilliary 1 to strip position input type ify
+recorder output auxilliary 1 to scaler global pitch bend connect
+recorder input auxilliary 2 to soupythree join
+recorder input auxilliary 2 to controller input type ify
+recorder output auxilliary 2 to scaler controller connect
+summer output audio to soupythree join
+recorder input activation to soupythree join
+recorder input roll to soupythree join
+recorder input yaw to soupythree join
+recorder input pressure to soupythree join
+recorder song beat to soupythree join
+recorder bar beat to soupythree join
+recorder running to soupythree join
+scaler base note to soupythree join
+scaler tonic to soupythree join
+scaler input scale to soupythree join
+soupythree as soupythree remember
+recorder un create
+scaler un create
+summer un create
+channeliser un create
+rectangle oscillator un create
+envelope un create
+
+
+rig create
+it with clarinet autonumber
+icon of it to sax set 
+recorder create
+scaler create
+clarinet oscillator create
+channeliser create
+summer create 
+shaper create
+clarinet , recorder add
+clarinet , scaler add
+clarinet , channeliser add
+clarinet , clarinet oscillator add
+clarinet , shaper add
+clarinet , summer add
+scaler to octave 3 set
+shaper compression to 0.6 set
+shaper sharpness to 0.6 set
+recorder to scaler connect
+scaler to channeliser connect
+channeliser to shaper connect
+channeliser to oscillator connect
+oscillator pressure input un connect
+oscillator activation input un connect
+shaper to oscillator connect
+channeliser output yaw to oscillator reed stiffness connect
+oscillator to summer connect
+recorder output roll to scaler k pitch bend connect
+recorder input auxilliary 1 to clarinet join
+recorder input auxilliary 1 to strip position input type ify
+recorder output auxilliary 1 to scaler global pitch bend connect
+recorder input auxilliary 2 to clarinet join
+recorder input auxilliary 2 to controller input type ify
+recorder output auxilliary 2 to scaler controller connect
+summer output audio to clarinet join
+recorder input activation to clarinet join
+recorder input roll to clarinet join
+recorder input yaw to clarinet join
+recorder input pressure to clarinet join
+recorder song beat to clarinet join
+recorder bar beat to clarinet join
+recorder running to clarinet join
+scaler base note to clarinet join
+scaler tonic to clarinet join
+scaler input scale to clarinet join
+clarinet as clarinet remember
+recorder un create
+scaler un create
+clarinet oscillator un create
+channeliser un create
+summer un create 
+shaper un create
+
+
+rig create
+it with sax autonumber
+icon of it to sax set 
+recorder create
+scaler create
+sax oscillator create
+channeliser create
+summer create 
+shaper create
+sax , recorder add
+sax , scaler add
+sax , channeliser add
+sax , oscillator oscillator add
+sax , shaper add
+sax , summer add
+shaper compression to 0.6 set
+shaper sharpness to 0.6 set
+scaler to octave 3 set
+recorder to scaler connect
+scaler to channeliser connect
+channeliser to shaper connect
+channeliser to oscillator connect
+oscillator pressure input un connect
+oscillator activation input un connect
+shaper to oscillator connect
+channeliser output yaw to oscillator reed stiffness connect
+oscillator to summer connect
+recorder output roll to scaler k pitch bend connect
+recorder input auxilliary 1 to sax join
+recorder input auxilliary 1 to strip position input type ify
+recorder output auxilliary 1 to scaler global pitch bend connect
+recorder input auxilliary 2 to sax join
+recorder input auxilliary 2 to controller input type ify
+recorder output auxilliary 2 to scaler controller connect
+summer output audio to sax join
+recorder input activation to sax join
+recorder input roll to sax join
+recorder input yaw to sax join
+recorder input pressure to sax join
+recorder song beat to sax join
+recorder bar beat to sax join
+recorder running to sax join
+scaler base note to sax join
+scaler tonic to sax join
+scaler input scale to sax join
+sax as sax remember
+recorder un create
+scaler un create
+sax oscillator un create
+channeliser un create
+summer un create 
+shaper un create
+
+
+rig create
+it with clarinet autonumber it to breath adjective ify
+icon of it to sax set 
+recorder create
+scaler create
+clarinet oscillator create
+channeliser create
+summer create 
+shaper create
+breath clarinet , recorder add
+breath clarinet , scaler add
+breath clarinet , channeliser add
+breath clarinet , clarinet oscillator add
+breath clarinet , shaper add
+breath clarinet , summer add
+scaler to octave 3 set
+shaper compression to 0.6 set
+shaper sharpness to 0.6 set
+recorder to scaler connect
+scaler to channeliser connect
+channeliser to shaper connect
+channeliser to oscillator connect
+oscillator pressure input un connect
+oscillator activation input un connect
+shaper to oscillator connect
+channeliser output yaw to oscillator reed stiffness connect
+oscillator to summer connect
+recorder output roll to scaler k pitch bend connect
+recorder input auxilliary 1 to breath clarinet join
+recorder input auxilliary 1 to strip position input type ify
+recorder output auxilliary 1 to scaler global pitch bend connect
+recorder input auxilliary 2 to breath clarinet join
+recorder input auxilliary 2 to breath input type ify
+shaper input pressure un connect
+shaper input activation un connect
+recorder output auxilliary 2 to shaper input pressure connect
+recorder output auxilliary 2 to shaper input activation connect
+recorder input auxilliary 3 to breath clarinet join
+recorder input auxilliary 3 to controller input type ify
+recorder output auxilliary 3 to scaler controller connect
+summer output audio to breath clarinet join
+recorder input activation to breath clarinet join
+recorder input roll to breath clarinet join
+recorder input yaw to breath clarinet join
+recorder input pressure to breath clarinet join
+recorder song beat to breath clarinet join
+recorder bar beat to breath clarinet join
+recorder running to breath clarinet join
+scaler base note to breath clarinet join
+scaler tonic to breath clarinet join
+scaler input scale to breath clarinet join
+breath clarinet as breath clarinet remember
+recorder un create
+scaler un create
+clarinet oscillator un create
+channeliser un create
+summer un create 
+shaper un create
+
+
+rig create
+it with sax autonumber it to breath adjective ify
+icon of it to sax set 
+recorder create
+scaler create
+sax oscillator create
+channeliser create
+summer create 
+shaper create
+breath sax , recorder add
+breath sax , scaler add
+breath sax , channeliser add
+breath sax , sax oscillator add
+breath sax , shaper add
+breath sax , summer add
+shaper compression to 0.6 set
+shaper sharpness to 0.6 set
+scaler to octave 3 set
+recorder to scaler connect
+scaler to channeliser connect
+channeliser to shaper connect
+channeliser to oscillator connect
+oscillator pressure input un connect
+oscillator activation input un connect
+shaper to oscillator connect
+channeliser output yaw to oscillator reed stiffness connect
+oscillator to summer connect
+recorder output roll to scaler k pitch bend connect
+recorder input auxilliary 1 to breath sax join
+recorder input auxilliary 1 to strip position input type ify
+recorder output auxilliary 1 to scaler global pitch bend connect
+recorder input auxilliary 2 to breath sax join
+recorder input auxilliary 2 to breath input type ify
+shaper input pressure un connect
+shaper input activation un connect
+recorder output auxilliary 2 to shaper input pressure connect
+recorder output auxilliary 2 to shaper input activation connect
+recorder input auxilliary 3 to breath sax join
+recorder input auxilliary 3 to controller input type ify
+recorder output auxilliary 3 to scaler controller connect
+summer output audio to breath sax join
+recorder input activation to breath sax join
+recorder input roll to breath sax join
+recorder input yaw to breath sax join
+recorder input pressure to breath sax join
+recorder song beat to breath sax join
+recorder bar beat to breath sax join
+recorder running to breath sax join
+scaler base note to breath sax join
+scaler tonic to breath sax join
+scaler input scale to breath sax join
+breath sax as breath sax remember
+recorder un create
+scaler un create
+sax oscillator un create
+channeliser un create
+summer un create 
+shaper un create

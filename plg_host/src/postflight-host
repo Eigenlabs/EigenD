@@ -1,0 +1,3 @@
+#!/bin/sh
+su $USER -c $PI_PREFIX/Applications/EigenScanner.app/Contents/MacOS/EigenScanner
+

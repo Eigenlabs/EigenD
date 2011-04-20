@@ -1,0 +1,95 @@
+<<<
+#include <piagent/pia_scaffold.h>
+>>>
+
+
+from picross_native[picross/picross.pip] import notify,f_string,status
+
+"""
+Python interface to libpia c++ classes.
+=======================================
+"""
+
+class scaffold_mt[pia::scaffold_mt_t]
+    """
+    A server and client environment.
+    
+    Starts up the various parts needed to run clients and servers in a
+    process.
+
+    This one is completely multi threaded
+    """
+{
+    scaffold_mt(const char *,unsigned,const f_string &,const f_string &,bool,bool)
+    bool global_lock()
+    void global_unlock()
+    void wait()
+        """
+        self.wait() -> .
+        run the scaffolds main loop
+        """
+    context context(const status &, const f_string &,const char *)
+        """
+        self.context(notify,tag) -> context
+        
+        Create a new context.  notify will be called when
+        context has gone.  tag is used to tag log messages by agent
+        """
+}
+
+class scaffold_gui[pia::scaffold_gui_t]
+    """
+    A server and client environment.
+    
+    Starts up the various parts needed to run clients and servers in a
+    process.
+
+    This one maintains internal threads for main and fast loops and background contexts,
+    but expects the user to drive the foreground context thread when convenient.
+    Background contexts are driven by a separate thread.
+    """
+{
+    scaffold_gui(const char *,const notify &, const notify &, const f_string &, const f_string &, bool,bool)
+
+    void process_ctx()
+    unsigned cpu_usage()
+    bool global_lock()
+    void global_unlock()
+
+    context bgcontext(const status &, const f_string &,const char *)
+        """
+        self.context(notify,tag) -> context
+        
+        Create a new background context.  notify will be called when
+        context has gone.  tag is used to tag log messages by agent
+        """
+
+    context context(const status &, const f_string &,const char *)
+        """
+        self.context(notify,tag) -> context
+        
+        Create a new foreground context.  notify will be called when
+        context has gone.  tag is used to tag log messages by agent
+        """
+}
+
+class context[pia::context_t]
+    """
+    An Agent context
+    
+    Provides a context in which to run Agents.
+    """
+{
+	context()
+    context(const context &)
+    void kill()
+    void release()
+    void lock()
+    void unlock()
+    void trigger()
+
+    inline getenv(self,args)
+    <<<
+        return PyCObject_FromVoidPtr(self->entity(),0);
+    >>>
+}

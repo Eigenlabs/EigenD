@@ -1,0 +1,6 @@
+
+description
+    Apply a 1 message per 10ms rate limit to all inputs on midi output 1.  This should throttle the output sufficiently for it to go over a standard MIDI cable
+    
+script
+    midi converter 1 hey minimum decimation to 10 set

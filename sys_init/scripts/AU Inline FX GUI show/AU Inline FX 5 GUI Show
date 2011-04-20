@@ -1,0 +1,5 @@
+description
+    Show AU Inline FX 5 (for Audio Unit 2)
+script
+    audio unit 10 hey show
+

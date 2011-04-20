@@ -1,0 +1,76 @@
+
+<<<
+#include "loop_bundle.h"
+#include "loop_pinger.h"
+#include "loop_file.h"
+#include "loop_clicker.h"
+>>>
+
+
+from piw[../../piw/piw.pip] import clockdomain_ctl,cookie,change,change_nb
+
+class player[loop::player_t]
+{
+    player(const cookie &,clockdomain_ctl *)
+    void load(const char *)
+    void unload()
+    void set_volume(float)
+    float get_volume()
+    void set_chop(float)
+    change_nb player(unsigned)
+    cookie cookie()
+}
+
+class pinger[loop::pinger_t] /gc/
+{
+    pinger(const cookie &, const cookie &, const cookie &, clockdomain_ctl *,const change &,const change &,const change &)
+    cookie cookie()
+    void set_tempo(float)
+    void set_beats(float)
+    void set_range(float,float)
+    void start_preroll(unsigned)
+    void midi_clock_enable(bool)
+    void midi_clock_set_latency(float)
+    void set_beat_flash_persistence(unsigned)
+    void play()
+    void stop()
+    void toggle()
+}
+
+class clicker[loop::clicker_t]
+{
+    clicker(const cookie &, clockdomain_ctl *, const samplearray2 &, const samplearray2 &)
+    cookie cookie()
+    void play(bool)
+}
+
+class xplayer[loop::xplayer_t]
+{
+    xplayer(const cookie &, clockdomain_ctl *, const samplearray2 &)
+    void play(bool)
+    void set_gain(float)
+}
+
+class samplearray2[loop::samplearray2ref_t]
+{
+    samplearray2()
+    samplearray2(const samplearray2 &)
+}
+
+class loopref[loop::loopref_t]
+{
+    loopref(const loopref &)
+    unsigned long samples()[ptr,locked]
+    unsigned long sample_rate()[ptr,locked]
+    unsigned long beats()[ptr,locked]
+    unsigned short note()[ptr,locked]
+    unsigned short scale()[ptr,locked]
+    unsigned short timesig_numerator()[ptr,locked]
+    unsigned short timesig_denominator()[ptr,locked]
+    unsigned short looping()[ptr,locked]
+    unsigned ntags()[ptr,locked]
+    stdstr tag(unsigned)[ptr,locked]
+}
+
+loopref read_aiff[loop::read_aiff](const char *,bool)
+samplearray2 canonicalise_samples[loop::canonicalise_samples](const stdstr &,float)

@@ -1,0 +1,25 @@
+description
+    Apply the standard keyboard mapping
+
+    This script should be run with pico setups only
+
+script
+    kmapper 2 listen 
+    clear
+    k 1 add
+    k 2 add
+    k 3 add
+    k 4 add
+    k 5 add
+    k 6 add
+    k 7 add
+    k 8 add
+    k 9 add
+    k 10 add
+    k 11 add
+    k 12 add
+    k 13 add
+    k 14 add
+    k 15 add
+    k 16 add
+

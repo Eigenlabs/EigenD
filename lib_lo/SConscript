@@ -1,0 +1,52 @@
+
+#
+# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+import os,glob
+
+lo_dirs = Split("""
+lo
+.
+""")
+
+lo_files = Split("""
+send.c
+address.c
+message.c
+server.c
+blob.c			
+method.c		
+bundle.c
+pattern_match.c
+timetag.c
+""")
+
+lo_env = env.Clone()
+lo_env.Append(CPPPATH=lo_dirs)
+
+
+if env['IS_WINDOWS']:
+    lo_files=lo_files+Split('liblo.def')
+    lo_env.Append(LINKFLAGS=' WS2_32.Lib ')
+
+
+
+lo_env.PiSharedLibrary('pilo',lo_files,package='eigend',hidden=False)

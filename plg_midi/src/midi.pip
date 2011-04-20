@@ -1,0 +1,49 @@
+<<<
+#include <plg_midi/midi_merge_output.h>
+#include <plg_midi/midi_output.h>
+#include <plg_midi/midi_clock.h>
+#include <plg_midi/midi_input.h>
+>>>
+
+from piw[piw/piw.pip] import cookie,data,change_nb,clockdomain_ctl
+
+class midi_merge_output[pi_midi::midi_merge_output_t]
+{
+    midi_merge_output(const change_nb &, clockdomain_ctl *)
+    cookie cookie()
+}
+
+class midi_output[pi_midi::midi_output_t]
+{
+    midi_output()
+    bool set_port(long)
+    long get_port()
+    change_nb get_midi_output_functor()
+    void set_source(const stdstr &)
+    virtual void sink_added(long, const stdstr &)
+    virtual void sink_removed(long)
+    void run()
+    void stop()
+}
+
+class midi_clock[pi_midi::midi_clock_t]
+{
+    midi_clock(const cookie &, clockdomain_ctl *)
+    cookie cookie()
+    void set_delay(float)
+}
+
+class midi_input[pi_midi::midi_input_t] /gc/
+{
+    midi_input(const cookie &, const cookie &)
+    bool setport(long)
+    long getport()
+    unsigned current(unsigned)
+    void set_trim(unsigned,float,float,bool)
+    void clear_trim()
+    void set_destination(const stdstr &)
+    virtual void source_added(long, const stdstr &)
+    virtual void source_removed(long)
+    void run()
+    void stop()
+}

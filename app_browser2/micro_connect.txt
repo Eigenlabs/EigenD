@@ -1,0 +1,6 @@
+keyboard k 1 yaw output to eigenbrowser vertical nudger 1 connect
+keyboard k 2 roll output to eigenbrowser sideways nudger 3 connect
+keyboard k 3 yaw output to eigenbrowser vertical nudger 2 connect
+keyboard k 1 activation output to eigenbrowser tapper 1 connect
+keyboard k 2 activation output to eigenbrowser tapper 3 connect
+

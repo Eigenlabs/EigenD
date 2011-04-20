@@ -1,0 +1,7 @@
+description
+    Set the Mixer's Pan law to Equal Power Sine.
+    
+    This has a Sine curve taper crossing at -3dB.
+
+script
+    console mixer hey pan curve to equal power sine set

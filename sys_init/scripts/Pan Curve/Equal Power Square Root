@@ -1,0 +1,7 @@
+description
+    Set the Mixer's Pan law to Equal Power Square Root.
+
+    This has a Square Root taper crossing at -3dB.
+
+script
+    console mixer hey pan curve to equal power square root set

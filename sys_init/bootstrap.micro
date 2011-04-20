@@ -1,0 +1,46 @@
+
+rig manager create
+agent manager use
+scale manager create
+
+ukbd create
+stereo mixer create
+audio create
+stereo mixer to audio connect
+
+metronome create
+scheduler create
+metronome to scheduler connect
+
+kgroup create
+keyboard to kgroup connect
+kgroup , all keyboard standard k choose
+
+keyboard strip position to kgroup input strip position 1 connect
+keyboard breath to kgroup input breath connect
+
+keyboard k 17 to kgroup mode connect
+
+kgroup , output 13 create it to the language agent using 1 connect
+
+soupytwo load metronome to it connect it to mixer connect kgroup , output 14 create it to soupytwo using 1 connect soupytwo volume to 80 set
+soupythree load metronome to it connect it to mixer connect kgroup , output 15 create it to soupythree using 1 connect soupythree volume to 70 set
+bass guitar load metronome to it connect it to mixer connect kgroup , output 16 create it to bass guitar using 1 connect bass guitar volume to 85  set
+rhodes load metronome to it connect it to mixer connect kgroup , output 9 create it to rhodes using 1 connect rhodes volume to 85  set
+clarinet load metronome to it connect it to mixer connect kgroup , output 10 create it to clarinet using 1 connect clarinet volume to 80 set
+sax load metronome to it connect it to mixer connect kgroup , output 11 create it to sax using 1 connect sax volume to 100 set
+bassoon load metronome to it connect it to mixer connect kgroup , output 12 create it to bassoon using 1 connect bassoon volume to 80  set
+piano load metronome to it connect it to mixer connect kgroup , output 5 create it to piano using 1 connect piano volume to 80  set
+breath clarinet load metronome to it connect it to mixer connect kgroup , output 6 create it to breath clarinet using 1 connect breath clarinet volume to 80 set
+breath sax load metronome to it connect it to mixer connect kgroup , output 7 create it to breath sax using 1 connect breath sax volume to 100 set
+electric guitar load metronome to it connect it to mixer connect kgroup , output 8 create it to electric guitar using 1 connect electric guitar volume to 80 set
+drummer create metronome to it connect it to mixer connect
+
+scheduler use
+
+drummer volume to 75 set
+
+kgroup , output 1 create it to scheduler connect
+
+controller create kgroup , output 2 create it to controller using 1 connect
+talker create kgroup , output 3 create it to talker using 1 connect
