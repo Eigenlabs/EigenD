@@ -21,4 +21,4 @@
 Import('env')
 env.PiPythonPackage('0.0',natives=Split('recorder_native'),resources=Split('recorder.png'),pi='0.0',pisession='0.0',package='eigend')
 env.PiPythonWrapper('brecdump','plg_recorder','recdump','main')
-env.PiAgent('recorder','plg_recorder.recorder_plg','plg_recorder:0.0',cversion='1.0.1',package='eigend')
+env.PiAgent('recorder','plg_recorder.recorder_plg','plg_recorder:0.0',cversion='1.0.2',package='eigend')

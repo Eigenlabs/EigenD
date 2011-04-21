@@ -555,6 +555,12 @@ class Upgrader(upgrade.Upgrader):
     def upgrade_1_0_0_to_1_0_1(self,tools,address):
         pass
 
+    def upgrade_1_0_1_to_1_0_2(self,tools,address):
+        pass
+
+    def phase2_1_0_2(self,tools,address):
+        return self.phase2_1_0_1(tools,address)
+
     def phase2_1_0_1(self,tools,address):
         print 'upgrading plugin host',address
         root = tools.get_root(address)
@@ -577,19 +583,27 @@ class Upgrader(upgrade.Upgrader):
         if recorder_type != 'recorder': return
         print 'recorder is',recorder_addr
 
+        canonical_names = {}
         available_sources = {}
+        blocked_sources = []
+
         available_sources['pressure'] = paths.makeid_list(scaler_addr,1,2)
         available_sources['roll'] = paths.makeid_list(scaler_addr,1,3)
         available_sources['yaw'] = paths.makeid_list(scaler_addr,1,4)
 
-        canonical_names = {}
+        for (k,v) in available_sources.items():
+            canonical_names[v] = k
 
         for i in range(5,15):
             recorder_input = recorder_root.get_node(1,i)
             if recorder_input:
                 input_name = recorder_input.get_name()
                 input_conn = recorder_input.get_master()
-                if not input_conn: continue
+                output_id = paths.makeid_list(recorder_addr,2,i)
+                if not input_conn:
+                    blocked_sources.append(output_id)
+                    print 'unavailable input',output_id
+                    continue
                 upstream_addr,upstream_path = paths.breakid_list(input_conn[0])
                 upstream_root = tools.get_root(upstream_addr)
                 if not upstream_root: continue
@@ -599,7 +613,6 @@ class Upgrader(upgrade.Upgrader):
                 if 'output' in upstream_name: upstream_name.remove('output')
                 upstream_name = ' '.join(upstream_name)
                 if upstream_name == 'controller': continue
-                output_id = paths.makeid_list(recorder_addr,2,i)
                 print 'recorder output',i,'at',output_id,'called',input_name,'connected to',upstream_name
                 available_sources[upstream_name] = output_id
                 canonical_names[output_id] = upstream_name
@@ -652,6 +665,8 @@ class Upgrader(upgrade.Upgrader):
             parm_node.set_name('parameter %d' % k)
             
         for pmaster,(k,pname) in current_parms.items():
+            if pmaster in blocked_sources:
+                continue
             conn = logic.make_term('conn',None,None,pmaster,None)
             conn_txt = logic.render_term(conn)
             parm_node = root.ensure_node(4,k)

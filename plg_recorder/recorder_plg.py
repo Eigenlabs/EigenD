@@ -959,6 +959,48 @@ class Agent(agent.Agent):
         return self.nplayer.play(note,velocity,500000),None
 
 class Upgrader(upgrade.Upgrader):
+    def upgrade_1_0_1_to_1_0_2(self,tools,address):
+        print 'upgrading recorder',address
+        recorder_root = tools.get_root(address)
+        if not recorder_root: return
+        recorder_type = recorder_root.get_meta_string('plugin')
+        if recorder_type != 'recorder': return
+
+        for i in range(5,15):
+            recorder_input = recorder_root.get_node(1,i)
+            changes = False
+
+            if recorder_input:
+                input_name = recorder_input.get_name()
+                input_connections = recorder_input.get_meta('master')
+
+                if not input_connections or not input_connections.is_string():
+                    continue
+
+                input_connections = logic.parse_termlist(input_connections.as_string())
+                output_connections = []
+
+                for input_conn in input_connections:
+                    input_id = input_conn.args[2]
+                    upstream_addr,upstream_path = paths.breakid_list(input_id)
+                    upstream_root = tools.get_root(upstream_addr)
+
+                    if not upstream_root or len(upstream_path):
+                        output_connections.append(input_connections)
+                        continue
+
+                    if upstream_root.get_meta_string('plugin') != 'kgroup':
+                        output_connections.append(input_connections)
+                        continue
+
+                    changes = True
+                    print 'pruning',input_id,'from input',i
+
+                if changes:
+                    output_connections = logic.render_termlist(tuple(output_connections))
+                    recorder_input.set_meta_string('master',output_connections)
+                    
+
     def upgrade_1_0_0_to_1_0_1(self,tools,address):
         print 'upgrading recorder',address
         recorder_root = tools.get_root(address)
