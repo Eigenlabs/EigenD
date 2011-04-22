@@ -1060,29 +1060,3 @@ class TabList(atom.Atom):
             self.__sessionChanges[newTabIndex] = newSessionChanges
         else:
             print 'TabList error: could not move tabs'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
