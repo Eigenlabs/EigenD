@@ -1346,13 +1346,19 @@ namespace
         pic::flipflop_functor_t<piw::change_t> c2_;
     };
 
-    struct change2_nb_sink_t: piw::change_nb_t::sinktype_t
+    struct change2_nb_sink_t: piw::change_nb_t::sinktype_t, public piw::thing_t
     {
-        change2_nb_sink_t(const piw::change_nb_t &c1, const piw::change_nb_t &c2): c1_(c1), c2_(c2)
+        change2_nb_sink_t(const piw::change_t &c1, const piw::change_t &c2): c1_(c1), c2_(c2)
         {
+            piw::tsd_thing(this);
         }
 
         void invoke(const piw::data_nb_t &d) const
+        {
+            const_cast<change2_nb_sink_t*>(this)->enqueue_slow_nb(d);
+        }
+
+        void thing_dequeue_slow(const piw::data_t &d)
         {
             c1_(d);
             c2_(d);
@@ -1371,8 +1377,8 @@ namespace
             return 0;
         }
 
-        pic::flipflop_functor_t<piw::change_nb_t> c1_;
-        pic::flipflop_functor_t<piw::change_nb_t> c2_;
+        pic::flipflop_functor_t<piw::change_t> c1_;
+        pic::flipflop_functor_t<piw::change_t> c2_;
     };
 }
 
@@ -1396,7 +1402,7 @@ piw::change_t piw::change2(const piw::change_t &c1, const piw::change_t &c2)
     return piw::change_t(pic::ref(new change2_sink_t(c1,c2)));
 }
 
-piw::change_nb_t piw::change2_nb(const piw::change_nb_t &c1, const piw::change_nb_t &c2)
+piw::change_nb_t piw::change2_nb(const piw::change_t &c1, const piw::change_t &c2)
 {
     return piw::change_nb_t(pic::ref(new change2_nb_sink_t(c1,c2)));
 }

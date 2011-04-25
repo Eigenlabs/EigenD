@@ -563,7 +563,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(change_nb_t) trigger(const change_nb_t &c, const data_nb_t &v);
 
     PIW_DECLSPEC_FUNC(change_t) change2(const change_t &c1, const change_t &c2);
-    PIW_DECLSPEC_FUNC(change_nb_t) change2_nb(const change_nb_t &c1, const change_nb_t &c2);
+    PIW_DECLSPEC_FUNC(change_nb_t) change2_nb(const change_t &c1, const change_t &c2);
 
     class PIW_DECLSPEC_CLASS dataholder_nb_t
     {

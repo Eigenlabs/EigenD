@@ -636,7 +636,7 @@ void piw::fasttrigger_t::control_receive(unsigned index,const piw::data_nb_t &va
     tsd_fastcall(__ping_direct,this,&t);
 }
 
-void piw::fasttrigger_t::trigger__(const piw::data_nb_t &d)
+void piw::fasttrigger_t::trigger__(const piw::data_t &d)
 {
     if(d.as_norm()!=0)
     {

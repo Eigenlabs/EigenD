@@ -142,7 +142,7 @@ class Key(atom.Atom):
         atom.Atom.__init__(self,creator=self.__create,wrecker=self.__wreck,ordinal=index,names='key')
         self.__event = piw.fasttrigger(const.light_unknown)
         self.__event.attach_to(controller,index)
-        self.__handler = piw.change2_nb(self.__event.trigger(),utils.changify_nb(self.event_triggered))
+        self.__handler = piw.change2_nb(self.__event.trigger(),utils.changify(self.event_triggered))
         self.key_aggregator = piw.aggregator(agent.light_aggregator.get_output(index+1),agent.domain)
         self.agent = agent
         self.index = index

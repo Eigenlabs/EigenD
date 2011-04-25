@@ -116,14 +116,14 @@ namespace piw
         public:
             fasttrigger_t(unsigned color);
             void ping();
-            change_nb_t trigger() { return change_nb_t::method(this,&fasttrigger_t::trigger__); }
+            change_t trigger() { return change_t::method(this,&fasttrigger_t::trigger__); }
             virtual void control_init();
             virtual void control_receive(unsigned input_index,const piw::data_nb_t &value);
             virtual void control_start(unsigned long long t);
             virtual void control_term(unsigned long long t);
         private:
             static int __ping_direct(void *c_, void *_);
-            void trigger__(const piw::data_nb_t &d);
+            void trigger__(const piw::data_t &d);
             unsigned color_;
             int active_;
     };
