@@ -336,7 +336,7 @@ class fasttrigger[piw::fasttrigger_t]: xxcontrolled
     void detach()
     void ping()
     int ordinal()
-    change_nb trigger()
+    change trigger()
 }
 
 class cookie[piw::cookie_t]
@@ -1002,7 +1002,7 @@ void changelist_connect_nb(change_nb &, const change_nb &)
 void changelist_disconnect_nb(change_nb &, const change_nb &)
 
 change change2[piw::change2](const change &, const change &)
-change_nb change2_nb[piw::change2_nb](const change_nb &, const change_nb &)
+change_nb change2_nb[piw::change2_nb](const change &, const change &)
 change_nb trigger[piw::trigger](const change_nb &, const data_nb &)
 
 class function1[piw::function1_t] /gc/
