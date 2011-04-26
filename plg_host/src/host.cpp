@@ -198,7 +198,7 @@ namespace
 
         void setup(unsigned num_channels, unsigned queue_size)
         {
-            unsigned long long mask = (num_channels<64)?((1<<num_channels)-1):(-1ULL);
+            unsigned long long mask = (num_channels<64)?((1ULL<<num_channels)-1ULL):(-1ULL);
             buffer_ = piw::xevent_data_buffer_t(mask,queue_size);
         }
 
