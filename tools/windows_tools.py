@@ -146,7 +146,7 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         cert = self.get('PI_CERTFILE')
         if cert:
             pwd = self['PI_CERTPASS']
-            self.AddPostAction(tgt,'signtool sign /q /f "%s" /p "%s" "${TARGET}"' % (cert,pwd))
+            self.AddPostAction(tgt,'signtool sign /q /t http://timestamp.verisign.com/scripts/timestamp.dll /f "%s" /p "%s" "${TARGET}"' % (cert,pwd))
 
     def add_manifest(self,tgt):
         self.AddPostAction(tgt, 'mt -nologo -manifest "${TARGET}.manifest" -outputresource:"$TARGET";2')
