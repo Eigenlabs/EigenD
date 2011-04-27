@@ -169,7 +169,7 @@ class Key(atom.Atom):
         self.get_private().set_data(piw.makelong(c,0))
 
     def __create(self,i):
-        self.agent.light_convertor.set_status_handler(self.index, utils.changify(self.set_status))
+        self.agent.light_convertor.set_status_handler(self.index, piw.slowchange(utils.changify(self.set_status)))
         self.agent.update()
         return Event(self,self.__event.fastdata(),'',i)
 
