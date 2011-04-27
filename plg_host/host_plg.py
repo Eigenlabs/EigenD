@@ -500,13 +500,18 @@ class Agent(agent.Agent):
                 if desc_checked and self.__host.open(desc_checked):
                     self.__host.set_state(state)
                     self.__host.set_showing(show)
-                    self.__host.set_bypassed(bypassed)
                     self.__host.set_mapping(mapping)
 
                     if bounds:
                         self.__host.set_bounds(bounds)
 
                     self.__set_title()
+
+                    if bypassed:
+                        self.__bypass()
+                    else:
+                        self.__unbypass();
+
                     return
 
                 delegate.add_error("Can't load " + desc.description());
