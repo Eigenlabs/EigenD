@@ -164,11 +164,13 @@ namespace
         unsigned short min_, range_, threshold_;
     };
 
-    struct breath_t: cwire_t
+    struct breath_t: cwire_t, piw::thing_t
     {
         breath_t(keyboard_t *);
+        ~breath_t();
 
         void update(unsigned long long t,unsigned b);
+        void thing_trigger_slow();
 
         int tick;
         unsigned warmup_count_;
@@ -256,6 +258,12 @@ namespace
         last_ = s;
     }
 
+    void breath_t::thing_trigger_slow()
+    {
+        pic::logmsg() << "breath pipe stuck: min=" << stuck_min_ << " max=" << stuck_max_;
+        piw::tsd_alert(BPMSG_KLASS,BPMSG_TITLE,BPMSG_MSG);
+    }
+
     void breath_t::update(unsigned long long t, unsigned b)
     {
         if(warmup_count_<1000)
@@ -291,8 +299,7 @@ namespace
             {
                 if((stuck_max_-stuck_min_)<50)
                 {
-                    pic::logmsg() << "breath pipe stuck: min=" << stuck_min_ << " max=" << stuck_max_;
-                    piw::tsd_alert(BPMSG_KLASS,BPMSG_TITLE,BPMSG_MSG);
+                    trigger_slow();
                 }
                 stuck_count_=0;
                 stuck_min_=4095;
@@ -493,6 +500,12 @@ namespace
 
     breath_t::breath_t(keyboard_t *k): cwire_t(piw::pathone(3,0),k), tick(0), warmup_count_(0), zero_(1900), pos_threshold_(2000), pos_gain_(1.0), neg_threshold_(1800), neg_gain_(1.0), breath_raw_(0), stuck_count_(0), stuck_min_(4095), stuck_max_(0)
     {
+        piw::tsd_thing(this);
+    }
+
+    breath_t::~breath_t()
+    {
+        close_thing();
     }
 
     static float __clip(float x,float l)

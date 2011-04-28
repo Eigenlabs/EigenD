@@ -22,6 +22,7 @@
 #define __RECORDING__
 #include <plg_recorder/pirecorder_exports.h>
 #include <picross/pic_ref.h>
+#include <picross/pic_fastalloc.h>
 #include <piw/piw_data.h>
 #include <piw/piw_address.h>
 #include <list>
@@ -38,7 +39,7 @@
 
 namespace recorder
 {
-    struct PIRECORDER_DECLSPEC_CLASS sample_t : public pic::lckobject_t
+    struct PIRECORDER_DECLSPEC_CLASS sample_t : virtual pic::lckobject_t
     {
         sample_t(unsigned long long t, float b, unsigned s, const piw::data_nb_t &v) : time(t), beat(b), signal(s), value(v) {}
 
@@ -50,7 +51,7 @@ namespace recorder
 
     typedef pic::lcklist_t<sample_t>::nbtype samplelist_t;
 
-    struct PIRECORDER_DECLSPEC_CLASS event_t: virtual public pic::atomic_counted_t, public pic::lckobject_t
+    struct PIRECORDER_DECLSPEC_CLASS event_t: virtual pic::atomic_counted_t, virtual pic::lckobject_t
     {
         event_t(unsigned long long t, float b, const piw::data_nb_t &v): time(t), beat(b), max_time(0), max_beat(0), value(v) , iscomplete_(false){}
 
@@ -68,7 +69,7 @@ namespace recorder
     typedef pic::lcklist_t<pic::ref_t<event_t> >::nbtype eventlist_t;
     typedef pic::lckmap_t<unsigned char, piw::data_nb_t>::nbtype taglist_t;
 
-    struct PIRECORDER_DECLSPEC_CLASS recording_data_t: public pic::atomic_counted_t, public pic::lckobject_t
+    struct PIRECORDER_DECLSPEC_CLASS recording_data_t: virtual pic::atomic_counted_t, virtual pic::lckobject_t
     {
         recording_data_t(unsigned signals, unsigned wires);
 
@@ -80,7 +81,7 @@ namespace recorder
         unsigned long long current_time_;
     };
 
-    class PIRECORDER_DECLSPEC_CLASS readevent_t : public pic::lckobject_t
+    class PIRECORDER_DECLSPEC_CLASS readevent_t : virtual public pic::lckobject_t
     {
         public:
             readevent_t() {}
@@ -111,7 +112,7 @@ namespace recorder
             samplelist_t::const_iterator current_sample_;
     };
 
-    class PIRECORDER_DECLSPEC_CLASS writeevent_t : public pic::lckobject_t
+    class PIRECORDER_DECLSPEC_CLASS writeevent_t : virtual public pic::lckobject_t
     {
         public:
             writeevent_t() {}
@@ -126,7 +127,7 @@ namespace recorder
 
     typedef pic::ref_t<recording_data_t> dataref_t;
 
-    class PIRECORDER_DECLSPEC_CLASS recording_t 
+    class PIRECORDER_DECLSPEC_CLASS recording_t: virtual public pic::lckobject_t
     {
         public:
             recording_t();
@@ -159,7 +160,7 @@ namespace recorder
     PIRECORDER_DECLSPEC_FUNC(recording_t) read(const char *name);
     PIRECORDER_DECLSPEC_FUNC(recording_t) read_meta(const char *name);
 
-    class PIRECORDER_DECLSPEC_CLASS recordmaker_t
+    class PIRECORDER_DECLSPEC_CLASS recordmaker_t: virtual public pic::lckobject_t
     {
         public:
             recordmaker_t();

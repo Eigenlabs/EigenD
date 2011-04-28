@@ -471,7 +471,7 @@ class ConnectionCache:
         self.__cn = {}
         self.__mss = {} # { mss -> { sss -> [ mid,sid] } }
         self.__sss = {} # { sss -> { mss -> [ mid,sid] } }
-        self.__inputs = {} # { sid -> { mid -> [inputs] } }
+        self.__inputs = {} # { sid -> { mid -> [(using,channel)..] } }
 
     def __rebuild(self,mid,m):
         rules = m[3]
@@ -529,7 +529,7 @@ class ConnectionCache:
             if not m[2]:
                 del self.__master[mid]
 
-    def get_inputs(self,sid,mid):
+    def get_inputs_channels(self,sid,mid):
         ssd = self.__inputs.get(sid)
         if ssd:
             msd = ssd.get(mid)
@@ -537,8 +537,16 @@ class ConnectionCache:
                 return msd
         return set()
 
+    def get_inputs(self,sid,mid):
+        ssd = self.__inputs.get(sid)
+        if ssd:
+            msd = ssd.get(mid)
+            if msd:
+                return set([m[0] for m in msd])
+        return set()
+
     def connect(self,sid,sss,mids):
-        wanted_mids = set([id for (id,ss,inp) in mids])
+        wanted_mids = set([id for (id,ss,inp,chn) in mids])
         old_mids = self.__cn.get(sid,set())
         self.__cn[sid] = wanted_mids
         unwanted_mids = old_mids.difference(wanted_mids)
@@ -549,8 +557,8 @@ class ConnectionCache:
 
         if mids:
             self.__inputs[sid] = {}
-            for (id,ss,inp) in mids:
-                self.__inputs[sid].setdefault(id,set()).add(inp)
+            for (id,ss,inp,chn) in mids:
+                self.__inputs[sid].setdefault(id,set()).add((inp,chn))
 
         for mid in unwanted_mids:
             m = self.__master.get(mid)
@@ -581,7 +589,7 @@ class ConnectionCache:
             try: del sssdict2[sid]
             except KeyError: pass
 
-        for (mid,mss,inp) in mids:
+        for (mid,mss,inp,chn) in mids:
             mssdict1 = self.__mss.setdefault(mss,dict())
             mssdict2 = mssdict1.setdefault(sss,dict())
             sssdict2 = sssdict1.setdefault(mss,dict())
@@ -1332,7 +1340,7 @@ class Database(logic.Engine):
 
         for t in terms:
             if logic.is_pred_arity(t,'conn',4,4):
-                ids.append((t.args[2],t.args[0]))
+                ids.append((t.args[2],t.args[0],t.args[3]))
 
         return ids
 
@@ -1381,10 +1389,10 @@ class Database(logic.Engine):
             if master:
                 mids = self.__master2id(master)
                 midmap = []
-                for mid,inp in mids:
+                for mid,inp,chn in mids:
                     p=ap.protocols()
                     mss = paths.id2server(mid)
-                    midmap.append((mid,mss,inp))
+                    midmap.append((mid,mss,inp,chn))
                     if 'obm' in p:
                         r.append(Relation(self.__assocwith,ss,mss))
                     if 'om' in p:
@@ -1533,6 +1541,9 @@ class Database(logic.Engine):
 
     def find_masters(self,item):
         return self.__ccache.get_masters(item)
+
+    def get_inputs_channels(self,slave_id,master_id):
+        return self.__ccache.get_inputs_channels(slave_id,master_id)
 
     def get_inputs(self,slave_id,master_id):
         return self.__ccache.get_inputs(slave_id,master_id)

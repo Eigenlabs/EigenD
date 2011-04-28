@@ -26,7 +26,7 @@ me = env.Dir('.').abspath
 
 if env['IS_WINDOWS']:
     juce_files = Split('juce_LibrarySource.cpp')
-    juce_env.Append(CCFLAGS='-DWINDOWS=1 -DJUCE_DLL -DJUCE_DLL_BUILD -DNDEBUG=1')
+    juce_env.Append(CCFLAGS='-DWINDOWS=1 -DJUCE_DLL -DJUCE_DLL_BUILD -DNDEBUG=1 /arch:SSE')
 
 if env['IS_LINUX']:
     juce_files = Split('juce_LibrarySource.cpp')

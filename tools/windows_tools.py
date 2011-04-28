@@ -130,7 +130,7 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         self.Replace(PYDSTAGEDIR=join('$RELEASESTAGEDIR','bin'))
         self.Replace(PYDINSTALLDIR=join('$INSTALLDIR','bin'))
         self.Replace(PYDRUNDIR=join('#tmp','bin'))
-        self.Append(CCFLAGS='/EHsc /w34355 /MD /O2 /fp:fast /DWIN32')
+        self.Append(CCFLAGS='/EHsc /w34355 /MD /O2 /fp:fast /arch:SSE2 /DWIN32')
         self.Replace(PI_PLATFORMTYPE='windows')
         self.Append(LINKFLAGS=Split('/MANIFEST /INCREMENTAL:NO'))
 

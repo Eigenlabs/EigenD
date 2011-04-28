@@ -95,6 +95,26 @@ class Plumber(agent.Agent):
 
         yield async.Coroutine.success()
 
+    def get_connections(self,id):
+        rv = []
+        db = self.database
+
+        for e in db.search(T('dump_connections',id,V('F'),V('T'))):
+            f = e['F']
+            t = e['T']
+
+            fd = db.find_full_desc(f) or f
+            td = db.find_full_desc(t) or t
+
+            us = db.get_inputs_channels(t,f)
+            for (u,c) in us:
+                d = '%s -> %s' % (fd,td)
+                if c: d = d+' channel %s' % (c)
+                if u: d = d+' using %s' % (u)
+                rv.append(d)
+
+        return rv
+
     def verb_18_unconnect(self,subject,t):
         print 'un connect',t
         t = action.concrete_object(t)
