@@ -17,6 +17,7 @@ alpha 1             | 1.1.2-testing           | 10247ef0ff49f78f5d5f45ae11b62a33
 alpha 1             | 1.1.7-testing           | f32de36056990740df770c49f60cbe06 (56d4a8c3571c582038125a21f2778935)
 alpha 1             | 1.1.19-testing          | 9fa9f683e70bf5a2664a9156ce7a3f22 (710a445ed214ab009dc0153c2fd7ec22)
 alpha 1             | 1.1.21-testing          | bbb923319e565bf73064d3d0d56447cd (edfd0658a995c0e12a8548b83109f53d)
+alpha 1             | 1.3.17-testing          | fb9f4169de2863df9dd0d8b65c081fc3
                     |                         |
 ---------------------------------------------------------------------------------
                     |                         |
@@ -25,6 +26,7 @@ alpha 2             | 1.1.2-testing           | db69a0954a0543b71365d9ef9f3ef3c0
 alpha 2             | 1.1.7-testing           | cce9d180e32ef34e69ee498f7982f788 (a6cd97bfec9f1b69251ec89cd63446a0)
 alpha 2             | 1.1.19-testing          | f075e49f86bfc2298210c649b2fb3d2f (42e766b86de3eb4d26f19406d62d5e4e)
 alpha 2             | 1.1.21-testing          | 7fe01cb16188aedf0416454f4f57c876 (3f33a75b0ee2aebb00ca2567093e5ebb)
+alpha 2             | 1.3.17-testing          | a6373e0afa1a079bb27d599744d3d828
                     |                         |
 ---------------------------------------------------------------------------------
                     |                         |
@@ -34,6 +36,7 @@ alpha 3             | 1.1.7-testing           | b4ee2cc276e29fdd7ca7f93c36cbf017
 alpha 3             | 1.1.19-testing          | 63f8af6f1bb0bd02babc87d8c41b1a84 (2371eabf6ab72762fc4b43ab444807d0)
 alpha 3             | 1.1.21-testing          | 92a97dbfd280757d050bcbbf983e93f2 (757e964076e9b95138365af005b6b95b)
 alpha 3             | 1.2.6-testing           | b8132492e50b82457c00e023b0bba7cd
+alpha 3             | 1.3.17-testing          | 6e9edcb43c7cfead6af5ba9224bec72a
                     |                         |
 ---------------------------------------------------------------------------------
                     |                         |
