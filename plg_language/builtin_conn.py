@@ -236,12 +236,11 @@ class Plumber(agent.Agent):
             fd = db.find_full_desc(f) or f
             td = db.find_full_desc(t) or t
 
-            us = db.get_inputs(t,f)
-            for u in us:
-                if u:
-                    d = '%s -> %s using %s' % (fd,td,u)
-                else:
-                    d = '%s -> %s' % (fd,td)
+            us = db.get_inputs_channels(t,f)
+            for (u,c) in us:
+                d = '%s -> %s' % (fd,td)
+                if c: d = d+' channel %s' % (c)
+                if u: d = d+' using %s' % (u)
                 rv.append(d)
 
         return rv

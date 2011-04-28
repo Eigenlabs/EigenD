@@ -42,7 +42,7 @@
 
 namespace
 {
-    struct clockwire_t: piw::wire_t, piw::event_data_sink_t
+    struct clockwire_t: piw::wire_t, piw::event_data_sink_t, virtual pic::lckobject_t
     {
         clockwire_t(piw::clockinterp_t *i): interp_(i), transport_(false)
         {
@@ -103,7 +103,7 @@ namespace
         bool transport_;
     };
 
-    struct datawire_t: public piw::wire_ctl_t, piw::event_data_source_real_t, virtual pic::counted_t
+    struct datawire_t: public piw::wire_ctl_t, piw::event_data_source_real_t, virtual pic::counted_t, virtual pic::lckobject_t
     {
         datawire_t(unsigned w,unsigned s,const piw::data_t &path): piw::event_data_source_real_t(path),  wire_(w), signals_(s), started_(false)
         {
@@ -320,7 +320,7 @@ namespace
         piw::xevent_data_buffer_t output_;
     };
 
-    struct take_t : piw::root_ctl_t, pic::element_t<>
+    struct take_t : piw::root_ctl_t, pic::element_t<>, virtual pic::lckobject_t
     {
         take_t(recorder::player_t::impl_t *i, unsigned n, unsigned s);
         ~take_t();
@@ -387,13 +387,13 @@ namespace
         unsigned state_;
         unsigned long long start_time_, last_tick_;
         float start_beat_;
-        std::vector<pic::ref_t<datawire_t> > wires_;
+        pic::lckvector_t<pic::ref_t<datawire_t> >::nbtype wires_;
         unsigned name_;
         bool free_;
         unsigned mode_;
     };
 
-    struct cookiedata_t
+    struct cookiedata_t: virtual pic::lckobject_t
     {
         cookiedata_t(const std::string &n, const recorder::recording_t &r, unsigned p) : name(n), recording(r), poly(p) {}
         std::string name;
@@ -401,7 +401,7 @@ namespace
         unsigned poly;
     };
 
-    struct interlock_t: virtual public pic::atomic_counted_t
+    struct interlock_t: virtual public pic::atomic_counted_t, virtual pic::lckobject_t
     {
         interlock_t(recorder::player_t::impl_t *i): impl_(i) {}
         mutable pic::flipflop_t<recorder::player_t::impl_t *> impl_;
@@ -437,7 +437,7 @@ namespace
 
 namespace recorder
 {
-    struct player_t::impl_t: piw::thing_t, piw::root_t, piw::clocksink_t
+    struct player_t::impl_t: piw::thing_t, piw::root_t, piw::clocksink_t, virtual pic::lckobject_t
     {
         impl_t(piw::clockdomain_ctl_t *d, unsigned p, unsigned s, const piw::cookie_t &c): root_t(0), aggregator_(c,d), next_(0), freecount_(0), takecount_(0), signals_(s), poly_(p), interp_(2), clockwire_(&interp_), up_(0)
         {
@@ -608,7 +608,7 @@ namespace recorder
 
         std::string cookiename(unsigned long r)
         {
-            std::map<unsigned long, cookiedata_t>::iterator ci = cookies_.find(r);
+            pic::lckmap_t<unsigned long, cookiedata_t>::nbtype::iterator ci = cookies_.find(r);
 
             if(ci == cookies_.end())
             {
@@ -621,7 +621,7 @@ namespace recorder
 
         unsigned long clonecookie(const std::string &name,unsigned poly)
         {
-            std::map<unsigned long, cookiedata_t>::const_iterator i = cookies_.begin(), e = cookies_.end();
+            pic::lckmap_t<unsigned long, cookiedata_t>::nbtype::const_iterator i = cookies_.begin(), e = cookies_.end();
 
             while(i != e)
             {
@@ -642,7 +642,7 @@ namespace recorder
 
         unsigned long getcookie(const std::string &name)
         {
-            std::map<unsigned long, cookiedata_t>::const_iterator i = cookies_.begin(), e = cookies_.end();
+            pic::lckmap_t<unsigned long, cookiedata_t>::nbtype::const_iterator i = cookies_.begin(), e = cookies_.end();
 
             while(i != e)
             {
@@ -684,7 +684,7 @@ namespace recorder
 
         piw::change_t player(unsigned long r, unsigned mode)
         {
-            std::map<unsigned long, cookiedata_t>::iterator ci = cookies_.find(r);
+            pic::lckmap_t<unsigned long, cookiedata_t>::nbtype::iterator ci = cookies_.find(r);
 
             if(ci == cookies_.end())
             {
@@ -721,7 +721,7 @@ namespace recorder
             unsigned ot = takecount_;
             unsigned of = freecount_;
 
-            std::map<unsigned long, cookiedata_t>::iterator ci;
+            pic::lckmap_t<unsigned long, cookiedata_t>::nbtype::iterator ci;
             unsigned takes = 0;
             unsigned poly = 0;
 
@@ -843,7 +843,7 @@ namespace recorder
         }
 
         piw::aggregator_t aggregator_;
-        std::map<unsigned long, cookiedata_t> cookies_;
+        pic::lckmap_t<unsigned long, cookiedata_t>::nbtype cookies_;
         unsigned next_;
 
         pic::ilist_t<take_t> takes_; // fast

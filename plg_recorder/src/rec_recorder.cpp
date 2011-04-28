@@ -47,7 +47,7 @@
 
 namespace 
 {
-    struct clockwire_t: piw::wire_t, piw::event_data_sink_t
+    struct clockwire_t: piw::wire_t, piw::event_data_sink_t, virtual pic::lckobject_t
     {
         clockwire_t(recorder::recorder_t::impl_t *impl): impl_(impl) {}
         ~clockwire_t() { invalidate(); }
@@ -62,7 +62,7 @@ namespace
         piw::xevent_data_buffer_t::iter_t iterator_;
     };
 
-    struct datawire_t: piw::wire_t, piw::event_data_sink_t
+    struct datawire_t: piw::wire_t, piw::event_data_sink_t, virtual pic::lckobject_t
     {
         datawire_t(recorder::recorder_t::impl_t *i, const piw::event_data_source_t &es, unsigned channel);
         ~datawire_t() { invalidate(); }
