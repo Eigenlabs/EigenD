@@ -724,11 +724,28 @@ void correlator_buffer_t::detach_source(correlator_source_t *input, unsigned lon
     //pic::logmsg() << "detach source " << (void *)input << " " << input->signame_ << " refc " << refcount_ << " from " << (void *)this << " " << input->type_;
 
     unsigned s = input->signal_;
+    unsigned sn = input->signame_;
+    correlator_voice_t *v = voice_;
+    impl_t *root = v->root_;
+
     input->source_detached(this);
     inputs_[s]=0;
 
-    if(input->type_==INPUT_LINGER || input->type_==INPUT_MERGE)
+    if(input->type_==INPUT_MERGE)
     {
+        return;
+    }
+
+    if(input->type_==INPUT_LINGER)
+    {
+        correlator_default_t *d = root->best_default(s,v->current_id_);
+
+        if(d)
+        {
+            inputs_[s] = d;
+            d->default_attached(this,0);
+        }
+
         return;
     }
 
@@ -746,8 +763,6 @@ void correlator_buffer_t::detach_source(correlator_source_t *input, unsigned lon
     {
         return;
     }
-
-    impl_t *root = voice_->root_;
 
     if(state_==BUFFER_STARTED)
     {
@@ -783,7 +798,7 @@ void correlator_buffer_t::set_signal(unsigned s,unsigned long long t,const piw::
 
     if(linger)
     {
-        if(state_==BUFFER_LINGERING || state_==BUFFER_LINGERING2)
+        if(state_!=BUFFER_DONE)
         {
             voice_->source_buffer_reset(s,t,oq,q);
         }
@@ -905,9 +920,9 @@ bool correlator_default_t::fastdata_receive_event(const piw::data_nb_t &d, const
     if(current_id_.get().is_path())
     {
         //pic::logmsg() << (void *)this << "release voices";
-        release_voices(d.time());
         erase_defaultbyid();
         current_id_.clear();
+        release_voices(d.time());
     }
 
     piw::data_nb_t nd = filter_(d);
@@ -1105,6 +1120,12 @@ void correlator_default_t::dump_buffers()
 void correlator_default_t::default_attached(correlator_buffer_t *buffer, unsigned long long time)
 {
     buffers_.push_back(buffer);
+
+    if(!time && queue_.isvalid())
+    {
+        time = queue_.current().time();
+    }
+
     buffer->set_signal(signame_,time,queue_,(type_==INPUT_LINGER));
     //pic::logmsg() << "(default_attached) buffer " << (void *)(buffer) << " attached for " << signame_ << " " << (void *)this; queue_.dump(false);
     //dump_buffers();

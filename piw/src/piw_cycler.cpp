@@ -466,9 +466,9 @@ void main_wire_t::ticked(unsigned long long t)
             s=std::min(1.0f,s*impl_->curve_);
             s=0.5*s;
             damper_ = s;
-            //pic::logmsg() << "damp: " << d << " -> " << s;
-            if(primary_voice_) primary_voice_->damp(d.time(),damper_);
-            if(secondary_voice_) secondary_voice_->damp(d.time(),damper_);
+            //pic::logmsg() << "damp: " << d << " -> " << s << ' ' << qindex_;
+            if(primary_voice_) primary_voice_->damp(t,damper_);
+            if(secondary_voice_) secondary_voice_->damp(t,damper_);
         }
     }
 
