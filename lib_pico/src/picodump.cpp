@@ -62,7 +62,7 @@ struct printer_t: public  pico::active_t::delegate_t
         for( int i = 0; i < 20; i++)
         {
             color = key[i].c;
-            printf( "key: %02d c1:%04d, c2:%04d, c3:%04d, c4:%04d\n",i,color[1],color[2],color[3],color[4] ); 
+            if(i==0) printf( "key: %02d c1:%04d, c2:%04d, c3:%04d, c4:%04d\n",i,color[0],color[1],color[2],color[3] ); 
                 
         }
     
@@ -72,7 +72,7 @@ struct printer_t: public  pico::active_t::delegate_t
 
 int main(int ac, char **av)
 {
-    const char *usbdev = 0;
+    std::string usbdev;
 
     if(ac==2)
     {
@@ -82,7 +82,7 @@ int main(int ac, char **av)
     {
         try
         {
-            usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,BCTPICO_USBPRODUCT).c_str();
+            usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,BCTPICO_USBPRODUCT);
         }
         catch(...)
         {
@@ -92,17 +92,17 @@ int main(int ac, char **av)
     }
 
     printer_t printer;
-    pico::active_t loop(usbdev, &printer);
+    pico::active_t loop(usbdev.c_str(), &printer);
+    loop.set_raw(false);
 
     loop.load_calibration_from_device();
     pic_microsleep(1000000);
     loop.start();
-    pic_microsleep(1000000);
 
     while(1)
     {       
-        loop.poll(0);
 		pic_microsleep(10000);
+        loop.poll(pic_microtime());
 	 }
 
     return 0;

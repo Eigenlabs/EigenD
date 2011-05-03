@@ -26,15 +26,11 @@
 
 #include <picross/pic_windows.h>
 
-static __int64 __ticks_per_second;
+static __int64 __ticks_per_second = 0LL;
 
 void pic_init_time(void)
 {
     LARGE_INTEGER l;
-
-    if(__ticks_per_second!=0)
-        return;
-
     QueryPerformanceFrequency(&l);
     __ticks_per_second = l.QuadPart;
 }

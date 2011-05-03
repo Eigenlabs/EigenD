@@ -90,7 +90,7 @@ namespace
 
     struct usbpipe_in_t: usbpipe_t
     {
-        usbpipe_in_t(linux_usbdevice_t *dev, pic::usbdevice_t::in_pipe_t *pipe): usbpipe_t(dev,pipe->in_pipe_name(),pipe->in_pipe_size()), pipe_(pipe), frame_(0ULL)
+        usbpipe_in_t(linux_usbdevice_t *dev, pic::usbdevice_t::iso_in_pipe_t *pipe): usbpipe_t(dev,pipe->in_pipe_name(),pipe->in_pipe_size()), pipe_(pipe), frame_(0ULL)
         {
             for(unsigned i=0;i<ISO_IN_URBS;i++)
             {
@@ -102,14 +102,14 @@ namespace
         virtual void completed(usburb_t *);
         void start();
 
-        pic::usbdevice_t::in_pipe_t *pipe_;
+        pic::usbdevice_t::iso_in_pipe_t *pipe_;
         unsigned long long frame_;
         std::auto_ptr<usburb_t> urbs_[ISO_IN_URBS];
     };
 
     struct usbpipe_out_t: usbpipe_t, pic::stack_t
     {
-        usbpipe_out_t(linux_usbdevice_t *dev, pic::usbdevice_t::out_pipe_t *pipe): usbpipe_t(dev,pipe->out_pipe_name(),pipe->out_pipe_size())
+        usbpipe_out_t(linux_usbdevice_t *dev, pic::usbdevice_t::iso_out_pipe_t *pipe): usbpipe_t(dev,pipe->out_pipe_name(),pipe->out_pipe_size())
         {
             for(unsigned i=0; i<ISO_IN_URBS; i++)
             {
@@ -138,8 +138,8 @@ struct pic::usbdevice_t::impl_t
     ~impl_t();
 
     bool poll_pipe(unsigned long long);
-    bool add_inpipe(in_pipe_t *p);
-    void set_outpipe(out_pipe_t *p);
+    bool add_iso_in(iso_in_pipe_t *p);
+    void set_iso_out(iso_out_pipe_t *p);
     void start_pipes();
 
     linux_usbdevice_t device_;
@@ -273,17 +273,17 @@ pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface, pic::usbdevic
 {
 }
 
-bool pic::usbdevice_t::add_inpipe(in_pipe_t *p)
+bool pic::usbdevice_t::add_iso_in(iso_in_pipe_t *p)
 {
-    return impl_->add_inpipe(p);
+    return impl_->add_iso_in(p);
 }
 
-void pic::usbdevice_t::set_outpipe(out_pipe_t *p)
+void pic::usbdevice_t::set_iso_out(iso_out_pipe_t *p)
 {
-    impl_->set_outpipe(p);
+    impl_->set_iso_out(p);
 }
 
-bool pic::usbdevice_t::impl_t::add_inpipe(in_pipe_t *p)
+bool pic::usbdevice_t::impl_t::add_iso_in(iso_in_pipe_t *p)
 {
     try
     {
@@ -304,7 +304,7 @@ bool pic::usbdevice_t::impl_t::add_inpipe(in_pipe_t *p)
     }
 }
 
-void pic::usbdevice_t::impl_t::set_outpipe(out_pipe_t *p)
+void pic::usbdevice_t::impl_t::set_iso_out(iso_out_pipe_t *p)
 {
     try
     {

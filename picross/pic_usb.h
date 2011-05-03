@@ -25,7 +25,7 @@
 #include "pic_error.h"
 #include <string>
 
-#define PIC_USB_FRAME_HISTORY 16
+#define PIC_USB_FRAME_HISTORY 20
 
 namespace pic
 {
@@ -35,8 +35,8 @@ namespace pic
             struct impl_t;
 
         public:
-            usbenumerator_t(unsigned short vendor, unsigned short product, const f_string_t &del);
-            usbenumerator_t(unsigned short vendor, unsigned short product, const f_string_t &del, const f_string_t &gone);
+            usbenumerator_t(unsigned short vendor, unsigned short product, const f_string_t &add);
+            usbenumerator_t(unsigned short vendor, unsigned short product, const f_string_t &add, const f_string_t &del);
             ~usbenumerator_t();
 
             void start();
@@ -58,10 +58,10 @@ namespace pic
         public:
             struct impl_t;
 
-            struct in_pipe_t
+            struct PIC_DECLSPEC_CLASS iso_in_pipe_t
             {
-                in_pipe_t(unsigned name, unsigned size): name_(name), size_(size), fnum_(0),ftime_(0),history_(0),trigger_(0),frame_check_(true) {}
-                virtual ~in_pipe_t() {}
+                iso_in_pipe_t(unsigned name, unsigned size): name_(name), size_(size), fnum_(0),ftime_(0),history_(0),trigger_(0),frame_check_(true) {}
+                virtual ~iso_in_pipe_t() {}
                 virtual void in_pipe_data(const unsigned char *frame, unsigned size, unsigned long long fnum, unsigned long long htime, unsigned long long ptime) = 0;
                 virtual void pipe_error(unsigned long long fnum, int result) {}
                 virtual void pipe_died() {}
@@ -87,21 +87,38 @@ namespace pic
                 bool frame_check_;
             };
 
-            struct power_t
+            struct PIC_DECLSPEC_CLASS power_t
             {
                 virtual ~power_t() {}
                 virtual void on_suspending() {}
                 virtual void on_waking() {}
             };
 
-            struct out_pipe_t
+            struct PIC_DECLSPEC_CLASS iso_out_pipe_t
             {
-                out_pipe_t(unsigned name, unsigned size): name_(name), size_(size) {}
+                iso_out_pipe_t(unsigned name, unsigned size): name_(name), size_(size) {}
                 unsigned out_pipe_name() { return name_; }
                 unsigned out_pipe_size() { return size_; }
             private:
                 unsigned name_;
                 unsigned size_;
+            };
+
+            struct PIC_DECLSPEC_CLASS bulk_out_pipe_t
+            {
+                bulk_out_pipe_t(unsigned name, unsigned size): name_(name), size_(size) {}
+                unsigned out_pipe_name() { return name_; }
+                unsigned out_pipe_size() { return size_; }
+                void bulk_write(const void *data, unsigned len, unsigned timeout=500);
+                void bulk_write(const std::string &data);
+
+                class impl_t;
+
+            private:
+                friend class impl_t;
+                unsigned name_;
+                unsigned size_;
+                impl_t *impl_;
             };
 
         public:
@@ -114,8 +131,10 @@ namespace pic
 
             // currently, supporting only one client with multiple pipes, possibly
             // a power notification delegate.  detach() clears them all out.
-            bool add_inpipe(in_pipe_t *);
-            void set_outpipe(out_pipe_t *);
+            bool add_iso_in(iso_in_pipe_t *);
+            void set_iso_out(iso_out_pipe_t *);
+            bool add_bulk_out(bulk_out_pipe_t *);
+
             void set_power_delegate(power_t *);
             void detach();
 
@@ -127,9 +146,6 @@ namespace pic
 
             void control_in(unsigned char type, unsigned char request, unsigned short value, unsigned short index, void *data, unsigned len, unsigned timeout=500);
             std::string control_in(unsigned char type, unsigned char request, unsigned short value, unsigned short index, unsigned len);
-
-            void bulk_write(unsigned name, const void *data, unsigned len, unsigned timeout=500);
-            void bulk_write(unsigned name, const std::string &data);
 
             class PIC_DECLSPEC_CLASS iso_out_guard_t: public pic::nocopy_t
             {

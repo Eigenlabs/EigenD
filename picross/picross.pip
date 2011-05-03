@@ -226,18 +226,19 @@ stdstr public_tools_dir[pic::public_tools_dir]()
 stdstr private_tools_dir[pic::private_tools_dir]()
 stdstr release[pic::release]()
 
-class in_pipe[pic::usbdevice_t::in_pipe_t]
+class bulk_out_pipe[pic::usbdevice_t::bulk_out_pipe_t]
 {
+    bulk_out_pipe(unsigned,unsigned)
+    void bulk_write(const stdstr &)
 }
 
 class usbdevice[pic::usbdevice_t]
 {
     usbdevice(const char *, unsigned)
-    bool add_inpipe(in_pipe *)
+    bool add_bulk_out(bulk_out_pipe *)
     void control(unsigned char, unsigned char, unsigned short, unsigned short)
     void control_out(unsigned char, unsigned char, unsigned short, unsigned short, const stdstr &)
     stdstr control_in(unsigned char, unsigned char, unsigned short, unsigned short, unsigned)
-    void bulk_write(unsigned, const stdstr &)
     void start_pipes()
     void stop_pipes()
 }

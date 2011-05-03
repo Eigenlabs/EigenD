@@ -60,7 +60,7 @@ int main(int ac, char **av)
 
     printf("found device %s\n",usbdev);
 
-    //pic::usbdevice_t::out_pipe_t pipe(6,128);
+    //pic::usbdevice_t::iso_out_pipe_t pipe(6,128);
     pic::usbdevice_t loop(usbdev,0);
 
     loop.control_out(0x40,0xb1,0,0,0,0);

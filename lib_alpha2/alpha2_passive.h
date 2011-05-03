@@ -47,7 +47,6 @@ namespace alpha2
             void control(unsigned char, unsigned char, unsigned short, unsigned short);
             void control_out(unsigned char, unsigned char, unsigned short, unsigned short, const std::string &);
             std::string control_in(unsigned char, unsigned char, unsigned short, unsigned short, unsigned);
-            void bulk_write(unsigned, const std::string &);
 
             void set_ledcolour(unsigned key, unsigned colour);
             const char *get_name();

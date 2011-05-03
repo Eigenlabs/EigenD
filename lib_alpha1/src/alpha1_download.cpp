@@ -35,7 +35,12 @@ namespace alpha1
     void tms_download(const char *name,const char *filename)
     {
         pic::usbdevice_t tms(name,0);
+        pic::usbdevice_t::bulk_out_pipe_t bulk_pipe(6,64);
+
+        tms.add_bulk_out(&bulk_pipe);
+
         unsigned char buffer[64];
+
         int fd;
         int l;
 
@@ -50,7 +55,7 @@ namespace alpha1
         {
             while((l=read(fd,buffer,sizeof(buffer)))>0)
             {
-                tms.bulk_write(6,buffer,l);
+                bulk_pipe.bulk_write(buffer,l);
             }
 
             close(fd);

@@ -31,7 +31,7 @@
 
 #define KEYS 17
 
-struct micro::active_t::impl_t: pic::usbdevice_t::in_pipe_t, pic::usbdevice_t::power_t, pic::usbdevice_t, virtual pic::lckobject_t
+struct micro::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice_t::power_t, pic::usbdevice_t, virtual pic::lckobject_t
 {
     impl_t(const char *, micro::active_t::delegate_t *);
     ~impl_t() { stop(); }
@@ -63,9 +63,9 @@ struct micro::active_t::impl_t: pic::usbdevice_t::in_pipe_t, pic::usbdevice_t::p
     bool resync_;
 };
 
-micro::active_t::impl_t::impl_t(const char *name, micro::active_t::delegate_t *del): usbdevice_t::in_pipe_t(BCTMICRO_USBENDPOINT_SENSOR_NAME,BCTMICRO_USBENDPOINT_SENSOR_SIZE), usbdevice_t(name,BCTMICRO_INTERFACE), handler_(del), raw_(false), resync_(false)
+micro::active_t::impl_t::impl_t(const char *name, micro::active_t::delegate_t *del): usbdevice_t::iso_in_pipe_t(BCTMICRO_USBENDPOINT_SENSOR_NAME,BCTMICRO_USBENDPOINT_SENSOR_SIZE), usbdevice_t(name,BCTMICRO_INTERFACE), handler_(del), raw_(false), resync_(false)
 {
-    add_inpipe(this);
+    add_iso_in(this);
     set_power_delegate(this);
     pico_decoder_create(&decoder_,PICO_DECODER_MICRO);
 }

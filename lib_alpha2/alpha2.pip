@@ -107,7 +107,6 @@ class passive[alpha2::passive_t]
     void control(unsigned char, unsigned char, unsigned short, unsigned short)
     void control_out(unsigned char, unsigned char, unsigned short, unsigned short, const stdstr &)
     stdstr control_in(unsigned char, unsigned char, unsigned short, unsigned short, unsigned)
-    void bulk_write(unsigned, const stdstr &)
 }
 
 class active[alpha2::active_t]
