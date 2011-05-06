@@ -724,7 +724,6 @@ void correlator_buffer_t::detach_source(correlator_source_t *input, unsigned lon
     //pic::logmsg() << "detach source " << (void *)input << " " << input->signame_ << " refc " << refcount_ << " from " << (void *)this << " " << input->type_;
 
     unsigned s = input->signal_;
-    unsigned sn = input->signame_;
     correlator_voice_t *v = voice_;
     impl_t *root = v->root_;
 
