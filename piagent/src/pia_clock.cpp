@@ -31,7 +31,7 @@
 #include <memory>
 
 #define SRC_INTL_SAMPLE_RATE 48000
-#define SRC_INTL_PERIOD      (PLG_CLOCK_BUFFER_SIZE*1000)/SRC_INTL_SAMPLE_RATE /* millis */
+#define SRC_INTL_PERIOD      (PLG_CLOCK_BUFFER_SIZE_DEFAULT*1000)/SRC_INTL_SAMPLE_RATE /* millis */
 #define CLOCK_DEBUG 0
 
 struct sink_t;

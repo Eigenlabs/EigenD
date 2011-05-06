@@ -35,7 +35,8 @@ extern "C" {
  * @{
  */
 
-#define PLG_CLOCK_BUFFER_SIZE      4096
+#define PLG_CLOCK_BUFFER_SIZE          4096
+#define PLG_CLOCK_BUFFER_SIZE_DEFAULT  512
 
 /**
  * @}
