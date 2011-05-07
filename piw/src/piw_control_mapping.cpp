@@ -187,7 +187,7 @@ namespace piw
                     oparam = t2.arg(1).value().as_long();
                     scale = t2.arg(2).value().as_float();
 
-                    if(t2.arity()>=12 && 
+                    if(t2.arity()>=13 && 
                         t2.arg(3).value().type()==BCTVTYPE_FLOAT && 
                         t2.arg(4).value().type()==BCTVTYPE_FLOAT && 
                         t2.arg(5).value().type()==BCTVTYPE_FLOAT && 
@@ -210,7 +210,7 @@ namespace piw
                         resolution = t2.arg(11).value().as_long();
                         secondary_cc = t2.arg(12).value().as_long();
 
-                        if(t2.arity()>=13 && 
+                        if(t2.arity()>=14 && 
                             t2.arg(13).value().type()==BCTVTYPE_INT)
                         {
                             curve = t2.arg(13).value().as_long();
