@@ -419,7 +419,7 @@ class Agent(agent.Agent):
         self.kclone.enable(1,False)
         self.sgate.enable(False)
         self.cgate.enable(False)
-        self.selgate.set_efunctor(piw.slowchange(utils.changify(self.__choice)))
+        self.selgate.set_efunctor(utils.make_change_nb(piw.slowchange(utils.changify(self.__choice))))
 
     def __choice(self,v):
         v=paths.path2grist(str(v))
