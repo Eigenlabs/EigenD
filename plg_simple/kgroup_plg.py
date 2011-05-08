@@ -684,7 +684,7 @@ class Agent(agent.Agent):
 
         self.status_buffer.override(True)
         self.mode_selector.choose(True)
-        self.selgate.set_efunctor(piw.slowchange(utils.changify(self.__choice)))
+        self.selgate.set_efunctor(utils.make_change_nb(piw.slowchange(utils.changify(self.__choice))))
 
     def __choice(self,v):
         v=int(str(v))
