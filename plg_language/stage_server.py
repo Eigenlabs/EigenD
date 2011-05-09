@@ -287,6 +287,38 @@ class stageXMLRPCFuncs:
             traceback.print_exc(limit=None)
             return False
 
+    def getValue(self, argument):
+        piw.tsd_lock()
+
+        r = self.__languageAgent.basic_get_value(argument)
+
+        args = [None,None,None]
+
+        if r.status() is not None:
+            args[0] = r.status()
+            args[1] = r.args()
+            args[2] = r.kwds()
+        else:
+            e = threading.Event()
+            e.clear()
+
+            def finished(returnstatus,*returnargs,**returnkwds):
+                args[0] = returnstatus
+                args[1] = returnargs
+                args[2] = returnkwds
+                print 'args',args
+                e.set()
+
+            r.setCallback(finished,True).setErrback(finished,False)
+            piw.tsd_unlock()
+            e.wait()
+
+        if args[0]:
+            return '\n'.join([str(i) for i in args[1][0]])
+        
+        return False
+
+
     def execBelcanto(self, argument):
         piw.tsd_lock()
 
