@@ -64,7 +64,9 @@ decoder_wire_t::decoder_wire_t(piw::decoder_t::impl_t *parent, const piw::event_
 
     if(i != parent_->wires_.end())
     {
-        i->second->invalidate();
+        decoder_wire_t *j = i->second;
+        j->invalidate();
+        delete j;
     }
 
     parent_->wires_.insert(std::make_pair(source_.path(),this));
@@ -698,12 +700,13 @@ piw::decoder_t::impl_t::~impl_t()
 
 void piw::decoder_t::impl_t::invalidate()
 {
-    std::map<piw::data_t,decoder_wire_t *>::iterator i,e;
-    e = wires_.end();
-    while((i=wires_.begin()) != e)
+    std::map<piw::data_t,decoder_wire_t *>::iterator i;
+
+    while((i=wires_.begin()) != wires_.end())
     {
-        i->second->invalidate();
-        delete i->second;
+        decoder_wire_t *j = i->second;
+        j->invalidate();
+        delete j;
     }
 }
 
