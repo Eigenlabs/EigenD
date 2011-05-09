@@ -226,7 +226,7 @@ namespace piw
             void do_linear(unsigned n,unsigned r)
             {
                 const float *in = upstream_.read(n);
-                float *out = buffer_.write(n*STRIDE);
+                float *out = buffer_.write(n*STRIDE+r);
                 float slope = 0;
 
                 for(unsigned i=0; i<n; ++i)
