@@ -238,6 +238,23 @@ class Agent(agent.Agent):
         yield async.Coroutine.success(text)
 
     @async.coroutine('internal error')
+    def basic_get_value(self,arg):
+        words = arg.strip().split()
+        r = self.interpret(self.interpreter,None,words)
+        yield r
+        if not r.status():
+            yield async.Coroutine.failure('not found')
+
+        (objs,) = r.args()
+        ids = objs.concrete_ids()
+        rv = []
+        for id in ids:
+            p = self.database.find_item(id)
+            rv.append(p.get_value())
+
+        yield async.Coroutine.success(rv)
+
+    @async.coroutine('internal error')
     def rpc_identify(self,arg):
         words = arg.strip().split()
         r = self.interpret(self.interpreter,None,words)
