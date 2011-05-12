@@ -50,12 +50,13 @@ void pic_set_fpu()
 
 void pic_set_foreground(bool rt)
 {
-    /*
-    if (SetPriorityClass(GetCurrentProcess(),REALTIME_PRIORITY_CLASS) == 0 )
+    if(rt)
     {
-        printf( "Failed to set thread priority to real time" ); 
+        if (SetPriorityClass(GetCurrentProcess(),HIGH_PRIORITY_CLASS) == 0 )
+        {
+            printf( "Failed to set thread priority to real time\n"); 
+        }
     }
-    */
 }
 
 pic_threadid_t pic_current_threadid()
@@ -77,23 +78,24 @@ static int __lock_stack()
 
 static int __realtime(unsigned pri)
 {
-    if(pri>0)
-    {
-		if ( SetThreadPriority(GetCurrentThread(),THREAD_PRIORITY_TIME_CRITICAL) == 0 )
-		{
-			printf( "Failed to set thread priority to real time" ); 
-		}
+    unsigned pri2 = THREAD_PRIORITY_NORMAL;
 
-        __lock_stack();
-    }
-    else
+    switch(pri)
     {
-        /*
-		if ( SetThreadPriority(GetCurrentThread(),THREAD_PRIORITY_BELOW_NORMAL) == 0 )
-		{
-			printf( "Failed to set thread priority to real time" ); 
-		}
-        */
+        case PIC_THREAD_PRIORITY_LOW:       pri2=THREAD_PRIORITY_BELOW_NORMAL; break;
+        case PIC_THREAD_PRIORITY_NORMAL:    pri2=THREAD_PRIORITY_NORMAL; break;
+        case PIC_THREAD_PRIORITY_HIGH:      pri2=THREAD_PRIORITY_ABOVE_NORMAL; break;
+        case PIC_THREAD_PRIORITY_REALTIME:  pri2=THREAD_PRIORITY_TIME_CRITICAL; break;
+    }
+
+    if (SetThreadPriority(GetCurrentThread(),pri2) == 0 )
+    {
+        printf( "Failed to set thread priority to real time" ); 
+    }
+
+    if(pri==PIC_THREAD_PRIORITY_REALTIME)
+    {
+        __lock_stack();
     }
 
     return 1;

@@ -213,7 +213,7 @@ float piw::sample_t::samplerate() const { return impl_->samplerate_; }
 float piw::sample_t::rootfreq() const { return impl_->rootfreq_; }
 float piw::sample_t::attenuation() const { return impl_->attenuation_; }
 
-piw::samplearray_t::impl_t::impl_t(const char *filename, unsigned p, unsigned l): pic::safe_worker_t(1000,10), name(filename), size(l/2), offset(p)
+piw::samplearray_t::impl_t::impl_t(const char *filename, unsigned p, unsigned l): pic::safe_worker_t(1000,PIC_THREAD_PRIORITY_HIGH), name(filename), size(l/2), offset(p)
 {
     fd = fopen(filename,"rb");
 

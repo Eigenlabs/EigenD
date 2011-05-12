@@ -75,11 +75,14 @@ static int __realtime(unsigned pri)
 {
     struct sched_param sp;
 
-    sp.sched_priority=LINUX_REALTIME_BASE+pri;
-
-    if(sched_setscheduler(0,SCHED_FIFO,&sp) == -1)
+    if(pri>=PIC_THREAD_PRIORITY_HIGH)
     {
-        perror("realtime");
+        sp.sched_priority=LINUX_REALTIME_BASE+(pri==PIC_THREAD_PRIORITY_REALTIME)?19:10;
+
+        if(sched_setscheduler(0,SCHED_FIFO,&sp) == -1)
+        {
+            perror("realtime");
+        }
     }
 
     return 1;
@@ -110,106 +113,37 @@ static void __realtime(pthread_t thread, unsigned pri)
 {
     kern_return_t err;
 
-    if(pri<20)
+    unsigned pri2 = 1;
+
+    switch(pri)
     {
-        thread_extended_policy_data_t policy_fixed;
-        thread_precedence_policy_data_t policy_prec;
-
-        /*
-        char stackstuff[16384];
-        thread_basic_info_data_t basic_info;
-        policy_info_data_t policy_info;
-        pthread_t self = pthread_self();
-        unsigned int count = THREAD_BASIC_INFO_COUNT;
-        unsigned int parent_priority = 0;
-
-        thread_info (pthread_mach_thread_np(self), THREAD_BASIC_INFO, (thread_info_t)&basic_info, &count);
-
-        switch (basic_info.policy)
-        {
-            case POLICY_TIMESHARE:
-                count = POLICY_TIMESHARE_INFO_COUNT;
-                thread_info(pthread_mach_thread_np(self), THREAD_SCHED_TIMESHARE_INFO, (thread_info_t)&(policy_info.ts), &count);
-                parent_priority=policy_info.ts.base_priority;
-                printf("parent is timeshared: p=%d c=%d\n",parent_priority,policy_info.ts.cur_priority);
-                break;
-
-            case POLICY_FIFO:
-                count = POLICY_FIFO_INFO_COUNT;
-                thread_info(pthread_mach_thread_np(self), THREAD_SCHED_FIFO_INFO, (thread_info_t)&(policy_info.fifo), &count);
-                parent_priority=policy_info.fifo.base_priority;
-                printf("parent is fifo: p=%d\n",parent_priority);
-                break;
-
-            case POLICY_RR:
-                count = POLICY_RR_INFO_COUNT;
-                thread_info(pthread_mach_thread_np(self), THREAD_SCHED_RR_INFO, (thread_info_t)&(policy_info.rr), &count);
-                parent_priority=policy_info.rr.base_priority;
-                printf("parent is rr: p=%d\n",parent_priority);
-                break;
-
-            default:
-                printf("wtf?\n");
-                parent_priority=47;
-        }
-        */
-
-        policy_fixed.timeshare = (pri==0)?1:0;
-        policy_prec.importance = pri; //MACOS_REALTIME_BASE+pri-parent_priority-1;
-
-        err = thread_policy_set (pthread_mach_thread_np(thread), THREAD_EXTENDED_POLICY, (thread_policy_t)&policy_fixed, THREAD_EXTENDED_POLICY_COUNT);
-
-        if(err != KERN_SUCCESS)
-        {
-            printf("thread policy set (1) failed\n");
-            return;
-        }
-
-        err = thread_policy_set (pthread_mach_thread_np(thread), THREAD_PRECEDENCE_POLICY, (thread_policy_t)&policy_prec, THREAD_PRECEDENCE_POLICY_COUNT);
-
-        if(err != KERN_SUCCESS)
-        {
-            printf("thread policy set (2) failed\n");
-            return;
-        }
-
-    }
-    else
-    {
-        thread_time_constraint_policy_data_t		theTCPolicy;
-        thread_extended_policy_data_t policy_fixed;
-		UInt64										theComputeQuanta;
-		UInt64										thePeriod;
-		UInt64										thePeriodNanos;
-
-        policy_fixed.timeshare = (pri==0)?1:0;
-
-        err = thread_policy_set (pthread_mach_thread_np(thread), THREAD_EXTENDED_POLICY, (thread_policy_t)&policy_fixed, THREAD_EXTENDED_POLICY_COUNT);
-
-        if(err != KERN_SUCCESS)
-        {
-            printf("thread policy set (1) failed\n");
-            return;
-        }
-
-        thePeriodNanos = 300000ULL; // inHALIOProcCycleDurationInNanoseconds;
-        theComputeQuanta = AudioConvertNanosToHostTime ( thePeriodNanos * 0.85 );
-		thePeriod = AudioConvertNanosToHostTime (thePeriodNanos);
-
-		theTCPolicy.period = thePeriod;
-		theTCPolicy.computation = theComputeQuanta;
-		theTCPolicy.constraint = thePeriod;
-		theTCPolicy.preemptible = true;
-
-		err = thread_policy_set (pthread_mach_thread_np(thread), THREAD_TIME_CONSTRAINT_POLICY, (thread_policy_t)&theTCPolicy, THREAD_TIME_CONSTRAINT_POLICY_COUNT);
-
-        if(err != KERN_SUCCESS)
-        {
-            printf("thread policy set (2) failed\n");
-            return;
-        }
+        case PIC_THREAD_PRIORITY_LOW:       pri2=0; break;
+        case PIC_THREAD_PRIORITY_NORMAL:    pri2=1; break;
+        case PIC_THREAD_PRIORITY_HIGH:      pri2=10; break;
+        case PIC_THREAD_PRIORITY_REALTIME:  pri2=19; break;
     }
 
+    thread_extended_policy_data_t policy_fixed;
+    thread_precedence_policy_data_t policy_prec;
+
+    policy_fixed.timeshare = (pri>=PIC_THREAD_PRIORITY_HIGH)?1:0;
+    policy_prec.importance = pri2; //MACOS_REALTIME_BASE+pri-parent_priority-1;
+
+    err = thread_policy_set (pthread_mach_thread_np(thread), THREAD_EXTENDED_POLICY, (thread_policy_t)&policy_fixed, THREAD_EXTENDED_POLICY_COUNT);
+
+    if(err != KERN_SUCCESS)
+    {
+        printf("thread policy set (1) failed\n");
+        return;
+    }
+
+    err = thread_policy_set (pthread_mach_thread_np(thread), THREAD_PRECEDENCE_POLICY, (thread_policy_t)&policy_prec, THREAD_PRECEDENCE_POLICY_COUNT);
+
+    if(err != KERN_SUCCESS)
+    {
+        printf("thread policy set (2) failed\n");
+        return;
+    }
 }
 
 #include <fenv.h>
