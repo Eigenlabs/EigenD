@@ -558,13 +558,13 @@ void mainthread_t::thread_main()
     }
 }
 
-mtscaffold_t::mtscaffold_t(const char *user,pic::nballocator_t *a, unsigned mt, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck,bool rt): network_(a,ck), fast_(rt?19:0,&manager_), main_(1,&manager_,&network_), manager_(user,this,a,&network_,l,winch), context_(mt), mt_(mt)
+mtscaffold_t::mtscaffold_t(const char *user,pic::nballocator_t *a, unsigned mt, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck,bool rt): network_(a,ck), fast_(rt?PIC_THREAD_PRIORITY_REALTIME:PIC_THREAD_PRIORITY_NORMAL,&manager_), main_(PIC_THREAD_PRIORITY_NORMAL,&manager_,&network_), manager_(user,this,a,&network_,l,winch), context_(mt), mt_(mt)
 {
     fast_.run();
 
     for(unsigned i=0;i<mt_;i++)
     {
-        context_[i] = pic::ref(new ctxthread_t(0,0,&manager_));
+        context_[i] = pic::ref(new ctxthread_t(PIC_THREAD_PRIORITY_NORMAL,0,&manager_));
         context_[i]->run();
     }
 }
@@ -604,7 +604,7 @@ void mtscaffold_t::service_ctx(int group)
 bool mtscaffold_t::service_isfast() { return fast_.isfast(); }
 void mtscaffold_t::service_gone() { main_.shutdown(false); }
 
-guiscaffold_t::guiscaffold_t(const char *user,pic::nballocator_t *a, const pic::notify_t &s, const pic::notify_t &g, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck, bool rt): gone_(g), network_(a,ck), main_(2,&manager_,&network_), usage_(&cpu_usage_,&gate_), fast_(rt?19:0,&manager_,&usage_),  ctx0_(0,0,&manager_), manager_(user,this,a,&network_,l,winch), pinger_(1,s)
+guiscaffold_t::guiscaffold_t(const char *user,pic::nballocator_t *a, const pic::notify_t &s, const pic::notify_t &g, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck, bool rt): gone_(g), network_(a,ck), main_(2,&manager_,&network_), usage_(&cpu_usage_,&gate_), fast_(rt?PIC_THREAD_PRIORITY_REALTIME:PIC_THREAD_PRIORITY_NORMAL,&manager_,&usage_),  ctx0_(PIC_THREAD_PRIORITY_NORMAL,0,&manager_), manager_(user,this,a,&network_,l,winch), pinger_(PIC_THREAD_PRIORITY_NORMAL,s)
 {
     cpu_usage_ = 0;
     fast_.run();

@@ -34,8 +34,8 @@
 #include "pia_bkernel.h"
 #include "pia_bclock.h"
 
-#define PIA_WORKER_PRIORITY 0
-#define PIA_TIMER_PRIORITY 0
+#define PIA_WORKER_PRIORITY PIC_THREAD_PRIORITY_NORMAL
+#define PIA_TIMER_PRIORITY PIC_THREAD_PRIORITY_NORMAL
 
 #include <unistd.h>
 #include <sys/types.h>

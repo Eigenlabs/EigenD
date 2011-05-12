@@ -99,7 +99,7 @@ static unsigned enumerate__(unsigned short vendor, unsigned short product, const
     return 0;
 }
 
-pic::usbenumerator_t::impl_t::impl_t(unsigned short v, unsigned short p, const f_string_t &d): pic::thread_t(0), vendor_(v), product_(p), delegate_(d)
+pic::usbenumerator_t::impl_t::impl_t(unsigned short v, unsigned short p, const f_string_t &d): pic::thread_t(PIC_THREAD_PRIORITY_LOW), vendor_(v), product_(p), delegate_(d)
 {
 }
 

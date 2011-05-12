@@ -20,6 +20,11 @@
 
 #include "pic_config.h"
 
+#define PIC_THREAD_PRIORITY_LOW -1
+#define PIC_THREAD_PRIORITY_NORMAL 0
+#define PIC_THREAD_PRIORITY_HIGH 1
+#define PIC_THREAD_PRIORITY_REALTIME 2
+
 #ifdef PI_WINDOWS
 #include "pic_thread_win32.h"
 #else

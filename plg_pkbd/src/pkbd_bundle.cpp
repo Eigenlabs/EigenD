@@ -658,7 +658,7 @@ namespace
 
 struct pkbd::bundle_t::impl_t : virtual pic::tracked_t, piw::thing_t, piw::clockdomain_ctl_t, piw::clocksink_t, pic::safe_worker_t
 {
-    impl_t(const char *n, const piw::cookie_t &c, const pic::notify_t &d, const piw::change_t &a): pic::safe_worker_t(10,0), loop_(n,&keyboard_), keyboard_(c,d,a), leds_(KEYS)
+    impl_t(const char *n, const piw::cookie_t &c, const pic::notify_t &d, const piw::change_t &a): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), loop_(n,&keyboard_), keyboard_(c,d,a), leds_(KEYS)
     {
         set_source(piw::makestring("*",0));
 

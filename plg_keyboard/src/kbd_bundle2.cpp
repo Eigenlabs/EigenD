@@ -1401,17 +1401,17 @@ namespace
 
 struct kbd::kbd_impl_t: piw::clockdomain_ctl_t, piw::clocksink_t, piw::thing_t, pic::safe_worker_t, virtual pic::tracked_t, virtual public pic::lckobject_t
 {
-    kbd_impl_t(pic::usbdevice_t *device, const piw::cookie_t &ac, keyboard_t *pkeyboard): pic::safe_worker_t(10,0), device_(device), loop_(device,pkeyboard,false), pkeyboard_(pkeyboard), skipped_(false), mic_output_(new mic_output_t(ac, pkeyboard_,&loop_)), headphone_input_(new headphone_input_t(&loop_)), leds_(pkeyboard->kbd_num_keys())
+    kbd_impl_t(pic::usbdevice_t *device, const piw::cookie_t &ac, keyboard_t *pkeyboard): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), device_(device), loop_(device,pkeyboard,false), pkeyboard_(pkeyboard), skipped_(false), mic_output_(new mic_output_t(ac, pkeyboard_,&loop_)), headphone_input_(new headphone_input_t(&loop_)), leds_(pkeyboard->kbd_num_keys())
     {
         init();
     }
 
-    kbd_impl_t(pic::usbdevice_t *device, keyboard_t *pkeyboard): pic::safe_worker_t(10,0), device_(device), loop_(device,pkeyboard,false), pkeyboard_(pkeyboard), skipped_(false), headphone_input_(new headphone_input_t(&loop_)), leds_(pkeyboard->kbd_num_keys())
+    kbd_impl_t(pic::usbdevice_t *device, keyboard_t *pkeyboard): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), device_(device), loop_(device,pkeyboard,false), pkeyboard_(pkeyboard), skipped_(false), headphone_input_(new headphone_input_t(&loop_)), leds_(pkeyboard->kbd_num_keys())
     {
         init();
     }
 
-    kbd_impl_t(const char *name, keyboard_t *pkeyboard): pic::safe_worker_t(10,0), device_(new pic::usbdevice_t(name,0)), loop_(device_,pkeyboard,true), pkeyboard_(pkeyboard), skipped_(false), leds_(pkeyboard->kbd_num_keys())
+    kbd_impl_t(const char *name, keyboard_t *pkeyboard): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), device_(new pic::usbdevice_t(name,0)), loop_(device_,pkeyboard,true), pkeyboard_(pkeyboard), skipped_(false), leds_(pkeyboard->kbd_num_keys())
     {
         init();
     }
