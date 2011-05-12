@@ -24,7 +24,7 @@
 #include <picross/pic_functor.h>
 #include <picross/pic_usb.h>
 
-#include "kbd_exports.h"
+#include "pikeyboardplg_exports.h"
 
 
 namespace kbd

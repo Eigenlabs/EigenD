@@ -20,7 +20,7 @@
 #ifndef __KBD_CONVERTER__
 #define __KBD_CONVERTER__
 
-#include "kbd_exports.h"
+#include "pikeyboardplg_exports.h"
 #include <picross/pic_flipflop.h>
 #include <picross/pic_fastalloc.h>
 

@@ -20,7 +20,7 @@
 
 #ifndef __PICO_PASSIVE__
 #define __PICO_PASSIVE__
-#include <lib_pico/pico_exports.h>
+#include <pico_exports.h>
 #include <string>
 
 namespace pico

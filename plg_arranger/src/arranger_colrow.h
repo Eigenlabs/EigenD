@@ -20,7 +20,7 @@
 
 #ifndef __ARRANGER_COLROW__
 #define __ARRANGER_COLROW__
-#include <plg_arranger/piarranger_exports.h>
+#include <piarranger_exports.h>
 
 namespace arranger
 {

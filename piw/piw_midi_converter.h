@@ -20,7 +20,7 @@
 #ifndef MIDI_CONVERTER_H_
 #define MIDI_CONVERTER_H_
 
-#include <piw/piw_exports.h>
+#include <piw_exports.h>
 #include <piw/piw_midi_from_belcanto.h>
 #include <piw/piw_gui_mapper.h>
 #include <piw/piw_control_mapping.h>

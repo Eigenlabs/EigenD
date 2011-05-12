@@ -21,7 +21,7 @@
 #ifndef __PICA_AUDIOCTL__
 #define __PICA_AUDIOCTL__
 
-#include "audio_exports.h"
+#include "piaudio_exports.h"
 
 #include <piw/piw_bundle.h>
 #include <piw/piw_clock.h>

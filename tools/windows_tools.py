@@ -608,7 +608,7 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         return env.addlibname(run_library1[0],target)
 
 
-    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True):
+    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True,deffile=None):
         fulltarget = '%s_%s' % (target,self.shared.release.replace('.','_').replace('-','_'))
         env = self.Clone()
 
@@ -617,9 +617,14 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         env.Replace(SHLIBNAME=fulltarget)
         env.Replace(PDB='%s.pdb' % fulltarget)
 
-        cert = os.path.join(os.path.dirname(__file__),'certificate.p12')
+        objects = env.SharedObject(sources)
 
-        bin_dll,bin_pdb,bin_lib,bin_exp = env.SharedLibrary(fulltarget,sources)
+        self.Depends(objects,self.PiExports(target))
+
+        if deffile:
+            objects.append(deffile)
+
+        bin_dll,bin_pdb,bin_lib,bin_exp = env.SharedLibrary(fulltarget,objects)
 
         env.add_manifest(bin_dll)
 

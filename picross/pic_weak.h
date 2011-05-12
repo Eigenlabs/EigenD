@@ -29,10 +29,10 @@
 
 namespace pic
 {
-    class tracked_t
+    class PIC_DECLSPEC_INLINE_CLASS tracked_t
     {
         public:
-            class tinterlock_t: virtual public pic::atomic_counted_t, virtual public pic::lckobject_t
+            class PIC_DECLSPEC_INLINE_CLASS tinterlock_t: virtual public pic::atomic_counted_t, virtual public pic::lckobject_t
             {
                 public:
                     tinterlock_t(tracked_t *p): flipflop_(p) {}
@@ -73,7 +73,7 @@ namespace pic
             mutable pic::ref_t<tinterlock_t> ptr_;
     };
 
-    template <class T> class weak_t
+    template <class T> class PIC_DECLSPEC_INLINE_CLASS weak_t
     {
         public:
             class guard_t

@@ -199,7 +199,7 @@ namespace
     {
         Dl_info exeInfo;
         dladdr ((const void*) get_exe, &exeInfo);
-        realpath(exeInfo.dli_fname,buffer);
+        if(!realpath(exeInfo.dli_fname,buffer)) buffer[0]=0;
     }
 
     static void get_lib(char *buffer)

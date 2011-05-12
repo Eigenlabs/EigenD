@@ -24,6 +24,7 @@
  */
 
 #include <sstream>
+#include <memory>
 
 #include <picross/pic_weak.h>
 #include <piw/piw_bundle.h>

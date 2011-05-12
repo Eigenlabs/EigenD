@@ -38,7 +38,7 @@
 
 struct printer_t: public  alpha1::active_t::delegate_t
 {
-    printer_t(int raw): raw(raw), count(0) { memset(map,0,22); }
+    printer_t(int raw): raw(raw), count(0) { memset(map,0,sizeof(map)); }
 
     void kbd_dead(unsigned reason)
     {

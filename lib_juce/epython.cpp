@@ -18,8 +18,6 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "epython.h"
-#include <iostream>
 
 #ifdef _WIN32  
 #ifdef _DEBUG
@@ -37,7 +35,9 @@
 #pragma message ("redefine _DEBUG")
 #endif
 
+#include "epython.h"
 #include <picross/pic_resources.h>
+#include <iostream>
 
 void epython::PythonInterface::py_startup()
 {

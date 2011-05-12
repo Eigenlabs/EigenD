@@ -25,7 +25,7 @@
 #include <piw/piw_tsd.h>
 #include <math.h>
 #include <algorithm>
-#include <plg_arranger/piarranger_exports.h>
+#include <piarranger_exports.h>
 
 namespace
 {

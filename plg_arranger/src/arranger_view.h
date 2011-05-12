@@ -21,7 +21,7 @@
 
 #ifndef __ARRANGER_VIEW__
 #define __ARRANGER_VIEW__
-#include <plg_arranger/piarranger_exports.h>
+#include <piarranger_exports.h>
 
 #include "picross/pic_config.h"
 

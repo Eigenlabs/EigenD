@@ -96,7 +96,20 @@ class PiGenericEnvironment(SCons.Environment.Environment):
     def set_hidden(self,hidden):
         pass
 
-    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True):
+    def PiExports(self,token):
+        text = exports_template % dict(libtoken=token.upper())
+        target = '%s_exports.h' % token
+
+        def action(target,source,env):
+            t = target[0].abspath
+            outp = file(t,"w")
+            outp.write(source[0].value)
+            outp.close()
+            os.chmod(t,0755)
+
+        return self.Command(join(self['EXPDIR'],target),self.Value(text),action)
+
+    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True,deffile=None):
         fulltarget = '%s_%s' % (target,self.shared.release.replace('.','_').replace('-','_'))
         env = self.Clone()
 
@@ -105,8 +118,14 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         env.Replace(SHLIBNAME=fulltarget)
         env.set_hidden(hidden)
 
-        bin_library=env.SharedLibrary(fulltarget,sources)
+        objects = env.SharedObject(sources)
+
+        self.Depends(objects,self.PiExports(target))
+
+        bin_library=env.SharedLibrary(fulltarget,objects)
         run_library=env.Install(env.subst('$BINRUNDIR'),bin_library)
+
+
         inst_library = []
 
         env.addlibuser(bin_library[0],libraries)
@@ -166,7 +185,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         status=os.popen('"%s" %s' % (self['PI_PYTHON'],join(os.path.dirname(__file__),'detect.py')),'r').read(1024)
         (exe,incpath,libpath,libs,linkextra,prefix) = [s.strip() for s in status.split(';')]
 
-        self.Append(CPPPATH=incpath)
+        self.Append(CPPPATH=[incpath])
         self.Append(LIBS=libs)
         self.Append(LIBPATH=libpath)
         self.Append(LINKFLAGS=linkextra)
@@ -215,6 +234,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.Append(LINKFLAGS=Split('$LIBMAPPER'))
         self.Replace(LIBMAPPER=self.libmapper)
 
+        self.Replace(EXPDIR=join('#tmp','exp'))
         self.Replace(PKGDIR=join('#tmp','pkg'))
         self.Replace(TMPDIR=join('#tmp','obj'))
         self.Replace(STAGEDIR=join('#tmp','stage','$PI_PACKAGENAME'))
@@ -227,6 +247,8 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.Replace(RESSTAGEDIR=join('$RELEASESTAGEDIR','resources'))
         self.Replace(PLGSTAGEDIR=join('$RELEASESTAGEDIR','plugins'))
         self.Replace(ETCSTAGEDIR=join('$RELEASESTAGEDIR','etc','$PI_PACKAGENAME'))
+
+        self.Append(CPPPATH='$EXPDIR')
 
         if os.environ.get('PI_VERBOSE') is None:
             self.Replace(PRINT_CMD_LINE_FUNC=self.print_cmd)
@@ -495,7 +517,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         return self.Command(target,self.Value(text),action)
 
-    def PiPipBinding(self,module,spec,sources=[],libraries={},package=None):
+    def PiPipBinding(self,module,spec,sources=[],libraries={},package=None,hidden=True):
         me=self.Dir('.').abspath
 
         inc=' '.join(map(lambda x: self.Dir(x).abspath,self['CPPPATH']))
@@ -509,6 +531,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         bind_env=self.Clone()
         bind_env.Prepend(CPPPATH=[me])
         bind_env.Append(PILIBS=libraries)
+        bind_env.set_hidden(hidden)
 
         binding=bind_env.SharedLibrary(module,allsources,SHLIBPREFIX=bind_env['PI_MODPREFIX'],SHLIBSUFFIX=bind_env['PI_MODSUFFIX'],SHLINKFLAGS=bind_env['PI_MODLINKFLAGS'])
         bind_env.addlibuser(binding,libraries)
@@ -708,4 +731,39 @@ extern int main(int argc, char **argv)
   Py_Finalize();
   return 0;
 }
+"""
+
+exports_template = """
+#ifdef _WIN32
+  #ifdef BUILDING_%(libtoken)s
+    #define %(libtoken)s_DECLSPEC_FUNC(rt) rt __declspec(dllexport)
+    #define %(libtoken)s_DECLSPEC_CLASS __declspec(dllexport)
+    #define %(libtoken)s_DECLSPEC_INLINE_FUNC(rt)
+    #define %(libtoken)s_DECLSPEC_INLINE_CLASS
+  #else
+    #define %(libtoken)s_DECLSPEC_FUNC(rt) rt __declspec(dllimport)
+    #define %(libtoken)s_DECLSPEC_CLASS __declspec(dllimport)
+    #define %(libtoken)s_DECLSPEC_INLINE_FUNC(rt)
+    #define %(libtoken)s_DECLSPEC_INLINE_CLASS
+  #endif
+#else
+  #if __GNUC__ >= 4
+    #ifdef BUILDING_%(libtoken)s
+      #define %(libtoken)s_DECLSPEC_FUNC(rt) rt __attribute__ ((visibility("default")))
+      #define %(libtoken)s_DECLSPEC_CLASS __attribute__ ((visibility("default")))
+      #define %(libtoken)s_DECLSPEC_INLINE_FUNC(rt) rt __attribute__ ((visibility("default")))
+      #define %(libtoken)s_DECLSPEC_INLINE_CLASS __attribute__ ((visibility("default")))
+    #else
+      #define %(libtoken)s_DECLSPEC_FUNC(rt) rt  __attribute__ ((visibility("default")))
+      #define %(libtoken)s_DECLSPEC_CLASS  __attribute__ ((visibility("default")))
+      #define %(libtoken)s_DECLSPEC_INLINE_FUNC(rt) rt  __attribute__ ((visibility("default")))
+      #define %(libtoken)s_DECLSPEC_INLINE_CLASS  __attribute__ ((visibility("default")))
+    #endif
+  #else
+    #define %(libtoken)s_DECLSPEC_FUNC(rt) rt
+    #define %(libtoken)s_DECLSPEC_CLASS
+    #define %(libtoken)s_DECLSPEC_INLINE_FUNC(rt) rt
+    #define %(libtoken)s_DECLSPEC_INLINE_CLASS
+  #endif
+#endif
 """

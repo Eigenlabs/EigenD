@@ -22,7 +22,7 @@
 #ifndef __ARRANGER_MODEL__
 #define __ARRANGER_MODEL__
 
-#include <plg_arranger/piarranger_exports.h>
+#include <piarranger_exports.h>
 
 #include <piw/piw_clock.h>
 #include <piw/piw_bundle.h>

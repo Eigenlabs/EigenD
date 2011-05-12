@@ -21,7 +21,7 @@
 #define __CMID_BUNDLE__
 
 #include <piw/piw_bundle.h>
-#include <plg_midi/midi_exports.h>
+#include <pimidi_exports.h>
 
 namespace pi_midi
 {

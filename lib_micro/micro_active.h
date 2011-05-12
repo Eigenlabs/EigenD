@@ -21,7 +21,7 @@
 #ifndef __PIK_ACTIVE__
 #define __PIK_ACTIVE__
 
-#include <lib_micro/micro_exports.h>
+#include <micro_exports.h>
 #include <picross/pic_usb.h>
 #include <resources/pico_decoder.h>
 

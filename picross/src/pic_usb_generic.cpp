@@ -269,7 +269,7 @@ void pic::bulk_queue_t::impl_t::write(const void *data, unsigned len)
 void pic::bulk_queue_t::impl_t::writer__(void *self_, void *buffer_, void *size_, void *)
 {
     impl_t *self = (impl_t *)self_;
-    unsigned size = (unsigned)size_;
+    unsigned size = (unsigned)(intptr_t)size_;
     try
     {
         //pic::logmsg() << "bulk write ep=" << self->name_ << " len=" << size;

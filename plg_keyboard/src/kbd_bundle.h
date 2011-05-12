@@ -22,7 +22,7 @@
 
 #include <piw/piw_bundle.h>
 #include <picross/pic_functor.h>
-#include <plg_keyboard/src/kbd_exports.h>
+#include <pikeyboardplg_exports.h>
 namespace kbd
 {
     class  PIKEYBOARDPLG_DECLSPEC_CLASS bundle_t

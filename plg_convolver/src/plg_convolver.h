@@ -25,7 +25,7 @@
 #include <piw/piw_bundle.h>
 #include <piw/piw_clock.h>
 #include <picross/pic_log.h>
-#include <plg_convolver/src/convolver_exports.h>
+#include <convolver_exports.h>
 
 namespace plg_convolver
 {

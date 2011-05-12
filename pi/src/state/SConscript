@@ -21,4 +21,5 @@
 Import('env')
 
 files = Split("sng_database.cpp sng_file.cpp sng_mapping.cpp sng_mirror.cpp")
-env.PiPipBinding('pi_state_native','state.pip',sources=files,libraries=Split('pic piw pie pia'),package='eigend')
+env.PiSharedLibrary('sng',files,libraries=Split('pic piw pie pia'),package='eigend')
+env.PiPipBinding('pi_state_native','state.pip',libraries=Split('sng piw pie pia pic'),package='eigend')

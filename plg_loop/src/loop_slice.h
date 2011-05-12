@@ -26,7 +26,7 @@
 #include <piw/piw_phase.h>
 #include <picross/pic_ilist.h>
 #include "loop_file.h"
-#include <plg_loop/src/loop_exports.h>
+#include <piloop_exports.h>
 
 #define FADELENGTH_GRAIN 128UL
 #define FADETIME_GRAIN  (128.f/48000.f)

@@ -21,7 +21,7 @@
 #define MAC_MIDI_OUTPUT_H_
 
 #include <piw/piw_data.h>
-#include <plg_midi/midi_exports.h>
+#include <pimidi_exports.h>
 
 namespace pi_midi
 {

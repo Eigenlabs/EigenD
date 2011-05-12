@@ -40,13 +40,17 @@ class PiLinuxEnvironment(unix_tools.PiUnixEnvironment):
 
         self.Append(LIBS=Split('dl m pthread rt'))
         self.Append(CCFLAGS=Split('-D_XOPEN_SOURCE=600 -D_GNU_SOURCE -D_REENTRANT -g -O0 -Wall -Werror -fmessage-length=0 -fno-strict-aliasing'))
-        self.Append(LINKFLAGS=Split('-g -z origin -Wl,--rpath=\\$$ORIGIN/../bin'))
-        self.Append(SHLINKFLAGS=Split('-g -z origin -Wl,--rpath=\\$$ORIGIN/../bin -Wl,-soname=lib${SHLIBNAME}.so'))
+        self.Append(LINKFLAGS=Split('-g -z origin -Wl,--rpath-link=tmp/bin -Wl,--rpath=\\$$ORIGIN/../bin'))
+        self.Append(SHLINKFLAGS=Split('-g -z origin -Wl,--rpath-link=tmp/bin -Wl,--rpath=\\$$ORIGIN/../bin -Wl,-soname=lib${SHLIBNAME}.so'))
         self.Replace(PI_PLATFORMTYPE='linux')
         self.Replace(IS_LINUX=True)
 
     def __getarch(self):
         return os.popen('dpkg --print-architecture','r').read(1024)
+
+    def set_hidden(self,hidden):
+        if hidden:
+            self.Append(CCFLAGS='-fvisibility=hidden')
 
     def PiBinaryDLL(self,target,package=None):
         env = self.Clone()

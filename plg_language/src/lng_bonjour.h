@@ -20,7 +20,7 @@
 #ifndef __LNG_BONJOUR__
 #define __LNG_BONJOUR__
 
-#include <plg_language/src/lng_exports.h>
+#include <pilanguage_exports.h>
 
 
 namespace language

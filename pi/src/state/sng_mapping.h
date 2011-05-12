@@ -22,12 +22,13 @@
 
 #include <map>
 #include <piw/piw_data.h>
+#include "sng_exports.h"
 
 namespace pi
 {
     namespace state
     {
-        class mapping_t: public pic::counted_t
+        class SNG_DECLSPEC_CLASS mapping_t: public pic::counted_t
         {
             private:
                 mapping_t(bool exclusive): exclusive_(exclusive) {}

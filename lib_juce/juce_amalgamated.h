@@ -851,6 +851,8 @@ namespace JuceDummyNamespace {}
 #elif defined (__GNUC__) && ((__GNUC__ >= 4) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4))
   #ifdef JUCE_DLL_BUILD
 	#define JUCE_API __attribute__ ((visibility("default")))
+  #elif defined (JUCE_DLL)
+	#define JUCE_API __attribute__ ((visibility("default")))
   #endif
 #endif
 
@@ -12200,7 +12202,7 @@ private:
 	int64, etc.
 */
 template <class Type>
-class SparseSet
+class JUCE_API SparseSet
 {
 public:
 
@@ -35001,7 +35003,7 @@ private:
 
 	@see AudioSource
 */
-class ChannelRemappingAudioSource  : public AudioSource
+class JUCE_API ChannelRemappingAudioSource  : public AudioSource
 {
 public:
 
@@ -55863,7 +55865,7 @@ private:
 	It's currently used by the TableHeaderComponent for stretching out the table
 	headings to fill the table's width.
 */
-class StretchableObjectResizer
+class JUCE_API StretchableObjectResizer
 {
 public:
 

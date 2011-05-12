@@ -30,7 +30,7 @@
 
 namespace pic
 {
-    template <class RT> struct sigtraits
+    template <class RT> struct PIC_DECLSPEC_INLINE_CLASS sigtraits
     {
         typedef RT rt_t;
         typedef struct {} p1_t;
@@ -39,7 +39,7 @@ namespace pic
         struct invoke_t { virtual RT invoke() const = 0; };
     };
 
-    template <class RT> struct sigtraits<RT()>
+    template <class RT> struct PIC_DECLSPEC_INLINE_CLASS sigtraits<RT()>
     {
         typedef RT rt_t;
         typedef struct {} p1_t;
@@ -48,7 +48,7 @@ namespace pic
         struct invoke_t { virtual ~invoke_t() {}; virtual RT invoke() const = 0; };
     };
 
-    template <class RT, class P1> struct sigtraits<RT(P1)>
+    template <class RT, class P1> struct PIC_DECLSPEC_INLINE_CLASS sigtraits<RT(P1)>
     {
         typedef RT rt_t;
         typedef P1 p1_t;
@@ -57,7 +57,7 @@ namespace pic
         struct invoke_t { virtual ~invoke_t() {}; virtual RT invoke(p1_t) const = 0; };
     };
 
-    template <class RT, class P1, class P2> struct sigtraits<RT(P1,P2)>
+    template <class RT, class P1, class P2> struct PIC_DECLSPEC_INLINE_CLASS sigtraits<RT(P1,P2)>
     {
         typedef RT rt_t;
         typedef P1 p1_t;
@@ -66,7 +66,7 @@ namespace pic
         struct invoke_t { virtual ~invoke_t() {}; virtual RT invoke(p1_t, p2_t) const = 0; };
     };
 
-    template <class RT, class P1, class P2, class P3> struct sigtraits<RT(P1,P2,P3)>
+    template <class RT, class P1, class P2, class P3> struct PIC_DECLSPEC_INLINE_CLASS sigtraits<RT(P1,P2,P3)>
     {
         typedef RT rt_t;
         typedef P1 p1_t;
@@ -75,7 +75,7 @@ namespace pic
         struct invoke_t { virtual ~invoke_t() {}; virtual RT invoke(p1_t, p2_t, p3_t) const = 0; };
     };
 
-    template <class SIG> struct sink_t: public sigtraits<SIG>::invoke_t, public nocopy_t, virtual public atomic_counted_t, virtual public pic::lckobject_t
+    template <class SIG> struct PIC_DECLSPEC_INLINE_CLASS sink_t: public sigtraits<SIG>::invoke_t, public nocopy_t, virtual public atomic_counted_t, virtual public pic::lckobject_t
     {
         public:
             sink_t() {}
@@ -103,12 +103,12 @@ namespace pic
     template <> struct rttraits<unsigned long> { static unsigned long def() { return 0; } };
     template <> struct rttraits<unsigned long long> { static unsigned long long def() { return 0; } };
 
-    template <class RT> struct default_t
+    template <class RT> struct PIC_DECLSPEC_INLINE_CLASS default_t
     {
         RT operator()() { return rttraits<RT>::def(); }
     };
 
-    template <class SIG, class CALLABLE> class callable_t: public sink_t<SIG>
+    template <class SIG, class CALLABLE> class PIC_DECLSPEC_INLINE_CLASS callable_t: public sink_t<SIG>
     {
         public:
             typedef typename sigtraits<SIG>::rt_t rt_t;
@@ -131,7 +131,7 @@ namespace pic
             CALLABLE callable_;
     };
 
-    template <class SIG, class O, class MP> class boundmethod_t: public sink_t<SIG>
+    template <class SIG, class O, class MP> class PIC_DECLSPEC_INLINE_CLASS boundmethod_t: public sink_t<SIG>
     {
         public:
             typedef typename sigtraits<SIG>::rt_t rt_t;
@@ -162,7 +162,7 @@ namespace pic
             MP _method;
     };
 
-    template <class SIG> class indirect_sink_t: public sink_t<SIG>
+    template <class SIG> class PIC_DECLSPEC_INLINE_CLASS indirect_sink_t: public sink_t<SIG>
     {
         public:
             typedef typename sigtraits<SIG>::rt_t rt_t;
@@ -212,7 +212,7 @@ namespace pic
             sink_flipflop_t target_;
     };
 
-    template <class SIG> class list_sink_t: public sink_t<SIG>
+    template <class SIG> class PIC_DECLSPEC_INLINE_CLASS list_sink_t: public sink_t<SIG>
     {
         public:
             typedef typename sigtraits<SIG>::rt_t rt_t;
@@ -306,7 +306,7 @@ namespace pic
             sink_flipflop_t list_;
     };
 
-    template <class SIG> class functor_t
+    template <class SIG> class PIC_DECLSPEC_INLINE_CLASS functor_t
     {
         public:
             typedef typename sigtraits<SIG>::rt_t rt_t;
@@ -412,7 +412,7 @@ namespace pic
     typedef functor_t<float(float)> f2f_t;
     typedef functor_t<float(int)> i2f_t;
 
-    template <class FUNCTOR> class flipflop_functor_t
+    template <class FUNCTOR> class PIC_DECLSPEC_INLINE_CLASS flipflop_functor_t
     {
         public:
             typedef FUNCTOR sink_functor_t;

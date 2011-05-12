@@ -36,13 +36,13 @@
 
 #include <picross/pic_nocopy.h>
 #include <picross/pic_ref.h>
-
+#include "sng_exports.h"
 
 namespace pi
 {
     namespace state
     {
-        struct file_t: public pic::nocopy_t, virtual public pic::counted_t
+        struct SNG_DECLSPEC_CLASS file_t: public pic::nocopy_t, virtual public pic::counted_t
         {
             virtual void flush() = 0;
             virtual unsigned char *write_payload(unsigned size, unsigned long *position, bool checkpoint) = 0;
@@ -58,7 +58,7 @@ namespace pi
 
         typedef pic::ref_t<file_t> fileref_t;
 
-        fileref_t open_file(const char *filename, bool writeable);
+        SNG_DECLSPEC_FUNC(fileref_t) open_file(const char *filename, bool writeable);
     };
 };
 

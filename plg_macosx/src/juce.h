@@ -18,6 +18,6 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "audio_exports.h"
+#include "piaudio_exports.h"
 #include <lib_juce/juce.h>
 using namespace juce;

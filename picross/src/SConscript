@@ -39,7 +39,7 @@ if env['IS_MACOSX']:
     pic_env.PiSharedLibrary('pic',pic_files,package='eigend')
 
 if env['IS_LINUX']:
-    pic_files=pic_files+Split('pic_thread_posix.cpp linux_usb_device.cpp linux_usb_enum.cpp pic_tool_linux.cpp')
+    pic_files=pic_files+Split('pic_thread_posix.cpp pic_usb_linux.cpp pic_tool_linux.cpp')
     pic_env.PiSharedLibrary('pic',pic_files,package='eigend')
 
 if env['IS_WINDOWS']:

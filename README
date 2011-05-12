@@ -60,3 +60,17 @@ MacOSX
 ------
 
 The Apple development kit, with the 10.4 build support installed.
+
+Linux
+-----
+
+These packages
+
+libiw-dev
+libfreetype6-dev
+libx11-dev
+libxext-dev
+libxcursor-dev
+libasound2-dev
+libxinerama-dev
+mesa-common-dev

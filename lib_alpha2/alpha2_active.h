@@ -24,7 +24,7 @@
 #include <picross/pic_usb.h>
 #include <lib_alpha2/alpha2_usb.h>
 #include <picross/pic_fastalloc.h>
-#include <lib_alpha2/alpha2_exports.h>
+#include <alpha2_exports.h>
 #define KBD_KEYS 132
 
 #define KBD_DESENSE (KBD_KEYS+0)

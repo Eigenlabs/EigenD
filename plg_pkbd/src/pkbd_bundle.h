@@ -23,7 +23,7 @@
 #include <piw/piw_bundle.h>
 #include <picross/pic_functor.h>
 
-#include <plg_pkbd/src/pkbd_exports.h>
+#include <pipkbdplg_exports.h>
 
 namespace pkbd
 {

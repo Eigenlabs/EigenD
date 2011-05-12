@@ -15,6 +15,7 @@
 
 #include <picross/pic_config.h>
 
+#define JUCE_DLL  1
 #define JUCE_QUICKTIME  0
 #define JUCE_FORCE_DEBUG  0
 #define JUCE_LOG_ASSERTIONS 0

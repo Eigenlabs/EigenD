@@ -20,7 +20,7 @@
 
 #ifndef __RECORDING__
 #define __RECORDING__
-#include <plg_recorder/pirecorder_exports.h>
+#include <pirecorder_exports.h>
 #include <picross/pic_ref.h>
 #include <picross/pic_fastalloc.h>
 #include <piw/piw_data.h>

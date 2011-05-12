@@ -23,7 +23,7 @@
 #include <picross/pic_functor.h>
 #include <piw/piw_bundle.h>
 #include <piw/piw_clock.h>
-#include <plg_host/host_exports.h>
+#include <pihost_exports.h>
 #include <piw/piw_control_mapping.h>
 
 #include <string>

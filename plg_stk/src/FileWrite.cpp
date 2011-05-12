@@ -612,7 +612,7 @@ void FileWrite :: closeMatFile( void )
 
   SINT32 headsize, temp;
   fseek(fd_, 132, SEEK_SET);  // jump to header size
-  fread(&headsize, 4, 1, fd_);
+  temp = fread(&headsize, 4, 1, fd_);
   temp = headsize;
   headsize += (SINT32) (frameCounter_ * 8 * channels_);
   fseek(fd_, 132, SEEK_SET);

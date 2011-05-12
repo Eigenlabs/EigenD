@@ -20,7 +20,7 @@
 
 #ifndef __ARRANGER_PLAYER__
 #define __ARRANGER_PLAYER__
-#include <plg_recorder/pirecorder_exports.h>
+#include <pirecorder_exports.h>
 #include <piw/piw_bundle.h>
 #include <piw/piw_clock.h>
 

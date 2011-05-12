@@ -23,7 +23,7 @@
 #define ZITA_THREADING 0
 
 #include <picross/pic_config.h>
-#include <plg_convolver/src/convolver_exports.h>
+#include <convolver_exports.h>
 
 #if ZITA_THREADING
 #include <pthread.h>

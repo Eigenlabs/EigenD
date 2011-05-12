@@ -22,6 +22,7 @@
 
 #include "sng_database.h"
 #include "sng_mapping.h"
+#include "sng_exports.h"
 
 #include <piw/piw_data.h>
 #include <piw/piw_client.h>
@@ -37,7 +38,7 @@ namespace pi
 {
     namespace state
     {
-        class worker_t: public piw::client_t
+        class SNG_DECLSPEC_CLASS worker_t: public piw::client_t
         {
             public:
                 worker_t(worker_t *p, unsigned char name, const noderef_t &sink, unsigned cflags);
@@ -77,7 +78,7 @@ namespace pi
                 noderef_t sink_;
         };
 
-        class manager_t: public worker_t
+        class SNG_DECLSPEC_CLASS manager_t: public worker_t
         {
             public:
                 manager_t(const noderef_t &sink);

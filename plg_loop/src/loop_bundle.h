@@ -22,7 +22,7 @@
 #define __LOOP__
 
 #include <piw/piw_bundle.h>
-#include <plg_loop/src/loop_exports.h>
+#include <piloop_exports.h>
 
 namespace piw
 {

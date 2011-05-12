@@ -21,7 +21,7 @@
 #ifndef __SAMPLER2_LOADER__
 #define __SAMPLER2_LOADER__
 
-#include <plg_sampler2/pisampler2_exports.h>
+#include <pisampler2_exports.h>
 
 #include <picross/pic_ref.h>
 #include <picross/pic_weak.h>

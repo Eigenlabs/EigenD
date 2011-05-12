@@ -21,6 +21,7 @@
 #define __PIA_SRC_GLUE__
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <pibelcanto/plugin.h>
 #include <picross/pic_functor.h>
