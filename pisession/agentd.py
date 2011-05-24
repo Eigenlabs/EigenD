@@ -327,6 +327,7 @@ def filter_upgradeable_version(v,t,r):
     my_v,my_t = resource.split_version(version.version)
 
     if t and t.startswith('unstable'): return False
+    if t and t.startswith('experimental'): return False
 
     if v<first_v: return False
     if v>=my_v: return False
