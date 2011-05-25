@@ -45,6 +45,8 @@ if env['IS_WINDOWS']:
     env.PiResources('eigend','state','states_win/*')
     env.PiReleaseFile('eigend','releasenotes.pdf','Release Notes')
     env.PiReleaseFile('eigend','pico-setup.pdf','Pico Setup Guide')
+    env.PiReleaseFile('eigend','alpha-setup.pdf','Alpha Setup Guide')
+    env.PiReleaseFile('eigend','tau-setup.pdf','Tau Setup Guide')
 else:
     env.PiResources('eigend','state','states/*')
 
