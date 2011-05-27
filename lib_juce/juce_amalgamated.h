@@ -57272,7 +57272,7 @@ private:
 	@see SelectableObject
 */
 template <class SelectableItemType>
-class JUCE_API  SelectedItemSet   : public ChangeBroadcaster
+class SelectedItemSet   : public ChangeBroadcaster
 {
 public:
 
