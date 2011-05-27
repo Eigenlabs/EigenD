@@ -557,23 +557,24 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         run_pdb=env.Install(env.subst('$BINRUNDIR'),bld_pdb)
         env.set_subsystem(run_binary,'WINDOWS')
 
-        env.sign(run_binary)
-
         rv.extend(run_binary)
 
         if gui:
             con_binary = env.InstallAs(env.File(join(env.subst('$BINRUNDIR'),'%s_con.exe' % name)),bld_binary)
             env.set_subsystem(con_binary,'CONSOLE')
-            env.sign(con_binary)
             rv.extend(con_binary)
 
         inst_binary = []
 
         if package:
             env.set_package(package)
-            rv.extend(env.Install(env.subst('$BINSTAGEDIR'),run_binary))
+            inst_binary = env.Install(env.subst('$BINSTAGEDIR'),run_binary)
+            env.sign(inst_binary)
+            rv.extend(inst_binary)
             if gui:
-                rv.extend(env.Install(env.subst('$BINSTAGEDIR'),con_binary))
+                inst_con_binary = env.Install(env.subst('$BINSTAGEDIR'),con_binary)
+                env.sign(inst_con_binary)
+                rv.extend(inst_con_binary)
 
         return rv
 
@@ -622,7 +623,6 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
 
         env.add_manifest(bin_dll)
 
-        env.sign(bin_dll)
         run_dll = env.Install(self['BINRUNDIR'],bin_dll)
         run_lib = env.Install(self['BINRUNDIR'],bin_lib)
         run_pdb = env.Install(self['BINRUNDIR'],bin_pdb)
@@ -637,6 +637,7 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         if package:
             env.set_package(package)
             inst_library = env.Install(self['BINSTAGEDIR'],run_dll)
+            env.sign(inst_library)
 
         return inst_library+run_lib
 

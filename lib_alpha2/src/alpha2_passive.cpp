@@ -77,6 +77,8 @@ struct alpha2::passive_t::impl_t: public alpha2::active_t::delegate_t
 
 void alpha2::passive_t::impl_t::kbd_raw(unsigned long long t, unsigned k, unsigned c1, unsigned c2, unsigned c3, unsigned c4)
 {
+    //pic::logmsg() << "raw " << k;
+
     PIC_ASSERT(k<(KBD_KEYS+KBD_SENSORS));
 
     current_->blob.corners[k][0]=c1;
@@ -122,7 +124,7 @@ void alpha2::passive_t::impl_t::kbd_raw(unsigned long long t, unsigned k, unsign
     scancount++;
 }
 
-alpha2::passive_t::impl_t::impl_t(const char *name,unsigned d): device_(name,0), loop_(&device_,this,true),poller_(&loop_),decim(d),keycount(0),scancount(0),insync(true),is_kbd_died(false),collecting(false),current_(pic::ref(new data_t))
+alpha2::passive_t::impl_t::impl_t(const char *name,unsigned d): device_(name,0), loop_(&device_,this,false),poller_(&loop_),decim(d),keycount(0),scancount(0),insync(true),is_kbd_died(false),collecting(false),current_(pic::ref(new data_t))
 {
     memset(&cal_row_,0,sizeof(cal_row_));
 }
@@ -176,11 +178,6 @@ void alpha2::passive_t::control_out(unsigned char t, unsigned char r, unsigned s
 std::string alpha2::passive_t::control_in(unsigned char t, unsigned char r, unsigned short v, unsigned short i, unsigned l)
 {
     return impl_->device_.control_in(t,r,v,i,l);
-}
-
-void alpha2::passive_t::bulk_write(unsigned ep, const std::string &msg)
-{
-    impl_->device_.bulk_write(ep,msg);
 }
 
 void alpha2::passive_t::start_calibration_row(unsigned key, unsigned corner)
@@ -275,6 +272,7 @@ void alpha2::passive_t::stop_polling()
 
 void alpha2::passive_t::start_collecting()
 {
+    pic::logmsg() << "start collecting";
     PIC_ASSERT(!impl_->collecting.current());
     impl_->data_.clear();
     impl_->data_.reserve(1000);
@@ -284,6 +282,7 @@ void alpha2::passive_t::start_collecting()
 void alpha2::passive_t::stop_collecting()
 {
     impl_->collecting.set(false);
+    pic::logmsg() << "stop collecting " << impl_->data_.size();
 }
 
 void alpha2::passive_t::set_active_colour(unsigned c)

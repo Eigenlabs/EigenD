@@ -30,7 +30,7 @@
 #define KEYS 18
 #define MODEKEYS 4
 
-struct pico::active_t::impl_t: pic::usbdevice_t::in_pipe_t, pic::usbdevice_t::power_t, pic::usbdevice_t, virtual pic::lckobject_t, pic::element_t<>
+struct pico::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice_t::power_t, pic::usbdevice_t, virtual pic::lckobject_t, pic::element_t<>
 {
     impl_t(const char *, pico::active_t::delegate_t *);
     ~impl_t();
@@ -101,7 +101,7 @@ static void __shutdown()
     }
 }
 
-pico::active_t::impl_t::impl_t(const char *name, pico::active_t::delegate_t *del): usbdevice_t::in_pipe_t(BCTPICO_USBENDPOINT_SENSOR_NAME,BCTPICO_USBENDPOINT_SENSOR_SIZE), 
+pico::active_t::impl_t::impl_t(const char *name, pico::active_t::delegate_t *del): usbdevice_t::iso_in_pipe_t(BCTPICO_USBENDPOINT_SENSOR_NAME,BCTPICO_USBENDPOINT_SENSOR_SIZE), 
     usbdevice_t(name,BCTPICO_INTERFACE), 
     handler_(del), 
     raw_( false ),
@@ -118,7 +118,7 @@ pico::active_t::impl_t::impl_t(const char *name, pico::active_t::delegate_t *del
 
     kbds__->append(this);
     control(0x40,0xd1,0,0);
-    add_inpipe(this);
+    add_iso_in(this);
     set_power_delegate(this);
 }
 

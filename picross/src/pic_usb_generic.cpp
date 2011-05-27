@@ -48,7 +48,7 @@ std::string pic::usbenumerator_t::find(unsigned short vendor, unsigned short pro
     return "";
 }
 
-void pic::usbdevice_t::in_pipe_t::dump_history()
+void pic::usbdevice_t::iso_in_pipe_t::dump_history()
 {
     unsigned l = std::min(history_,(unsigned long)PIC_USB_FRAME_HISTORY);
 
@@ -73,7 +73,7 @@ void pic::usbdevice_t::in_pipe_t::dump_history()
     }
 }
 
-void pic::usbdevice_t::in_pipe_t::call_pipe_data(const unsigned char *frame, unsigned size, unsigned long long fnum, unsigned long long ftime,unsigned long long ptime)
+void pic::usbdevice_t::iso_in_pipe_t::call_pipe_data(const unsigned char *frame, unsigned size, unsigned long long fnum, unsigned long long ftime,unsigned long long ptime)
 {
     hist_fnum_[history_%PIC_USB_FRAME_HISTORY] = fnum;
     hist_ftime_[history_%PIC_USB_FRAME_HISTORY] = ftime;
@@ -91,21 +91,26 @@ void pic::usbdevice_t::in_pipe_t::call_pipe_data(const unsigned char *frame, uns
     {
         if(fnum <= fnum_)
         {
-            pic::logmsg() << "out of order frame " << fnum << " (received after " << fnum_ << ")";
-            trigger_ = PIC_USB_FRAME_HISTORY/2;
+            pic::logmsg() << "pipe " << name_ << " out of order frame " << fnum << " (received after " << fnum_ << ")";
+
+            if(!trigger_)
+                trigger_ = PIC_USB_FRAME_HISTORY/2;
+
+            fnum_=fnum;
+            ftime_=ftime;
             return;
         }
 
         if(ftime <= ftime_)
         {
-            pic::logmsg() << "out of order time " << ftime << " (received after " << ftime_ << ")";
-            trigger_ = PIC_USB_FRAME_HISTORY/2;
-            
-            if(frame_check_)
-            {
-                return;
-            }
+#if 0
+            pic::logmsg() << "pipe " << name_ << " out of order time " << ftime << " (received after " << ftime_ << ")";
 
+            if(!trigger_)
+                trigger_ = PIC_USB_FRAME_HISTORY/2;
+
+#endif
+            
             ftime = ftime_+1;
         }
 
@@ -172,12 +177,12 @@ std::string pic::usbdevice_t::control_in(unsigned char type, unsigned char reque
     return std::string((char *)b,len);
 }
 
-void pic::usbdevice_t::bulk_write(unsigned name, const std::string &data)
+void pic::usbdevice_t::bulk_out_pipe_t::bulk_write(const std::string &data)
 {
-    bulk_write(name,(const void *)data.c_str(),data.size(),500);
+    bulk_write((const void *)data.c_str(),data.size(),500);
 }
 
-struct pic::bulk_queue_t::impl_t: pic::safe_worker_t
+struct pic::bulk_queue_t::impl_t: pic::safe_worker_t, pic::usbdevice_t::bulk_out_pipe_t
 {
     impl_t(unsigned size,usbdevice_t *dev, unsigned name, unsigned timeout, unsigned auto_flush);
     ~impl_t();
@@ -227,8 +232,9 @@ void pic::bulk_queue_t::stop()
     impl_->quit();
 }
 
-pic::bulk_queue_t::impl_t::impl_t(unsigned size,usbdevice_t *dev, unsigned name, unsigned timeout,unsigned auto_flush): pic::safe_worker_t(auto_flush,0), size_(size), dev_(dev), name_(name), timeout_(timeout), count_(0)
+pic::bulk_queue_t::impl_t::impl_t(unsigned size,usbdevice_t *dev, unsigned name, unsigned timeout,unsigned auto_flush): pic::safe_worker_t(auto_flush,0), bulk_out_pipe_t(name,size), size_(size), dev_(dev), name_(name), timeout_(timeout), count_(0)
 {
+    PIC_ASSERT(dev->add_bulk_out(this));
     buffer_ = (unsigned char *)nb_malloc(PIC_ALLOC_NB,size_);
     PIC_ASSERT(buffer_);
     memset(buffer_,0,size_);
@@ -267,8 +273,8 @@ void pic::bulk_queue_t::impl_t::writer__(void *self_, void *buffer_, void *size_
     try
     {
         //pic::logmsg() << "bulk write ep=" << self->name_ << " len=" << size;
-        self->dev_->bulk_write(self->name_,buffer_,size,self->timeout_);
-        pic_microsleep(500);
+        pic_microsleep(1000);
+        self->bulk_write(buffer_,size,self->timeout_);
     }
     CATCHLOG()
     nb_free(buffer_);

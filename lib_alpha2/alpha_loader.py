@@ -59,6 +59,8 @@ class usb_interface():
         self.end_point = ep
         picross.pic_set_interrupt()
         self.interface = picross.usbdevice( device, 0 )
+        self.bulk_pipe = picross.bulk_out_pipe(self.end_point,512)
+        self.interface.add_bulk_out(self.bulk_pipe)
         self.interface.start_pipes()
         self.interface.control_out(0x40,0xb1,0,0,'')
         time.sleep( 4 )
@@ -69,7 +71,7 @@ class usb_interface():
     def bulk_transfer( self,packet ):
         bytes = packet.get_buffer()        
         strpacket =  "".join( map(chr,bytes))
-        self.interface.bulk_write( self.end_point,strpacket )
+        self.bulk_pipe.bulk_write(strpacket )
 
     def control(self,*args):
         return self.interface.control(*args)

@@ -107,8 +107,7 @@ namespace
 
 //class alpha2::active_t::impl_t;
 
-struct key_in_pipe:
-    pic::usbdevice_t::in_pipe_t
+struct key_in_pipe: pic::usbdevice_t::iso_in_pipe_t
 {
 
     key_in_pipe( alpha2::active_t::impl_t * ); 
@@ -125,8 +124,7 @@ private:
     alpha2::active_t::impl_t *pimpl_;
 };
 
-struct pedal_in_pipe:
-    pic::usbdevice_t::in_pipe_t
+struct pedal_in_pipe: pic::usbdevice_t::iso_in_pipe_t
 {
 
     pedal_in_pipe( alpha2::active_t::impl_t * ); 
@@ -210,11 +208,46 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     unsigned char mic_config_wait() { return config_wait(A2_REG_MIC_CONFIG,0x20); }
     void mic_config_done(unsigned char mc) { write_register(A2_REG_MIC_CONFIG,mc|0x10); }
 
+    void raw_mode(bool e)
+    {
+        raw_mode_ = e;
+
+        if(kbd_state_ != KBD_STARTED)
+        {
+            return;
+        }
+
+        if(!legacy_mode_)
+        {
+            unsigned char hc = read_register(A2_REG_MODE);
+
+            if(e)
+            {
+                hc |= 0x01;
+            }
+            else
+            {
+                hc &= ~0x01;
+            }
+
+            write_register(A2_REG_MODE,hc);
+        }
+        else
+        {
+            if(raw_mode_)
+            {
+                device_->control(BCTKBD_USBCOMMAND_SETRAW_REQTYPE, BCTKBD_USBCOMMAND_SETRAW_REQ,0,0);
+            }
+        }
+
+        pic::logmsg() << "raw mode enable: " << e;
+    }
+
     void loopback_enable(bool e)
     {
         loop_enable_ = e;
 
-        if(tau_mode_ || kbd_state_ != KBD_STARTED)
+        if(legacy_mode_ || tau_mode_ || kbd_state_ != KBD_STARTED)
         {
             return;
         }
@@ -239,7 +272,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     {
         mic_automute_ = e;
 
-        if(tau_mode_ || kbd_state_ != KBD_STARTED)
+        if(legacy_mode_ || tau_mode_ || kbd_state_ != KBD_STARTED)
         {
             return;
         }
@@ -262,18 +295,20 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     {
         loop_gain_ = f;
 
-        if(tau_mode_ || kbd_state_ != KBD_STARTED)
+        if(legacy_mode_ || tau_mode_ || kbd_state_ != KBD_STARTED)
         {
             return;
         }
 
         unsigned d = 0,n = 0;
 
+        /*
         if(f>=0.01)
         {
             d = 255U/((unsigned)ceilf(f));
             n = (unsigned)(f*((float)d));
         }
+        */
 
         pic::logmsg() << "loop gain " << f << " -> " << n << "/" << d;
         write_register(A2_REG_LT_GAIN_MULT,n);
@@ -284,7 +319,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     {
         hp_enable_ = e;
 
-        if(kbd_state_ != KBD_STARTED)
+        if(legacy_mode_ || kbd_state_ != KBD_STARTED)
         {
             return;
         }
@@ -308,7 +343,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     {
         hp_limit_ = e;
 
-        if(kbd_state_ != KBD_STARTED)
+        if(legacy_mode_ || kbd_state_ != KBD_STARTED)
         {
             return;
         }
@@ -334,7 +369,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
 
         hp_gain_ = g;
 
-        if(kbd_state_ != KBD_STARTED)
+        if(legacy_mode_ || kbd_state_ != KBD_STARTED)
         {
             return;
         }
@@ -349,7 +384,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     {
         mic_gain_ = g;
 
-        if(tau_mode_ || kbd_state_ != KBD_STARTED)
+        if(legacy_mode_ || tau_mode_ || kbd_state_ != KBD_STARTED)
         {
             return;
         }
@@ -364,7 +399,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     {
         mic_type_ = t;
 
-        if(tau_mode_ || kbd_state_ != KBD_STARTED)
+        if(legacy_mode_ || tau_mode_ || kbd_state_ != KBD_STARTED)
         {
             return;
         }
@@ -398,7 +433,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     {
         mic_pad_ = p;
 
-        if(tau_mode_ || kbd_state_ != KBD_STARTED)
+        if(legacy_mode_ || tau_mode_ || kbd_state_ != KBD_STARTED)
         {
             return;
         }
@@ -426,7 +461,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     {
         mic_enable_ = e;
 
-        if(tau_mode_ || kbd_state_ != KBD_STARTED)
+        if(legacy_mode_ || tau_mode_ || kbd_state_ != KBD_STARTED)
         {
             return;
         }
@@ -451,20 +486,19 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     alpha2::active_t::delegate_t *handler_;
     key_in_pipe *pkey_in_pipe_;
     pedal_in_pipe *ppedal_in_pipe_;
-    pic::usbdevice_t::out_pipe_t out_pipe_;
+    pic::usbdevice_t::iso_out_pipe_t out_pipe_;
     pic::bulk_queue_t led_pipe_;
-    pic::bulk_queue_t midi_pipe_;
+    //pic::bulk_queue_t midi_pipe_;
     bool keydown_recv_;
     unsigned heartbeat_;
     unsigned char ledstates_[132];
     bool noleds_;
     bool legacy_mode_;
     bool mic_suppressed_;
-    bool raw_;
     unsigned active_colour_;
     bool tau_mode_;
 
-    bool mic_pad_,mic_enable_,hp_enable_,loop_enable_,mic_automute_,hp_limit_;
+    bool mic_pad_,mic_enable_,hp_enable_,loop_enable_,mic_automute_,hp_limit_,raw_mode_;
     unsigned mic_type_,mic_gain_,hp_gain_;
     float loop_gain_;
 
@@ -474,7 +508,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
 };
 
 key_in_pipe::key_in_pipe( alpha2::active_t::impl_t *pimpl ):
-    pic::usbdevice_t::in_pipe_t(BCTKBD_USBENDPOINT_ISO_IN_NAME,BCTKBD_USBENDPOINT_ISO_IN_SIZE),
+    pic::usbdevice_t::iso_in_pipe_t(BCTKBD_USBENDPOINT_ISO_IN_NAME,BCTKBD_USBENDPOINT_ISO_IN_SIZE),
     pimpl_( pimpl )
 {
 }
@@ -485,38 +519,34 @@ key_in_pipe::~key_in_pipe()
 }
 
 pedal_in_pipe::pedal_in_pipe( alpha2::active_t::impl_t *pimpl ):
-    pic::usbdevice_t::in_pipe_t( BCTP_USBENDPOINT_ISO_IN_NAME ,BCTP_USBENDPOINT_ISO_IN_SIZE),
+    pic::usbdevice_t::iso_in_pipe_t(BCTP_USBENDPOINT_ISO_IN_NAME,BCTP_USBENDPOINT_ISO_IN_SIZE),
     pimpl_( pimpl )
 {
-
-
 }
 
 pedal_in_pipe::~pedal_in_pipe()
 {
-
 }
 
 alpha2::active_t::impl_t::impl_t(pic::usbdevice_t *device, alpha2::active_t::delegate_t *del, bool legacy_mode): 
     device_(device),
     handler_(del),
-    out_pipe_(BCTKBD_USBENDPOINT_ISO_OUT_NAME,BCTKBD_USBENDPOINT_ISO_OUT_SIZE ),
-    led_pipe_(BCTKBD_BULKOUT_LED_EP_SIZE,device,BCTKBD_BULKOUT_LED_EP,500,0),
-    midi_pipe_(BCTP_BULKOUT_MIDI_EP_SIZE,device,BCTP_BULKOUT_MIDI_EP,500,1),
+    out_pipe_(BCTKBD_USBENDPOINT_ISO_OUT_NAME,BCTKBD_USBENDPOINT_ISO_OUT_SIZE),
+    led_pipe_(/*BCTKBD_BULKOUT_LED_EP_SIZE*/36,device,BCTKBD_BULKOUT_LED_EP,500,0),
+    //midi_pipe_(BCTP_BULKOUT_MIDI_EP_SIZE,device,BCTP_BULKOUT_MIDI_EP,500,1),
     keydown_recv_(false),
     heartbeat_(0),
     legacy_mode_(legacy_mode),
     mic_suppressed_(false),
-    raw_(false),
     active_colour_(0x03),
     tau_mode_(false),
-    mic_pad_(true), mic_enable_(false), hp_enable_(false), loop_enable_(false), mic_automute_(false), hp_limit_(true),
+    mic_pad_(true), mic_enable_(false), hp_enable_(false), loop_enable_(false), mic_automute_(false), hp_limit_(true),raw_mode_(false),
     mic_type_(1), mic_gain_(0x15), hp_gain_(0x46),
     kbd_state_(KBD_OFF)
 {
     device_->set_power_delegate(this);
     pkey_in_pipe_ = new key_in_pipe( this );
-    device_->add_inpipe( pkey_in_pipe_ );
+    device_->add_iso_in( pkey_in_pipe_ );
     pkey_in_pipe_->enable_frame_check(true);
 
     noleds_ = (getenv("PI_NOLEDS")!=0);
@@ -526,17 +556,20 @@ alpha2::active_t::impl_t::impl_t(pic::usbdevice_t *device, alpha2::active_t::del
     if(!noleds_)
     {
         ppedal_in_pipe_ = new pedal_in_pipe( this );
-        device_->add_inpipe( ppedal_in_pipe_ );
+        device_->add_iso_in( ppedal_in_pipe_ );
         total_pipes_ = 2;
     }
     
     memset(ledstates_,0,sizeof(ledstates_));
-    device_->set_outpipe(&out_pipe_);
+    device_->set_iso_out(&out_pipe_);
 
     if(legacy_mode_)
     {
         pic::logmsg() << "device is legacy mode, no audio or configuration registers available";
     }
+
+    device_->control_out(BCTKBD_USBCOMMAND_STOP_REQTYPE,BCTKBD_USBCOMMAND_STOP_REQ,0,0,0,0);
+    device_->control_out(BCTKBD_USBCOMMAND_STOP_REQTYPE,BCTP_USBCOMMAND_STOP_REQ,0,0,0,0); 
 }
 
 alpha2::active_t::impl_t::~impl_t()
@@ -678,6 +711,8 @@ void key_in_pipe::in_pipe_data(const unsigned char *frame, unsigned length, unsi
         pik_msg1_t *m = (pik_msg1_t *)p;
         pik_msg2_t *m2 = (pik_msg2_t *)p;
 
+        //pic::logmsg() << "message type " << (int)(m->type);
+
         switch(m->type)
         {
             case 0: case BCTKBD_MSGTYPE_NULL:          return;
@@ -716,7 +751,7 @@ void alpha2::active_t::impl_t::start()
     pic::logmsg() << "starting pipes";
     device_->start_pipes();
     led_pipe_.start();
-    midi_pipe_.start();
+    //midi_pipe_.start();
 }
 
 void alpha2::active_t::impl_t::kbd_start()
@@ -758,7 +793,7 @@ void alpha2::active_t::impl_t::stop()
 {
     //pic::logmsg() << " alpha2::active_t::impl_t::stop IN";
     led_pipe_.stop();
-    midi_pipe_.stop();
+    //midi_pipe_.stop();
     device_->stop_pipes();
 }
 
@@ -791,12 +826,14 @@ bool alpha2::active_t::impl_t::poll(unsigned long long t)
 
         if(kbd_state_ == KBD_STARTED)
         {
+            bool mg = mic_gain_;
+
             pic::logmsg() << "keyboard startup phase 2";
             kbd_state_ = KBD_STARTED;
             msg_set_leds();
 
-            bool mg = mic_gain_;
 
+            raw_mode(raw_mode_);
             loopback_enable(loop_enable_);
             mic_automute(mic_automute_);
             loopback_gain(loop_gain_);
@@ -807,13 +844,10 @@ bool alpha2::active_t::impl_t::poll(unsigned long long t)
             mic_pad(mic_pad_);
             mic_enable(mic_enable_);
             mic_gain(mg);
-
-
-
         }
     }
 
-    if(!v && !raw_)
+    if(!v && !raw_mode_)
     {
         if(keydown_recv_)
         {
@@ -869,7 +903,7 @@ void alpha2::active_t::impl_t::msg_send_midi(const unsigned char *data, unsigned
 
             try
             {
-                midi_pipe_.write(msg,l3+2);
+                //midi_pipe_.write(msg,l3+2);
                 //midi_pipe_.flush();
             }
             CATCHLOG()
@@ -929,25 +963,6 @@ void alpha2::active_t::msg_send_midi(const unsigned char *data, unsigned len)
 void alpha2::active_t::msg_set_led(unsigned key, unsigned colour)
 {
     _impl->msg_set_led(key,colour);
-}
-
-void alpha2::active_t::msg_set_firmware()
-{
-    _impl->device_->control_out(0x40,0xb1,0,0,0);
-}
-
-void alpha2::active_t::msg_write_firmware( const char *packet )
-{
-    _impl->device_->bulk_write( 4,packet );
-}
-
-void alpha2::active_t::set_raw(bool raw)
-{
-    _impl->raw_ = raw;
-    if(raw)
-        _impl->device_->control(BCTKBD_USBCOMMAND_SETRAW_REQTYPE,BCTKBD_USBCOMMAND_SETRAW_REQ,0,0);
-    else
-        _impl->device_->control(BCTKBD_USBCOMMAND_SETCOOKED_REQTYPE,BCTKBD_USBCOMMAND_SETCOOKED_REQ,0,0);
 }
 
 const char *alpha2::active_t::get_name()
@@ -1045,6 +1060,11 @@ unsigned alpha2::active_t::impl_t::decode_raw(const unsigned short *payload, uns
 
 unsigned alpha2::active_t::impl_t::decode_mic(unsigned char seq, const unsigned short *payload, unsigned length, unsigned long long ts)
 {
+    if(legacy_mode_)
+    {
+        return length;
+    }
+
     if(length<BCTKBD_MSGSIZE_MIC)
     {
         return 0;
@@ -1323,7 +1343,7 @@ void alpha2::active_t::audio_write(const float *stereo, unsigned len, unsigned p
 void alpha2::active_t::msg_flush()
 {
     _impl->led_pipe_.flush();
-    _impl->midi_pipe_.flush();
+    //_impl->midi_pipe_.flush();
 }
 
 void alpha2::active_t::mic_type(unsigned t)
@@ -1395,4 +1415,10 @@ void alpha2::active_t::mic_suppress(bool s)
 void alpha2::active_t::set_active_colour(unsigned c)
 {
     _impl->active_colour_ = c;
+}
+
+void alpha2::active_t::set_raw(bool raw)
+{
+    pic::logmsg() << "raw mode " << raw;
+    _impl->raw_mode(raw);
 }

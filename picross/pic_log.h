@@ -58,6 +58,7 @@ namespace pic
             void clear() { rep_=ref(new rep_t); }
             nbstring_t str() const { return rep_->str(); }
             msg_t &operator<<(void (*f)(const msg_t &)) { f(*this); return *this; }
+            msg_t &operator<<(const msg_t &m) { (*rep_) << m.str(); return *this; }
             msg_t &operator<<(logger_t &l) { l.log(str().c_str()); return *this; }
             msg_t &operator<<(logger_t *l) { l->log(str().c_str()); return *this; }
             template <class D> msg_t &operator<<(const D &d) { (*rep_) << d; return *this; }

@@ -33,7 +33,7 @@
 #define MY_NTOHS(X) ((((X)&0xff)<<8)|(((X)>>8)&0xff))
 #endif
 
-struct alpha1::active_t::impl_t: pic::usbdevice_t::in_pipe_t, pic::usbdevice_t::power_t, pic::usbdevice_t, virtual public pic::lckobject_t
+struct alpha1::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice_t::power_t, pic::usbdevice_t, virtual public pic::lckobject_t
 {
     impl_t(const char *, alpha1::active_t::delegate_t *);
     ~impl_t();
@@ -58,13 +58,13 @@ struct alpha1::active_t::impl_t: pic::usbdevice_t::in_pipe_t, pic::usbdevice_t::
     char name_[17];
 };
 
-alpha1::active_t::impl_t::impl_t(const char *name, alpha1::active_t::delegate_t *del): usbdevice_t::in_pipe_t(BCTALPHA1_USBENDPOINT_SENSOR_NAME,BCTALPHA1_USBENDPOINT_SENSOR_SIZE), usbdevice_t(name,BCTALPHA1_INTERFACE), handler_(del)
+alpha1::active_t::impl_t::impl_t(const char *name, alpha1::active_t::delegate_t *del): usbdevice_t::iso_in_pipe_t(BCTALPHA1_USBENDPOINT_SENSOR_NAME,BCTALPHA1_USBENDPOINT_SENSOR_SIZE), usbdevice_t(name,BCTALPHA1_INTERFACE), handler_(del)
 {
     set_power_delegate(this);
     //device_.control_in(BCTALPHA1_USBCOMMAND_GETNAME_REQTYPE,BCTALPHA1_USBCOMMAND_GETNAME_REQ,0,0,name_,16);
     //name_[16]=0;
     strcpy(name_,"alpha");
-    add_inpipe(this);
+    add_iso_in(this);
 }
 
 alpha1::active_t::impl_t::~impl_t()

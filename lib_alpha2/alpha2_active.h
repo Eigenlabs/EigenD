@@ -102,9 +102,6 @@ namespace alpha2
             void msg_flush();
             void msg_send_midi(const unsigned char *data, unsigned len);
 
-            void msg_write_firmware(const char *packet);
-            void msg_set_firmware();
-
             // period is 0x01 for 44.1/512, 0x02 for 48/512, 0x03 for 96/512
             void audio_write(const float *stereo, unsigned len, unsigned period);
 
