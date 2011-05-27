@@ -181,81 +181,6 @@ class VerbProxy:
         return self.__id
 
 
-class ModeProxy:
-    def __init__(self,id,schema):
-        self.__id = id
-        self.__index = schema.args[0]
-
-        schema = schema.args[1]
-
-        if not logic.is_term(schema) or not logic.is_list(schema.args[0]):
-            raise RuntimeError("invalid mode schema")
-
-        self.__mods = set(schema.args[0])
-        self.__options = set()
-        self.__fixed = set()
-        self.__constraints = dict()
-        self.__order = []
-
-        for r in schema.args[1:]:
-            if logic.is_pred(r,'role'):
-                role = r.args[0]
-                self.__fixed.add(role)
-                self.__constraints[role] = r.args[1]
-                self.__order.append(role)
-            if logic.is_pred(r,'option'):
-                role = r.args[0]
-                self.__options.add(role)
-                self.__constraints[role] = r.args[1]
-                self.__order.append(role)
-
-    def order(self):
-        return self.__order
-
-    def constraints(self):
-        return self.__constraints
-
-    def mods(self):
-        return self.__mods
-
-    def fixed_roles(self):
-        return self.__fixed
-
-    def option_roles(self):
-        return self.__options
-
-    def subject(self):
-        return paths.id2server(self.__id)
-
-    def __hash__(self):
-        return hash((self.__id,self.__index))
-
-    def __cmp__(self,other):
-        if self is other: return 0
-        if not isinstance(other,ModeProxy): return 1
-        return cmp((self.__id,self.__index),(other.__id,other.__index))
-
-    def invoke(self, interp, *args):
-        return action.adapt_callback1(rpc.invoke_rpc(self.__id,'minvoke',action.marshal((self.__index,)+args)))
-
-    def find(self, interp, *args):
-        return action.adapt_callback1(rpc.invoke_rpc(self.__id,'mfind',action.marshal((self.__index,)+args)))
-
-    def cancel(self,interp,*args):
-        return action.adapt_callback0(rpc.invoke_rpc(self.__id,'mcancel',action.marshal((self.__index,)+args)))
-
-    def attach(self,interp,*args):
-        return action.adapt_callback0(rpc.invoke_rpc(self.__id,'mattach',action.marshal((self.__index,)+args)))
-
-    def __repr__(self):
-        return "<mode %s:%s>" % (self.__id,self.__index)
-
-    def __str__(self):
-        return "<mode %s:%s>" % (self.__id,self.__index)
-
-    def id(self):
-        return self.__id
-
 class Relation:
     def __init__(self,r,o,c):
         self.r = r
@@ -903,12 +828,9 @@ class DatabaseProxy(proxy.AtomProxy):
     def node_ready(self):
         self.__root.__changed = True
 
-        self.rules,props,modes,verbs = self.database.make_rules(self,True,self.monitor)
+        self.rules,props,verbs = self.database.make_rules(self,True,self.monitor)
 
         myid = self.id()
-
-        if modes is not None:
-            self.database.get_verbcache().set_modes(myid,modes)
 
         if verbs is not None:
             self.database.get_verbcache().set_verbs(myid,verbs)
@@ -935,13 +857,10 @@ class DatabaseProxy(proxy.AtomProxy):
             self.__root.__timestamp = piw.tsd_time()
             self.database.set_timestamp(self.__root.__timestamp)
         
-        newrules,newprops,newmodes,newverbs = self.database.make_rules(self,False,parts)
+        newrules,newprops,newverbs = self.database.make_rules(self,False,parts)
 
         myid = self.id()
         
-        if newmodes is not None:
-            self.database.get_verbcache().set_modes(myid,newmodes)
-
         if newverbs is not None:
             self.database.get_verbcache().set_verbs(myid,newverbs)
 
@@ -976,7 +895,6 @@ class DatabaseProxy(proxy.AtomProxy):
         myid = self.id()
 
         self.database.get_verbcache().retract_verbs(myid)
-        self.database.get_verbcache().retract_modes(myid)
 
         for v in self.rules.itervalues():
             self.database.retract_rules(v)
@@ -992,61 +910,12 @@ class VerbCache:
         self.__id2verbs = dict() # id -> list of VerbProxy objects
         self.__subject2verbs = dict() # id -> set of VerbProxy objects
         self.__name2verbs = dict() # name -> set of VerbProxy objects
-        self.__id2modes = dict() # id -> list of ModeProxy objects
-        self.__mod2modes = dict()
-        self.__role2modes = dict()
-        self.__modes = set()
 
     def find_verbs_by_name(self,verbname):
         return self.__name2verbs.get(verbname,frozenset())
 
     def find_verbs_by_subject(self,id):
         return self.__subject2verbs.get(id,frozenset())
-
-    def find_all_modes(self):
-        return self.__modes
-
-    def find_modes_by_role(self,rolename):
-        return self.__role2modes.get(rolename,frozenset())
-
-    def find_modes_by_mod(self,modname):
-        return self.__mod2modes.get(modname,frozenset())
-
-    def set_modes(self,id,modes):
-        self.retract_modes(id)
-
-        if modes:
-            self.__id2modes[id] = modes
-
-            for m in modes:
-                self.__modes.add(m)
-                for mm in m.mods():
-                    self.__mod2modes.setdefault(mm,set()).add(m)
-                for mm in m.fixed_roles():
-                    self.__role2modes.setdefault(mm,set()).add(m)
-                for mm in m.option_roles():
-                    self.__role2modes.setdefault(mm,set()).add(m)
-
-    def retract_modes(self,id):
-        modes = self.__id2modes.get(id)
-
-        if modes is not None:
-            del self.__id2modes[id]
-
-            for m in modes:
-                self.__modes.discard(m)
-                for mm in m.mods():
-                    ms = self.__mod2modes[mm]
-                    ms.discard(m)
-                    if not ms: del self.__mod2modes[mm]
-                for mm in m.fixed_roles():
-                    ms = self.__role2modes[mm]
-                    ms.discard(m)
-                    if not ms: del self.__role2modes[mm]
-                for mm in m.option_roles():
-                    ms = self.__role2modes[mm]
-                    ms.discard(m)
-                    if not ms: del self.__role2modes[mm]
 
     def set_verbs(self,id,verbs):
         self.retract_verbs(id)
@@ -1326,13 +1195,6 @@ class Database(logic.Engine):
             print 'malformed verb',id,schema
             return None
 
-    def make_mode_proxy(self,id,schema):
-        try:
-            return ModeProxy(id,schema)
-        except:
-            print 'malformed mode',id,schema
-            return None
-
     @staticmethod
     def __master2id(master):
         terms = logic.parse_termlist(master or '')
@@ -1366,14 +1228,6 @@ class Database(logic.Engine):
                 r.append(Relation(self.__partof,id,pid))
 
             rules['init']=r
-
-        mode_return = None
-        if 'modes' in parts:
-            mode_return = []
-            for s in ap.modes():
-                p = self.make_mode_proxy(id,s)
-                if p is not None:
-                    mode_return.append(p)
 
         verb_return = None
         if 'verbs' in parts:
@@ -1510,7 +1364,7 @@ class Database(logic.Engine):
 
         props['props'] = (prop_add,prop_del)
 
-        return rules,props,mode_return,verb_return
+        return rules,props,verb_return
 
     def start(self,name):
         if not self.__index:

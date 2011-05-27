@@ -815,11 +815,12 @@ class Agent(agent.Agent):
         if not factory:
             return async.failure('no such agent')
 
-        if not name:
-            name = guid.address(plugin_name)
+        address = self.dynamic.create(factory,address=address)
 
-        self.dynamic.create(factory,name)
-        return async.success(name)
+        if not address:
+            return async.failure('address in use')
+
+        return async.success(address)
 
     def __create(self,subject,plugin):
         plugin = action.abstract_string(plugin)
@@ -829,9 +830,12 @@ class Agent(agent.Agent):
         if not factory:
             return async.failure('no such agent')
 
-        name = guid.address(plugin)
-        self.dynamic.create(factory,name)
-        return action.created_return(name)
+        address = self.dynamic.create(factory)
+
+        if not address:
+            return async.failure('address in use')
+
+        return action.created_return(address)
 
 
     @async.coroutine('internal error')

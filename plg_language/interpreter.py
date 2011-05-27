@@ -80,6 +80,13 @@ class Interpreter:
         self.__lastcmd = None
         self.__history = []
         self.__statemgr = None
+        self.__action = None
+
+    def set_action(self,action):
+        self.__action = action
+
+    def get_action(self):
+        return self.__action
 
     def set_statemgr(self,sm):
         print 'using',sm,'for undo'

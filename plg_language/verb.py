@@ -124,61 +124,6 @@ def primitive_role(interp,word):
     interp.push(RoleMarker(word))
     return async.success()
 
-def primitive_verb(interp,verb):
-    args=[]
-    mods=[]
-    roles=[]
-    flags=[]
-    action=None
-    text=(verb,)
-
-    print 'verb:',verb,map(str,interp.stack())
-
-    while not interp.empty():
-        m = interp.pop(interpreter.ModMarker)
-        if m is not None:
-            mods.append(m.word)
-            text = m.words()+text
-            continue
-        m = interp.pop(BgMarker)
-        if m is not None:
-            flags.append('bg')
-            text = m.words()+text
-            continue
-        break
-
-    while not interp.empty():
-        t = interp.pop(interpreter.VerbAction)
-        if t is not None:
-            action=t
-            break
-
-        t = interp.pop(referent.Referent)
-        if t is None:
-            print 'top stack is',interp.topany()
-            return async.failure('garbled form of '+verb)
-
-        text = t.words()+text
-
-        r = interp.pop(RoleMarker)
-        if r is None:
-            r2=None
-        else:
-            r2=r.word
-            text = r.words()+text
-
-        args.insert(0,t)
-        roles.insert(0,r2)
-
-    args=tuple(args)
-    roles=tuple(roles)
-
-    if action:
-        return action.run(interp,verb,mods,roles,args,flags,text)
-
-    print 'run imperative:',text
-    return run_imperative(interp,verb,mods,roles,args,flags,text)
-
 def primitive_ify(interp,word):
     w = interp.undo()
     w = interp.undo()
@@ -206,31 +151,95 @@ def primitive_which(interp,word):
 
     return async.success()
 
+
+def primitive_verb(interp,verb):
+    args=[]
+    mods=[]
+    roles=[]
+    flags=[]
+    action=interp.get_action() or run_imperative
+    text=(verb,)
+
+    print 'verb:',verb,map(str,interp.stack())
+
+    while not interp.empty():
+        m = interp.pop(interpreter.ModMarker)
+        if m is not None:
+            mods.append(m.word)
+            text = m.words()+text
+            continue
+        m = interp.pop(BgMarker)
+        if m is not None:
+            flags.append('bg')
+            text = m.words()+text
+            continue
+        break
+
+    while not interp.empty():
+        t = interp.pop(interpreter.VerbAction)
+        if t is not None:
+            action=t.run
+            break
+
+        t = interp.pop(referent.Referent)
+        if t is None:
+            print 'top stack is',interp.topany()
+            return async.failure('garbled form of '+verb)
+
+        text = t.words()+text
+
+        r = interp.pop(RoleMarker)
+        if r is None:
+            r2=None
+        else:
+            r2=r.word
+            text = r.words()+text
+
+        args.insert(0,t)
+        roles.insert(0,r2)
+
+    args=tuple(args)
+    roles=tuple(roles)
+
+    return action(interp,verb,mods,roles,args,flags,text)
+
+
+def run_imperative(interp,verb,mods,roles,args,flags,text):
+    fg = ('bg' not in flags)
+    coresult = async.Coroutine(run_imperative_co(interp,verb,mods,roles,args,flags,fg,text),interpreter.rpcerrorhandler)
+    if fg: return coresult
+    interp.add_job(coresult)
+    return async.success()
+
+
 def run_imperative_co(interp,verb,mods,roles,args,flags,fg,text):
-    vresult = async.Aggregate(accumulate=True)
-
-    def build_vresult(subject,r):
-        vresult.add(subject,r)
-
-    sresult = imperative.run(interp,verb,mods,roles,args,text,build_vresult)
+    sresult = imperative.run(interp,verb,mods,roles,args)
 
     yield sresult
+
     if not sresult.status():
         yield async.Coroutine.failure(*sresult.args(),**sresult.kwds())
+
+    (verbs,) = sresult.args()
+
+    vresult = async.Aggregate(accumulate=True)
+
+    for (verb,verb_args) in verbs:
+        vresult.add(verb.subject(),verb.invoke(interp,verb.subject(),*verb_args))
 
     vresult.enable()
 
     yield vresult
 
-    vs = vresult.args()[0]
-    vf = vresult.args()[1]
+    (vs,vf) = vresult.args()
+
     db = interp.get_database()
 
     for d in vs:
         print "%s: ok" % db.find_desc(d)
 
     for (d,m) in vf.iteritems():
-         print "%s: %s" % (db.find_desc(d), m[0])
+        print "%s: %s" % (db.find_desc(d), m[0])
 
     context = set()
     sync = []
@@ -299,9 +308,6 @@ def run_imperative_co(interp,verb,mods,roles,args,flags,fg,text):
         interp.get_context().push_stack(context)
         interp.get_context().extend_scope(context)
 
-    if cancel:
-        yield imperative.cancel_events(db,cancel)
-
     if dosync or created:
         print 'starting sync after',verb,':',sync
         yield interp.sync(*[piw.address2server(o) for o in sync])
@@ -322,10 +328,3 @@ def run_imperative_co(interp,verb,mods,roles,args,flags,fg,text):
         yield async.Coroutine.failure('%d verbs failed: %d verbs succeeded' % (nerr,nsucceeded),user_errors=tuple(errs))
 
     yield async.Coroutine.success()
-
-def run_imperative(interp,verb,mods,roles,args,flags,text):
-    fg = ('bg' not in flags)
-    coresult = async.Coroutine(run_imperative_co(interp,verb,mods,roles,args,flags,fg,text),interpreter.rpcerrorhandler)
-    if fg: return coresult
-    interp.add_job(coresult)
-    return async.success()

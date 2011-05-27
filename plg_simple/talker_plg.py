@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,paths
+from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,paths,talker
 from plg_simple import talker_version as version
 import piw
 import operator
@@ -101,25 +101,68 @@ class PhraseBrowser(atom.Atom):
         map = tuple([(i,e.describe(),None) for (i,e) in all[cnum:] ])
         return logic.render_term(map)
 
-class Event(atom.Atom):
-    def __init__(self,key,fast,text,index):
+class Collection(atom.Atom):
+    def __init__(self,protocols=None,inst_creator=None,inst_wrecker=None,*args,**kwds):
+        p = protocols+' create' if protocols else 'create'
+        self.__creator = inst_creator or self.instance_create
+        self.__wrecker = inst_wrecker or self.instance_wreck
+        atom.Atom.__init__(self,protocols=p,*args,**kwds)
+
+    def instance_wreck(self,k,v,o):
+        return async.success()
+
+    def instance_create(self,o):
+        return async.failure('not implemented')
+
+    def listinstances(self):
+        return [ self[i].get_property_long('ordinal',0) for i in self ]
+
+    def rpc_listinstances(self,arg):
+        i = self.listinstances()
+        return logic.render_termlist(i)
+
+    @async.coroutine('internal error')
+    def rpc_createinstance(self,arg):
+        name = int(arg)
+        outputs = self.listinstances()
+
+        if name in outputs:
+            yield async.Coroutine.failure('output in use')
+
+        oresult = self.__creator(name)
+        yield oresult
+
+        if not oresult.status():
+            yield async.Coroutine.failure(*oresult.args(),**oresult.kwds())
+
+        output = oresult.args()[0]
+        yield async.Coroutine.success(output.id())
+
+    @async.coroutine('internal error')
+    def rpc_delinstance(self,arg):
+        name = int(arg)
+
+        for k,v in self.items():
+            o = v.get_property_long('ordinal',0)
+            if o == name:
+                oid = v.id()
+                oresult = self.__wrecker(k,v,o)
+                yield oresult
+                if k in self: del self[k]
+                yield async.Coroutine.success(oid)
+
+        yield async.Coroutine.failure('output not in use')
+
+
+class Event(talker.Talker):
+    def __init__(self,key,fast,index):
         self.__key = key
         self.__index = index
+        cookie = self.__key.key_aggregator.get_output(self.__index)
 
-        self.__fastdata = piw.fastdata(0)
-        piw.tsd_fastdata(self.__fastdata)
-        self.__fastdata.set_upstream(fast)
+        talker.Talker.__init__(self,self.__key.agent.finder,fast,cookie,names='event',ordinal=index,connection_index=index)
 
-        atom.Atom.__init__(self,domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),names='action',ordinal=index)
-
-        self.get_policy().set_source(self.__fastdata)
-        self.status_input = bundles.VectorInput(self.__key.key_aggregator.get_output(self.__index), self.__key.agent.domain,signals=(1,))
-        self.set_property_string('help',text)
-
-        self[1] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.status_input.vector_policy(1,False,clocked=False),names='status input',protocols='nostage')
-
-    def cancel(self):
-        self.clear_connections()
+    def detach_event(self):
         self.__key.key_aggregator.clear_output(self.__index)
 
     def property_change(self,key,value):
@@ -129,17 +172,11 @@ class Event(atom.Atom):
     def describe(self):
         return self.get_property_string('help')
 
-    def attach(self,*args):
-        c = []
-        for i,a in enumerate(args):
-            (id,ch) = a.args
-            c.append(logic.make_term('conn',i,self.__key.index,id,ch))
 
-        self[1].set_connections(logic.render_termlist(c))
 
-class Key(atom.Atom):
+class Key(Collection):
     def __init__(self,agent,controller,index):
-        atom.Atom.__init__(self,creator=self.__create,wrecker=self.__wreck,ordinal=index,names='key')
+        Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,ordinal=index,names='k')
         self.__event = piw.fasttrigger(const.light_unknown)
         self.__event.attach_to(controller,index)
         self.__handler = piw.change2_nb(self.__event.trigger(),utils.changify(self.event_triggered))
@@ -148,6 +185,22 @@ class Key(atom.Atom):
         self.index = index
         self.set_private(node.Server(value=piw.makelong(3,0),change=self.__change_color))
         self.set_internal(250,atom.Atom(domain=domain.Trigger(),init=False,names='activate',policy=policy.TriggerPolicy(self.__handler),transient=True))
+        self.agent.light_convertor.set_status_handler(self.index, piw.slowchange(utils.changify(self.set_status)))
+
+    @async.coroutine('internal error')
+    def instance_create(self,name):
+        e = Event(self,self.__event.fastdata(),name)
+        self[name] = e
+        e.attached()
+
+    @async.coroutine('internal error')
+    def instance_wreck(self,k,e,name):
+        print 'killing event',k
+        del self[k]
+        e.detach_event()
+        r = e.clear_phrase()
+        yield r
+        print 'killed event',k
 
     def event_triggered(self,v):
         self.get_internal(250).get_policy().set_status(piw.makelong(0,0))
@@ -169,68 +222,59 @@ class Key(atom.Atom):
         self.get_private().set_data(piw.makelong(c,0))
 
     def __create(self,i):
-        self.agent.light_convertor.set_status_handler(self.index, piw.slowchange(utils.changify(self.set_status)))
         self.agent.update()
-        return Event(self,self.__event.fastdata(),'',i)
+        return Event(self,self.__event.fastdata(),i)
 
     def __wreck(self,k,v):
-        self.agent.light_convertor.remove_status_handler(self.index)
-        v.cancel()
+        v.detach_event()
         self.agent.update()
 
-    def eventcalled(self,text,called):
-        if called in self:
-            return None
-        e = Event(self,self.__event.fastdata(),text,called)
-        self[called] = e
-        return e.id()
+    def detach_key(self):
+        self.agent.light_convertor.remove_status_handler(self.index)
+        self.agent.light_aggregator.clear_output(self.index+1)
 
-    def event(self,text):
-        i = self.find_hole()
-        e = Event(self,self.__event.fastdata(),text,i)
-        self[i] = e
-        return e.id()
+    @async.coroutine('internal error')
+    def create_event(self,text,called=None):
+        if called:
+            if called in self:
+                yield async.Coroutine.failure('phrase exists')
+            index = called
+        else:
+            index = self.find_hole()
 
-    def detach(self,id=None,del_similar=False):
-        did = False
-        for n,e in self.items():
-            if id is None or e.id()==id:
-                e.cancel()
-                del self[n]
-                did = True
+        print 'create event on key',self.id()
 
-        if len(self)==0:
-            self.__event.detach()
-            self.agent.light_aggregator.clear_output(self.index+1)
+        e = Event(self,self.__event.fastdata(),index)
+        self[index] = e
+        e.attached()
+        r = e.set_phrase(text)
+        yield r
 
-        return did
-
-    def attach(self,id,*args):
-        did = False
-        for n,e in self.items():
-            if e.id()==id:
-                did = True
-                e.attach(*args)
-                break
-
-        return did
+    @async.coroutine('internal error')
+    def cancel_event(self,called=None):
+        for c,e in self.items():
+            if not called or called==c:
+                del self[c]
+                e.detach_event()
+                r = e.clear_phrase()
+                yield r
 
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         agent.Agent.__init__(self,signature=version,names='talker',container=5,ordinal=ordinal)
 
-        self.add_mode2(4,'mode([],role(when,[singular,numeric]),option(using,[instance(~server)]))', self.__mode, self.__query, self.__cancel_mode, self.__attach_mode)
-        self.add_mode2(7,'mode([],role(when,[singular,numeric]),role(called,[singular,numeric]),option(using,[instance(~server)]))', self.__cmode, self.__cquery, self.__cancel_mode, self.__attach_mode)
-        self.add_verb2(1,'cancel([],None,role(None,[ideal([~server,event])]))', self.__cancel_verb)
-        self.add_verb2(8,'cancel([],None,role(None,[singular,numeric]),role(called,[singular,numeric]))', self.__cancel_verb_called)
+        self.add_verb2(2,'do([],None,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
+        self.add_verb2(8,'cancel([],None,role(None,[singular,numeric]),option(called,[singular,numeric]))', self.__cancel_verb)
         self.add_verb2(5,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]))', self.__color_verb)
         self.add_verb2(6,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]),role(from,[singular,numeric]))', self.__all_color_verb)
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
         self.__size = 0
+        self.finder = talker.TalkerFinder()
 
         self[1] = bundles.Output(1,False, names='light output',protocols='revconnect')
+
         self.light_output = bundles.Splitter(self.domain,self[1])
         self.light_convertor = piw.lightconvertor(self.light_output.cookie())
         self.light_aggregator = piw.aggregator(self.light_convertor.cookie(),self.domain)
@@ -239,16 +283,10 @@ class Agent(agent.Agent):
         self.activation_input = bundles.VectorInput(self.controller.cookie(), self.domain,signals=(1,))
 
         self[2] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.activation_input.local_policy(1,False),names='activation input')
-        self[3] = atom.Atom(creator=self.__create,wrecker=self.__wreck)
-        self[4] = PhraseBrowser(self.__eventbykey,self.__keylist)
+        self[3] = Collection(creator=self.__create,wrecker=self.__wreck,names='k',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
+        self[4] = PhraseBrowser(self.__eventlist,self.__keylist)
 
-    def rpc_resolve_ideal(self,arg):
-        (typ,name) = action.unmarshal(arg)
-        if typ != 'event': return '[]'
-        name = ' '.join(name)
-        return self[4].resolve_name(name)
-
-    def __eventbykey(self,k):
+    def __eventlist(self,k):
         el=[]
         if k in self[3]:
             for e in self[3][k].itervalues():
@@ -273,7 +311,18 @@ class Agent(agent.Agent):
         return Key(self,self.controller,k)
 
     def __wreck(self,k,v):
-        v.detach()
+        v.detach_key()
+
+    @async.coroutine('internal error')
+    def __create_inst(self,k):
+        self.__update_lights(k)
+        self[3][k] = Key(self,self.controller,k)
+
+    @async.coroutine('internal error')
+    def __wreck_inst(self,k,e,name):
+        del self[3][k]
+        r = e.cancel_event()
+        yield r
 
     def __all_color_verb(self,subject,k,c,f):
         k = int(action.abstract_string(k))
@@ -289,82 +338,39 @@ class Agent(agent.Agent):
         if k in self[3]:
             self[3][k].set_color(c)
 
-    def __cquery(self,k,c,u):
+    @async.coroutine('internal error')
+    def __do_verb(self,subject,t,k,c):
+        t = action.abstract_string(t)
         k = int(action.abstract_string(k))
-        c = int(action.abstract_string(c))
-
-        if k in self[3]:
-            if c in self[3][k]:
-                return [ self[3][k][c].id() ]
-        else:
-            return []
-
-    def __cmode(self,text,k,c,u):
-        k = int(action.abstract_string(k))
-        c = int(action.abstract_string(c))
-
+        c = int(action.abstract_string(c)) if c else None
+        
         if k not in self[3]:
             self.__update_lights(k)
             self[3][k] = Key(self,self.controller,k)
 
-        id = self[3][k].eventcalled(text,c)
+        if c and c in self[3][k]:
+                yield async.Coroutine.success(action.error_return('name in use','','do'))
 
-        if id is None:
-            return async.failure('mode in use')
+        r = self[3][k].create_event(t,c)
+        yield r
+        yield async.Coroutine.success()
 
-        self[4].update()
-        return logic.render_term((id,('echo',)))
-
-    def __query(self,k,u):
+    @async.coroutine('internal error')
+    def __cancel_verb(self,subject,k,c):
         k = int(action.abstract_string(k))
+        c = int(action.abstract_string(c)) if c else None
 
-        if k in self[3]:
-             return [ v.id() for v in self[3][k].itervalues() ]
-        else:
-             return []
-
-    def __mode(self,text,k,u):
-        k = int(action.abstract_string(k))
-
+        rv=[]
         if k not in self[3]:
-            self.__update_lights(k)
-            self[3][k] = Key(self,self.controller,k)
+            yield async.Coroutine.success()
 
-        id = self[3][k].event(text)
-        self[4].update()
-        return logic.render_term((id,('echo',)))
+        if c and c not in self[3][k]:
+            yield async.Coroutine.success()
 
-    def __cancel_mode(self,id):
-        for k,v in self[3].iteritems():
-            if v.detach(id,True):
-                self[4].update()
-                if len(v)==0:
-                    del self[3][k]
-                return
-   
-    def __cancel_verb_called(self,subject,key,called):
-        key = int(action.abstract_string(key))
-        called = int(action.abstract_string(called))
+        r = self[3][k].cancel_event(c)
+        yield r
+        yield async.Coroutine.success()
 
-        rv=[]
-        if key in self[3]:
-            if called in self[3][key]:
-                rv.append(action.cancel_return(self.id(),4,self[3][key][called].id()))
-                
-        return rv
-
-    def __cancel_verb(self,subject,phrase):
-        rv=[]
-        for o in action.arg_objects(phrase):
-            type,thing = action.crack_ideal(o)
-            event_id = thing[1]
-            rv.append(action.cancel_return(self.id(),4,event_id))
-        return rv
-
-    def __attach_mode(self,id,*args):
-        for k,v in self[3].iteritems():
-            if v.attach(id,*args):
-                return
 
 class Upgrader(upgrade.Upgrader):
     

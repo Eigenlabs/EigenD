@@ -66,8 +66,8 @@ namespace piw
             bool running() { return open() && !closing(); }
 
         public:
-            piw::data_t servername() { PIC_ASSERT(open()); return piw::data_t::from_given(bct_server_host_servername(this)); }
-            piw::data_t path() { PIC_ASSERT(open()); return piw::data_t::from_given(bct_server_host_path(this)); }
+            piw::data_t servername() { PIC_ASSERT(running()); return piw::data_t::from_given(bct_server_host_servername(this)); }
+            piw::data_t path() { PIC_ASSERT(running()); return piw::data_t::from_given(bct_server_host_path(this)); }
             void child_add(unsigned char n, bct_server_t *c) { PIC_ASSERT(open()); PIC_ASSERT(bct_server_host_child_add(this,n,c)>=0); }
             void shutdown() { if(open()) bct_server_host_shutdown(this); }
             void advertise(const char *i) { PIC_ASSERT(open()); bct_server_host_advertise(this,i); }

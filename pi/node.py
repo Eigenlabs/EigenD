@@ -397,11 +397,15 @@ class server(piw.server):
         for k in self.keys():
             del self[k]
 
+    def attached(self):
+        if self.open():
+            for (k,v) in self.__children.iteritems():
+                if not v.open():
+                    self.child_add(k,v)
+
     def server_opened(self):
         piw.server.server_opened(self)
-        for (k,v) in self.__children.iteritems():
-            if not v.open():
-                self.child_add(k,v)
+        self.attached()
 
     def clear_source(self):
         self.set_source(None)

@@ -20,7 +20,7 @@
 
 from pi import agent,atom,domain,errors,action,logic,async,index,utils,bundles,resource,paths,node,container,upgrade,timeout
 from pi.logic.shortcuts import *
-from plg_language import interpreter,database,feedback,noun,builtin_misc,builtin_conn,controller,context,variable,script,stage_server,widget,help_manager
+from plg_language import interpreter,database,feedback,noun,builtin_misc,builtin_conn,controller,context,variable,script,stage_server,widget,help_manager,deferred
 from plg_language import interpreter_version as version
 
 import piw
@@ -614,8 +614,25 @@ class Agent(agent.Agent):
         self.__history.buffer_done(status,msg,repeat)
 
 
+    @async.coroutine('internal error')
+    def rpc_create_action(self,arg):
+        action_term = logic.parse_term(arg)
+        result = deferred.create_action(self,action_term)
+        yield result
+        if not result.status():
+            yield async.Coroutine.failure(*result.args(),**result.kwds())
+        action = logic.render_termlist(result.args()[0])
+        yield async.Coroutine.success(action)
 
 
+    @async.coroutine('internal error')
+    def rpc_cancel_action(self,arg):
+        action = logic.parse_clauselist(arg)
+        result = deferred.cancel_action(self,action)
+        yield result
+        if not result.status():
+            yield async.Coroutine.failure(*result.args(),**result.kwds())
+        yield async.Coroutine.success()
 
 
 class Upgrader(upgrade.Upgrader):

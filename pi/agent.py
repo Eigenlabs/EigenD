@@ -306,16 +306,30 @@ class Agent(atom.Atom):
                 return None
         return c
 
+    @async.coroutine('internal error')
     def __verb_builtin(self,target,op):
         targets = action.concrete_objects(target)
         rv = []
+        agg = async.Aggregate(accumulate=True)
+
         for t in targets:
             (a,p) = paths.breakid_list(t)
             c = self.__get_child(p)
             if c is not None:
                 r = op(c)
-                if r is not None: rv.extend(r)
-        return rv
+                if r is not None:
+                    if isinstance(r,async.Deferred):
+                        agg.add(t,r)
+                    else:
+                        rv.extend(r)
+
+        if agg.get_outstanding():
+            agg.enable()
+            yield agg
+            for r in agg.successes().values(): rv.extend(r)
+            for r in agg.failures().values(): rv.extend(r)
+
+        yield async.Coroutine.success(rv)
 
     def __verb_builtin_set_value(self,subject,target,value):
         value = action.abstract_string(value)
