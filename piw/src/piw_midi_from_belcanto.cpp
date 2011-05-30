@@ -846,7 +846,15 @@ namespace piw
                         }
                     default:
                         global = false;
-                        channel = channel_;
+                        belcanto_note_wire_t *w = active_input_wires_.head();
+                        if(w && extract_keynum(w->id_) == extract_keynum(i->id_))
+                        {
+                            channel = channel_;
+                        }
+                        else
+                        {
+                            channel = 0;
+                        }
                         break;
                 }
             }
