@@ -374,6 +374,46 @@ class Agent(agent.Agent):
 
 class Upgrader(upgrade.Upgrader):
     
+    def move_connections(self,tools,connections,old_id,new_id):
+        actions = []
+
+        old_server,old_path = paths.breakid_list(old_id)
+        old_path = tuple(old_path)
+        old_path_len = len(old_path)
+        old_connections = connections.get(old_server,{})
+        new_server,new_path = paths.breakid_list(new_id)
+        new_path = tuple(new_path)
+
+        for src_path,tgt_id_set in old_connections.items():
+            if src_path[:old_path_len] == old_path:
+                old_src_id = paths.makeid_list(old_server,*src_path)
+                new_src_id = paths.makeid_list(new_server,*(new_path+src_path[old_path_len:]))
+                for tgt_id in tgt_id_set:
+                    tgt_server,tgt_path = paths.breakid_list(tgt_id)
+                    tgt_node = tools.get_root(tgt_server).get_node(*tgt_path)
+                    if tgt_node:
+                        tgt_node.move_connection(old_src_id,new_src_id)
+                        actions.append("deferred_action('%s',None)" % tgt_id)
+
+        return ','.join(actions)
+
+    def upgrade_1_0_1_to_1_0_2(self,tools,address):
+        connections = tools.get_connections()
+        keys = tools.get_root(address).get_node(3)
+        keys.set_name('k')
+        for k in keys.iter(exclude=(254,255)):
+            for e in k.iter(exclude=(250,254,255)):
+                em = e.get_data()
+                em = piw.dictset(em,'interpreter',piw.makestring('<interpreter>',0))
+                et = em.as_dict_lookup('help')
+                e.ensure_node(254).set_data(et)
+                t = e.ensure_node(2)
+                t.set_name('trigger output')
+                actions = self.move_connections(tools,connections,e.id(),t.id())
+                em = piw.dictset(em,'actions',piw.makestring(actions,0))
+                e.set_data(em)
+                print 'upgrading',e.id(),et,actions
+
     def upgrade_1_0_0_to_1_0_1(self,tools,address):
         keys = tools.get_root(address).get_node(3)
         for k in keys.iter(exclude=(254,255)):

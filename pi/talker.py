@@ -77,7 +77,7 @@ class Talker(atom.Atom):
         self.status_input = bundles.VectorInput(status_cookie,self.__domain,signals=(1,))
 
         self[1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.status_input.vector_policy(1,False,clocked=False),names='status input',protocols='nostage hidden-connection')
-        self[2] = atom.Atom(domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),names='trigger', protocols='hidden-connection')
+        self[2] = atom.Atom(domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),names='trigger output', protocols='hidden-connection')
         self[2].get_policy().set_source(trigger)
 
         self.__running = []
