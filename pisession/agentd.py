@@ -569,6 +569,16 @@ class DynamicPluginList(atom.Atom):
     def __relation(address):
         return 'create(cnc("%s"),role(by,[instance(~a)]))' % address
 
+    def check_address(self,address):
+        found = [False]
+
+        def visitor(v,s):
+            if v.args[0]==address:
+                found[0] = True
+
+        self.__meta.visit(visitor)
+        return found[0]
+
     def check_ordinal(self,name,ordinal):
         found = [False]
 
@@ -618,17 +628,23 @@ class DynamicPluginList(atom.Atom):
         # call on_quit for all plugins
         self.__meta.visit(lambda v,s: s.on_quit())
 
-    def create(self,factory,address,ordinal=0):
+    def create(self,factory,address=None,ordinal=0):
         if ordinal:
             if self.check_ordinal(factory.name,ordinal):
                 return None
         else:
             ordinal = self.find_new_ordinal(factory.name)
 
+        if address:
+            if self.check_address(address):
+                return None
+        else:
+            address = guid.toguid("%s%d" % (factory.name,ordinal))
+
         print 'assigned ordinal',ordinal,'to',factory.name
         signature = logic.make_term('a',address,factory.name,factory.version,factory.cversion,ordinal)
         plugin = self.__meta.assert_state(signature)
-        return plugin
+        return address
 
 
 class Agent(agent.Agent):
@@ -700,14 +716,15 @@ class Agent(agent.Agent):
 
         if plugin_def.arity>1:
             plugin_ordinal = plugin_def.args[1]
-            if self.dynamic.check_ordinal(plugin_slug,plugin_ordinal):
-                return async.failure('ordinal in use')
         else:
             plugin_ordinal = 0
 
-        plugin_addr = guid.address(plugin_slug)
-        print 'creating',plugin_addr,'as',plugin_slug
-        self.dynamic.create(factory,plugin_addr,plugin_ordinal)
+        plugin_addr = self.dynamic.create(factory,ordinal=plugin_ordinal)
+
+        if not plugin_addr:
+            return async.failure('ordinal in use')
+
+        print 'created',plugin_addr,'as',plugin_slug
         return async.success(plugin_addr)
 
     def __make_unloader(self,name):
@@ -775,23 +792,13 @@ class Agent(agent.Agent):
         piw.tsd_index('<main>',self.index)
         self.advertise('<main>')
 
-    def add_agent(self,address,plugin_name):
-        factory = self.registry.get_module(plugin_name)
-
-        if not factory:
-            print 'no factory for',plugin_name
-            return False
-
-        self.dynamic.create(factory,address)
-        return True
-
     def rpc_create(self,plugin_def):
         plugin_def = plugin_def.split()
 
         if len(plugin_def)==2:
-            name = guid.toguid(plugin_def[1])
+            address = guid.toguid(plugin_def[1])
         else:
-            name = None
+            address = None
 
         plugin_sig = plugin_def[0].split(':')
 

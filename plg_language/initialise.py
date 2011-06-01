@@ -27,40 +27,6 @@ def uninitialise_set(database,objs):
     print 'uninitialise_set',objs
     yield builtin_conn.unconnect_set(database,objs)
 
-def autonumber_set(db,objs):
-    names = {}
-
-    name_cache = db.get_propcache('name')
-    ord_cache = db.get_propcache('ordinal')
-    world = db.get_propcache('props').get_idset('agent')
-
-    for o in objs:
-        p = db.find_item(o)
-        n = p.names()
-        n.sort()
-        n = tuple(n)
-        names.setdefault(n,[]).append(o)
-
-    bases = {}
-
-    for (n,os) in names.iteritems():
-        a = world
-        for nn in n:
-            a = a.intersection(name_cache.get_idset(nn))
-        a = a.difference(set(os))
-        d = [int(o) for oo in a for o in ord_cache.get_valueset(oo)]
-        bases[n]=reduce(lambda a,b: a if a>b else b,d,0)
-
-    def co():
-        for (n,os) in names.iteritems():
-            x = bases[n]
-            for o in os:
-                x+=1
-                print 'autonumber',o,n,'with',x
-                yield interpreter.RpcAdapter(rpc.invoke_rpc(o,'set_ordinal',str(x)))
-        
-    return async.Coroutine(co(),interpreter.rpcerrorhandler)
-
 def initialise_set(database,objs):
     print 'initialise_set',objs
-    return autonumber_set(database,objs)
+    return async.success()
