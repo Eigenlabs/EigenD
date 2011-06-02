@@ -220,7 +220,7 @@ class Output(agent.Agent):
         n = self.name
 
         if self.__tee is not None:
-            piw.fastchange(self.__tee)(piw.makebool_nb(False,0))
+            piw.fastchange(self.__tee)(piw.makebool(False,0))
             self.__tee = None
 
         self.__agent.mode_selector.clear_output(n-1)
