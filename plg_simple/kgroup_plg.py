@@ -239,7 +239,7 @@ class Output(atom.Atom):
     def unplumb(self):
         if self.__current is not None:
             n = self.__current
-            piw.fastchange(self.__tee)(piw.makebool_nb(False,0))
+            piw.fastchange(self.__tee)(piw.makebool(False,0))
             self.__agent.mode_selector.clear_output(n-1)
             self.__agent.selgate.clear_functor(piw.pathone_nb(n,0))
             self.__agent.kclone.clear_output(n)
