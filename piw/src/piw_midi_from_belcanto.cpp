@@ -1234,6 +1234,7 @@ namespace piw
     void midi_from_belcanto_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &data) { impl_->set_midi(data); }
     void midi_from_belcanto_t::set_send_notes(bool send) { piw::tsd_fastcall(__set_send_notes,impl_,&send); }
     void midi_from_belcanto_t::set_send_pitchbend(bool send) { piw::tsd_fastcall(__set_send_pitchbend,impl_,&send); }
+    unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &d) { return impl_->channel_list_.get_channel(d); }
 
 } // namespace piw
 

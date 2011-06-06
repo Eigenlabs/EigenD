@@ -621,7 +621,7 @@ namespace piw
      * mapper_cell_editor_t
      */
 
-    mapper_cell_editor_t::mapper_cell_editor_t(mapper_table_t &mapper): mapper_(mapper), edit_control_scope_(true), edit_resolution_(true), active_popup_(0), cell_popup_(0)
+    mapper_cell_editor_t::mapper_cell_editor_t(mapper_table_t &mapper): mapper_(mapper), edit_control_scope_(true), edit_fixed_channel_(true), edit_resolution_(true), active_popup_(0), cell_popup_(0)
     {
         addAndMakeVisible(label_=new juce::Label(juce::String::empty,"0.0"));
         label_->addMouseListener(this,false);
@@ -930,7 +930,7 @@ namespace piw
     mapper_cell_editor_t* mapper_table_t::create_cell_editor(int row, int col)
     {
         mapper_cell_editor_t *editor = new mapper_cell_editor_t(*this);
-        editor->edit_control_scope(false);
+        editor->edit_fixed_channel(false);
         editor->edit_resolution(false);
         return editor;
     }
@@ -1051,6 +1051,7 @@ namespace piw
         if(row>=MIDI_STATUS_MAX)
         {
             editor->edit_control_scope(false);
+            editor->edit_fixed_channel(false);
         }
  
         return editor;

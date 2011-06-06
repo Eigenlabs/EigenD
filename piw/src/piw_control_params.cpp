@@ -171,7 +171,7 @@ namespace piw
         pic::lckvector_t<param_data_t>::nbtype params;
         pic::lckvector_t<midi_data_t>::nbtype midi;
 
-        process_wire(w, params, midi, to, (w!=active_.head()), true);
+        process_wire(w, params, midi, to, (w==active_.head()), true);
 
         if(!params.empty()) params_delegate_->set_parameters(params);
         if(!midi.empty()) params_delegate_->set_midi(midi);
@@ -181,13 +181,13 @@ namespace piw
     {
         if(active_.head()) return;
 
-        end_with_origins();
+        end_with_origins(w);
 
         w->ended_ = true;
         w->processed_data_ = false;
     }
 
-    void param_input_t::end_with_origins()
+    void param_input_t::end_with_origins(param_wire_t *w)
     {
         pic::lckvector_t<param_data_t>::nbtype params;
 
@@ -213,7 +213,7 @@ namespace piw
             if(io!=eo && io->first==ip->first &&
                ip->second.origin_return_)
             {
-                params.push_back(param_data_t(io->first,io->second));
+                params.push_back(param_data_t(io->first, io->second, ip->second.scope_, w->id_.get()));
             }
         }
 
@@ -288,7 +288,7 @@ namespace piw
         while(w)
         {
             w->processed_data_ = true;
-            process_wire(w, params, midi, to, (w!=active_.head()), false);
+            process_wire(w, params, midi, to, (w==active_.head()), false);
             w = active_.next(w);
         }
         rotating_active_.append(wh);
@@ -304,7 +304,7 @@ namespace piw
         }
     }
 
-    void param_input_t::process_wire(param_wire_t *w, pic::lckvector_t<param_data_t>::nbtype &params, pic::lckvector_t<midi_data_t>::nbtype &midi, unsigned long long to, bool skip_params, bool ending)
+    void param_input_t::process_wire(param_wire_t *w, pic::lckvector_t<param_data_t>::nbtype &params, pic::lckvector_t<midi_data_t>::nbtype &midi, unsigned long long to, bool first_wire, bool ending)
     {
         if(w->ended_) return;
 
@@ -316,7 +316,7 @@ namespace piw
         if(!more_data && ending)
         {
             current_data_.set_nb(makenull_nb(piw::tsd_time()));
-            process_wire_data(w, params, midi, skip_params, true);
+            process_wire_data(w, params, midi, first_wire, true);
         }
 
         // process outstanding data
@@ -326,7 +326,7 @@ namespace piw
 
             more_data = w->iterator_->nextsig(1,d,to);
 
-            bool continuous = process_wire_data(w, params, midi, skip_params, ending && !more_data);
+            bool continuous = process_wire_data(w, params, midi, first_wire, ending && !more_data);
             if(!continuous)
             {
                 break;
@@ -334,20 +334,17 @@ namespace piw
         }
     }
 
-    bool param_input_t::process_wire_data(param_wire_t *w, pic::lckvector_t<param_data_t>::nbtype &params, pic::lckvector_t<midi_data_t>::nbtype &midi, bool skip_params, bool ending)
+    bool param_input_t::process_wire_data(param_wire_t *w, pic::lckvector_t<param_data_t>::nbtype &params, pic::lckvector_t<midi_data_t>::nbtype &midi, bool first_wire, bool ending)
     {
         bool continuous = wiredata_processed(w, current_data_);
 
-        if(!skip_params)
-        {
-            process_params(params, current_id_, current_data_, ending);
-        }
+        process_params(params, current_id_, current_data_, first_wire, ending);
         process_midi(midi, current_id_, current_data_, continuous, true, ending);
 
         return continuous;
     }
 
-    void param_input_t::process_params(pic::lckvector_t<param_data_t>::nbtype &params, const piw::data_nb_t &id, const piw::data_nb_t &d, bool ending)
+    void param_input_t::process_params(pic::lckvector_t<param_data_t>::nbtype &params, const piw::data_nb_t &id, const piw::data_nb_t &d, bool first_wire, bool ending)
     {
         piw::nb_param_map_t::iterator ip,bp,ep;
         bp = control_mapping_.params().begin();
@@ -361,6 +358,11 @@ namespace piw
 
         for(ip=bp; ip!=ep; ++ip)
         {
+            if(GLOBAL_SCOPE==ip->second.scope_ && !first_wire)
+            {
+                continue;
+            }
+
             float origin = 0;
             while(io->first < ip->first && io!=eo)
             {
@@ -394,7 +396,7 @@ namespace piw
             }
             ip->second.last_processed_ = current_time;
 
-            params.push_back(param_data_t(ip->first,value));
+            params.push_back(param_data_t(ip->first, value, ip->second.scope_, id));
         }
     }
 
