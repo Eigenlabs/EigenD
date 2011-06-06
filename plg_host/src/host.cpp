@@ -887,7 +887,16 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
 
         for(; i!=e; ++i)
         {
-            pg.value()->setParameter(i->param_,i->value_);
+            if(PERNOTE_SCOPE==i->scope_)
+            {
+                unsigned channel = midi_from_belcanto_->get_active_midi_channel(i->id_);
+                if(channel > 0) channel--;
+                pg.value()->setParameter(i->param_+channel,i->value_);
+            }
+            else
+            {
+                pg.value()->setParameter(i->param_,i->value_);
+            }
         }
     }
 

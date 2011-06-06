@@ -50,6 +50,14 @@ void CellPopupComponent::initialize(piw::mapper_cell_editor_t *cell_editor)
         removeChildComponent(control_scope_channel_number);
         height -= 90;
     }
+    else if(!cell_editor->edit_fixed_channel())
+    {
+        control_scope_channel->setVisible(false);
+        control_scope_channel_number->setVisible(false);
+        removeChildComponent(control_scope_channel);
+        removeChildComponent(control_scope_channel_number);
+        height -= 32;
+    }
 
     if(!cell_editor->edit_resolution())
     {
@@ -61,7 +69,7 @@ void CellPopupComponent::initialize(piw::mapper_cell_editor_t *cell_editor)
         removeChildComponent(resolution_7bit);
         removeChildComponent(resolution_14bit);
         removeChildComponent(secondary_cc);
-        height -= 104;
+        height -= 100;
     }
 
     setSize(208, height);
@@ -616,6 +624,10 @@ void CellPopupComponent::resized()
     control_scope_channel_number->setBounds (136, 301, 48, 24);
     bounds_origin_return->setBounds (16, 152, 168, 24);
     //[UserResized] Add your own custom resize handling here..
+    if(!control_scope_channel->isVisible())
+    {
+        control_scope_group->setBounds (8, 254, 192, 50);
+    }
     //[/UserResized]
 }
 

@@ -183,6 +183,9 @@ namespace piw
             void edit_control_scope(bool edit) { edit_control_scope_ = edit; };
             bool edit_control_scope() { return edit_control_scope_; }
 
+            void edit_fixed_channel(bool edit) { edit_fixed_channel_ = edit; };
+            bool edit_fixed_channel() { return edit_fixed_channel_; }
+
             void edit_resolution(bool edit) { edit_resolution_ = edit; };
             bool edit_resolution() { return edit_resolution_; }
 
@@ -195,6 +198,7 @@ namespace piw
 
             mapper_table_t &mapper_;
             bool edit_control_scope_;
+            bool edit_fixed_channel_;
             bool edit_resolution_;
             juce::Label *label_;
             int iparam_;

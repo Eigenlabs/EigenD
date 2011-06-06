@@ -46,10 +46,12 @@ namespace piw
 
     struct PIW_DECLSPEC_CLASS param_data_t
     {
-        param_data_t(unsigned p, float v): param_(p), value_(v) {};
+        param_data_t(unsigned p, float v, unsigned s, piw::data_nb_t id): param_(p), value_(v), scope_(s), id_(id) {};
 
         unsigned param_;
         float value_;
+        unsigned scope_;
+        piw::data_nb_t id_;
     };
 
     struct PIW_DECLSPEC_CLASS midi_data_t
@@ -121,9 +123,9 @@ namespace piw
         private:
             void process_wire(param_wire_t *, pic::lckvector_t<param_data_t>::nbtype &, pic::lckvector_t<midi_data_t>::nbtype &, unsigned long long, bool, bool);
             bool process_wire_data(param_wire_t *, pic::lckvector_t<param_data_t>::nbtype &, pic::lckvector_t<midi_data_t>::nbtype &, bool, bool);
-            void process_params(pic::lckvector_t<param_data_t>::nbtype &, const piw::data_nb_t &, const piw::data_nb_t &, bool);
+            void process_params(pic::lckvector_t<param_data_t>::nbtype &, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool);
             void process_midi(pic::lckvector_t<midi_data_t>::nbtype &, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool, bool);
-            void end_with_origins();
+            void end_with_origins(param_wire_t *w);
             params_delegate_t *params_delegate_;
             piw::control_mapping_t control_mapping_;
             piw::dataholder_nb_t current_id_;
