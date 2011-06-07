@@ -103,7 +103,7 @@ class PhraseBrowser(atom.Atom):
 
 class Collection(atom.Atom):
     def __init__(self,protocols=None,inst_creator=None,inst_wrecker=None,*args,**kwds):
-        p = protocols+' create' if protocols else 'create'
+        p = protocols+' create' if protocols else 'create hidden-connection'
         self.__creator = inst_creator or self.instance_create
         self.__wrecker = inst_wrecker or self.instance_wreck
         atom.Atom.__init__(self,protocols=p,*args,**kwds)
@@ -176,7 +176,7 @@ class Event(talker.Talker):
 
 class Key(Collection):
     def __init__(self,agent,controller,index):
-        Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,ordinal=index,names='k')
+        Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,ordinal=index,names='k',protocols='hidden-connection')
         self.__event = piw.fasttrigger(const.light_unknown)
         self.__event.attach_to(controller,index)
         self.__handler = piw.change2_nb(self.__event.trigger(),utils.changify(self.event_triggered))
