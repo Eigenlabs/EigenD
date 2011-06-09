@@ -179,15 +179,13 @@ namespace piw
 
     void param_input_t::ended(param_wire_t *w)
     {
-        if(active_.head()) return;
-
-        end_with_origins(w);
+        end_with_origins(w, (w==active_.head()));
 
         w->ended_ = true;
         w->processed_data_ = false;
     }
 
-    void param_input_t::end_with_origins(param_wire_t *w)
+    void param_input_t::end_with_origins(param_wire_t *w, bool first_wire)
     {
         pic::lckvector_t<param_data_t>::nbtype params;
 
@@ -208,6 +206,11 @@ namespace piw
             while(io->first < ip->first && io!=eo)
             {
                 io++;
+            }
+
+            if(GLOBAL_SCOPE==ip->second.scope_ && !first_wire)
+            {
+                continue;
             }
 
             if(io!=eo && io->first==ip->first &&
