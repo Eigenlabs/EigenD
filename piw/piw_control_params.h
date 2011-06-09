@@ -125,7 +125,7 @@ namespace piw
             bool process_wire_data(param_wire_t *, pic::lckvector_t<param_data_t>::nbtype &, pic::lckvector_t<midi_data_t>::nbtype &, bool, bool);
             void process_params(pic::lckvector_t<param_data_t>::nbtype &, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool);
             void process_midi(pic::lckvector_t<midi_data_t>::nbtype &, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool, bool);
-            void end_with_origins(param_wire_t *w);
+            void end_with_origins(param_wire_t *w, bool);
             params_delegate_t *params_delegate_;
             piw::control_mapping_t control_mapping_;
             piw::dataholder_nb_t current_id_;
