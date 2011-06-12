@@ -367,6 +367,11 @@ class Agent(agent.Agent):
         self[11] = atom.Atom(domain=domain.BoundedInt(1,16),init=1,names='minimum channel',policy=atom.default_policy(self.set_min_channel))
         self[12] = atom.Atom(domain=domain.BoundedInt(1,16),init=16,names='maximum channel',policy=atom.default_policy(self.set_max_channel))
 
+        # bank change
+        self[16]=atom.Atom(domain=domain.BoundedFloat(1,128),init=1,names="midi bank", policy=atom.default_policy(self.__set_bank_change))
+        # program change
+        self[17]=atom.Atom(domain=domain.BoundedFloat(1,128),init=1,names="midi program", policy=atom.default_policy(self.__set_program_change))
+
         # status output to drive the talker lights
         self[13] = bundles.Output(1,False,names='status output')
         self.light_output = bundles.Splitter(self.__domain,self[13])
@@ -414,6 +419,14 @@ class Agent(agent.Agent):
             return False
         self[12].set_value(c)
         self.__host.set_max_midi_channel(c)
+        return True
+
+    def __set_bank_change(self,c):
+        self.__host.set_bank_change(c)
+        return True
+
+    def __set_program_change(self,c):
+        self.__host.set_program_change(c)
         return True
 
     def __set_velocity_samples(self,samples):

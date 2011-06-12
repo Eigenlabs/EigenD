@@ -594,6 +594,16 @@ namespace piw
         impl_->settings_changed();
     }
 
+    void midi_converter_t::set_program_change(unsigned c)
+    {
+        impl_->midi_from_belcanto_.set_program_change(c);
+    }
+
+    void midi_converter_t::set_bank_change(unsigned c)
+    {
+        impl_->midi_from_belcanto_.set_bank_change(c);
+    }
+
     void midi_converter_t::close()
     {
         impl_->close();

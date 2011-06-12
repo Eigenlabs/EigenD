@@ -476,7 +476,7 @@ namespace piw
 
     long keynum_input_t::calculate_midi_value(const piw::data_nb_t &id, const float d, const piw::mapping_data_t &mapping)
     {
-        long value = extract_keynum(id);
+        long value = extract_keynum(id) - 1;
         if(BITS_7 == mapping.resolution_)
         {
             value <<= 7;

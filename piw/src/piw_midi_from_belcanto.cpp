@@ -117,10 +117,10 @@ namespace
             }
 
             pic::lcklist_t<unsigned>::nbtype::iterator i = list_.begin();
+            if(i==list_.end()) return 1;
 
             list_.erase(i);
             list_.push_back(*i);
-            //pic::logmsg() << "midi get " << *i;
 
             return *i;
         }
@@ -759,7 +759,7 @@ namespace piw
         midi_from_belcanto_t::impl_t *r = (midi_from_belcanto_t::impl_t *)r_;
         unsigned c = *(unsigned *)c_;
 
-        r->set_program_change(true, false, r->get_channel()-1, c-1, piw::tsd_time());
+        r->set_program_change(r->poly_, false, r->poly_ ? 1 : r->channel_, (c - 1) << 7, r->time_);
 
         return 0;
     }
@@ -774,7 +774,7 @@ namespace piw
         midi_from_belcanto_t::impl_t *r = (midi_from_belcanto_t::impl_t *)r_;
         unsigned c = *(unsigned *)c_;
 
-        r->set_cc(true, false, r->get_channel()-1, 0, 0, c-1, piw::tsd_time());
+        r->set_cc(r->poly_, false, r->poly_ ? 1 : r->channel_, 0, 0, (c - 1) << 7, r->time_);
 
         return 0;
     }
@@ -847,7 +847,8 @@ namespace piw
                     default:
                         global = false;
                         belcanto_note_wire_t *w = active_input_wires_.head();
-                        if(w && extract_keynum(w->id_) == extract_keynum(i->id_))
+                        if(i->mcc_ == MIDI_CC_MAX + POLY_AFTERTOUCH ||
+                           (w && extract_keynum(w->id_) == extract_keynum(i->id_)))
                         {
                             channel = channel_;
                         }
@@ -1005,9 +1006,10 @@ namespace piw
 
     void midi_from_belcanto_t::impl_t::set_program_change(bool global, bool continuous, unsigned channel, const unsigned value, unsigned long long t)
     {
+        unsigned channel_offset = MIDI_STATUS_MAX*(--channel);
+
         unsigned msb = (value&0x3fff)>>7;
 
-        unsigned channel_offset = MIDI_STATUS_MAX*(--channel);
         if(!continuous || msb!=last_status_[PROGRAM_CHANGE+channel_offset])
         {
             add_midi_data(global, 0xc0+channel, msb, t);
@@ -1017,9 +1019,10 @@ namespace piw
 
     void midi_from_belcanto_t::impl_t::set_channel_aftertouch(bool global, bool continuous, unsigned channel, const unsigned value, unsigned long long t)
     {
+        unsigned channel_offset = MIDI_STATUS_MAX*(--channel);
+
         unsigned msb = (value&0x3fff)>>7;
 
-        unsigned channel_offset = MIDI_STATUS_MAX*(--channel);
         if(!continuous || msb!=last_status_[CHANNEL_AFTERTOUCH+channel_offset])
         {
             add_midi_data(global, 0xd0+channel, msb, t);
@@ -1211,6 +1214,13 @@ namespace piw
         return 0;
     }
 
+    static int __get_channel(void *i_, void *d_)
+    {
+        midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
+        const piw::data_nb_t d = *(const piw::data_nb_t *)i_;
+        return i->channel_list_.get_channel(d);
+    }
+
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // midi from belcanto interface class
@@ -1234,7 +1244,7 @@ namespace piw
     void midi_from_belcanto_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &data) { impl_->set_midi(data); }
     void midi_from_belcanto_t::set_send_notes(bool send) { piw::tsd_fastcall(__set_send_notes,impl_,&send); }
     void midi_from_belcanto_t::set_send_pitchbend(bool send) { piw::tsd_fastcall(__set_send_pitchbend,impl_,&send); }
-    unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &d) { return impl_->channel_list_.get_channel(d); }
+    unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &d) { return piw::tsd_fastcall(__get_channel,impl_,(void *)&d); }
 
 } // namespace piw
 
