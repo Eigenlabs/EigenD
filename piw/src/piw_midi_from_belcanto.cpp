@@ -833,6 +833,7 @@ namespace piw
             time_ = std::max(time_+1,i->time_);
             bool global = false;
             unsigned channel = 0;
+            unsigned char keynum = extract_keynum(i->id_);
             if(!poly_)
             {
                 switch(i->scope_)
@@ -848,7 +849,8 @@ namespace piw
                         global = false;
                         belcanto_note_wire_t *w = active_input_wires_.head();
                         if(i->mcc_ == MIDI_CC_MAX + POLY_AFTERTOUCH ||
-                           (w && extract_keynum(w->id_) == extract_keynum(i->id_)))
+                           !keynum ||
+                           (w && extract_keynum(w->id_) == keynum))
                         {
                             channel = channel_;
                         }
@@ -905,7 +907,7 @@ namespace piw
                                 {
                                     if(global || w->channel_==channel)
                                     {
-                                        if(extract_keynum(w->id_) == extract_keynum(i->id_))
+                                        if(extract_keynum(w->id_) == keynum)
                                         {
                                             if(w->note_id_!=0)
                                             {
