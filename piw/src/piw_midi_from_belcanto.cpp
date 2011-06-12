@@ -847,7 +847,8 @@ namespace piw
                     default:
                         global = false;
                         belcanto_note_wire_t *w = active_input_wires_.head();
-                        if(w && extract_keynum(w->id_) == extract_keynum(i->id_))
+                        if(i->mcc_ == MIDI_CC_MAX + POLY_AFTERTOUCH ||
+                           (w && extract_keynum(w->id_) == extract_keynum(i->id_)))
                         {
                             channel = channel_;
                         }
