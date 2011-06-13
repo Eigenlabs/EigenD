@@ -259,19 +259,18 @@ namespace piw
         unsigned get_channel();
         // set the MIDI channel to use
         void set_midi_channel(unsigned c);
-        // set channel fast call, channel 0 sets poly mode (channel cycling)
         static int __setchannel(void *r_, void *c_);
         // set the MIDI program
         void set_program_change(unsigned c);
-        // set the MIDI program fast call
         static int __set_program_change(void *r_, void *c_);
         // set the MIDI bank
         void set_bank_change(unsigned c);
-        // set the MIDI bank fast call
         static int __set_bank_change(void *r_, void *c_);
+        // set the MIDI cc
+        void set_cc(unsigned c, unsigned v);
+        static int __set_cc(void *r_, void *c_, void *v_);
         // set MIDI omni mode (send to all channels)
         void set_omni(bool b);
-        // set MIDI omni mode fast call
         static int __set_omni(void *r_, void *b_);
 
         // check whether a status message has to be discarted
@@ -779,6 +778,22 @@ namespace piw
         return 0;
     }
 
+    void midi_from_belcanto_t::impl_t::set_cc(unsigned c, unsigned v)
+    {
+        piw::tsd_fastcall3(__set_cc,this,&c,&v);
+    }
+
+    int midi_from_belcanto_t::impl_t::__set_cc(void *r_, void *c_, void *v_)
+    {
+        midi_from_belcanto_t::impl_t *r = (midi_from_belcanto_t::impl_t *)r_;
+        unsigned c = *(unsigned *)c_;
+        unsigned v = *(unsigned *)v_;
+
+        r->set_cc(r->poly_, false, r->poly_ ? 1 : r->channel_, c, 0, (v - 1) << 7, r->time_);
+
+        return 0;
+    }
+
     void midi_from_belcanto_t::impl_t::set_control_interval(float interval)
     {
         if(interval<0)
@@ -1219,7 +1234,7 @@ namespace piw
     static int __get_channel(void *i_, void *d_)
     {
         midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
-        const piw::data_nb_t d = *(const piw::data_nb_t *)i_;
+        const piw::data_nb_t d = *(const piw::data_nb_t *)d_;
         return i->channel_list_.get_channel(d);
     }
 
@@ -1242,6 +1257,7 @@ namespace piw
     void midi_from_belcanto_t::set_omni(bool b) { impl_->set_omni(b); }
     void midi_from_belcanto_t::set_program_change(unsigned p) { impl_->set_program_change(p); }
     void midi_from_belcanto_t::set_bank_change(unsigned b) { impl_->set_bank_change(b); }
+    void midi_from_belcanto_t::set_cc(unsigned c, unsigned v) { impl_->set_cc(c, v); }
     void midi_from_belcanto_t::set_control_interval(float interval) { impl_->set_control_interval(interval); }
     void midi_from_belcanto_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &data) { impl_->set_midi(data); }
     void midi_from_belcanto_t::set_send_notes(bool send) { piw::tsd_fastcall(__set_send_notes,impl_,&send); }
