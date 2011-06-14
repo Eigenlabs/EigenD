@@ -130,9 +130,9 @@ Not properly assigned, in use:
 8   8   6   6  : Strummer      : Noun              : None
 8   8   6   7  : Cubic         : Noun              : None
 8   8   6   8  : Quadratic     : Noun              : None
-8   8   7   1  : Unused        : Unused            : None
-8   8   7   2  : Unused        : Unused            : None
-8   8   7   3  : Unused        : Unused            : None
+8   8   7   1  : Inputs        : Noun              : None
+8   8   7   2  : Outputs       : Noun              : None
+8   8   7   3  : Taps          : Noun              : None
 8   8   7   4  : Unused        : Unused            : None
 8   8   7   5  : Unused        : Unused            : None
 8   8   7   6  : Unused        : Unused            : None

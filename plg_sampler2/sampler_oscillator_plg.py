@@ -321,7 +321,7 @@ class Agent(agent.Agent):
         agent.Agent.__init__(self,signature=version,names='sampler oscillator',container=8,ordinal=ordinal)
         self.domain = piw.clockdomain_ctl()
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='outputs')
         self[1][1] = bundles.Output(1,True,names="left audio output")
         self[1][10] = bundles.Output(2,True,names="right audio output")
         self[1][2] = bundles.Output(3,False,names="activation output")
@@ -347,7 +347,7 @@ class Agent(agent.Agent):
         self.loader_input = bundles.VectorInput(self.vdetector.cookie(), self.domain, signals=(1,4),threshold=5)
         self.player_input = bundles.VectorInput(self.synth_player.cookie(), self.domain, signals=(1,2,3),threshold=5)
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='inputs')
         self[2][1]=atom.Atom(domain=domain.BoundedFloat(0,96000,rest=440), names='frequency input',ordinal=1,policy=self.player_input.merge_policy(1,False))
         self[2][2]=atom.Atom(domain=domain.BoundedFloat(-1200,1200), names='detune input',policy=self.player_input.merge_policy(2,False))
         self[2][3]=atom.Atom(domain=domain.BoundedFloat(0,1), names='activation input',policy=self.player_input.vector_policy(3,False))

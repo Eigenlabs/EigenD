@@ -68,7 +68,7 @@ class Agent(agent.Agent):
         self.clicker = loop_native.clicker(self.output.cookie(),self.domain,accent,beat)
         self.input = bundles.ScalarInput(self.clicker.cookie(), self.domain, signals=(1,2))
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='inputs')
         self[2][1] = atom.Atom(domain=domain.Aniso(),policy=self.input.policy(1,False),names='running input')
         self[2][2] = atom.Atom(domain=domain.Aniso(),policy=self.input.policy(2,False),names='bar beat input')
 

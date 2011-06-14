@@ -495,7 +495,7 @@ class Agent(agent.Agent):
         self.loopdb = loopdb.LoopDatabase()
         self.__timestamp = 0
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='outputs')
         self[1][1] = bundles.Output(1,True,names='left audio output')
         self[1][2] = bundles.Output(2,True,names='right audio output')
 
@@ -507,7 +507,7 @@ class Agent(agent.Agent):
         self.input = bundles.ScalarInput(self.clock_cloner.cookie(), self.domain,signals=(1,2))
         self.input.add_upstream(self.verb_container().clock)
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='inputs')
         self[2][1] = atom.Atom(domain=domain.BoundedFloat(0,100), policy=self.input.policy(1, False), names='song beat input')
         self[2][2] = atom.Atom(domain=domain.Bool(), init=False, policy=self.input.policy(2,False), names='running input')
 

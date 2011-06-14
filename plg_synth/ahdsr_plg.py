@@ -28,7 +28,7 @@ class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         agent.Agent.__init__(self, signature=version,names='ahdsr',ordinal=ordinal)
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='outputs')
         self[2][1] = bundles.Output(1,True,names='volume output')
         self[2][2] = bundles.Output(2,False,names='activation output')
         self[2][3] = bundles.Output(8,False,names='pressure output')
@@ -44,7 +44,7 @@ class Agent(agent.Agent):
         self.input = bundles.VectorInput(self.vdetect.cookie(), self.domain,signals=(2,3,4,5,6,7,8,9,10,11,12,13,14),threshold=5)
 
         time=(T('inc',0.01),T('biginc',0.2),T('control','updown'))
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='inputs')
         self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1), init=1.0, names="activation input", policy=self.input.merge_policy(13,False))
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,60,hints=time),init=0, names="delay input", policy=self.input.merge_policy(2,False))
         self[1][3]=atom.Atom(domain=domain.BoundedFloat(0,60,hints=time),init=0.01, names="attack input", policy=self.input.merge_policy(3,False))

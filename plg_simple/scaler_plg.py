@@ -40,7 +40,7 @@ class Agent(agent.Agent):
         self.__fixed = False
         self.set_private(node.Server(value=piw.makebool(False,0),change=self.__changefix))
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='outputs')
         self[1][1] = bundles.Output(1,False,names='activation output', protocols='')
         self[1][2] = bundles.Output(2,False,names='pressure output', protocols='')
         self[1][3] = bundles.Output(3,False,names='roll output', protocols='')
@@ -56,7 +56,7 @@ class Agent(agent.Agent):
         self.input = bundles.VectorInput(self.filter.cookie(), self.domain,signals=(1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17))
         self.input.correlator.clocksink().add_upstream(self.ctl_input.correlator.clocksink())
 
-        self[4]=atom.Atom()
+        self[4]=atom.Atom(names='inputs')
 
         self[4][1]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.merge_policy(1,False),names='activation input')
         self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input')

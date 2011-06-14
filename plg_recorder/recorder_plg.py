@@ -365,7 +365,7 @@ class Agent(agent.Agent):
         self.domain = piw.clockdomain_ctl()
         agent.Agent.__init__(self, signature=version, names='recorder', protocols='bind',icon='plg_recorder/recorder.png',container=(3,'agent',atom.VerbContainer(clock_domain=self.domain)),ordinal=ordinal)
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='outputs')
         self[2][1] = bundles.Output(1,False,names='activation output', protocols='')
         self[2][2] = bundles.Output(2,False,names='pressure output', protocols='')
         self[2][3] = bundles.Output(3,False,names='roll output', protocols='')
@@ -450,7 +450,7 @@ class Agent(agent.Agent):
         self.nplayer = recorder_native.nplayer(self.output_aggregator.get_filtered_output(3,piw.gristchaff_aggregation_filter(100,3)),16,2,self.domain)
         self.input_clock.add_upstream(self.nplayer.get_clock())
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='inputs')
 
         self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.input_data.vector_policy(1,False),names='activation input')
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.input_data.vector_policy(2,False),names='pressure input')

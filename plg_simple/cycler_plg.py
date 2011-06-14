@@ -31,7 +31,7 @@ class Agent(agent.Agent):
         self.get_private()[1]=node.Server(change=self.__cycle_set,value=piw.makebool(True,0))
         self.get_private()[2]=node.Server(change=self.__invert_set,value=piw.makebool(False,0))
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='outputs')
         self[2][1] = bundles.Output(1,False,names='activation output')
         self[2][2] = bundles.Output(2,False,names='pressure output')
         self[2][3] = bundles.Output(3,False,names='roll output')
@@ -56,7 +56,7 @@ class Agent(agent.Agent):
         self.cycler.set_invert(False)
         self.cycler.set_curve(1.0)
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='inputs')
         self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(1,False),names='activation input')
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input')
         self[1][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(3,False),names='roll input')

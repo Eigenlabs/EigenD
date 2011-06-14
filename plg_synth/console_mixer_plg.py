@@ -345,7 +345,7 @@ class Agent(agent.Agent):
         self.vol = piw.make_f2f_table(0,120,1000,picross.make_f2f_functor(volume_function))
         self.pan = piw.make_f2f_table(-1,1,1000,picross.make_f2f_functor(pan_function))
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='outputs')
         self[1][1] = bundles.Output(1, True, names='left audio output')
         self[1][2] = bundles.Output(2, True, names='right audio output')
         self.output = bundles.Splitter(self.clk, self[1][1], self[1][2])
@@ -367,7 +367,7 @@ class Agent(agent.Agent):
             
         self.master_controls_input = bundles.ScalarInput(self.mixer.master_controls_cookie(),self.clk,signals=(1,2))
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='master')
         self[2][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))),
                             init=100, names='master volume',
                             policy=self.master_controls_input.notify_policy(1,policy.LopassStreamPolicy(100,0.97),notify=self.volume_changed))

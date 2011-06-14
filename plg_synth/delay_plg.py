@@ -112,7 +112,7 @@ class TapList(atom.Atom):
 
     def __init__(self,agent):
         self.__agent = agent
-        atom.Atom.__init__(self,creator=self.__create_tap,wrecker=self.__wreck_tap)
+        atom.Atom.__init__(self,creator=self.__create_tap,wrecker=self.__wreck_tap,names='taps')
 
     # create tap, called when rebuilding state
     def __create_tap(self,tapno):

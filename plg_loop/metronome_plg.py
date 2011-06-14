@@ -32,7 +32,7 @@ class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         agent.Agent.__init__(self, signature=version,names='metronome',icon='plg_loop/metronome_64.png',container=4,protocols='browse',ordinal=ordinal)
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='outputs')
         self[1][1] = bundles.Output(1,False,names='bar beat output')
         self[1][2] = bundles.Output(2,False,names='song beat output')
         self[1][3] = bundles.Output(3,False,names='running output')
