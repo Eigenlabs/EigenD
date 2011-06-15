@@ -330,12 +330,12 @@ class Agent(agent.Agent):
         self[1] = self.__browser
 
         # audio output
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='audio outputs')
         self[2][1] = self.__audio_output
         self[2][2] = self.__audio_output_channels
 
         # audio input
-        self[3] = atom.Atom()
+        self[3] = atom.Atom(names='audio inputs')
         self[3][1] = self.__audio_input
         self[3][2] = self.__audio_input_channels
 
@@ -343,14 +343,14 @@ class Agent(agent.Agent):
         self[4] = self.parameter_list
 
         # metronome input
-        self[5] = atom.Atom()
+        self[5] = atom.Atom(names='metronome inputs')
         self[5][1] = atom.Atom(domain=domain.Aniso(),policy=self.__metronome_input.nodefault_policy(1,False),names='song beat input')
         self[5][2] = atom.Atom(domain=domain.Aniso(),policy=self.__metronome_input.nodefault_policy(2,False),names='running input')
         self[5][3] = atom.Atom(domain=domain.Aniso(),policy=self.__metronome_input.nodefault_policy(3,False),names='tempo input')
         self[5][4] = atom.Atom(domain=domain.Aniso(),policy=self.__metronome_input.nodefault_policy(4,False),names='bar beat input')
 
         # kbd/controller inputs
-        self[6] = atom.Atom()
+        self[6] = atom.Atom(names='controller inputs')
         self[6][1] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.vector_policy(1,False),names='pressure input')
         self[6][2] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.merge_nodefault_policy(2,False),names='frequency input')
 
@@ -358,7 +358,7 @@ class Agent(agent.Agent):
         self[7] =  atom.Atom(domain=domain.BoundedInt(0,16),init=0,names='midi channel',policy=atom.default_policy(self.set_midi_channel))
 
         # velocity curve control
-        self[8] = atom.Atom()
+        self[8] = atom.Atom(names='velocity curve controls')
         self[8][1] = atom.Atom(domain=domain.BoundedInt(1,1000),init=4,names='velocity sample',policy=atom.default_policy(self.__set_velocity_samples))
         self[8][2] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names='velocity curve',policy=atom.default_policy(self.__set_velocity_curve))
         self[8][3] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names='velocity scale',policy=atom.default_policy(self.__set_velocity_scale))

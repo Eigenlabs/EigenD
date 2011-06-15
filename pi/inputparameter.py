@@ -53,7 +53,7 @@ class Parameter(atom.Atom):
 class List(atom.Atom):
     def __init__(self,delegate,clockdomain,verbcontainer):
         self.__delegate = delegate
-        atom.Atom.__init__(self, container=(None,'parameters',verbcontainer))
+        atom.Atom.__init__(self, container=(None,'parameters',verbcontainer),names='parameters')
         # legacy verbs
         self.add_verb2(1,'map([],~a,role(None,[abstract]),role(to,[numeric]),role(with,[numeric]))',callback=self.__map_legacy)
         self.add_verb2(2,'map([un],~a,role(None,[abstract]),role(to,[numeric]))',callback=self.__unmap)

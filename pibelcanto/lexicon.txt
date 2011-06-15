@@ -133,8 +133,8 @@ Not properly assigned, in use:
 8   8   7   1  : Inputs        : Noun              : None
 8   8   7   2  : Outputs       : Noun              : None
 8   8   7   3  : Taps          : Noun              : None
-8   8   7   4  : Unused        : Unused            : None
-8   8   7   5  : Unused        : Unused            : None
+8   8   7   4  : Parameters    : Noun              : None
+8   8   7   5  : Controls      : Noun              : None
 8   8   7   6  : Unused        : Unused            : None
 8   8   7   7  : Unused        : Unused            : None
 8   8   7   8  : Unused        : Unused            : None
