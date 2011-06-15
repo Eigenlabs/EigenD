@@ -758,6 +758,7 @@ namespace piw
         midi_from_belcanto_t::impl_t *r = (midi_from_belcanto_t::impl_t *)r_;
         unsigned c = *(unsigned *)c_;
 
+        r->time_++;
         r->set_program_change(r->poly_, false, r->poly_ ? 1 : r->channel_, (c - 1) << 7, r->time_);
 
         return 0;
@@ -773,6 +774,7 @@ namespace piw
         midi_from_belcanto_t::impl_t *r = (midi_from_belcanto_t::impl_t *)r_;
         unsigned c = *(unsigned *)c_;
 
+        r->time_++;
         r->set_cc(r->poly_, false, r->poly_ ? 1 : r->channel_, 0, 0, (c - 1) << 7, r->time_);
 
         return 0;
