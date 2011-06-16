@@ -24,7 +24,7 @@
 # Agent to convert Belcanto note data into a MIDI stream
 # ------------------------------------------------------------------------------------------------------------------
 
-from pi import agent,atom,logic,node,utils,bundles,audio,domain,const,resource,guid,upgrade,policy,errors,inputparameter,paths
+from pi import agent,atom,logic,node,utils,bundles,audio,domain,const,resource,guid,upgrade,policy,errors,action,inputparameter,paths
 from pibelcanto import lexicon
 import piw,urllib,sys,os,operator,glob,shutil,string
 from plg_midi import midi_converter_version as version
@@ -141,9 +141,9 @@ class Agent(agent.Agent):
         self[4][3] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names="velocity scale",policy=atom.default_policy(self.__set_scale))
 
         # bank change
-        self[5]=atom.Atom(domain=domain.BoundedFloat(1,128),init=1,names="midi bank", policy=atom.default_policy(self.__set_bank_change))
+        self[5]=atom.Atom(domain=domain.BoundedFloat(0,127),init=0,names="midi bank", policy=atom.default_policy(self.__set_bank_change))
         # program change
-        self[6]=atom.Atom(domain=domain.BoundedFloat(1,128),init=1,names="midi program", policy=atom.default_policy(self.__set_program_change))
+        self[6]=atom.Atom(domain=domain.BoundedFloat(0,127),init=0,names="midi program", policy=atom.default_policy(self.__set_program_change))
 
         # inputs to set the minimum and maximum MIDI channel when in poly mode
         self[7] = atom.Atom(domain=domain.BoundedInt(1,16),init=1,names="minimum channel",policy=atom.default_policy(self.set_min_channel))
@@ -151,6 +151,9 @@ class Agent(agent.Agent):
 
         # parameter mapping
         self[12] = self.parameter_list
+
+        # control change
+        self.add_verb2(1,'set([],None,role(None,[mass([midi,controller])]),role(to,[numeric]))',callback=self.__set_midi_control)
 
         self.set_midi_channel(0)
 
@@ -201,6 +204,18 @@ class Agent(agent.Agent):
 
     def __set_program_change(self,c):
         self.__midi_from_belcanto.set_program_change(c)
+        return True
+
+    def __set_midi_control(self,prop,c_,to_):
+        c = action.mass_quantity(c_)
+        to = action.abstract_wordlist(to_)[0]
+        c_val = int(c)
+        to_val = int(to)
+        if c_val < 0 or c_val > 127:
+            return errors.invalid_thing(c, 'set')
+        if to_val < 0 or to_val > 127:
+            return errors.invalid_thing(to, 'set')
+        self.__midi_from_belcanto.set_cc(c_val,to_val)
         return True
 
     def __agent_state_loaded(self,delegate,mapping):

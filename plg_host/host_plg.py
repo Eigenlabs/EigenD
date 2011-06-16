@@ -368,9 +368,9 @@ class Agent(agent.Agent):
         self[12] = atom.Atom(domain=domain.BoundedInt(1,16),init=16,names='maximum channel',policy=atom.default_policy(self.set_max_channel))
 
         # bank change
-        self[16]=atom.Atom(domain=domain.BoundedFloat(1,128),init=1,names="midi bank", policy=atom.default_policy(self.__set_bank_change))
+        self[16]=atom.Atom(domain=domain.BoundedFloat(0,127),init=0,names="midi bank", policy=atom.default_policy(self.__set_bank_change))
         # program change
-        self[17]=atom.Atom(domain=domain.BoundedFloat(1,128),init=1,names="midi program", policy=atom.default_policy(self.__set_program_change))
+        self[17]=atom.Atom(domain=domain.BoundedFloat(0,127),init=0,names="midi program", policy=atom.default_policy(self.__set_program_change))
 
         # status output to drive the talker lights
         self[13] = bundles.Output(1,False,names='status output')
@@ -395,6 +395,9 @@ class Agent(agent.Agent):
         self.add_verb2(7,'scan([],None)',callback=self.__browser.refresh_plugin_list)
         self.add_verb2(8,'bypass([],None)',callback=self.__bypass)
         self.add_verb2(9,'bypass([un],None)',callback=self.__unbypass)
+
+        # control change
+        self.add_verb2(10,'set([],None,role(None,[mass([midi,controller])]),role(to,[numeric]))',callback=self.__set_midi_control)
 
         self.set_ordinal(ordinal)
 
@@ -427,6 +430,18 @@ class Agent(agent.Agent):
 
     def __set_program_change(self,c):
         self.__host.set_program_change(c)
+        return True
+
+    def __set_midi_control(self,prop,c_,to_):
+        c = action.mass_quantity(c_)
+        to = action.abstract_wordlist(to_)[0]
+        c_val = int(c)
+        to_val = int(to)
+        if c_val < 0 or c_val > 127:
+            return errors.invalid_thing(c, 'set')
+        if to_val < 0 or to_val > 127:
+            return errors.invalid_thing(to, 'set')
+        self.__host.set_cc(c_val,to_val)
         return True
 
     def __set_velocity_samples(self,samples):

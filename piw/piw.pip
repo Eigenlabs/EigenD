@@ -570,6 +570,7 @@ class midi_converter[piw::midi_converter_t]
     void set_max_midi_channel(unsigned)
     void set_program_change(unsigned)
     void set_bank_change(unsigned)
+    void set_cc(unsigned, unsigned)
 
     void close()
 }
@@ -1985,6 +1986,7 @@ class midi_from_belcanto[piw::midi_from_belcanto_t]
     void set_max_midi_channel(unsigned)   
     void set_program_change(unsigned)
     void set_bank_change(unsigned)
+    void set_cc(unsigned, unsigned)
     void set_omni(bool)
 }
 

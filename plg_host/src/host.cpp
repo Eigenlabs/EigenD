@@ -1438,6 +1438,11 @@ void host::plugin_instance_t::set_bank_change(unsigned c)
     impl_->midi_from_belcanto_->set_bank_change(c);
 }
 
+void host::plugin_instance_t::set_cc(unsigned c, unsigned v)
+{
+    impl_->midi_from_belcanto_->set_cc(c, v);
+}
+
 piw::cookie_t host::plugin_instance_t::parameter_input(unsigned name)
 {
     return piw::cookie_t(impl_->param_input_[name-1].get());

@@ -604,6 +604,11 @@ namespace piw
         impl_->midi_from_belcanto_.set_bank_change(c);
     }
 
+    void midi_converter_t::set_cc(unsigned c, unsigned v)
+    {
+        impl_->midi_from_belcanto_.set_cc(c, v);
+    }
+
     void midi_converter_t::close()
     {
         impl_->close();
