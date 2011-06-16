@@ -126,6 +126,7 @@ namespace host
             void set_max_midi_channel(unsigned);
             void set_program_change(unsigned);
             void set_bank_change(unsigned);
+            void set_cc(unsigned, unsigned);
 
             piw::cookie_t parameter_input(unsigned);
             void set_mapping(const std::string &);

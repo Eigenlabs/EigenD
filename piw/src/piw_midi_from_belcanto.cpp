@@ -759,7 +759,7 @@ namespace piw
         unsigned c = *(unsigned *)c_;
 
         r->time_++;
-        r->set_program_change(r->poly_, false, r->poly_ ? 1 : r->channel_, (c - 1) << 7, r->time_);
+        r->set_program_change(r->poly_, false, r->poly_ ? 1 : r->channel_, c << 7, r->time_);
 
         return 0;
     }
@@ -775,7 +775,7 @@ namespace piw
         unsigned c = *(unsigned *)c_;
 
         r->time_++;
-        r->set_cc(r->poly_, false, r->poly_ ? 1 : r->channel_, 0, 0, (c - 1) << 7, r->time_);
+        r->set_cc(r->poly_, false, r->poly_ ? 1 : r->channel_, 0, 0, c << 7, r->time_);
 
         return 0;
     }
@@ -791,7 +791,8 @@ namespace piw
         unsigned c = *(unsigned *)c_;
         unsigned v = *(unsigned *)v_;
 
-        r->set_cc(r->poly_, false, r->poly_ ? 1 : r->channel_, c, 0, (v - 1) << 7, r->time_);
+        r->time_++;
+        r->set_cc(r->poly_, false, r->poly_ ? 1 : r->channel_, c, 0, v << 7, r->time_);
 
         return 0;
     }
