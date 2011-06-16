@@ -22,7 +22,7 @@ Import('env')
 
 env.PiPythonPackage('0.0',natives=Split('midi_native'),pi='0.0',package='eigend')
 env.PiAgent('midi_output','plg_midi.midi_output_plg','plg_midi:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('midi_converter','plg_midi.midi_converter_plg','plg_midi:0.0',cversion='1.0.2',package='eigend')
+env.PiAgent('midi_converter','plg_midi.midi_converter_plg','plg_midi:0.0',cversion='1.0.3',package='eigend')
 env.PiAgent('midi_controller','plg_midi.midi_controller_plg','plg_midi:0.0',cversion='1.0.0',package='eigend')
 env.PiAgent('midi_clock','plg_midi.midi_clock_plg','plg_midi:0.0',cversion='1.0.0',package='eigend')
 env.PiAgent('midi_input','plg_midi.midi_input_plg','plg_midi:0.0',cversion='1.0.0',package='eigend')

@@ -53,8 +53,11 @@ namespace piw
         void set_min_midi_channel(unsigned);
         void set_max_midi_channel(unsigned);
         void set_program_change(unsigned);
+        change_nb_t change_program();
         void set_bank_change(unsigned);
+        change_nb_t change_bank();
         void set_cc(unsigned, unsigned);
+        change_nb_t change_cc();
         void close();
 
         int gc_clear();

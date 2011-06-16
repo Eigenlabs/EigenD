@@ -45,10 +45,13 @@ namespace piw
         void set_midi_channel(unsigned);
         void set_min_midi_channel(unsigned);
         void set_max_midi_channel(unsigned);
-        void set_program_change(unsigned);
-        void set_bank_change(unsigned);
         void set_omni(bool);
+        void set_program_change(unsigned);
+        change_nb_t change_program();
+        void set_bank_change(unsigned);
+        change_nb_t change_bank();
         void set_cc(unsigned, unsigned);
+        change_nb_t change_cc();
         void set_control_interval(float);
         void set_midi(pic::lckvector_t<piw::midi_data_t>::nbtype &);
         void set_send_notes(bool);

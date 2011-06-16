@@ -4,7 +4,7 @@
 >>>
 
 from picross[picross/picross.pip] import notify,status
-from piw[piw/piw.pip] import cookie,clockdomain_ctl,data,mapping_info,midi_channel_delegate
+from piw[piw/piw.pip] import cookie,clockdomain_ctl,data,change_nb,mapping_info,midi_channel_delegate
 
 class plugin_description[host::plugin_description_t]
 {
@@ -57,8 +57,11 @@ class plugin_instance[host::plugin_instance_t] /gc/
     void set_min_midi_channel(unsigned)
     void set_max_midi_channel(unsigned)
     void set_program_change(unsigned)
+    change_nb change_program()
     void set_bank_change(unsigned)
+    change_nb change_bank()
     void set_cc(unsigned, unsigned)
+    change_nb change_cc()
 
     cookie parameter_input(unsigned)
     void set_mapping(const stdstr &)

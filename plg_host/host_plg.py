@@ -368,11 +368,6 @@ class Agent(agent.Agent):
         self[11] = atom.Atom(domain=domain.BoundedInt(1,16),init=1,names='minimum channel',policy=atom.default_policy(self.set_min_channel))
         self[12] = atom.Atom(domain=domain.BoundedInt(1,16),init=16,names='maximum channel',policy=atom.default_policy(self.set_max_channel))
 
-        # bank change
-        self[16]=atom.Atom(domain=domain.BoundedFloat(0,127),init=0,names="midi bank", policy=atom.default_policy(self.__set_bank_change))
-        # program change
-        self[17]=atom.Atom(domain=domain.BoundedFloat(0,127),init=0,names="midi program", policy=atom.default_policy(self.__set_program_change))
-
         # status output to drive the talker lights
         self[13] = bundles.Output(1,False,names='status output')
         self.light_output = bundles.Splitter(self.__domain,self[13])
@@ -398,7 +393,9 @@ class Agent(agent.Agent):
         self.add_verb2(9,'bypass([un],None)',callback=self.__unbypass)
 
         # control change
-        self.add_verb2(10,'set([],None,role(None,[mass([midi,controller])]),role(to,[numeric]))',callback=self.__set_midi_control)
+        self.add_verb2(10,'set([],~a,role(None,[matches([midi,program])]),role(to,[numeric]))',create_action=self.__set_program_change)
+        self.add_verb2(11,'set([],~a,role(None,[matches([midi,bank])]),role(to,[numeric]))',create_action=self.__set_bank_change)
+        self.add_verb2(12,'set([],~a,role(None,[mass([midi,controller])]),role(to,[numeric]))',create_action=self.__set_midi_control)
 
         self.set_ordinal(ordinal)
 
@@ -425,25 +422,30 @@ class Agent(agent.Agent):
         self.__host.set_max_midi_channel(c)
         return True
 
-    def __set_bank_change(self,c):
-        self.__host.set_bank_change(c)
-        return True
+    def __set_program_change(self,ctx,subj,dummy,val):
+        to = action.abstract_wordlist(val)[0]
+        to_val = int(to)
+        if to_val < 0 or to_val > 127:
+            return errors.invalid_thing(to, 'set')
+        return piw.trigger(self.__host.change_program(),piw.makelong_nb(to_val,0)),None
 
-    def __set_program_change(self,c):
-        self.__host.set_program_change(c)
-        return True
+    def __set_bank_change(self,ctx,subj,dummy,val):
+        to = action.abstract_wordlist(val)[0]
+        to_val = int(to)
+        if to_val < 0 or to_val > 127:
+            return errors.invalid_thing(to, 'set')
+        return piw.trigger(self.__host.change_bank(),piw.makelong_nb(to_val,0)),None
 
-    def __set_midi_control(self,prop,c_,to_):
-        c = action.mass_quantity(c_)
-        to = action.abstract_wordlist(to_)[0]
+    def __set_midi_control(self,ctx,subj,ctl,val):
+        c = action.mass_quantity(ctl)
+        to = action.abstract_wordlist(val)[0]
         c_val = int(c)
         to_val = int(to)
         if c_val < 0 or c_val > 127:
             return errors.invalid_thing(c, 'set')
         if to_val < 0 or to_val > 127:
             return errors.invalid_thing(to, 'set')
-        self.__host.set_cc(c_val,to_val)
-        return True
+        return piw.trigger(self.__host.change_cc(),utils.makedict_nb({'ctl':piw.makelong_nb(c_val,0),'val':piw.makelong_nb(to_val,0)},0)),None
 
     def __set_velocity_samples(self,samples):
         self.__velocity_detector.set_samples(samples)
