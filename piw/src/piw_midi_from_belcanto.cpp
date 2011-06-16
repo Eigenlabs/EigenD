@@ -263,12 +263,16 @@ namespace piw
         // set the MIDI program
         void set_program_change(unsigned c);
         static int __set_program_change(void *r_, void *c_);
+        void set_program_change_data(const piw::data_nb_t &d);
         // set the MIDI bank
         void set_bank_change(unsigned c);
         static int __set_bank_change(void *r_, void *c_);
+        void set_bank_change_data(const piw::data_nb_t &d);
         // set the MIDI cc
         void set_cc(unsigned c, unsigned v);
         static int __set_cc(void *r_, void *c_, void *v_);
+        void set_cc_data(const piw::data_nb_t &d);
+
         // set MIDI omni mode (send to all channels)
         void set_omni(bool b);
         static int __set_omni(void *r_, void *b_);
@@ -748,6 +752,13 @@ namespace piw
         return 0;
     }
 
+    void midi_from_belcanto_t::impl_t::set_program_change_data(const piw::data_nb_t &d)
+    {
+        if(!d.is_long()) return;
+
+        set_program_change(d.as_long());
+    }
+
     void midi_from_belcanto_t::impl_t::set_program_change(unsigned c)
     {
         piw::tsd_fastcall(__set_program_change,this,&c);
@@ -764,6 +775,13 @@ namespace piw
         return 0;
     }
 
+    void midi_from_belcanto_t::impl_t::set_bank_change_data(const piw::data_nb_t &d)
+    {
+        if(!d.is_long()) return;
+
+        set_bank_change(d.as_long());
+    }
+
     void midi_from_belcanto_t::impl_t::set_bank_change(unsigned c)
     {
         piw::tsd_fastcall(__set_bank_change,this,&c);
@@ -778,6 +796,13 @@ namespace piw
         r->set_cc(r->poly_, false, r->poly_ ? 1 : r->channel_, 0, 0, c << 7, r->time_);
 
         return 0;
+    }
+
+    void midi_from_belcanto_t::impl_t::set_cc_data(const piw::data_nb_t &d)
+    {
+        if(!d.is_dict()) return;
+
+        set_cc(d.as_dict_value(0).as_long(),d.as_dict_value(1).as_long());
     }
 
     void midi_from_belcanto_t::impl_t::set_cc(unsigned c, unsigned v)
@@ -1259,8 +1284,11 @@ namespace piw
     void midi_from_belcanto_t::set_max_midi_channel(unsigned c) { piw::tsd_fastcall(__set_max_midi_channel,impl_,&c); }
     void midi_from_belcanto_t::set_omni(bool b) { impl_->set_omni(b); }
     void midi_from_belcanto_t::set_program_change(unsigned p) { impl_->set_program_change(p); }
+    change_nb_t midi_from_belcanto_t::change_program() { return change_nb_t::method(impl_,&impl_t::set_program_change_data); }
     void midi_from_belcanto_t::set_bank_change(unsigned b) { impl_->set_bank_change(b); }
+    change_nb_t midi_from_belcanto_t::change_bank() { return change_nb_t::method(impl_,&impl_t::set_bank_change_data); }
     void midi_from_belcanto_t::set_cc(unsigned c, unsigned v) { impl_->set_cc(c, v); }
+    change_nb_t midi_from_belcanto_t::change_cc() { return change_nb_t::method(impl_,&impl_t::set_cc_data); }
     void midi_from_belcanto_t::set_control_interval(float interval) { impl_->set_control_interval(interval); }
     void midi_from_belcanto_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &data) { impl_->set_midi(data); }
     void midi_from_belcanto_t::set_send_notes(bool send) { piw::tsd_fastcall(__set_send_notes,impl_,&send); }

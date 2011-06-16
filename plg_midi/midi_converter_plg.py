@@ -140,11 +140,6 @@ class Agent(agent.Agent):
         self[4][2] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names="velocity curve",policy=atom.default_policy(self.__set_curve))
         self[4][3] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names="velocity scale",policy=atom.default_policy(self.__set_scale))
 
-        # bank change
-        self[5]=atom.Atom(domain=domain.BoundedFloat(0,127),init=0,names="midi bank", policy=atom.default_policy(self.__set_bank_change))
-        # program change
-        self[6]=atom.Atom(domain=domain.BoundedFloat(0,127),init=0,names="midi program", policy=atom.default_policy(self.__set_program_change))
-
         # inputs to set the minimum and maximum MIDI channel when in poly mode
         self[7] = atom.Atom(domain=domain.BoundedInt(1,16),init=1,names="minimum channel",policy=atom.default_policy(self.set_min_channel))
         self[8] = atom.Atom(domain=domain.BoundedInt(1,16),init=16,names="maximum channel",policy=atom.default_policy(self.set_max_channel))
@@ -153,7 +148,9 @@ class Agent(agent.Agent):
         self[12] = self.parameter_list
 
         # control change
-        self.add_verb2(1,'set([],None,role(None,[mass([midi,controller])]),role(to,[numeric]))',callback=self.__set_midi_control)
+        self.add_verb2(1,'set([],~a,role(None,[matches([midi,program])]),role(to,[numeric]))',create_action=self.__set_program_change)
+        self.add_verb2(2,'set([],~a,role(None,[matches([midi,bank])]),role(to,[numeric]))',create_action=self.__set_bank_change)
+        self.add_verb2(3,'set([],~a,role(None,[mass([midi,controller])]),role(to,[numeric]))',create_action=self.__set_midi_control)
 
         self.set_midi_channel(0)
 
@@ -198,25 +195,30 @@ class Agent(agent.Agent):
         self.__kvelo.set_scale(x)
         return True
 
-    def __set_bank_change(self,c):
-        self.__midi_from_belcanto.set_bank_change(c)
-        return True
+    def __set_program_change(self,ctx,subj,dummy,val):
+        to = action.abstract_wordlist(val)[0]
+        to_val = int(to)
+        if to_val < 0 or to_val > 127:
+            return errors.invalid_thing(to, 'set')
+        return piw.trigger(self.__midi_from_belcanto.change_program(),piw.makelong_nb(to_val,0)),None
 
-    def __set_program_change(self,c):
-        self.__midi_from_belcanto.set_program_change(c)
-        return True
+    def __set_bank_change(self,ctx,subj,dummy,val):
+        to = action.abstract_wordlist(val)[0]
+        to_val = int(to)
+        if to_val < 0 or to_val > 127:
+            return errors.invalid_thing(to, 'set')
+        return piw.trigger(self.__midi_from_belcanto.change_bank(),piw.makelong_nb(to_val,0)),None
 
-    def __set_midi_control(self,prop,c_,to_):
-        c = action.mass_quantity(c_)
-        to = action.abstract_wordlist(to_)[0]
+    def __set_midi_control(self,ctx,subj,ctl,val):
+        c = action.mass_quantity(ctl)
+        to = action.abstract_wordlist(val)[0]
         c_val = int(c)
         to_val = int(to)
         if c_val < 0 or c_val > 127:
             return errors.invalid_thing(c, 'set')
         if to_val < 0 or to_val > 127:
             return errors.invalid_thing(to, 'set')
-        self.__midi_from_belcanto.set_cc(c_val,to_val)
-        return True
+        return piw.trigger(self.__midi_from_belcanto.change_cc(),utils.makedict_nb({'ctl':piw.makelong_nb(c_val,0),'val':piw.makelong_nb(to_val,0)},0)),None
 
     def __agent_state_loaded(self,delegate,mapping):
         self.__midi_converter.set_mapping(mapping)
@@ -224,6 +226,14 @@ class Agent(agent.Agent):
 
 
 class Upgrader(upgrade.Upgrader):
+    def upgrade_1_0_2_to_1_0_3(self,tools,address):
+        print 'upgrading converter',address
+        root = tools.get_root(address)
+                    
+        # remove midi program and bank atoms
+        root.erase_child(5)
+        root.erase_child(6)
+
     def upgrade_1_0_1_to_1_0_2(self,tools,address):
         pass
 

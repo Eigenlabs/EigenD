@@ -1289,13 +1289,13 @@ namespace
         piw::change_t change_;
     };
 
-    struct trig_sink_t : piw::change_nb_t::sinktype_t
+    struct trig_sink_t : piw::change_t::sinktype_t
     {
         trig_sink_t(const piw::change_nb_t &target, const piw::data_nb_t &value) : target_(target), value_(value)
         {
         }
 
-        void invoke(const piw::data_nb_t &d) const
+        void invoke(const piw::data_t &d) const
         {
             if(d.as_norm()!=0.f)
             {
@@ -1380,6 +1380,36 @@ namespace
         pic::flipflop_functor_t<piw::change_t> c1_;
         pic::flipflop_functor_t<piw::change_t> c2_;
     };
+
+    struct change_nb2_sink_t: piw::change_nb_t::sinktype_t, public piw::thing_t
+    {
+        change_nb2_sink_t(const piw::change_nb_t &c1, const piw::change_nb_t &c2): c1_(c1), c2_(c2)
+        {
+            piw::tsd_thing(this);
+        }
+
+        void invoke(const piw::data_nb_t &d) const
+        {
+            c1_(d);
+            c2_(d);
+        }
+
+        bool iscallable() const
+        {
+            return true;
+        }
+
+        int gc_visit(void *v, void *a) const
+        {
+            int r;
+            if((r=c1_.gc_traverse(v,a))!=0) return r;
+            if((r=c2_.gc_traverse(v,a))!=0) return r;
+            return 0;
+        }
+
+        pic::flipflop_functor_t<piw::change_nb_t> c1_;
+        pic::flipflop_functor_t<piw::change_nb_t> c2_;
+    };
 }
 
 piw::change_t piw::make_change_normal(const piw::change_nb_t &c)
@@ -1392,9 +1422,9 @@ piw::change_nb_t piw::make_change_nb(const piw::change_t &c)
     return piw::change_nb_t(pic::ref(new make_change_nb_t(c)));
 }
 
-piw::change_nb_t piw::trigger(const piw::change_nb_t &c, const piw::data_nb_t &v)
+piw::change_t piw::trigger(const piw::change_nb_t &c, const piw::data_nb_t &v)
 {
-    return piw::change_nb_t(pic::ref(new trig_sink_t(c,v)));
+    return piw::change_t(pic::ref(new trig_sink_t(c,v)));
 }
 
 piw::change_t piw::change2(const piw::change_t &c1, const piw::change_t &c2)
@@ -1405,6 +1435,11 @@ piw::change_t piw::change2(const piw::change_t &c1, const piw::change_t &c2)
 piw::change_nb_t piw::change2_nb(const piw::change_t &c1, const piw::change_t &c2)
 {
     return piw::change_nb_t(pic::ref(new change2_nb_sink_t(c1,c2)));
+}
+
+piw::change_nb_t piw::change_nb2(const piw::change_nb_t &c1, const piw::change_nb_t &c2)
+{
+    return piw::change_nb_t(pic::ref(new change_nb2_sink_t(c1,c2)));
 }
 
 /*

@@ -36,7 +36,7 @@ class Agent(agent.Agent):
 
         self.output = bundles.Splitter(self.domain, self[1],self[2],self[3])
         self.filter = synth_native.synthfilter(self.output.cookie(),self.domain)
-        self.bend_filter = piw.function2(True,3,4,1,piw.makefloat_bounded_nb(96000,0,0,440,0),piw.makefloat_bounded_nb(1,-1,0,0,0),self.filter.cookie())
+        self.bend_filter = piw.function2(True,3,4,1,piw.makefloat_bounded(96000,0,0,440,0),piw.makefloat_bounded(1,-1,0,0,0),self.filter.cookie())
         self.bender = piw.fast_pitchbender()
         self.bend_filter.set_functor(self.bender.bend_functor())
         self.input = bundles.VectorInput(self.bend_filter.cookie(), self.domain, signals=(5,2,3,4),threshold=5)
@@ -61,7 +61,7 @@ class Agent(agent.Agent):
         print 'rcreate',ctx,subj,arg,val
         if val<0 or val>72:
             return async.failure('range inappropriate')
-        b = piw.change2(self.bender.set_range(),piw.slowchange_polled(utils.changify(self[8].get_policy().set_data),5000))
+        b = piw.change_nb2(self.bender.set_range(),piw.slowchange_polled(utils.changify(self[8].get_policy().set_data),5000))
         return piw.trigger(b,piw.makefloat_nb(val,0)),None
 
     def __ocreate(self,ctx,subj,dummy,arg):
@@ -69,17 +69,17 @@ class Agent(agent.Agent):
         print 'ocreate',ctx,subj,arg,val
         if val<-72 or val>72:
             return async.failure('offset inappropriate')
-        b = piw.change2(self.bender.set_offset(),piw.slowchange_polled(utils.changify(self[9].get_policy().set_data),5000))
+        b = piw.change_nb2(self.bender.set_offset(),piw.slowchange_polled(utils.changify(self[9].get_policy().set_data),5000))
         return piw.trigger(b,piw.makefloat_nb(val,0)),None
 
     def __rchange(self,v):
         fc = piw.fastchange(self.bender.set_range())
-        fc(piw.makefloat_nb(v,0))
+        fc(piw.makefloat(v,0))
         return True
 
     def __ochange(self,v):
         fc = piw.fastchange(self.bender.set_offset())
-        fc(piw.makefloat_nb(v,0))
+        fc(piw.makefloat(v,0))
         return True
 
 class Upgrader(upgrade.Upgrader):

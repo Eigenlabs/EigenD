@@ -599,14 +599,29 @@ namespace piw
         impl_->midi_from_belcanto_.set_program_change(c);
     }
 
+    change_nb_t midi_converter_t::change_program()
+    {
+        return impl_->midi_from_belcanto_.change_program();
+    }
+
     void midi_converter_t::set_bank_change(unsigned c)
     {
         impl_->midi_from_belcanto_.set_bank_change(c);
     }
 
+    change_nb_t midi_converter_t::change_bank()
+    {
+        return impl_->midi_from_belcanto_.change_bank();
+    }
+
     void midi_converter_t::set_cc(unsigned c, unsigned v)
     {
         impl_->midi_from_belcanto_.set_cc(c, v);
+    }
+
+    change_nb_t midi_converter_t::change_cc()
+    {
+        return impl_->midi_from_belcanto_.change_cc();
     }
 
     void midi_converter_t::close()

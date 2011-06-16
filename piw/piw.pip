@@ -569,8 +569,11 @@ class midi_converter[piw::midi_converter_t]
     void set_min_midi_channel(unsigned)
     void set_max_midi_channel(unsigned)
     void set_program_change(unsigned)
+    change_nb change_program()
     void set_bank_change(unsigned)
+    change_nb change_bank()
     void set_cc(unsigned, unsigned)
+    change_nb change_cc()
 
     void close()
 }
@@ -1006,7 +1009,8 @@ void changelist_disconnect_nb(change_nb &, const change_nb &)
 
 change change2[piw::change2](const change &, const change &)
 change_nb change2_nb[piw::change2_nb](const change &, const change &)
-change_nb trigger[piw::trigger](const change_nb &, const data_nb &)
+change_nb change_nb2[piw::change_nb2](const change_nb &, const change_nb &)
+change trigger[piw::trigger](const change_nb &, const data_nb &)
 
 class function1[piw::function1_t] /gc/
     """
@@ -1985,8 +1989,11 @@ class midi_from_belcanto[piw::midi_from_belcanto_t]
     void set_min_midi_channel(unsigned)   
     void set_max_midi_channel(unsigned)   
     void set_program_change(unsigned)
+    change_nb change_program()
     void set_bank_change(unsigned)
+    change_nb change_bank()
     void set_cc(unsigned, unsigned)
+    change_nb change_cc()
     void set_omni(bool)
 }
 

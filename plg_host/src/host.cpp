@@ -1433,14 +1433,29 @@ void host::plugin_instance_t::set_program_change(unsigned c)
     impl_->midi_from_belcanto_->set_program_change(c);
 }
 
+piw::change_nb_t host::plugin_instance_t::change_program()
+{
+    return impl_->midi_from_belcanto_->change_program();
+}
+
 void host::plugin_instance_t::set_bank_change(unsigned c)
 {
     impl_->midi_from_belcanto_->set_bank_change(c);
 }
 
+piw::change_nb_t host::plugin_instance_t::change_bank()
+{
+    return impl_->midi_from_belcanto_->change_bank();
+}
+
 void host::plugin_instance_t::set_cc(unsigned c, unsigned v)
 {
     impl_->midi_from_belcanto_->set_cc(c, v);
+}
+
+piw::change_nb_t host::plugin_instance_t::change_cc()
+{
+    return impl_->midi_from_belcanto_->change_cc();
 }
 
 piw::cookie_t host::plugin_instance_t::parameter_input(unsigned name)

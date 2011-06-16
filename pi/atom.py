@@ -381,10 +381,10 @@ class Atom(node.Server):
         if f is None:
             return async.failure()
 
-        ff = piw.fastchange(f[0])
+        ff = piw.fastchange(utils.changify_nb(f[0]))
         t = piw.tsd_time()
-        ff(piw.makefloat_bounded_nb(1,0,0,1,t))
-        ff(piw.makefloat_bounded_nb(1,0,0,0,t+1))
+        ff(piw.makefloat_bounded(1,0,0,1,t))
+        ff(piw.makefloat_bounded(1,0,0,0,t+1))
 
         ret = (action.nosync_return(),)
         return async.success(action.marshal(ret))

@@ -125,8 +125,11 @@ namespace host
             void set_min_midi_channel(unsigned);
             void set_max_midi_channel(unsigned);
             void set_program_change(unsigned);
+            piw::change_nb_t change_program();
             void set_bank_change(unsigned);
+            piw::change_nb_t change_bank();
             void set_cc(unsigned, unsigned);
+            piw::change_nb_t change_cc();
 
             piw::cookie_t parameter_input(unsigned);
             void set_mapping(const std::string &);
