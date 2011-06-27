@@ -153,7 +153,7 @@ class Output(atom.Atom):
         self.__tee = None
         self.__current = None
 
-        atom.Atom.__init__(self,domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='kgroup output',ordinal=slot,container=const.verb_node)
+        atom.Atom.__init__(self,domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='kgroup output',protocols='remove',ordinal=slot,container=const.verb_node)
 
         self.light_output = piw.clone(True)
         self.input = bundles.VectorInput(self.light_output.cookie(),self.__agent.domain,signals=(1,))

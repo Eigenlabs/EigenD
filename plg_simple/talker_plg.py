@@ -103,7 +103,7 @@ class PhraseBrowser(atom.Atom):
 
 class Collection(atom.Atom):
     def __init__(self,protocols=None,inst_creator=None,inst_wrecker=None,*args,**kwds):
-        p = protocols+' create' if protocols else 'create hidden-connection'
+        p = protocols+' create remove' if protocols else 'create hidden-connection'
         self.__creator = inst_creator or self.instance_create
         self.__wrecker = inst_wrecker or self.instance_wreck
         atom.Atom.__init__(self,protocols=p,*args,**kwds)

@@ -67,7 +67,7 @@ class TalkerFinder(Finder):
 
 class Talker(atom.Atom):
     def __init__(self,finder,trigger,status_cookie,names='action',connection_index=None,ordinal=None):
-        atom.Atom.__init__(self,domain=domain.String(),policy=atom.default_policy(self.__change),names='action',protocols='nostage hidden-connection',ordinal=ordinal)
+        atom.Atom.__init__(self,domain=domain.String(),policy=atom.default_policy(self.__change),names='action',protocols='remove nostage hidden-connection',ordinal=ordinal)
         self.__finder = finder
         self.__conn_index = connection_index
         self.__domain = piw.clockdomain_ctl()
