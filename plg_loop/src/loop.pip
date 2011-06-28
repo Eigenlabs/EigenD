@@ -7,17 +7,18 @@
 >>>
 
 
-from piw[../../piw/piw.pip] import clockdomain_ctl,cookie,change,change_nb
+from piw[../../piw/piw.pip] import clockdomain_ctl,cookie,change
+from picross[../../picross/picross.pip] import status
 
 class player[loop::player_t]
 {
-    player(const cookie &,clockdomain_ctl *)
+    player(const cookie &,clockdomain_ctl *,const status &)
     void load(const char *)
     void unload()
     void set_volume(float)
     float get_volume()
     void set_chop(float)
-    change_nb player(unsigned)
+    change player(unsigned)
     cookie cookie()
 }
 

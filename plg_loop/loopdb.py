@@ -71,11 +71,11 @@ def qfmatch(a):
     return q
 
 def qpinfo(a):
-    q = """select id,desc,name from files where file like '%s%s%%'""" % (a,os.path.sep)
+    q = """select file,desc,name from files where file like '%s%s%%'""" % (a,os.path.sep)
     return q
 
 def qfinfo(a):
-    q = """select id,desc,name from files where id in (%s)""" % qfmatch(a)
+    q = """select file,desc,name from files where id in (%s)""" % qfmatch(a)
     return q
 
 def qmodtime():

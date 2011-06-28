@@ -151,7 +151,7 @@ def run(interp,verb,mods,roles,args):
         d = v.disambiguator()
         p = checked.get(d)
 
-        if p is not None and p[2]==None:
+        if p is not None:
             # we have a matched direct verb
             continue
 

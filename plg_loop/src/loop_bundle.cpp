@@ -24,6 +24,7 @@
 #include <piw/piw_clock.h>
 #include <piw/piw_clockclient.h>
 #include <piw/piw_fastdata.h>
+#include <piw/piw_thing.h>
 
 #include "loop_bundle.h"
 #include "loop_slice.h"
@@ -71,14 +72,15 @@ namespace
 
 namespace loop
 {
-    struct player_t::impl_t : piw::root_t, piw::wire_t, piw::clocksink_t, piw::root_ctl_t, piw::wire_ctl_t, piw::event_data_source_real_t, piw::event_data_sink_t, virtual pic::tracked_t, virtual public pic::lckobject_t
+    struct player_t::impl_t : piw::root_t, piw::wire_t, piw::clocksink_t, piw::root_ctl_t, piw::wire_ctl_t, piw::event_data_source_real_t, piw::event_data_sink_t, piw::thing_t, virtual pic::tracked_t, virtual public pic::lckobject_t
     {
-        impl_t(const piw::cookie_t &c, piw::clockdomain_ctl_t *d): piw::root_t(0), piw::event_data_source_real_t(piw::pathnull(0)), up_(0), bmod_(0), interp_(1), transport_(false), playing_(PLAY), awake_(false), volume_(1.0), clockdomain_(d)
+        impl_t(const piw::cookie_t &c, piw::clockdomain_ctl_t *d,const pic::status_t &s): piw::root_t(0), piw::event_data_source_real_t(piw::pathnull(0)), up_(0), bmod_(0), interp_(1), transport_(false), playing_(PLAY), awake_(false), volume_(1.0), clockdomain_(d), status_(s)
         {
             connect(c);
             loaded_.set(false);
             d->sink(this,"loop");
             set_clock(this);
+            piw::tsd_thing(this);
             //tick_enable(false);
             tick_enable(true);
             fading_ = false;
@@ -95,7 +97,12 @@ namespace loop
             clock_changed();
         }
 
-        ~impl_t() { invalidate(); }
+        ~impl_t()
+        {
+            tracked_invalidate();
+            close_thing();
+            invalidate();
+        }
 
         void root_closed() { invalidate(); }
         void wire_closed() { invalidate(); }
@@ -277,6 +284,16 @@ namespace loop
             {
                 slices_.append(new slice_t(ld,pos,ld->samples()));
             }
+        }
+
+        void thing_dequeue_slow(const piw::data_t &status)
+        {
+            status_(status.as_bool());
+        }
+
+        void change_status(bool playing)
+        {
+            enqueue_slow_nb(piw::makebool_nb(playing));
         }
 
         void clocksink_ticked(unsigned long long from,unsigned long long to)
@@ -602,15 +619,16 @@ namespace loop
         piw::xevent_data_buffer_t output_;
         piw::xevent_data_buffer_t::iter_t clkiter_;
         piw::clockdomain_ctl_t *clockdomain_;
+        pic::status_t status_;
     };
 
-    struct playsink_t: pic::sink_t<void(const piw::data_nb_t &)>
+    struct playsink_t: pic::sink_t<void(const piw::data_t &)>
     {
         playsink_t(player_t::impl_t *i,unsigned p) : impl_(i), play_(p)
         {
         }
 
-        void invoke(const piw::data_nb_t &d) const
+        void invoke(const piw::data_t &d) const
         {
             if(d.as_norm()!=0)
             {
@@ -620,6 +638,7 @@ namespace loop
                     impl_->beatoffset_ = loop::mod(impl_->interp_.interpolate_clock(0,t),impl_->bmod_);
                     impl_->current_beat_ = -1;
                     impl_->playing_ = play_;
+                    impl_->change_status(false);
                 }
                 else
                 {
@@ -629,20 +648,25 @@ namespace loop
                         {
                             impl_->beatoffset_ = 0.f;
                             impl_->playing_ = STOP;
+                            impl_->change_status(false);
                         }
                         else
                         {
                             impl_->beatoffset_ = 0.f;
                             impl_->playing_ = PLAY;
+                            impl_->change_status(true);
                         }    
                     }
                     else
                     {
                         if(impl_->playing_==play_)
+                        {
                             return;
+                        }
 
                         impl_->beatoffset_ = 0.f;
                         impl_->playing_ = play_;
+                        impl_->change_status((play_==STOP)?false:true);
                     }
             
                 }
@@ -655,7 +679,7 @@ namespace loop
             return impl_.isvalid();
         }
 
-        bool compare(const pic::sink_t<void(const piw::data_nb_t &)> *o) const
+        bool compare(const pic::sink_t<void(const piw::data_t &)> *o) const
         {
             const playsink_t *c = dynamic_cast<const playsink_t *>(o);
             return c ? c->impl_==impl_ && c->play_==play_ : false;
@@ -665,7 +689,7 @@ namespace loop
         unsigned play_;
     };
 
-    player_t::player_t(const piw::cookie_t &c,piw::clockdomain_ctl_t *d) : impl_(new impl_t(c,d)) {}
+    player_t::player_t(const piw::cookie_t &c,piw::clockdomain_ctl_t *d, const pic::status_t &s) : impl_(new impl_t(c,d,s)) {}
     player_t::~player_t() { delete impl_; }
     piw::cookie_t player_t::cookie() { return piw::cookie_t(impl_); }
     void player_t::load(const char *name) { impl_->load(name); }
@@ -673,5 +697,5 @@ namespace loop
     void player_t::set_volume(float v) { impl_->set_volume(v); }
     void player_t::set_chop(float c) { impl_->chop_=c; impl_->setdecay(); }
     float player_t::get_volume() { return impl_->get_volume(); }
-    piw::change_nb_t player_t::player(unsigned p) { return piw::change_nb_t(pic::ref(new playsink_t(impl_,p))); }
+    piw::change_t player_t::player(unsigned p) { return piw::change_t(pic::ref(new playsink_t(impl_,p))); }
 }

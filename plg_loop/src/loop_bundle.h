@@ -21,6 +21,7 @@
 #ifndef __LOOP__
 #define __LOOP__
 
+#include <picross/pic_functor.h>
 #include <piw/piw_bundle.h>
 #include <plg_loop/src/loop_exports.h>
 
@@ -34,13 +35,13 @@ namespace loop
     class PILOOP_DECLSPEC_CLASS player_t : public pic::nocopy_t
     {
         public:
-            player_t(const piw::cookie_t &c, piw::clockdomain_ctl_t *);
+            player_t(const piw::cookie_t &c, piw::clockdomain_ctl_t *,const pic::status_t &);
             ~player_t();
             void set_volume(float);
             float get_volume();
             void load(const char *);
             void unload();
-            piw::change_nb_t player(unsigned p);
+            piw::change_t player(unsigned p);
             piw::cookie_t cookie();
             void set_chop(float c);
 

@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,paths,talker
+from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,paths,talker,collection
 from plg_simple import talker_version as version
 import piw
 import operator
@@ -101,66 +101,13 @@ class PhraseBrowser(atom.Atom):
         map = tuple([(i,e.describe(),None) for (i,e) in all[cnum:] ])
         return logic.render_term(map)
 
-class Collection(atom.Atom):
-    def __init__(self,protocols=None,inst_creator=None,inst_wrecker=None,*args,**kwds):
-        p = protocols+' create remove' if protocols else 'create hidden-connection'
-        self.__creator = inst_creator or self.instance_create
-        self.__wrecker = inst_wrecker or self.instance_wreck
-        atom.Atom.__init__(self,protocols=p,*args,**kwds)
-
-    def instance_wreck(self,k,v,o):
-        return async.success()
-
-    def instance_create(self,o):
-        return async.failure('not implemented')
-
-    def listinstances(self):
-        return [ self[i].get_property_long('ordinal',0) for i in self ]
-
-    def rpc_listinstances(self,arg):
-        i = self.listinstances()
-        return logic.render_termlist(i)
-
-    @async.coroutine('internal error')
-    def rpc_createinstance(self,arg):
-        name = int(arg)
-        outputs = self.listinstances()
-
-        if name in outputs:
-            yield async.Coroutine.failure('output in use')
-
-        oresult = self.__creator(name)
-        yield oresult
-
-        if not oresult.status():
-            yield async.Coroutine.failure(*oresult.args(),**oresult.kwds())
-
-        output = oresult.args()[0]
-        yield async.Coroutine.success(output.id())
-
-    @async.coroutine('internal error')
-    def rpc_delinstance(self,arg):
-        name = int(arg)
-
-        for k,v in self.items():
-            o = v.get_property_long('ordinal',0)
-            if o == name:
-                oid = v.id()
-                oresult = self.__wrecker(k,v,o)
-                yield oresult
-                if k in self: del self[k]
-                yield async.Coroutine.success(oid)
-
-        yield async.Coroutine.failure('output not in use')
-
-
 class Event(talker.Talker):
     def __init__(self,key,fast,index):
         self.__key = key
         self.__index = index
         cookie = self.__key.key_aggregator.get_output(self.__index)
 
-        talker.Talker.__init__(self,self.__key.agent.finder,fast,cookie,names='event',ordinal=index,connection_index=index)
+        talker.Talker.__init__(self,self.__key.agent.finder,fast,cookie,names='event',ordinal=index,connection_index=key.index,protocols='remove')
 
     def detach_event(self):
         self.__key.key_aggregator.clear_output(self.__index)
@@ -174,9 +121,9 @@ class Event(talker.Talker):
 
 
 
-class Key(Collection):
+class Key(collection.Collection):
     def __init__(self,agent,controller,index):
-        Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,ordinal=index,names='k',protocols='hidden-connection')
+        collection.Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,ordinal=index,names='k',protocols='hidden-connection remove')
         self.__event = piw.fasttrigger(const.light_unknown)
         self.__event.attach_to(controller,index)
         self.__handler = piw.change2_nb(self.__event.trigger(),utils.changify(self.event_triggered))
@@ -192,6 +139,7 @@ class Key(Collection):
         e = Event(self,self.__event.fastdata(),name)
         self[name] = e
         e.attached()
+        yield async.Coroutine.success(e)
 
     @async.coroutine('internal error')
     def instance_wreck(self,k,e,name):
@@ -201,6 +149,7 @@ class Key(Collection):
         r = e.clear_phrase()
         yield r
         print 'killed event',k
+        yield async.Coroutine.success()
 
     def event_triggered(self,v):
         self.get_internal(250).get_policy().set_status(piw.makelong(0,0))
@@ -283,7 +232,7 @@ class Agent(agent.Agent):
         self.activation_input = bundles.VectorInput(self.controller.cookie(), self.domain,signals=(1,))
 
         self[2] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.activation_input.local_policy(1,False),names='activation input')
-        self[3] = Collection(creator=self.__create,wrecker=self.__wreck,names='k',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
+        self[3] = collection.Collection(creator=self.__create,wrecker=self.__wreck,names='k',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst,protocols='hidden-connection')
         self[4] = PhraseBrowser(self.__eventlist,self.__keylist)
 
     def __eventlist(self,k):
@@ -316,13 +265,15 @@ class Agent(agent.Agent):
     @async.coroutine('internal error')
     def __create_inst(self,k):
         self.__update_lights(k)
-        self[3][k] = Key(self,self.controller,k)
+        e = Key(self,self.controller,k)
+        self[3][k] = e
+        yield async.Coroutine.success(e)
 
     @async.coroutine('internal error')
     def __wreck_inst(self,k,e,name):
-        del self[3][k]
         r = e.cancel_event()
         yield r
+        yield async.Coroutine.success()
 
     def __all_color_verb(self,subject,k,c,f):
         k = int(action.abstract_string(k))
