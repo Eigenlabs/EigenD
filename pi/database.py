@@ -1483,6 +1483,26 @@ class Database(logic.Engine):
 
         return ' '.join((adesc,sdesc,pdesc)).replace('  ',' ')
 
+    def find_full_display_desc(self, id):
+        aid = paths.id2server(id)
+        if aid==id:
+            adesc = self.find_desc(id) or 'unnamed port' 
+            sdesc = ''
+            pdesc = ''
+        else:
+            adesc = self.find_desc(aid) or 'unnamed port'
+            sdesc = ''
+            pdesc = self.find_desc(id) or 'unnamed port'
+
+        if 'agent' not in self.__propcache.get_valueset(aid):
+            mid = self.find_joined_master(aid)
+            if mid:
+                sdesc = adesc
+                adesc = self.find_full_desc(set(mid).pop())
+
+        return ' '.join((adesc,sdesc,pdesc)).replace('  ',' ')
+
+
     def find_desc(self, id):
         desc = ' '.join(self.__desccache.get_valueset(id))
         return desc or ''
