@@ -58,7 +58,7 @@ class Atom(node.Server):
 
         ex = const.ext_node if bignode else None
         node.Server.__init__(self,creator=creator,wrecker=wrecker,rtransient=rtransient,extension=ex,dynlist=dynlist)
-        self.set_meta_data(piw.dictnull(0))
+        node.Server.set_data(self,piw.dictnull(0))
 
         p = policy
 
@@ -88,7 +88,6 @@ class Atom(node.Server):
         fullname = names or ''
 
         if fullname:
-            self.set_property_string('name',fullname,notify=False)
             self.set_property_string('cname',fullname,notify=False)
 
         if pronoun is not None:
@@ -98,7 +97,6 @@ class Atom(node.Server):
             self.set_property_string('fuzzy',fuzzy,notify=False)
 
         if ordinal is not None:
-            self.set_property_long('ordinal',ordinal,notify=False)
             self.set_property_long('cordinal',ordinal,notify=False)
 
         if icon is not None:
@@ -149,17 +147,11 @@ class Atom(node.Server):
             if n is not None:
                 self[n] = c
 
-    def get_meta_data(self):
-        return node.Server.get_data(self)
-
-    def set_meta_data(self,data):
-        node.Server.set_data(self,data)
-
     def server_change(self,new_value):
         node.Server.server_change(self,new_value)
 
         if new_value.is_dict():
-            old_value = self.get_meta_data()
+            old_value = node.Server.get_data(self)
             old_keys = set(utils.dict_keys(old_value))
             new_keys = set(utils.dict_keys(new_value))
 
@@ -184,22 +176,22 @@ class Atom(node.Server):
         self.set_property(key,piw.makelong(value,0),allow_veto,notify)
 
     def get_property_long(self,key,default = 0):
-        v = self.get_meta_data().as_dict_lookup(key)
-        return v.as_long() if v.is_long() else default
+        v = self.get_property(key,None)
+        return v.as_long() if v and v.is_long() else default
 
     def set_property_string(self,key,value,allow_veto=False,notify=True):
         self.set_property(key,piw.makestring(value,0),allow_veto,notify)
 
     def get_property_string(self,key,default = ''):
-        v = self.get_meta_data().as_dict_lookup(key)
-        return v.as_string() if v.is_string() else default
+        v = self.get_property(key,None)
+        return v.as_string() if v and v.is_string() else default
 
     def set_property_termlist(self,key,value,allow_veto=False,notify=True):
         self.set_property(key,piw.makestring(logic.render_termlist(value),0),allow_veto,notify)
 
     def get_property_termlist(self,key,default = []):
-        v = self.get_meta_data().as_dict_lookup(key)
-        if v.is_string(): return logic.parse_clauselist(v.as_string(),nosubst=True)
+        v = self.get_property(key,None)
+        if v and v.is_string(): return logic.parse_clauselist(v.as_string(),nosubst=True)
         return copy.copy(default)
 
     def add_property_termlist(self,key,term,allow_veto=False,notify=True):
@@ -219,6 +211,14 @@ class Atom(node.Server):
         self.set_property(key,None,allow_veto,notify)
 
     def set_property(self,key,value,allow_veto=False,notify=True):
+        if key == 'ordinal':
+            if value == self.get_property('cordinal'):
+                value = None
+
+        if key == 'name':
+            if value == self.get_property('cname'):
+                value = None
+
         if allow_veto:
             if self.property_veto(key,value):
                 return
@@ -229,12 +229,14 @@ class Atom(node.Server):
                     if l(True,key,value):
                         return
 
-        if value is None:
-            d = piw.dictdel(self.get_meta_data(),key)
-        else:
-            d = piw.dictset(self.get_meta_data(),key,value)
+        old_value = node.Server.get_data(self)
 
-        self.set_meta_data(d)
+        if value is None:
+            d = piw.dictdel(old_value,key)
+        else:
+            d = piw.dictset(old_value,key,value)
+
+        node.Server.set_data(self,d)
 
         if notify:
             self.property_change(key,value)
@@ -244,8 +246,18 @@ class Atom(node.Server):
                     l(False,key,value)
 
     def get_property(self,key,default=None):
-        v = self.get_meta_data().as_dict_lookup(key)
-        return v if not v.is_null() else default
+        v = node.Server.get_data(self).as_dict_lookup(key)
+
+        if not v.is_null():
+            return v
+
+        if key == 'ordinal':
+            return self.get_property('cordinal',default)
+
+        if key == 'name':
+            return self.get_property('cname',default)
+
+        return default
 
     def add_listener(self,listener):
         self.del_listener(listener)

@@ -111,22 +111,35 @@ class AtomProxy(node.Client):
     def node_removed(self):
         pass
 
-    def __as_stringlist(self,key,default=[]):
+    def get_property(self,key,default):
         v = self.__current_meta.as_dict_lookup(key)
-        return v.as_string().split() if v.is_string() else copy.copy(default)
+
+        if not v.is_null():
+            return v
+
+        if key == 'ordinal':
+            return self.get_property('cordinal',default)
+
+        if key == 'name':
+            return self.get_property('cname',default)
+
+        return default
+
+    def __as_stringlist(self,key,default=[]):
+        v = self.get_property(key,None)
+        return v.as_string().split() if v and v.is_string() else copy.copy(default)
 
     def __as_long(self,key,default=0):
-        v = self.__current_meta.as_dict_lookup(key)
-        return v.as_long() if v.is_long() else default
+        v = self.get_property(key,None)
+        return v.as_long() if v and v.is_long() else default
 
     def __as_string(self,key,default=''):
-        v = self.__current_meta.as_dict_lookup(key)
-        return v.as_string() if v.is_string() else default
+        v = self.get_property(key,None)
+        return v.as_string() if v and v.is_string() else default
 
     def __as_termlist(self,key,default=[]):
-        v = self.get_meta_data().as_dict_lookup(key)
-        if v.is_string(): return logic.parse_termlist(v.as_string(),paths.make_subst(self.id()))
-        return default
+        v = self.get_property(key,None)
+        return logic.parse_termlist(v.as_string(),paths.make_subst(self.id())) if v and v.is_string() else default
 
     def protocols(self):
         return self.__as_stringlist('protocols')
@@ -188,12 +201,6 @@ class AtomProxy(node.Client):
     def get_master(self):
         return self.__as_string('master')
 
-    def set_meta_data(self,value):
-        node.Client.set_data(self,value)
-
-    def get_meta_data(self):
-        return node.Client.get_data(self)
-
     def get_data(self):
         return self.__data.get_data()
 
@@ -243,7 +250,7 @@ class AtomProxy(node.Client):
 
     def __meta_changed(self):
         old_value = self.__current_meta
-        new_value = self.get_meta_data()
+        new_value = node.Client.get_data(self)
 
         old_keys = set(utils.dict_keys(old_value))
         new_keys = set(utils.dict_keys(new_value))
