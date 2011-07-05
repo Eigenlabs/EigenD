@@ -48,6 +48,21 @@ class PiLinuxEnvironment(unix_tools.PiUnixEnvironment):
     def __getarch(self):
         return os.popen('dpkg --print-architecture','r').read(1024)
 
+    def PiBinaryDLL(self,target,package=None):
+        env = self.Clone()
+
+        f1 = env.File('lib'+target+'.so')
+
+        run_library1=env.Install(env.subst('$BINRUNDIR'),f1)
+        env.Alias('target-runtime',run_library1)
+
+        if package:
+            env.set_package(package)
+            inst_library_1 = env.Install(env['BINSTAGEDIR'],f1)
+
+        return env.addlibname(run_library1[0],target)
+
+
     def Initialise(self):
         unix_tools.PiUnixEnvironment.Initialise(self)
 

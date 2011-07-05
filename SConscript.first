@@ -46,4 +46,8 @@ if master_env['IS_MACOSX']:
     prereq = [
     ]
 
+if master_env['IS_LINUX']:
+    prereq = [
+    ]
+
 master_env.PiPackageCollection('EigenD-gpl',groups=('app',),prereq=prereq)
