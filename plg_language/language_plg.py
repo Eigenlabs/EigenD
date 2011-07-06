@@ -636,6 +636,22 @@ class Agent(agent.Agent):
 
 
 class Upgrader(upgrade.Upgrader):
+    def upgrade_1_0_1_to_1_0_2(self,tools,address):
+        root = tools.get_root(address)
+        for ss in root.get_node(255,2).iter():
+            addr = '<interpreter/%d>' % ss.path[-1]
+            if not controller.upgrade_1_0_1_to_1_0_2(tools,address,addr):
+                return False
+        return True
+
+    def phase2_1_0_2(self,tools,address):
+        root = tools.get_root(address)
+        for ss in root.get_node(255,2).iter():
+            addr = '<interpreter/%d>' % ss.path[-1]
+            if not controller.phase2_1_0_2(tools,address,addr):
+                return False
+        return True
+
     def upgrade_1_0_0_to_1_0_1(self,tools,address):
         root = tools.get_root(address)
         print 'upgrade Stage widget atoms'

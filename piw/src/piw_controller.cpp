@@ -24,23 +24,45 @@
 #include <piw/piw_clock.h>
 #include <piw/piw_tsd.h>
 #include <piw/piw_fastdata.h>
+#include <piw/piw_keys.h>
 
 #include <picross/pic_log.h>
 #include <picross/pic_flipflop.h>
 
 #include <vector>
 
+struct piw::controller_t::control_t: piw::ufilterctl_t, piw::ufilter_t
+{
+    control_t(piw::controller_t *h): ufilter_t(this,0), host_(h)
+    {
+    }
+
+    ~control_t()
+    {
+    }
+
+    ufilterfunc_t *ufilterctl_create(const piw::data_t &);
+    unsigned long long ufilterctl_inputs() { return SIG1(1); }
+    unsigned long long ufilterctl_outputs() { return 0; }
+    unsigned long long ufilterctl_thru() { return 0; }
+    void update_layout(piw::data_nb_t rowlen);
+    void refresh_layout();
+
+    piw::controller_t *host_;
+    pic::flipflop_t<piw::dataholder_nb_t> rowlen_;
+};
+
 namespace
 {
     struct ctlfilter_t: piw::ufilterfunc_t
     {
-        ctlfilter_t(piw::controller_t::impl_t *controller): controller_(controller), knum_(0) {}
+        ctlfilter_t(piw::controller_t::impl_t *controller): controller_(controller) {}
         void ufilterfunc_start(piw::ufilterenv_t *env,const piw::data_nb_t &id);
         void ufilterfunc_data(piw::ufilterenv_t *env,unsigned s,const piw::data_nb_t &d);
         void ufilterfunc_end(piw::ufilterenv_t *env, unsigned long long);
 
         piw::controller_t::impl_t *controller_;
-        unsigned knum_;
+        piw::dataholder_nb_t k_;
         piw::dataholder_nb_t last_;
     };
 
@@ -104,6 +126,12 @@ namespace
             state_=v;
         }
 
+        void set_key(const piw::data_t &key)
+        {
+            key_.alternate().set_normal(key);
+            key_.exchange();
+        }
+
         static int __unset(void *self_, void *)
         {
             ctlsignal_t *self = (ctlsignal_t *)self_;
@@ -119,6 +147,7 @@ namespace
         unsigned id_;
         piw::xxcontrolled_t *client_;
         unsigned state_,savestate_;
+        pic::flipflop_t<piw::dataholder_nb_t> key_;
         piw::xevent_data_buffer_t buffer_;
     };
 
@@ -129,6 +158,29 @@ namespace
         return 0;
     }
 
+    struct ctlfunc_t: piw::ufilterfunc_t
+    {
+        ctlfunc_t(piw::controller_t::control_t *c): control_(c), last_rowlen_(piw::makenull_nb(0)) {}
+        void ufilterfunc_start(piw::ufilterenv_t *e,const piw::data_nb_t &id) {}
+        void ufilterfunc_end(piw::ufilterenv_t *, unsigned long long) {}
+
+        void ufilterfunc_data(piw::ufilterenv_t *e,unsigned sig,const piw::data_nb_t &d)
+        {
+            if(sig!=1) return;
+            if(!d.is_dict()) return;
+
+            piw::data_nb_t rowlen = d.as_dict_lookup("rowlen");
+            if (rowlen.is_null()) return;
+
+            if(0 == rowlen.compare(last_rowlen_)) return;
+            last_rowlen_ = rowlen;
+
+            control_->update_layout(rowlen);
+        }
+
+        piw::controller_t::control_t *control_;
+        piw::data_nb_t last_rowlen_;
+    };
 }
 
 struct piw::xxcontrolled_t::impl_t
@@ -173,47 +225,66 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
     unsigned long long ufilterctl_outputs() { return 0; }
     unsigned long long ufilterctl_inputs() { return sigmask_; }
 
-    void start(piw::ufilterenv_t *env, unsigned long long time, unsigned index)
+    piw::xxcontrolled_t* get_controlled(const piw::data_nb_t &key)
     {
-        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t g(controllist_);
+        piw::xxcontrolled_t *result = 0ULL;
 
-        if(index<g.value().size())
+        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t gl(controllist_);
+        pic::flipflop_t<std::vector<unsigned> >::guard_t ma(controlabsmap_);
+
+        unsigned index = 0;
+
+        if(!key.is_tuple() || key.as_tuplelen() < 6) return 0;
+
+        unsigned abskey = key.as_tuple_value(0).as_long();
+        if(abskey<ma.value().size())
         {
-            ctlsignal_t *c = g.value()[index];
+            index = ma.value()[abskey];
+        }
 
-            if(c && c->client_)
+        if(!index)
+        {
+            pic::flipflop_t<std::vector<unsigned> >::guard_t ms(controlseqmap_);
+            unsigned seqkey = key.as_tuple_value(3).as_long();
+            if(seqkey < ms.value().size())
             {
-                c->client_->control_start(time);
+                index = ms.value()[seqkey];
             }
         }
-    }
 
-    void filter(piw::ufilterenv_t *env, unsigned input_index, const piw::data_nb_t &value, unsigned index)
-    {
-        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t g(controllist_);
-
-        if(index<g.value().size())
+        if(index)
         {
-            ctlsignal_t *c = g.value()[index];
-
-            if(c && c->client_)
+            // the ctlsignal_t index is offset by 1 to allow 0 to indicate absense
+            --index;
+            if(index<gl.value().size())
             {
-                c->client_->control_receive(input_index-1,value);
+                ctlsignal_t *c = gl.value()[index];
+                if(c && c->client_)
+                {
+                    result = c->client_;
+                }
             }
         }
+
+        return result;
     }
 
-    void term(piw::ufilterenv_t *env, unsigned long long t, unsigned index)
+    void start(piw::ufilterenv_t *env, unsigned long long time, const piw::data_nb_t &key)
     {
-        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t g(controllist_);
+        xxcontrolled_t *c = get_controlled(key);
+        if(c) c->control_start(time);
+    }
 
-        if(index<g.value().size())
-        {
-            ctlsignal_t *c = g.value()[index];
+    void filter(piw::ufilterenv_t *env, unsigned s, const piw::data_nb_t &d, const piw::data_nb_t &key)
+    {
+        xxcontrolled_t *c = get_controlled(key);
+        if(c) c->control_receive(s-1,d);
+    }
 
-            if(c && c->client_)
-                c->client_->control_term(t);
-        }
+    void term(piw::ufilterenv_t *env, unsigned long long t, const piw::data_nb_t &key)
+    {
+        xxcontrolled_t *c = get_controlled(key);
+        if(c) c->control_term(t);
     }
 
     piw::ufilterfunc_t *ufilterctl_create(const piw::data_t &)
@@ -243,6 +314,65 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
             if(c)
             {
                 c->set(value);
+            }
+        }
+    }
+
+    void set_key(unsigned index, const piw::data_t &key)
+    {
+        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t gc(controllist_);
+        pic::flipflop_t<piw::dataholder_nb_t>::guard_t gr(host_->control_->rowlen_);
+
+        if(index<gc.value().size())
+        {
+            ctlsignal_t *c = gc.value()[index];
+
+            if(c)
+            {
+                piw::data_nb_t rowlen = gr.value().get();
+                if(!rowlen.is_null() && key.is_tuple() && 2 == key.as_tuplelen())
+                {
+                    int row = key.as_tuple_value(0).as_long();
+                    int col = key.as_tuple_value(1).as_long();
+
+                    if(0 == row && col > 0)
+                    {
+                        std::vector<unsigned> &m(controlseqmap_.alternate());
+
+                        unsigned c = col + 1;
+
+                        if(m.size()<c)
+                        {
+                            m.resize(c);
+                        }
+
+                        // offset the index by 1 to enable the possibility of using 0 for indicating
+                        // the absence of a ctlsignal
+                        m[c-1] = index+1;
+
+                        controlseqmap_.exchange();
+                    }
+                    else
+                    {
+                        unsigned keynumber = piw::calc_keynum(rowlen, row, col);
+
+                        if(keynumber != 0)
+                        {
+                            std::vector<unsigned> &m(controlabsmap_.alternate());
+
+                            if(keynumber < m.size())
+                            {
+                                // offset the index by 1 to enable the possibility of using 0 for indicating
+                                // the absence of a ctlsignal
+                                m[keynumber] = index+1;
+
+                                controlabsmap_.exchange();
+                            }
+                        }
+                    }
+                }
+
+                c->set_key(key);
             }
         }
     }
@@ -345,47 +475,123 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
 
     piw::ufilter_t filter_;
     pic::flipflop_t<std::vector<ctlsignal_t *> > controllist_;
+    pic::flipflop_t<std::vector<unsigned> > controlabsmap_;
+    pic::flipflop_t<std::vector<unsigned> > controlseqmap_;
     unsigned long sigmask_;
     piw::controller_t *host_;
 };
 
 void ctlfilter_t::ufilterfunc_end(piw::ufilterenv_t *env, unsigned long long t)
 {
-    if(knum_>0)
+    if(!k_.is_empty())
     {
-        controller_->term(env,t,knum_-1);
+        controller_->term(env,t,k_);
     }
 }
 
 void ctlfilter_t::ufilterfunc_start(piw::ufilterenv_t *env,const piw::data_nb_t &id)
 {
-    if(id.is_path() && id.as_pathlen()>0)
+    piw::data_nb_t d;
+    if(env->ufilterenv_latest(1,d,id.time()) && d.is_tuple() && d.as_tuplelen() >= 6)
     {
-        knum_=id.as_path()[id.as_pathlen()-1];
+        k_.set_nb(d);
         env->ufilterenv_start(id.time());
         last_.clear();
-        controller_->start(env,id.time(),knum_-1);
+        controller_->start(env,id.time(),d);
     }
     else
     {
-        knum_=0;
+        k_.clear();
     }
 }
 
 void ctlfilter_t::ufilterfunc_data(piw::ufilterenv_t *env,unsigned s,const piw::data_nb_t &d)
 {
-    if(knum_!=0)
+    if(!k_.is_empty())
     {
         if(d.compare(last_.get(),false)!=0)
         {
             last_.set_nb(d);
-            controller_->filter(env,s,d,knum_-1);
+            controller_->filter(env,s,d,k_.get());
         }
     }
 }
 
-piw::controller_t::controller_t(const piw::cookie_t &c,const std::string &sigmap): impl_(new impl_t(this,c,sigmap)) { } 
-piw::controller_t::~controller_t() { delete impl_; } 
+piw::ufilterfunc_t *piw::controller_t::control_t::ufilterctl_create(const piw::data_t &)
+{
+    return new ctlfunc_t(this);
+}
+
+void piw::controller_t::control_t::update_layout(piw::data_nb_t rowlen)
+{
+    if(rowlen.is_null() || !rowlen.is_tuple() || 0 == rowlen.as_tuplelen()) return;
+
+    piw::dataholder_nb_t &r(rowlen_.alternate());
+
+    unsigned total_length = 0;
+    for(unsigned i=0; i<rowlen.as_tuplelen(); ++i)
+    {
+        total_length += rowlen.as_tuple_value(i).as_long();
+    }
+
+    std::vector<unsigned> &ma(host_->impl_->controlabsmap_.alternate());
+    ma.clear();
+    ma.resize(total_length + 1);
+
+    std::vector<unsigned> &ms(host_->impl_->controlseqmap_.alternate());
+    ms.clear();
+
+    pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t gl(host_->impl_->controllist_);
+    for(unsigned i=0; i<gl.value().size(); ++i)
+    {
+        ctlsignal_t *c = gl.value()[i];
+        if(c)
+        {
+            pic::flipflop_t<piw::dataholder_nb_t >::guard_t gk(c->key_);
+            piw::data_nb_t key = gk.value().get();
+
+            if(key.is_tuple() && 2 == key.as_tuplelen())
+            {
+                int row = key.as_tuple_value(0).as_long();
+                int col = key.as_tuple_value(1).as_long();
+
+                if(0 == row && col > 0)
+                {
+                    unsigned c = col + 1;
+
+                    if(ms.size()<c)
+                    {
+                        ms.resize(c);
+                    }
+
+                    // offset the index by 1 to enable the possibility of using 0 for indicating
+                    // the absence of a ctlsignal
+                    ms[c-1] = i+1;
+                }
+                else
+                {
+                    unsigned keynumber = piw::calc_keynum(rowlen, row, col);
+
+                    // only store a mapping that falls within the possibilities of the current key layout
+                    if(keynumber>total_length || 0 == keynumber) continue;
+
+                    // offset the index by 1 to enable the possibility of using 0 for indicating
+                    // the absence of a ctlsignal
+                    ma[keynumber] = i+1;
+                }
+            }
+        }
+    }
+
+    host_->impl_->controlabsmap_.exchange();
+    host_->impl_->controlseqmap_.exchange();
+
+    r.set_nb(rowlen);
+    rowlen_.exchange();
+}
+
+piw::controller_t::controller_t(const piw::cookie_t &c,const std::string &sigmap): impl_(new impl_t(this,c,sigmap)), control_(new control_t(this)) { } 
+piw::controller_t::~controller_t() { delete impl_; delete control_; } 
 
 piw::xxcontrolled_t::xxcontrolled_t() : controller_(0), xximpl_(new impl_t()) { }
 piw::xxcontrolled_t::~xxcontrolled_t()
@@ -479,6 +685,12 @@ piw::change_nb_t piw::xxcontrolled_t::sender()
     return xximpl_->sender();
 }
 
+void piw::xxcontrolled_t::set_key(const piw::data_t &key)
+{
+    if(controller_)
+        controller_->impl_->set_key(index_,key);
+}
+
 void piw::xxcontrolled_t::send(const piw::data_nb_t &d)
 {
     xximpl_->send(d);
@@ -495,9 +707,14 @@ void piw::xxcontrolled_t::end_event(unsigned long long t)
 }
 
 
-piw::cookie_t piw::controller_t::cookie()
+piw::cookie_t piw::controller_t::event_cookie()
 {
     return impl_->filter_.cookie();
+}
+
+piw::cookie_t piw::controller_t::control_cookie()
+{
+    return control_->cookie();
 }
 
 static int __start(void *c_, void *)
@@ -550,8 +767,6 @@ int piw::controlled_t::__disable_direct(void *c_, void *_)
 void piw::controlled_t::control_receive(unsigned index,const piw::data_nb_t &value)
 {
     if(index!=0) return;
-    if(!value.is_array()) return;
-    if(value.as_arraylen()==0 || value.as_renorm(0.0,3.0,0.0)<2) return;
 
     if(enabled_)
         disable();
@@ -630,8 +845,6 @@ void piw::fasttrigger_t::control_term(unsigned long long t)
 void piw::fasttrigger_t::control_receive(unsigned index,const piw::data_nb_t &value)
 {
     if(index!=0) return;
-    if(!value.is_array()) return;
-    if(value.as_arraylen()==0 || value.as_renorm(0.0,3.0,0.0)<2) return;
     unsigned long long t = value.time();
     tsd_fastcall(__ping_direct,this,&t);
 }

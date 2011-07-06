@@ -94,6 +94,7 @@ namespace
         pic::weak_t<kbd::kbd_impl_t> i_;
     };
 
+    struct kwire_t;
     struct pedal_t;
     struct test_wire_t;
 
@@ -117,6 +118,12 @@ namespace
         void set_mic_quality(unsigned q);
         void mic_reset();
 
+        virtual const unsigned int get_coursecount() = 0;
+        virtual const unsigned int* get_courses_array() = 0;
+        const piw::data_nb_t get_courses_tuple();
+
+        void create_kwires();
+
         virtual void kbd_enqueue(unsigned long long t, unsigned key, unsigned a, unsigned p, int r, int y){};
         virtual void dump_keydown(const unsigned short *map){};
 
@@ -127,6 +134,7 @@ namespace
         void set_pedal_min(unsigned pedal, unsigned value);
         void set_pedal_max(unsigned pedal, unsigned value);
         
+        std::auto_ptr<kwire_t>* kwires_;
         std::auto_ptr<pedal_t> pedal1_;
         std::auto_ptr<pedal_t> pedal2_;
         std::auto_ptr<pedal_t> pedal3_;
@@ -140,11 +148,12 @@ namespace
         void (*midi_sink_)(void *,const unsigned char *,unsigned);
         void *midi_sink_ctx_;
         piw::resampler_t resampler_;
+        piw::dataholder_nb_t courses_;
     };
 
     struct blob_t
     {
-        blob_t(unsigned k_, unsigned long long t_, unsigned a_, unsigned p_,int r_,int y_): k(k_),a(a_),p(p_),t(t_),r(r_),y(y_) {}
+        blob_t(unsigned k_, unsigned long long t_, unsigned a_, unsigned p_,int r_, int y_): k(k_),a(a_),p(p_),t(t_),r(r_),y(y_) {}
         unsigned k,a,p;
         unsigned long long t;
         int r,y;
@@ -280,14 +289,14 @@ namespace
 
     struct kwire_t: piw::wire_ctl_t, piw::event_data_source_real_t, virtual public pic::lckobject_t
     {
-        kwire_t(unsigned,const piw::data_t &,keyboard_t *);
+        kwire_t(unsigned,unsigned,unsigned,const piw::data_t &,keyboard_t *);
         ~kwire_t() { source_shutdown(); keyboard_ = 0; }
 
         void source_ended(unsigned seq) {}
 
         void update(const blob_t *b);
 
-        unsigned index_;
+        unsigned index_,row_,column_;
         piw::data_nb_t id_;
         keyboard_t *keyboard_;
         float maxpressure_;
@@ -466,7 +475,8 @@ namespace
         set_latency(KBD_LATENCY);
 
         connect(c);
-        
+       
+        kwires_ = new std::auto_ptr<kwire_t>[num_keys];
         pedal1_ = std::auto_ptr<pedal_t>( new pedal_t(piw::pathone(6,0),this));    
         pedal2_ = std::auto_ptr<pedal_t>( new pedal_t(piw::pathone(7,0),this));    
         pedal3_ = std::auto_ptr<pedal_t>( new pedal_t(piw::pathone(8,0),this));    
@@ -476,6 +486,7 @@ namespace
 
     keyboard_t::~keyboard_t()
     {
+        delete [] kwires_;
         tracked_invalidate();
     }
 
@@ -552,6 +563,24 @@ namespace
     void keyboard_t::mic_reset()
     {
         resampler_.reset();
+    }
+
+    const piw::data_nb_t keyboard_t::get_courses_tuple()
+    {
+        if(!courses_.is_empty())
+        {
+            return courses_.get();
+        }
+
+        piw::data_nb_t courses = piw::tuplenull_nb(0);
+        for(unsigned i = 0; i < get_coursecount(); ++i)
+        {
+            courses = piw::tupleadd_nb(courses, piw::makelong_nb(get_courses_array()[i],0));
+        }
+
+        courses_.set_nb(courses);
+
+        return courses_.get();
     }
 
     piw::data_nb_t keyboard_t::mic_data(unsigned long long t, unsigned bs)
@@ -698,15 +727,38 @@ namespace
         }
     }
 
+    void keyboard_t::create_kwires()
+    {
+        unsigned previous_coursekeys = 0;
+        unsigned row = 1;
+        unsigned col = 1;
+        
+        unsigned coursecount = get_coursecount();
+        for(unsigned k=1; k <= kbd_num_keys() && row <= coursecount; k++)
+        {
+            unsigned coursekeys = get_courses_array()[row-1];
+            if((k-previous_coursekeys) <= coursekeys)
+            {
+                col = k-previous_coursekeys; 
+            }
+            else
+            {
+                row++;
+                previous_coursekeys += coursekeys;
+                col = k-previous_coursekeys; 
+            }
+            kwires_[k-1] = std::auto_ptr<kwire_t>(new kwire_t(k,row,col,piw::pathtwo(1,k,0),this));
+        }
+    }
+
+    static const unsigned int ALPHA_COURSECOUNT = 6;
+    static const unsigned int ALPHA_COURSES[ALPHA_COURSECOUNT] = {24,24,24,24,24,12};
+
     struct alpha_kbd: keyboard_t
     {
         alpha_kbd( const piw::cookie_t &c,const pic::notify_t &d): keyboard_t( c, d, KBD_KEYS )
         {
-    
-            for(unsigned k=0; k<kbd_num_keys(); k++)
-            {
-                kwires_[k] = std::auto_ptr<kwire_t>(new kwire_t(k+1,piw::pathtwo(1,k+1,0),this));
-            }
+            create_kwires();
 
             strip1_ = std::auto_ptr<strip_t>(new strip_t(piw::pathone(2,0),this));
             strip2_ = std::auto_ptr<strip_t>(new strip_t(piw::pathone(4,0),this));
@@ -749,20 +801,29 @@ namespace
             }
         }
 
-        std::auto_ptr<kwire_t> kwires_[KBD_KEYS];
+        virtual const unsigned int get_coursecount()
+        {
+            return ALPHA_COURSECOUNT;
+        }
+
+        virtual const unsigned int* get_courses_array()
+        {
+            return ALPHA_COURSES;
+        }
+
         std::auto_ptr<strip_t> strip1_;
         std::auto_ptr<strip_t> strip2_;
         std::auto_ptr<breath_t> breath_;
     };
     
+    static const unsigned int TAU_COURSECOUNT = 7;
+    static const unsigned int TAU_COURSES[TAU_COURSECOUNT] = {16,16,20,20,12,4,4};
+        
     struct tau_kbd: keyboard_t
     {
-        tau_kbd( const piw::cookie_t &c,const pic::notify_t &d): keyboard_t( c, d, TAU_KBD_KEYS + TAU_MODE_KEYS )
+        tau_kbd(const piw::cookie_t &c,const pic::notify_t &d): keyboard_t( c, d, TAU_KBD_KEYS + TAU_MODE_KEYS )
         {
-            for(unsigned k=0; k<kbd_num_keys(); k++)
-            {
-                kwires_[k] = std::auto_ptr<kwire_t>(new kwire_t(k+1,piw::pathtwo(1,k+1,0),this));
-            }
+            create_kwires();
 
             strip1_ = std::auto_ptr<strip_t>(new strip_t(piw::pathone(2,0),this));
             breath1_ = std::auto_ptr<breath_t>(new breath_t(piw::pathone(5,0),this));
@@ -808,13 +869,21 @@ namespace
                 msg << (alpha2::active_t::keydown(TAU_KBD_KEYS+5+m,map)?"X":"-");
         }
 
-        std::auto_ptr<kwire_t> kwires_[TAU_KBD_KEYS + TAU_MODE_KEYS];
+        virtual const unsigned int get_coursecount()
+        {
+            return TAU_COURSECOUNT;
+        }
+
+        virtual const unsigned int* get_courses_array()
+        {
+            return TAU_COURSES;
+        }
+
         std::auto_ptr<strip_t> strip1_;
         std::auto_ptr<breath_t> breath1_;
-        
     };
 
-    kwire_t::kwire_t(unsigned i,const piw::data_t &path,keyboard_t *k):piw::event_data_source_real_t(path), index_(i),id_(piw::pathone_nb(i,0)),keyboard_(k),maxpressure_(0),counter_(0),gated_(0),gated_count_(0), running_(false), ts_(0), output_(15,PIW_DATAQUEUE_SIZE_NORM),cur_pressure_(0), cur_roll_(0), cur_yaw_(0)
+    kwire_t::kwire_t(unsigned i, unsigned r, unsigned c, const piw::data_t &path, keyboard_t *k): piw::event_data_source_real_t(path), index_(i), row_(r), column_(c), id_(piw::pathone_nb(i,0)), keyboard_(k), maxpressure_(0), counter_(0), gated_(0),gated_count_(0), running_(false), ts_(0), output_(63,PIW_DATAQUEUE_SIZE_NORM),cur_pressure_(0), cur_roll_(0), cur_yaw_(0)
     {
         k->connect_wire(this,source());
     }
@@ -848,13 +917,12 @@ namespace
         float r = 2047.0-float(b->r);
         float y = 2047.0-float(b->y);
 
-
         if(!a)
         {
             if(running_)
             {
                 source_end(t);
-                output_ = piw::xevent_data_buffer_t(15,PIW_DATAQUEUE_SIZE_NORM);
+                output_ = piw::xevent_data_buffer_t(31,PIW_DATAQUEUE_SIZE_NORM);
                 output_.add_value(1,piw::makefloat_bounded_nb(3,0,0,0,t));
                 output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,0,t));
                 output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,0,t));
@@ -882,6 +950,17 @@ namespace
             skipping_=false;
 
             source_start(0,id_.restamp(t),output_);
+            piw::data_nb_t position = piw::tuplenull_nb(t);
+            position = piw::tupleadd_nb(position, piw::makefloat_nb(row_,t));
+            position = piw::tupleadd_nb(position, piw::makefloat_nb(column_,t));
+            piw::data_nb_t key = piw::tuplenull_nb(t);
+            key = piw::tupleadd_nb(key, piw::makelong_nb(index_,t));
+            key = piw::tupleadd_nb(key, position);
+            key = piw::tupleadd_nb(key, keyboard_->get_courses_tuple());
+            key = piw::tupleadd_nb(key, piw::makelong_nb(index_,t));
+            key = piw::tupleadd_nb(key, position);
+            key = piw::tupleadd_nb(key, keyboard_->get_courses_tuple());
+            output_.add_value(5, key);
             running_=true;
             maxpressure_=0;
             gated_=0;
@@ -1374,7 +1453,6 @@ namespace
                         out[2*i+1] += r[i];
                     }
                 }
-
             }
 
             if(converter_.write(out,bs))
@@ -1445,6 +1523,11 @@ struct kbd::kbd_impl_t: piw::clockdomain_ctl_t, piw::clocksink_t, piw::thing_t, 
         {
             headphone_input_->set_quality(q);
         }
+    }
+
+    piw::data_t get_courses()
+    {
+        return pkeyboard_->get_courses_tuple().make_normal();
     }
 
     piw::cookie_t audio_cookie()
@@ -1566,6 +1649,12 @@ std::string kbd::alpha2_bundle_legacy_t::name()
 {
     PIC_ASSERT(_root);
     return _root->loop_.get_name();
+}
+
+piw::data_t kbd::alpha2_bundle_legacy_t::get_courses()
+{
+    PIC_ASSERT(_root);
+    return _root->get_courses();
 }
 
 void kbd::alpha2_bundle_legacy_t::set_roll_axis_window(float t)
@@ -1734,6 +1823,12 @@ std::string kbd::alpha2_bundle_t::name()
 {
     PIC_ASSERT(_root);
     return _root->loop_.get_name();
+}
+
+piw::data_t kbd::alpha2_bundle_t::get_courses()
+{
+    PIC_ASSERT(_root);
+    return _root->get_courses();
 }
 
 void kbd::alpha2_bundle_t::set_threshold1(float t)
@@ -1969,6 +2064,12 @@ std::string kbd::tau_bundle_t::name()
 {
     PIC_ASSERT(_root);
     return _root->loop_.get_name();
+}
+
+piw::data_t kbd::tau_bundle_t::get_courses()
+{
+    PIC_ASSERT(_root);
+    return _root->get_courses();
 }
 
 void kbd::tau_bundle_t::set_threshold1(float t)

@@ -33,6 +33,7 @@ namespace piw
     {
         public:
             class impl_t;
+            class control_t;
 
         public:
             controller_t(const cookie_t &cookie,const std::string &sigmap);
@@ -40,9 +41,11 @@ namespace piw
             virtual void controller_clock(bct_clocksink_t *) {}
             virtual void controller_latency(unsigned) {}
 
-            cookie_t cookie();
+            cookie_t event_cookie();
+            cookie_t control_cookie();
 
             impl_t *impl_;
+            control_t *control_;
     };
 
     class PIW_DECLSPEC_CLASS xxcontrolled_t: public pic::nocopy_t
@@ -62,11 +65,12 @@ namespace piw
             void set_light(unsigned index, unsigned value);
             void save_lights();
             void restore_lights();
+            void set_key(const piw::data_t &key);
             fastdata_t *fastdata();
 
             virtual void control_init() {}
             virtual void control_start(unsigned long long t) {}
-            virtual void control_receive(unsigned input_index,const piw::data_nb_t &value) {}
+            virtual void control_receive(unsigned s,const piw::data_nb_t &value) {}
             virtual void control_term(unsigned long long t) {}
 
             change_nb_t sender();
@@ -102,7 +106,7 @@ namespace piw
             void enable();
             void disable();
             virtual void control_init();
-            virtual void control_receive(unsigned input_index,const piw::data_nb_t &value);
+            virtual void control_receive(unsigned s,const piw::data_nb_t &value);
 
         private:
             static int __enable_direct(void *,void *);
@@ -118,7 +122,7 @@ namespace piw
             void ping();
             change_t trigger() { return change_t::method(this,&fasttrigger_t::trigger__); }
             virtual void control_init();
-            virtual void control_receive(unsigned input_index,const piw::data_nb_t &value);
+            virtual void control_receive(unsigned s,const piw::data_nb_t &value);
             virtual void control_start(unsigned long long t);
             virtual void control_term(unsigned long long t);
         private:

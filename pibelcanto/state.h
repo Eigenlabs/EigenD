@@ -66,6 +66,7 @@ extern "C" {
 #define BCTVTYPE_BOOL       0x06 /**< boolean; length=0 means false */
 #define BCTVTYPE_BLOB       0x07 /**< binary; sequence of BctU8 */
 #define BCTVTYPE_DICT       0x08 /**< dictionary; mapping of string to data (wire rep) */
+#define BCTVTYPE_TUPLE      0x09 /**< tuple; ordered list of data */
 
 #define BCTVTYPE_RTRANSIENT 0x04 /**< state variable children are not state managed */
 #define BCTVTYPE_LIST       0x10 /**< state variable is list */

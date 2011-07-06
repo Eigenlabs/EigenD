@@ -82,6 +82,7 @@ class Keyboard(agent.Agent):
         self[2] = bundles.Output(2,False,names='pressure output')
         self[3] = bundles.Output(3,False,names='roll output')
         self[4] = bundles.Output(4,False,names='yaw output')
+        self[17] = bundles.Output(5,False,names='key output')
 
         self[5] = bundles.Output(1,False,names='strip position output',ordinal=1)
 
@@ -100,7 +101,7 @@ class Keyboard(agent.Agent):
 
         self[100] = VirtualKey(self.kbd_keys)
 
-        self.koutput = bundles.Splitter(self.domain,self[1],self[2],self[3],self[4])
+        self.koutput = bundles.Splitter(self.domain,self[1],self[2],self[3],self[4],self[17])
         self.kpoly = piw.polyctl(10,self.koutput.cookie(),False,5)
         self.s1output = bundles.Splitter(self.domain,self[5],self[10])
         self.boutput = bundles.Splitter(self.domain,self[7])
@@ -117,8 +118,6 @@ class Keyboard(agent.Agent):
         self.kclone.set_filtered_output(7,self.poutput2.cookie(),piw.first_filter(7))
         self.kclone.set_filtered_output(8,self.poutput3.cookie(),piw.first_filter(8))
         self.kclone.set_filtered_output(9,self.poutput4.cookie(),piw.first_filter(9))
-
-        self[9] = atom.Atom(names='controller output',domain=domain.Aniso(),init=self.courses())
 
         self.add_verb2(4,'maximise([],None,role(None,[mass([pedal])]))',self.__maximise)
         self.add_verb2(5,'minimise([],none,role(None,[mass([pedal])]))',self.__minimise)
@@ -147,6 +146,9 @@ class Keyboard(agent.Agent):
     def update(self):
         self.__timestamp = self.__timestamp+1
         self.set_property_string('timestamp',str(self.__timestamp))
+
+    def set_controller(self):
+        self[9] = atom.Atom(names='controller output',domain=domain.Aniso(),init=self.controllerinit())
   
     def set_threshhold(self):
         self[241] = atom.Atom(domain=domain.BoundedInt(0,4095), init=self.keyboard.get_pedal_min(1), protocols='input output explicit', names='pedal minimum threshold', ordinal=1, policy=atom.default_policy(lambda v: self.__set_min(1,v)))
@@ -195,8 +197,8 @@ class Keyboard(agent.Agent):
         self.keyboard.learn_pedal_min(pedal)
         self.__setpedal(pedal)
 
-    def courses(self):
-        return utils.makedict({'courselen':piw.makestring('[24,24,24,24,24,12]',0)},0)
+    def controllerinit(self):
+        return utils.makedict({'courselen':self.keyboard.get_courses(),'rowlen':self.keyboard.get_courses()},0)
 
     def close_server(self):
         agent.Agent.close_server(self)
@@ -220,7 +222,7 @@ class MicrophoneOutput(audio.AudioOutput):
 
     def __init__(self,agent):
         self.__agent = agent
-        audio.AudioOutput.__init__(self,self.__agent.audio_output,1,1,names='microphone')
+        audio.AudioOutput.__init__(self,self.__agent.audio_output,1,1)
 
         self[100] = toggle.Toggle(self.__enable,self.__agent.domain,container=(None,'microphone enable',self.__agent.verb_container()),names='enable',transient=True)
         self[101] = atom.Atom(domain=domain.String(),init='electret',names='type',policy=atom.default_policy(self.__type))
@@ -325,6 +327,7 @@ class Keyboard_Alpha2( Keyboard ):
 
         self.test_setup()
         self.nativekeyboard_setup()
+        self.set_controller() #define in base class 
         self.set_threshhold() #define in base class 
         self.setup_leds() #define in base class 
 
@@ -402,6 +405,7 @@ class Keyboard_Tau( Keyboard ):
         self.usbdev = usbdev
         Keyboard.__init__(self,'tau keyboard',ordinal,dom,remove,92)
         self.nativekeyboard_setup()
+        self.set_controller() #define in base class 
         self.set_threshhold() #define in base class 
         self.setup_leds() #define in base class 
 
@@ -418,8 +422,8 @@ class Keyboard_Tau( Keyboard ):
         self.audio_input = bundles.ScalarInput(self.keyboard.audio_cookie(),self.domain,signals=(1,2))
         self[103] = HeadphoneInput(self)
 
-    def courses(self):
-        return utils.makedict({'courselen':piw.makestring('[16,16,20,20,12,4,4]',0)},0)
+    def controllerinit(self):
+        return utils.makedict({'courselen':self.keyboard.get_courses(),'rowlen':self.keyboard.get_courses()},0)
 
 
 class Keyboard_Alpha1( Keyboard ):
@@ -617,6 +621,12 @@ class KeyboardFactory( agent.Agent ):
         self.remove_subsystem(str(i))
 
 class Upgrader(upgrade.Upgrader):
+    def upgrade_1_0_0_to_1_0_1(self,tools,address):
+        for ss in tools.get_subsystems(address):
+            print 'upgrading keyboard',ss
+            ssr = tools.get_root(ss)
+            ssr.ensure_node(17).set_name('key output')
+
     def upgrade_9_0_to_10_0(self,tools,address):
         for ss in tools.get_subsystems(address):
             ssr = tools.root(ss)

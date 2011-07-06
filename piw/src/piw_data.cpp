@@ -591,6 +591,7 @@ static T __dictset_ex(unsigned nb,const T &old, const std::string &key, const T 
     *vp=0;
     return d2;
 }
+
 template <class T>
 static int __dict_findkey(const T &d, const char *keyp, unsigned keyl)
 {
@@ -692,6 +693,140 @@ static T __dictupdate_ex(unsigned nb,const T &old, const T &upd)
     return d2;
 }
 
+template <class T>
+static T __tuplenull_ex(unsigned nb,unsigned long long ts)
+{
+    float *vp;
+    unsigned char *dp;
+    T d = T::from_given(__allocate_host(nb,ts,1,-1,0,BCTVTYPE_TUPLE,0,&dp,1,&vp));
+    *vp = 0;
+    return d;
+}
+
+template <class T>
+static T __tupledel_ex(unsigned nb, const T &old, unsigned i)
+{
+    const unsigned char *b;
+    unsigned r,r2;
+    unsigned l,l2;
+    unsigned c;
+
+    b = (const unsigned char *)old.host_data();
+    r = old.host_length();
+    l = 0;
+    c = 0;
+
+    r2 = r;
+
+    while(r>=2)
+    {
+        uint16_t vl;
+        PIC_ASSERT(pie_getu16(b+l,r,&vl)>0);
+
+        if(r-2<vl)
+            break;
+
+        if(c==i)
+        {
+            r2 -= (vl+2);
+            break;
+        }
+
+        c++;
+        l+=(2+vl);
+        r-=(2+vl);
+    }
+
+    float *vp;
+    unsigned char *dp;
+    T d2 = T::from_given(__allocate_host(nb,old.time(),1,-1,0,BCTVTYPE_DICT,r2,&dp,1,&vp));
+
+    r = old.host_length();
+    l = 0;
+    l2 = 0;
+
+    c = 0;
+
+    while(r>=4)
+    {
+        uint16_t vl;
+
+        PIC_ASSERT(pie_getu16(b+l,r,&vl)>0);
+
+        if(r-2<vl)
+            break;
+
+        if(c!=i)
+        {
+            memcpy(dp+l2,b+l,2+vl);
+            l2+=(2+vl);
+        }
+
+        c++;
+        l+=(2+vl);
+        r-=(2+vl);
+    }
+
+    *vp=0;
+    return d2;
+}
+
+template <class T>
+static T __tupleadd_ex(unsigned nb,const T &old, const T &v)
+{
+    const unsigned char *b;
+    unsigned r,r2;
+    unsigned l;
+
+    b = (const unsigned char *)old.host_data();
+    r = old.host_length();
+    l = 0;
+
+    r2 = r;
+
+    while(r>=2)
+    {
+        uint16_t vl;
+        PIC_ASSERT(pie_getu16(b+l,r,&vl)>0);
+
+        if(r-2<vl)
+            break;
+
+        l+=(2+vl);
+        r-=(2+vl);
+    }
+
+    r2 += (2+v.wire_length());
+
+    float *vp;
+    unsigned char *dp;
+    T d2 = T::from_given(__allocate_host(nb,old.time(),1,-1,0,BCTVTYPE_TUPLE,r2,&dp,1,&vp));
+
+    r = old.host_length();
+    l = 0;
+
+    while(r>=2)
+    {
+        uint16_t vl;
+
+        PIC_ASSERT(pie_getu16(b+l,r,&vl)>0);
+
+        if(r-2<vl)
+            break;
+
+        memcpy(dp+l,b+l,2+vl);
+
+        l+=(2+vl);
+        r-=(2+vl);
+    }
+
+    pie_setu16(dp+l,2,v.wire_length());
+    memcpy(dp+l+2,v.wire_data(),v.wire_length());
+
+    *vp=0;
+    return d2;
+}
+
 bct_data_t piw::makecopy(unsigned nb, unsigned long long ts, bct_data_t &d)
 {
     float *vp;
@@ -739,6 +874,9 @@ piw::data_t piw::dictnull_ex(unsigned nb,unsigned long long ts) { return __dictn
 piw::data_t piw::dictdel_ex(unsigned nb,const data_t &old, const std::string &key) { return __dictdel_ex<data_t>(nb, old, key); }
 piw::data_t piw::dictset_ex(unsigned nb,const data_t &old, const std::string &key, const data_t &v) { return __dictset_ex<data_t>(nb, old, key, v); }
 piw::data_t piw::dictupdate_ex(unsigned nb,const data_t &old, const data_t &upd) { return __dictupdate_ex<data_t>(nb, old, upd); }
+piw::data_t piw::tuplenull_ex(unsigned nb,unsigned long long ts) { return __tuplenull_ex<data_t>(nb,ts); }
+piw::data_t piw::tupledel_ex(unsigned nb,const data_t &old, unsigned i) { return __tupledel_ex<data_t>(nb, old, i); }
+piw::data_t piw::tupleadd_ex(unsigned nb,const data_t &old, const data_t &v) { return __tupleadd_ex<data_t>(nb, old, v); }
 
 piw::data_nb_t piw::makearray_nb_ex(unsigned nb,unsigned long long ts, float ubound, float lbound, float rest, unsigned nfloats, float **pfloat, float **fs) { return __makearray_ex<data_nb_t>(nb,ts,ubound,lbound,rest,nfloats,pfloat,fs); }
 piw::data_nb_t piw::makenorm_nb_ex(unsigned nb,unsigned long long ts, unsigned nfloats, float **pfloat,float **fs) { return makearray_nb_ex(nb,ts,1,-1,0,nfloats,pfloat,fs); }
@@ -774,6 +912,9 @@ piw::data_nb_t piw::dictnull_nb_ex(unsigned nb,unsigned long long ts) { return _
 piw::data_nb_t piw::dictdel_nb_ex(unsigned nb,const data_nb_t &old, const std::string &key) { return __dictdel_ex<data_nb_t>(nb, old, key); }
 piw::data_nb_t piw::dictset_nb_ex(unsigned nb,const data_nb_t &old, const std::string &key, const data_nb_t &v) { return __dictset_ex<data_nb_t>(nb, old, key, v); }
 piw::data_nb_t piw::dictupdate_nb_ex(unsigned nb,const data_nb_t &old, const data_nb_t &upd) { return __dictupdate_ex<data_nb_t>(nb, old, upd); }
+piw::data_nb_t piw::tuplenull_nb_ex(unsigned nb,unsigned long long ts) { return __tuplenull_ex<data_nb_t>(nb,ts); }
+piw::data_nb_t piw::tupledel_nb_ex(unsigned nb,const data_nb_t &old, unsigned i) { return __tupledel_ex<data_nb_t>(nb, old, i); }
+piw::data_nb_t piw::tupleadd_nb_ex(unsigned nb,const data_nb_t &old, const data_nb_t &v) { return __tupleadd_ex<data_nb_t>(nb, old, v); }
 
 /*
  * piw::data_base_t
@@ -1001,6 +1142,34 @@ long piw::data_base_t::hash() const
     return hash;
 }
 
+unsigned piw::data_base_t::as_tuplelen() const
+{
+    const unsigned char *b;
+    unsigned r;
+    unsigned l;
+    unsigned c;
+
+    b = (const unsigned char *)host_data();
+    r = host_length();
+    l = 0;
+    c = 0;
+
+    while(r>=2)
+    {
+        uint16_t vl;
+        PIC_ASSERT(pie_getu16(b+l,r,&vl)>0);
+
+        if(r-2<vl)
+            break;
+
+        c++;
+        l+=(2+vl);
+        r-=(2+vl);
+    }
+
+    return c;
+}
+
 std::ostream &operator<<(std::ostream &o, const piw::data_base_t &d)
 {
     pie_print(d.wire_length(),d.wire_data(), pie::ostreamwriter, &o);
@@ -1025,7 +1194,7 @@ std::ostream &operator<<(std::ostream &o, const piw::fullprinter_t<piw::data_nb_
  */
 
 template <class T>
-static T __as_dict_value(const T *o, unsigned n)
+static T __as_dict_value(unsigned nb, const T *o, unsigned n)
 {
     const unsigned char *b;
     unsigned r;
@@ -1049,17 +1218,17 @@ static T __as_dict_value(const T *o, unsigned n)
 
         if(c==n)
         {
-            return __makewire<T>(PIC_ALLOC_NORMAL,vl,b+l+kl+4);
+            return __makewire<T>(nb,vl,b+l+kl+4);
         }
 
         c++; l+=(kl+vl+4); r-=(kl+vl+4);
     }
 
-    return __makenull<T>(PIC_ALLOC_NORMAL,0);
+    return __makenull<T>(nb,0);
 }
 
 template <class T>
-static T __as_dict_lookup(const T *o, const std::string &key)
+static T __as_dict_lookup(unsigned nb, const T *o, const std::string &key)
 {
     const unsigned char *b;
     unsigned r;
@@ -1083,13 +1252,47 @@ static T __as_dict_lookup(const T *o, const std::string &key)
 
         if(kl==keyl && !strncmp(keyp,(const char *)(b+l+4),kl))
         {
-            return __makewire<T>(PIC_ALLOC_NORMAL,vl,b+l+kl+4);
+            return __makewire<T>(nb,vl,b+l+kl+4);
         }
 
         l+=(4+kl+vl); r-=(4+kl+vl);
     }
 
-    return __makenull<T>(PIC_ALLOC_NORMAL,0);
+    return __makenull<T>(nb,0);
+}
+
+template <class T>
+static T __as_tuple_value(unsigned nb, const T *o, unsigned i)
+{
+    const unsigned char *b;
+    unsigned r;
+    unsigned l;
+    unsigned c;
+
+    b = (const unsigned char *)o->host_data();
+    r = o->host_length();
+    l = 0;
+    c = 0;
+
+    while(r>=2)
+    {
+        uint16_t vl;
+        PIC_ASSERT(pie_getu16(b+l,r,&vl)>0);
+
+        if(r-2<vl)
+            break;
+
+        if(c==i)
+        {
+            return __makewire<T>(nb,vl,b+l+2);
+        }
+
+        c++;
+        l+=(vl+2);
+        r-=(vl+2);
+    }
+
+    return __makenull<T>(nb,0);
 }
 
 template <class T>
@@ -1113,12 +1316,17 @@ static T __restamp(const T *o, unsigned long long t)
 
 piw::data_t piw::data_t::as_dict_value(unsigned n) const
 {
-    return __as_dict_value<data_t>(this, n);
+    return __as_dict_value<data_t>(PIC_ALLOC_NORMAL, this, n);
 }
 
 piw::data_t piw::data_t::as_dict_lookup(const std::string &key) const
 {
-    return __as_dict_lookup<data_t>(this, key);
+    return __as_dict_lookup<data_t>(PIC_ALLOC_NORMAL, this, key);
+}
+
+piw::data_t piw::data_t::as_tuple_value(unsigned i) const
+{
+    return __as_tuple_value<data_t>(PIC_ALLOC_NORMAL, this, i);
 }
 
 piw::data_t piw::data_t::realloc_real(unsigned nb) const
@@ -1150,12 +1358,17 @@ piw::data_nb_t piw::data_t::make_nb() const
 
 piw::data_nb_t piw::data_nb_t::as_dict_value(unsigned n) const
 {
-    return __as_dict_value<data_nb_t>(this, n);
+    return __as_dict_value<data_nb_t>(PIC_ALLOC_NB, this, n);
 }
 
 piw::data_nb_t piw::data_nb_t::as_dict_lookup(const std::string &key) const
 {
-    return __as_dict_lookup<data_nb_t>(this, key);
+    return __as_dict_lookup<data_nb_t>(PIC_ALLOC_NB, this, key);
+}
+
+piw::data_nb_t piw::data_nb_t::as_tuple_value(unsigned i) const
+{
+    return __as_tuple_value<data_nb_t>(PIC_ALLOC_NB, this, i);
 }
 
 piw::data_nb_t piw::data_nb_t::realloc_real(unsigned nb) const
@@ -1538,6 +1751,11 @@ void piw::dataholder_nb_t::clear()
         piw_data_decref_fast(data_);
         data_ = 0;
     }
+}
+
+bool piw::dataholder_nb_t::is_empty()
+{
+    return 0 == data_;
 }
 
 const piw::data_nb_t piw::dataholder_nb_t::get() const

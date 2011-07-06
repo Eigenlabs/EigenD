@@ -60,46 +60,43 @@ class Controller:
 
     def set_course_semis(self,idx,val):
         self.ensure(idx)
-        l = map(float,self.getlist('courseoffset'))
+        l = [i.as_float() for i in self.getlist('courseoffset')]
         l[idx-1] = float(val)
-        self.setlist('courseoffset',l)
+        self.setlist('courseoffset',[piw.makefloat(i,0) for i in l])
 
     def set_course_steps(self,idx,val):
         self.ensure(idx)
-        l = map(float,self.getlist('courseoffset'))
+        l = [i.as_float() for i in self.getlist('courseoffset')]
         l[idx-1] = float(val+10000 if val else 0)
-        self.setlist('courseoffset',l)
-
-    def setlist(self,name,l):
-        self.__controller_dict[name] = piw.makestring(repr(l),piw.tsd_time())
-        self.__setup()
-        self.__state.set_data(utils.makedict(self.__controller_dict,0))
+        self.setlist('courseoffset',[piw.makefloat(i,0) for i in l])
 
     def num_courses(self):
         l = self.getlist('courseoffset')
         return len(l) if l else 0
 
     def ensure(self,course):
-        l = map(float,self.getlist('courseoffset'))
+        l = [i.as_float() for i in self.getlist('courseoffset')]
         if course>len(l):
             xl = course-len(l)
             l.extend([0]*xl)
-            self.setlist('courseoffset',l)
+            self.setlist('courseoffset',[piw.makefloat(i,0) for i in l])
 
-        l = map(int,self.getlist('courselen'))
+        l = [i.as_long() for i in self.getlist('courselen')]
         if course>len(l):
             xl = course-len(l)
             l.extend([0]*xl)
-            self.setlist('courselen',l)
+            self.setlist('courselen',[piw.makelong(i,0) for i in l])
+
+    def setlist(self,name,l):
+        self.__controller_dict[name] = utils.maketuple(l,piw.tsd_time())
+        self.__setup()
+        self.__state.set_data(utils.makedict(self.__controller_dict,0))
 
     def getlist(self,name):
         d = self.__controller_dict.get(name)
-        if d is None or not d.is_string():
+        if d is None or not d.is_tuple():
             return []
-        s = d.as_string()
-        if len(s)<2:
-            return []
-        return s[1:-1].split(',')
+        return utils.tuple_items(d)
 
 class VirtualCourse(atom.Atom):
     def __init__(self,controller):
@@ -192,18 +189,22 @@ class Agent(agent.Agent):
         self[10] = bundles.Output(2,False, names='pressure output')
         self[11] = bundles.Output(3,False, names='roll output')
         self[12] = bundles.Output(4,False, names='yaw output')
+        self[26] = bundles.Output(5,False, names='key output')
+        self[27] = bundles.Output(6,False, names='original key output')
 
-        self.koutput = bundles.Splitter(self.domain,self[9],self[10],self[11],self[12])
+        self.koutput = bundles.Splitter(self.domain,self[9],self[10],self[11],self[12],self[26],self[27])
         self.kpoly = piw.polyctl(10,self.koutput.cookie(),False,5)
 
         self.kclone = piw.clone(True)
         self.kclone.set_policy(False)
-        self.kinput = bundles.VectorInput(self.kclone.cookie(),self.domain,signals=(1,2,3,4),filter=self.mapper.key_filter())
+        self.kinput = bundles.VectorInput(self.kclone.cookie(),self.domain,signals=(1,2,3,4,5,6),filter=self.mapper.key_filter())
 
         self[13] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.kinput.vector_policy(1,False), names='activation input')
         self[14] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.kinput.vector_policy(2,False), names='pressure input')
         self[15] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.kinput.vector_policy(3,False), names='roll input')
         self[16] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.kinput.vector_policy(4,False), names='yaw input')
+        self[28] = atom.Atom(domain=domain.Aniso(), policy=self.kinput.vector_policy(5,False), names='key input')
+        self[29] = atom.Atom(domain=domain.Aniso(), policy=self.kinput.vector_policy(6,False), names='original key input')
 
         self.kclone.set_output(1,self.kpoly.cookie())
 
@@ -273,18 +274,16 @@ class Agent(agent.Agent):
         try:
             if not k.is_dict(): return 0
             cl = k.as_dict_lookup('courselen')
-            if not cl.is_string(): return 0
-            cll = logic.parse_clause(cl.as_string())
-            if not isinstance(cll,tuple): return 0
+            if not cl.is_tuple(): return 0
             k=0
-            for i in cll: k+=int(i)
+            for i in cl: k+=i.as_long()
             return k
         except:
             return 0
 
     def __getkeys(self):
         mapping = self.__cur_mapping()
-        courses = map(int,self.controller.getlist('courselen'))
+        courses = [i.as_long() for i in self.getlist('courselen')]
 
         if not courses:
             courses = [len(mapping)]
@@ -303,7 +302,7 @@ class Agent(agent.Agent):
         while len(coursekeys)>0 and not coursekeys[-1]:
             coursekeys.pop()
 
-        self.controller.setlist('courselen',[len(k) for k in coursekeys])
+        self.controller.setlist('courselen',[piw.makelong(len(k),0) for k in coursekeys])
 
         keys = []
         for c in coursekeys:
@@ -314,7 +313,7 @@ class Agent(agent.Agent):
 
     def __kclear(self,subject,course):
         if course is None:
-            self.controller.setlist('courselen',[0])
+            self.controller.setlist('courselen',[piw.makelong(0,0)])
             self.__set_mapping(())
             return
 
@@ -384,7 +383,7 @@ class Agent(agent.Agent):
         curmap = self.__cur_mapping() # [[from,to 1..N]]
         active = [str(f) for (f,t) in curmap] # all active keys
 
-        courses=self.controller.getlist('courselen')
+        courses = [i.as_long() for i in self.controller.getlist('courselen')]
         coursekeys=[]
 
         if course:
@@ -393,16 +392,16 @@ class Agent(agent.Agent):
             # collapse current courses into 1 course
             self.__course=1
             n=0
-            for c in map(int,courses):
+            for c in courses:
                 n=n+c
             courses=[str(n)]
-            self.controller.setlist('courselen',[n])
+            self.controller.setlist('courselen',[piw.makelong(n,0)])
 
         if len(courses)>=self.__course and self.__choices==[]:
-            clen=int(courses[self.__course-1])
+            clen=courses[self.__course-1]
             cstart=0
             for i in range(0,self.__course-1):
-                cstart=cstart+int(courses[i])
+                cstart=cstart+courses[i]
             self.__coursekeys=active[cstart:cstart+clen] 
             print 'light course: keys=',self.__coursekeys 
 
@@ -445,7 +444,7 @@ class Agent(agent.Agent):
         
     def __do_mapping(self):
         self.controller.ensure(self.__course)
-        cl = map(int,self.controller.getlist('courselen'))
+        cl = [i.as_long() for i in self.controller.getlist('courselen')]
         print 'old courselen',cl
 
         ckeys = [str(k) for k in self.__choices]
@@ -485,7 +484,7 @@ class Agent(agent.Agent):
         for v in oldcourses.itervalues():
             cl.append(len(v))
         print 'new courselen',cl
-        self.controller.setlist('courselen',cl)
+        self.controller.setlist('courselen',[piw.makelong(i,0) for i in cl])
         print '__do_mapping  mapping:',self.__cur_mapping()
 
     def __set_mapping(self,mapping):
@@ -510,6 +509,28 @@ class Agent(agent.Agent):
         return logic.parse_clause(self.__private.get_data().as_string())
 
 class Upgrader(upgrade.Upgrader):
+
+    def upgrade_1_0_0_to_1_0_1(self,tools,address):
+        root = tools.get_root(address)
+
+        root.get_node(21).erase_child(254)
+
+        n = root.get_node(255)
+        courselen = n.get_meta('courselen')
+        courseoffset = n.get_meta('courseoffset')
+
+        if courselen and courselen.is_string():
+            l = eval(courselen.as_string())
+            t = courselen.time()
+            tpl = utils.maketuple([piw.makelong(i,t) for i in l],t)
+            n.set_meta('courselen',tpl)
+
+        if courseoffset and courseoffset.is_string():
+            l = eval(courseoffset.as_string())
+            t = courseoffset.time()
+            tpl = utils.maketuple([piw.makefloat(i,t) for i in l],t)
+            n.set_meta('courseoffset',tpl)
+
     def upgrade_2_0_to_3_0(self,tools,address):
         root = tools.root(address)
         cnode = root.ensure_node(25,255)

@@ -407,7 +407,7 @@ class Aniso(Domain):
     def data2value(self,d):
         return d
     def value2data(self,v,t=0L):
-        if isinstance(v,piw.data): return v
+        if isinstance(v,piw.data_base): return v
         raise ValueError('value %s inappropriate' % v)
     def canonical(self):
         return 'aniso(%s)' % logic.render_term(self.hints)

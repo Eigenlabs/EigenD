@@ -237,8 +237,28 @@ def makedict_nb(items,ts):
     return d
 
 def dict_items(d):
-    return [ (d.as_dict_key(i),d.as_dict_value()) for i in range(0,d.as_dict_nkeys()) ]
+    return [ (d.as_dict_key(i),d.as_dict_value(i)) for i in range(0,d.as_dict_nkeys()) ]
 
 def dict_keys(d):
     return [ d.as_dict_key(i) for i in range(0,d.as_dict_nkeys()) ]
 
+def maketuple(items,ts):
+    d = piw.tuplenull(ts)
+    for v in items:
+        d = piw.tupleadd(d,v)
+    return d
+
+def maketuple_longs(items,ts):
+    d = piw.tuplenull(ts)
+    for v in items:
+        d = piw.tupleadd(d,piw.makelong(v,ts))
+    return d
+
+def maketuple_floats(items,ts):
+    d = piw.tuplenull(ts)
+    for v in items:
+        d = piw.tupleadd(d,piw.makefloat(v,ts))
+    return d
+
+def tuple_items(d):
+    return [ (d.as_tuple_value(i)) for i in range(0,d.as_tuplelen()) ]

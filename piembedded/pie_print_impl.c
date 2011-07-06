@@ -228,6 +228,35 @@ static void __WritePath(const unsigned char *buf, unsigned chaff, unsigned size,
     }
 }
 
+void pie_printtuple(const unsigned char *buf,unsigned size,piu_output_t w, void *wa)
+{
+    unsigned l=0;
+
+    w(wa,'(');
+
+    while(size>0)
+    {
+		uint16_t vl;
+        
+        if(pie_getu16(buf+l,size,&vl)<0)
+            break;
+
+        l+=2; size-=2;
+
+        if(size<vl)
+            break;
+
+        pie_print(vl,buf+l,w,wa);
+        l+=vl;
+        size-=vl;
+
+        if(size>0)
+            w(wa,',');
+    }
+
+    w(wa,')');
+}
+
 static void __WriteWire(unsigned len, const unsigned char *buf, piu_output_t w, void *wa, int full)
 {
     int32_t vl;
@@ -292,6 +321,9 @@ static void __WriteWire(unsigned len, const unsigned char *buf, piu_output_t w, 
 				break;
 			case BCTVTYPE_DICT:
 				pie_printdict(sp,sl,w,wa);
+				break;
+			case BCTVTYPE_TUPLE:
+				pie_printtuple(sp,sl,w,wa);
 				break;
 			case BCTVTYPE_NULL:
 				break;

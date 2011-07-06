@@ -62,6 +62,7 @@ class Keyboard(agent.Agent):
         self[2] = bundles.Output(2,False, names='pressure output')
         self[3] = bundles.Output(3,False, names='roll output')
         self[4] = bundles.Output(4,False, names='yaw output')
+        self[17] = bundles.Output(5,False,names='key output')
 
         self[5] = bundles.Output(1,False, names='strip position output')
         self[6] = bundles.Output(2,False, names='breath output')
@@ -71,7 +72,7 @@ class Keyboard(agent.Agent):
         self.led_input = bundles.VectorInput(self.status_mixer.cookie(),self.domain,signals=(1,))
         self[7] = atom.Atom(names='light input',protocols='revconnect',policy=self.led_input.vector_policy(1,False,False,auto_slot=True),domain=domain.Aniso())
 
-        self.koutput = bundles.Splitter(self.domain,self[1],self[2],self[3],self[4])
+        self.koutput = bundles.Splitter(self.domain,self[1],self[2],self[3],self[4],self[17])
         self.kpoly = piw.polyctl(10,self.koutput.cookie(),False,5)
         self.aoutput = bundles.Splitter(self.domain,self[5],self[6])
 
@@ -88,10 +89,10 @@ class Keyboard(agent.Agent):
         f=self.keyboard.led_functor()
         self.led_backend.set_functor(piw.pathnull(0),f)
 
-        self[9] = atom.Atom(names='controller output',domain=domain.Aniso(),init=self.__courses())
+        self[9] = atom.Atom(names='controller output',domain=domain.Aniso(),init=self.__controllerinit())
 
-    def __courses(self):
-        return utils.makedict({'courselen':piw.makestring('[4,4,4,4,1]',0)},0)
+    def __controllerinit(self):
+        return utils.makedict({'courselen':self.keyboard.get_courses(),'rowlen':self.keyboard.get_courses()},0)
 
     def close_server(self):
         atom.Atom.close_server(self)
@@ -152,6 +153,12 @@ class KeyboardAgent(agent.Agent):
 
 
 class Upgrader(upgrade.Upgrader):
+    def upgrade_1_0_0_to_1_0_1(self,tools,address):
+        for ss in tools.get_subsystems(address):
+            print 'upgrading keyboard',ss
+            ssr = tools.get_root(ss)
+            ssr.ensure_node(17).set_name('key output')
+
     def upgrade_3_0_to_4_0(self,tools,address):
         for ss in tools.get_subsystems(address):
             print 'upgrading',ss

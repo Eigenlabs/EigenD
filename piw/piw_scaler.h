@@ -24,9 +24,10 @@
 #include "piw_bundle.h"
 
 // inputs
-#define SCALER_TONIC 5
-#define SCALER_BASE 6
-#define SCALER_SCALE 7
+#define SCALER_KEY 5
+#define SCALER_TONIC 6
+#define SCALER_BASE 7
+#define SCALER_SCALE 8
 #define SCALER_KBEND 9
 #define SCALER_GBEND 10
 #define SCALER_KRANGE 11
@@ -34,13 +35,13 @@
 #define SCALER_CONTROL 13
 #define SCALER_OVERRIDE 14
 #define SCALER_OCTAVE 15
-#define SCALER_KEY 16
+#define SCALER_KNUMBER 16
 #define SCALER_ROCTAVE 17
-#define SCALER_IN_MASK SIG12(SCALER_TONIC,SCALER_BASE,SCALER_SCALE,SCALER_KBEND,SCALER_GBEND,SCALER_KRANGE,SCALER_GRANGE,SCALER_CONTROL,SCALER_OVERRIDE,SCALER_OCTAVE,SCALER_KEY,SCALER_ROCTAVE)
+#define SCALER_IN_MASK SIG13(SCALER_KEY,SCALER_TONIC,SCALER_BASE,SCALER_SCALE,SCALER_KBEND,SCALER_GBEND,SCALER_KRANGE,SCALER_GRANGE,SCALER_CONTROL,SCALER_OVERRIDE,SCALER_OCTAVE,SCALER_KNUMBER,SCALER_ROCTAVE)
 
 // outputs
-#define SCALER_SCALENOTE 5
-#define SCALER_FREQUENCY 6
+#define SCALER_SCALENOTE 6 
+#define SCALER_FREQUENCY 7
 #define SCALER_OUT_MASK  SIG2(SCALER_SCALENOTE,SCALER_FREQUENCY)
 
 #define BTONIC (1<<0)
@@ -63,6 +64,7 @@ namespace piw
             class impl_t;
 
             static void parsevector(const std::string &s, pic::lckvector_t<float>::nbtype *v, unsigned sizehint);
+            static void tuple2vector(const data_nb_t &t, pic::lckvector_t<float>::nbtype *v);
 
             struct scale_t: pic::atomic_counted_t, pic::lckobject_t
             {
@@ -85,11 +87,12 @@ namespace piw
 
             struct layout_t: pic::atomic_counted_t, pic::lckobject_t
             {
-                layout_t(const std::string &offsets,const std::string &lengths)
+                layout_t(const data_nb_t &offsets, const data_nb_t &lengths)
                 {
                     pic::lckvector_t<float>::nbtype co;
-                    parsevector(offsets,&co,5);
-                    parsevector(lengths,&lengths_,5);
+
+                    tuple2vector(offsets,&co);
+                    tuple2vector(lengths,&lengths_);
 
                     ncourses_ = std::min(co.size(),lengths_.size());
                     if(ncourses_==0)

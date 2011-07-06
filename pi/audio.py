@@ -62,7 +62,7 @@ class AudioOutput(atom.Atom):
 
 class AudioInput(atom.Atom):
     def __init__(self,input,base,channels,name='audio input',**kwds):
-        atom.Atom.__init__(self,dynlist=True,names='inputs',**kwds)
+        atom.Atom.__init__(self,dynlist=True,**kwds)
         self.__base = base
         self.__channels = 0
         self.__input = input

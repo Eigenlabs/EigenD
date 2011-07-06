@@ -31,8 +31,6 @@ namespace piw
 {
     inline void piw_dataqueue_incref(bct_dataqueue_t q) { if(q) pic_atomicinc(&q->count); }
     inline void piw_dataqueue_decref(bct_dataqueue_t q) { if(q) if(pic_atomicdec(&q->count)==0) bct_dataqueue_free(q); }
-    //inline void piw_dataqueue_incref(bct_dataqueue_t q) { if(q) ++q->count; }
-    //inline void piw_dataqueue_decref(bct_dataqueue_t q) { if(q) { if(--q->count==0) bct_dataqueue_free(q); } }
 
     class PIW_DECLSPEC_CLASS dataqueue_t: public pic::tracked_t
     {

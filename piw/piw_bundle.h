@@ -94,7 +94,7 @@ namespace piw
 
             void dump(bool full) const;
 
-            inline bool latest(unsigned sig,piw::data_nb_t &d,unsigned long long t) { return event_->signals_[sig-1].latest(d,0,t); }
+            inline bool latest(unsigned sig,piw::data_nb_t &d,unsigned long long t) const { return event_->signals_[sig-1].latest(d,0,t); }
 
         private:
             pic::ref_t<event_data_t> event_;

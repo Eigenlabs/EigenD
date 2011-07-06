@@ -75,7 +75,7 @@ namespace
 
     struct kwire_t: piw::wire_ctl_t, piw::event_data_source_real_t
     {
-        kwire_t(unsigned i,const piw::data_t &path,keyboard_t *k);
+        kwire_t(unsigned i,unsigned r,unsigned c,const piw::data_t &path,keyboard_t *k);
         ~kwire_t() { source_shutdown(); keyboard = 0; }
 
         void activate(unsigned long long);
@@ -89,7 +89,7 @@ namespace
         unsigned counter;
         float maxpressure;
         keyboard_t *keyboard;
-        unsigned index;
+        unsigned index_,row_,column_;
 
         bool active;
         unsigned long long last;
@@ -261,6 +261,9 @@ namespace
         }
     }
     
+    static const unsigned int MICRO_COURSECOUNT = 5;
+    static const unsigned int MICRO_COURSES[MICRO_COURSECOUNT] = {4,4,4,4,1};
+
     struct keyboard_t: piw::root_ctl_t, piw::wire_ctl_t, piw::thing_t, micro::active_t::delegate_t
     {
         keyboard_t(const piw::cookie_t &c, const pic::notify_t &d, const piw::change_t &a): dead(d)
@@ -283,10 +286,7 @@ namespace
             drops = 0;
             counter = 0;
 
-            for(unsigned k=0; k<KEYS; ++k)
-            {
-                kwires_[k] = std::auto_ptr<kwire_t>(new kwire_t(k+1,piw::pathtwo(1,k+1,0),this));
-            }
+            create_kwires();
 
             cwire_ = std::auto_ptr<cwire_t>(new cwire_t(piw::pathone(2,0),this));
         }
@@ -328,17 +328,70 @@ namespace
             dead();
         }
 
+        void create_kwires()
+        {
+            unsigned previous_coursekeys = 0;
+            unsigned row = 1;
+            unsigned col = 1;
+
+            unsigned coursecount = get_coursecount();
+            for(unsigned k=1; k <= KEYS && row <= coursecount; k++)
+            {
+                unsigned coursekeys = get_courses_array()[row-1];
+                if((k-previous_coursekeys) <= coursekeys)
+                {
+                    col = k-previous_coursekeys; 
+                }
+                else
+                {
+                    row++;
+                    previous_coursekeys += coursekeys;
+                    col = k-previous_coursekeys; 
+                }
+                kwires_[k-1] = std::auto_ptr<kwire_t>(new kwire_t(k,row,col,piw::pathtwo(1,k,0),this));
+            }
+        }
+
+        const piw::data_nb_t get_courses_tuple()
+        {
+            if(!courses_.is_empty())
+            {
+                return courses_.get();
+            }
+
+            piw::data_nb_t courses = piw::tuplenull_nb(0);
+            for(unsigned i = 0; i < get_coursecount(); ++i)
+            {
+                courses = piw::tupleadd_nb(courses, piw::makelong_nb(get_courses_array()[i],0));
+            }
+
+            courses_.set_nb(courses);
+
+            return courses_.get();
+        }
+
+        const unsigned int get_coursecount()
+        {
+            return MICRO_COURSECOUNT;
+        }
+
+        const unsigned int* get_courses_array()
+        {
+            return MICRO_COURSES;
+        }
+
         std::auto_ptr<kwire_t> kwires_[KEYS];
         std::auto_ptr<cwire_t> cwire_;
         pic::notify_t dead;
         float threshold1,threshold2;
+        piw::dataholder_nb_t courses_;
 
         pic_atomic_t queue;
         unsigned drops;
         unsigned counter;
     };
 
-    kwire_t::kwire_t(unsigned i,const piw::data_t &path,keyboard_t *k): piw::event_data_source_real_t(path), counter(0), maxpressure(0), keyboard(k), index(i), active(false), last(0), gated(false),id_(piw::pathone_nb(i,0)),output_(15,PIW_DATAQUEUE_SIZE_NORM)
+    kwire_t::kwire_t(unsigned i, unsigned r, unsigned c, const piw::data_t &path, keyboard_t *k): piw::event_data_source_real_t(path), counter(0), maxpressure(0), keyboard(k), index_(i), row_(r), column_(c), active(false), last(0), gated(false),id_(piw::pathone_nb(i,0)),output_(15,PIW_DATAQUEUE_SIZE_NORM)
     {
         keyboard->connect_wire(this,source());
     }
@@ -360,7 +413,7 @@ namespace
         if(t < last)
         {
             long long dt = t-last;
-            pic::msg() << "ukbd key " << index << " sent out of order last=" << last <<  " now=" << t << " diff=" << dt << pic::log;
+            pic::msg() << "ukbd key " << index_ << " sent out of order last=" << last <<  " now=" << t << " diff=" << dt << pic::log;
         }
 
         last=t;
@@ -386,6 +439,19 @@ namespace
             output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,0,0));
             output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,0,0));
             output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,0,0));
+
+            piw::data_nb_t position = piw::tuplenull_nb(t);
+            position = piw::tupleadd_nb(position, piw::makefloat_nb(row_,t));
+            position = piw::tupleadd_nb(position, piw::makefloat_nb(column_,t));
+            piw::data_nb_t key = piw::tuplenull_nb(t);
+            key = piw::tupleadd_nb(key, piw::makelong_nb(index_,t));
+            key = piw::tupleadd_nb(key, position);
+            key = piw::tupleadd_nb(key, keyboard->get_courses_tuple());
+            key = piw::tupleadd_nb(key, piw::makelong_nb(index_,t));
+            key = piw::tupleadd_nb(key, position);
+            key = piw::tupleadd_nb(key, keyboard->get_courses_tuple());
+            output_.add_value(5, key);
+
             source_start(0,id_.restamp(t), output_);
 
             maxpressure=0;
@@ -426,7 +492,7 @@ namespace
     {
         if(keyboard)
         {
-            keyboard->activate(index,time);
+            keyboard->activate(index_,time);
         }
     }
 
@@ -472,6 +538,11 @@ struct ukbd::bundle_t::impl_t : virtual pic::tracked_t, piw::thing_t, piw::clock
     void thing_dequeue_slow(const piw::data_t &d)
     {
         __lightdeq(this,(void *)(d.give()),0,0);
+    }
+
+    piw::data_t get_courses()
+    {
+        return keyboard_.get_courses_tuple().make_normal();
     }
 
     static void __set_led(void *self, unsigned key, unsigned color)
@@ -547,6 +618,12 @@ std::string ukbd::bundle_t::name()
 {
     PIC_ASSERT(_root);
     return _root->loop_.get_name();
+}
+
+piw::data_t ukbd::bundle_t::get_courses()
+{
+    PIC_ASSERT(_root);
+    return _root->get_courses();
 }
 
 piw::change_nb_t ukbd::bundle_t::led_functor()

@@ -321,7 +321,7 @@ class Agent(agent.Agent):
         self.__audio_input = audio.AudioInput(bundles.ScalarInput(self.__host.audio_input(),self.__domain,signals=range(1,65)),1,2)
         self.__audio_input_channels = audio.AudioChannels(self.__audio_input)
         self.__velocity_detector = piw.velocitydetect(self.__host.midi_from_belcanto(),1,4)
-        self.__key_input = bundles.VectorInput(self.__velocity_detector.cookie(),self.__domain,signals=(1,2))
+        self.__key_input = bundles.VectorInput(self.__velocity_detector.cookie(),self.__domain,signals=(1,2,5))
         self.__midi_input = bundles.ScalarInput(self.__host.midi_aggregator(),self.__domain,signals=(1,))
         self.__metronome_input = bundles.ScalarInput(self.__host.metronome_input(),self.__domain,signals=(1,2,3,4))
         self.__host.set_bypassed(True)
@@ -353,6 +353,7 @@ class Agent(agent.Agent):
         self[6] = atom.Atom(names='controller inputs')
         self[6][1] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.vector_policy(1,False),names='pressure input')
         self[6][2] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.merge_nodefault_policy(2,False),names='frequency input')
+        self[6][3] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.merge_nodefault_policy(5,False),names='key input')
 
         # midi channel 
         self[7] =  atom.Atom(domain=domain.BoundedInt(0,16),init=0,names='midi channel',policy=atom.default_policy(self.set_midi_channel))
@@ -586,14 +587,31 @@ class Agent(agent.Agent):
         self.__host.close()
 
 class Upgrader(upgrade.Upgrader):
-    def upgrade_1_0_0_to_1_0_1(self,tools,address):
-        pass
+
+    def upgrade_1_0_2_to_1_0_3(self,tools,address):
+        print 'upgrading plugin host',address
+        root = tools.get_root(address)
+
+        # ensure input atom names
+        root.ensure_node(6,3).set_name('key input')
+
+    def phase2_1_0_3(self,tools,address):
+        root = tools.get_root(address)
+
+        # hook up the key input
+        root.mimic_connections((6,1),(6,3),'key output')
+
+    def phase2_1_0_2(self,tools,address):
+        return self.phase2_1_0_1(tools,address)
 
     def upgrade_1_0_1_to_1_0_2(self,tools,address):
         pass
 
     def phase2_1_0_2(self,tools,address):
         return self.phase2_1_0_1(tools,address)
+
+    def upgrade_1_0_0_to_1_0_1(self,tools,address):
+        pass
 
     def phase2_1_0_1(self,tools,address):
         print 'upgrading plugin host',address

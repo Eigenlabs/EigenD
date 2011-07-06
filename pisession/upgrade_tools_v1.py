@@ -170,11 +170,16 @@ class Node:
         if key == 'master' and self.tools:
             self.tools.invalidate_connections()
 
-
     def get_meta_string(self,key,default=''):
         m = self.get_meta(key)
-        if m.is_string():
+        if m is not None and m.is_string():
             return m.as_string()
+        return default
+
+    def get_meta_long(self,key,default=0):
+        m = self.get_meta(key)
+        if m is not None and m.is_long():
+            return m.as_long()
         return default
 
     def get_meta(self,key):
@@ -292,6 +297,37 @@ class Node:
         for c in self.iter():
             for cc in c.iter_tree():
                 yield cc
+
+    def mimic_connections(self,fr,to,name,argstocopy=(0,1,3)):
+        from_input = self.get_node(*fr)
+        if from_input:
+            input_name = from_input.get_name()
+
+            input_connections = from_input.get_meta('master')
+            if input_connections and input_connections.is_string() and input_connections.as_string():
+                input_connections_parsed = logic.parse_termlist(input_connections.as_string())
+                output_connections = []
+
+                if input_connections_parsed:
+                    for input_conn in input_connections_parsed:
+                        upstream_addr,upstream_path = paths.breakid_list(input_conn.args[2])
+                        upstream_root = self.tools.get_root(upstream_addr)
+                        if upstream_root:
+                            upstream_node = upstream_root
+                            for n in upstream_path[:-1]:
+                                c = upstream_node.get_node(n)
+                                if c:
+                                    upstream_node = c
+                            for c in upstream_node.iter():
+                                if name == c.get_name():
+                                    conn = logic.make_term('conn',input_conn.args[0] if 0 in argstocopy else None,input_conn.args[1] if 1 in argstocopy else None,c.id(),input_conn.args[3] if 3 in argstocopy else None)
+                                    output_connections.append(conn)
+
+                    if len(output_connections):
+                        conn_txt = logic.render_termlist(output_connections)
+                        c = self.ensure_node(*to)
+                        c.set_meta_string('master', conn_txt)
+                        print 'connected',name,'for',c.id(),'from',conn_txt
             
 
 class Agent:

@@ -179,6 +179,7 @@ namespace piw
             bool is_bool() const { return type()==BCTVTYPE_BOOL; }
             bool is_blob() const { return type()==BCTVTYPE_BLOB; }
             bool is_dict() const { return type()==BCTVTYPE_DICT; }
+            bool is_tuple() const { return type()==BCTVTYPE_TUPLE; }
             bool is_array() const { return !is_null(); }
 
             float as_float() const { PIC_ASSERT(is_float()); return *(float *)host_data(); }
@@ -219,6 +220,7 @@ namespace piw
             unsigned as_dict_nkeys() const;
             std::string as_dict_key(unsigned k) const;
             std::string as_pathstr() const { return std::string((const char *)as_path(),as_pathlen()); }
+            unsigned as_tuplelen() const;
 
             std::string repr() const;
             long hash() const;
@@ -295,6 +297,8 @@ namespace piw
 
             data_t as_dict_lookup(const std::string &key) const;
             data_t as_dict_value(unsigned k) const;
+
+            data_t as_tuple_value(unsigned i) const;
 
             data_t restamp(unsigned long long t) const;
             data_t realloc_real(unsigned nb) const;
@@ -375,6 +379,8 @@ namespace piw
             data_nb_t as_dict_lookup(const std::string &key) const;
             data_nb_t as_dict_value(unsigned k) const;
 
+            data_nb_t as_tuple_value(unsigned i) const;
+
             data_nb_t restamp(unsigned long long t) const;
             data_nb_t realloc_real(unsigned nb) const;
             data_nb_t realloc(unsigned nb) const { if(!_rep || !nb) return *this; if(bct_data_nb_mode(_rep)) return *this; return realloc_real(nb); }
@@ -424,6 +430,9 @@ namespace piw
     PIW_DECLSPEC_FUNC(data_t) dictdel_ex(unsigned nb, const data_t &d, const std::string &k);
     PIW_DECLSPEC_FUNC(data_t) dictset_ex(unsigned nb, const data_t &d, const std::string &k,const data_t &v);
     PIW_DECLSPEC_FUNC(data_t) dictupdate_ex(unsigned nb, const data_t &d, const data_t &d2);
+    PIW_DECLSPEC_FUNC(data_t) tuplenull_ex(unsigned nb, unsigned long long t=0L);
+    PIW_DECLSPEC_FUNC(data_t) tupledel_ex(unsigned nb, const data_t &d, unsigned i);
+    PIW_DECLSPEC_FUNC(data_t) tupleadd_ex(unsigned nb, const data_t &d, const data_t &v);
 
     inline data_t makewire(unsigned dl, const unsigned char *dp) { return makewire_ex(PIC_ALLOC_NORMAL,dl,dp); }
     inline data_t pathnull(unsigned long long t) { return pathnull_ex(PIC_ALLOC_NORMAL,t); }
@@ -440,6 +449,9 @@ namespace piw
     inline data_t dictdel(const data_t &d, const std::string &k) { return dictdel_ex(PIC_ALLOC_NORMAL,d,k); }
     inline data_t dictset(const data_t &d, const std::string &k, const data_t &v) { return dictset_ex(PIC_ALLOC_NORMAL,d,k,v); }
     inline data_t dictupdate(const data_t &d, const data_t &d2) { return dictupdate_ex(PIC_ALLOC_NORMAL,d,d2); }
+    inline data_t tuplenull(unsigned long long t) { return tuplenull_ex(PIC_ALLOC_NORMAL,t); }
+    inline data_t tupledel(const data_t &d, unsigned i) { return tupledel_ex(PIC_ALLOC_NORMAL,d,i); }
+    inline data_t tupleadd(const data_t &d, const data_t &v) { return tupleadd_ex(PIC_ALLOC_NORMAL,d,v); }
     inline data_t makeblob(unsigned long long ts, unsigned size, unsigned char **pdata) { return makeblob_ex(PIC_ALLOC_NORMAL,ts,size,pdata); }
     inline data_t makeblob2(const std::string &s, unsigned long long ts) { unsigned char *p; data_t d(makeblob_ex(PIC_ALLOC_NORMAL,ts,s.size(),&p)); memcpy(p,s.c_str(),s.size()); return d; }
     inline data_t makedouble(double v, unsigned long long t=0L) { return makedouble_ex(PIC_ALLOC_NORMAL,v,t); }
@@ -495,6 +507,9 @@ namespace piw
     PIW_DECLSPEC_FUNC(data_nb_t) dictdel_nb_ex(unsigned nb, const data_nb_t &d, const std::string &k);
     PIW_DECLSPEC_FUNC(data_nb_t) dictset_nb_ex(unsigned nb, const data_nb_t &d, const std::string &k, const data_nb_t &v);
     PIW_DECLSPEC_FUNC(data_nb_t) dictupdate_nb_ex(unsigned nb, const data_nb_t &d, const data_nb_t &d2);
+    PIW_DECLSPEC_FUNC(data_nb_t) tuplenull_nb_ex(unsigned nb, unsigned long long t=0L);
+    PIW_DECLSPEC_FUNC(data_nb_t) tupledel_nb_ex(unsigned nb, const data_nb_t &d, unsigned i);
+    PIW_DECLSPEC_FUNC(data_nb_t) tupleadd_nb_ex(unsigned nb, const data_nb_t &d, const data_nb_t &v);
 
     inline data_nb_t makewire_nb(unsigned dl, const unsigned char *dp) { return makewire_nb_ex(PIC_ALLOC_NB,dl,dp); }
     inline data_nb_t pathnull_nb(unsigned long long t) { return pathnull_nb_ex(PIC_ALLOC_NB,t); }
@@ -511,6 +526,9 @@ namespace piw
     inline data_nb_t dictdel_nb(const data_nb_t &d, const std::string &k) { return dictdel_nb_ex(PIC_ALLOC_NB,d,k); }
     inline data_nb_t dictset_nb(const data_nb_t &d, const std::string &k, const data_nb_t &v) { return dictset_nb_ex(PIC_ALLOC_NB,d,k,v); }
     inline data_nb_t dictupdate_nb(const data_nb_t &d, const data_nb_t &d2) { return dictupdate_nb_ex(PIC_ALLOC_NB,d,d2); }
+    inline data_nb_t tuplenull_nb(unsigned long long t) { return tuplenull_nb_ex(PIC_ALLOC_NB,t); }
+    inline data_nb_t tupledel_nb(const data_nb_t &d, unsigned i) { return tupledel_nb_ex(PIC_ALLOC_NB,d,i); }
+    inline data_nb_t tupleadd_nb(const data_nb_t &d, const data_nb_t &v) { return tupleadd_nb_ex(PIC_ALLOC_NB,d,v); }
     inline data_nb_t makeblob_nb(unsigned long long ts, unsigned size, unsigned char **pdata) { return makeblob_nb_ex(PIC_ALLOC_NB,ts,size,pdata); }
     inline data_nb_t makedouble_nb(double v, unsigned long long t=0L) { return makedouble_nb_ex(PIC_ALLOC_NB,v,t); }
     inline data_nb_t makefloat_nb(float v, unsigned long long t=0L) { return makefloat_nb_ex(PIC_ALLOC_NB,v,t); }
@@ -583,6 +601,7 @@ namespace piw
             void set_normal(const data_t &d);
             void set_nb(const data_nb_t &d);
             void clear();
+            bool is_empty();
             const data_nb_t get() const;
 
         private:

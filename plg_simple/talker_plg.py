@@ -134,6 +134,22 @@ class Key(collection.Collection):
         self.set_internal(250,atom.Atom(domain=domain.Trigger(),init=False,names='activate',policy=policy.TriggerPolicy(self.__handler),transient=True))
         self.agent.light_convertor.set_status_handler(self.index, piw.slowchange(utils.changify(self.set_status)))
 
+        self.set_internal(248, atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key row', init=None, policy=atom.default_policy(self.__change_key_row)))
+        self.set_internal(249, atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key column', init=None, policy=atom.default_policy(self.__change_key_column)))
+
+    def __change_key_row(self,val):
+        self.get_internal(248).set_value(val)
+        self.__update_event_key()
+        return False
+
+    def __change_key_column(self,val):
+        self.get_internal(249).set_value(val)
+        self.__update_event_key()
+        return False
+
+    def __update_event_key(self):
+       self.__event.set_key(utils.maketuple((piw.makelong(self.get_internal(248).get_value(),0),piw.makelong(self.get_internal(249).get_value(),0)), 0)) 
+
     @async.coroutine('internal error')
     def instance_create(self,name):
         e = Event(self,self.__event.fastdata(),name)
@@ -159,7 +175,7 @@ class Key(collection.Collection):
         self.get_internal(250).get_policy().set_status(v)
 
     def isinternal(self,k):
-        if k == 250: return True
+        if k == 248 or k == 249 or k == 250: return True
         return atom.Atom.isinternal(self,k)
 
     def __change_color(self,d):
@@ -229,11 +245,15 @@ class Agent(agent.Agent):
         self.light_aggregator = piw.aggregator(self.light_convertor.cookie(),self.domain)
         self.controller = piw.controller(self.light_aggregator.get_output(1),utils.pack_str(1))
 
-        self.activation_input = bundles.VectorInput(self.controller.cookie(), self.domain,signals=(1,))
+        self.activation_input = bundles.VectorInput(self.controller.event_cookie(), self.domain,signals=(1,))
 
-        self[2] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.activation_input.local_policy(1,False),names='activation input')
         self[3] = collection.Collection(creator=self.__create,wrecker=self.__wreck,names='k',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst,protocols='hidden-connection')
         self[4] = PhraseBrowser(self.__eventlist,self.__keylist)
+
+        self.ctl_input = bundles.VectorInput(self.controller.control_cookie(),self.domain,signals=(1,))
+        self[5] = atom.Atom(domain=domain.Aniso(),policy=self.ctl_input.vector_policy(1,False),names='controller input')
+
+        self[6] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.local_policy(1,False), names='key input')
 
     def __eventlist(self,k):
         el=[]
@@ -349,11 +369,22 @@ class Upgrader(upgrade.Upgrader):
         return ','.join(actions)
 
     def upgrade_1_0_1_to_1_0_2(self,tools,address):
+        print 'upgrading talker',address
+
+        root = tools.get_root(address)
+
         connections = tools.get_connections()
-        keys = tools.get_root(address).get_node(3)
+        keys = root.get_node(3)
         keys.set_name('k')
-        for k in keys.iter(exclude=(254,255)):
-            for e in k.iter(exclude=(250,254,255)):
+        for k in keys.iter(exclude=(253,254,255)):
+            # transform the old key indices to row/column atoms
+            ordinal = k.get_meta_long('ordinal')
+            if ordinal is not None:
+                k.ensure_node(248,254).set_data(piw.makelong(0, 0))
+                k.ensure_node(249,254).set_data(piw.makelong(ordinal,0))
+
+            # upgrade the events
+            for e in k.iter(exclude=(248,249,250,253,254,255)):
                 em = e.get_data()
                 em = piw.dictset(em,'interpreter',piw.makestring('<interpreter>',0))
                 et = em.as_dict_lookup('help')
@@ -364,6 +395,18 @@ class Upgrader(upgrade.Upgrader):
                 em = piw.dictset(em,'actions',piw.makestring(actions,0))
                 e.set_data(em)
                 print 'upgrading',e.id(),et,actions
+
+        # ensure the presence of the new inputs
+        root.ensure_node(5).set_name('controller input')
+        root.ensure_node(6).set_name('key input')
+
+    def phase2_1_0_2(self,tools,address):
+        root = tools.get_root(address)
+        root.mimic_connections((2,),(5,),'controller output')
+        root.mimic_connections((2,),(6,),'key output')
+
+        # erase the activation input since it's not used anymore
+        root.erase_child(2)
 
     def upgrade_1_0_0_to_1_0_1(self,tools,address):
         keys = tools.get_root(address).get_node(3)

@@ -213,8 +213,6 @@ struct piw::stringer_t::impl_t: piw::decode_ctl_t, virtual pic::lckobject_t
 
     unsigned id_;
 
-    scaler_controller_t controller_;
-
     bool enable_;
 };
 
@@ -310,8 +308,8 @@ void voice_t::startup(main_wire_t *owner,const piw::data_nb_t &id,std::string pa
     abskey_=abskey;
     relkey_=relkey;
 
-    buffer_ = piw::xevent_data_buffer_t(SIG1(5),4);
-    buffer_.merge(b,SIG4(1,2,3,4));
+    buffer_ = piw::xevent_data_buffer_t(SIG1(5),5);
+    buffer_.merge(b,SIG5(1,2,3,4,6));
     // send the abskey out on the key output
     buffer_.add_value(5,piw::makelong_bounded_nb(1000,0,0,abskey,id_.time()));
 //    buffer_.add_value(5,piw::makelong_bounded_nb(1000,0,0,abskey,t));
@@ -460,13 +458,11 @@ void main_wire_t::detach_voice(voice_t *voice)
 
 void main_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::xevent_data_buffer_t &b)
 {
-    piw::data_nb_t d;
     seq_=seq;
 
-    unsigned lp=id.as_pathgristlen();
-    const unsigned char *grist=id.as_pathgrist();
-    unsigned knum;
-
+    unsigned knum=0;
+    unsigned kcourse=0;
+    unsigned kkey=0;
 
 #if STRINGER_USE_PATH==1
     unsigned chaff_len=id.as_pathchafflen();
@@ -478,30 +474,14 @@ void main_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::
     std::string chaff("path");
 #endif // STRINGER_USE_PATH==1
 
-    if(lp>0)
+    piw::data_nb_t d;
+    if(b.latest(6,d,id.time()) && d.is_tuple() && d.as_tuplelen() >= 6)
     {
-        knum=grist[lp-1];
-        //pic::logmsg() << "lp=" << lp << " knum = " << knum;
-    }
-    else
-    {
-        knum=0;
-        //pic::logmsg() << "lp=0 knum=0";
-    }
+        knum = d.as_tuple_value(3).as_long();
 
-    unsigned kcourse=0;
-    unsigned kkey=0;
-
-    piw::scaler_controller_t::bits_t bits(impl_->controller_.bits(id));
-
-    if(bits.bits&BLAYOUT)
-    {
-        bits.layout->geometry(knum,kcourse,kkey);
-    }
-    else
-    {
-        kcourse=1;
-        kkey=knum;
+        piw::data_nb_t muskey = d.as_tuple_value(4);
+        kcourse = unsigned(muskey.as_tuple_value(0).as_float());
+        kkey = unsigned(muskey.as_tuple_value(1).as_float());
     }
 
 #if STRINGER_DEBUG>0
@@ -561,11 +541,6 @@ piw::stringer_t::~stringer_t()
 piw::cookie_t piw::stringer_t::data_cookie()
 {
     return impl_->main_decoder_.cookie();
-}
-
-piw::cookie_t piw::stringer_t::ctl_cookie()
-{
-    return impl_->controller_.cookie();
 }
 
 void piw::stringer_t::enable(bool b)

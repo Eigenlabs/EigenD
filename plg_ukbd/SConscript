@@ -21,4 +21,4 @@
 Import('env')
 
 env.PiPythonPackage('0.0',package='eigend',natives=Split('ukbd_native'),pi='0.0',piupot='0.0')
-env.PiAgent('micro_manager','plg_ukbd.ukbd_plg','plg_ukbd:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('micro_manager','plg_ukbd.ukbd_plg','plg_ukbd:0.0',cversion='1.0.1',package='eigend')

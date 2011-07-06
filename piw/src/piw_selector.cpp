@@ -52,7 +52,7 @@ namespace
 
     struct slot_t: virtual public pic::lckobject_t
     {
-        slot_t(unsigned char sl): slot_(sl), state_(false), current_(false)
+        slot_t(): index_(0), state_(false), current_(false)
         {
         }
 
@@ -91,8 +91,25 @@ namespace
         {
         }
 
+        static int __set_index(void *self_, void *i_)
+        {
+            slot_t *self = (slot_t *)self_;
+            unsigned i = *(unsigned *)i_;
+
+            self->index_ = i;
+
+            return 0;
+        }
+
+        void set_index(unsigned i)
+        {
+            piw::tsd_fastcall(__set_index,this,(void *)&i);
+        }
+
         void change_status(piw::statusbuffer_t *buffer, unsigned sel)
         {
+            if(!index_) return;
+
             unsigned st(BCTSTATUS_OFF);
 
             if (MODE_SELECTING == sel)
@@ -100,7 +117,7 @@ namespace
                 st = state_ ? BCTSTATUS_SELECTOR_ON : BCTSTATUS_SELECTOR_OFF;
             }
 
-            buffer->set_status(slot_,st);
+            buffer->set_status(index_,st);
         }
 
         int gc_traverse(void *v, void *a) const
@@ -118,7 +135,7 @@ namespace
             return 0;
         }
 
-        unsigned slot_;
+        unsigned index_;
         bool state_;
         pic::flipflop_functor_t<piw::change_nb_t> gate_;
         pic::flipflop_functor_t<piw::change_nb_t> selected_;
@@ -128,7 +145,7 @@ namespace
 
 struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
 {
-    impl_t(const cookie_t &lo, const change_nb_t &ls, unsigned n, bool initial): selecting_(MODE_RUNNING),initial_(initial),lightswitch_(ls),lightchannel_(n),statusbuffer_(piw::change_nb_t(),0,lo)
+    impl_t(const cookie_t &lo, const change_nb_t &ls, const change_nb_t &ms, unsigned n, bool initial): selecting_(MODE_RUNNING),initial_(initial),lightswitch_(ls),modeselector_(ms),lightchannel_(n),statusbuffer_(piw::change_nb_t(),0,lo)
     {
         statusbuffer_.autosend(false);
     }
@@ -198,7 +215,7 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
         if(si!=slots_.alternate().end())
             return si->second;
 
-        slot_t *sl = new slot_t(s+1);
+        slot_t *sl = new slot_t();
 
         slots_.alternate().insert(std::make_pair(s,sl));
         slots_.exchange();
@@ -219,7 +236,7 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
         delete sl;
     }
 
-    static int __setgate(void *self_, void *sl_, void *func_, void *selected_)
+    static int __set_gate(void *self_, void *sl_, void *func_, void *selected_)
     {
         impl_t *self = (impl_t *)self_;
         slot_t *sl = (slot_t *)sl_;
@@ -238,7 +255,18 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
     void gate_output(unsigned s, const piw::change_nb_t &f, const piw::change_nb_t &e)
     {
         slot_t *sl = plumb_slot(s);
-        piw::tsd_fastcall4(__setgate,this,sl,(void *)&f,(void *)&e);
+        piw::tsd_fastcall4(__set_gate,this,sl,(void *)&f,(void *)&e);
+    }
+
+    void gate_status_index(unsigned s, unsigned i)
+    {
+        pic::lckmap_t<unsigned,slot_t *>::lcktype::iterator si=slots_.alternate().find(s);
+
+        if(si!=slots_.alternate().end())
+        {
+            slot_t *sl = si->second;
+            sl->set_index(i);
+        }
     }
 
     void clear_output(unsigned s)
@@ -332,7 +360,7 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
                 {
                     if(ci->second->state_)
                     {
-                        lightswitch_(piw::makelong_nb(ci->first+1,t));
+                        lightswitch_(piw::makelong_nb(ci->first,t));
                         break;
                     }
                 }
@@ -361,6 +389,8 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
             selecting_ = s;
             unsigned long long t = d.time();
 
+            modeselector_(piw::makelong_nb(s,t));
+
             pic::flipflop_t<pic::lckmap_t<unsigned,slot_t *>::lcktype>::guard_t g(slots_);
             pic::lckmap_t<unsigned,slot_t *>::lcktype::const_iterator ci;
 
@@ -375,7 +405,7 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
                 {
                     if(ci->second->state_)
                     {
-                        lightswitch_(piw::makelong_nb(ci->first+1,t));
+                        lightswitch_(piw::makelong_nb(ci->first,t));
                         break;
                     }
                 }
@@ -394,6 +424,7 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
     bool initial_;
     pic::flipflop_t<pic::lckmap_t<unsigned,slot_t *>::lcktype> slots_;
     change_nb_t lightswitch_;
+    change_nb_t modeselector_;
     unsigned lightchannel_;
     piw::statusbuffer_t statusbuffer_;
 };
@@ -408,7 +439,7 @@ void gatesink_t::invoke(const piw::data_nb_t &d) const
     i_->gate_input(s_,piw::makebool_nb(s,d.time()));
 }
 
-piw::selector_t::selector_t(const cookie_t &lo, const change_nb_t &ls, unsigned n, bool initial): impl_(new impl_t(lo,ls,n,initial))
+piw::selector_t::selector_t(const cookie_t &lo, const change_nb_t &ls, const change_nb_t &ms, unsigned n, bool initial): impl_(new impl_t(lo,ls,ms,n,initial))
 {
 }
 
@@ -443,6 +474,11 @@ void piw::selector_t::choose(bool ch)
 void piw::selector_t::gate_output(unsigned s, const piw::change_nb_t &f, const piw::change_nb_t &e)
 {
     impl_->gate_output(s,f,e);
+}
+
+void piw::selector_t::gate_status_index(unsigned s, unsigned i)
+{
+    impl_->gate_status_index(s,i);
 }
 
 void piw::selector_t::clear_output(unsigned s)
@@ -491,7 +527,7 @@ static int __select(void *i_, void *s_, void *e_)
         ci->second->change_status(&i->statusbuffer_,i->selecting_);
         i->statusbuffer_.send();
         if(e)
-            i->lightswitch_(piw::makelong_nb(ci->first+1,t));
+            i->lightswitch_(piw::makelong_nb(ci->first,t));
     }
 
     return 0;

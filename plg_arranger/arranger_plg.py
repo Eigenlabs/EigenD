@@ -269,11 +269,12 @@ class Agent(agent.Agent):
         self.ctlr_input = bundles.ScalarInput(self.ctlr_fb.cookie(),self.domain,signals=(1,))
         self[2] = atom.Atom(domain=domain.Aniso(),policy=self.ctlr_input.policy(1,False),names='controller input')
 
-        self.kinput = bundles.VectorInput(self.view.cookie(),self.domain,signals=(1,2,3))
+        self.kinput = bundles.VectorInput(self.view.cookie(),self.domain,signals=(1,2,3,5))
         self[3] = atom.Atom()
         self[3][1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.kinput.vector_policy(1,False),names='pressure input')
         self[3][2] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.kinput.merge_policy(2,False),names='roll input')
         self[3][3] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.kinput.merge_policy(3,False),names='yaw input')
+        self[3][5] = atom.Atom(domain=domain.Aniso(), policy=self.kinput.vector_policy(5,False),names='key input')
         self[3][4] = self.light_output
 
         self.cinput = bundles.ScalarInput(self.model.cookie(),self.domain,signals=(1,2))
@@ -371,6 +372,16 @@ class Agent(agent.Agent):
                 return
 
 class Upgrader(upgrade.Upgrader):
+    def upgrade_1_0_0_to_1_0_1(self,tools,address):
+        print 'upgrading arranger',address
+        root = tools.get_root(address)
+
+        root.ensure_node(3,5).set_name('key input')
+
+    def phase2_1_0_1(self,tools,address):
+        root = tools.get_root(address)
+        root.mimic_connections((3,1),(3,5),'key output')
+
     def upgrade_2_0_to_3_0(self,tools,address):
         root = tools.root(address)
         evts = root.get_node(6)

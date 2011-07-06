@@ -3,7 +3,7 @@
 >>>
 
 
-from piw_native[piw/piw.pip] import cookie,change_nb,change
+from piw_native[piw/piw.pip] import cookie,change_nb,change,data
 from picross_native[picross/picross.pip] import notify
 
 class bundle[ukbd::bundle_t]
@@ -11,6 +11,7 @@ class bundle[ukbd::bundle_t]
     bundle(const char *,const cookie &, const notify &, const change &)
     void close()
     stdstr name()
+    data get_courses()
     change_nb led_functor()
     void set_threshold1(float)
     float get_threshold1()

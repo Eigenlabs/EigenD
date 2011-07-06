@@ -21,6 +21,13 @@
 import piw
 from pi import const,domain,proxy,node,utils,logic,paths,container
 
+class FilterStreamPolicy:
+    def __init__(self,f):
+        self.__f = f
+
+    def create_converter(self,iso):
+        return piw.filtering_converter(self.__f)
+
 class TriggerStreamPolicy:
     def create_converter(self,iso):
         return piw.triggering_converter()
@@ -33,6 +40,7 @@ class LopassStreamPolicy:
     def __init__(self,f,c):
         self.__f = f
         self.__c = c
+
     def create_converter(self,iso):
         return piw.lopass_converter(self.__f,self.__c)
 

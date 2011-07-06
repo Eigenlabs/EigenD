@@ -38,6 +38,7 @@ namespace kbd
             ~alpha2_bundle_legacy_t();
 
             std::string name();
+            piw::data_t get_courses();
             float get_threshold1();
             float get_threshold2();
             void set_threshold1(float);
@@ -77,6 +78,7 @@ namespace kbd
             ~alpha2_bundle_t();
 
             std::string name();
+            piw::data_t get_courses();
             float get_threshold1();
             float get_threshold2();
             void set_threshold1(float);
@@ -129,6 +131,7 @@ namespace kbd
             tau_bundle_t(pic::usbdevice_t *usb,const piw::cookie_t &kc,const pic::notify_t &dead);
             ~tau_bundle_t();
             std::string name();
+            piw::data_t get_courses();
             float get_threshold1();
             float get_threshold2();
             void set_threshold1(float);

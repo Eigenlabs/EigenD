@@ -30,6 +30,53 @@ def removelist(l1,s):
         if l not in s:
             l2.append(l)
     return l2
+
+
+def calc_keynum(geo,row,col):
+    if not geo or not geo.is_tuple():
+        return None
+    
+    geolen = geo.as_tuplelen();
+    if geolen <= 0:
+        return None
+
+    if 0 == col:
+        return None
+
+    # the key was entered in a sequential column-only format
+    if 0 == row and col > 0:
+        return col
+    
+    # resolve relative rows
+    if row < 0:
+        row = geolen + row + 1
+
+    # only calculate the key number when the row exists
+    if row > geolen:
+        return None
+    
+    rowlen = geo.as_tuple_value(row-1).as_long()
+
+    # resolve relative columns
+    if col < 0:
+        col = rowlen + col + 1
+
+    # only calculate the key number when the column exists
+    if rowlen < col:
+        return None
+
+    # the row and column are within existing bounds, iterate
+    # through the geometry to calculate the key number
+    if row > 0 and col > 0:
+        keynum = 0
+        for i in range(1,row):
+            keynum += geo.as_tuple_value(i-1).as_long()
+        keynum += col
+
+        return keynum
+
+    return None
+
     
 class SlowTonicChange:
     def __init__(self,agent,tonic):
@@ -40,6 +87,7 @@ class SlowTonicChange:
         if d.as_norm() != 0:
             self.__agent[19].set_value(self.__tonic)
 
+
 class SlowScaleChange:
     def __init__(self,agent,scale):
         self.__agent = agent
@@ -48,6 +96,7 @@ class SlowScaleChange:
     def change(self,d):
         if d.as_norm() != 0:
             self.__agent[20].set_value(self.__scale)
+
 
 class Controller:
     def __init__(self,cookie):
@@ -75,45 +124,53 @@ class Controller:
 
     def set_course_semis(self,idx,val):
         self.ensure(idx)
-        l = map(float,self.getlist('courseoffset'))
+        l = [i.as_float() for i in self.getlist('courseoffset')]
         l[idx-1] = float(val)
-        self.setlist('courseoffset',l)
+        self.setlist('courseoffset',[piw.makefloat(i,0) for i in l])
 
     def set_course_steps(self,idx,val):
         self.ensure(idx)
-        l = map(float,self.getlist('courseoffset'))
+        l = [i.as_float() for i in self.getlist('courseoffset')]
         l[idx-1] = float(val+10000 if val else 0)
-        self.setlist('courseoffset',l)
+        self.setlist('courseoffset',[piw.makefloat(i,0) for i in l])
 
     def num_courses(self):
         l = self.getlist('courseoffset')
         return len(l) if l else 0
 
     def ensure(self,course):
-        l = map(float,self.getlist('courseoffset'))
+        l = [i.as_float() for i in self.getlist('courseoffset')]
         if course>len(l):
             xl = course-len(l)
             l.extend([0]*xl)
-            self.setlist('courseoffset',l)
+            self.setlist('courseoffset',[piw.makefloat(i,0) for i in l])
 
-        l = map(int,self.getlist('courselen'))
+        l = [i.as_long() for i in self.getlist('courselen')]
         if course>len(l):
             xl = course-len(l)
             l.extend([0]*xl)
-            self.setlist('courselen',l)
+            self.setlist('courselen',[piw.makelong(i,0) for i in l])
 
     def setlist(self,name,l):
-        self.__dict.put_ctl(name, piw.makestring(repr(l),piw.tsd_time()))
+        self.__dict.put_ctl(name, utils.maketuple(l,piw.tsd_time()))
+        self.__state.set_data(self.__dict.get_ctl_dict())
+
+    def settuple(self,name,t):
+        self.__dict.put_ctl(name, t)
         self.__state.set_data(self.__dict.get_ctl_dict())
 
     def getlist(self,name):
+        d = self.gettuple(name)
+        if d is None or not d.is_tuple():
+            return []
+        return utils.tuple_items(d)
+
+    def gettuple(self,name):
         d = self.__dict.get_ctl_value(name)
-        if d is None or not d.is_string():
-            return []
-        s = d.as_string()
-        if len(s)<2:
-            return []
-        return s[1:-1].split(',')
+        if d is None or not d.is_tuple():
+            return piw.tuplenull(piw.tsd_time())
+        return d;
+        
 
 class VirtualKey(atom.Atom):
     def __init__(self,size,chosen):
@@ -134,6 +191,7 @@ class VirtualKey(atom.Atom):
         if o<1 or o>self.__size(): return '[]'
         return self.__key(o)
 
+
 class VirtualCourse(atom.Atom):
     def __init__(self,controller):
         self.__controller = controller
@@ -146,27 +204,29 @@ class VirtualCourse(atom.Atom):
         if o<1 or o>self.__controller.num_courses(): return '[]'
         return '[ideal([~server,course],%d)]'%o
 
+
 class Output(atom.Atom):
     def __init__(self,master,slot):
         self.__agent = master.agent
         self.__list = master
+        self.__slot = slot
         self.__tee = None
-        self.__current = None
 
         atom.Atom.__init__(self,domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='kgroup output',protocols='remove',ordinal=slot,container=const.verb_node)
 
         self.light_output = piw.clone(True)
-        self.input = bundles.VectorInput(self.light_output.cookie(),self.__agent.domain,signals=(1,))
+        self.light_input = bundles.VectorInput(self.light_output.cookie(),self.__agent.domain,signals=(1,))
 
         self[1] = bundles.Output(1,False, names='activation output')
         self[2] = bundles.Output(2,False, names='pressure output')
         self[3] = bundles.Output(3,False, names='roll output')
         self[4] = bundles.Output(4,False, names='yaw output')
+        self[22] = bundles.Output(5,False, names='key output')
         self[5] = bundles.Output(1,False, names='strip position output',ordinal=1)
         self[9] = bundles.Output(1,False, names='strip position output',ordinal=2)
         self[6] = bundles.Output(1,False, names='breath output')
         self[7] = bundles.Output(1,False, names='controller output', continuous=True)
-        self[8] = atom.Atom(names='light input',protocols='revconnect',policy=self.input.vector_policy(1,False,clocked=False,auto_slot=True),domain=domain.Aniso())
+        self[8] = atom.Atom(names='light input',protocols='revconnect',policy=self.light_input.vector_policy(1,False,clocked=False,auto_slot=True),domain=domain.Aniso())
         self[10] = bundles.Output(2,False, names='absolute strip output',ordinal=1)
         self[11] = bundles.Output(2,False, names='absolute strip output',ordinal=2)
         self[30] = bundles.Output(1,False,names='pedal output', ordinal=1, protocols='')
@@ -176,7 +236,10 @@ class Output(atom.Atom):
 
         self[20] = VirtualKey(self.__agent.kgroup_size,self.__agent.key_choice)
 
-        self.koutput = bundles.Splitter(self.__agent.domain,self[1],self[2],self[3],self[4])
+        self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key row', init=None, policy=atom.default_policy(self.__change_key_row))
+        self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key column', init=None, policy=atom.default_policy(self.__change_key_column))
+
+        self.koutput = bundles.Splitter(self.__agent.domain,self[1],self[2],self[3],self[4],self[22])
         self.s1output = bundles.Splitter(self.__agent.domain,self[5],self[10])
         self.s2output = bundles.Splitter(self.__agent.domain,self[9],self[11])
         self.boutput = bundles.Splitter(self.__agent.domain,self[6])
@@ -188,27 +251,30 @@ class Output(atom.Atom):
 
         self.kpolyctl = piw.polyctl(10,self.koutput.cookie(),False,5)
 
-    def property_change(self,key,value):
-        if key=='ordinal' and value and value.is_long() and value.as_long():
-            if self.__current:
-                self.__list.rename(self,self.__current,value.as_long())
+    def __change_key_row(self,val):
+        self[24].set_value(val)
+        self.update_status_index()
+        return False
+
+    def __change_key_column(self,val):
+        self[25].set_value(val)
+        self.update_status_index()
+        return False
 
     def __setstate(self,data):
         self.set_value(data.as_norm()!=0.0)
 
     def enable(self,val):
-        if self.__current:
-            self.__agent.mode_selector.select(self.__current-1,val)
+        self.__agent.mode_selector.select(self.__slot,val)
         return True
 
-    def plumb(self,name):
+    def plumb(self):
         self.unplumb()
 
-        self.__current = name
         tee = piw.changelist_nb()
         self.__tee = tee
 
-        n = self.__current
+        n = self.__slot
 
         piw.changelist_connect_nb(tee,self.__agent.kclone.gate(n))
         piw.changelist_connect_nb(tee,self.__agent.s1clone.gate(n))
@@ -231,17 +297,14 @@ class Output(atom.Atom):
 
         self.light_output.set_output(1,self.__agent.light_switch.get_input(n))
 
-        self.__agent.mode_selector.gate_output(n-1,tee,utils.make_change_nb(piw.slowchange(utils.changify(self.__setstate))))
-        self.__agent.selgate.set_functor(piw.pathone(n,0),self.__agent.mode_selector.gate_input(n-1))
-        self.__agent.mode_selector.select(self.__current-1,self.get_value())
-
+        self.__agent.mode_selector.gate_output(n,tee,utils.make_change_nb(piw.slowchange(utils.changify(self.__setstate))))
+        self.__agent.mode_selector.select(n,self.get_value())
 
     def unplumb(self):
-        if self.__current is not None:
-            n = self.__current
+        if self.__tee is not None:
+            n = self.__slot
             piw.fastchange(self.__tee)(piw.makebool(False,0))
-            self.__agent.mode_selector.clear_output(n-1)
-            self.__agent.selgate.clear_functor(piw.pathone_nb(n,0))
+            self.__agent.mode_selector.clear_output(n)
             self.__agent.kclone.clear_output(n)
             self.__agent.s1clone.clear_output(n)
             self.__agent.s2clone.clear_output(n)
@@ -252,9 +315,17 @@ class Output(atom.Atom):
             self.__agent.pedal3_clone.clear_output(n)
             self.__agent.pedal4_clone.clear_output(n)
             self.light_output.clear_output(1)
-            self.__current = None
             
             self.__tee = None
+    
+    def calc_keynum(self):
+        return self.__agent.calc_physical_keynum(self[24].get_value(),self[25].get_value())
+
+    def update_status_index(self):
+        keynum = self.calc_keynum()
+        if keynum:
+            self.__agent.mode_selector.gate_status_index(self.__slot,keynum)
+        
 
 class OutputList(atom.Atom):
     def __init__(self,agent):
@@ -267,29 +338,26 @@ class OutputList(atom.Atom):
             e.unplumb()
 
     def rpc_listinstances(self,arg):
-        i = [ self[i].get_property_long('ordinal',0) for i in self ]
-        return logic.render_termlist(i)
+        return logic.render_termlist(self.keys())
 
     def rpc_createinstance(self,arg):
-        name = int(arg)
-        output = self.create(name)
+        slot = int(arg)
+        output = self.create(slot)
         if not output:
             return async.failure('output in use')
         return output.id()
 
     def rpc_delinstance(self,arg):
-        name = int(arg)
+        n = int(arg)
 
         for k,v in self.items():
-            o = v.get_property_long('ordinal',0)
-            if o == name:
+            if n == k:
                 oid = v.id()
                 del self[k]
                 self.__check_single()
                 return oid
 
         return async.failure('output not in use')
-
 
     def load_state(self,state,delegate,phase):
         self.__plumbing = False
@@ -300,11 +368,9 @@ class OutputList(atom.Atom):
         atom.Atom.load_state(self,state,delegate,phase)
 
         for v in self.values():
-            o = v.get_property_long('ordinal',0)
             v.enable(False)
-            if o:
-                v.plumb(o)
-                v.enable(v.get_value())
+            v.plumb()
+            v.enable(v.get_value())
 
         self.__plumbing = True
         self.__check_single()
@@ -312,19 +378,45 @@ class OutputList(atom.Atom):
     def __create(self,i):
         return Output(self,i)
 
-    def create(self,name):
-        for v in self.values():
-            o = v.get_property_long('ordinal',0)
-            if o==name:
-                return None
+    def create(self,slot=None):
+        if slot is not None:
+            output = self[slot]
+            if output:
+                return output
 
         slot = self.find_hole()
-        self[slot] = Output(self,slot)
-        self[slot].set_property_long('ordinal',name,notify=False)
-        self[slot].plumb(name)
+
+        output = Output(self,slot)
+        output.plumb()
+        self[slot] = output
+
         self.__check_single()
 
-        return self[slot]
+        return output
+
+    def output_selector(self,v):
+        if v.is_tuple():
+            keynum = v.as_tuple_value(3).as_long()
+            row = int(v.as_tuple_value(1).as_tuple_value(0).as_float())
+            col = int(v.as_tuple_value(1).as_tuple_value(1).as_float())
+            for k,o in self.items():
+                orow = o[24].get_value()
+                ocol = o[25].get_value()
+
+                select = False
+
+                if row == orow and col == ocol:
+                    select = True
+                elif row == 0 and ocol == keynum:
+                    select = True
+                else:
+                    okeynum = o.calc_keynum()
+                    if okeynum == keynum:
+                        select = True
+
+                if select:
+                    self.agent.mode_selector.gate_input(k)(piw.makebool_nb(True,v.time()))
+                    break
 
     def uncreate(self,oid):
         for k,v in self.items():
@@ -335,34 +427,20 @@ class OutputList(atom.Atom):
 
         return False
 
-    def rename(self,output,old_name,new_name):
-        if old_name == new_name:
-            return
-
-        output.unplumb()
-
+    def activate(self,name):
         for k,v in self.items():
-            o = v.get_property_long('ordinal',0)
-            if o == new_name:
-                v.set_property_long('ordinal',old_name,notify=False)
-                v.plumb(old_name)
-                
-        output.set_property_long('ordinal',new_name,notify=False)
-        output.plumb(new_name)
-
-    def move(self,old_id,new_name):
-        for k,v in self.items():
-            if v.id()==old_id:
-                old_name = v.get_property_long('ordinal',0)
-                self.rename(v,old_name,new_name)
-                return True
-
-        return False
+            if v.id()==name:
+                self.agent.mode_selector.activate(k)
+                break
 
     def __check_single(self):
         outputs = self.values()
         if len(outputs)==1:
             outputs[0].enable(True)
+
+    def update_status_indexes(self):
+        for v in self.values():
+            v.update_status_index()
 
 
 class Agent(agent.Agent):
@@ -371,13 +449,12 @@ class Agent(agent.Agent):
 
         self.__active_blinker = None
         self.__choices = []
-        self.__coursekeys=[]
-        self.__course=1
+        self.__coursekeys = []
+        self.__course = 1
         self.__cur_size = 0
 
         self.__private = node.Server()
         self.set_private(self.__private)
-        self.__private[3] = node.Server(value=piw.makestring('[]',0),change=self.__set_members)
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
@@ -403,7 +480,7 @@ class Agent(agent.Agent):
         self.kclone.set_policy(False)
 
         self.key_mapper = piw.clone(True) # keys
-        self.key_mapper.set_filtered_output(1,self.kclone.cookie(),self.mapper.key_filter())
+        self.key_mapper.set_filtered_data_output(1, self.kclone.cookie(), self.mapper.key_filter(), 5)
 
         self.s1input = bundles.ScalarInput(self.s1clone.cookie(),self.domain,signals=(1,2))
         self.s2input = bundles.ScalarInput(self.s2clone.cookie(),self.domain,signals=(1,2))
@@ -418,45 +495,53 @@ class Agent(agent.Agent):
         self.input_pedal2 = bundles.VectorInput(self.pedal2_clone.cookie(), self.domain, signals=(1,))
         self.input_pedal3 = bundles.VectorInput(self.pedal3_clone.cookie(), self.domain, signals=(1,))
         self.input_pedal4 = bundles.VectorInput(self.pedal4_clone.cookie(), self.domain, signals=(1,))
-        self[30]=atom.Atom(domain=domain.Aniso(), policy=self.input_pedal1.vector_policy(1,False),names='pedal input', ordinal=1)
-        self[31]=atom.Atom(domain=domain.Aniso(), policy=self.input_pedal2.vector_policy(1,False),names='pedal input', ordinal=2)
-        self[32]=atom.Atom(domain=domain.Aniso(), policy=self.input_pedal3.vector_policy(1,False),names='pedal input', ordinal=3)
-        self[33]=atom.Atom(domain=domain.Aniso(), policy=self.input_pedal4.vector_policy(1,False),names='pedal input', ordinal=4)
+        self[30] = atom.Atom(domain=domain.Aniso(), policy=self.input_pedal1.vector_policy(1,False),names='pedal input', ordinal=1)
+        self[31] = atom.Atom(domain=domain.Aniso(), policy=self.input_pedal2.vector_policy(1,False),names='pedal input', ordinal=2)
+        self[32] = atom.Atom(domain=domain.Aniso(), policy=self.input_pedal3.vector_policy(1,False),names='pedal input', ordinal=3)
+        self[33] = atom.Atom(domain=domain.Aniso(), policy=self.input_pedal4.vector_policy(1,False),names='pedal input', ordinal=4)
 
-        self.kinput = bundles.VectorInput(self.key_mapper.cookie(),self.domain,signals=(1,2,3,4),threshold=10)
+        self.kinput = bundles.VectorInput(self.key_mapper.cookie(),self.domain,signals=(1,2,3,4,5),threshold=10)
 
         self[11] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.kinput.vector_policy(1,False), names='activation input')
         self[12] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.kinput.vector_policy(2,False), names='pressure input')
         self[13] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.kinput.vector_policy(3,False), names='roll input')
         self[14] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.kinput.vector_policy(4,False), names='yaw input')
-
+        self[22] = atom.Atom(domain=domain.Aniso(), policy=self.kinput.vector_policy(5,False), names='key input')
 
         self.controller = Controller(self.cclone.cookie())
-        self.__private[2]=self.controller.state()
+        self.__private[2] = self.controller.state()
 
-        self.selgate = piw.functor_backend(1,True)
+        self.keypulse = piw.changelist_nb()
+        self.keychoice = utils.make_change_nb(piw.slowchange(utils.changify(self.__choice)))
+        self.selgate = piw.functor_backend(5,True)
+        self.selgate.set_gfunctor(self.keypulse)
         self.kclone.enable(250,True)
         self.kclone.set_output(250,self.selgate.cookie())
 
         self.status_buffer = piw.statusbuffer(self.light_switch.gate_input(),251,self.light_switch.get_input(251))
         self.status_buffer.autosend(False)
-        self.mode_selector = piw.selector(self.light_switch.get_input(250),self.status_buffer.enabler(),250,False)
+        lightselection = self.status_buffer.enabler()
+        modeselection = utils.make_change_nb(piw.slowchange(utils.changify(self.__mode_selection)))
+        self.mode_selector = piw.selector(self.light_switch.get_input(250),lightselection,modeselection,250,False)
 
         self.modepulse = piw.changelist_nb()
         piw.changelist_connect_nb(self.modepulse,self.status_buffer.blinker())
         piw.changelist_connect_nb(self.modepulse,self.mode_selector.mode_input())
 
-        self[10] = atom.Atom(domain=domain.Bool(), init=False, fuzzy="activation", names='mode input', protocols='explicit', policy=policy.FastPolicy(self.modepulse,policy.TriggerStreamPolicy()))
+        self[23] = atom.Atom(domain=domain.Aniso(), names='mode key input', policy=policy.FastPolicy(self.modepulse,policy.FilterStreamPolicy(piw.make_d2b_nb_functor(self.__is_mode_key))))
+        self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key row', init=None, policy=atom.default_policy(self.__change_mode_key_row))
+        self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key column', init=None, policy=atom.default_policy(self.__change_mode_key_column))
+        self[26] = atom.Atom(domain=domain.String(), init='[]', names='key map', policy=atom.default_policy(self.__set_members))
 
         self.add_verb2(3,'set([un],None)',callback=self.__untune)
 
         self.add_verb2(5,'create([],None,role(None,[mass([output])]))',self.__create)
         self.add_verb2(6,'create([un],None,role(None,[concrete,singular,partof(~(a)#"1")]))', self.__uncreate)
         self.add_verb2(7,'choose([],None,role(None,[matches([k])]),option(as,[numeric]))',self.__choose)
+        self.add_verb2(11,'choose([un],None)',self.__unchoose)
         
         self.add_verb2(8,'set([],None,role(None,[tagged_ideal([~server,course],[offset])]),role(to,[mass([semitone])]))',callback=self.__set_course_semi)
         self.add_verb2(9,'set([],None,role(None,[tagged_ideal([~server,course],[offset])]),role(to,[mass([interval])]))',callback=self.__set_course_int)
-        self.add_verb2(10,'move([],None,role(None,[concrete,singular,partof(~(a)"#1")]),role(to,[numeric]))', self.__move)
 
         self.add_verb2(12,'clear([],None,option(None,[mass([course])]))',self.__kclear)
         self.add_verb2(13,'add([],None,role(None,[mass([k])]),option(to,[mass([course])]))',self.__kadd)
@@ -467,6 +552,7 @@ class Agent(agent.Agent):
 
         self[16] = VirtualCourse(self.controller)
 
+        self.__upstream_rowlen = None
         self.__upstream_size = 0
 
         self.cfunctor = piw.functor_backend(1,True)
@@ -476,17 +562,44 @@ class Agent(agent.Agent):
 
         th=(T('inc',1),T('biginc',1),T('control','updown'))
 
-        self[18]=atom.Atom(domain=domain.BoundedFloatOrNull(-1,9,hints=th),init=None,policy=atom.default_policy(self.__change_octave),names='octave')
+        self[18] = atom.Atom(domain=domain.BoundedFloatOrNull(-1,9,hints=th),init=None,policy=atom.default_policy(self.__change_octave),names='octave')
 
-        self[19]=atom.Atom(domain=domain.BoundedFloatOrNull(0,12,hints=th),init=None,policy=atom.default_policy(self.__change_tonic),names='tonic',protocols='bind set',container=(None,'tonic',self.verb_container()))
+        self[19] = atom.Atom(domain=domain.BoundedFloatOrNull(0,12,hints=th),init=None,policy=atom.default_policy(self.__change_tonic),names='tonic',protocols='bind set',container=(None,'tonic',self.verb_container()))
         self[19].add_verb2(1,'set([],~a,role(None,[instance(~self)]),role(to,[ideal([None,note]),singular]))',create_action=self.__tune_tonic_fast,callback=self.__tune_tonic)
 
-        self[20]=atom.Atom(domain=domain.String(),init='',policy=atom.default_policy(self.__change_scale),names='scale',protocols='bind set',container=(None,'scale',self.verb_container()))
+        self[20] = atom.Atom(domain=domain.String(),init='',policy=atom.default_policy(self.__change_scale),names='scale',protocols='bind set',container=(None,'scale',self.verb_container()))
         self[20].add_verb2(1,'set([],~a,role(None,[instance(~self)]),role(to,[ideal([None,scale]),singular]))',create_action=self.__tune_scale_fast,callback=self.__tune_scale)
         
-        self[21]=atom.Atom(domain=domain.BoundedFloatOrNull(0,20),init=0.5,policy=atom.default_policy(self.__change_blinktime),names='blink')
+        self[21] = atom.Atom(domain=domain.BoundedFloatOrNull(0,20),init=0.5,policy=atom.default_policy(self.__change_blinktime),names='blink')
 
-        self[1]=OutputList(self)
+        self[1] = OutputList(self)
+        self.outputchoice = utils.make_change_nb(piw.slowchange(utils.changify(self[1].output_selector)))
+
+    def __is_mode_key(self,d):
+        row = self[24].get_value()
+        col = self[25].get_value()
+        if d.is_tuple():
+            key = d.as_tuple_value(1)
+
+            geo = d.as_tuple_value(2)
+            if row < 0:
+                rowcount = geo.as_tuplelen()
+                row = rowcount + row + 1
+
+            if col < 0:
+                rowlen = geo.as_tuple_value(row-1).as_long()
+                col = rowlen + col + 1
+
+            if int(key.as_tuple_value(0).as_float()) == row and int(key.as_tuple_value(1).as_float()) == col:
+                return True
+            
+        return False
+
+    def __mode_selection(self,d):
+        if d.as_long():
+            piw.changelist_connect_nb(self.keypulse,self.outputchoice)
+        else:
+            piw.changelist_disconnect_nb(self.keypulse,self.outputchoice)
 
     def __change_scale(self,val):
         self[20].set_value(val)
@@ -513,21 +626,64 @@ class Agent(agent.Agent):
         self.status_buffer.set_blink_time(float(val))
         return False
 
+    def __change_mode_key_row(self,val):
+        self[24].set_value(val)
+        return False
+
+    def __change_mode_key_column(self,val):
+        self[25].set_value(val)
+        return False
+
     def __decode(self,k):
         try:
             if not k.is_dict(): return 0
-            cl = k.as_dict_lookup('courselen')
-            if not cl.is_string(): return 0
-            cll = logic.parse_clause(cl.as_string())
-            if not isinstance(cll,tuple): return 0
-            k=0
-            for i in cll: k+=int(i)
-            return k
+
+            # store the upstream row lengths
+            rl = k.as_dict_lookup('rowlen')
+            if rl.is_tuple():
+                self.__upstream_rowlen = utils.tuple_items(rl)
+
+            # recalculate all key geometries based on the upstream geometry
+            self.__set_physical_geo(self.__cur_mapping())
+
+            # transform the mode key row and column in case it was set from an
+            # upgraded setup that only set the key in a sequential position
+            if self.__upstream_rowlen:
+                mode_key_row = self[24].get_value()
+                mode_key_col = self[25].get_value()
+
+                if 0 == mode_key_row and mode_key_col > 0:
+                    mode_key_row = 1
+
+                    for i in self.__upstream_rowlen:
+                        rowlen = i.as_long()
+                        if mode_key_col > rowlen:
+                            mode_key_row += 1
+                            mode_key_col -= rowlen
+                        else:
+                            break
+
+                    self.__change_mode_key_row(mode_key_row) 
+                    self.__change_mode_key_column(mode_key_col) 
+
+            # calculate the total number of keys on the keyboard
+            total_keys = 0
+
+            if self.__upstream_rowlen:
+                for i in self.__upstream_rowlen:
+                    total_keys += i.as_long()
+
+            return total_keys
         except:
             return 0
 
     def get_size(self):
         return self.__upstream_size
+
+    def calc_physical_keynum(self,row,col):
+        if self.__upstream_rowlen:
+            return calc_keynum(self.controller.gettuple('rowlen'),row,col)
+        return None
 
     def __upstream(self,k):
         size = self.__decode(k)
@@ -591,13 +747,12 @@ class Agent(agent.Agent):
 
     def __ochoose(self,subj,name):
         name = int(action.abstract_wordlist(name)[0])
-        self.mode_selector.activate(name-1)
+        self[1].activate(name)
 
     def __create(self,subj,name):
         name = int(action.abstract_wordlist(name)[0])
         o = self[1].create(name)
         return action.concrete_return(o.id())
-
 
     def __uncreate(self,subj,grp):
         a = action.concrete_object(grp)
@@ -605,18 +760,9 @@ class Agent(agent.Agent):
             return async.success(action.removed_return(a))
         return async.success(errors.doesnt_exist('output','un create'))
 
-    def __move(self,subj,src,dst):
-        old = action.concrete_object(src)
-        new = int(action.abstract_wordlist(dst)[0])
-
-        if self[1].move(old,new):
-            return async.success()
-
-        return async.success(errors.doesnt_exist('output','move'))
-
     def __getkeys(self):
         mapping = self.__cur_mapping()
-        courses = map(int,self.controller.getlist('courselen'))
+        courses = [i.as_long() for i in self.getlist('courselen')]
 
         if not courses:
             courses = [len(mapping)]
@@ -635,7 +781,7 @@ class Agent(agent.Agent):
         while len(coursekeys)>0 and not coursekeys[-1]:
             coursekeys.pop()
 
-        self.controller.setlist('courselen',[len(k) for k in coursekeys])
+        self.controller.setlist('courselen',[piw.makelong(len(k),0) for k in coursekeys])
 
         keys = []
         for c in coursekeys:
@@ -646,7 +792,7 @@ class Agent(agent.Agent):
 
     def __kclear(self,subject,course):
         if course is None:
-            self.controller.setlist('courselen',[0])
+            self.controller.setlist('courselen',[piw.makelong(0,0)])
             self.__set_mapping(())
             return
 
@@ -717,7 +863,7 @@ class Agent(agent.Agent):
         curmap = self.__cur_mapping() # [[from,to 1..N]]
         active = [str(f) for (f,t) in curmap] # all active keys
 
-        courses=self.controller.getlist('courselen')
+        courses = [i.as_long() for i in self.controller.getlist('courselen')]
         coursekeys=[]
 
         if course:
@@ -726,16 +872,16 @@ class Agent(agent.Agent):
             # collapse current courses into 1 course
             self.__course=1
             n=0
-            for c in map(int,courses):
+            for c in courses:
                 n=n+c
-            courses=[str(n)]
-            self.controller.setlist('courselen',[n])
+            courses=[n]
+            self.controller.setlist('courselen',[piw.makelong(n,0)])
 
         if len(courses)>=self.__course and self.__choices==[]:
-            clen=int(courses[self.__course-1])
+            clen=courses[self.__course-1]
             cstart=0
             for i in range(0,self.__course-1):
-                cstart=cstart+int(courses[i])
+                cstart=cstart+courses[i]
             self.__coursekeys=active[cstart:cstart+clen] 
 
         for k in range(1,self.__upstream_size+1):
@@ -751,28 +897,34 @@ class Agent(agent.Agent):
 
         self.status_buffer.override(True)
         self.mode_selector.choose(True)
-        self.selgate.set_efunctor(utils.make_change_nb(piw.slowchange(utils.changify(self.__choice))))
+        piw.changelist_connect_nb(self.keypulse,self.keychoice)
 
     def __choice(self,v):
-        v=int(str(v))
+        if not v.is_tuple() or v.as_tuplelen() < 6: return
+        keynum = v.as_tuple_value(0).as_long()
 
-        if self.__choices and v==self.__choices[-1]:
+        if self.__choices and keynum==self.__choices[-1]:
             self.mode_selector.choose(False)
-            self.selgate.clear_efunctor()
+            piw.changelist_disconnect_nb(self.keypulse,self.keychoice)
             self.status_buffer.override(False)
             self.__do_mapping()
         else:
-            if not v in self.__choices:
-                self.__choices.append(v)
+            if not keynum in self.__choices:
+                self.__choices.append(keynum)
                 for k in self.__coursekeys:
                     self.status_buffer.set_status(int(k),const.status_choose_used)
                 self.__coursekeys=[]
-                self.status_buffer.set_status(v,const.status_choose_active)
+                self.status_buffer.set_status(keynum,const.status_choose_active)
                 self.status_buffer.send()
+        
+    def __unchoose(self,subject):
+        self.mode_selector.choose(False)
+        piw.changelist_disconnect_nb(self.keypulse,self.keychoice)
+        self.status_buffer.override(False)
         
     def __do_mapping(self):
         self.controller.ensure(self.__course)
-        cl = map(int,self.controller.getlist('courselen'))
+        cl = [i.as_long() for i in self.controller.getlist('courselen')]
 
         ckeys = [str(k) for k in self.__choices]
         okeys = [m[0] for m in self.__cur_mapping()]
@@ -803,36 +955,86 @@ class Agent(agent.Agent):
                 count=count+1
                 mapping.append((nk,str(count)))
         
-        self.__set_mapping(tuple(mapping))
         cl=[]
         for v in oldcourses.itervalues():
             cl.append(len(v))
-        self.controller.setlist('courselen',cl)
+        self.controller.setlist('courselen',[piw.makelong(i,0) for i in cl])
+
+        self.__set_mapping(tuple(mapping))
+    
+    def __set_physical_geo(self,mapping):
+        rowbounds = None
+        if self.__upstream_rowlen:
+            rowbounds = []
+            for rowlen in self.__upstream_rowlen:
+                rowbounds.append([0,0])
+
+        rowlen = piw.tuplenull(0)
+        rowoffset = piw.tuplenull(0)
+
+        if rowbounds:
+            for (src,dst) in mapping:
+                row = 0 
+                col = int(src)
+                for upstream_rowlen in self.__upstream_rowlen:
+                    keysinrow = upstream_rowlen.as_long()
+                    if col > keysinrow:
+                        row += 1
+                        col -= keysinrow
+                    else:
+                        break
+
+                if 0 == rowbounds[row][0]: rowbounds[row][0] = col
+                else: rowbounds[row][0] = min(rowbounds[row][0], col)
+                rowbounds[row][1] = max(rowbounds[row][1], col)
+
+            for (first,last) in rowbounds: 
+                if first and last:
+                    rowlen = piw.tupleadd(rowlen, piw.makelong(last-first+1,0))
+                if first:
+                    rowoffset = piw.tupleadd(rowoffset, piw.makelong(first-1,0))
+                else:
+                    rowoffset = piw.tupleadd(rowoffset, piw.makenull(0))
+
+        self.controller.settuple('rowlen',rowlen)
+        self.controller.settuple('rowoffset',rowoffset)
+        self.mapper.set_rowlen(rowlen)
+        self.mapper.set_rowoffset(rowoffset)
+
+        self[1].update_status_indexes()
 
     def __set_mapping(self,mapping):
         mapper = self.mapper
         mapper.clear_mapping()
 
+        # set the physical to musical mapping
         for (src,dst) in mapping:
-            mapper.set_mapping(int(src),int(dst))
+            self.mapper.set_mapping(int(src),int(dst))
 
+        # set the musical courses tuple
+        mapper.set_courselen(self.controller.gettuple('courselen'))
+
+        # determine the physical geometry
+        self.__set_physical_geo(mapping)
+
+        # activate the mappings
         mapper.activate_mapping()
+
+        # store the mapping description in the state of the agent
         mapstr = logic.render_term(mapping)
-        self.__private[3].set_data(piw.makestring(mapstr,0))
+        self[26].set_value(mapstr)
         self.__cur_size = len(mapping)
 
         print 'activating mapping'
         self.key_mapper.enable(1,False)
         self.key_mapper.enable(1,True)
 
-
     def __set_members(self,value):
-        if value.is_string():
-            mapping=logic.parse_clause(value.as_string())
-            self.__set_mapping(mapping)
+        mapping=logic.parse_clause(value)
+        self.__set_mapping(mapping)
 
     def __cur_mapping(self):
-        return logic.parse_clause(self.__private[3].get_data().as_string())
+        return logic.parse_clause(self[26].get_value())
 
 
 class Upgrader(upgrade.Upgrader):
@@ -841,6 +1043,77 @@ class Upgrader(upgrade.Upgrader):
         (myid,mypath) = guid.split(myaddress)
         nid = ('%s/%s%s' % (myid,index,mypath))[:26]
         return '<%s>' % nid
+
+    def upgrade_1_0_2_to_1_0_3(self,tools,address):
+        print 'upgrading kgroup',address
+        root = tools.get_root(address)
+                    
+        # remove outstanding slow data
+        root.get_node(17).erase_child(254)
+
+        # ensure input atom names
+        root.ensure_node(22).set_name('key input')
+        root.ensure_node(23).set_name('mode key input')
+        root.ensure_node(24).set_name('mode key row')
+        root.ensure_node(25).set_name('mode key column')
+        root.ensure_node(26).set_name('key map')
+
+        # add key output atom to outputs
+        # and set the output key positions
+        for o in root.get_node(1).iter():
+            ordinal = o.get_meta_long('ordinal')
+            if ordinal is not None:
+                o.ensure_node(22).set_name('key output')
+                o.ensure_node(24,254).set_data(piw.makelong(0,0))
+                o.ensure_node(25,254).set_data(piw.makelong(ordinal,0))
+
+        # convert courselen and courseoffset to tuples
+        n = root.get_node(255,2)
+        courselen = n.get_meta('courselen')
+        courseoffset = n.get_meta('courseoffset')
+
+        if courselen and courselen.is_string():
+            l = eval(courselen.as_string())
+            t = courselen.time()
+            tpl = utils.maketuple([piw.makelong(i,t) for i in l],t)
+            n.set_meta('courselen',tpl)
+
+        if courseoffset and courseoffset.is_string():
+            l = eval(courseoffset.as_string())
+            t = courseoffset.time()
+            tpl = utils.maketuple([piw.makefloat(i,t) for i in l],t)
+            n.set_meta('courseoffset',tpl)
+        
+        # transfer key mapping data to public atom
+        root.ensure_node(26,254).set_data(root.get_node(255,3).get_data())
+        root.get_node(255).erase_child(3)
+
+    def phase2_1_0_3(self,tools,address):
+        root = tools.get_root(address)
+
+        # hook up the key input
+        root.mimic_connections((11,),(22,),'key output')
+
+        # hook up the new mode key input
+        root.mimic_connections((10,),(23,),'key output', (0,1))
+
+        # extract the mode key
+        mode_node = root.get_node(10)
+        if mode_node:
+            conn = mode_node.get_meta('master')
+            if conn and conn.is_string() and conn.as_string():
+                conn_parsed = logic.parse_termlist(conn.as_string())
+                for c in conn_parsed:
+                    key = c.args[3]
+                    if key:
+                        keynum = int(key)
+                        if keynum:
+                            root.ensure_node(24,254).set_data(piw.makelong(0,0))
+                            root.ensure_node(25,254).set_data(piw.makelong(keynum,0))
+                            break
+
+        # erase the old mode input
+        root.erase_child(10)
 
     def upgrade_1_0_1_to_1_0_2(self,tools,address):
         root = tools.get_root(address)
@@ -1065,11 +1338,11 @@ class Upgrader(upgrade.Upgrader):
             changedict=True
             cm=logic.parse_clause(root.ensure_node(255,6,3).get_string_default(''))
             courselen=len(cm)
-            dict['courselen']=piw.makestring('[%d]' % courselen,0) 
+            dict['courselen']=utils.maketuple_longs([courselen],0)
 
         if not 'courseoffset' in dict:
             changedict=True
-            dict['courseoffset']=piw.makestring('[0]',0)
+            dict['courseoffset']=utils.maketuple_floats([0],0)
 
         if changedict:
             nd=utils.makedict_nb(dict,0)

@@ -21,4 +21,4 @@
 Import('env')
 
 env.PiPythonPackage('0.0',natives=Split('host_native'),pi='0.0',package='eigend')
-env.PiAgent('audio_unit','plg_host.host_plg','plg_host:0.0',cversion='1.0.2',package='eigend')
+env.PiAgent('audio_unit','plg_host.host_plg','plg_host:0.0',cversion='1.0.3',package='eigend')

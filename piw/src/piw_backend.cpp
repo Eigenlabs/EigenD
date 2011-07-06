@@ -34,7 +34,6 @@ namespace
 
         void send(const piw::data_nb_t &p, const piw::data_nb_t &d)
         {
-            //pic::logmsg() << "backend " << p << " recv data " << d;
             std::map<piw::data_t,piw::change_nb_t,piw::grist_less>::const_iterator fi;
 
             {
@@ -49,12 +48,6 @@ namespace
             {
                 pic::flipflop_t<piw::change_nb_t>::guard_t g2(gfunctor_);
                 g2.value()(d);
-            }
-
-            if(!d.is_null() && d.as_norm()!=0.0)
-            {
-                pic::flipflop_t<piw::change_nb_t>::guard_t g2(efunctor_);
-                g2.value()(p);
             }
         }
 
@@ -72,11 +65,6 @@ namespace
                 }
             }
 
-            if((r=efunctor_.current().gc_traverse(v,a))!=0)
-            {
-                return r;
-            }
-
             if((r=gfunctor_.current().gc_traverse(v,a))!=0)
             {
                 return r;
@@ -87,7 +75,6 @@ namespace
 
         int gc_clear()
         {
-            efunctor_.set(piw::change_nb_t());
             gfunctor_.set(piw::change_nb_t());
             functors_.alternate().clear();
             functors_.exchange();
@@ -96,7 +83,6 @@ namespace
 
         unsigned signal_;
         pic::flipflop_t<std::map<piw::data_t, piw::change_nb_t,piw::grist_less> > functors_;
-        pic::flipflop_t<piw::change_nb_t> efunctor_;
         pic::flipflop_t<piw::change_nb_t> gfunctor_;
         pic::flipflop_t<bool> send_duplicates_;
     };
@@ -168,18 +154,6 @@ struct piw::functor_backend_t::impl_t: piw::decode_ctl_t
     {
         fast_->gfunctor_.alternate().clear();
         fast_->gfunctor_.exchange();
-    }
-
-    void set_efunctor(const piw::change_nb_t &f)
-    {
-        fast_->efunctor_.alternate()=f;
-        fast_->efunctor_.exchange();
-    }
-
-    void clear_efunctor()
-    {
-        fast_->efunctor_.alternate().clear();
-        fast_->efunctor_.exchange();
     }
 
     void set_functor(const bct_data_t d, const piw::change_nb_t &f)
@@ -286,8 +260,6 @@ void piw::functor_backend_t::set_functor(const piw::data_t &p, const piw::change
 void piw::functor_backend_t::clear_functor(const piw::data_t &p) { impl_->clear_functor(p.give_copy(PIC_ALLOC_NB)); }
 void piw::functor_backend_t::set_gfunctor(const piw::change_nb_t &f) { impl_->set_gfunctor(f); }
 void piw::functor_backend_t::clear_gfunctor() { impl_->clear_gfunctor(); }
-void piw::functor_backend_t::set_efunctor(const piw::change_nb_t &f) { impl_->set_efunctor(f); }
-void piw::functor_backend_t::clear_efunctor() { impl_->clear_efunctor(); }
 piw::cookie_t piw::functor_backend_t::cookie() { return impl_->decoder_.cookie(); }
 bct_clocksink_t *piw::functor_backend_t::get_clock() { return impl_->decoder_.get_clock(); }
 void piw::functor_backend_t::send_duplicates(bool b) { impl_->send_duplicates(b); }

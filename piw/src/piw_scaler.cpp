@@ -49,6 +49,24 @@ void piw::scaler_controller_t::parsevector(const std::string &s, pic::lckvector_
     }
 }
 
+void piw::scaler_controller_t::tuple2vector(const data_nb_t &t, pic::lckvector_t<float>::nbtype *v)
+{
+    PIC_ASSERT(t.is_tuple());
+
+    v->clear();
+
+    unsigned l = t.as_tuplelen();
+    v->reserve(l);
+
+    for(unsigned i = 0; i < l; i++)
+    {
+        data_nb_t e = t.as_tuple_value(i);
+        if (e.is_float()) v->push_back(e.as_float());
+        else if (e.is_long()) v->push_back(e.as_long());
+        else PIC_THROW("unsupported tuple element type");
+    }
+}
+
 namespace
 {
     class sfunc_t;
@@ -183,7 +201,6 @@ namespace
 
         void ufilterfunc_data(piw::ufilterenv_t *e,unsigned sig,const piw::data_nb_t &d)
         {
-            //PIC_ASSERT(sig==1 && d.is_dict());
             if(sig!=1) return;
             if(!d.is_dict()) return;
 
@@ -219,7 +236,7 @@ namespace
             if(li!=impl_->layout_.end()) impl_->layout_.erase(li);
             co = d.as_dict_lookup("courseoffset");
             cl = d.as_dict_lookup("courselen");
-            if(co.is_string() && cl.is_string()) impl_->layout_.insert(std::make_pair(id_,pic::ref(new piw::scaler_controller_t::layout_t(co.as_string(),cl.as_string()))));
+            if(co.is_tuple() && cl.is_tuple()) impl_->layout_.insert(std::make_pair(id_,pic::ref(new piw::scaler_controller_t::layout_t(co,cl))));
 
             impl_->control_changed(id_);
 
@@ -333,6 +350,15 @@ namespace
 
         void setkey(const piw::data_nb_t &v)
         {
+            if(v.is_tuple() && v.as_tuplelen() >= 6)
+            {
+                keynum_ = v.as_tuple_value(3).as_long() - 1;
+                time_ = std::max(time_,v.time());
+            }
+        }
+
+        void setkeynumber(const piw::data_nb_t &v)
+        {
             keynum_= lroundf(v.as_renorm_float(0,1000,0))-1;
             time_ = std::max(time_,v.time());
 #if SCALER_DEBUG>0
@@ -357,23 +383,21 @@ namespace
             mode_=0;
             scale_=parent_->controller_->common_scale_at(0);
 
-            unsigned lp=id.as_pathgristlen();
-            const unsigned char *p=id.as_pathgrist();
+            piw::data_nb_t d;
 
-            if(lp>0)
+            if(e->ufilterenv_latest(SCALER_KEY,d,time_) && d.is_tuple() && d.as_tuplelen() >= 6)
             {
-                keynum_=p[lp-1]-1;
+                keynum_=d.as_tuple_value(3).as_long() - 1;
             }
             else
             {
-                keynum_=0;
+                keynum_=-1;
             }
 
             kbend_=0;
             gbend_=0;
             override_=false;
 
-            piw::data_nb_t d;
             if(e->ufilterenv_latest(SCALER_OVERRIDE,d,time_)) setoverride(d);
             if(e->ufilterenv_latest(SCALER_TONIC,d,time_)) settonic(d);
             if(e->ufilterenv_latest(SCALER_BASE,d,time_)) setmode(d);
@@ -384,7 +408,7 @@ namespace
             if(e->ufilterenv_latest(SCALER_GBEND,d,time_)) setgbend(d);
             if(e->ufilterenv_latest(SCALER_KRANGE,d,time_)) setkrange(d);
             if(e->ufilterenv_latest(SCALER_GRANGE,d,time_)) setgrange(d);
-            if(e->ufilterenv_latest(SCALER_KEY,d,time_)) setkey(d);
+            if(e->ufilterenv_latest(SCALER_KNUMBER,d,time_)) setkeynumber(d);
 
 #if SCALER_DEBUG>0
             pic::logmsg() << "scaler start key: " << keynum_;
@@ -397,7 +421,6 @@ namespace
             time_ = id.time();
             e->ufilterenv_start(time_);
 
-            dirty_ = true;
             send_output(e);
         }
 
@@ -454,7 +477,7 @@ namespace
 
         void ufilterfunc_data(piw::ufilterenv_t *env,unsigned sig,const piw::data_nb_t &d)
         {
-            //pic::logmsg() << "ufilterfunc_data sig=" << sig << " value=" << d << " time=" << d.time();
+            // pic::logmsg() << "sfunc_t ufilterfunc_data sig=" << sig << " value=" << d << " time=" << d.time();
 
             bool nc=false;
             bool gc=false;
@@ -463,6 +486,7 @@ namespace
             switch(sig)
             {
                 case SCALER_KEY: nc=true; setkey(d); break;
+                case SCALER_KNUMBER: nc=true; setkeynumber(d); break;
                 case SCALER_OVERRIDE: nc=true;  setoverride(d); break;
                 case SCALER_GBEND: gc=true; setgbend(d); break;
                 case SCALER_GRANGE: gc=true; setgrange(d); break;
@@ -510,6 +534,13 @@ namespace
             }
 
             int kn = keynum_;
+            if(kn < 0)
+            {
+                note_ = -1;
+                note_hz_ = 0;
+                return;
+            }
+
             float note = 0.f;
             PIC_ASSERT(s.isvalid());
 
@@ -543,7 +574,7 @@ namespace
 
         void send_output(piw::ufilterenv_t *env)
         {
-            if(dirty_)
+            if(dirty_ && note_ >= 0 && note_hz_ > 0)
             {
                 dirty_ = false;
                 float bend = kbend_note_+gbend_note_;
@@ -562,13 +593,17 @@ namespace
 
         void recalculate_kbend()
         {
-            kbend_note_ = parent_->bend_(kbend_)*krange_;
+            float kbend_note = parent_->bend_(kbend_)*krange_;
+            if (kbend_note_ == kbend_note) return;
+            kbend_note_ = kbend_note;
             dirty_ = true;
         }
 
         void recalculate_gbend()
         {
-            gbend_note_ = grange_*gbend_;
+            float gbend_note = grange_*gbend_;
+            if (gbend_note_ == gbend_note) return;
+            gbend_note_ = gbend_note;
             dirty_ = true;
         }
 

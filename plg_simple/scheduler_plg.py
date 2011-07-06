@@ -254,7 +254,7 @@ class Agent(agent.Agent):
         self.control_output = bundles.Splitter(self.domain,self[4][1])
         self.light_convertor = piw.lightconvertor(self.control_output.cookie())
         self.controller = piw.controller(self.light_convertor.cookie(),utils.pack_str(1))
-        self.control_input = bundles.VectorInput(self.controller.cookie(), self.domain, signals=(1,))
+        self.control_input = bundles.VectorInput(self.controller.event_cookie(), self.domain, signals=(1,))
 
         self[4][2] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.control_input.local_policy(1,False),names='activation input')
 

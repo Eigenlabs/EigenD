@@ -21,5 +21,5 @@
 Import('env')
 
 env.PiPythonPackage('0.0',natives=Split('keyboard_native'),pi='0.0',pikeyboard='0.0',lib_alpha2='0.0',package='eigend')
-env.PiAgent('alpha_manager','plg_keyboard.keyboard_plg','plg_keyboard:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('alpha_manager','plg_keyboard.keyboard_plg','plg_keyboard:0.0',cversion='1.0.1',package='eigend')
 env.PiResources('eigend','keyboard','testlib*')

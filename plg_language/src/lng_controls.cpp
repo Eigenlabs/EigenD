@@ -267,19 +267,16 @@ void language::updown_t::uimpl_t::activate(bool on, unsigned long long t)
 
 void language::updown_t::uimpl_t::control_receive(unsigned index, const piw::data_nb_t &d)
 {
-    if(d.as_arraylen()==0)
-        return;
-    
     float a=adjusted_;
 
     switch(index)
     {
         case 0:
-            //pic::logmsg() << "activation " << (d.as_norm()!=0?"on":"off");
-            activate(d.as_norm()!=0,d.time());
+            activate(d.is_tuple() && d.as_tuplelen()>=6,d.time());
             break;
 
         case 2:
+            if(d.as_arraylen()==0) return;
             if(!on_) return;
             adjust(d);
             break;
@@ -336,12 +333,12 @@ void language::xselector_t::simpl_t::control_receive(unsigned index, const piw::
 {
     if(index!=0)
         return;
-    if(value.as_arraylen()==0)
+    if(!value.is_tuple() || value.as_tuplelen()<6)
         return;
     if(selecting_)
         return;
 
-    activate(value.as_renorm(0,3,0)>1,value.time());
+    activate(true,value.time());
 }
 
 void language::xselector_t::simpl_t::control_term(unsigned long long t)
@@ -490,7 +487,7 @@ void language::toggle_t::timpl_t::control_receive(unsigned index, const piw::dat
 {
     if(!d.is_null())
     {
-        if(index==0 && d.as_norm()>0)
+        if(index==0 && d.is_tuple() && d.as_tuplelen() >= 6)
         {
             output_(piw::makebool_nb(!on_,d.time()));
         }

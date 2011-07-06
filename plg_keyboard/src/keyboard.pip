@@ -4,7 +4,7 @@
 >>>
 
 
-from piw_native[piw/piw.pip] import cookie,change_nb
+from piw_native[piw/piw.pip] import cookie,change_nb,data
 from picross_native[picross/picross.pip] import notify,usbdevice
 
 class bundle[kbd::bundle_t] /gc/
@@ -33,6 +33,7 @@ class alpha2_bundle_legacy[kbd::alpha2_bundle_legacy_t] /gc/
 {
     alpha2_bundle_legacy(const char *,const cookie &,const notify &)
     stdstr name()
+    data get_courses()
     void set_threshold1(float)
     float get_threshold1()
     void set_threshold2(float)
@@ -61,6 +62,7 @@ class alpha2_bundle[kbd::alpha2_bundle_t] /gc/
 {
     alpha2_bundle(usbdevice *,const cookie &,const cookie &,const notify &)
     stdstr name()
+    data get_courses()
     void set_threshold1(float)
     float get_threshold1()
     void set_threshold2(float)
@@ -102,6 +104,7 @@ class tau_bundle[kbd::tau_bundle_t] /gc/
 {
     tau_bundle(usbdevice *,const cookie &,const notify &)
     stdstr name()
+    data get_courses()
     void set_threshold1(float)
     float get_threshold1()
     void set_threshold2(float)

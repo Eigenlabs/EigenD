@@ -162,7 +162,6 @@ class stringer[piw::stringer_t]
 {
     stringer(const cookie &)
     cookie data_cookie()
-    cookie ctl_cookie()
     void enable(bool)
 }
 
@@ -278,6 +277,7 @@ converter_ref impulse_converter[piw::impulse_converter]()
 converter_ref resampling_converter[piw::resampling_converter]()
 converter_ref interpolating_converter[piw::interpolating_converter](float,float,float)
 converter_ref lopass_converter[piw::lopass_converter](float,float)
+converter_ref filtering_converter[piw::filtering_converter](d2b_nb)
 
 class capture_backend[piw::capture_backend_t]
 {
@@ -290,8 +290,6 @@ class functor_backend[piw::functor_backend_t] /gc/
     functor_backend(unsigned,bool)
     void set_functor(const data &, const change_nb &)
     void clear_functor(const data &)
-    void set_efunctor(const change_nb &)
-    void clear_efunctor()
     void set_gfunctor(const change_nb &)
     void clear_gfunctor()
     cookie cookie()
@@ -302,7 +300,8 @@ class functor_backend[piw::functor_backend_t] /gc/
 class controller[piw::controller_t]
 {
     controller(const cookie &,const stdstr &)
-    cookie cookie()
+    cookie event_cookie()
+    cookie control_cookie()
     virtual void controller_clock(clockref *)
     virtual void controller_latency(unsigned)
 }
@@ -315,6 +314,7 @@ class xxcontrolled[piw::xxcontrolled_t]
     void detach()
     int ordinal()
     fastdata *fastdata()
+    void set_key(const data &)
 }
 
 class controlled[piw::controlled_t]: xxcontrolled
@@ -326,6 +326,7 @@ class controlled[piw::controlled_t]: xxcontrolled
     void enable()
     void disable()
     int ordinal()
+    void set_key(const data &)
 }
 
 class fasttrigger[piw::fasttrigger_t]: xxcontrolled
@@ -337,6 +338,7 @@ class fasttrigger[piw::fasttrigger_t]: xxcontrolled
     void ping()
     int ordinal()
     change trigger()
+    void set_key(const data &)
 }
 
 class cookie[piw::cookie_t]
@@ -595,6 +597,9 @@ class kgroup_mapper[piw::kgroup_mapper_t]
     void clear_mapping()
     void activate_mapping()
     void set_mapping(unsigned, unsigned)
+    void set_rowlen(data)
+    void set_rowoffset(data)
+    void set_courselen(data)
 }
 
 class sclone[piw::sclone_t] /gc/
@@ -614,6 +619,7 @@ class clone[piw::clone_t] /gc/
     void set_policy(bool)
     void set_output(unsigned,const cookie &)
     void set_filtered_output(unsigned,const cookie &, const d2d_nb &)
+    void set_filtered_data_output(unsigned,const cookie &, const d2d_nb &,unsigned)
     void clear_output(unsigned)
     cookie cookie()
     change_nb gate(unsigned)
@@ -1505,6 +1511,10 @@ class data_base[piw::data_base_t]
         """
         self.is_dict() -> True if data is a dict, False otherwise
         """
+    bool is_tuple()
+        """
+        self.is_tuple() -> True if data is a tuple, False otherwise
+        """
     bool is_blob()
         """
         self.is_blob() -> True if data is a blob, False otherwise
@@ -1550,6 +1560,8 @@ class data_base[piw::data_base_t]
     unsigned as_dict_nkeys()
     stdstr as_dict_key(unsigned)
 
+    unsigned as_tuplelen()
+
     int compare(const data_base &)
         """
         self.compare(other) -> int
@@ -1581,6 +1593,9 @@ class data[piw::data_t]: data_base
 
     data as_dict_lookup(const stdstr &)
     data as_dict_value(unsigned)
+
+    data as_tuple_value(unsigned)
+
     data restamp(unsigned long long)
 
     data_nb make_nb();
@@ -1594,6 +1609,9 @@ class data_nb[piw::data_nb_t]: data_base
 
     data_nb as_dict_lookup(const stdstr &)
     data_nb as_dict_value(unsigned)
+
+    data_nb as_tuple_value(unsigned)
+
     data_nb restamp(unsigned long long)
 
     data_nb make_nb();
@@ -1653,11 +1671,21 @@ data_nb pathnull_nb[piw::pathnull_nb](unsigned long long)
 
 data dictnull[piw::dictnull](unsigned long long)
 data dictset[piw::dictset](const data &,const stdstr &,const data &)
-data dictupdate(const data &,const data &)
-data dictdel(const data &,const stdstr &)
+data dictupdate[piw::dictupdate](const data &,const data &)
+data dictdel[piw::dictdel](const data &,const stdstr &)
+
+data tuplenull[piw::tuplenull](unsigned long long)
+data tupleadd[piw::tupleadd](const data &,const data &)
+data tupledel[piw::tupledel](const data &,unsigned)
 
 data_nb dictnull_nb[piw::dictnull_nb](unsigned long long)
 data_nb dictset_nb[piw::dictset_nb](const data_nb &,const stdstr &,const data_nb &)
+data_nb dictupdate_nb[piw::dictupdate_nb](const data_nb &,const data_nb &)
+data_nb dictdel_nb[piw::dictdel_nb](const data_nb &,const stdstr &)
+
+data_nb tuplenull_nb[piw::tuplenull_nb](unsigned long long)
+data_nb tupleadd_nb[piw::tupleadd_nb](const data_nb &,const data_nb &)
+data_nb tupledel_nb[piw::tupledel_nb](const data_nb &,unsigned)
 
 data_nb parsepath_nb[piw::parsepath_nb](const char *, unsigned long long)
     """
@@ -1900,9 +1928,10 @@ class linear_gain[piw::linear_gain_t]
 
 class selector[piw::selector_t] /gc/
 {
-    selector(const cookie &, const change_nb &, unsigned, bool)
+    selector(const cookie &, const change_nb &, const change_nb &, unsigned, bool)
 
     void gate_output(unsigned, const change_nb &, const change_nb &)
+    void gate_status_index(unsigned, unsigned)
     change_nb gate_input(unsigned)
     change_nb mode_input()
     void clear_output(unsigned)

@@ -370,6 +370,7 @@ class Agent(agent.Agent):
         self[2][2] = bundles.Output(2,False,names='pressure output', protocols='')
         self[2][3] = bundles.Output(3,False,names='roll output', protocols='')
         self[2][4] = bundles.Output(4,False,names='yaw output', protocols='')
+        self[2][15] = bundles.Output(5,False,names='key output', protocols='')
         self[2][5] = bundles.Output(1,False,names='auxilliary output', ordinal=1, protocols='')
         self[2][6] = bundles.Output(1,False,names='auxilliary output', ordinal=2, protocols='')
         self[2][7] = bundles.Output(1,False,names='auxilliary output', ordinal=3, protocols='')
@@ -381,7 +382,7 @@ class Agent(agent.Agent):
         self[2][13] = bundles.Output(1,False,names='auxilliary output', ordinal=9, protocols='')
         self[2][14] = bundles.Output(1,False,names='auxilliary output', ordinal=10, protocols='')
 
-        self.output_data = bundles.Splitter(self.domain,self[2][1],self[2][2],self[2][3],self[2][4])
+        self.output_data = bundles.Splitter(self.domain,self[2][1],self[2][2],self[2][3],self[2][4],self[2][15])
         self.output_aux1 = bundles.Splitter(self.domain,self[2][5])
         self.output_aux2 = bundles.Splitter(self.domain,self[2][6])
         self.output_aux3 = bundles.Splitter(self.domain,self[2][7])
@@ -434,7 +435,7 @@ class Agent(agent.Agent):
         self.input_clock.add_upstream(self.verb_container().clock)
 
         self.input_poly = piw.polyctl(10,self.input_aggregator.get_filtered_output(2,piw.grist_aggregation_filter(2)), False,5)
-        self.input_data = bundles.VectorInput(self.input_poly.cookie(), self.domain, signals=(1,2,3,4))
+        self.input_data = bundles.VectorInput(self.input_poly.cookie(), self.domain, signals=(1,2,3,4,5))
 
         self.input_aux1 = bundles.VectorInput(self.input_aggregator.get_filtered_output(3,piw.grist_aggregation_filter(3)), self.domain, signals=(1,))
         self.input_aux2 = bundles.VectorInput(self.input_aggregator.get_filtered_output(4,piw.grist_aggregation_filter(4)), self.domain, signals=(1,))
@@ -447,8 +448,12 @@ class Agent(agent.Agent):
         self.input_aux9 = bundles.VectorInput(self.input_aggregator.get_filtered_output(11,piw.grist_aggregation_filter(11)), self.domain, signals=(1,))
         self.input_aux10 = bundles.VectorInput(self.input_aggregator.get_filtered_output(12,piw.grist_aggregation_filter(12)), self.domain, signals=(1,))
 
-        self.nplayer = recorder_native.nplayer(self.output_aggregator.get_filtered_output(3,piw.gristchaff_aggregation_filter(100,3)),16,2,self.domain)
+        self.nplayer = recorder_native.nplayer(self.output_aggregator.get_filtered_output(3,piw.gristchaff_aggregation_filter(100,3)),16,2,5,self.domain)
         self.input_clock.add_upstream(self.nplayer.get_clock())
+
+        self.ctl_fb = piw.functor_backend(1,True)
+        self.ctl_fb.set_functor(piw.pathnull(0),self.nplayer.control())
+        self.ctl_input = bundles.ScalarInput(self.ctl_fb.cookie(),self.domain,signals=(1,))
 
         self[1] = atom.Atom(names='inputs')
 
@@ -456,6 +461,8 @@ class Agent(agent.Agent):
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.input_data.vector_policy(2,False),names='pressure input')
         self[1][3]=atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input_data.vector_policy(3,False),names='roll input')
         self[1][4]=atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input_data.vector_policy(4,False),names='yaw input')
+        self[1][19]=atom.Atom(domain=domain.Aniso(), policy=self.input_data.vector_policy(5,False),names='key input')
+        self[1][20]=atom.Atom(domain=domain.Aniso(), policy=self.ctl_input.policy(1,False),names='controller input')
 
         self[1][5]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux1.vector_policy(1,False),names='auxilliary input', ordinal=1)
         self[1][6]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux2.vector_policy(1,False),names='auxilliary input', ordinal=2)
@@ -959,6 +966,31 @@ class Agent(agent.Agent):
         return self.nplayer.play(note,velocity,500000),None
 
 class Upgrader(upgrade.Upgrader):
+
+    def upgrade_1_0_2_to_1_0_3(self,tools,address):
+        print 'upgrading recorder',address
+        root = tools.get_root(address)
+
+        for i in range(5,15):
+            recorder_input = root.get_node(1,i)
+            input_name = recorder_input.get_name()
+            if input_name.startswith('key input'):
+                recorder_input.set_name(input_name.replace('key input', 'k number input'))
+
+        for i in range(5,15):
+            recorder_output = root.get_node(2,i)
+            output_name = recorder_output.get_name()
+            if  output_name.startswith('key output'):
+                recorder_output.set_name(output_name.replace('key output', 'k number output'))
+
+        root.ensure_node(1,19).set_name('key input')
+        root.ensure_node(2,15).set_name('key output')
+
+    def phase2_1_0_3(self,tools,address):
+        root = tools.get_root(address)
+        root.mimic_connections((1,1),(1,19),'key output')
+        root.mimic_connections((1,1),(1,20),'controller output')
+
     def upgrade_1_0_1_to_1_0_2(self,tools,address):
         print 'upgrading recorder',address
         recorder_root = tools.get_root(address)

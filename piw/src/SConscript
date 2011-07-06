@@ -39,8 +39,8 @@ piw_files=Split("""
     piw_termparse.cpp piw_state.cpp piw_midi_from_belcanto.cpp piw_strummer.cpp
     piw_lightconvertor.cpp piw_statusbuffer.cpp piw_statusmixer.cpp piw_statusledconvertor.cpp
 	piw_controllerdict.cpp piw_gui_mapper.cpp piw_midi_converter.cpp piw_control_mapping.cpp
-    piw_control_params.cpp JucerPopupDialogComponent.cpp JucerCellPopupComponent.cpp
-    JucerGlobalSettingsComponent.cpp JucerHelpComponent.cpp
+    piw_control_params.cpp piw_filter.cpp piw_keys.cpp JucerPopupDialogComponent.cpp
+    JucerCellPopupComponent.cpp JucerGlobalSettingsComponent.cpp JucerHelpComponent.cpp
     """)
 
 piw_env=env.Clone()

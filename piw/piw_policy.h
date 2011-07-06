@@ -48,6 +48,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(converter_ref_t) throttling_converter(unsigned long long interval);
     PIW_DECLSPEC_FUNC(converter_ref_t) triggering_converter();
     PIW_DECLSPEC_FUNC(converter_ref_t) impulse_converter();
+    PIW_DECLSPEC_FUNC(converter_ref_t) filtering_converter(const piw::d2b_nb_t &);
 
     PIW_DECLSPEC_FUNC(d2d_nb_t) root_filter();
     PIW_DECLSPEC_FUNC(d2d_nb_t) null_filter();

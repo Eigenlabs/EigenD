@@ -33,14 +33,15 @@ namespace {
 
     struct clone_root_ctl_t: piw::root_ctl_t
     {
-        clone_root_ctl_t(const piw::d2d_nb_t &f);
-        piw::data_nb_t filter(const piw::data_nb_t &d);
+        clone_root_ctl_t(const piw::d2d_nb_t &f, unsigned filtered_signal);
+
         piw::d2d_nb_t filter_;
+        unsigned filtered_signal_;
     };
 
     struct clone_wire_ctl_t: piw::wire_ctl_t, piw::event_data_source_real_t, piw::event_data_sink_t, virtual public pic::lckobject_t
     {
-        clone_wire_ctl_t(unsigned o, piw::clone_t::impl_t *impl, const piw::d2d_nb_t &filter, const piw::event_data_source_t &es);
+        clone_wire_ctl_t(unsigned o, piw::clone_t::impl_t *impl, const piw::d2d_nb_t &filter, unsigned filtered_signal, const piw::event_data_source_t &es);
         ~clone_wire_ctl_t();
 
         bool event_end(unsigned long long t);
@@ -53,6 +54,7 @@ namespace {
         piw::clone_t::impl_t *parent_;
         bool active_;
         pic::flipflop_functor_t<piw::d2d_nb_t> filter_;
+        unsigned filtered_signal_;
         unsigned seq_;
         piw::dataholder_nb_t id_;
     };
@@ -88,7 +90,7 @@ struct piw::clone_t::impl_t: root_t, virtual public pic::tracked_t
     int gc_traverse(void *v, void *a) const;
     int gc_clear();
     piw::wire_t *root_wire(const event_data_source_t &es);
-    void add_output(unsigned name, const piw::cookie_t cookie, const piw::d2d_nb_t &filter);
+    void add_output(unsigned name, const piw::cookie_t cookie, const piw::d2d_nb_t &filter, unsigned filtered_signal);
     void del_outputs();
     void del_output(unsigned name);
     void root_clock();
@@ -144,7 +146,7 @@ void clone_wire_t::activate(bool b, unsigned o, unsigned long long t)
     c->activate(b,t);
 }
 
-clone_wire_ctl_t::clone_wire_ctl_t(unsigned o, piw::clone_t::impl_t *impl, const piw::d2d_nb_t &filter, const piw::event_data_source_t &es): piw::event_data_source_real_t(es.path()), output_(o), parent_(impl), active_(false), filter_(filter)
+clone_wire_ctl_t::clone_wire_ctl_t(unsigned o, piw::clone_t::impl_t *impl, const piw::d2d_nb_t &filter, unsigned filtered_signal, const piw::event_data_source_t &es): piw::event_data_source_real_t(es.path()), output_(o), parent_(impl), active_(false), filter_(filter), filtered_signal_(filtered_signal)
 {
     subscribe_and_ping(es);
 }
@@ -158,15 +160,42 @@ void clone_wire_ctl_t::event_start(unsigned seq,const piw::data_nb_t &id, const 
         return;
     }
 
-    piw::data_nb_t nid = filter_(id);
-
-    if(nid.is_path())
+    if(filtered_signal_)
     {
-        active_=true;
-        id_.set_nb(nid);
-        //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " starting event " << nid << "<-" << current_id();
-        source_start(seq,nid,b);
+        piw::xevent_data_buffer_t::iter_t iterator = b.iterator();
+        piw::data_nb_t d;
+        if(iterator->latest(filtered_signal_,d,id.time()))
+        {
+            piw::data_nb_t nd = filter_(d);
+            if(!nd.is_null())
+            {
+                piw::xevent_data_buffer_t output = piw::xevent_data_buffer_t((1 << (filtered_signal_-1)),PIW_DATAQUEUE_SIZE_ISO);
+
+                active_ = true;
+                id_.set_nb(id);
+                //pic::logmsg() << "filtered cloner " << (void *)this << " on " << output_ << " starting event " << id << "<-" << current_id();
+
+                iterator->clear_signal(filtered_signal_);
+                output.add_value(filtered_signal_, nd);
+                output.merge(b, 0);
+
+                source_start(seq,id,output);
+            }
+        }
     }
+    else
+    {
+        piw::data_nb_t nid = filter_(id);
+
+        if(nid.is_path())
+        {
+            active_ = true;
+            id_.set_nb(nid);
+            //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " starting event " << nid << "<-" << current_id();
+            source_start(seq,nid,b);
+        }
+    }
+
 }
 
 void clone_wire_ctl_t::activate(bool b, unsigned long long t)
@@ -182,14 +211,33 @@ void clone_wire_ctl_t::activate(bool b, unsigned long long t)
     {
         if(parent_->policy_)
         {
-            piw::data_nb_t nid = filter_(current_id());
-
-            if(nid.is_path())
+            if(filtered_signal_)
             {
-                active_ = true;
-                id_.set_nb(nid);
-                //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " activating event " << nid << "<-" << current_id();
-                source_start(seq_,current_id().restamp(t),current_data());
+                piw::xevent_data_buffer_t::iter_t iterator = current_data().iterator();
+                piw::data_nb_t d;
+
+                if(iterator->latest(filtered_signal_,d,t))
+                {
+                    piw::data_nb_t nd = filter_(d);
+
+                    active_ = true;
+                    id_.set_nb(current_id());
+                    //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " activating event " << current_id();
+                    current_data().add_value(filtered_signal_, nd);
+                    source_start(seq_,current_id().restamp(t),current_data());
+                }
+            }
+            else
+            {
+                piw::data_nb_t nid = filter_(current_id());
+
+                if(nid.is_path())
+                {
+                    active_ = true;
+                    id_.set_nb(nid);
+                    //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " activating event " << nid << "<-" << current_id();
+                    source_start(seq_,current_id().restamp(t),current_data());
+                }
             }
         }
     }
@@ -225,12 +273,18 @@ piw::clone_t::~clone_t()
 
 void piw::clone_t::set_filtered_output(unsigned name, const piw::cookie_t &cookie, const piw::d2d_nb_t &filter)
 {
-    root_->add_output(name,cookie,filter);
+    root_->add_output(name, cookie, filter, 0);
+}
+
+void piw::clone_t::set_filtered_data_output(unsigned name, const piw::cookie_t &cookie, const piw::d2d_nb_t &filter, unsigned filtered_signal)
+{
+    PIC_ASSERT(signal>0);
+    root_->add_output(name, cookie, filter, filtered_signal);
 }
 
 void piw::clone_t::set_output(unsigned name, const piw::cookie_t &cookie)
 {
-    root_->add_output(name,cookie,piw::null_filter());
+    root_->add_output(name, cookie, piw::null_filter(), 0);
 }
 
 namespace
@@ -308,13 +362,8 @@ void piw::clone_t::enable(unsigned name,bool enabled)
     piw::tsd_fastcall3(__enable,root_,&o,&enabled);
 }
 
-clone_root_ctl_t::clone_root_ctl_t(const piw::d2d_nb_t &f): filter_(f)
+clone_root_ctl_t::clone_root_ctl_t(const piw::d2d_nb_t &f, unsigned fs): filter_(f), filtered_signal_(fs)
 {
-}
-
-piw::data_nb_t clone_root_ctl_t::filter(const piw::data_nb_t &d)
-{
-    return filter_(d);
 }
 
 clone_wire_ctl_t::~clone_wire_ctl_t()
@@ -361,7 +410,7 @@ void clone_wire_t::add_output(unsigned name, clone_root_ctl_t *root)
 
     if(!w)
     {
-        w = new clone_wire_ctl_t(o,parent_,root->filter_,source_);
+        w = new clone_wire_ctl_t(o,parent_, root->filter_, root->filtered_signal_, source_);
         clones_.alternate()[o] = w;
     }
 
@@ -494,7 +543,7 @@ piw::wire_t *piw::clone_t::impl_t::root_wire(const event_data_source_t &es)
     return w;
 }
 
-void piw::clone_t::impl_t::add_output(unsigned name, const piw::cookie_t cookie, const piw::d2d_nb_t &filter)
+void piw::clone_t::impl_t::add_output(unsigned name, const piw::cookie_t cookie, const piw::d2d_nb_t &filter, unsigned filtered_signal)
 {
     del_output(name);
 
@@ -502,7 +551,7 @@ void piw::clone_t::impl_t::add_output(unsigned name, const piw::cookie_t cookie,
 
     PIC_ASSERT(clones_.find(name)==clones_.end());
 
-    r = new clone_root_ctl_t(filter);
+    r = new clone_root_ctl_t(filter, filtered_signal);
     clones_.insert(std::make_pair(name,r));
     r->set_clock(get_clock());
     r->set_latency(get_latency());
@@ -512,7 +561,7 @@ void piw::clone_t::impl_t::add_output(unsigned name, const piw::cookie_t cookie,
 
     for(ci=children_.alternate().begin(); ci!=children_.alternate().end(); ci++)
     {
-        ci->second->add_output(name,r);
+        ci->second->add_output(name, r);
     }
 
     children_.exchange();

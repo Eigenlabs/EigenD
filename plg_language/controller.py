@@ -37,6 +37,9 @@ class Trigger:
         self.__trigger = piw.fasttrigger(3)
         self.__trigger.attach_to(controller.controller,index)
 
+    def set_key(self,d):
+        self.__trigger.set_key(d)
+
     def detach(self):
         self.__trigger.detach()
 
@@ -51,6 +54,9 @@ class Toggle:
         self.__toggle = language_native.toggle(t.get_data())
         self.__toggle.attach_to(controller.controller,index)
 
+    def set_key(self,d):
+        self.__toggle.set_key(d)
+
     def detach(self):
         self.__toggle.detach()
 
@@ -64,6 +70,9 @@ class UpDown:
     def __init__(self,t,index,controller):
         self.__updown = language_native.updown(t.get_data(),t.domain().biginc,t.domain().inc)
         self.__updown.attach_to(controller.controller,index)
+
+    def set_key(self,d):
+        self.__updown.set_key(d)
 
     def detach(self):
         self.__updown.detach()
@@ -87,6 +96,9 @@ class Selector:
             self.__selector.set_choice(i+1,piw.makestring(c,0))
 
         self.__selector.attach_to(self.__controller.controller,self.__index)
+
+    def set_key(self,d):
+        self.__selector.set_key(d)
 
     def detach(self):
         self.__selector.detach()
@@ -137,6 +149,23 @@ class Connector(atom.Atom):
         self.control = None
         self.target_domain = None
 
+        self.set_internal(248, atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key row', init=None, policy=atom.default_policy(self.__change_key_row)))
+        self.set_internal(249, atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key column', init=None, policy=atom.default_policy(self.__change_key_column)))
+
+    def __change_key_row(self,val):
+        self.get_internal(248).set_value(val)
+        self.__update_event_key()
+        return False
+
+    def __change_key_column(self,val):
+        self.get_internal(249).set_value(val)
+        self.__update_event_key()
+        return False
+
+    def __update_event_key(self):
+        if self.control:
+            self.control.set_key(utils.maketuple((piw.makelong(self.get_internal(248).get_value(),0),piw.makelong(self.get_internal(249).get_value(),0)), 0)) 
+
     def set_controller_clock(self,clock):
         self.get_policy().set_clock(clock)
 
@@ -160,6 +189,7 @@ class Connector(atom.Atom):
         if factory:
             self.control = factory(self.monitor,self.index,self.controller)
             self.get_policy().set_source(self.control.fastdata())
+            self.__update_event_key()
 
     def __reset(self,v):
         if self.control:
@@ -218,16 +248,19 @@ class Controller(agent.Agent):
         self.lightconvertor = piw.lightconvertor(self.lights.cookie())
         self.controller = Controller0(self,self.lightconvertor.cookie(),utils.pack_str(1,2,3,4,5))
         self.clone = piw.clone(True)
-        self.clone.set_output(1,self.controller.cookie())
+        self.clone.set_output(1,self.controller.event_cookie())
         self.input = bundles.VectorInput(self.clone.cookie(),self.domain,signals=(1,2,3,4,5))
 
         self[1] = atom.Atom()
-        self[1][1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(1,False),names='activation input')
         self[1][2] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input')
         self[1][3] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(3,False),names='roll input')
         self[1][4] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(4,False),names='yaw input')
         self[1][5] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(5,False),names='strip position input')
+        self[1][6] = atom.Atom(domain=domain.Aniso(),policy=self.input.vector_policy(1,False), names='key input')
 
+        self.ctl_input = bundles.VectorInput(self.controller.control_cookie(),self.domain,signals=(1,))
+        self[5] = atom.Atom(domain=domain.Aniso(),policy=self.ctl_input.vector_policy(1,False),names='controller input')
+        
 
     def server_opened(self):
         agent.Agent.server_opened(self)
@@ -307,6 +340,31 @@ class Controller(agent.Agent):
         for i in self[4].itervalues():
             i.disconnect()
         agent.Agent.close_server(self)
+
+def upgrade_1_0_1_to_1_0_2(tools,address,ss):
+    print 'upgrading controller',address,ss
+    root = tools.get_root(ss)
+    root.ensure_node(1,6).set_name('key input')
+    root.ensure_node(5).set_name('controller input')
+
+    keys = root.get_node(4)
+    for k in keys.iter(exclude=(253,254,255)):
+        # transform the old key indices to row/column atoms
+        ordinal = k.path[1]
+        if ordinal is not None:
+            k.ensure_node(248,254).set_data(piw.makelong(0, 0))
+            k.ensure_node(249,254).set_data(piw.makelong(ordinal,0))
+
+    return True
+
+def phase2_1_0_2(tools,address,ss):
+    root = tools.get_root(ss)
+    root.mimic_connections((1,1),(1,6),'key output')
+    root.mimic_connections((1,1),(5,),'controller output')
+
+    # erase the activation input since it's not used anymore
+    root.ensure_node(1).erase_child(1)
+    return True
 
 def upgrade_0_0_to_1_0(root):
     root[1][1].rename(adjectives='input',names='activation')

@@ -20,4 +20,4 @@
 
 Import('env')
 env.PiPythonPackage('0.0',natives=Split('arranger_native'),resources=Split(''),pi='0.0',package='eigend')
-env.PiAgent('arranger','plg_arranger.arranger_plg','plg_arranger:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('arranger','plg_arranger.arranger_plg','plg_arranger:0.0',cversion='1.0.1',package='eigend')

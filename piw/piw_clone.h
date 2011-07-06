@@ -36,6 +36,7 @@ namespace piw
             void set_policy(bool activate_on_enable);
             void set_output(unsigned name, const cookie_t &);
             void set_filtered_output(unsigned name, const cookie_t &, const piw::d2d_nb_t &);
+            void set_filtered_data_output(unsigned name, const cookie_t &, const piw::d2d_nb_t &, unsigned filtered_signal);
             void clear_output(unsigned name);
             change_nb_t gate(unsigned name);
             void enable(unsigned name,bool enabled);

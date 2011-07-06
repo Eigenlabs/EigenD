@@ -45,15 +45,16 @@ class Agent(agent.Agent):
         self[1][2] = bundles.Output(2,False,names='pressure output', protocols='')
         self[1][3] = bundles.Output(3,False,names='roll output', protocols='')
         self[1][4] = bundles.Output(4,False,names='yaw output', protocols='')
-        self[1][5] = bundles.Output(5,False,names='scale note output', protocols='')
-        self[1][6] = bundles.Output(6,False,names='frequency output', protocols='')
+        self[1][7] = bundles.Output(5,False,names='key output', protocols='')
+        self[1][5] = bundles.Output(6,False,names='scale note output', protocols='')
+        self[1][6] = bundles.Output(7,False,names='frequency output', protocols='')
 
         self.ctl = piw.scaler_controller()
-        self.ctl_input = bundles.VectorInput(self.ctl.cookie(),self.domain,signals=(1,))
+        self.ctl_input = bundles.VectorInput(self.ctl.cookie(),self.domain,signals=(1,5))
 
         self.output = bundles.Splitter(self.domain,*self[1].values())
         self.filter = piw.scaler(self.ctl,self.output.cookie(),cubic())
-        self.input = bundles.VectorInput(self.filter.cookie(), self.domain,signals=(1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17))
+        self.input = bundles.VectorInput(self.filter.cookie(), self.domain,signals=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17))
         self.input.correlator.clocksink().add_upstream(self.ctl_input.correlator.clocksink())
 
         self[4]=atom.Atom(names='inputs')
@@ -62,15 +63,16 @@ class Agent(agent.Agent):
         self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input')
         self[4][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(3,False),names='roll input')
         self[4][4]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(4,False),names='yaw input')
+        self[4][22]=atom.Atom(domain=domain.Aniso(), policy=self.input.vector_policy(5,False), names='key input')
 
         th=(T('inc',1),T('biginc',1),T('control','updown'))
         bh=(T('inc',1),T('biginc',1),T('control','updown'))
         sh=(T('choices','[0,2,4,5,7,9,11,12]','[0,1,2,3,4,5,6,7,8,9,10,11,12]','[0,2,4,6,8,10,12]','[0,2,3,5,7,8,10,12]','[0,3,5,6,7,10,12]', '[0,2,3,6,7,8,11,12]','[0,3,5,7,10,12]','[0,2,4,7,9,12]'), T('control','selector'))
-        self[4][5]=atom.Atom(domain=domain.BoundedFloat(0,12,hints=th),policy=self.input.merge_policy(5,False),names='tonic input',protocols='bind set',container=(None,'tonic',self.verb_container()))
-        self[4][6]=atom.Atom(domain=domain.BoundedFloat(-20,20,hints=bh),policy=self.input.merge_policy(6,False),names='base note input',protocols='bind')
+        self[4][5]=atom.Atom(domain=domain.BoundedFloat(0,12,hints=th),policy=self.input.merge_policy(6,False),names='tonic input',protocols='bind set',container=(None,'tonic',self.verb_container()))
+        self[4][6]=atom.Atom(domain=domain.BoundedFloat(-20,20,hints=bh),policy=self.input.merge_policy(7,False),names='base note input',protocols='bind')
 
 
-        self[4][7]=atom.Atom(domain=domain.String(hints=sh),init='[0,2,4,5,7,9,11,12]',policy=self.input.merge_policy(7,False),names='scale input',protocols='bind set',container=(None,'scale',self.verb_container()))
+        self[4][7]=atom.Atom(domain=domain.String(hints=sh),init='[0,2,4,5,7,9,11,12]',policy=self.input.merge_policy(8,False),names='scale input',protocols='bind set',container=(None,'scale',self.verb_container()))
         self[4][8]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(9,policy.LopassStreamPolicy(200,0.6)),names='k pitch bend input')
         self[4][9]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(10,False),names='global pitch bend input')
         self[4][10]=atom.Atom(domain=domain.BoundedFloat(0,72),init=1,policy=self.input.merge_policy(11,False),names='k bend range input',protocols='bind')
@@ -79,7 +81,7 @@ class Agent(agent.Agent):
         self[4][13]=atom.Atom(domain=domain.Bool(),policy=self.input.merge_policy(14,False),names='override',protocols='bind')
         self[4][14]=atom.Atom(domain=domain.BoundedFloat(-1,9,hints=th),init=3,policy=self.input.merge_policy(15,False),names='octave input',protocols='bind',container=(None,'octave',self.verb_container()))
         self[4][15]=atom.Atom(domain=domain.BoundedInt(1,4),init=2,policy=atom.default_policy(self.__set_curve),names='curve',protocols='bind')
-        self[4][16]=atom.Atom(domain=domain.BoundedFloat(0,1000),policy=self.input.merge_nodefault_policy(16,False),names='key input')
+        self[4][16]=atom.Atom(domain=domain.BoundedFloat(0,1000),policy=self.input.merge_nodefault_policy(16,False),names='k number input')
         self[4][17]=atom.Atom(domain=domain.BoundedFloat(-10,10,hints=th),init=0,policy=self.input.merge_policy(17,False),names='relative octave input',protocols='bind')
 
         self.add_verb2(3,'choose([],None,role(none,[ideal([None,scale]),singular]))',callback=self.__tune_scale)
@@ -124,6 +126,22 @@ class Agent(agent.Agent):
             self.get_private().set_data(d)
 
 class Upgrader(upgrade.Upgrader):
+
+    def upgrade_1_0_0_to_1_0_1(self,tools,address):
+        print 'upgrading scaler',address
+        root = tools.get_root(address)
+
+        # rename existing key input and name new one
+        root.ensure_node(4,16).set_name('k number input')
+        root.ensure_node(4,22).set_name('key input')
+
+        # ensure key output
+        root.ensure_node(1,7).set_name('key output')
+
+    def phase2_1_0_1(self,tools,address):
+        root = tools.get_root(address)
+        root.mimic_connections((4,1),(4,22),'key output')
+
     def upgrade_7_0_to_8_0(self,tools,address):
         root = tools.root(address)
         rnode = root.ensure_node(4,17,255)

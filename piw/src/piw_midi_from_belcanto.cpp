@@ -50,7 +50,7 @@ using namespace std;
 
 #define IN_FREQUENCY 2
 #define IN_VELOCITY 4
-// TODO: check these
+#define IN_KEY 5
 #define IN_MASK SIG2(IN_FREQUENCY,IN_VELOCITY)
 
 #define MIDI_FROM_BELCANTO_DEBUG 0
@@ -66,18 +66,6 @@ using namespace std;
 namespace
 {
     struct belcanto_note_wire_t;
-
-    static unsigned char extract_keynum(const piw::data_nb_t &id)
-    {
-        unsigned char keynum = 0;
-        unsigned lp = id.as_pathgristlen();
-        if(lp>0)
-        {
-            const unsigned char *p = id.as_pathgrist();
-            keynum = p[lp-1];
-        }
-        return keynum;
-    }
 
     struct channel_list_t
     {
@@ -172,32 +160,24 @@ namespace
         {
             pic::lckmap_t<piw::data_nb_t,unsigned>::lcktype::iterator it;
 
-            const unsigned char *p = id.as_path();
-            int l = id.as_pathlen();
-
-            for(;l>=0;l--)
+            for(it=assignments_.begin() ; it!=assignments_.end(); it++)
             {
-                piw::data_nb_t d = piw::makepath_nb(p,l);
-
-                for(it=assignments_.begin() ; it!=assignments_.end(); it++)
+                if(0==it->first.compare(id, false))
                 {
-                   if(0==it->first.compare_path(d) && extract_keynum(d)==extract_keynum(it->first))
-                   {
-                     return (int)it->second;
-                   }
+                    return (int)it->second;
                 }
             }
             
             return 0;
         }
 
-        void register_id(const piw::data_nb_t &id, unsigned channel)
+        void register_channel(const piw::data_nb_t &id, unsigned channel)
         {
             if(channel<CHANNEL_MIN || channel>CHANNEL_MAX) return;
             assignments_.insert(std::make_pair(id,channel));
         }
 
-        void unregister_id(const piw::data_nb_t &id)
+        void unregister_channel(const piw::data_nb_t &id)
         {
             assignments_.erase(id);
         }
@@ -371,6 +351,7 @@ namespace
 
         piw::data_nb_t id_;
 
+        unsigned key_;
         float note_id_;
         float note_velocity_;
         float note_pitch_;
@@ -404,18 +385,31 @@ namespace
         note_velocity_ = -1.f;
         note_pitch_ = -1.f;
         note_id_ = 0;
-
-        channel_ = root_->get_channel();
-
-        id_ = id;
-        root_->channel_list_.register_id(id_, channel_);
+        key_ = 0;
 
         unsigned long long t = id.time();
         last_from_ = t;
+        id_ = id;
+        channel_ = root_->get_channel();
+
+        piw::data_nb_t dk;
+        if(iterator_->latest(IN_KEY,dk,t))
+        {
+            if(dk.is_tuple() && dk.as_tuplelen() >= 6)
+            {
+                key_ = dk.as_tuple_value(3).as_long();
+            }
+        }
+
+        root_->channel_list_.register_channel(id_, channel_);
+
         iterator_->reset(IN_VELOCITY,t);
 
-        piw::data_nb_t d;
-        if(iterator_->latest(IN_FREQUENCY,d,t)) set_frequency(d,t,true);
+        piw::data_nb_t df;
+        if(iterator_->latest(IN_FREQUENCY,df,t))
+        {
+            set_frequency(df,t,true);
+        }
 
         root_->active_input_wires_.append(this);
 
@@ -556,7 +550,7 @@ namespace
             }
         }
 
-        root_->channel_list_.unregister_id(id_);
+        root_->channel_list_.unregister_channel(id_);
         if(root_->poly_)
         {
             root_->channel_list_.put(channel_);
@@ -876,7 +870,6 @@ namespace piw
             time_ = std::max(time_+1,i->time_);
             bool global = false;
             unsigned channel = 0;
-            unsigned char keynum = extract_keynum(i->id_);
             if(!poly_)
             {
                 switch(i->scope_)
@@ -892,8 +885,8 @@ namespace piw
                         global = false;
                         belcanto_note_wire_t *w = active_input_wires_.head();
                         if(i->mcc_ == MIDI_CC_MAX + POLY_AFTERTOUCH ||
-                           !keynum ||
-                           (w && extract_keynum(w->id_) == keynum))
+                           !i->key_ ||
+                           (w && w->key_ == i->key_))
                         {
                             channel = channel_;
                         }
@@ -927,7 +920,7 @@ namespace piw
             }
 
 #if MIDI_FROM_BELCANTO_DEBUG>0
-            pic::logmsg() << "midi msg global: " << global << ", channel: " << channel << ", continuous: " << i->continuous_ << ", mcc: " << (unsigned)i->mcc_ << ", lcc: " << (unsigned)i->lcc_ << ", value: " << i->value_ << ", time: " << time_ << ", id:" << i->id_;
+            pic::logmsg() << "midi msg global: " << global << ", channel: " << channel << ", continuous: " << i->continuous_ << ", mcc: " << (unsigned)i->mcc_ << ", lcc: " << (unsigned)i->lcc_ << ", value: " << i->value_ << ", time: " << time_ << ", id:" << i->id_ << ", key:" << i->key_;
 #endif // MIDI_FROM_BELCANTO_DEBUG>0
 
             if(channel > 0)
@@ -950,7 +943,7 @@ namespace piw
                                 {
                                     if(global || w->channel_==channel)
                                     {
-                                        if(extract_keynum(w->id_) == keynum)
+                                        if(w->key_ == i->key_)
                                         {
                                             if(w->note_id_!=0)
                                             {
@@ -1293,7 +1286,7 @@ namespace piw
     void midi_from_belcanto_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &data) { impl_->set_midi(data); }
     void midi_from_belcanto_t::set_send_notes(bool send) { piw::tsd_fastcall(__set_send_notes,impl_,&send); }
     void midi_from_belcanto_t::set_send_pitchbend(bool send) { piw::tsd_fastcall(__set_send_pitchbend,impl_,&send); }
-    unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &d) { return piw::tsd_fastcall(__get_channel,impl_,(void *)&d); }
+    unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &id) { return piw::tsd_fastcall(__get_channel,impl_,(void *)&id); }
 
 } // namespace piw
 

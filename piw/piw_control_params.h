@@ -46,17 +46,18 @@ namespace piw
 
     struct PIW_DECLSPEC_CLASS param_data_t
     {
-        param_data_t(unsigned p, float v, unsigned s, piw::data_nb_t id): param_(p), value_(v), scope_(s), id_(id) {};
+        param_data_t(unsigned p, float v, unsigned s, piw::data_nb_t id, unsigned key): param_(p), value_(v), scope_(s), id_(id), key_(key) {};
 
         unsigned param_;
         float value_;
         unsigned scope_;
         piw::data_nb_t id_;
+        unsigned key_;
     };
 
     struct PIW_DECLSPEC_CLASS midi_data_t
     {
-        midi_data_t(unsigned long long time, unsigned char mcc, unsigned char lcc, unsigned value, unsigned scope, unsigned channel, piw::data_nb_t id, bool continuous): time_(time), mcc_(mcc), lcc_(lcc), value_(value), scope_(scope), channel_(channel), id_(id), continuous_(continuous) {};
+        midi_data_t(unsigned long long time, unsigned char mcc, unsigned char lcc, unsigned value, unsigned scope, unsigned channel, piw::data_nb_t id, unsigned key, bool continuous): time_(time), mcc_(mcc), lcc_(lcc), value_(value), scope_(scope), channel_(channel), id_(id), key_(key), continuous_(continuous) {};
 
         unsigned long long time_;
         unsigned char mcc_;
@@ -65,6 +66,7 @@ namespace piw
         unsigned scope_;
         unsigned channel_;
         piw::data_nb_t id_;
+        unsigned key_;
         bool continuous_;
     };
 

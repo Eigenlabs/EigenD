@@ -34,7 +34,8 @@ class Agent(agent.Agent):
         self[1][2] = bundles.Output(2,False,names='pressure output', protocols='')
         self[1][3] = bundles.Output(3,False,names='roll output', protocols='')
         self[1][4] = bundles.Output(4,False,names='yaw output', protocols='')
-        self[1][5] = bundles.Output(5,False,names='key output', protocols='')
+        self[1][5] = bundles.Output(5,False,names='k number output', protocols='')
+        self[1][6] = bundles.Output(6,False,names='key output', protocols='')
 
         self[2] = bundles.Output(1,False, names='controller output', continuous=True)
 
@@ -47,16 +48,16 @@ class Agent(agent.Agent):
         # clone controller input to copy it to an output and the stringer
         self.cclone = piw.clone(True) 
         self.cclone.set_output(1,self.coutput.cookie())
-        self.cclone.set_output(2,self.stringer.ctl_cookie())
 
         self.ctl_input = bundles.VectorInput(self.cclone.cookie(),self.domain,signals=(1,))
-        self.data_input = bundles.VectorInput(self.stringer.data_cookie(),self.domain,signals=(1,2,3,4))
+        self.data_input = bundles.VectorInput(self.stringer.data_cookie(),self.domain,signals=(1,2,3,4,6))
 
         self[4]=atom.Atom()
         self[4][1]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.data_input.merge_policy(1,False),names='activation input')
         self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.data_input.vector_policy(2,False),names='pressure input')
         self[4][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.data_input.merge_policy(3,False),names='roll input')
         self[4][4]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.data_input.merge_policy(4,False),names='yaw input')
+        self[4][6]=atom.Atom(domain=domain.Aniso(),policy=self.data_input.merge_policy(6,False), names='key input')
         self[4][5]=atom.Atom(domain=domain.Aniso(),policy=self.ctl_input.vector_policy(1,False),names='controller input')
 
         # self[5] is the verb container
@@ -100,6 +101,15 @@ class Agent(agent.Agent):
 
 
 class Upgrader(upgrade.Upgrader):
-    pass
+    def upgrade_1_0_0_to_1_0_1(self,tools,address):
+        print 'upgrading stringer',address
+        root = tools.get_root(address)
+        root.ensure_node(4,6).set_name('key input')
+        root.ensure_node(1,5).set_name('k number output')
+        root.ensure_node(1,6).set_name('key output')
+
+    def phase2_1_0_1(self,tools,address):
+        root = tools.get_root(address)
+        root.mimic_connections((4,1),(4,6),'key output')
 
 agent.main(Agent,Upgrader)

@@ -1,4 +1,3 @@
-
 /*
  Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
 
@@ -18,32 +17,17 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __PIW_BACKEND__
-#define __PIW_BACKEND__
+#ifndef __PIW_KEYS_
+#define __PIW_KEYS_
+
 #include "piw_exports.h"
-#include "piw_bundle.h"
+
+#include <piw/piw_data.h>
 
 namespace piw
 {
-    class PIW_DECLSPEC_CLASS functor_backend_t
-    {
-        public:
-            functor_backend_t(unsigned signal,bool end_null);
-            ~functor_backend_t();
-            void set_functor(const piw::data_t &, const change_nb_t &);
-            void clear_functor(const piw::data_t &);
-            void set_gfunctor(const change_nb_t &);
-            void clear_gfunctor();
-            cookie_t cookie();
-            bct_clocksink_t *get_clock();
-            void send_duplicates(bool);
-            int gc_traverse(void *,void *) const;
-            int gc_clear();
-        public:
-            class impl_t;
-        private:
-            impl_t *impl_;
-    };
-}
+    PIW_DECLSPEC_FUNC(unsigned) calc_keynum(piw::data_nb_t geo, int row, int col);
+    PIW_DECLSPEC_FUNC(piw::data_nb_t) key_position(unsigned key, const piw::data_nb_t &lengths, unsigned long long t);
+};
 
 #endif

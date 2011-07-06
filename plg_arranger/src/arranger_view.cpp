@@ -425,10 +425,9 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
         if(d.is_dict())
         {
             piw::data_nb_t v = d.as_dict_lookup("courselen");
-            if(v.is_string())
+            if(v.is_tuple())
             {
-                pic::nbstring_t s(v.as_string());
-                unsigned keys = decode_courses(s);
+                unsigned keys = decode_courses(v);
                 enqueue_slow_nb(piw::makenull_nb(keys));
             }
         }
@@ -473,24 +472,21 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
         draw_marker(true);
     }
 
-    unsigned decode_courses(const pic::nbstring_t &s)
+    unsigned decode_courses(const piw::data_nb_t &courselen)
     {
         k2rect_.clear();
         rect2k_.clear();
 
-        if(s.size()<2)
+        unsigned dictlen = courselen.as_tuplelen();
+        if(0 == dictlen)
             return 0;
 
         pic::lckvector_t<unsigned>::nbtype courses;
         courses.reserve(5);
 
-        pic::nbistringstream_t iss(s.substr(1,s.size()-2));
-        pic::nbstring_t part;
-        while(std::getline(iss,part,','))
+        for(unsigned i = 0; i < dictlen; ++i)
         {
-            unsigned c;
-            pic::nbistringstream_t(part) >> c;
-            courses.push_back(c);
+            courses.push_back(courselen.as_tuple_value(i).as_long());
         }
 
         pic::lckvector_t<unsigned>::nbtype::const_iterator ci,ce;
@@ -864,11 +860,16 @@ void vp_wire_t::invalidate()
 
 void vp_wire_t::event_start(unsigned seq,const piw::data_nb_t &id,const piw::xevent_data_buffer_t &b)
 {
-    if(!id.is_path())
+    piw::data_nb_t d;
+    if(b.latest(5,d,id.time()) && d.is_tuple() && d.as_tuplelen() >= 6)
+    {
+        active_ = d.as_tuple_value(3).as_long();
+    }
+    else
+    {
         return;
-    if(id.as_pathlen()<1)
-        return;
-    active_ = id.as_path()[id.as_pathlen()-1];
+    }
+
     id_ = id;
     parent_->key_active(active_,piw::makebool_nb(true,id.time()));
     pressure_.send_fast(id,b.signal(1));

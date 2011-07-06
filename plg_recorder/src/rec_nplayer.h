@@ -29,11 +29,12 @@ namespace recorder
     class PIRECORDER_DECLSPEC_CLASS nplayer_t : public pic::nocopy_t
     {
         public:
-            nplayer_t(const piw::cookie_t &c,unsigned poly,unsigned sig,piw::clockdomain_ctl_t *);
+            nplayer_t(const piw::cookie_t &c,unsigned poly,unsigned sig_data,unsigned sig_key,piw::clockdomain_ctl_t *);
             ~nplayer_t();
 
             piw::change_t play(unsigned note, unsigned velocity, unsigned long long length);
             bct_clocksink_t *get_clock();
+            piw::change_nb_t control();
 
             class impl_t;
 

@@ -311,8 +311,12 @@ void piw::xevent_data_buffer_t::merge(const piw::xevent_data_buffer_t &b,unsigne
 {
     for(unsigned i=0; i<MAX_SIGNALS; ++i)
     {
-        if(m&(1ULL<<i))
+        if((m&(1ULL<<i) ||
+           (!m && b.event_->signals_[i].isvalid()
+               && !event_->signals_[i].isvalid())))
+        {
             event_->signals_[i] = b.event_->signals_[i];
+        }
     }
 }
 

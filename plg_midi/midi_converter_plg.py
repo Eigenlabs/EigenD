@@ -126,10 +126,11 @@ class Agent(agent.Agent):
 
         # Inputs for generating keyboard driven MIDI signals
         # MIDI controllers are merged down with signals from keys (driven by pressure)
-        self.__kinpt = bundles.VectorInput(self.__kvelo.cookie(),self.__domain,signals=(1,2,3,5,6,7,8,9,10,11,12,13))
+        self.__kinpt = bundles.VectorInput(self.__kvelo.cookie(),self.__domain,signals=(1,2,5))
         self[2] = atom.Atom()
         self[2][1] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.vector_policy(1,False),names='pressure input')
         self[2][2] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.merge_nodefault_policy(2,False),names='frequency input')
+        self[2][3] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.merge_nodefault_policy(5,False),names='key input')
 
          # input to set the MIDI channel
         self[3] = atom.Atom(domain=domain.BoundedInt(0,16),init=0,names="midi channel",policy=atom.default_policy(self.set_midi_channel))
@@ -227,12 +228,21 @@ class Agent(agent.Agent):
 
 class Upgrader(upgrade.Upgrader):
     def upgrade_1_0_2_to_1_0_3(self,tools,address):
-        print 'upgrading converter',address
+        print 'upgrading midi converter',address
         root = tools.get_root(address)
-                    
+
         # remove midi program and bank atoms
         root.erase_child(5)
         root.erase_child(6)
+
+        # ensure input atom names
+        root.ensure_node(2,3).set_name('key input')
+
+    def phase2_1_0_3(self,tools,address):
+        root = tools.get_root(address)
+
+        # hook up the key input
+        root.mimic_connections((2,1),(2,3),'key output')
 
     def upgrade_1_0_1_to_1_0_2(self,tools,address):
         pass
