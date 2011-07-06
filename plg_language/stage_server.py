@@ -298,6 +298,7 @@ class stageXMLRPCFuncs:
             args[0] = r.status()
             args[1] = r.args()
             args[2] = r.kwds()
+            piw.tsd_unlock()
         else:
             e = threading.Event()
             e.clear()
