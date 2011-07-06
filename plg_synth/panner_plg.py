@@ -40,8 +40,8 @@ class Agent(agent.Agent):
         self.panner = piw.panner(self.pan,self.output.cookie(),self.domain)
         self.input = bundles.VectorInput(self.panner.cookie(), self.domain, signals=(1,2,3))
 
-        self[1]=audio.AudioOutput(self.output,1,2)
-        self[2]=audio.AudioInput(self.input,2,2)
+        self[1]=audio.AudioOutput(self.output,1,2,names='outputs')
+        self[2]=audio.AudioInput(self.input,2,2,names='inputs')
 
         self[3]=atom.Atom(domain=domain.BoundedFloat(-1,1), names="pan input", policy=self.input.merge_policy(1,policy.IsoStreamPolicy(1,-1,0)))
 

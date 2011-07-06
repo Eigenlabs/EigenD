@@ -27,7 +27,7 @@ def channel_name(c,n):
 class AudioOutput(atom.Atom):
 
     def __init__(self,splitter,base,channels,name='audio output',**kwds):
-        atom.Atom.__init__(self,dynlist=True,names='outputs',**kwds)
+        atom.Atom.__init__(self,dynlist=True,**kwds)
         self.__base = base
         self.__channels = 0
         self.__splitter = splitter
@@ -62,7 +62,7 @@ class AudioOutput(atom.Atom):
 
 class AudioInput(atom.Atom):
     def __init__(self,input,base,channels,name='audio input',**kwds):
-        atom.Atom.__init__(self,dynlist=True,names='inputs',**kwds)
+        atom.Atom.__init__(self,dynlist=True,**kwds)
         self.__base = base
         self.__channels = 0
         self.__input = input
