@@ -34,8 +34,8 @@ class Agent(agent.Agent):
         self.mixer = piw.stereosummer(self.domain,self.output.cookie(),1)
         self.input = bundles.VectorInput(self.mixer.cookie(), self.domain, signals=(1,2,3,4,5,6,7,8,9))
 
-        self[2] = audio.AudioOutput(self.output,1,1)
-        self[1] = audio.AudioInput(self.input,1,1)
+        self[2] = audio.AudioOutput(self.output,1,1,names='outputs')
+        self[1] = audio.AudioInput(self.input,1,1,names='inputs')
         self[4] = audio.AudioChannels(self[1],self[2],self.mixer)
 
 class Upgrader(upgrade.Upgrader):

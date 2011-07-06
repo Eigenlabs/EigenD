@@ -60,7 +60,7 @@ class Agent(agent.Agent):
 
         self.domain = piw.clockdomain_ctl()
         self.output = bundles.Splitter(self.domain)
-        self[1] = audio.AudioOutput(self.output,1,2)
+        self[1] = audio.AudioOutput(self.output,1,2,names='outputs')
         file = wav_resource('output.wav')
         self.xplayer = loop_native.xplayer(self.output.cookie(),self.domain,file)
         self.xplayer.play(True)

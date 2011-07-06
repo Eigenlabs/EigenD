@@ -35,8 +35,8 @@ class Agent(agent.Agent):
         self.gain = piw.linear_gain(self.output.cookie(),self.domain)
         self.input = bundles.VectorInput(self.gain.cookie(), self.domain, signals=(1,2,3,4,5,6,7,8,9,10))
 
-        self[1]=audio.AudioOutput(self.output,2,1)
-        self[2]=audio.AudioInput(self.input,2,1)
+        self[1]=audio.AudioOutput(self.output,2,1,names='outputs')
+        self[2]=audio.AudioInput(self.input,2,1,names='inputs')
         self[4]=audio.AudioChannels(self[1],self[2])
 
         self[3]=atom.Atom(domain=domain.BoundedFloat(0,1), names="volume input", policy=self.input.merge_policy(1,policy.IsoStreamPolicy(1,0,0)))
