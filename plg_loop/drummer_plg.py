@@ -67,7 +67,7 @@ class Voice(atom.Atom):
 
         self.__timestamp = piw.tsd_time()
 
-        atom.Atom.__init__(self,domain=domain.String(),names='voice',ordinal=voice,protocols='browse',policy=atom.default_policy(self.set_loop))
+        atom.Atom.__init__(self,domain=domain.String(),names='voice',ordinal=voice,protocols='remove browse',policy=atom.default_policy(self.set_loop))
 
         self.looper = loop_native.player(agent.aggregator.get_output(voice),agent.domain,utils.statusify(self.__loop_status))
         agent.clock_cloner.set_output(voice,self.looper.cookie())
