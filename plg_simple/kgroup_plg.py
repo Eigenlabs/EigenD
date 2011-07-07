@@ -99,7 +99,8 @@ class SlowScaleChange:
 
 
 class Controller:
-    def __init__(self,cookie):
+    def __init__(self,agent,cookie):
+        self.__agent = agent
         self.__dict = piw.controllerdict(cookie)
         self.__state = node.Server(change=self.__change_controller)
 
@@ -118,6 +119,7 @@ class Controller:
                 v = d.as_dict_lookup(x)
                 self.__dict.put_ctl(x,v)
             self.__state.set_data(self.__dict.get_ctl_dict().make_normal())
+            self.__agent.controller_changed()
 
     def thing_changed(self,d,kk):
         self.__dict.put(kk,d)
@@ -154,10 +156,12 @@ class Controller:
     def setlist(self,name,l):
         self.__dict.put_ctl(name, utils.maketuple(l,piw.tsd_time()))
         self.__state.set_data(self.__dict.get_ctl_dict())
+        self.__agent.controller_changed()
 
     def settuple(self,name,t):
         self.__dict.put_ctl(name, t)
         self.__state.set_data(self.__dict.get_ctl_dict())
+        self.__agent.controller_changed()
 
     def getlist(self,name):
         d = self.gettuple(name)
@@ -379,7 +383,7 @@ class OutputList(atom.Atom):
         return Output(self,i)
 
     def create(self,slot=None):
-        if slot is not None:
+        if slot is not None and self.has_key(slot):
             output = self[slot]
             if output:
                 return output
@@ -508,7 +512,7 @@ class Agent(agent.Agent):
         self[14] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.kinput.vector_policy(4,False), names='yaw input')
         self[22] = atom.Atom(domain=domain.Aniso(), policy=self.kinput.vector_policy(5,False), names='key input')
 
-        self.controller = Controller(self.cclone.cookie())
+        self.controller = Controller(self,self.cclone.cookie())
         self.__private[2] = self.controller.state()
 
         self.keypulse = piw.changelist_nb()
@@ -1011,9 +1015,6 @@ class Agent(agent.Agent):
         for (src,dst) in mapping:
             self.mapper.set_mapping(int(src),int(dst))
 
-        # set the musical courses tuple
-        mapper.set_courselen(self.controller.gettuple('courselen'))
-
         # determine the physical geometry
         self.__set_physical_geo(mapping)
 
@@ -1029,8 +1030,11 @@ class Agent(agent.Agent):
         self.key_mapper.enable(1,False)
         self.key_mapper.enable(1,True)
 
+    def controller_changed(self):
+        self.mapper.set_courselen(self.controller.gettuple('courselen'))
+
     def __set_members(self,value):
-        mapping=logic.parse_clause(value)
+        mapping = logic.parse_clause(value)
         self.__set_mapping(mapping)
 
     def __cur_mapping(self):

@@ -72,8 +72,10 @@ unsigned piw::calc_keynum(piw::data_nb_t geo, int row, int col)
 
 PIW_DECLSPEC_FUNC(piw::data_nb_t) piw::key_position(unsigned key, const piw::data_nb_t &lengths, unsigned long long t)
 {
-    PIC_ASSERT(key>0);
-    PIC_ASSERT(lengths.is_tuple());
+    if(key <= 0 || !lengths.is_tuple())
+    {
+        return piw::makenull_nb(0);
+    }
 
     unsigned row = 0;
     unsigned col = 0;
