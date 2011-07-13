@@ -50,7 +50,7 @@ struct host::plugin_list_t::impl_t: piw::thing_t
 
     void load()
     {
-        if(plugins_cache_.exists())
+        if(plugins_cache_.existsAsFile() && plugins_cache_.getSize()>0)
         {
             juce::XmlDocument xml(plugins_cache_);
             list_.clear();

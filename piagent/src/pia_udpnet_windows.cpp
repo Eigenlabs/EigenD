@@ -130,7 +130,7 @@ namespace
                 pic::msg() << "Can't setup mcast ttl" << pic::hurl;
             }
 
-            int ssz = BCTLINK_MAXPACKET;
+            int ssz = 10*BCTLINK_MAXPACKET;
             if(setsockopt(socket_.fd, SOL_SOCKET, SO_SNDBUF, (char *)&ssz, sizeof(ssz)) < 0)
             {
                 pic::msg() << "Can't set sndbuf size" << pic::hurl;
@@ -203,7 +203,7 @@ namespace
 			{
 				pic::msg() << "Failed to set non blocking option";
 			}
-            int rsz = BCTLINK_MAXPACKET;
+            int rsz = 10*BCTLINK_MAXPACKET;
             if(setsockopt(socket_.fd, SOL_SOCKET, SO_RCVBUF, (char *)&rsz, sizeof(rsz)) != 0)
             {
                 pic::msg() << "Can't set rcvbuf size" << pic::hurl;
