@@ -386,7 +386,6 @@ void datawire_t::shutdown(unsigned long long t)
         float b = impl_->clock_.interpolate_clock(SONGBEAT,t);
         event_.end_event(t-st,b-sb);
     }
-
 }
 
 void clockwire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::xevent_data_buffer_t &ei)
@@ -413,14 +412,15 @@ bool clockwire_t::event_end(unsigned long long t)
     //pic::logmsg() << "recorder clockwire event ended";
     ticked(t);
     impl_->id_receive(piw::makenull_nb(t));
-    impl_->tick_suppress(true);
+    impl_->beat_age_ = 0;
+    impl_->state_ = RECORDER_SHUTDOWN;
     return true;
 }
 
 void recorder::recorder_t::impl_t::clocksink_ticked(unsigned long long from,unsigned long long t)
 {
     clockwire_.ticked(t);
-    if(state_==RECORDER_IDLE)
+    if(state_==RECORDER_IDLE || state_==RECORDER_ARMED)
         return;
 
     if(beat_age_>0) beat_age_--;
@@ -428,8 +428,10 @@ void recorder::recorder_t::impl_t::clocksink_ticked(unsigned long long from,unsi
     if(beat_age_==0)
     {
         state_ = RECORDER_SHUTDOWN;
-        pic::msg() << "recording aborted: no clock" << pic::log;
-        enqueue_slow_nb(piw::makefloat_nb(0,3));
+        pic::msg() << "recording stopped: no clock" << pic::log;
+        enqueue_slow_nb(piw::makefloat_nb(0,1));
+        
+        tick_suppress(true);
     }
 
     if(state_==RECORDER_ARMING)
@@ -459,7 +461,6 @@ void recorder::recorder_t::impl_t::clocksink_ticked(unsigned long long from,unsi
         {
             i->second->shutdown(t);
         }
-
     }
 
     if(state_==RECORDER_RUNNING)
@@ -572,6 +573,7 @@ int recorder::recorder_t::impl_t::aborter__(void *impl_, void *)
     {
         impl->state_ = RECORDER_SHUTDOWN;
         pic::msg() << "recorder is aborted" << pic::log;
+        impl->enqueue_slow_nb(piw::makefloat_nb(0,3));
     }
 
     return 0;
@@ -586,12 +588,6 @@ int recorder::recorder_t::impl_t::armer__(void *impl_, void *dur_)
 {
     unsigned duration = *(unsigned *)dur_;
     recorder::recorder_t::impl_t *impl = (recorder::recorder_t::impl_t *)impl_;
-
-    if(impl->beat_age_==0)
-    {
-        pic::msg() << "can't record, no clock" << pic::log;
-        return RECORD_ERR_NO_CLOCK;
-    }
 
     if(impl->state_==RECORDER_RUNNING)
     {

@@ -278,6 +278,13 @@ namespace
                 return;
             }
 
+            // always send out the data that was captured at event start with the same timestamp as the event
+            while(event_.isvalid() && event_.evt_time() == event_.cur_time())
+            {
+                output_.add_value(event_.cur_signal(),event_.cur_value().restamp(et));
+                event_.next();
+            }
+
             switch(mode_)
             {
                 case PLAYER_MODE_STRETCH: end=buffer_stretch(st,t,b,clk); break;
