@@ -300,6 +300,8 @@ struct arranger::model_t::impl_t: piw::decode_ctl_t, piw::wire_t, piw::event_dat
 
         while((c=clock())<s)
         {
+            update();
+
             if(row_<g.value().size() && playing_)
             {
                 unsigned long long tt = interp_.interpolate_time(0,steps2beats(c),0);
@@ -333,6 +335,21 @@ struct arranger::model_t::impl_t: piw::decode_ctl_t, piw::wire_t, piw::event_dat
         return (float)clock_+frac_;
     }
 
+    void update()
+    {
+        column_t *l = grid_.at(position(),false);
+        if(l && cindex_>=0 && cindex_<(int)l->size())
+        {
+            frac_ = l->at(cindex_).first;
+            row_  = l->at(cindex_).second;
+        }
+        else
+        {
+            frac_ = 0.f;
+            row_ = ~0U;
+        }
+    }
+
     void forwards()
     {
         column_t *l = grid_.at(position(),false);
@@ -349,17 +366,6 @@ struct arranger::model_t::impl_t: piw::decode_ctl_t, piw::wire_t, piw::event_dat
             ++clock_;
             l = grid_.at(position(),false);
             cindex_ = 0;
-        }
-
-        if(l && cindex_<(int)l->size())
-        {
-            frac_ = l->at(cindex_).first;
-            row_  = l->at(cindex_).second;
-        }
-        else
-        {
-            frac_ = 0.f;
-            row_ = ~0U;
         }
     }
 
@@ -380,17 +386,6 @@ struct arranger::model_t::impl_t: piw::decode_ctl_t, piw::wire_t, piw::event_dat
             l = grid_.at(position(),false);
             if(l)
                 cindex_ = (int)l->size()-1;
-        }
-
-        if(l && cindex_>=0)
-        {
-            frac_ = l->at(cindex_).first;
-            row_  = l->at(cindex_).second;
-        }
-        else
-        {
-            frac_ = 0.f;
-            row_ = ~0U;
         }
     }
 

@@ -82,7 +82,8 @@ namespace
                 cur_plugin_ = -1;
 
                 juce::File f(getPluginsDir().getChildFile(T("plugins_cache")));
-                if(f.exists())
+
+                if(f.existsAsFile() && f.getSize()>0)
                 {
                     XmlDocument xml(f);
                     current_plugin_list_.recreateFromXml(*xml.getDocumentElement());
@@ -90,7 +91,6 @@ namespace
                 else
                 {
                     printf("no current plugin cache\n");
-                    f.create();
                 }
 
                 state_ = STATE_STARTING;
@@ -343,6 +343,7 @@ namespace
             void save()
             {
                 juce::File f(getPluginsDir().getChildFile(T("plugins_cache")));
+
                 std::auto_ptr<juce::XmlElement> el(plugin_list_.createXml());
                 //printf("writing %s as %d...\n",f.getFullPathName().toCString(),geteuid());
                 if(!el->writeToFile(f,juce::String::empty)) printf("oops, failed!\n");
