@@ -350,6 +350,7 @@ class Backend(eigend_native.c2p):
         self.run_background(bginit)
 
     def upgrade_setups(self):
+        agentd.upgrade_default_setup()
         agentd.upgrade_old_setups()
 
     def prepare_quit(self):

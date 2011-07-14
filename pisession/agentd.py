@@ -1161,6 +1161,20 @@ class Agent(agent.Agent):
     def quit(self):
         self.dynamic.on_quit()
 
+def upgrade_default_setup():
+    filename = resource.user_resource_file('global',resource.default_setup)
+
+    if not os.path.exists(filename):
+        for v in resource.find_installed_versions(filter_upgradeable_version):
+            old_filename = resource.user_resource_file('global',resource.default_setup,version=v)
+            if os.path.exists(old_filename):
+                setup = open(old_filename,'r').read()
+                if ''==setup:
+                    set_default_setup('')
+                else:
+                    set_default_setup(setup.replace(v,resource.current_version()))
+                return
+
 def upgrade_old_setups():
     for (dst,src,src_ver) in upgradeable_old_setups():
         copy_old_setup(src,dst,src_ver)
