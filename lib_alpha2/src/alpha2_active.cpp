@@ -768,6 +768,7 @@ void alpha2::active_t::impl_t::kbd_start()
     }
 
     kbd_state_ = KBD_STARTING;
+    heartbeat_ = 0;
 }
 
 void alpha2::active_t::impl_t::kbd_stop()
@@ -816,6 +817,8 @@ bool alpha2::active_t::impl_t::poll(unsigned long long t)
     bool v;
 	keydown_recv_=false;
     v = device_->poll_pipe(t);
+
+    if(kbd_state_ == KBD_OFF) return v;
 
     if(kbd_state_ != KBD_STARTED)
     {

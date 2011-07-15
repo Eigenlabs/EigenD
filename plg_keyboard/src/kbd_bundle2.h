@@ -120,6 +120,7 @@ namespace kbd
             void loopback_enable(bool);
             void loopback_gain(float);
             void headphone_gain(unsigned);
+            void headphone_limit(bool);
 
         private:
             kbd_impl_t *_root;
@@ -163,6 +164,7 @@ namespace kbd
 
             piw::cookie_t audio_cookie();
             void headphone_enable(bool);
+            void headphone_limit(bool);
             void headphone_gain(unsigned);
 
         private:
