@@ -293,6 +293,7 @@ class HeadphoneInput(audio.AudioInput):
         self[100] = toggle.Toggle(self.__enable,self.__agent.domain,container=(None,'headphone',self.__agent.verb_container()),names='enable')
         self[101] = atom.Atom(domain=domain.BoundedInt(0,127,hints=(T('inc',1),T('biginc',5),T('control','updown'))),names='gain',init=70,policy=atom.default_policy(self.__gain))
         self[102] = atom.Atom(domain=domain.BoundedInt(0,4),names='quality',init=0,policy=atom.default_policy(self.__quality))
+        self[103] = atom.Atom(domain=domain.Bool(),names='limit',init=True,policy=atom.default_policy(self.__limit))
 
     def server_opened(self):
         audio.AudioInput.server_opened(self)
@@ -307,6 +308,11 @@ class HeadphoneInput(audio.AudioInput):
 
     def __gain(self,g):
         self.__agent.keyboard.headphone_gain(g)
+        self.__agent.update()
+        return True
+
+    def __limit(self,l):
+        self.__agent.keyboard.headphone_limit(l)
         self.__agent.update()
         return True
 

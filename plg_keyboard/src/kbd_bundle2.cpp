@@ -1192,6 +1192,11 @@ namespace
             loop_->headphone_gain(g);
         }
 
+        void headphone_limit(bool l)
+        {
+            loop_->headphone_limit(l);
+        }
+
         ~headphone_input_t()
         {
             invalidate();
@@ -1936,6 +1941,11 @@ void kbd::alpha2_bundle_t::headphone_enable(bool e)
     _root->headphone_input_->headphone_enable(e);
 }
 
+void kbd::alpha2_bundle_t::headphone_limit(bool l)
+{
+    _root->headphone_input_->headphone_limit(l);
+}
+
 void kbd::alpha2_bundle_t::headphone_gain(unsigned g)
 {
     _root->headphone_input_->headphone_gain(g);
@@ -2123,6 +2133,11 @@ piw::cookie_t kbd::tau_bundle_t::audio_cookie()
 void kbd::tau_bundle_t::headphone_enable(bool e)
 {
     _root->headphone_input_->headphone_enable(e);
+}
+
+void kbd::tau_bundle_t::headphone_limit(bool l)
+{
+    _root->headphone_input_->headphone_limit(l);
 }
 
 void kbd::tau_bundle_t::headphone_gain(unsigned g)

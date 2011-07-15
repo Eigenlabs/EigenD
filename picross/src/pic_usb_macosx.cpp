@@ -398,6 +398,7 @@ namespace
         unsigned write_urb_;
         unsigned write_frame_;
         pic_atomic_t shutdown_latch;
+        unsigned sleeping;
     };
 
     typedef pic::lcklist_t<macosx_usbpipe_in_t *>::lcktype pipe_list_t;
@@ -754,21 +755,29 @@ void macosx_usbpipe_in_t::sleep()
 void macosx_usbpipe_out_t::sleep()
 {
     pic::logmsg() << "out pipe entering sleep";
+    sleeping=2;
     abort_urbs();
     pic::logmsg() << "out pipe sleeping";
 }
 
 void macosx_usbpipe_in_t::wakeup()
 {
-    sleeping=1;
-    impl_->ping((void *)2,this);
+    if(2==sleeping)
+    {
+        sleeping=1;
+        impl_->ping((void *)2,this);
+    }
 }
 
 void macosx_usbpipe_out_t::wakeup()
 {
-    pic::logmsg() << "out pipe waking up";
-    start();
-    pic::logmsg() << "out pipe awake";
+    if(2==sleeping)
+    {
+        pic::logmsg() << "out pipe waking up";
+        sleeping=1;
+        start();
+        pic::logmsg() << "out pipe awake";
+    }
 }
 
 void macosx_usbpipe_in_t::start()
@@ -996,7 +1005,7 @@ macosx_usbpipe_in_t::macosx_usbpipe_in_t(pic::usbdevice_t::impl_t *impl,pic::usb
 
 macosx_usbpipe_out_t::macosx_usbpipe_out_t(pic::usbdevice_t::impl_t *impl,pic::usbdevice_t::iso_out_pipe_t *p,int r): 
     macosx_usbpipe_t(impl,r,p->out_pipe_size()),
-    pipe(p), write_urb_(0), write_frame_(0), shutdown_latch(OUTPIPE_START)
+    pipe(p), write_urb_(0), write_frame_(0), shutdown_latch(OUTPIPE_START), sleeping(0)
 {
     PIC_ASSERT(impl_->device.hispeed);
 }
@@ -1217,11 +1226,17 @@ void pic::usbdevice_t::impl_t::shutdown()
     pic::logmsg() << "usb shutdown starting";
     if(outpipe)
     {
+        pic::logmsg() << "shutting down outpipe";
         outpipe->kill();
 
+        pic::logmsg() << "waiting for outpipe shutdown";
         if(!outpipe->gate.timedpass(1000000ULL))
         {
             pic::logmsg() << "outpipe shutdown timed out";
+        }
+        else
+        {
+            pic::logmsg() << "outpipe shut down";
         }
     }
     {
@@ -1229,11 +1244,17 @@ void pic::usbdevice_t::impl_t::shutdown()
 
         for(i=inpipes_.alternate().begin(); i!=inpipes_.alternate().end(); i++)
         {
+            pic::logmsg() << "shutting down inpipe";
             (*i)->kill();
 
+            pic::logmsg() << "waiting for inpipe shutdown";
             if(!(*i)->gate.timedpass(1000000ULL))
             {
                 pic::logmsg() << "inpipe shutdown timed out";
+            }
+            else
+            {
+                pic::logmsg() << "inpipe shut down";
             }
         }
     }
@@ -1304,15 +1325,22 @@ static void __power_callback(void *i_, io_service_t s, natural_t mt, void *arg)
     switch(mt)
     {
         case kIOMessageSystemWillSleep:
+            pic::logmsg() << "power callback SystemWillSleep, " << (long)arg;
             i->power_sleep();
-            // fallthrough
+            IOAllowPowerChange(i->power_port, (long)arg);
+            break;
 
         case kIOMessageCanSystemSleep:
+            pic::logmsg() << "power callback CanSystemSleep, " << (long)arg;
             IOAllowPowerChange(i->power_port, (long)arg);
             break;
 
         case kIOMessageSystemHasPoweredOn:
+            pic::logmsg() << "power callback SystemHasPoweredOn, " << (long)arg;
             i->power_wakeup();
+            break;
+
+        default:
             break;
     }
 }
@@ -1369,6 +1397,7 @@ void pic::usbdevice_t::impl_t::runloop_init()
 
 void pic::usbdevice_t::impl_t::runloop_term()
 {
+    pic::logmsg() << "terminating runloop";
     if(power_port != MACH_PORT_NULL)
     {
         IODeregisterForSystemPower(&power_iterator);
