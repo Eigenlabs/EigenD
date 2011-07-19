@@ -461,6 +461,7 @@ struct pic::usbdevice_t::impl_t: pic::cfrunloop_t, virtual public pic::lckobject
     void abort_urbs(int piperef);
 
     std::string name_;
+    bool sleeping;
 
     macosx_usbdevice_t device;
     pic::usbdevice_t::power_t *power;
@@ -1145,7 +1146,7 @@ macosx_usbdevice_t::~macosx_usbdevice_t()
     close_device(device);
 }
 
-pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface): pic::cfrunloop_t(0), name_(name), device(name,iface), power(0), power_port(MACH_PORT_NULL),outpipe(0),cmd2_pending(0)
+pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface): pic::cfrunloop_t(0), name_(name), sleeping(false), device(name,iface), power(0), power_port(MACH_PORT_NULL),outpipe(0),cmd2_pending(0)
 {
 }
 
@@ -1284,10 +1285,18 @@ void pic::usbdevice_t::impl_t::power_sleep()
     {
         power->on_suspending();
     }
+    sleeping = true;
 }
 
 void pic::usbdevice_t::impl_t::power_wakeup()
 {
+    if(!sleeping)
+    {
+        pic::logmsg() << "usb power wakeup, but not sleeping";
+        return;
+    }
+    sleeping = false;
+
     IOReturn e;
 
     pic::logmsg() << "usb power wakeup";
