@@ -138,6 +138,7 @@ class Output(agent.Agent):
     def __init__(self,master,name):
         self.__agent = master
         self.__tee = None
+        self.plumbed = False
         self.name = name
 
         agent.Agent.__init__(self,domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='kgroup output',ordinal=name,signature=version,subsystem='output',protocols='notagent is_subsys')
@@ -215,8 +216,12 @@ class Output(agent.Agent):
 
         self.enable(self.get_value())
 
+        self.plumbed = True
 
     def unplumb(self):
+        if not self.plumbed:
+            return
+
         n = self.name
 
         if self.__tee is not None:
@@ -235,6 +240,8 @@ class Output(agent.Agent):
         self.__agent.pedal3_clone.clear_output(n)
         self.__agent.pedal4_clone.clear_output(n)
         self.light_output.clear_output(1)
+
+        self.plumbed = False
 
     def server_opened(self):
         agent.Agent.server_opened(self)
@@ -478,9 +485,15 @@ class Agent(agent.Agent):
             self.get_subsystem(ss[0]).enable(True)
 
     def __inst_asserted(self,index,value):
+        for k,v in self.iter_subsys_items():
+            if v.name==int(value):
+                v.unplumb()
+                break
+
         g = Output(self,int(value))
         self.add_subsystem(index,g)
         g.plumb()
+
         self.__check_single()
         return g
 
