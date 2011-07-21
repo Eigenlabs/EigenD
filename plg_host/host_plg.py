@@ -461,7 +461,7 @@ class Agent(agent.Agent):
 
     def __open(self,arg,id):
         id = action.abstract_string(id)
-        if self.set_plugin(id):
+        if self.set_plugin(id.strip('!')):
             return action.nosync_return()
         return async.success(errors.doesnt_exist('plugin "%s"'%id,'open'))
 
