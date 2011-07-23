@@ -171,15 +171,11 @@ class Agent(agent.Agent):
         return True
 
     def set_min_channel(self,c):
-        if c>=self[8].get_value():
-            return False
         self[7].set_value(c)
         self.__midi_converter.set_min_midi_channel(c)
         return True
 
     def set_max_channel(self,c):
-        if c<=self[7].get_value():
-            return False
         self[8].set_value(c)
         self.__midi_converter.set_max_midi_channel(c)
         return True

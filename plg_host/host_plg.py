@@ -409,15 +409,11 @@ class Agent(agent.Agent):
         return True
 
     def set_min_channel(self,c):
-        if c>=self[12].get_value():
-            return False
         self[11].set_value(c)
         self.__host.set_min_midi_channel(c)
         return True
 
     def set_max_channel(self,c):
-        if c<=self[11].get_value():
-            return False
         self[12].set_value(c)
         self.__host.set_max_midi_channel(c)
         return True

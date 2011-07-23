@@ -69,15 +69,27 @@ namespace
 
     struct channel_list_t
     {
-        channel_list_t(): min_(CHANNEL_MIN), max_(CHANNEL_MAX), legato_mode_(false), legato_initial_(false)
+        channel_list_t(): legato_mode_(false), legato_initial_(false), min_(CHANNEL_MIN), max_(CHANNEL_MAX)
         {
             refresh_available_channels();
+        }
+
+        unsigned min()
+        {
+            return std::min(min_,max_);
+        }
+
+        unsigned max()
+        {
+            return std::max(min_,max_);
         }
 
         void refresh_available_channels()
         {
             list_.clear();
-            for(unsigned i=min_; i<=max_; i++)
+            unsigned mn = min();
+            unsigned mx = max();
+            for(unsigned i=mn; i<=mx; i++)
             {
                 list_.push_back(i);
             }
@@ -115,7 +127,7 @@ namespace
 
         unsigned num_channels()
         {
-            return (max_-min_)+1;
+            return (max()-min())+1;
         }
 
         void put(unsigned c)
@@ -134,11 +146,9 @@ namespace
             {
                 c = CHANNEL_MIN;
             }
-            if(c<max_)
-            {
-                //pic::logmsg() << "midi min set to " << c;
-                min_ = c;
-            }
+
+            min_ = c;
+
             refresh_available_channels();
         }
 
@@ -148,11 +158,9 @@ namespace
             {
                 c = CHANNEL_MAX;
             }
-            if(c>min_)
-            {
-                //pic::logmsg() << "midi max set to " << c;
-                max_ = c;
-            }
+
+            max_ = c;
+
             refresh_available_channels();
         }
 
@@ -182,12 +190,16 @@ namespace
             assignments_.erase(id);
         }
 
-        pic::lcklist_t<unsigned>::nbtype list_;
-        unsigned min_;
-        unsigned max_;
-        bool legato_mode_;
-        bool legato_initial_;
-        pic::lckmap_t<piw::data_nb_t,unsigned>::lcktype assignments_;
+        public:
+
+            pic::lcklist_t<unsigned>::nbtype list_;
+            bool legato_mode_;
+            bool legato_initial_;
+            pic::lckmap_t<piw::data_nb_t,unsigned>::lcktype assignments_;
+
+        private:
+            unsigned min_;
+            unsigned max_;
     };
 
 } // namespace
@@ -1108,7 +1120,7 @@ namespace piw
         else
         {
             // omni mode, send to all channels
-            for(unsigned channel = channel_list_.min_-1; channel < channel_list_.max_; channel++)
+            for(unsigned channel = channel_list_.min()-1; channel < channel_list_.max(); channel++)
             {
                 unsigned char *blob = 0;
                 piw::data_nb_t d = piw::makeblob_nb(t,2,&blob);
@@ -1156,7 +1168,7 @@ namespace piw
         else
         {
             // omni mode, send to all channels
-            for(unsigned channel = channel_list_.min_-1; channel < channel_list_.max_; channel++)
+            for(unsigned channel = channel_list_.min()-1; channel < channel_list_.max(); channel++)
             {
                 unsigned char *blob = 0;
                 piw::data_nb_t d = piw::makeblob_nb(t,3,&blob);
