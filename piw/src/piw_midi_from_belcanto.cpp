@@ -144,6 +144,8 @@ namespace
 
         void put(unsigned c)
         {
+            if(c < min() || c > max()) return;
+
             //pic::logmsg() << "midi put " << c;
             if(!legato_mode_)
             {
