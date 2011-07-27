@@ -84,34 +84,6 @@ class Agent(agent.Agent):
         self.add_verb2(1,'cancel([],None)', self.__cancel_verb)
         self.add_verb2(5,'choose([],None,role(None,[ideal([None,scale]),singular]))',self.__choose_verb)
 
-        try:
-            self.read_user()
-        except:
-            pass
-
-
-    def read_user(self):
-        fn = resource.user_resource_file('Scale Manager','User Scales.txt',version='')
-
-        if not os.path.exists(fn):
-            print 'no scale file',fn
-            fr = resource.find_release_resource('scale_manager','User Scales.txt');
-            if not fr:
-                print 'no factory scale file',fr
-                return
-            print 'copy',fr,fn
-            shutil.copyfile(fr,fn)
-
-        cp = ConfigParser.ConfigParser()
-        cp.read(fn)
-
-        for s in cp.sections():
-            if not cp.has_option(s,'intervals'): 
-                continue
-            line = cp.get(s,'intervals')
-            line = line.strip()
-            self[2].add_scale(line,s)
-
     def __choose_verb(self,subject,scale):
         type,thing = action.crack_ideal(action.arg_objects(scale)[0])
         print 'choose',scale,thing
@@ -287,25 +259,53 @@ class VirtualScale(atom.Atom):
 
     def __init__(self, activate):
         atom.Atom.__init__(self,names='scale',protocols='virtual browse')
-        self.values = list(self.init_values)
         self.descriptions = {}
-        self.__selected=None
-        self.__selected_name=None
-        self.__activated_scale=None
-        self.__activated_name=None
-        self.__activated_idx=None
-        self.__activate=activate
+        self.__user = resource.user_resource_file('Scale Manager','User Scales.txt',version='')
+        self.__mtime = None
+        self.__selected = None
+        self.__selected_name = None
+        self.__activated_scale = None
+        self.__activated_name = None
+        self.__activated_idx = None
+        self.__activate = activate
         self.__timestamp = piw.tsd_time()
-        self.update()
         self.__usercounter = 1
+        self.update_scales()
+        self.update_timestamp()
 
     def reset(self):
-        self.__selected=None
-        self.__selected_name=None
-        self.__activated_scale=None
-        self.__activated_name=None
-        self.__activated_idx=None
-        self.update()
+        self.__selected = None
+        self.__selected_name = None
+        self.__activated_scale = None
+        self.__activated_name = None
+        self.__activated_idx = None
+        self.update_timestamp()
+
+    def get_user_mtime(self):
+        try:
+            return os.path.getmtime(self.__user)
+        except:
+            return None
+
+    def read_user(self):
+        if not os.path.exists(self.__user):
+            print 'no scale file',self.__user
+            fr = resource.find_release_resource('scale_manager','User Scales.txt');
+            if not fr:
+                print 'no factory scale file',fr
+                return
+            print 'copy',fr,self.__user
+            shutil.copyfile(fr,self.__user)
+
+        cp = ConfigParser.ConfigParser()
+        cp.read(self.__user)
+
+        for s in sorted(cp.sections()):
+            if not cp.has_option(s,'intervals'): 
+                continue
+            line = cp.get(s,'intervals')
+            line = line.strip()
+            self.add_scale(line,s)
 
     def rpc_displayname(self,arg):
         return 'scales'
@@ -319,23 +319,37 @@ class VirtualScale(atom.Atom):
                 self.__activated_idx = i
                 self.__activated_name = k
                 self.__activated_scale = v
-                self.update()
+                self.update_timestamp()
                 return
 
         print 'no match',scale
-        self.__selected=None
-        self.__selected_name=None
-        self.__activated_scale=None
-        self.__activated_name=None
-        self.__activated_idx=None
-        self.update()
+        self.__selected = None
+        self.__selected_name = None
+        self.__activated_scale = None
+        self.__activated_name = None
+        self.__activated_idx = None
+        self.update_timestamp()
 
-    def update(self):
+    def update_timestamp(self):
         self.__timestamp = self.__timestamp+1
         self.set_property_string('timestamp',str(self.__timestamp))
 
+    def update_scales(self):
+        try:
+            mtime = self.get_user_mtime()
+            if mtime and (not self.__mtime or self.__mtime != mtime):
+                self.__usercounter = 1
+                self.values = list(self.init_values)
+                self.read_user()
+                print 'updated scales',self.__mtime,mtime
+                self.__mtime = mtime
+            else:
+                print 'not updating scale',self.__mtime,mtime
+        except:
+            pass
+
     def rpc_current(self,arg):
-        if self.__activated_scale is not None:
+        if self.__activated_scale is not None and self.__activated_idx < len(self.values) and self.values[self.__activated_idx][1] == self.__activated_scale:
             return '[["%s",[]]]' % self.__activated_name
         return '[[0,[]]]'
 
@@ -359,7 +373,7 @@ class VirtualScale(atom.Atom):
                 self.__activated_idx=i
                 if old_idx != i:
                     self.__activate()
-                    self.update()
+                    self.update_timestamp()
         return logic.render_term(('',''))
 
     def resolve_name(self,name):
@@ -390,6 +404,7 @@ class VirtualScale(atom.Atom):
         return '[]'
 
     def rpc_enumerate(self,a):
+        self.update_scales()
         return logic.render_term((len(self.values),0))
 
     def rpc_cinfo(self,a):
