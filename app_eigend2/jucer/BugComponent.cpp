@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:51:46pm
+  Creation date:  27 Jul 2011 5:10:12pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -133,6 +133,7 @@ BugComponent::BugComponent ()
 
     setSize (725, 684);
 
+
     //[Constructor] You can add your own custom stuff here..
     //[/Constructor]
 }
@@ -147,6 +148,7 @@ BugComponent::~BugComponent()
     deleteAndZero (email);
     deleteAndZero (subject);
     deleteAndZero (description);
+
 
     //[Destructor]. You can add your own custom destruction code here..
     //[/Destructor]
@@ -230,28 +232,22 @@ void BugComponent::paint (Graphics& g)
                 Justification::centredRight, true);
 
     g.setColour (Colours::black);
-    g.setFont (Font (25.2000f, Font::plain));
+    g.setFont (Font (24.0000f, Font::plain));
     g.drawText (T("If you\'ve found a bug or experienced an error,"),
-                220, 100, 484, 30,
-                Justification::centredLeft, true);
+                36, 108, getWidth() - 66, 30,
+                Justification::centred, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (T("If you are not connected to the internet right now"),
-                356, getHeight() - 103, 356, 30,
+    g.drawText (T("If there\'s no internet connection, the report will be stored and sent later"),
+                220, getHeight() - 115, 508, 30,
                 Justification::centredLeft, true);
 
     g.setColour (Colours::black);
-    g.setFont (Font (25.2000f, Font::plain));
+    g.setFont (Font (24.0000f, Font::plain));
     g.drawText (T("we would love to hear about it."),
-                220, 132, 324, 30,
-                Justification::centredLeft, true);
-
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (T("eigenD will store your report and send it later."),
-                356, getHeight() - 79, 356, 30,
-                Justification::centredLeft, true);
+                36, 140, getWidth() - 66, 30,
+                Justification::centred, true);
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTl_png,
@@ -444,7 +440,7 @@ void BugComponent::paint (Graphics& g)
 
 void BugComponent::resized()
 {
-    textButton->setBounds (220, getHeight() - 75 - 24, 50, 24);
+    textButton->setBounds (216, getHeight() - 47 - 24, 50, 24);
     name->setBounds (232, 216, getWidth() - 285, 24);
     email->setBounds (232, 280, getWidth() - 285, 24);
     subject->setBounds (232, 344, getWidth() - 285, 24);
@@ -513,14 +509,12 @@ BEGIN_JUCER_METADATA
           fontname="Default font" fontsize="15" bold="0" italic="0" justification="34"/>
     <TEXT pos="28 404 172 30" fill="solid: ff000000" hasStroke="0" text="What Happened?"
           fontname="Default font" fontsize="15" bold="0" italic="0" justification="34"/>
-    <TEXT pos="220 100 484 30" fill="solid: ff000000" hasStroke="0" text="If you've found a bug or experienced an error,"
-          fontname="Default font" fontsize="25.2" bold="0" italic="0" justification="33"/>
-    <TEXT pos="356 103R 356 30" fill="solid: ff000000" hasStroke="0" text="If you are not connected to the internet right now"
+    <TEXT pos="36 108 66M 30" fill="solid: ff000000" hasStroke="0" text="If you've found a bug or experienced an error,"
+          fontname="Default font" fontsize="24" bold="0" italic="0" justification="36"/>
+    <TEXT pos="220 115R 508 30" fill="solid: ff000000" hasStroke="0" text="If there's no internet connection, the report will be stored and sent later"
           fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
-    <TEXT pos="220 132 324 30" fill="solid: ff000000" hasStroke="0" text="we would love to hear about it."
-          fontname="Default font" fontsize="25.2" bold="0" italic="0" justification="33"/>
-    <TEXT pos="356 79R 356 30" fill="solid: ff000000" hasStroke="0" text="eigenD will store your report and send it later."
-          fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
+    <TEXT pos="36 140 66M 30" fill="solid: ff000000" hasStroke="0" text="we would love to hear about it."
+          fontname="Default font" fontsize="24" bold="0" italic="0" justification="36"/>
     <IMAGE pos="222 209 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
     <IMAGE pos="59R 209 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
     <IMAGE pos="59R 233 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
@@ -564,7 +558,7 @@ BEGIN_JUCER_METADATA
     <IMAGE pos="177R 12 146 60" resource="eigenD_png" opacity="1" mode="0"/>
   </BACKGROUND>
   <TEXTBUTTON name="new button" id="b0dca4b103533c1f" memberName="textButton"
-              virtualName="" explicitFocusOrder="0" pos="220 75Rr 50 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="216 47Rr 50 24" bgColOff="ffaeaeae"
               buttonText="Send" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTEDITOR name="new text editor" id="5e8f1ae063d16d8a" memberName="name"
               virtualName="" explicitFocusOrder="0" pos="232 216 285M 24" bkgcol="ffffff"

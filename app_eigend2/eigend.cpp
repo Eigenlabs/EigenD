@@ -251,13 +251,13 @@ class EigenMainWindow: public DocumentWindow, public MenuBarModel, public piw::t
         pic::tool_t commander_;
         pic::tool_t scanner_;
         pic::tool_t stage_;
-        std::set<std::string> ignores_;
         std::string new_version_;
         std::string current_setup_;
         std::map<std::string,EigenDialog *> alert_dialogs_;
         std::map<std::string,EigenDialog *> info_dialogs_;
         EigenDialog *progress_;
         EigenDialog *help_;
+        juce::PropertiesFile ignores_;
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EigenMainWindow);
 };
@@ -481,7 +481,7 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
         case commandStartBug:
             if(!bug_)
             {
-                bug_ = new EigenDialog(this,new EigenBugComponent(this),700,600,700,600,2000,2000,this);
+                bug_ = new EigenDialog(this,new EigenBugComponent(this),700,700,700,700,2000,2000,this);
             }
             break;
 
@@ -787,11 +787,16 @@ File getPluginsDir()
     return File(pic::global_library_dir().c_str()).getChildFile("Plugins");
 }
 
+File getGlobalDir()
+{
+    return File(pic::global_library_dir().c_str()).getChildFile("Global");
+}
+
 EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_gui_t *scaffold, eigend::c2p_t *backend, const pic::f_string_t &log):
     DocumentWindow (T("eigenD"), Colours::black, DocumentWindow::allButtons, true),
     manager_(mgr), scaffold_(scaffold), backend_(backend), status_(0), saving_(0), editing_(0), about_(0), logger_(log), bug_(0),
     browser_(pic::private_tools_dir(),TOOL_BROWSER), commander_(pic::private_tools_dir(),TOOL_COMMANDER), scanner_(pic::private_tools_dir(),TOOL_SCANNER), 
-    stage_(pic::public_tools_dir(),TOOL_STAGE), progress_(0), help_(0)
+    stage_(pic::public_tools_dir(),TOOL_STAGE), progress_(0), help_(0), ignores_(getGlobalDir().getChildFile(T("ignores")), 0, juce::PropertiesFile::storeAsXML)
 {
     backend->upgrade_setups();
 
@@ -831,8 +836,8 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
         }
     }
 
-    juce::File f(getPluginsDir().getChildFile(T("plugins_cache")));
-    if(!f.exists())
+    juce::File plugin_file(getPluginsDir().getChildFile(T("plugins_cache")));
+    if(!plugin_file.exists())
     {
         pic::logmsg() << "starting plugin scan..";
         scanner_.start();
@@ -1271,16 +1276,19 @@ EigenBugComponent::EigenBugComponent(EigenMainWindow *mediator): mediator_(media
     setName(T("Bug"));
     pic::msg_t bug_report;
 
-    bug_report << "OS: " << SystemStats::getOperatingSystemName().toUTF8() << " "
+    bug_report << "Explain what happened:\n"
+               << "\n\n"
+               << "System information:\n"
+               << "OS: " << SystemStats::getOperatingSystemName().toUTF8() << " "
 
 #if JUCE_MAC
-               << " 10." << PlatformUtilities::getOSXMinorVersionNumber()
+               << "10." << PlatformUtilities::getOSXMinorVersionNumber() << ", "
 #endif
                << "64 bit: " << (SystemStats::isOperatingSystem64Bit()?"yes":"no") << "\n"
-               << "CPU: " << SystemStats::getCpuVendor() << " "
-               << "Cores: " << SystemStats::getNumCpus() << " "
-               << "Speed: " << SystemStats::getCpuSpeedInMegaherz() << " mhz\n"
-               << "Memory: " << SystemStats::getMemorySizeInMegabytes() << " mb\n"
+               << "CPU: " << SystemStats::getCpuVendor() << ", "
+               << "Cores: " << SystemStats::getNumCpus() << ", "
+               << "Speed: " << SystemStats::getCpuSpeedInMegaherz() << " MHz\n"
+               << "Memory: " << SystemStats::getMemorySizeInMegabytes() << " MB\n"
                << "Version: " << pic::release() << "\n" << "\n";
 
     name_editor()->setText(mediator->backend()->get_username().c_str(),false);
@@ -1898,7 +1906,7 @@ EigenDialog *EigenMainWindow::alert1(const String &klass, const String &label, c
 {
     std::string cklass = klass.toUTF8();
 
-    if(ignores_.find(cklass) != ignores_.end())
+    if(ignores_.getBoolValue(juce::String("ignores.")+klass, false))
     {
         return 0;
     }
@@ -1922,7 +1930,7 @@ EigenDialog *EigenMainWindow::alert2(const String &klass, const String &label, c
 {
     std::string cklass = klass.toUTF8();
 
-    if(ignores_.find(cklass) != ignores_.end())
+    if(ignores_.getBoolValue(juce::String("ignores.")+klass, false))
     {
         l->alert_ok();
         return 0;
@@ -2124,7 +2132,7 @@ void EigenLogger::operator()(const char *msg) const
 void EigenMainWindow::ignore_klass(const juce::String &klass)
 {
     std::string cklass = klass.toUTF8();
-    ignores_.insert(cklass);
+    ignores_.setValue(juce::String("ignores.")+klass, true);
 }
 
 void EigenD::handleWinch(const std::string &msg)
