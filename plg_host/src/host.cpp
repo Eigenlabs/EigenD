@@ -604,15 +604,23 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
         {
             if(plugin_.current())
             {
-                window_ = new host_view_t(title_.c_str(),plugin_.current()->createEditorIfNeeded(),this,bounds_);
+                juce::Component *editor = plugin_.current()->createEditorIfNeeded();
+                if(0 == editor)
+                {
+                    editor = new juce::GenericAudioProcessorEditor(plugin_.current());
+                }
+                if(editor != 0)
+                {
+                    window_ = new host_view_t(title_.c_str(),editor,this,bounds_);
 
-                //  move window a bit so we can move it back later to force redraw
-                //juce::Rectangle<int> r(window_->getBounds());
-                //window_->setBounds(r.getX()+1,r.getY(),window_->getWidth(),window_->getHeight());
-                //timer_slow(1000);
-                host_window_.set_window_state(true);
-                refresh_title();
-                observer_->showing_changed(true);
+                    //  move window a bit so we can move it back later to force redraw
+                    //juce::Rectangle<int> r(window_->getBounds());
+                    //window_->setBounds(r.getX()+1,r.getY(),window_->getWidth(),window_->getHeight());
+                    //timer_slow(1000);
+                    host_window_.set_window_state(true);
+                    refresh_title();
+                    observer_->showing_changed(true);
+                }
             }
         }
 
