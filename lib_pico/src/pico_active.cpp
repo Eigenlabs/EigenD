@@ -37,7 +37,7 @@ struct pico::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice_t
 
     void in_pipe_data(const unsigned char *frame, unsigned length, unsigned long long hf, unsigned long long ht,unsigned long long pt);
 
-    void pipe_died();
+    void pipe_died(unsigned reason);
     void pipe_started();
     void pipe_stopped();
     void pipe_error(unsigned long long fnum, int err);
@@ -67,7 +67,7 @@ struct pico::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice_t
         catch(...)
         {
             pic::logmsg() << "device startup failed";
-            pipe_died();
+            pipe_died(PIPE_UNKNOWN_ERROR);
         }
     }
 
@@ -268,10 +268,14 @@ void pico::active_t::impl_t::pipe_error(unsigned long long fnum, int err)
     resync_ = true;
 }
 
-void pico::active_t::impl_t::pipe_died()
+void pico::active_t::impl_t::pipe_died(unsigned reason)
 {
     pic::logmsg() << "pico::active pipe died";
     pipe_stopped();
+    if(PIPE_NO_BANDWIDTH==reason)
+    {
+        handler_->insufficient_bandwidth();
+    }
     handler_->kbd_dead();
 }
 

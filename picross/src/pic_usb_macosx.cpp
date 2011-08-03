@@ -60,6 +60,10 @@
 #define OUTPIPE_START 2
 #define OUTPIPE_SHUTDOWN 3
 
+#define SUBMIT_OK 0
+#define SUBMIT_UNKNOWN_ERROR 1 
+#define SUBMIT_NO_BANDWIDTH 2
+
 namespace
 {
     int find_bulk_pipe(IOUSBInterfaceInterface197 **iface, unsigned name)
@@ -326,11 +330,11 @@ namespace
         macosx_usbpipe_t(pic::usbdevice_t::impl_t *impl,int piperef,unsigned size);
         virtual ~macosx_usbpipe_t() {}
 
-        void kill();
+        void kill(unsigned reason);
         void kill_complete();
         void clear_stall();
         void abort_urbs();
-        virtual void pipe_died() {}
+        virtual void pipe_died(unsigned reason) {}
 
         pic::usbdevice_t::impl_t *impl_;
         int piperef_;
@@ -339,6 +343,7 @@ namespace
 
         unsigned queued_;
         pic_atomic_t killed_;
+        unsigned kill_reason_;
         bool notified_;
         pic::gate_t gate;
     };
@@ -353,10 +358,10 @@ namespace
         void sleep();
         void wakeup();
 
-        virtual void pipe_died() { pipe->pipe_died(); }
+        virtual void pipe_died(unsigned reason) { pipe->pipe_died(reason); }
 
         void completed(usburb_t *, IOReturn);
-        bool submit(usburb_t *);
+        unsigned submit(usburb_t *);
         void init_urb(usburb_t *);
 
         bool poll(unsigned long long t);
@@ -382,7 +387,7 @@ namespace
         ~macosx_usbpipe_out_t();
 
         void completed(usburb_t *, IOReturn);
-        bool submit(usburb_t *);
+        unsigned submit(usburb_t *);
         void init_urb(usburb_t *);
         void start();
         void sleep();
@@ -504,14 +509,16 @@ macosx_usbpipe_t::macosx_usbpipe_t(pic::usbdevice_t::impl_t *impl,int piperef,un
     counter_(0),
     queued_(0),
     killed_(0),
+    kill_reason_(PIPE_OK),
     notified_(false)
 {
 }
 
-void macosx_usbpipe_t::kill()
+void macosx_usbpipe_t::kill(unsigned reason)
 {
     if(pic_atomiccas(&killed_,0,1))
     {
+        kill_reason_ = reason;
         pic::logmsg() << "pipe kill";
         abort_urbs();
     }
@@ -524,7 +531,7 @@ void macosx_usbpipe_t::kill_complete()
     if(!notified_)
     {
         notified_=true;
-        pipe_died();
+        pipe_died(kill_reason_);
     }
 
     gate.open();
@@ -624,7 +631,7 @@ static void out_completed__(void *urb_, IOReturn e, void *)
     p->completed(urb,e);
 }
 
-bool macosx_usbpipe_in_t::submit(usburb_t *u)
+unsigned macosx_usbpipe_in_t::submit(usburb_t *u)
 {
     IOUSBInterfaceInterface197 **intf = impl_->device.interface;
     IOReturn e;
@@ -652,13 +659,18 @@ restart:
             pic::logmsg() << "fell behind: frame count resynced to " << counter_;
             goto restart;
         }
+        else if(e==kIOReturnNoBandwidth)
+        {
+            pic::logmsg() << "can't submit read request due to unsufficient bandwidth " << std::hex << e;
+            return SUBMIT_NO_BANDWIDTH;
+        }
 
         pic::logmsg() << "can't submit read request " << std::hex << e;
-        return false;
+        return SUBMIT_UNKNOWN_ERROR;
     }
 
     counter_+=requests;
-    return true;
+    return SUBMIT_OK;
 }
 
 void macosx_usbpipe_in_t::service()
@@ -714,10 +726,16 @@ void macosx_usbpipe_in_t::service()
     {
         usburb_t *urb = &urbs[urb_queued_%ISO_IN_URBS];
 
-        if(!submit(urb))
+        unsigned sbmt = submit(urb);
+        switch(sbmt)
         {
-            kill();
-            return;
+            case SUBMIT_UNKNOWN_ERROR:
+                kill(PIPE_UNKNOWN_ERROR);
+                return;
+
+            case SUBMIT_NO_BANDWIDTH:
+                kill(PIPE_NO_BANDWIDTH);
+                return;
         }
 
         urb_queued_++;
@@ -907,7 +925,7 @@ restart:
             if(s==kIOReturnNotResponding)
             {
                 pic::logmsg() << "fatal error in poll, killing pipe";
-                kill();
+                kill(PIPE_NOT_RESPONDING);
             }
 
             polled_ = urb->fnum+requests;
@@ -983,7 +1001,7 @@ void macosx_usbpipe_in_t::completed(usburb_t *urb, IOReturn result)
 
             default:
                 pic::logmsg() << "urb completed with error " << std::hex << result;
-                kill();
+                kill(PIPE_UNKNOWN_ERROR);
                 break;
         }
     }
@@ -1050,17 +1068,24 @@ void macosx_usbpipe_out_t::completed(usburb_t *u, IOReturn e)
 
     if(e!=kIOReturnSuccess)
     {
-        kill();
+        kill(PIPE_OK);
         return;
     }
     
-    if(!submit(u))
+    unsigned sbmt = submit(u);
+    switch(sbmt)
     {
-        kill();
+        case SUBMIT_UNKNOWN_ERROR:
+            kill(PIPE_UNKNOWN_ERROR);
+            return;
+
+        case SUBMIT_NO_BANDWIDTH:
+            kill(PIPE_NO_BANDWIDTH);
+            return;
     }
 }
 
-bool macosx_usbpipe_out_t::submit(usburb_t *u)
+unsigned macosx_usbpipe_out_t::submit(usburb_t *u)
 {
     IOUSBInterfaceInterface197 **intf = impl_->device.interface;
     IOReturn e;
@@ -1101,14 +1126,19 @@ restart:
             pic::logmsg() << "Fell behind: output frame count resynced to " << counter_;
             goto restart;
         }
+        else if(e==kIOReturnNoBandwidth)
+        {
+            pic::logmsg() << "can't submit write request due to unsufficient bandwidth " << std::hex << e;
+            return SUBMIT_NO_BANDWIDTH;
+        }
 
         pic::logmsg() << "can't submit write request " << std::hex << e;
-        return false;
+        return SUBMIT_UNKNOWN_ERROR;
     }
 
     counter_+=ISO_OUT_MICROFRAMES_PER_URB;
     ++queued_;
-    return true;
+    return SUBMIT_OK;
 }
 
 macosx_usbpipe_in_t::~macosx_usbpipe_in_t()
@@ -1228,7 +1258,7 @@ void pic::usbdevice_t::impl_t::shutdown()
     if(outpipe)
     {
         pic::logmsg() << "shutting down outpipe";
-        outpipe->kill();
+        outpipe->kill(PIPE_OK);
 
         pic::logmsg() << "waiting for outpipe shutdown";
         if(!outpipe->gate.timedpass(1000000ULL))
@@ -1246,7 +1276,7 @@ void pic::usbdevice_t::impl_t::shutdown()
         for(i=inpipes_.alternate().begin(); i!=inpipes_.alternate().end(); i++)
         {
             pic::logmsg() << "shutting down inpipe";
-            (*i)->kill();
+            (*i)->kill(PIPE_OK);
 
             pic::logmsg() << "waiting for inpipe shutdown";
             if(!(*i)->gate.timedpass(1000000ULL))

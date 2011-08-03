@@ -65,7 +65,7 @@ namespace
         unsigned name() { return piperef_; }
         unsigned size() { return size_;} 
         virtual void completed(usburb_t *) = 0;
-        virtual void pipe_died() {}
+        virtual void pipe_died(unsigned reason) {}
         unsigned get() { return piperef_; }
         linux_usbdevice_t *device_;
         unsigned piperef_;
@@ -98,7 +98,7 @@ namespace
             }
         }
 
-        void pipe_died() { pipe_->pipe_died(); }
+        void pipe_died(unsigned reason) { pipe_->pipe_died(reason); }
         virtual void completed(usburb_t *);
         void start();
 
@@ -186,7 +186,7 @@ void usbpipe_t::submit(usburb_t *urb)
             printf("num packets in urb=%d\n",urb->urb.number_of_packets);
             perror("cannot submit frame");
             //pic::msg() << "can't submit frame " << errno << pic::log;
-            pipe_died();
+            pipe_died(PIPE_UNKNOWN_ERROR);
             device_=0;
             return;
         }

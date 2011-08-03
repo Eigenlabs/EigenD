@@ -66,6 +66,7 @@ namespace alpha2
                 virtual void kbd_keydown(unsigned long long t, const unsigned short *bitmap) {}
                 virtual void pedal_down(unsigned long long t, unsigned pedal, unsigned p) {}
                 virtual void midi_data(unsigned long long t, const unsigned char *data, unsigned len) {}
+                virtual void insufficient_bandwidth() {}
             };
 
             inline static unsigned word2key(unsigned word) { return word*16; }

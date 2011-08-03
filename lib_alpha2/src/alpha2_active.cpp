@@ -115,7 +115,7 @@ struct key_in_pipe: pic::usbdevice_t::iso_in_pipe_t
 
     void in_pipe_data(const unsigned char *frame, unsigned size, unsigned long long fnum, unsigned long long htime, unsigned long long ptime);
     void pipe_error(unsigned long long fnum, int result);
-    void pipe_died();
+    void pipe_died(unsigned reason);
     void pipe_started();
     void pipe_stopped();
  
@@ -132,7 +132,7 @@ struct pedal_in_pipe: pic::usbdevice_t::iso_in_pipe_t
 
     void in_pipe_data(const unsigned char *frame, unsigned size, unsigned long long fnum, unsigned long long htime, unsigned long long ptime);
     void pipe_error(unsigned long long fnum, int result);
-    void pipe_died();
+    void pipe_died(unsigned reason);
     void pipe_started();
     void pipe_stopped();
  
@@ -1107,9 +1107,13 @@ unsigned alpha2::active_t::impl_t::decode_processed(const unsigned short *payloa
     return BCTKBD_MSGSIZE_PROCESSED;
 }
 
-void pedal_in_pipe::pipe_died()
+void pedal_in_pipe::pipe_died(unsigned reason)
 {
     pipe_stopped();
+    if(PIPE_NO_BANDWIDTH==reason)
+    {
+        pimpl_->handler_->insufficient_bandwidth();
+    }
     pimpl_->handler_->kbd_dead();
 }
 
@@ -1131,9 +1135,13 @@ void pedal_in_pipe::pipe_error(unsigned long long fnum, int err)
     pic::msg() << "usb error in frame " << fnum << " err=" << std::hex << err << pic::log;
 }
 
-void key_in_pipe::pipe_died()
+void key_in_pipe::pipe_died(unsigned reason)
 {
     pipe_stopped();
+    if(PIPE_NO_BANDWIDTH==reason)
+    {
+        pimpl_->handler_->insufficient_bandwidth();
+    }
     pimpl_->handler_->kbd_dead();
 }
 

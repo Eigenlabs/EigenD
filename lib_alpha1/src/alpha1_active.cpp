@@ -44,7 +44,7 @@ struct alpha1::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice
 
     void in_pipe_data(const unsigned char *frame, unsigned length, unsigned long long hf, unsigned long long ht,unsigned long long pt);
     void pipe_error(unsigned long long fnum, int err);
-    void pipe_died();
+    void pipe_died(unsigned reason);
     void pipe_started();
     void pipe_stopped();
 
@@ -273,7 +273,7 @@ void alpha1::active_t::impl_t::in_pipe_data(const unsigned char *frame, unsigned
 #endif
 }
 
-void alpha1::active_t::impl_t::pipe_died()
+void alpha1::active_t::impl_t::pipe_died(unsigned reason)
 {
     pipe_stopped();
     handler_->kbd_dead();
