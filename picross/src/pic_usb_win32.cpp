@@ -76,7 +76,7 @@ namespace
 		usbpipe_in_t(pic::usbdevice_t::impl_t *dev, pic::usbdevice_t::iso_in_pipe_t *pipe);
         ~usbpipe_in_t();
 
-		void pipe_died();
+		void pipe_died(unsigned reason);
 		void completed(usbbuf_t *, unsigned long);
         void submit(usburb_t *);
         bool poll_pipe(unsigned long long);
@@ -293,7 +293,7 @@ void usbpipe_in_t::submit(usburb_t *urb)
     if(!(urb->buffer_ = pop_free_queue()))
     {
         pic::logmsg() << "no buffers";
-        pipe_died();
+        pipe_died(PIPE_UNKNOWN_ERROR);
         return;
     }
 
@@ -341,7 +341,7 @@ void usbpipe_in_t::submit(usburb_t *urb)
     }
 
     pic::logmsg() << "ReadFile() " << phandle_ << ' ' << (void *)dp << ' ' << dl << ' ' << SystemError();
-    pipe_died();
+    pipe_died(PIPE_UNKNOWN_ERROR);
 }
 
 usbbuf_t::usbbuf_t(usbpipe_in_t *pipe): pipe_(pipe)
@@ -362,12 +362,12 @@ usbpipe_in_t::~usbpipe_in_t()
     CloseHandle(phandle_);
 }
 
-void usbpipe_in_t::pipe_died()
+void usbpipe_in_t::pipe_died(unsigned reason)
 {
     if(!died_)
     {
         died_ = true;
-        pipe_->pipe_died();
+        pipe_->pipe_died(reason);
     }
 }
 
@@ -504,7 +504,7 @@ void pic::usbdevice_t::impl_t::thread_main()
 
         if(pipe)
         {
-            pipe->pipe_died();
+            pipe->pipe_died(PIPE_UNKNOWN_ERROR);
         }
 
         stopping_ = true;

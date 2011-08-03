@@ -66,17 +66,21 @@
 #define TEST_STARTED 3
 #define TEST_STOPPING 4
 
-
 #define MIC_OFF 0
 #define MIC_ON 1
 #define MIC_FADEUP 2
 #define MIC_FADEDOWN 3
 
-
 #define AUDIO_BLOCKSIZE 512
 
 #define PI 3.14159f
 
+#define BWMSG_KLASS "Insufficient USB Bandwidth"
+#define BWMSG_TITLE "Insufficient USB Bandwidth"
+#define BWMSG_MSG   "Your USB bus doesn't have enough USB bandwidth available " \
+                    "for your Eigenharp to be able to function correctly.\n\n" \
+                    "Your instrument or pedals might not be working until you " \
+                    "plug your Eigenharp into another USB bus or remove other devices."
 namespace
 {
     struct ledsink_t: pic::sink_t<void(const piw::data_nb_t &)>
@@ -103,6 +107,7 @@ namespace
         keyboard_t( const piw::cookie_t &c,const pic::notify_t &d,const unsigned num_keys);
         virtual ~keyboard_t();   
         void kbd_dead();
+        void insufficient_bandwidth();
         void shutdown();
         void thing_trigger_slow();
         void kbd_key( unsigned long long t, unsigned key, unsigned p, int r, int y );
@@ -483,6 +488,12 @@ namespace
     {
          active_ = false;
          trigger_slow();
+    }
+
+    void keyboard_t::insufficient_bandwidth()
+    {
+        pic::logmsg() << "insufficient USB bandwidth";
+        piw::tsd_alert(BWMSG_KLASS,BWMSG_TITLE,BWMSG_MSG);
     }
 
     void keyboard_t::set_midi_sink(void (*cb)(void *,const unsigned char *,unsigned),void *ctx)

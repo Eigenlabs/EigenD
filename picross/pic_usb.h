@@ -27,6 +27,11 @@
 
 #define PIC_USB_FRAME_HISTORY 20
 
+#define PIPE_OK 0
+#define PIPE_UNKNOWN_ERROR 1
+#define PIPE_NO_BANDWIDTH 2
+#define PIPE_NOT_RESPONDING 3
+
 namespace pic
 {
     class PIC_DECLSPEC_CLASS usbenumerator_t
@@ -64,7 +69,7 @@ namespace pic
                 virtual ~iso_in_pipe_t() {}
                 virtual void in_pipe_data(const unsigned char *frame, unsigned size, unsigned long long fnum, unsigned long long htime, unsigned long long ptime) = 0;
                 virtual void pipe_error(unsigned long long fnum, int result) {}
-                virtual void pipe_died() {}
+                virtual void pipe_died(unsigned reason) {}
                 virtual void pipe_started() {}
                 virtual void pipe_stopped() {}
 
@@ -92,6 +97,7 @@ namespace pic
                 virtual ~power_t() {}
                 virtual void on_suspending() {}
                 virtual void on_waking() {}
+                virtual void pipe_died(unsigned reason) {}
             };
 
             struct PIC_DECLSPEC_CLASS iso_out_pipe_t

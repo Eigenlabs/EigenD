@@ -37,7 +37,7 @@ struct micro::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice_
     ~impl_t() { stop(); }
 
     void in_pipe_data(const unsigned char *frame, unsigned length, unsigned long long hf, unsigned long long ht,unsigned long long pt);
-    void pipe_died();
+    void pipe_died(unsigned reason);
     void pipe_error(unsigned long long fnum, int err);
     void start();
     void stop();
@@ -167,7 +167,7 @@ void micro::active_t::impl_t::pipe_error(unsigned long long fnum, int err)
     resync_=true;
 }
 
-void micro::active_t::impl_t::pipe_died()
+void micro::active_t::impl_t::pipe_died(unsigned reason)
 {
     pic::logmsg() << "micro::active pipe died";
     handler_->kbd_dead();
