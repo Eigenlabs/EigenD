@@ -49,6 +49,7 @@ def posix_Linux_i686():
 def posix_Darwin_x86_64():
     import darwin_tools
     env = darwin_tools.PiDarwinEnvironment('macosx-i386')
+    env.Replace(MACOSXSDK='/Developer-old/SDKs/MacOSX10.4u.sdk')
     env.Replace(IS_MACOSX_86=True)
     return env
 
