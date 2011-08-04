@@ -49,6 +49,7 @@ namespace alpha1
                 virtual void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4) {}
                 virtual void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) {}
                 virtual void kbd_keydown(unsigned long long t, const unsigned short *bitmap) {}
+                virtual void insufficient_bandwidth() {}
             };
 
             inline static unsigned word2key(unsigned word) { return word*16; }
