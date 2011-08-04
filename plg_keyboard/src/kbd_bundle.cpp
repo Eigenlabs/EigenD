@@ -50,6 +50,13 @@
 
 #define DEBOUNCE_US 20000
 
+#define BWMSG_KLASS "Insufficient USB Bandwidth"
+#define BWMSG_TITLE "Insufficient USB Bandwidth"
+#define BWMSG_MSG   "Your USB bus doesn't have enough USB bandwidth available " \
+                    "for your Eigenharp to be able to function correctly.\n\n" \
+                    "Your instrument or pedals might not be working until you " \
+                    "plug your Eigenharp into another USB bus or remove other devices."
+
 namespace
 {
     struct ledsink_t: pic::sink_t<void(const piw::data_nb_t &)>
@@ -218,6 +225,12 @@ namespace
         void kbd_dead()
         {
             trigger_slow();
+        }
+
+        void insufficient_bandwidth()
+        {
+            pic::logmsg() << "insufficient USB bandwidth";
+            piw::tsd_alert(BWMSG_KLASS,BWMSG_TITLE,BWMSG_MSG);
         }
 
         void shutdown()
