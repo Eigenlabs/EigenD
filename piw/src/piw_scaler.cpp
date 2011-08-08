@@ -352,17 +352,24 @@ namespace
         {
             if(v.is_tuple() && 4 == v.as_tuplelen())
             {
-                keynum_ = v.as_tuple_value(2).as_long() - 1;
-                time_ = std::max(time_,v.time());
+                piw::data_nb_t v2(v.as_tuple_value(3));
+
+                if(v2.is_tuple() && v2.as_tuplelen()==2)
+                {
+                    keycourse_ = v2.as_tuple_value(0).as_float()-1.0;
+                    keynum_ = v2.as_tuple_value(1).as_float()-1.0;
+                    time_ = std::max(time_,v.time());
+                }
             }
         }
 
         void setkeynumber(const piw::data_nb_t &v)
         {
-            keynum_= lroundf(v.as_renorm_float(0,1000,0))-1;
+            keynum_= v.as_renorm_float(0,1000,0)-1;
+            keycourse_ = 0;
             time_ = std::max(time_,v.time());
 #if SCALER_DEBUG>0
-            pic::logmsg() << "keynum override " << keynum_;
+            pic::logmsg() << "keynum override " << keycourse_ << ':' << keynum_;
 #endif // SCALER_DEBUG>0
         }
 
@@ -387,11 +394,18 @@ namespace
 
             if(e->ufilterenv_latest(SCALER_KEY,d,time_) && d.is_tuple() && 4 == d.as_tuplelen())
             {
-                keynum_=d.as_tuple_value(2).as_long() - 1;
+                piw::data_nb_t v2(d.as_tuple_value(3));
+
+                if(v2.is_tuple() && v2.as_tuplelen()==2)
+                {
+                    keynum_=v2.as_tuple_value(1).as_float()-1.0;
+                    keycourse_=v2.as_tuple_value(0).as_float()-1.0;
+                }
             }
             else
             {
-                keynum_=-1;
+                keynum_=-1.0;
+                keycourse_=0.0;
             }
 
             kbend_=0;
@@ -411,7 +425,7 @@ namespace
             if(e->ufilterenv_latest(SCALER_KNUMBER,d,time_)) setkeynumber(d);
 
 #if SCALER_DEBUG>0
-            pic::logmsg() << "scaler start key: " << keynum_;
+            pic::logmsg() << "scaler start key: " << keynum_ << ':' << keycourse_;
 #endif // SCALER_DEBUG>0
 
             recalculate_note();
@@ -533,41 +547,45 @@ namespace
                 if(b.bits&BSCALE) s=b.scale;
             }
 
-            int kn = keynum_;
-            if(kn < 0)
-            {
-                note_ = -1;
-                note_hz_ = 0;
-                return;
-            }
+            float key_offset = 0.0;
+            float note_offset = 0.0;
 
-            float note = 0.f;
             PIC_ASSERT(s.isvalid());
 
-            if(l.isvalid() && keynum_<(long)l->size())
+            if(l.isvalid())
             {
-                kn = l->knum(keynum_);
-                note = l->note(keynum_);
+                l->offsets(keycourse_,key_offset,note_offset);
             }
 
-            kn += (int)m;
-            int ss = s->size()-1;
-            float es = s->at(ss);
+            key_offset += (keynum_+m);
+
+
+            int scale_size = s->size()-1;
+            float ntave_size = s->at(scale_size);
+
             int ntave = 0;
-            int offset = 0;
-            if(ss>0)
+            float offset = 0.0;
+
+            if(key_offset>=0.0)
             {
-                ntave = kn/ss;
-                offset = kn%ss;
-                if(offset<0)
-                {
-                    int o = 1+(offset/ss);
-                    offset+=(ss*o);
-                    ntave-=o;
-                }
+                ntave = (int)(key_offset/scale_size);
+                offset = key_offset - (ntave*scale_size);
+            }
+            else
+            {
+                ntave = (int)(key_offset/scale_size)-1;
+                offset = key_offset - (ntave*scale_size);
             }
 
-            note_ = note+t+12.0*(roctave_+o+1.0)+es*ntave+s->at(offset);
+            //pic::logmsg() << "k=" << key_offset << " c=" << keycourse_ << " no=" << note_offset << " ss=" << scale_size << " sr=" << ntave_size << " tave=" << ntave << " offset=" << offset;
+
+            note_ = note_offset+t+12.0*(roctave_+o+1.0)+ntave_size*ntave+s->interpolate(offset);
+
+            if(note_<0.0)
+            {
+                note_=0.0;
+            }
+
             note_hz_ = 440.0*powf(2.0,(note_-69.0)/12.0);
             dirty_ = true;
         }
@@ -616,7 +634,8 @@ namespace
 
         float krange_,grange_;
 
-        long keynum_;
+        float keynum_;
+        float keycourse_;
 
         float kbend_;
         float gbend_;
