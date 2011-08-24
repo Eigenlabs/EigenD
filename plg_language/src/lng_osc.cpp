@@ -93,7 +93,6 @@ struct language::oscserver_t::impl_t: pic::thread_t
     void prune();
     unsigned add_widget(const char *, piw::fastdata_t *, piw::fastdata_t *);
     void del_widget(unsigned);
-    void del_widget_by_name(const char* name);
     void add_recipient(lo_address);
     void send(const char *name,float v);
     void set_connected(unsigned index, bool is_connected);
@@ -131,11 +130,6 @@ void language::oscserver_t::del_widget(unsigned index)
     impl_->del_widget(index);
 }
 
-void language::oscserver_t::del_widget_by_name(const char *name)
-{
-    impl_->del_widget_by_name(name);
-}
-
 void language::oscserver_t::send(const char *name,float v)
 {
     impl_->send(name,v);
@@ -151,9 +145,6 @@ unsigned language::oscserver_t::impl_t::add_widget(const char *name, piw::fastda
 {
     unsigned i;
 
-    // delete any widget that already has this name
-    del_widget_by_name(name);
-    
     for(i=0;i<widgets_.size();i++)
     {
         if(!widgets_[i])
@@ -185,24 +176,6 @@ void language::oscserver_t::impl_t::del_widget(unsigned index)
             return;
         }
     }
-}
-
-void language::oscserver_t::impl_t::del_widget_by_name(const char* name)
-{
-    //pic::logmsg() << "oscserver_t::del_widget_by_name name="<<name;
-    
-    for(unsigned i=0;i<widgets_.size();i++)
-    {
-        if(widgets_[i])
-            if(strcmp(widgets_[i]->name_, name)==0)
-            {
-                //pic::logmsg() << "deleted widget";
-                delete widgets_[i];
-                widgets_[i]=0;
-                return;
-            }
-    }
-    
 }
 
 void language::oscserver_t::startup()
@@ -391,10 +364,16 @@ bool widget_t::fastdata_receive_event(const piw::data_nb_t &d,const piw::dataque
 {
     if(!d.is_null())
     {
+#if OSC_DEBUG==1
+    pic::logmsg() << "*** received fast event start " << name_ << ' ' << d;
+#endif // OSC_DEBUG==1
         fastdata_t::ping(d.time(),q);
         return true;
     }
 
+#if OSC_DEBUG==1
+    pic::logmsg() << "*** received fast event end " << name_ << ' ' << d;
+#endif // OSC_DEBUG==1
     return false;
 }
 
@@ -403,9 +382,9 @@ widget_t::~widget_t()
     receiver_.send_slow(piw::makenull(piw::tsd_time()),piw::dataqueue_t());
     receiver_.close_fastdata();
     close_fastdata();
-    lo_server_del_method(impl_->receiver_,name_,"f");
-    lo_server_del_method(impl_->receiver_,name_,"");
-    lo_server_del_method(impl_->receiver_,"/ping","");
+    lo_server_del_method(impl_->receiver_,name_,"f",method1__,this);
+    lo_server_del_method(impl_->receiver_,name_,"",method2__,this);
+    lo_server_del_method(impl_->receiver_,"/ping","",method3__,this);
     free((void *)name_);
 }
 
@@ -426,7 +405,7 @@ service_broadcast_t::service_broadcast_t(language::oscserver_t::impl_t *impl) : 
 
 service_broadcast_t::~service_broadcast_t()
 {
-    lo_server_del_method(broadcast_server_,"/eigend","");
+    lo_server_del_method(broadcast_server_,"/eigend","",request_addr__,this);
     lo_server_free(broadcast_server_);
 }
 

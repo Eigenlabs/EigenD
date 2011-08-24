@@ -651,7 +651,8 @@ lo_method lo_server_add_method(lo_server s, const char *path,
  * \param typespec The typespec the method accepts.
  */
 void lo_server_del_method(lo_server s, const char *path,
-                               const char *typespec);
+                               const char *typespec, lo_method_handler h,
+                               void *user_data);
 
 /**
  * \brief Return the file descriptor of the server socket.
