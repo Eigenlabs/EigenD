@@ -37,7 +37,6 @@ namespace language
 
             unsigned add_widget(const char *name, piw::fastdata_t *sender, piw::fastdata_t *receiver);
             void del_widget(unsigned);
-            void del_widget_by_name(const char* name);
             void startup();
             void shutdown();
             void send(const char *name,float v);

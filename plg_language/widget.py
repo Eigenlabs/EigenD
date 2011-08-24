@@ -292,6 +292,7 @@ class WidgetManager(atom.Atom):
                 print 'WidgetManager: could not create widget name =',name
             return False
 
+
     def destroy_widget(self,name):
         if widget_manager_debug:
             print 'WidgetManager: destroy_widget'
@@ -307,6 +308,7 @@ class WidgetManager(atom.Atom):
                 return True
         return False
 
+
     def get_server_port(self):
         return self.__server_port
 
@@ -321,7 +323,7 @@ class WidgetManager(atom.Atom):
             for (k,v) in self.iteritems():
                 address = v.get_property_string('target-id')
                 if address in changed_nodes:
-                        new_name = self.__database.build_osc_name(address)
+                        new_name = self.__stage_server_instance.build_osc_name(address)
                         if widget_manager_debug:
                             print 'WidgetManager: changing widget name', address, new_name
                         # set name in widget
@@ -339,49 +341,3 @@ class WidgetManager(atom.Atom):
 
         if widget_manager_debug:
             print 'WidgetManager: check_widget_name_updates done'
-
-    # TODO: remove this if not needed
-    def reconnect_widgets(self):
-        if widget_manager_debug:
-            print 'WidgetManager: refresh targets'
-        if self.__stage_server_instance is not None:
-            
-            for (k,v) in self.iteritems():
-                name = v.get_property_string('target-name')
-                address = v.get_property_string('target-id')
-                address_in_server = self.__stage_server_instance.enabledAtoms[name]
-                if address!=address_in_server:
-                    if widget_manager_debug:
-                        print '-   refreshing ',address,'->',address_in_server
-                    # target address has changed, so replumb widget to new target address
-                    v.set_property_string('target-id',address_in_server)
-        else:
-            if widget_manager_debug:
-                print 'WidgetManager: could not refresh targets'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

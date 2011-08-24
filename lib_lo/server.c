@@ -1245,7 +1245,8 @@ lo_method lo_server_add_method(lo_server s, const char *path,
 }
 
 void lo_server_del_method(lo_server s, const char *path,
-			  const char *typespec)
+			  const char *typespec, lo_method_handler h,
+                          void *user_data)
 {
     lo_method it, prev, next;
     int pattern = 0;
@@ -1267,17 +1268,19 @@ void lo_server_del_method(lo_server s, const char *path,
 	    if ((it->typespec == typespec) ||
 		(typespec && it->typespec && !strcmp(typespec, it->typespec))
 	        ) {
-		/* Take care when removing the head. */
-		if (it == s->first) {
-		    s->first = it->next;
-		} else {
-		    prev->next = it->next;
-		}
-		next = it->next;
-		free((void *)it->path);
-		free((void *)it->typespec);
-		free(it);
-		it = prev;
+                if((!h || h==it->handler) && (!user_data || user_data==it->user_data)) {
+                    /* Take care when removing the head. */
+                    if (it == s->first) {
+                        s->first = it->next;
+                    } else {
+                        prev->next = it->next;
+                    }
+                    next = it->next;
+                    free((void *)it->path);
+                    free((void *)it->typespec);
+                    free(it);
+                    it = prev;
+                }
 	    }
 	}
 	prev = it;

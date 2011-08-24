@@ -21,7 +21,6 @@ class oscserver[language::oscserver_t]
     void shutdown();
     unsigned add_widget(const char *, fastdata *, fastdata *)
     void del_widget(unsigned);
-    void del_widget_by_name(const char *);
     void send(const char *, float);
     void set_connected(unsigned, bool);
 }
