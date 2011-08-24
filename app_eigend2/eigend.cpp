@@ -119,6 +119,7 @@ enum EigenCommands
     commandMainWindow,
     commandQuit,
     commandDownload,
+    commandResetWarnings,
     commandWindow // must be last
 };
 
@@ -525,8 +526,14 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
             break;
 
         case commandDownload:
-            URL u(T("http://www.eigenlabs.com/downloads/releases/"));
-            u.launchInDefaultBrowser();
+            {
+                URL u(T("http://www.eigenlabs.com/downloads/releases/"));
+                u.launchInDefaultBrowser();
+            }
+            break;
+
+        case commandResetWarnings:
+            ignores_.clear();
             break;
     }
 
@@ -896,6 +903,7 @@ void EigenMainWindow::getAllCommands (Array <CommandID>& commands)
         commandMainWindow,
         commandQuit,
         commandDownload,
+        commandResetWarnings,
         commandWindow,
         commandWindow+1,
         commandWindow+2,
@@ -1003,9 +1011,15 @@ void EigenMainWindow::getCommandInfo (const CommandID commandID, ApplicationComm
             break;
 
         case commandDownload:
-            juce::String v = T("Download "); v += juce::String(new_version_.c_str());
-            result.setInfo (v, T("Download New Version"), generalCategory, 0);
-            result.addDefaultKeypress (T('d'), ModifierKeys::commandModifier);
+            {
+                juce::String v = T("Download "); v += juce::String(new_version_.c_str());
+                result.setInfo (v, T("Download New Version"), generalCategory, 0);
+                result.addDefaultKeypress (T('d'), ModifierKeys::commandModifier);
+            }
+            break;
+
+        case commandResetWarnings:
+            result.setInfo (T("Reset warnings"), T("Reset warnings"), generalCategory, 0);
             break;
     }
 }
@@ -1056,6 +1070,8 @@ const PopupMenu EigenMainWindow::getMenuForIndex (int topLevelMenuIndex, const S
         menu.addCommandItem (manager(),commandStartWorkbench);
         menu.addSeparator();
         menu.addCommandItem (manager(),commandStartScanner);
+        menu.addSeparator();
+        menu.addCommandItem (manager(),commandResetWarnings);
     }
 
     if (topLevelMenuIndex == 3)
