@@ -209,7 +209,7 @@ class Menu:
         self.leaf = None
 
     def number_of_setups(self):
-        return len(self.setups.keys());
+        return len(self.setups);
 
     def add_setup(self,name,slot,file,upg,user):
         self.setups[slot] = (name,slot,file,upg,user)
