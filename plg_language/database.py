@@ -88,29 +88,3 @@ class Database(database.Database):
        
     def set_widget_manager(self, widget_manager):
         self.__widget_manager = widget_manager
-
-
-    def build_osc_name(self, id):
-        # like find_full_desc but builds full osc path style name
-        aid = paths.id2server(id)
-        if aid==id:
-            adesc = self.find_desc(id) or id
-            sdesc = '-'
-            pdesc = '-'
-        else:
-            adesc = self.find_desc(aid) or aid
-            sdesc = '-'
-            pdesc = self.find_desc(id) or id
-
-        if 'agent' not in self.__propcache.get_valueset(aid):
-            mid = self.find_joined_master(aid)
-            if mid:
-                sdesc = adesc
-                adesc = self.build_osc_name(set(mid).pop())
-            head = ''
-        else:
-            head = '/'
-
-        return head+'/'.join((adesc,sdesc,pdesc)).replace('  ','_').replace(' ','_').replace('-/','')
-
-        

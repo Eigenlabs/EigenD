@@ -208,6 +208,9 @@ class Menu:
         self.setups = {}
         self.leaf = None
 
+    def number_of_setups(self):
+        return len(self.setups);
+
     def add_setup(self,name,slot,file,upg,user):
         self.setups[slot] = (name,slot,file,upg,user)
 
@@ -1189,5 +1192,6 @@ def upgrade_default_setup():
                 return
 
 def upgrade_old_setups():
-    for (dst,src,src_ver) in upgradeable_old_setups():
-        copy_old_setup(src,dst,src_ver)
+    if 0 == find_user_setups().number_of_setups():
+        for (dst,src,src_ver) in upgradeable_old_setups():
+            copy_old_setup(src,dst,src_ver)

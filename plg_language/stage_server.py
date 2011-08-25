@@ -60,8 +60,6 @@ class stageXMLRPCFuncs:
         self.__tabs = languageAgent.tabs
         self.__database = languageAgent.database
         self.__widgetManager = languageAgent.widgets
-        #self.loadAgents('/Users/arran/git/stage/xmlrpc/testXMLRPC/agents.xml')
-        #self.loadTabs('/Users/arran/git/stage/xmlrpc/testXMLRPC/tabs.xml')
 
         self.setupName = 'setup'
         # dict for agent xml
@@ -461,81 +459,6 @@ class stageXMLRPCFuncs:
 
         
     #---------------------------------------------------------------------------
-    # TODO: remove test functions
-
-    def getNumAgents(self):
-        print 'get num agents =',len(self.agents)
-        return len(self.agents)
-
-    def getAgentID(self, name):
-        print 'get agent ID',name
-        ID = self.__database.find_by_name(name)
-        print ID
-        return ID
-
-    def setAgent(self, index):
-        return True
-
-    def loadAgents(self, filename):
-        print 'load agents'
-        # load agents xml to make a dictionary of agents
-        agentsFile = open(filename, 'r')
-        
-        doc = xml.dom.pulldom.parse(agentsFile)
-
-        self.agents = {}
-        index = 0
-        for event, node in doc:
-            if event=='START_ELEMENT' and node.nodeName=='agent':
-                doc.expandNode(node)
-                # store the agent subtree xml strings
-                self.agents[index] = node.toxml()
-                index+=1
-            elif event=='START_ELEMENT' and node.nodeName=='setup':
-                self.setupName = node.getAttribute('name')
-                print "     setup name =",self.setupName
-           
-
-        agentsFile.close()
-
-        print "     loaded %s agents"%len(self.agents)
-        
-        return True
-
-    def saveAgents(self, filename):
-        try:
-            print 'save agents'
-            doc = '<?xml version="1.0" ?>\n'
-            doc += '<agents>\n'
-
-            piw.tsd_lock()
-            self.getAgentChangeSet(True)
-            agents = [(agentID, self.__getNameOrdinalPair(self.__database.find_desc(agentID))) for agentID in self.__last_agentIDs]
-            # sort by name-ordinal pair to make sure numbers sorted in right order
-            agents.sort(key=lambda x:x[1])
-            piw.tsd_unlock()
-            
-            for (id, (n,o)) in agents:
-                doc += self.getAgent(id)
-
-            doc += '</agents>\n'
-
-            print doc
-
-            tabsFile = open(filename, 'w')
-            tabsFile.write(doc)
-            tabsFile.close()
-
-            print "     saved %s agents"%self.getNumAgents()
-        except:
-            traceback.print_exc(limit=None)
-            return False
-
-        return True
-
-
-
-    #---------------------------------------------------------------------------
     # tab rpcs
     #
     # used by Stage to store and retrieve the tabs to and from the setup
@@ -736,18 +659,16 @@ class stageXMLRPCFuncs:
             return False
         return True
 
-    def reconnectWidgets(self):
-        # TODO: remove this if not needed
-        # reconnect widgets by their OSC path name
-        # used after importing widgets from another setup
-        print 'reconnect widgets'
-        try:
-            self.__languageAgent.widgets.reconnect_widgets()
-        except:
-            traceback.print_exc(limit=None)
-            return False
-        return True
+    def build_osc_name(self,id):
+        aid,path = paths.breakid_list(id)
+        adesc = ['']
+        for p in range(0,len(path)+1):
+            pid = paths.makeid_list(aid,*path[:p])
+            pdesc = self.__getStringFromNameOrdinalPair(self.__getNameOrdinalPair(self.__database.find_desc(pid)))
+            if pdesc:
+                adesc.append(pdesc)
 
+        return '/'.join(adesc).replace(' ','_')
 
     def updateAllWidgetPaths(self, changedNodes):
         # update all widgets with a set of addresses mapping to new OSC paths
@@ -764,10 +685,11 @@ class stageXMLRPCFuncs:
                     widgetDoc = xml.dom.minidom.parseString(widgetXML)
                     widgetNode = widgetDoc.documentElement
                     widgetAddress = widgetNode.getAttribute('address')
+                    widgetPath = widgetNode.getAttribute('path')
                     if widgetAddress in changedNodes:
                         # update the widget xml with the new osc path
                         newOSCPath = changedNodes[widgetAddress]
-                        #print '    updated widget path',newOSCPath
+                        print '    updated widget path',newOSCPath,'from',widgetPath
                         widgetNode.setAttribute('path', newOSCPath)
                         widgetDoc.documentElement = widgetNode
                         widgetXML = widgetDoc.documentElement.toxml()
@@ -779,80 +701,6 @@ class stageXMLRPCFuncs:
         return True
 
 
-
-    #---------------------------------------------------------------------------
-    # TODO: remove test functions
-
-    def removeAllTabs(self):
-        print 'remove all tabs'
-        self.__tabs.clear()
-        return True
-
-    def removeAllWidgets(self):
-        print 'remove all widgets'
-        try:
-            # remove all current widget controllers
-            self.__widgetManager.clear()
-        except:
-            traceback.print_exc(limit=None)
-            return False
-        return True
-    
-    def dumpTabs(self):
-        print 'dump tabs'
-        print self.__tabs
-        return True
-
-    def loadTabs(self, filename):
-        print 'load tabs'
-        # load tabs to make a list of tabs
-        tabsFile = open(filename, 'r')
-        
-        doc = xml.dom.pulldom.parse(tabsFile)
-
-        self.tabs = {}
-        index = 0
-        for event, node in doc:
-           if event=='START_ELEMENT' and node.nodeName=='tab':
-               doc.expandNode(node)
-               # store the tab subtree xml strings
-               self.tabs[index] = node.toxml()
-               index+=1
-
-        tabsFile.close()
-
-        print "     loaded %s tabs"%len(self.tabs)
-        
-        return True
-
-    def saveTabs(self, filename):
-        try:
-            print 'save tabs'
-            doc = '<?xml version="1.0" ?>\n'
-            doc += '<tabs>\n'
-
-            for i in range(0,self.getNumTabs()):
-                tab = (self.getTab(i))
-                doc += tab[0:len(tab)-3]+'>\n'
-                for j in range(0, self.getNumWidgets(i)):
-                    doc += self.getWidget(i,j)
-
-                doc += '</tab>\n'
-
-            doc += '</tabs>\n'
-
-            print doc
-
-            tabsFile = open(filename, 'w')
-            tabsFile.write(doc)
-            tabsFile.close()
-
-            print "     saved %s tabs"%self.getNumTabs()
-        except:
-            traceback.print_exc(limit=None)
-            return False
-
-        return True
 
        
 #-------------------------------------------------------------------------------        
