@@ -1724,6 +1724,11 @@ void kbd::alpha2_bundle_legacy_t::set_pedal_max(unsigned pedal, unsigned value)
     _root->pkeyboard_->set_pedal_max(pedal,value);
 }
 
+void kbd::alpha2_bundle_legacy_t::restart()
+{
+    _root->loop_.restart();
+}
+
 
 // ---------------- alpha2 (new)
 
@@ -1764,6 +1769,18 @@ float kbd::alpha2_bundle_t::get_threshold1()
     return _root->pkeyboard_->threshold1_/4096.0;
 }
 
+void kbd::alpha2_bundle_t::set_threshold2(float t)
+{
+    PIC_ASSERT(_root);
+    _root->pkeyboard_->threshold2_=t*4096.0;
+}
+
+float kbd::alpha2_bundle_t::get_threshold2()
+{
+    PIC_ASSERT(_root);
+    return _root->pkeyboard_->threshold2_/4096.0;
+}
+
 void kbd::alpha2_bundle_t::set_roll_axis_window(float t)
 {
     PIC_ASSERT(_root);
@@ -1786,18 +1803,6 @@ float kbd::alpha2_bundle_t::get_yaw_axis_window()
 {
     PIC_ASSERT(_root);
     return _root->pkeyboard_->yaw_axis_window_;
-}
-
-void kbd::alpha2_bundle_t::set_threshold2(float t)
-{
-    PIC_ASSERT(_root);
-    _root->pkeyboard_->threshold2_=t*4096.0;
-}
-
-float kbd::alpha2_bundle_t::get_threshold2()
-{
-    PIC_ASSERT(_root);
-    return _root->pkeyboard_->threshold2_/4096.0;
 }
 
 piw::change_nb_t kbd::alpha2_bundle_t::led_functor()
@@ -1902,6 +1907,21 @@ void kbd::alpha2_bundle_t::set_hp_quality(unsigned q)
     _root->set_hp_quality(q);
 }
 
+void kbd::alpha2_bundle_t::headphone_enable(bool e)
+{
+    _root->headphone_input_->headphone_enable(e);
+}
+
+void kbd::alpha2_bundle_t::headphone_limit(bool l)
+{
+    _root->headphone_input_->headphone_limit(l);
+}
+
+void kbd::alpha2_bundle_t::headphone_gain(unsigned g)
+{
+    _root->headphone_input_->headphone_gain(g);
+}
+
 void kbd::alpha2_bundle_t::set_mic_quality(unsigned q)
 {
     _root->set_mic_quality(q);
@@ -1947,19 +1967,9 @@ void kbd::alpha2_bundle_t::loopback_enable(bool e)
     _root->loop_.loopback_enable(e);
 }
 
-void kbd::alpha2_bundle_t::headphone_enable(bool e)
+void kbd::alpha2_bundle_t::restart()
 {
-    _root->headphone_input_->headphone_enable(e);
-}
-
-void kbd::alpha2_bundle_t::headphone_limit(bool l)
-{
-    _root->headphone_input_->headphone_limit(l);
-}
-
-void kbd::alpha2_bundle_t::headphone_gain(unsigned g)
-{
-    _root->headphone_input_->headphone_gain(g);
+    _root->loop_.restart();
 }
 
 
@@ -2111,11 +2121,6 @@ void kbd::tau_bundle_t::learn_pedal_max(unsigned pedal)
     _root->pkeyboard_->learn_pedal_max(pedal);
 }
 
-void kbd::tau_bundle_t::set_hp_quality(unsigned q)
-{
-    _root->set_hp_quality(q);
-}
-
 unsigned kbd::tau_bundle_t::get_pedal_min(unsigned pedal)
 {
     return _root->pkeyboard_->get_pedal_min(pedal);
@@ -2141,6 +2146,11 @@ piw::cookie_t kbd::tau_bundle_t::audio_cookie()
     return _root->audio_cookie();
 }
 
+void kbd::tau_bundle_t::set_hp_quality(unsigned q)
+{
+    _root->set_hp_quality(q);
+}
+
 void kbd::tau_bundle_t::headphone_enable(bool e)
 {
     _root->headphone_input_->headphone_enable(e);
@@ -2154,4 +2164,9 @@ void kbd::tau_bundle_t::headphone_limit(bool l)
 void kbd::tau_bundle_t::headphone_gain(unsigned g)
 {
     _root->headphone_input_->headphone_gain(g);
+}
+
+void kbd::tau_bundle_t::restart()
+{
+    _root->loop_.restart();
 }

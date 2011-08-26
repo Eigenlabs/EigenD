@@ -120,6 +120,8 @@ namespace alpha2
             void loopback_enable(bool);
             void loopback_gain(float);
             void mic_automute(bool);
+
+            void restart();
             
         private:
             impl_t *_impl;

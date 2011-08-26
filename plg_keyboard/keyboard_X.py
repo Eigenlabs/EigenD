@@ -207,6 +207,9 @@ class Keyboard(agent.Agent):
     def name(self):
         return self.keyboard.name()
 
+    def restart(self):
+        self.keyboard.restart();
+
     def dead(self):
         print 'notify dead'
         self.close_server()
@@ -407,6 +410,7 @@ class Keyboard_Tau( Keyboard ):
         self.usbname = usbname
         self.usbdev = usbdev
         Keyboard.__init__(self,'tau keyboard',ordinal,dom,remove,92)
+        
         self.nativekeyboard_setup()
         self.set_threshhold() #define in base class 
         self.setup_leds() #define in base class 
@@ -419,10 +423,13 @@ class Keyboard_Tau( Keyboard ):
         l.append(('Headphone gain',self[103][101].get_value()))
         return logic.render_term(T('keyval',tuple(l) ))
 
-    def nativekeyboard_setup(self):
-        self.keyboard=keyboard_native.tau_bundle(self.usbdev,self.kclone.cookie(),utils.notify(self.dead))
+    def audio_input_setup(self):
         self.audio_input = bundles.ScalarInput(self.keyboard.audio_cookie(),self.domain,signals=(1,2))
         self[103] = HeadphoneInput(self)
+
+    def nativekeyboard_setup(self):
+        self.keyboard=keyboard_native.tau_bundle(self.usbdev,self.kclone.cookie(),utils.notify(self.dead))
+        self.audio_input_setup()
 
     def courses(self):
         return utils.makedict({'courselen':piw.makestring('[16,16,20,20,12,4,4]',0)},0)
@@ -581,7 +588,8 @@ class KeyboardFactory( agent.Agent ):
 
         for (ssk,ssv) in self.iter_subsys_items():
             if ssv.usbname==name:
-                print 'ignore existing kbd',name
+                print 'ignore existing kbd during add',name
+                ssv.restart()
                 return
 
         if version=='base':
@@ -603,7 +611,8 @@ class KeyboardFactory( agent.Agent ):
     def create(self,type,name,device):
         for (ssk,ssv) in self.iter_subsys_items():
             if ssv.usbname==name:
-                print 'ignore existing kbd',name
+                print 'ignore existing kbd during create',name
+                ssv.restart()
                 return
             
         i=self.next_keyboard()

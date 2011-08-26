@@ -164,6 +164,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
 
     void start();
     void stop();
+    void restart();
     void kbd_start();
     void kbd_stop();
     
@@ -756,7 +757,6 @@ void alpha2::active_t::impl_t::start()
 
 void alpha2::active_t::impl_t::kbd_start()
 {
-    pic::logmsg() << "starting up keyboard";
     device_->control_out(BCTKBD_USBCOMMAND_START_REQTYPE,BCTP_USBCOMMAND_START_REQ,0,0,0,0);
     device_->control_out(BCTKBD_USBCOMMAND_START_REQTYPE,BCTKBD_USBCOMMAND_START_REQ,0,0,0,0); 
     //device_->control_out(BCTKBD_USBCOMMAND_START_REQTYPE,BCTP_USBCOMMAND_START_MIDI_REQ,0,0,0,0);
@@ -1188,6 +1188,11 @@ void key_in_pipe::pipe_error(unsigned long long fnum, int err)
 
 void alpha2::active_t::impl_t::on_waking()
 {
+    restart();
+}
+
+void alpha2::active_t::impl_t::restart()
+{
     pic::logmsg() << "starting up keyboard";
 
     try
@@ -1433,3 +1438,10 @@ void alpha2::active_t::set_raw(bool raw)
     pic::logmsg() << "raw mode " << raw;
     _impl->raw_mode(raw);
 }
+
+void alpha2::active_t::restart()
+{
+    pic::logmsg() << "restart keyboard";
+    _impl->restart();
+}
+

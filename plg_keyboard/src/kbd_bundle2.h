@@ -66,6 +66,8 @@ namespace kbd
             int gc_traverse(void *,void *) const;
             int gc_clear();
 
+            void restart();
+
         private:
             kbd_impl_t *_root;
     };
@@ -120,6 +122,8 @@ namespace kbd
             void headphone_gain(unsigned);
             void headphone_limit(bool);
 
+            void restart();
+
         private:
             kbd_impl_t *_root;
     };
@@ -163,6 +167,8 @@ namespace kbd
             void headphone_enable(bool);
             void headphone_limit(bool);
             void headphone_gain(unsigned);
+
+            void restart();
 
         private:
             kbd_impl_t *_root;

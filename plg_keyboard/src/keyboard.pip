@@ -55,6 +55,7 @@ class alpha2_bundle_legacy[kbd::alpha2_bundle_legacy_t] /gc/
     void set_pedal_min(unsigned,unsigned)
     void set_pedal_max(unsigned,unsigned)
     void arm_recording(unsigned)
+    void restart()
 }
 
 class alpha2_bundle[kbd::alpha2_bundle_t] /gc/
@@ -97,6 +98,7 @@ class alpha2_bundle[kbd::alpha2_bundle_t] /gc/
     void arm_recording(unsigned)
     void set_mic_quality(unsigned)
     void set_hp_quality(unsigned)
+    void restart()
 }
 
 class tau_bundle[kbd::tau_bundle_t] /gc/
@@ -130,4 +132,5 @@ class tau_bundle[kbd::tau_bundle_t] /gc/
     void headphone_gain(unsigned)
     void arm_recording(unsigned)
     void set_hp_quality(unsigned)
+    void restart()
 }
