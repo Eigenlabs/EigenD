@@ -308,6 +308,9 @@ class VoiceList(collection.Collection):
     def rpc_cinfo(self,a):
         return logic.render_term(())
 
+    def rpc_instancename(self,a):
+        return 'voice'
+
     def rpc_finfo(self,a):
         (dlist,idx) = logic.parse_clause(a)
         map = tuple([v.finfo() for v in self.itervalues()])

@@ -40,6 +40,9 @@ class Collection(atom.Atom):
         i = self.listinstances()
         return logic.render_termlist(i)
 
+    def rpc_instancename(self,arg):
+        return self.get_property_string('name');
+
     @async.coroutine('internal error')
     def rpc_createinstance(self,arg):
         name = int(arg)

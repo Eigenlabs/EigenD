@@ -344,6 +344,9 @@ class OutputList(atom.Atom):
     def rpc_listinstances(self,arg):
         return logic.render_termlist(self.keys())
 
+    def rpc_instancename(self,a):
+        return 'kgroup output'
+
     def rpc_createinstance(self,arg):
         slot = int(arg)
         output = self.create(slot)

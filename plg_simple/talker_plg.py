@@ -150,6 +150,9 @@ class Key(collection.Collection):
     def __update_event_key(self):
        self.__event.set_key(utils.maketuple((piw.makelong(self.get_internal(248).get_value(),0),piw.makelong(self.get_internal(249).get_value(),0)), 0)) 
 
+    def rpc_instancename(self,a):
+        return 'action'
+
     @async.coroutine('internal error')
     def instance_create(self,name):
         e = Event(self,self.__event.fastdata(),name)
