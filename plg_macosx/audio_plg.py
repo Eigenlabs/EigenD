@@ -182,7 +182,7 @@ class Agent(agent.Agent):
         self.__filename = resource.new_resource_file('audio','audio.wav')
         self.recorder.setfile(self.__filename)
 
-        self[10]=atom.Atom(domain=domain.Bool(),init=False,transient=True,policy=policy.FastPolicy(self.recorder.record(),policy.TriggerStreamPolicy()), names='recorder running input')
+        self[10]=atom.Atom(domain=domain.Bool(),init=False,transient=True,policy=policy.FastPolicy(self.recorder.record(),policy.TriggerStreamPolicy()),protocols='nostage',names='recorder running input')
 
     def load_state(self,state,delegate,phase):
         self.__loading = True

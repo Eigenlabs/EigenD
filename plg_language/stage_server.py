@@ -154,13 +154,17 @@ class stageXMLRPCFuncs:
                 # ignore child nodes that are agents, e.g. in rigs
                 if 'agent' not in self.__database.get_propcache('props').get_valueset(atom[0]):
                     if atomName != None and atomName != '':
-                        xml += ('<atom name="%s">\n'%atomName + 
-                                self.__buildAtomsXml(childAtomIDs, (oscPath+'/'+atomName.replace(' ','_'))) + 
-                                self.__atomHelpXml(atom[0]) +
-                                '</atom>\n')
+                        atomXml = self.__buildAtomsXml(childAtomIDs, (oscPath+'/'+atomName.replace(' ','_')))
+                        if atomXml != '':
+                            xml += ('<atom name="%s">\n'%atomName + 
+                                    atomXml + 
+                                    self.__atomHelpXml(atom[0]) +
+                                    '</atom>\n')
                     else:
                         # collapse unnamed node
-                        xml += self.__buildAtomsXml(childAtomIDs, oscPath)
+                        atomXml = self.__buildAtomsXml(childAtomIDs, oscPath)
+                        if atomXml != '':
+                            xml += atomXml
             else:
                 # child node
                 # ignore atoms with no name
@@ -186,37 +190,39 @@ class stageXMLRPCFuncs:
 
                         #print oscPath,atomName,atomDomainCanonical,noStage,isSupportedType
 
-                        atomPath = (oscPath+'/'+atomName.replace(' ','_'))
-
-                        xml += '<atom name="%s" '%atomName
-                        xml += 'path="%s" '%atomPath
-                        xml += 'address="%s" '%atom[0]
-                        
-                        # indicate if Stage can use this atom value, show in tree as 'enabled'
-                        if(isSupportedType):
-                            xml += 'enabled="true" '
-                        else:
-                            xml += 'enabled="false" '
-                        
-                        xml += '>\n'
-
-                        xml += '<domain type="%s" '%atomDomainType
-
-                        # numeric domain range
-                        if isNumericType:
-                            min = atomDomain.min
-                            max = atomDomain.max
-                            xml += 'min="%f" '%min+'max="%f" '%max
-
-                        xml += '/>\n'
-
-                        xml += self.__atomHelpXml(atom[0])
-
-                        xml += '</atom>'
-
                         # store enabled atom addresses for use by the widget manager
                         if(isSupportedType):
+
+                            atomPath = (oscPath+'/'+atomName.replace(' ','_'))
+
                             self.enabledAtoms[atomPath] = atom[0]
+
+                            xml += '<atom name="%s" '%atomName
+                            xml += 'path="%s" '%atomPath
+                            xml += 'address="%s" '%atom[0]
+                            
+                            # indicate if Stage can use this atom value, show in tree as 'enabled'
+                            if(isSupportedType):
+                                xml += 'enabled="true" '
+                            else:
+                                xml += 'enabled="false" '
+                            
+                            xml += '>\n'
+
+                            xml += '<domain type="%s" '%atomDomainType
+
+                            # numeric domain range
+                            if isNumericType:
+                                min = atomDomain.min
+                                max = atomDomain.max
+                                xml += 'min="%f" '%min+'max="%f" '%max
+
+                            xml += '/>\n'
+
+                            xml += self.__atomHelpXml(atom[0])
+
+                            xml += '</atom>'
+
                     
         
         return xml
@@ -246,11 +252,13 @@ class stageXMLRPCFuncs:
                     # child atoms, union of child atoms and subsystems
                     childAtomIDs = list(self.__database.find_children(agent[0]).union(self.__database.find_joined_slaves(agent[0])))
 
-                    # store the agent subtree xml strings
-                    self.agents[agent[0]] = ('<agent name="%s" '%agentName + 'address="%s">\n'%agent[0] + 
-                                             self.__buildAtomsXml(childAtomIDs, ('/'+agentName.replace(' ','_'))) + 
-                                             self.__atomHelpXml(agent[0]) +
-                                             '</agent>\n')
+                    atomXml = self.__buildAtomsXml(childAtomIDs, ('/'+agentName.replace(' ','_')))
+                    if atomXml != '':
+                        # store the agent subtree xml strings
+                        self.agents[agent[0]] = ('<agent name="%s" '%agentName + 'address="%s">\n'%agent[0] + 
+                                                 atomXml +
+                                                 self.__atomHelpXml(agent[0]) +
+                                                 '</agent>\n')
 
             return True
 
@@ -273,11 +281,13 @@ class stageXMLRPCFuncs:
                 # child atoms, union of child atoms and subsystems
                 childAtomIDs = list(self.__database.find_children(agentID).union(self.__database.find_joined_slaves(agentID)))
 
-                # store the agent subtree xml strings
-                self.agents[agentID] = ('<agent name="%s" '%agentName + 'address="%s">\n'%agentID + 
-                                         self.__buildAtomsXml(childAtomIDs, ('/'+agentName.replace(' ','_'))) + 
-                                         self.__atomHelpXml(agentID) +
-                                         '</agent>\n')
+                atomXml = self.__buildAtomsXml(childAtomIDs, ('/'+agentName.replace(' ','_'))) 
+                if atomXml != '':
+                    # store the agent subtree xml strings
+                    self.agents[agentID] = ('<agent name="%s" '%agentName + 'address="%s">\n'%agentID + 
+                                             atomXml +
+                                             self.__atomHelpXml(agentID) +
+                                             '</agent>\n')
 
             return True
 
