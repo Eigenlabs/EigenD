@@ -341,7 +341,7 @@ class Agent(agent.Agent):
         piw.changelist_connect_nb(self.modepulse,self.status_buffer.blinker())
         piw.changelist_connect_nb(self.modepulse,self.mode_selector.mode_input())
 
-        self[10] = atom.Atom(domain=domain.Bool(), init=False, fuzzy="activation", names='mode input', protocols='explicit', policy=policy.FastPolicy(self.modepulse,policy.TriggerStreamPolicy()))
+        self[10] = atom.Atom(domain=domain.Bool(), init=False, fuzzy="activation", names='mode input', protocols='explicit nostage', policy=policy.FastPolicy(self.modepulse,policy.TriggerStreamPolicy()))
 
         self.add_verb2(3,'set([un],None)',callback=self.__untune)
 

@@ -45,7 +45,7 @@ class Agent(agent.Agent):
 
         time=(T('inc',0.01),T('biginc',0.2),T('control','updown'))
         self[1] = atom.Atom()
-        self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1), init=1.0, names="activation input", policy=self.input.merge_policy(13,False))
+        self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1), init=1.0, names="activation input", policy=self.input.merge_policy(13,False), protocols="nostage")
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,60,hints=time),init=0, names="delay input", policy=self.input.merge_policy(2,False))
         self[1][3]=atom.Atom(domain=domain.BoundedFloat(0,60,hints=time),init=0.01, names="attack input", policy=self.input.merge_policy(3,False))
         self[1][4]=atom.Atom(domain=domain.BoundedFloat(0,60,hints=time),init=0, names="hold input", policy=self.input.merge_policy(4,False))

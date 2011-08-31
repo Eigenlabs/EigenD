@@ -58,10 +58,10 @@ class Agent(agent.Agent):
 
         self[4]=atom.Atom()
 
-        self[4][1]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.merge_policy(1,False),names='activation input')
-        self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input')
-        self[4][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(3,False),names='roll input')
-        self[4][4]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(4,False),names='yaw input')
+        self[4][1]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.merge_policy(1,False),names='activation input',protocols='nostage')
+        self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input',protocols='nostage')
+        self[4][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(3,False),names='roll input',protocols='nostage')
+        self[4][4]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(4,False),names='yaw input',protocols='nostage')
 
         th=(T('inc',1),T('biginc',1),T('control','updown'))
         bh=(T('inc',1),T('biginc',1),T('control','updown'))

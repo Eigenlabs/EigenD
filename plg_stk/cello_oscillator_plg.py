@@ -44,11 +44,11 @@ class Agent(agent.Agent):
         self[2] = atom.Atom()
         # playing inputs
         # bow activation
-        self[2][1] = atom.Atom(names='activation input', domain=domain.BoundedFloat(0,1), policy=self.input.merge_policy(1,False))
+        self[2][1] = atom.Atom(names='activation input', domain=domain.BoundedFloat(0,1), policy=self.input.merge_policy(1,False),protocols='nostage')
         # frequency
         self[2][2] = atom.Atom(names='frequency input', domain=domain.BoundedFloat(1,96000), policy=self.input.vector_policy(2,False))
         # bow pressure
-        self[2][3] = atom.Atom(names='pressure input', domain=domain.BoundedFloat(0,1), policy=self.input.merge_policy(3,False))
+        self[2][3] = atom.Atom(names='pressure input', domain=domain.BoundedFloat(0,1), policy=self.input.merge_policy(3,False),protocols='nostage')
         # bow position, tranverse position of bow relative to string
         self[2][4] = atom.Atom(names='bow position input', domain=domain.BoundedFloat(-1,1), policy=self.input.merge_nodefault_policy(22,False))
         # bow velocity

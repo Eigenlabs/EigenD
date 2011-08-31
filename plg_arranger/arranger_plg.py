@@ -271,9 +271,9 @@ class Agent(agent.Agent):
 
         self.kinput = bundles.VectorInput(self.view.cookie(),self.domain,signals=(1,2,3))
         self[3] = atom.Atom()
-        self[3][1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.kinput.vector_policy(1,False),names='pressure input')
-        self[3][2] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.kinput.merge_policy(2,False),names='roll input')
-        self[3][3] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.kinput.merge_policy(3,False),names='yaw input')
+        self[3][1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.kinput.vector_policy(1,False),names='pressure input',protocols='nostage')
+        self[3][2] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.kinput.merge_policy(2,False),names='roll input',protocols='nostage')
+        self[3][3] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.kinput.merge_policy(3,False),names='yaw input',protocols='nostage')
         self[3][4] = self.light_output
 
         self.cinput = bundles.ScalarInput(self.model.cookie(),self.domain,signals=(1,2))

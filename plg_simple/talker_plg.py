@@ -238,7 +238,7 @@ class Agent(agent.Agent):
 
         self.activation_input = bundles.VectorInput(self.controller.cookie(), self.domain,signals=(1,))
 
-        self[2] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.activation_input.local_policy(1,False),names='activation input')
+        self[2] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.activation_input.local_policy(1,False),names='activation input',protocols='nostage')
         self[3] = atom.Atom(creator=self.__create,wrecker=self.__wreck)
         self[4] = PhraseBrowser(self.__eventbykey,self.__keylist)
 
