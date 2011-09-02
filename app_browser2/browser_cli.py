@@ -107,7 +107,7 @@ class ViewManager(agent.Agent):
         self.font=wx.SystemSettings_GetFont(wx.SYS_DEFAULT_GUI_FONT)
         self.font.SetPointSize(fonts.DEFAULT_PTS)
 
-        self[12]=atom.Atom(domain=domain.BoundedInt(5,20,rest=11),names='text',policy=atom.default_policy(self.__set_fontsize))
+        self[12]=atom.Atom(domain=domain.BoundedInt(5,20,rest=11),names='text',protocols='nostage',policy=atom.default_policy(self.__set_fontsize))
         self[15] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=nudge), init=-1, names='sideways nudger', ordinal=3, policy=self.scroller_in3.vector_policy(1,False))
         self[16] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=nudge), init=-1, names='vertical nudger', ordinal=3, policy=self.scroller_in3.vector_policy(2,False))
         self[17] = atom.Atom(domain=domain.BoundedFloat(0,1), init=0, names='tapper', ordinal=1, policy=self.scroller_in1.vector_policy(3,False))
