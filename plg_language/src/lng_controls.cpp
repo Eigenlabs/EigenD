@@ -272,7 +272,7 @@ void language::updown_t::uimpl_t::control_receive(unsigned index, const piw::dat
     switch(index)
     {
         case 0:
-            activate(d.is_tuple() && d.as_tuplelen()>=6,d.time());
+            activate(d.is_tuple() && 4 == d.as_tuplelen(), d.time());
             break;
 
         case 2:
@@ -333,7 +333,7 @@ void language::xselector_t::simpl_t::control_receive(unsigned index, const piw::
 {
     if(index!=0)
         return;
-    if(!value.is_tuple() || value.as_tuplelen()<6)
+    if(!value.is_tuple() || value.as_tuplelen() != 4)
         return;
     if(selecting_)
         return;
@@ -487,7 +487,7 @@ void language::toggle_t::timpl_t::control_receive(unsigned index, const piw::dat
 {
     if(!d.is_null())
     {
-        if(index==0 && d.is_tuple() && d.as_tuplelen() >= 6)
+        if(index==0 && d.is_tuple() && 4 == d.as_tuplelen())
         {
             output_(piw::makebool_nb(!on_,d.time()));
         }

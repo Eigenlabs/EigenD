@@ -967,10 +967,8 @@ namespace
             piw::data_nb_t key = piw::tuplenull_nb(t);
             key = piw::tupleadd_nb(key, piw::makelong_nb(index_,t));
             key = piw::tupleadd_nb(key, position);
-            key = piw::tupleadd_nb(key, keyboard_->get_courses_tuple());
             key = piw::tupleadd_nb(key, piw::makelong_nb(index_,t));
             key = piw::tupleadd_nb(key, position);
-            key = piw::tupleadd_nb(key, keyboard_->get_courses_tuple());
             output_.add_value(5, key);
             running_=true;
             maxpressure_=0;

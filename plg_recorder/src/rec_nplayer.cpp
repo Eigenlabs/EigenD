@@ -222,19 +222,15 @@ void ::kwire_t::ticked(unsigned long long f,unsigned long long t)
         piw::data_nb_t rowlen = nplayer_->courselen_;
         if(rowlen.is_null())
         {
-            rowlen = piw::dictnull_nb(time_);
-
             piw::data_nb_t rowposition = piw::tuplenull_nb(time_);
             rowposition = piw::tupleadd_nb(rowposition,piw::makefloat_nb(1,time_));
             rowposition = piw::tupleadd_nb(rowposition,piw::makefloat_nb(note_,time_));
 
             key = piw::tupleadd_nb(key,rowposition);
-            key = piw::tupleadd_nb(key,rowlen);
         }
         else
         {
             key = piw::tupleadd_nb(key,piw::key_position(note_,rowlen,time_));
-            key = piw::tupleadd_nb(key,rowlen);
         }
 
         key = piw::tupleadd_nb(key,note);
@@ -242,19 +238,15 @@ void ::kwire_t::ticked(unsigned long long f,unsigned long long t)
         piw::data_nb_t courselen = nplayer_->courselen_;
         if(courselen.is_null())
         {
-            courselen = piw::dictnull_nb(time_);
-
             piw::data_nb_t courseposition = piw::tuplenull_nb(time_);
             courseposition = piw::tupleadd_nb(courseposition,piw::makefloat_nb(1,time_));
             courseposition = piw::tupleadd_nb(courseposition,piw::makefloat_nb(note_,time_));
 
             key = piw::tupleadd_nb(key,courseposition);
-            key = piw::tupleadd_nb(key,courselen);
         }
         else
         {
             key = piw::tupleadd_nb(key,piw::key_position(note_,courselen,time_));
-            key = piw::tupleadd_nb(key,courselen);
         }
         buffer_.add_value(sig_key_,key);
     }

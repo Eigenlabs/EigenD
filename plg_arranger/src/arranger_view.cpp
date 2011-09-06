@@ -861,9 +861,9 @@ void vp_wire_t::invalidate()
 void vp_wire_t::event_start(unsigned seq,const piw::data_nb_t &id,const piw::xevent_data_buffer_t &b)
 {
     piw::data_nb_t d;
-    if(b.latest(5,d,id.time()) && d.is_tuple() && d.as_tuplelen() >= 6)
+    if(b.latest(5,d,id.time()) && d.is_tuple() && 4 == d.as_tuplelen())
     {
-        active_ = d.as_tuple_value(3).as_long();
+        active_ = d.as_tuple_value(2).as_long();
     }
     else
     {

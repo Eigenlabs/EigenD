@@ -409,9 +409,9 @@ namespace
         piw::data_nb_t dk;
         if(iterator_->latest(IN_KEY,dk,t))
         {
-            if(dk.is_tuple() && dk.as_tuplelen() >= 6)
+            if(dk.is_tuple() && 4 == dk.as_tuplelen())
             {
-                key_ = dk.as_tuple_value(3).as_long();
+                key_ = dk.as_tuple_value(2).as_long();
             }
         }
 

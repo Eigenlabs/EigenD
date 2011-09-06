@@ -40,6 +40,7 @@ namespace piw
             void clear_mapping();
             void set_mapping(unsigned in, unsigned out);
             void activate_mapping();
+            void set_upstream_rowlen(data_t rowlen);
             void set_rowlen(data_t rowlen);
             void set_rowoffset(data_t rowoffset);
             void set_courselen(data_t courselen);

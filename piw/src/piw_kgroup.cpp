@@ -94,22 +94,21 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
 
         if(g.value().forward.empty() ||
            rowlen_.is_empty() || rowoffset_.is_empty() || courselen_.is_empty() ||
-           !in.is_tuple() || in.as_tuplelen() < 6)
+           !in.is_tuple() || in.as_tuplelen() != 4)
         {
             return in;
         }
 
         data_nb_t upstream_keynum = in.as_tuple_value(0);
         data_nb_t upstream_key = in.as_tuple_value(1);
-        data_nb_t upstream_rowlen = in.as_tuple_value(2);
 
-        if(!upstream_key.is_tuple() || upstream_key.as_tuplelen() < 2 ||
-           !upstream_rowlen.is_tuple())
+        if(!upstream_key.is_tuple() || upstream_key.as_tuplelen() != 2 ||
+           upstream_rowlen_.is_empty() || !upstream_rowlen_.get().is_tuple())
         {
             return in;
         }
 
-        unsigned key = get_key(upstream_key, upstream_rowlen);
+        unsigned key = get_key(upstream_key, upstream_rowlen_);
         if(!key)
         {
             return piw::makenull_nb(0);
@@ -125,10 +124,8 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
             piw::data_nb_t result = piw::tuplenull_nb(t);
             result = piw::tupleadd_nb(result, piw::makelong_nb(get_key(physical_key, rowlen_), t));
             result = piw::tupleadd_nb(result, physical_key);
-            result = piw::tupleadd_nb(result, rowlen_);
             result = piw::tupleadd_nb(result, piw::makelong_nb(i->second,t));
             result = piw::tupleadd_nb(result, musical_key);
-            result = piw::tupleadd_nb(result, courselen_);
             return result;
         }
 
@@ -164,14 +161,19 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
         return result;
     }
 
-    void set_rowoffset(data_t rowoffset)
+    void set_upstream_rowlen(data_t rowlen)
     {
-        rowoffset_.set_normal(rowoffset);
+        upstream_rowlen_.set_normal(rowlen);
     }
 
     void set_rowlen(data_t rowlen)
     {
         rowlen_.set_normal(rowlen);
+    }
+
+    void set_rowoffset(data_t rowoffset)
+    {
+        rowoffset_.set_normal(rowoffset);
     }
 
     void set_courselen(data_t courselen)
@@ -180,8 +182,9 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
     }
 
     pic::flipflop_t<mapping_t> mapping_;
-    piw::dataholder_nb_t rowoffset_;
+    piw::dataholder_nb_t upstream_rowlen_;
     piw::dataholder_nb_t rowlen_;
+    piw::dataholder_nb_t rowoffset_;
     piw::dataholder_nb_t courselen_;
 };
 
@@ -221,6 +224,11 @@ void piw::kgroup_mapper_t::set_mapping(unsigned in, unsigned out)
 void piw::kgroup_mapper_t::activate_mapping()
 {
     impl_->mapping_.exchange();
+}
+
+void piw::kgroup_mapper_t::set_upstream_rowlen(data_t rowlen)
+{
+    impl_->set_upstream_rowlen(rowlen);
 }
 
 void piw::kgroup_mapper_t::set_rowlen(data_t rowlen)

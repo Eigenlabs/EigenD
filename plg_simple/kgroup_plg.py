@@ -403,7 +403,7 @@ class OutputList(atom.Atom):
 
     def output_selector(self,v):
         if v.is_tuple():
-            keynum = v.as_tuple_value(3).as_long()
+            keynum = v.as_tuple_value(2).as_long()
             row = int(v.as_tuple_value(1).as_tuple_value(0).as_float())
             col = int(v.as_tuple_value(1).as_tuple_value(1).as_float())
             for k,o in self.items():
@@ -588,7 +588,7 @@ class Agent(agent.Agent):
         if d.is_tuple():
             key = d.as_tuple_value(1)
 
-            geo = d.as_tuple_value(2)
+            geo = self.__upstream_rowlen
             if row < 0:
                 rowcount = geo.as_tuplelen()
                 row = rowcount + row + 1
@@ -649,6 +649,10 @@ class Agent(agent.Agent):
             rl = k.as_dict_lookup('rowlen')
             if rl.is_tuple():
                 self.__upstream_rowlen = utils.tuple_items(rl)
+                self.mapper.set_upstream_rowlen(rl)
+            else:
+                self.__upstream_rowlen = None
+                self.mapper.set_upstream_rowlen(piw.makenull(0))
 
             # recalculate all key geometries based on the upstream geometry
             self.__set_physical_geo(self.__cur_mapping())
@@ -907,7 +911,7 @@ class Agent(agent.Agent):
         piw.changelist_connect_nb(self.keypulse,self.keychoice)
 
     def __choice(self,v):
-        if not v.is_tuple() or v.as_tuplelen() < 6: return
+        if not v.is_tuple() or v.as_tuplelen() != 4: return
         keynum = v.as_tuple_value(0).as_long()
 
         if self.__choices and keynum==self.__choices[-1]:

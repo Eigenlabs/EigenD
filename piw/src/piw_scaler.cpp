@@ -350,9 +350,9 @@ namespace
 
         void setkey(const piw::data_nb_t &v)
         {
-            if(v.is_tuple() && v.as_tuplelen() >= 6)
+            if(v.is_tuple() && 4 == v.as_tuplelen())
             {
-                keynum_ = v.as_tuple_value(3).as_long() - 1;
+                keynum_ = v.as_tuple_value(2).as_long() - 1;
                 time_ = std::max(time_,v.time());
             }
         }
@@ -385,9 +385,9 @@ namespace
 
             piw::data_nb_t d;
 
-            if(e->ufilterenv_latest(SCALER_KEY,d,time_) && d.is_tuple() && d.as_tuplelen() >= 6)
+            if(e->ufilterenv_latest(SCALER_KEY,d,time_) && d.is_tuple() && 4 == d.as_tuplelen())
             {
-                keynum_=d.as_tuple_value(3).as_long() - 1;
+                keynum_=d.as_tuple_value(2).as_long() - 1;
             }
             else
             {

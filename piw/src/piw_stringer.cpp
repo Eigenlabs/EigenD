@@ -475,11 +475,11 @@ void main_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::
 #endif // STRINGER_USE_PATH==1
 
     piw::data_nb_t d;
-    if(b.latest(6,d,id.time()) && d.is_tuple() && d.as_tuplelen() >= 6)
+    if(b.latest(6,d,id.time()) && d.is_tuple() && 4 == d.as_tuplelen())
     {
-        knum = d.as_tuple_value(3).as_long();
+        knum = d.as_tuple_value(2).as_long();
 
-        piw::data_nb_t muskey = d.as_tuple_value(4);
+        piw::data_nb_t muskey = d.as_tuple_value(3);
         kcourse = unsigned(muskey.as_tuple_value(0).as_float());
         kkey = unsigned(muskey.as_tuple_value(1).as_float());
     }

@@ -597,6 +597,7 @@ class kgroup_mapper[piw::kgroup_mapper_t]
     void clear_mapping()
     void activate_mapping()
     void set_mapping(unsigned, unsigned)
+    void set_upstream_rowlen(data)
     void set_rowlen(data)
     void set_rowoffset(data)
     void set_courselen(data)

@@ -234,7 +234,7 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
 
         unsigned index = 0;
 
-        if(!key.is_tuple() || key.as_tuplelen() < 6) return 0;
+        if(!key.is_tuple() || key.as_tuplelen() != 4) return 0;
 
         unsigned abskey = key.as_tuple_value(0).as_long();
         if(abskey<ma.value().size())
@@ -245,7 +245,7 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
         if(!index)
         {
             pic::flipflop_t<std::vector<unsigned> >::guard_t ms(controlseqmap_);
-            unsigned seqkey = key.as_tuple_value(3).as_long();
+            unsigned seqkey = key.as_tuple_value(2).as_long();
             if(seqkey < ms.value().size())
             {
                 index = ms.value()[seqkey];
@@ -492,7 +492,7 @@ void ctlfilter_t::ufilterfunc_end(piw::ufilterenv_t *env, unsigned long long t)
 void ctlfilter_t::ufilterfunc_start(piw::ufilterenv_t *env,const piw::data_nb_t &id)
 {
     piw::data_nb_t d;
-    if(env->ufilterenv_latest(1,d,id.time()) && d.is_tuple() && d.as_tuplelen() >= 6)
+    if(env->ufilterenv_latest(1,d,id.time()) && d.is_tuple() && 4 == d.as_tuplelen())
     {
         k_.set_nb(d);
         env->ufilterenv_start(id.time());
