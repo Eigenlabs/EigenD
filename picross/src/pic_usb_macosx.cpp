@@ -50,10 +50,8 @@
 
 #define ISO_OUT_URBS        80
 #define ISO_OUT_FRAMES_PER_URB     4 
-#define ISO_OUT_MICROFRAMES_PER_URB     (ISO_OUT_FRAMES_PER_URB*8)
 #define ISO_OUT_OFFSET       4 /* ms (frames)*/
 #define ISO_OUT_FUTURE       64 /* microframes */
-#define ISO_OUT_STRIDE       8
 
 #define OUTPIPE_IDLE 0
 #define OUTPIPE_BUSY 1
@@ -63,6 +61,18 @@
 #define SUBMIT_OK 0
 #define SUBMIT_UNKNOWN_ERROR 1 
 #define SUBMIT_NO_BANDWIDTH 2
+
+// top 4 bits of device state is the status, bottom 12 inflight urb count
+// run together so we can do atomic changes of both at once.
+
+#define PIPES_STOPPED  0x0000  // not running.
+#define PIPES_IDLE     0x1000  // idle state.  pipe_started not called, no urbs in flight, will go to running on poll
+#define PIPES_RUNNING  0x2000  // running state.  pipe_started called, urbs in progress
+#define PIPES_KILLED   0x3000  // pipe_died called, no urbs in flight
+#define PIPES_SLEEP    0x4000
+
+#define PIPES_STATE_MASK 0xf000
+#define PIPES_COUNT_MASK 0x0fff
 
 namespace
 {
@@ -88,7 +98,7 @@ namespace
         return -1;
     }
 
-    int find_iso_pipe(IOUSBInterfaceInterface197 **iface, unsigned name)
+    int find_iso_pipe(IOUSBInterfaceInterface197 **iface, unsigned name, unsigned *uframe_per_frame = 0)
     {
         UInt8 ne;
         int wdir = (name>=0x80)?1:0;
@@ -103,6 +113,11 @@ namespace
 
             if(num==wnum && dir==wdir && type==kUSBIsoc)
             {
+                if(uframe_per_frame)
+                {
+                    *uframe_per_frame = 8/(1<<(time-1));
+                }
+
                 return (int)i;
             }
         }
@@ -322,7 +337,6 @@ namespace
         IOUSBLowLatencyIsocFrame *frame;
         unsigned char *buffer;
         UInt64 fnum;
-        unsigned index;
     };
 
     struct macosx_usbpipe_t: virtual public pic::lckobject_t
@@ -330,22 +344,13 @@ namespace
         macosx_usbpipe_t(pic::usbdevice_t::impl_t *impl,int piperef,unsigned size);
         virtual ~macosx_usbpipe_t() {}
 
-        void kill(unsigned reason);
-        void kill_complete();
         void clear_stall();
         void abort_urbs();
-        virtual void pipe_died(unsigned reason) {}
 
         pic::usbdevice_t::impl_t *impl_;
         int piperef_;
         unsigned size_;
         UInt64 counter_;
-
-        unsigned queued_;
-        pic_atomic_t killed_;
-        unsigned kill_reason_;
-        bool notified_;
-        pic::gate_t gate;
     };
 
     struct macosx_usbpipe_in_t: macosx_usbpipe_t
@@ -355,13 +360,9 @@ namespace
 
         void start();
         void service();
-        void sleep();
-        void wakeup();
-
-        virtual void pipe_died(unsigned reason) { pipe->pipe_died(reason); }
 
         void completed(usburb_t *, IOReturn);
-        unsigned submit(usburb_t *);
+        void submit(usburb_t *);
         void init_urb(usburb_t *);
 
         bool poll(unsigned long long t);
@@ -371,39 +372,34 @@ namespace
         usburb_t urbs[ISO_IN_URBS];
 
         unsigned long urb_queued_, urb_reaped_;
-        unsigned sleeping;
-        bool skipping;
-        bool stalled;
         unsigned micro;
         unsigned requests;
 
         unsigned long long polled_;
         pic::flipflop_t<unsigned long long> urb_reaped_lbound_;
+        unsigned inflight_;
     };
 
     struct macosx_usbpipe_out_t: macosx_usbpipe_t
     {
-        macosx_usbpipe_out_t(pic::usbdevice_t::impl_t *impl,pic::usbdevice_t::iso_out_pipe_t *pipe, int ref);
+        macosx_usbpipe_out_t(pic::usbdevice_t::impl_t *impl,pic::usbdevice_t::iso_out_pipe_t *pipe, int ref, unsigned uframe_per_frame);
         ~macosx_usbpipe_out_t();
 
         void completed(usburb_t *, IOReturn);
-        unsigned submit(usburb_t *);
+        void submit(usburb_t *);
         void init_urb(usburb_t *);
         void start();
-        void sleep();
-        void wakeup();
-        void wait();
 
         unsigned char *iso_write_start();
         unsigned char *iso_write_advance(unsigned n);
 
         pic::usbdevice_t::iso_out_pipe_t *pipe;
 
-        std::auto_ptr<usburb_t> urbs[ISO_OUT_URBS];
+        usburb_t urbs[ISO_IN_URBS];
         unsigned write_urb_;
         unsigned write_frame_;
-        pic_atomic_t shutdown_latch;
-        unsigned sleeping;
+        unsigned uframe_per_frame_;
+        unsigned inflight_;
     };
 
     typedef pic::lcklist_t<macosx_usbpipe_in_t *>::lcktype pipe_list_t;
@@ -442,31 +438,36 @@ struct pic::usbdevice_t::impl_t: pic::cfrunloop_t, virtual public pic::lckobject
     void runloop_init();
     void runloop_term();
     int runloop_cmd(void *c, void *a);
-    void runloop_cmd2(void *c, void *a);
-    void shutdown();
+    void start_pipes();
+    void stop_pipes();
     void detach();
 
     void power_sleep();
     void power_wakeup();
+
+    void pipe_idle();
+    void pipe_sleep();
+    void pipe_kill(unsigned reason);
+    void pipe_running();
+
+    void inc_inflight();
+    void dec_inflight();
+    void call_pipe_running();
+    void call_pipe_stopped();
+    void call_pipe_died(unsigned reason);
 
     bool poll_pipe(unsigned long long t);
 
     bool add_bulk_out(bulk_out_pipe_t *);
     bool add_iso_in(iso_in_pipe_t *);
     void set_iso_out(iso_out_pipe_t *);
-    void clear_pipes();
 
-    void ping(void *a, void *b)
-    {
-        if(pic_atomiccas(&cmd2_pending,0,1))
-            pic::logmsg() << "pinging usb loop";
-        cmd2(a,b);
-    }
-
+    void ping(void *a, void *b);
     void abort_urbs(int piperef);
+    void abort_urbs();
+    void reset_device();
 
     std::string name_;
-    bool sleeping;
 
     macosx_usbdevice_t device;
     pic::usbdevice_t::power_t *power;
@@ -480,7 +481,9 @@ struct pic::usbdevice_t::impl_t: pic::cfrunloop_t, virtual public pic::lckobject
 
     pipe_flipflop_t inpipes_;
     macosx_usbpipe_out_t *outpipe;
-    pic_atomic_t cmd2_pending;
+    pic_atomic_t cmd_pending;
+
+    unsigned state_;
 };
 
 struct pic::usbdevice_t::bulk_out_pipe_t::impl_t
@@ -502,39 +505,8 @@ struct pic::usbdevice_t::bulk_out_pipe_t::impl_t
     int ref_;
 };
 
-macosx_usbpipe_t::macosx_usbpipe_t(pic::usbdevice_t::impl_t *impl,int piperef,unsigned size):
-    impl_(impl),
-    piperef_(piperef),
-    size_(size),
-    counter_(0),
-    queued_(0),
-    killed_(0),
-    kill_reason_(PIPE_OK),
-    notified_(false)
+macosx_usbpipe_t::macosx_usbpipe_t(pic::usbdevice_t::impl_t *impl,int piperef,unsigned size): impl_(impl), piperef_(piperef), size_(size), counter_(0)
 {
-}
-
-void macosx_usbpipe_t::kill(unsigned reason)
-{
-    if(pic_atomiccas(&killed_,0,1))
-    {
-        kill_reason_ = reason;
-        pic::logmsg() << "pipe kill";
-        abort_urbs();
-    }
-}
-
-void macosx_usbpipe_t::kill_complete()
-{
-    pic::logmsg() << "pipe shutdown";
-
-    if(!notified_)
-    {
-        notified_=true;
-        pipe_died(kill_reason_);
-    }
-
-    gate.open();
 }
 
 void macosx_usbpipe_t::clear_stall()
@@ -578,7 +550,6 @@ void macosx_usbpipe_in_t::init_urb(usburb_t *u)
     }
 
     u->pipe=this;
-    
     u->device=&impl_->device;
 }
 
@@ -587,19 +558,19 @@ void macosx_usbpipe_out_t::init_urb(usburb_t *u)
     IOUSBInterfaceInterface197 **i = impl_->device.interface;
     IOReturn e;
 
-    e=(*i)->LowLatencyCreateBuffer(i,(void **)&u->frame,ISO_OUT_MICROFRAMES_PER_URB*sizeof(IOUSBLowLatencyIsocFrame),kUSBLowLatencyFrameListBuffer);
+    e=(*i)->LowLatencyCreateBuffer(i,(void **)&u->frame,ISO_OUT_FRAMES_PER_URB*uframe_per_frame_*sizeof(IOUSBLowLatencyIsocFrame),kUSBLowLatencyFrameListBuffer);
 
     if (e!=kIOReturnSuccess)
     {
-        pic::msg() << "LowLatencyCreateBuffer: allocing frame list: " << ISO_OUT_MICROFRAMES_PER_URB*sizeof(IOUSBLowLatencyIsocFrame) << ' ' << std::hex << e << pic::hurl;
+        pic::msg() << "LowLatencyCreateBuffer: allocing frame list: " << ISO_OUT_FRAMES_PER_URB*uframe_per_frame_*sizeof(IOUSBLowLatencyIsocFrame) << ' ' << std::hex << e << pic::hurl;
     }
 
-    e=(*i)->LowLatencyCreateBuffer(i,(void **)&u->buffer,ISO_OUT_MICROFRAMES_PER_URB*size_,kUSBLowLatencyWriteBuffer);
+    e=(*i)->LowLatencyCreateBuffer(i,(void **)&u->buffer,ISO_OUT_FRAMES_PER_URB*uframe_per_frame_*size_,kUSBLowLatencyWriteBuffer);
 
     if (e!=kIOReturnSuccess)
     {
         (*i)->LowLatencyDestroyBuffer(i,u->frame);
-        pic::msg() << "LowLatencyCreateBuffer: allocing write buffer: " << ISO_OUT_MICROFRAMES_PER_URB*size_ << ' ' << std::hex << e << pic::hurl;
+        pic::msg() << "LowLatencyCreateBuffer: allocing write buffer: " << ISO_OUT_FRAMES_PER_URB*uframe_per_frame_*size_ << ' ' << std::hex << e << pic::hurl;
     }
 
     u->pipe=this;
@@ -631,10 +602,15 @@ static void out_completed__(void *urb_, IOReturn e, void *)
     p->completed(urb,e);
 }
 
-unsigned macosx_usbpipe_in_t::submit(usburb_t *u)
+void macosx_usbpipe_in_t::submit(usburb_t *u)
 {
     IOUSBInterfaceInterface197 **intf = impl_->device.interface;
     IOReturn e;
+
+    if((impl_->state_&PIPES_STATE_MASK) !=PIPES_RUNNING)
+    {
+        return;
+    }
 
     for(unsigned i=0;i<requests;i++)
     {
@@ -661,101 +637,36 @@ restart:
         }
         else if(e==kIOReturnNoBandwidth)
         {
+            impl_->pipe_kill(PIPE_NO_BANDWIDTH);
             pic::logmsg() << "can't submit read request due to unsufficient bandwidth " << std::hex << e;
-            return SUBMIT_NO_BANDWIDTH;
+            return;
         }
 
         pic::logmsg() << "can't submit read request " << std::hex << e;
-        return SUBMIT_UNKNOWN_ERROR;
+        impl_->pipe_kill(PIPE_UNKNOWN_ERROR);
+        return;
     }
 
     counter_+=requests;
-    return SUBMIT_OK;
+    urb_queued_++;
+    inflight_++;
+    impl_->inc_inflight();
 }
 
 void macosx_usbpipe_in_t::service()
 {
-    if(killed_)
-    {
-        if(queued_==0)
-        {
-            pic::logmsg() << "in pipe kill complete";
-            kill_complete();
-        }
-
-        return;
-    }
-
-    if(sleeping==2)
-    {
-        return;
-    }
-
-    bool wakeup = (sleeping==1);
-    if(wakeup)
-    {
-        if(queued_>0)
-        {
-            return;
-        }
-
-        sleeping=0;
-        urb_queued_=0;
-        urb_reaped_=0;
-        pic::logmsg() << "service starting again after sleep";
-    }
-
     unsigned long reaped = urb_reaped_;
 
-    if(wakeup || (stalled && urb_queued_<reaped+ISO_IN_URBS))
-    {
-        pic::logmsg() << "(re)starting submission";
-        counter_=0;
-        clear_stall();
-
-        try
-        {
-            pipe->pipe_started();
-        }
-        CATCHLOG()
-
-        stalled=false;
-    }
-
-    while(urb_queued_<reaped+ISO_IN_URBS)
+    while((impl_->state_&PIPES_STATE_MASK)==PIPES_RUNNING && urb_queued_<reaped+ISO_IN_URBS)
     {
         usburb_t *urb = &urbs[urb_queued_%ISO_IN_URBS];
-
-        unsigned sbmt = submit(urb);
-        switch(sbmt)
-        {
-            case SUBMIT_UNKNOWN_ERROR:
-                kill(PIPE_UNKNOWN_ERROR);
-                return;
-
-            case SUBMIT_NO_BANDWIDTH:
-                kill(PIPE_NO_BANDWIDTH);
-                return;
-        }
-
-        urb_queued_++;
-        queued_++;
+        submit(urb);
     }
 
-    if(queued_==1)
+    if(inflight_==1)
     {
         pic::logmsg() << "pipe starvation";
-        abort_urbs();
-        clear_stall();
-
-        try
-        {
-            pipe->pipe_stopped();
-        }
-        CATCHLOG()
-
-        stalled=true;
-        urb_reaped_lbound_.set(urb_queued_);
+        impl_->pipe_idle();
     }
 }
 
@@ -765,65 +676,25 @@ void pic::usbdevice_t::impl_t::abort_urbs(int pipe)
     (*intf)->AbortPipe(intf,pipe);
 }
 
-void macosx_usbpipe_in_t::sleep()
-{
-    sleeping=2;
-    abort_urbs();
-}
-
-void macosx_usbpipe_out_t::sleep()
-{
-    pic::logmsg() << "out pipe entering sleep";
-    sleeping=2;
-    abort_urbs();
-    pic::logmsg() << "out pipe sleeping";
-}
-
-void macosx_usbpipe_in_t::wakeup()
-{
-    if(2==sleeping)
-    {
-        sleeping=1;
-        impl_->ping((void *)2,this);
-    }
-}
-
-void macosx_usbpipe_out_t::wakeup()
-{
-    if(2==sleeping)
-    {
-        pic::logmsg() << "out pipe waking up";
-        sleeping=1;
-        start();
-        pic::logmsg() << "out pipe awake";
-    }
-}
-
 void macosx_usbpipe_in_t::start()
 {
     pic::logmsg() << "in pipe starting...";
-    gate.shut();
     urb_queued_=0;
     urb_reaped_=0;
     counter_=0;
-    notified_=false;
     pic::logmsg() << "in pipe started.";
 }
 
 void macosx_usbpipe_out_t::start()
 {
     pic::logmsg() << "out pipe starting...";
-    gate.shut();
     counter_=0;
+
     for(unsigned i=0;i<ISO_OUT_URBS;i++)
     {
-        urbs[i] = std::auto_ptr<usburb_t>(new usburb_t());
-        usburb_t *u = static_cast< usburb_t *> (urbs[i].get());
-        u->index=i;
-        init_urb(u);
-        submit(u);
+        submit(&urbs[i]);
     }
-    shutdown_latch=OUTPIPE_IDLE;
+
     pic::logmsg() << "out pipe started.";
 }
 
@@ -832,11 +703,29 @@ bool pic::usbdevice_t::poll_pipe(unsigned long long time)
     return impl_->poll_pipe(time);
 }
 
-bool pic::usbdevice_t::impl_t::poll_pipe(unsigned long long time)
+void pic::usbdevice_t::impl_t::abort_urbs()
 {
-    bool skipped = false;
     pipe_flipflop_t::guard_t g(inpipes_);
     pipe_list_t::const_iterator i;
+
+    for(i=g.value().begin(); i!=g.value().end(); i++)
+    {
+        (*i)->abort_urbs();
+    }
+
+    if(outpipe)
+    {
+        outpipe->abort_urbs();
+    }
+}
+
+bool pic::usbdevice_t::impl_t::poll_pipe(unsigned long long time)
+{
+    pipe_running();
+
+    pipe_flipflop_t::guard_t g(inpipes_);
+    pipe_list_t::const_iterator i;
+    bool skipped = false;
 
     for(i=g.value().begin(); i!=g.value().end(); i++)
     {
@@ -851,29 +740,25 @@ bool pic::usbdevice_t::impl_t::poll_pipe(unsigned long long time)
 
 bool macosx_usbpipe_in_t::poll(unsigned long long t)
 {
-    bool warn = false;
     pic::flipflop_t<unsigned long long>::guard_t reaped_guard(urb_reaped_lbound_);
 
 restart:
     unsigned long queued = urb_queued_;
     unsigned long long reaped_lbound = reaped_guard.value();
+
+    if((impl_->state_&PIPES_STATE_MASK)!=PIPES_RUNNING)
+    {
+        urb_reaped_ = urb_queued_;
+        return false;
+    }
+
     if(urb_reaped_<reaped_lbound)
     {
         urb_reaped_ = reaped_lbound;
     }
 
-    if(killed_ || sleeping==2)
+    if(urb_reaped_>=queued)
     {
-        if(warn) pic::logmsg() << "queued=" << queued_ << " sleeping=" << sleeping << " killed=" << killed_;
-        skipping=false;
-        return false;
-    }
-
-    if(stalled || urb_reaped_>=queued)
-    {
-        pic::logmsg() << "poll restarting pipe";
-        impl_->ping((void *)2,this);
-        skipping=false;
         return false;
     }
 
@@ -890,13 +775,6 @@ restart:
     {
         pic::logmsg() << "skipped urb";
         polled_ = urb->fnum;
-
-        if(skipping)
-        {
-            return false;
-        }
-
-        skipping=true;
         return true;
     }
 
@@ -910,34 +788,21 @@ restart:
 
         if(s==kUSBLowLatencyIsochTransferKey)
         {
-            //if(warn) pic::logmsg() << "polled up to " << polled_;
-            skipping=false;
             return false;
         }
 
         if(s!=kIOReturnSuccess && s!=kIOReturnUnderrun && s!=kIOReturnOverrun)
         {
-            if(!skipping)
-            {
-                pipe->pipe_error(urb->fnum+i,s);
-            }
-
             if(s==kIOReturnNotResponding)
             {
                 pic::logmsg() << "fatal error in poll, killing pipe";
-                kill(PIPE_NOT_RESPONDING);
+                impl_->pipe_kill(PIPE_NOT_RESPONDING);
             }
 
             polled_ = urb->fnum+requests;
             urb_reaped_++;
 
-            if(skipping)
-            {
-                return false;
-            }
-
             pic::logmsg() << "skip aborted frames";
-            skipping=true;
             return true;
         }
 
@@ -945,8 +810,6 @@ restart:
 
         if(t!=0ULL && ft>t)
         {
-            if(warn) pic::logmsg() << "queued=" << queued_ << " t=" << t << " ft=" << ft;
-            skipping=false;
             return false;
         }
 
@@ -957,7 +820,9 @@ restart:
         }
 
         if(reaped_guard.value()!=reaped_lbound)
+        {
             goto restart;
+        }
     }
 
     urb_reaped_++;
@@ -966,9 +831,10 @@ restart:
 
 void macosx_usbpipe_in_t::completed(usburb_t *urb, IOReturn result)
 {
-    --queued_;
+    --inflight_;
+    impl_->dec_inflight();
 
-    if(!sleeping)
+    if((impl_->state_&PIPES_STATE_MASK)==PIPES_RUNNING)
     {
         switch(result)
         {
@@ -984,24 +850,15 @@ void macosx_usbpipe_in_t::completed(usburb_t *urb, IOReturn result)
             case kIOReturnNoBandwidth:
                 pic::logmsg() << "urb ignored with error " << std::hex << result;
                 break;
+
             case kIOUSBWrongPIDErr:
-                if(!stalled)
-                {
-                    pic::logmsg() << "pipe stall " << std::hex << result;
-                    stalled=true;
-                    sleeping=1;
-                    abort_urbs();
-                    try
-                    {
-                        pipe->pipe_stopped();
-                    }
-                    CATCHLOG()
-                }
+                pic::logmsg() << "pipe stall " << std::hex << result;
+                impl_->pipe_idle();
                 break;
 
             default:
                 pic::logmsg() << "urb completed with error " << std::hex << result;
-                kill(PIPE_UNKNOWN_ERROR);
+                impl_->pipe_kill(PIPE_UNKNOWN_ERROR);
                 break;
         }
     }
@@ -1011,7 +868,7 @@ void macosx_usbpipe_in_t::completed(usburb_t *urb, IOReturn result)
 
 macosx_usbpipe_in_t::macosx_usbpipe_in_t(pic::usbdevice_t::impl_t *impl,pic::usbdevice_t::iso_in_pipe_t *p,int r): 
     macosx_usbpipe_t(impl,r,p->in_pipe_size()),
-    pipe(p), urb_queued_(0), urb_reaped_(0), sleeping(0), skipping(false), stalled(true), polled_(0), urb_reaped_lbound_(0ULL)
+    pipe(p), urb_queued_(0), urb_reaped_(0), polled_(0), urb_reaped_lbound_(0ULL), inflight_(0)
 {
     micro = impl_->device.hispeed?MICROFRAMES_PER_FRAME:1;
     requests = micro*ISO_IN_URBSIZE;
@@ -1022,86 +879,62 @@ macosx_usbpipe_in_t::macosx_usbpipe_in_t(pic::usbdevice_t::impl_t *impl,pic::usb
     }
 }
 
-macosx_usbpipe_out_t::macosx_usbpipe_out_t(pic::usbdevice_t::impl_t *impl,pic::usbdevice_t::iso_out_pipe_t *p,int r): 
+macosx_usbpipe_out_t::macosx_usbpipe_out_t(pic::usbdevice_t::impl_t *impl,pic::usbdevice_t::iso_out_pipe_t *p,int r,unsigned uframe_per_frame): 
     macosx_usbpipe_t(impl,r,p->out_pipe_size()),
-    pipe(p), write_urb_(0), write_frame_(0), shutdown_latch(OUTPIPE_START), sleeping(0)
+    pipe(p), write_urb_(0), write_frame_(0), uframe_per_frame_(uframe_per_frame), inflight_(0)
 {
     PIC_ASSERT(impl_->device.hispeed);
+    pic::logmsg() << "output pipe " << r << " uframe_per_frame " << uframe_per_frame;
+
+    for(unsigned i=0;i<ISO_OUT_URBS;i++)
+    {
+        init_urb(&urbs[i]);
+    }
 }
 
 macosx_usbpipe_out_t::~macosx_usbpipe_out_t()
 {
-    wait();
-}
-
-void macosx_usbpipe_out_t::wait()
-{
-    if(shutdown_latch==OUTPIPE_SHUTDOWN)
-        return;
-
-    for(;;)
-    {
-        if(pic_atomiccas(&shutdown_latch,OUTPIPE_IDLE,OUTPIPE_SHUTDOWN))
-            break;
-
-        if(pic_atomiccas(&shutdown_latch,OUTPIPE_START,OUTPIPE_SHUTDOWN))
-            break;
-
-        pic_thread_yield();
-    }
 }
 
 void macosx_usbpipe_out_t::completed(usburb_t *u, IOReturn e)
 {
-    --queued_;
+    --inflight_;
+    impl_->dec_inflight();
 
-    if(killed_)
+    if((impl_->state_&PIPES_STATE_MASK)==PIPES_RUNNING)
     {
-        if(queued_==0)
+        if(e!=kIOReturnSuccess)
         {
-            pic::logmsg() << "out pipe kill complete";
-            wait();
-            gate.open();
+            impl_->pipe_kill(PIPE_OK);
+            return;
         }
-        return;
-    }
-
-    if(e!=kIOReturnSuccess)
-    {
-        kill(PIPE_OK);
-        return;
     }
     
-    unsigned sbmt = submit(u);
-    switch(sbmt)
-    {
-        case SUBMIT_UNKNOWN_ERROR:
-            kill(PIPE_UNKNOWN_ERROR);
-            return;
-
-        case SUBMIT_NO_BANDWIDTH:
-            kill(PIPE_NO_BANDWIDTH);
-            return;
-    }
+    submit(u);
 }
 
-unsigned macosx_usbpipe_out_t::submit(usburb_t *u)
+void macosx_usbpipe_out_t::submit(usburb_t *u)
 {
     IOUSBInterfaceInterface197 **intf = impl_->device.interface;
     IOReturn e;
 
-    for(unsigned i=0;i<ISO_OUT_MICROFRAMES_PER_URB;i++)
+    if((impl_->state_&PIPES_STATE_MASK) != PIPES_RUNNING)
+    {
+        return;
+    }
+
+    for(unsigned i=0;i<ISO_OUT_FRAMES_PER_URB*uframe_per_frame_;i++)
     {
         u->frame[i].frStatus=kUSBLowLatencyIsochTransferKey;
         u->frame[i].frActCount=0;
         u->frame[i].frTimeStamp.lo=0;
         u->frame[i].frTimeStamp.hi=0;
 
-        if((i%ISO_OUT_STRIDE)==0)
+        if((i%uframe_per_frame_)==0)
         {
             //pic::printmsg() << "complete clear " << u->index << ":" << i;
             u->frame[i].frReqCount=size_;
-            memset(u->buffer+(i/ISO_OUT_STRIDE)*size_,0,size_);
+            memset(u->buffer+(i/uframe_per_frame_)*size_,0,size_);
         }
         else
         {
@@ -1114,7 +947,7 @@ restart:
 
     u->fnum = counter_;
 
-    if((e=(*intf)->LowLatencyWriteIsochPipeAsync(intf,piperef_,u->buffer,u->fnum/8,ISO_OUT_MICROFRAMES_PER_URB,1,u->frame,out_completed__,u)) != kIOReturnSuccess)
+    if((e=(*intf)->LowLatencyWriteIsochPipeAsync(intf,piperef_,u->buffer,u->fnum/uframe_per_frame_,ISO_OUT_FRAMES_PER_URB*uframe_per_frame_,1,u->frame,out_completed__,u)) != kIOReturnSuccess)
     {
         if(e==kIOReturnIsoTooOld)
         {
@@ -1122,23 +955,26 @@ restart:
             UInt64 f;
             (*intf)->GetBusFrameNumber(intf,&f,&time);
             f+=ISO_OUT_FUTURE;
-            counter_ = f*8;
+            counter_ = f*uframe_per_frame_;
             pic::logmsg() << "Fell behind: output frame count resynced to " << counter_;
             goto restart;
         }
-        else if(e==kIOReturnNoBandwidth)
+
+        if(e==kIOReturnNoBandwidth)
         {
             pic::logmsg() << "can't submit write request due to unsufficient bandwidth " << std::hex << e;
-            return SUBMIT_NO_BANDWIDTH;
+            impl_->pipe_kill(PIPE_NO_BANDWIDTH);
+            return;
         }
 
+        impl_->pipe_kill(PIPE_UNKNOWN_ERROR);
         pic::logmsg() << "can't submit write request " << std::hex << e;
-        return SUBMIT_UNKNOWN_ERROR;
+        return;
     }
 
-    counter_+=ISO_OUT_MICROFRAMES_PER_URB;
-    ++queued_;
-    return SUBMIT_OK;
+    counter_+=ISO_OUT_FRAMES_PER_URB*uframe_per_frame_;
+    ++inflight_;
+    impl_->inc_inflight();
 }
 
 macosx_usbpipe_in_t::~macosx_usbpipe_in_t()
@@ -1176,15 +1012,16 @@ macosx_usbdevice_t::~macosx_usbdevice_t()
     close_device(device);
 }
 
-pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface): pic::cfrunloop_t(0), name_(name), sleeping(false), device(name,iface), power(0), power_port(MACH_PORT_NULL),outpipe(0),cmd2_pending(0)
+pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface): pic::cfrunloop_t(0), name_(name), device(name,iface), power(0), power_port(MACH_PORT_NULL),outpipe(0),cmd_pending(0),state_(PIPES_STOPPED)
 {
 }
 
 void pic::usbdevice_t::impl_t::set_iso_out(iso_out_pipe_t *p )
 {
     int piperef;
+    unsigned uframe_per_frame;
 
-    if((piperef=find_iso_pipe(device.interface,p->out_pipe_name()))<0)
+    if((piperef=find_iso_pipe(device.interface,p->out_pipe_name(),&uframe_per_frame))<0)
     {
         pic::logmsg() << "can't find endpoint " << p->out_pipe_name();
         return;
@@ -1192,7 +1029,7 @@ void pic::usbdevice_t::impl_t::set_iso_out(iso_out_pipe_t *p )
     
    try 
     {
-        outpipe = new macosx_usbpipe_out_t(this,p,piperef);
+        outpipe = new macosx_usbpipe_out_t(this,p,piperef,uframe_per_frame);
     }
     catch( std::exception &e )
     {
@@ -1231,129 +1068,303 @@ bool pic::usbdevice_t::impl_t::add_iso_in(iso_in_pipe_t *pipe)
 
 pic::usbdevice_t::impl_t::~impl_t()
 {
-    shutdown();
-    clear_pipes();
+    stop_pipes();
+    detach();
 }
 
-void pic::usbdevice_t::impl_t::clear_pipes()
+
+void pic::usbdevice_t::impl_t::call_pipe_died(unsigned reason)
 {
-    while(inpipes_.alternate().size()>0)
+    abort_urbs();
+
+    if(power)
     {
-        macosx_usbpipe_in_t *p = inpipes_.alternate().front();
-        inpipes_.alternate().pop_front();
-        inpipes_.exchange();
-        delete p;
+        try
+        {
+            power->pipe_died(reason);
+        }
+        CATCHLOG()
+    }
+}
+
+void pic::usbdevice_t::impl_t::call_pipe_stopped()
+{
+    abort_urbs();
+
+    if(power)
+    {
+        try
+        {
+            power->pipe_stopped();
+        }
+        CATCHLOG()
+    }
+}
+
+void pic::usbdevice_t::impl_t::call_pipe_running()
+{
+    pic::logmsg() << "pipe_running " << std::hex << state_ << " woke pipe";
+
+    {
+        pipe_flipflop_t::guard_t g(inpipes_);
+        pipe_list_t::const_iterator i;
+
+        for(i=g.value().begin(); i!=g.value().end(); i++)
+        {
+            (*i)->start();
+        }
     }
 
     if(outpipe)
     {
-        delete outpipe;
-        outpipe = 0;
+        outpipe->start();
+    }
+
+    cmd(0,0);
+}
+
+int pic::usbdevice_t::impl_t::runloop_cmd(void *c, void *a)
+{
+    pic::logmsg() << "runloop starting pipe";
+
+    if(power)
+    {
+        try
+        {
+            power->pipe_started();
+        }
+        CATCHLOG()
+    }
+
+    pipe_flipflop_t::guard_t g(inpipes_);
+    pipe_list_t::const_iterator i;
+
+    for(i=g.value().begin(); i!=g.value().end(); i++)
+    {
+        (*i)->counter_=0;
+        (*i)->service();
+    }
+
+    pic::logmsg() << "runloop started pipe";
+
+    return 0;
+}
+
+void pic::usbdevice_t::impl_t::pipe_running()
+{
+    for(;;)
+    {
+        unsigned o = state_;
+        unsigned os = o&PIPES_STATE_MASK;
+        unsigned c = o&PIPES_COUNT_MASK;
+        unsigned ns = os;
+
+        switch(os)
+        {
+            case PIPES_RUNNING: return;
+            case PIPES_SLEEP: return;
+            case PIPES_KILLED: return;
+            case PIPES_STOPPED: return;
+            case PIPES_IDLE: ns=PIPES_RUNNING; break;
+        }
+
+        unsigned n = ns|c;
+
+        if(pic_atomiccas(&state_,o,n))
+        {
+            call_pipe_running();
+            return;
+        }
     }
 }
 
-void pic::usbdevice_t::impl_t::shutdown()
+void pic::usbdevice_t::impl_t::pipe_sleep()
 {
+    for(;;)
+    {
+        unsigned o = state_;
+        unsigned os = o&PIPES_STATE_MASK;
+        unsigned c = o&PIPES_COUNT_MASK;
+        unsigned ns = os;
+
+        switch(os)
+        {
+            case PIPES_RUNNING: ns=PIPES_SLEEP; break;
+            case PIPES_SLEEP: return;
+            case PIPES_KILLED: return;
+            case PIPES_STOPPED: return;
+            case PIPES_IDLE: ns=PIPES_SLEEP; break;
+        }
+
+        unsigned n = ns|c;
+
+        if(pic_atomiccas(&state_,o,n))
+        {
+            if(os!=PIPES_SLEEP && os!=PIPES_IDLE)
+            {
+                call_pipe_stopped();
+            }
+
+            return;
+        }
+    }
+}
+
+void pic::usbdevice_t::impl_t::pipe_idle()
+{
+    for(;;)
+    {
+        unsigned o = state_;
+        unsigned os = o&PIPES_STATE_MASK;
+        unsigned c = o&PIPES_COUNT_MASK;
+        unsigned ns = os;
+
+        switch(os)
+        {
+            case PIPES_RUNNING: ns=PIPES_IDLE; break;
+            case PIPES_SLEEP: return;
+            case PIPES_KILLED: return;
+            case PIPES_STOPPED: return;
+            case PIPES_IDLE: return;
+        }
+
+        unsigned n = ns|c;
+
+        if(pic_atomiccas(&state_,o,n))
+        {
+            if(os!=PIPES_SLEEP && os!=PIPES_IDLE)
+            {
+                call_pipe_stopped();
+            }
+
+            return;
+        }
+    }
+}
+
+void pic::usbdevice_t::impl_t::pipe_kill(unsigned reason)
+{
+    for(;;)
+    {
+        unsigned o = state_;
+        unsigned os = o&PIPES_STATE_MASK;
+        unsigned c = o&PIPES_COUNT_MASK;
+        unsigned ns = os;
+
+        switch(os)
+        {
+            case PIPES_RUNNING: ns=PIPES_KILLED; break;
+            case PIPES_SLEEP: ns=PIPES_KILLED; break;
+            case PIPES_KILLED: return;
+            case PIPES_STOPPED: ns=PIPES_KILLED; break;
+            case PIPES_IDLE: ns=PIPES_KILLED; break;
+        }
+
+        unsigned n = ns|c;
+
+        if(pic_atomiccas(&state_,o,n))
+        {
+            call_pipe_died(reason);
+            return;
+        }
+    }
+}
+
+void pic::usbdevice_t::impl_t::inc_inflight()
+{
+    for(;;)
+    {
+        unsigned o = state_;
+        unsigned n = o+1;
+
+        if(pic_atomiccas(&state_,o,n))
+        {
+            return;
+        }
+    }
+}
+
+void pic::usbdevice_t::impl_t::dec_inflight()
+{
+    for(;;)
+    {
+        unsigned o = state_;
+        unsigned c = o&PIPES_COUNT_MASK;
+        unsigned s = o&PIPES_STATE_MASK;
+
+        if(!c)
+        {
+            return;
+        }
+
+        c--;
+
+        unsigned n = s|c;
+
+        if(pic_atomiccas(&state_,o,n))
+        {
+            return;
+        }
+    }
+}
+
+void pic::usbdevice_t::impl_t::start_pipes()
+{
+    if(state_ == PIPES_STOPPED)
+    {
+        run();
+        state_ = PIPES_IDLE;
+    }
+}
+
+void pic::usbdevice_t::impl_t::stop_pipes()
+{
+    pipe_kill(PIPE_OK);
     pic::logmsg() << "usb shutdown starting";
-    if(outpipe)
+
+    for(;;)
     {
-        pic::logmsg() << "shutting down outpipe";
-        outpipe->kill(PIPE_OK);
-
-        pic::logmsg() << "waiting for outpipe shutdown";
-        if(!outpipe->gate.timedpass(1000000ULL))
+        if(state_ == PIPES_KILLED)
         {
-            pic::logmsg() << "outpipe shutdown timed out";
+            break;
         }
-        else
-        {
-            pic::logmsg() << "outpipe shut down";
-        }
-    }
-    {
-        pipe_list_t::iterator i;
 
-        for(i=inpipes_.alternate().begin(); i!=inpipes_.alternate().end(); i++)
-        {
-            pic::logmsg() << "shutting down inpipe";
-            (*i)->kill(PIPE_OK);
-
-            pic::logmsg() << "waiting for inpipe shutdown";
-            if(!(*i)->gate.timedpass(1000000ULL))
-            {
-                pic::logmsg() << "inpipe shutdown timed out";
-            }
-            else
-            {
-                pic::logmsg() << "inpipe shut down";
-            }
-        }
+        pic_microsleep(1000000);
+        pic::logmsg() << "usb shutdown continues: " << std::hex << state_;
     }
 
     stop();
+
+    state_ = PIPES_STOPPED;
     pic::logmsg() << "usb shutdown complete";
 }
 
 void pic::usbdevice_t::impl_t::power_sleep()
 {
     pic::logmsg() << "usb power sleep";
-
-    {
-        pipe_flipflop_t::guard_t g(inpipes_);
-        pipe_list_t::const_iterator i;
-
-        for(i=g.value().begin(); i!=g.value().end(); i++)
-        {
-            (*i)->sleep();
-        }
-    }
-
-    if(outpipe)
-        outpipe->sleep();
-
-    if(power)
-    {
-        power->on_suspending();
-    }
-    sleeping = true;
+    pipe_sleep();
 }
 
-void pic::usbdevice_t::impl_t::power_wakeup()
+void pic::usbdevice_t::impl_t::reset_device()
 {
-    if(!sleeping)
-    {
-        pic::logmsg() << "usb power wakeup, but not sleeping";
-        return;
-    }
-    sleeping = false;
-
     IOReturn e;
-
-    pic::logmsg() << "usb power wakeup";
 
     if((e=(*device.device)->ResetDevice(device.device)) != kIOReturnSuccess)
     {
         pic::logmsg() << "can't reset device: " << std::hex << e;
     }
     else
+    {
         pic::logmsg() << "reset device";
-
-    if(power)
-    {
-        power->on_waking();
     }
+}
 
+void pic::usbdevice_t::impl_t::power_wakeup()
+{
+    if(state_ == PIPES_SLEEP)
     {
-        pipe_flipflop_t::guard_t g(inpipes_);
-        pipe_list_t::const_iterator i;
-
-        for(i=g.value().begin(); i!=g.value().end(); i++)
-        {
-            (*i)->wakeup();
-        }
-
-        if(outpipe)
-            outpipe->wakeup();
+        reset_device();
+        state_ = PIPES_IDLE;
     }
 }
 
@@ -1398,6 +1409,7 @@ void pic::usbdevice_t::impl_t::runloop_init()
     if(power)
     {
         power_port = IORegisterForSystemPower(this, &power_notify, __power_callback, &power_iterator);
+
         if(power_port != MACH_PORT_NULL)
         {
             power_source = IONotificationPortGetRunLoopSource(power_notify);
@@ -1408,29 +1420,6 @@ void pic::usbdevice_t::impl_t::runloop_init()
         {
             pic::msg() << "unable to register for power status" << pic::log;
         }
-    }
-
-    try
-    {
-        {
-            pipe_flipflop_t::guard_t g(inpipes_);
-            pipe_list_t::const_iterator i;
-
-            for(i=g.value().begin(); i!=g.value().end(); i++)
-            {
-                (*i)->start();
-            }
-
-            if(outpipe)
-            {
-                outpipe->start();
-            }
-        }
-    }
-    catch(...)
-    {
-        runloop_term();
-        throw;
     }
 }
 
@@ -1524,24 +1513,6 @@ void pic::usbdevice_t::bulk_out_pipe_t::bulk_write(const void *data, unsigned le
     impl_->bulk_write(data,len,timeout);
 }
 
-int pic::usbdevice_t::impl_t::runloop_cmd(void *c, void *a)
-{
-    return 0;
-}
-
-void pic::usbdevice_t::impl_t::runloop_cmd2(void *c, void *a)
-{
-    if(c==(void *)2)
-    {
-        if(pic_atomiccas(&cmd2_pending,1,0))
-        {
-            macosx_usbpipe_in_t *pipe = (macosx_usbpipe_in_t *)a;
-            pic::logmsg() << "usb pipe wakeup";
-            pipe->service();
-        }
-    }
-}
-
 pic::usbdevice_t::usbdevice_t(const char *name, unsigned iface)
 {
     impl_ = new pic::usbdevice_t::impl_t(name,iface);
@@ -1554,12 +1525,12 @@ const char *pic::usbdevice_t::name()
 
 void pic::usbdevice_t::start_pipes()
 {
-    impl_->run();
+    impl_->start_pipes();
 }
 
 void pic::usbdevice_t::stop_pipes()
 {
-    impl_->shutdown();
+    impl_->stop_pipes();
 }
 
 pic::usbdevice_t::~usbdevice_t()
@@ -1590,8 +1561,23 @@ void pic::usbdevice_t::set_power_delegate(power_t *p)
 void pic::usbdevice_t::impl_t::detach()
 {
     pic::logmsg() << "detaching client";
-    clear_pipes();
-    power = 0;
+
+    while(inpipes_.alternate().size()>0)
+    {
+        macosx_usbpipe_in_t *p = inpipes_.alternate().front();
+        inpipes_.alternate().pop_front();
+        inpipes_.exchange();
+        delete p;
+    }
+
+    if(outpipe)
+    {
+        delete outpipe;
+        outpipe = 0;
+    }
+
+    power=0;
+
     pic::logmsg() << "done detaching client";
 }
 
@@ -1606,7 +1592,8 @@ unsigned char *macosx_usbpipe_out_t::iso_write_start()
     unsigned last_status = kUSBLowLatencyIsochTransferKey;
     for(;;)
     {
-        unsigned status = urbs[write_urb_]->frame[write_frame_].frStatus;
+        unsigned status = urbs[write_urb_].frame[write_frame_].frStatus;
+
         if(status!=0 && status!=kUSBLowLatencyIsochTransferKey)
         {
             return 0;
@@ -1616,18 +1603,18 @@ unsigned char *macosx_usbpipe_out_t::iso_write_start()
             break;
 
         last_status=status;
-        iso_write_advance(ISO_OUT_STRIDE);
+        iso_write_advance(1);
     }
 
-    return iso_write_advance(8*ISO_OUT_OFFSET);
+    return iso_write_advance(ISO_OUT_OFFSET);
 }
 
 unsigned char *macosx_usbpipe_out_t::iso_write_advance(unsigned n)
 {
-    unsigned f=(write_urb_*ISO_OUT_MICROFRAMES_PER_URB)+write_frame_+n;
-    write_urb_=(f/ISO_OUT_MICROFRAMES_PER_URB)%ISO_OUT_URBS;
-    write_frame_=f%ISO_OUT_MICROFRAMES_PER_URB;
-    return urbs[write_urb_]->buffer+(write_frame_/ISO_OUT_STRIDE)*size_;
+    unsigned f=(write_urb_*ISO_OUT_FRAMES_PER_URB*uframe_per_frame_)+write_frame_+n*uframe_per_frame_;
+    write_urb_=(f/(ISO_OUT_FRAMES_PER_URB*uframe_per_frame_))%ISO_OUT_URBS;
+    write_frame_=f%(ISO_OUT_FRAMES_PER_URB*uframe_per_frame_);
+    return urbs[write_urb_].buffer+(write_frame_/uframe_per_frame_)*size_;
 }
 
 pic::usbdevice_t::iso_out_guard_t::iso_out_guard_t(usbdevice_t *d): impl_(d->impl_), current_(0)
@@ -1637,29 +1624,17 @@ pic::usbdevice_t::iso_out_guard_t::iso_out_guard_t(usbdevice_t *d): impl_(d->imp
         return;
     }
 
-    if(impl_->outpipe->killed_)
-    {
-        return;
-    }
-
-    if(!pic_atomiccas(&impl_->outpipe->shutdown_latch,OUTPIPE_IDLE,OUTPIPE_BUSY))
-    {
-        return;
-    }
-
     current_ = impl_->outpipe->iso_write_start();
 }
 
 pic::usbdevice_t::iso_out_guard_t::~iso_out_guard_t()
 {
-    if(impl_->outpipe)
-        pic_atomiccas(&impl_->outpipe->shutdown_latch,OUTPIPE_BUSY,OUTPIPE_IDLE);
 }
 
 unsigned char *pic::usbdevice_t::iso_out_guard_t::advance()
 {
     PIC_ASSERT(impl_->outpipe);
-    current_=impl_->outpipe->iso_write_advance(ISO_OUT_STRIDE);
+    current_=impl_->outpipe->iso_write_advance(1);
     return current_;
 }
 

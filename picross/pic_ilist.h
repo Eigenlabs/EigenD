@@ -207,11 +207,12 @@ namespace pic
             element_t<N> head_;
     };
 
-    template <class E, int N=0> struct ilist_t
+    template <class E, int N=0, bool D=false> struct ilist_t
     {
         public:
             ilist_t() {}
             ilist_t(ilist_t &l): base_(l.base_) {}
+            ~ilist_t() { if(D) { E *e; while((e=pop_front())) delete e; } }
             E *prev(E *e) { return static_cast<E *>(base_.prev(e)); }
             E *next(E *e) { return static_cast<E *>(base_.next(e)); }
             E *head() { return static_cast<E *>(base_.head()); }

@@ -43,13 +43,9 @@ struct alpha1::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice
     int decode_processed(const unsigned short *frame, unsigned length, unsigned long long ts);
 
     void in_pipe_data(const unsigned char *frame, unsigned length, unsigned long long hf, unsigned long long ht,unsigned long long pt);
-    void pipe_error(unsigned long long fnum, int err);
     void pipe_died(unsigned reason);
     void pipe_started();
     void pipe_stopped();
-
-    void on_suspending();
-    void on_waking();
 
     void start();
     void stop();
@@ -301,43 +297,6 @@ void alpha1::active_t::impl_t::pipe_started()
     pic::logmsg() << "starting up keyboard";
     control_out(BCTALPHA1_USBCOMMAND_START_REQTYPE,BCTALPHA1_USBCOMMAND_START_REQ,0,0,0,0);
     pic::logmsg() << "started up keyboard";
-}
-
-void alpha1::active_t::impl_t::pipe_error(unsigned long long fnum, int err)
-{
-    pic::msg() << "usb error in frame " << fnum << " err=" << std::hex << err << pic::log;
-}
-
-void alpha1::active_t::impl_t::on_waking()
-{
-    pic::logmsg() << "starting up keyboard";
-
-    try
-    {
-        control_out(BCTALPHA1_USBCOMMAND_START_REQTYPE,BCTALPHA1_USBCOMMAND_START_REQ,0,0,0,0);
-    }
-    catch(...)
-    {
-        pic::logmsg() << "device startup failed";
-    }
-
-    pic::logmsg() << "started up keyboard";
-}
-
-void alpha1::active_t::impl_t::on_suspending()
-{
-    pic::logmsg() << "shutting down kbd";
-
-    try
-    {
-        control_out(BCTALPHA1_USBCOMMAND_STOP_REQTYPE,BCTALPHA1_USBCOMMAND_STOP_REQ,0,0,0,0);
-    }
-    catch(...)
-    {
-        pic::logmsg() << "device shutdown failed";
-    }
-
-    pic::logmsg() << "shut down kbd";
 }
 
 pic::usbdevice_t *alpha1::active_t::device()

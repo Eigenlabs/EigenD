@@ -515,8 +515,8 @@ class KeyboardFactory( agent.Agent ):
         self.__enum.append(picross.enumerator(0xbeca,0x0103,lsf(self.add_taukeyboard)))
         self.__enum.append(picross.enumerator(0x2139,0x0002,lsf(self.download_base_station)))
         self.__enum.append(picross.enumerator(0x2139,0x0003,lsf(self.download_psu)))
-        self.__enum.append(picross.enumerator(0x2139,0x0102,lsf(self.add_base_station),lsf(self.del_base_station)))
-        self.__enum.append(picross.enumerator(0x2139,0x0103,lsf(self.add_base_station),lsf(self.del_base_station)))
+        self.__enum.append(picross.enumerator(0x2139,0x0104,lsf(self.add_base_station),lsf(self.del_base_station)))
+        self.__enum.append(picross.enumerator(0x2139,0x0105,lsf(self.add_base_station),lsf(self.del_base_station)))
 
     def add_alpha1keyboard( self, usbname):
         msg = 'alpha1:%s' % usbname

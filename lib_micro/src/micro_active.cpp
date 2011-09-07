@@ -38,21 +38,11 @@ struct micro::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice_
 
     void in_pipe_data(const unsigned char *frame, unsigned length, unsigned long long hf, unsigned long long ht,unsigned long long pt);
     void pipe_died(unsigned reason);
-    void pipe_error(unsigned long long fnum, int err);
+    void pipe_started();
+    void pipe_stopped();
+
     void start();
     void stop();
-
-    void on_suspending()
-    {
-        printf("keyboard suspending\n");
-    }
-
-    void on_waking()
-    {
-        printf("keyboard waking\n");
-        control_out(TYPE_VENDOR,BCTMICRO_USBCOMMAND_START,0,0,0,0);
-        resync_=true;
-    }
 
     static void decode_cooked(void *ctx,unsigned long long ts,int tp, int id,unsigned a,unsigned p,int r,int y);
     static void decode_raw(void *ctx,int resync,const pico_rawkbd_t *);
@@ -73,10 +63,9 @@ micro::active_t::impl_t::impl_t(const char *name, micro::active_t::delegate_t *d
 void micro::active_t::impl_t::start()
 {
     start_pipes();
-    control_out(TYPE_VENDOR,BCTMICRO_USBCOMMAND_START,0,0,0,0);
 }
 
-void micro::active_t::impl_t::stop()
+void micro::active_t::impl_t::pipe_stopped()
 {
     try
     {
@@ -87,6 +76,24 @@ void micro::active_t::impl_t::stop()
         pic::logmsg() << "device shutdown failed";
     }
 
+}
+
+void micro::active_t::impl_t::pipe_started()
+{
+    try
+    {
+        printf("keyboard waking\n");
+        control_out(TYPE_VENDOR,BCTMICRO_USBCOMMAND_START,0,0,0,0);
+        resync_=true;
+    }
+    catch(...)
+    {
+        pic::logmsg() << "device startup failed";
+    }
+}
+
+void micro::active_t::impl_t::stop()
+{
     stop_pipes();
 }
 
@@ -112,7 +119,14 @@ void micro::active_t::stop()
 
 bool micro::active_t::poll(unsigned long long t)
 {
-    return _impl->poll_pipe(t);
+    bool skipped = _impl->poll_pipe(t);
+
+    if(skipped)
+    {
+        _impl->resync_ = true;
+    }
+
+    return skipped;
 }
 
 const char *micro::active_t::get_name()
@@ -159,12 +173,6 @@ void micro::active_t::impl_t::in_pipe_data(const unsigned char *frame, unsigned 
     {
         pico_decoder_cooked(&decoder_,resync_?1:0,frame,length,ht,decode_cooked,this);
     }
-}
-
-void micro::active_t::impl_t::pipe_error(unsigned long long fnum, int err)
-{
-    pic::msg() << "usb error in frame " << fnum << " err=" << std::hex << err << pic::log;
-    resync_=true;
 }
 
 void micro::active_t::impl_t::pipe_died(unsigned reason)

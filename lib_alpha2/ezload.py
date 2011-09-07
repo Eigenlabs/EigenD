@@ -41,8 +41,8 @@ psu_product = 0x0003
 
 # Bit 7 in major version indicates test firmware,
 # not released to end users
-bs_version = '0102'
-psu_version = '0101'
+bs_version = '0103'
+psu_version = '0102'
 
 def find_release_resource(category,name):
     res_root = picross.release_resource_dir()

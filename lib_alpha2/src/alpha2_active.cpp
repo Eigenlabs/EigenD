@@ -64,11 +64,7 @@ namespace
         else if(f>=1.0f)
             x = MAX_24;
         else
-#ifdef PI_WINDOWS
-            x = floorf((f*SCALE_24)+0.5);
-#else
-            x = lrintf(f*SCALE_24);
-#endif
+            x = (long)((f > 0.0f) ? ((f*SCALE_24) + 0.5f) : ((f*SCALE_24) - 0.5f));
 
 #ifndef PI_BIGENDIAN
         memcpy(out,&x,3);
@@ -114,10 +110,6 @@ struct key_in_pipe: pic::usbdevice_t::iso_in_pipe_t
     ~key_in_pipe();
 
     void in_pipe_data(const unsigned char *frame, unsigned size, unsigned long long fnum, unsigned long long htime, unsigned long long ptime);
-    void pipe_error(unsigned long long fnum, int result);
-    void pipe_died(unsigned reason);
-    void pipe_started();
-    void pipe_stopped();
  
 private:
 
@@ -131,10 +123,6 @@ struct pedal_in_pipe: pic::usbdevice_t::iso_in_pipe_t
     ~pedal_in_pipe();
 
     void in_pipe_data(const unsigned char *frame, unsigned size, unsigned long long fnum, unsigned long long htime, unsigned long long ptime);
-    void pipe_error(unsigned long long fnum, int result);
-    void pipe_died(unsigned reason);
-    void pipe_started();
-    void pipe_stopped();
  
 private:
 
@@ -156,11 +144,9 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
 
     unsigned total_keys();
 
-    void pipe_in_started_sig();
-    void pipe_in_stopped_sig();
-
-    void on_suspending();
-    void on_waking();
+    void pipe_died(unsigned reason);
+    void pipe_started();
+    void pipe_stopped();
 
     void start();
     void stop();
@@ -503,8 +489,6 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     unsigned mic_type_,mic_gain_,hp_gain_;
     float loop_gain_;
 
-    pic_atomic_t started_pipes_;
-    pic_atomic_t total_pipes_;
     unsigned kbd_state_;
 };
 
@@ -551,14 +535,11 @@ alpha2::active_t::impl_t::impl_t(pic::usbdevice_t *device, alpha2::active_t::del
     pkey_in_pipe_->enable_frame_check(true);
 
     noleds_ = (getenv("PI_NOLEDS")!=0);
-    started_pipes_ = 0;
-    total_pipes_ = 1;
 
     if(!noleds_)
     {
         ppedal_in_pipe_ = new pedal_in_pipe( this );
         device_->add_iso_in( ppedal_in_pipe_ );
-        total_pipes_ = 2;
     }
     
     memset(ledstates_,0,sizeof(ledstates_));
@@ -1107,58 +1088,24 @@ unsigned alpha2::active_t::impl_t::decode_processed(const unsigned short *payloa
     return BCTKBD_MSGSIZE_PROCESSED;
 }
 
-void pedal_in_pipe::pipe_died(unsigned reason)
+void alpha2::active_t::impl_t::pipe_died(unsigned reason)
 {
     pipe_stopped();
+
     if(PIPE_NO_BANDWIDTH==reason)
     {
-        pimpl_->handler_->insufficient_bandwidth();
+        handler_->insufficient_bandwidth();
     }
-    pimpl_->handler_->kbd_dead();
+
+    handler_->kbd_dead();
 }
 
-void pedal_in_pipe::pipe_stopped()
-{
-
-    pimpl_->pipe_in_stopped_sig();
-}
-
-void pedal_in_pipe::pipe_started()
-{
-   
-   pimpl_->pipe_in_started_sig();
-
-}
-
-void pedal_in_pipe::pipe_error(unsigned long long fnum, int err)
-{
-    pic::msg() << "usb error in frame " << fnum << " err=" << std::hex << err << pic::log;
-}
-
-void key_in_pipe::pipe_died(unsigned reason)
-{
-    pipe_stopped();
-    if(PIPE_NO_BANDWIDTH==reason)
-    {
-        pimpl_->handler_->insufficient_bandwidth();
-    }
-    pimpl_->handler_->kbd_dead();
-}
-
-void key_in_pipe::pipe_stopped()
-{
-    pimpl_->pipe_in_stopped_sig();
-}
-
-void alpha2::active_t::impl_t::pipe_in_stopped_sig()
+void alpha2::active_t::impl_t::pipe_stopped()
 {
     try
     {
-        if(pic_atomicdec(&started_pipes_)==0)
-        {
-            pic::logmsg() << "keyboard shutdown";
-            kbd_stop();
-        }
+        pic::logmsg() << "keyboard shutdown";
+        kbd_stop();
     }
     catch(...)
     {
@@ -1167,28 +1114,10 @@ void alpha2::active_t::impl_t::pipe_in_stopped_sig()
 
 }
 
-void key_in_pipe::pipe_started()
+void alpha2::active_t::impl_t::pipe_started()
 {
-    pimpl_->pipe_in_started_sig();
-}
-
-void alpha2::active_t::impl_t::pipe_in_started_sig()
-{
-    if(pic_atomicinc(&started_pipes_)==total_pipes_)
-    {
-        pic::logmsg() << "keyboard startup";
-        kbd_start();
-    }
-}
-
-void key_in_pipe::pipe_error(unsigned long long fnum, int err)
-{
-    pic::msg() << "usb error in frame " << fnum << " err=" << std::hex << err << pic::log;
-}
-
-void alpha2::active_t::impl_t::on_waking()
-{
-    restart();
+    pic::logmsg() << "keyboard startup";
+    kbd_start();
 }
 
 void alpha2::active_t::impl_t::restart()
@@ -1205,22 +1134,6 @@ void alpha2::active_t::impl_t::restart()
     }
 
     pic::logmsg() << "started up keyboard";
-}
-
-void alpha2::active_t::impl_t::on_suspending()
-{
-    pic::logmsg() << "shutting down kbd";
-
-    try
-    {
-        kbd_stop();
-    }
-    catch(...)
-    {
-        pic::logmsg() << "device shutdown failed";
-    }
-
-    pic::logmsg() << "shut down kbd";
 }
 
 void alpha2::active_t::msg_test_write_lib(unsigned idx, unsigned p, unsigned r, unsigned y)
@@ -1324,15 +1237,22 @@ void alpha2::active_t::audio_write(const float *stereo, unsigned len, unsigned p
     unsigned char *frame = guard.current();
     unsigned index = 0;
 
+    if(!frame)
+    {
+        return;
+    }
+
     if(period>0)
     {
         // start audio header
+        guard.dirty();
         frame[index++] = 0x09;
         frame[index++] = period;
     }
 
     for(unsigned i=0; i<pkts; i++)
     {
+        guard.dirty();
         frame[index+0] = 0x06;
         frame[index+1] = 2*3*BCTKBD_AUDIO_PKT_FRAMES;
         __float_to_24(&frame[index+2],stereo,2*BCTKBD_AUDIO_PKT_FRAMES,1,1);
@@ -1343,6 +1263,12 @@ void alpha2::active_t::audio_write(const float *stereo, unsigned len, unsigned p
         if((index+BCTKBD_AUDIO_PKT_SIZE)>BCTKBD_USBENDPOINT_ISO_OUT_SIZE)
         {
             frame = guard.advance();
+
+            if(!frame)
+            {
+                return;
+            }
+
             index=0;
         }
     }
@@ -1350,6 +1276,7 @@ void alpha2::active_t::audio_write(const float *stereo, unsigned len, unsigned p
     unsigned remain = len%BCTKBD_AUDIO_PKT_FRAMES;
     if(remain>0)
     {
+        guard.dirty();
         frame[index+0] = 0x06;
         frame[index+1] = 2*3*remain;
         __float_to_24(&frame[index+2],stereo,2*remain,1,1);
