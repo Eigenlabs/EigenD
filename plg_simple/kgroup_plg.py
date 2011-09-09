@@ -629,7 +629,9 @@ class Agent(agent.Agent):
         return False
 
     def __change_blinktime(self,val):
-        self[21].set_value(val)
+		if not val:
+			val = 0
+		self[21].set_value(val)
         self.status_buffer.set_blink_time(float(val))
         return False
 
