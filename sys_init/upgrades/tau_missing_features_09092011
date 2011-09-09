@@ -1,0 +1,466 @@
+# Moving channel configuration of advanced MIDI controls
+#-------------------------------------------------------
+
+empty join midi talker 1 listen interpreter listen
+all phrase cancel
+" eigenbrowser , midi output 1 hey midi port browse " when 16 do
+
+empty join midi talker 1 listen midi converter 1 listen
+
+midi channel to 0 when 8 set
+midi channel to 1 when 9 set
+midi channel to 2 when 10 set
+midi channel to 3 when 11 set
+midi channel to 4 when 12 set
+midi channel to 5 when 25 set
+midi channel to 6 when 26 set
+midi channel to 7 when 27 set
+midi channel to 8 when 28 set
+midi channel to 9 when 41 set
+midi channel to 10 when 42 set
+midi channel to 11 when 43 set
+midi channel to 12 when 44 set
+midi channel to 13 when 59 set
+midi channel to 14 when 60 set
+midi channel to 15 when 61 set
+midi channel to 16 when 62 set
+
+# Set talker phrase to browse MIDI port 1
+empty join midi talker 2 listen interpreter listen
+all phrase cancel
+" eigenbrowser , midi output 1 hey midi port browse " when 16 do
+
+# Talker phrases to set MIDI channel on MIDI converter
+empty join midi talker 2 listen midi converter 2 listen
+
+midi channel to 0 when 8 set
+midi channel to 1 when 9 set
+midi channel to 2 when 10 set
+midi channel to 3 when 11 set
+midi channel to 4 when 12 set
+midi channel to 5 when 25 set
+midi channel to 6 when 26 set
+midi channel to 7 when 27 set
+midi channel to 8 when 28 set
+midi channel to 9 when 41 set
+midi channel to 10 when 42 set
+midi channel to 11 when 43 set
+midi channel to 12 when 44 set
+midi channel to 13 when 59 set
+midi channel to 14 when 60 set
+midi channel to 15 when 61 set
+midi channel to 16 when 62 set
+
+# Upgrade Script for MIDI input talkers
+#--------------------------------------
+
+all join
+midi input create
+
+talker create it to midi input talker name ify
+midi input to it connect
+
+# Tonic
+
+empty join kgroup 1 listen kgroup 2 listen kgroup 3 listen kgroup 4 listen kgroup 5 listen kgroup 6 listen midi input talker listen midi input listen
+all tonic to notec when 60 set
+all tonic to notecsharp when 61 set
+all tonic to noted when 62 set
+all tonic to notedsharp when 63 set
+all tonic to notee when 64 set
+all tonic to notef when 65 set
+all tonic to notefsharp when 66 set
+all tonic to noteg when 67 set
+all tonic to notegsharp when 68 set
+all tonic to notea when 69 set
+all tonic to noteasharp when 70 set
+all tonic to noteb when 71 set
+
+# Scale
+
+all scale to major when 72 called 1 set
+all scale to harmonic minor when 73 called 1 set
+all scale to melodic minor when 74 called 1 set
+all scale to chromatic when 75 called 1 set
+all scale to blues when 76 called 1 set
+all scale to pentatonic major when 77 called 1 set
+all scale to diminished when 78 called 1 set
+all scale to whole tone when 79 called 1 set
+
+# Metronome
+
+empty join metronome listen midi input talker listen midi input listen
+when 59 toggle start
+
+# Lights
+
+empty join interpreter listen midi input talker listen
+
+" global tonic talker hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 1 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 2 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 3 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 4 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 5 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 6 hey 1 to 1 from 2 colour ify " when 60 do
+" global tonic talker hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 1 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 2 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 3 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 4 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 5 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 6 hey 2 to 1 from 2 colour ify " when 61 do
+" global tonic talker hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 1 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 2 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 3 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 4 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 5 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 6 hey 3 to 1 from 2 colour ify " when 62 do
+" global tonic talker hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 1 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 2 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 3 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 4 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 5 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 6 hey 4 to 1 from 2 colour ify " when 63 do
+" global tonic talker hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 1 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 2 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 3 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 4 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 5 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 6 hey 5 to 1 from 2 colour ify " when 64 do
+" global tonic talker hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 1 hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 2 hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 3 hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 4 hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 5 hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 6 hey 6 to 1 from 2 colour ify " when 65 do
+" global tonic talker hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 1 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 2 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 3 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 4 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 5 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 6 hey 7 to 1 from 2 colour ify " when 66 do
+" global tonic talker hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 1 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 2 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 3 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 4 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 5 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 6 hey 8 to 1 from 2 colour ify " when 67 do
+" global tonic talker hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 1 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 2 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 3 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 4 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 5 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 6 hey 9 to 1 from 2 colour ify " when 68 do
+" global tonic talker hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 1 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 2 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 3 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 4 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 5 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 6 hey 10 to 1 from 2 colour ify " when 69 do
+" global tonic talker hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 1 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 2 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 3 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 4 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 5 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 6 hey 11 to 1 from 2 colour ify " when 70 do
+" global tonic talker hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 1 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 2 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 3 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 4 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 5 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 6 hey 12 to 1 from 2 colour ify " when 71 do
+
+" global scale talker hey 9 to 1 from 2 colour ify " when 72 do
+" scale talker 1 hey 9 to 1 from 2 colour ify " when 72 do
+" scale talker 2 hey 9 to 1 from 2 colour ify " when 72 do
+" scale talker 3 hey 9 to 1 from 2 colour ify " when 72 do
+" scale talker 4 hey 9 to 1 from 2 colour ify " when 72 do
+" scale talker 5 hey 9 to 1 from 2 colour ify " when 72 do
+" scale talker 6 hey 9 to 1 from 2 colour ify " when 72 do
+" global scale talker hey 10 to 1 from 2 colour ify " when 73 do
+" scale talker 1 hey 10 to 1 from 2 colour ify " when 73 do
+" scale talker 2 hey 10 to 1 from 2 colour ify " when 73 do
+" scale talker 3 hey 10 to 1 from 2 colour ify " when 73 do
+" scale talker 4 hey 10 to 1 from 2 colour ify " when 73 do
+" scale talker 5 hey 10 to 1 from 2 colour ify " when 73 do
+" scale talker 6 hey 10 to 1 from 2 colour ify " when 73 do
+" global scale talker hey 11 to 1 from 2 colour ify " when 74 do
+" scale talker 1 hey 11 to 1 from 2 colour ify " when 74 do
+" scale talker 2 hey 11 to 1 from 2 colour ify " when 74 do
+" scale talker 3 hey 11 to 1 from 2 colour ify " when 74 do
+" scale talker 4 hey 11 to 1 from 2 colour ify " when 74 do
+" scale talker 5 hey 11 to 1 from 2 colour ify " when 74 do
+" scale talker 6 hey 11 to 1 from 2 colour ify " when 74 do
+" global scale talker hey 12 to 1 from 2 colour ify " when 75 do
+" scale talker 1 hey 12 to 1 from 2 colour ify " when 75 do
+" scale talker 2 hey 12 to 1 from 2 colour ify " when 75 do
+" scale talker 3 hey 12 to 1 from 2 colour ify " when 75 do
+" scale talker 4 hey 12 to 1 from 2 colour ify " when 75 do
+" scale talker 5 hey 12 to 1 from 2 colour ify " when 75 do
+" scale talker 6 hey 12 to 1 from 2 colour ify " when 75 do
+" global scale talker hey 13 to 1 from 2 colour ify " when 76 do
+" scale talker 1 hey 13 to 1 from 2 colour ify " when 76 do
+" scale talker 2 hey 13 to 1 from 2 colour ify " when 76 do
+" scale talker 3 hey 13 to 1 from 2 colour ify " when 76 do
+" scale talker 4 hey 13 to 1 from 2 colour ify " when 76 do
+" scale talker 5 hey 13 to 1 from 2 colour ify " when 76 do
+" scale talker 6 hey 13 to 1 from 2 colour ify " when 76 do
+" global scale talker hey 14 to 1 from 2 colour ify " when 77 do
+" scale talker 1 hey 14 to 1 from 2 colour ify " when 77 do
+" scale talker 2 hey 14 to 1 from 2 colour ify " when 77 do
+" scale talker 3 hey 14 to 1 from 2 colour ify " when 77 do
+" scale talker 4 hey 14 to 1 from 2 colour ify " when 77 do
+" scale talker 5 hey 14 to 1 from 2 colour ify " when 77 do
+" scale talker 6 hey 14 to 1 from 2 colour ify " when 77 do
+" global scale talker hey 15 to 1 from 2 colour ify " when 78 do
+" scale talker 1 hey 15 to 1 from 2 colour ify " when 78 do
+" scale talker 2 hey 15 to 1 from 2 colour ify " when 78 do
+" scale talker 3 hey 15 to 1 from 2 colour ify " when 78 do
+" scale talker 4 hey 15 to 1 from 2 colour ify " when 78 do
+" scale talker 5 hey 15 to 1 from 2 colour ify " when 78 do
+" scale talker 6 hey 15 to 1 from 2 colour ify " when 78 do
+" global scale talker hey 16 to 1 from 2 colour ify " when 79 do
+" scale talker 1 hey 16 to 1 from 2 colour ify " when 79 do
+" scale talker 2 hey 16 to 1 from 2 colour ify " when 79 do
+" scale talker 3 hey 16 to 1 from 2 colour ify " when 79 do
+" scale talker 4 hey 16 to 1 from 2 colour ify " when 79 do
+" scale talker 5 hey 16 to 1 from 2 colour ify " when 79 do
+" scale talker 6 hey 16 to 1 from 2 colour ify " when 79 do
+
+# MIDI clock
+
+all join
+midi input to metronome connect
+
+# MIDI talker phrases
+
+empty join midi talker 1 listen interpreter listen 
+" eigenbrowser , midi input hey midi port browse " when 48 do
+empty join midi talker 1 listen metronome listen
+midi clock enable when 49 toggle set
+
+# Create MIDI latency controller
+
+all join
+
+controller create
+it to midi latency controller name ify
+kgroup 1 output 36 to it connect
+
+empty join midi latency controller listen metronome listen 
+midi clock latency with 50 control
+
+# Upgrade Script for ultra scale talkers to contain new MIDI input talkers in Tau Setup 1
+
+empty join ultra scale talker listen interpreter listen
+all phrase cancel
+
+" empty join scale manager hey cancel scale manager hey variable scalev1 choose when activation using scale manager ` empty join scale manager activation scale as scalev1 define global scale talker hey 9 called 1 cancel all kgroup , global scale talker hey all scale to variable scalev1 when 9 called 1 set scale talker 1 hey 9 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev1 when 9 called 1 set scale talker 2 hey 9 called 1 cancel kgroup 2 , scale talker 2 hey scale to variable scalev1 when 9 called 1 set scale talker 3 hey 9 called 1 cancel kgroup 3 , scale talker 3 hey scale to variable scalev1 when 9 called 1 set scale talker 4 hey 9 called 1 cancel kgroup 4 , scale talker 4 hey scale to variable scalev1 when 9 called 1 set scale talker 5 hey 9 called 1 cancel kgroup 5 , scale talker 5 hey scale to variable scalev1 when 9 called 1 set scale talker 6 hey 9 called 1 cancel kgroup 6 , scale talker 6 hey scale to variable scalev1 when 9 called 1 set midi input talker hey 72 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev1 when 72 called 1 set ` do ` scale manager scale browse ` do " when 45 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev2 choose when activation using scale manager ` empty join scale manager activation scale as scalev2 define global scale talker hey 10 called 1 cancel all kgroup , global scale talker hey all scale to variable scalev2 when 10 called 1 set scale talker 1 hey 10 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev2 when 10 called 1 set scale talker 2 hey 10 called 1 cancel kgroup 2 , scale talker 2 hey scale to variable scalev2 when 10 called 1 set scale talker 3 hey 10 called 1 cancel kgroup 3 , scale talker 3 hey scale to variable scalev2 when 10 called 1 set scale talker 4 hey 10 called 1 cancel kgroup 4 , scale talker 4 hey scale to variable scalev2 when 10 called 1 set scale talker 5 hey 10 called 1 cancel kgroup 5 , scale talker 5 hey scale to variable scalev2 when 10 called 1 set scale talker 6 hey 10 called 1 cancel kgroup 6 , scale talker 6 hey scale to variable scalev2 when 10 called 1 set midi input talker hey 73 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev2 when 73 called 1 set ` do ` scale manager scale browse ` do " when 46 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev3 choose when activation using scale manager ` empty join scale manager activation scale as scalev3 define global scale talker hey 11 called 1 cancel all kgroup , global scale talker hey all scale to variable scalev3 when 11 called 1 set scale talker 1 hey 11 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev3 when 11 called 1 set scale talker 2 hey 11 called 1 cancel kgroup 2 , scale talker 2 hey scale to variable scalev3 when 11 called 1 set scale talker 3 hey 11 called 1 cancel kgroup 3 , scale talker 3 hey scale to variable scalev3 when 11 called 1 set scale talker 4 hey 11 called 1 cancel kgroup 4 , scale talker 4 hey scale to variable scalev3 when 11 called 1 set scale talker 5 hey 11 called 1 cancel kgroup 5 , scale talker 5 hey scale to variable scalev3 when 11 called 1 set scale talker 6 hey 11 called 1 cancel kgroup 6 , scale talker 6 hey scale to variable scalev3 when 11 called 1 set midi input talker hey 74 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev3 when 74 called 1 set ` do ` scale manager scale browse ` do " when 47 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev4 choose when activation using scale manager ` empty join scale manager activation scale as scalev4 define global scale talker hey 12 called 1 cancel all kgroup , global scale talker hey all scale to variable scalev4 when 12 called 1 set scale talker 1 hey 12 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev4 when 12 called 1 set scale talker 2 hey 12 called 1 cancel kgroup 2 , scale talker 2 hey scale to variable scalev4 when 12 called 1 set scale talker 3 hey 12 called 1 cancel kgroup 3 , scale talker 3 hey scale to variable scalev4 when 12 called 1 set scale talker 4 hey 12 called 1 cancel kgroup 4 , scale talker 4 hey scale to variable scalev4 when 12 called 1 set scale talker 5 hey 12 called 1 cancel kgroup 5 , scale talker 5 hey scale to variable scalev4 when 12 called 1 set scale talker 6 hey 12 called 1 cancel kgroup 6 , scale talker 6 hey scale to variable scalev4 when 12 called 1 set midi input talker hey 75 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev4 when 75 called 1 set ` do ` scale manager scale browse ` do " when 48 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev5 choose when activation using scale manager ` empty join scale manager activation scale as scalev5 define global scale talker hey 13 called 1 cancel all kgroup , global scale talker hey all scale to variable scalev5 when 13 called 1 set scale talker 1 hey 13 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev5 when 13 called 1 set scale talker 2 hey 13 called 1 cancel kgroup 2 , scale talker 2 hey scale to variable scalev5 when 13 called 1 set scale talker 3 hey 13 called 1 cancel kgroup 3 , scale talker 3 hey scale to variable scalev5 when 13 called 1 set scale talker 4 hey 13 called 1 cancel kgroup 4 , scale talker 4 hey scale to variable scalev5 when 13 called 1 set scale talker 5 hey 13 called 1 cancel kgroup 5 , scale talker 5 hey scale to variable scalev5 when 13 called 1 set scale talker 6 hey 13 called 1 cancel kgroup 6 , scale talker 6 hey scale to variable scalev5 when 13 called 1 set midi input talker hey 76 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev5 when 76 called 1 set ` do ` scale manager scale browse ` do " when 63 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev6 choose when activation using scale manager ` empty join scale manager activation scale as scalev6 define global scale talker hey 14 called 1 cancel all kgroup , global scale talker hey all scale to variable scalev6 when 14 called 1 set scale talker 1 hey 14 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev6 when 14 called 1 set scale talker 2 hey 14 called 1 cancel kgroup 2 , scale talker 2 hey scale to variable scalev6 when 14 called 1 set scale talker 3 hey 14 called 1 cancel kgroup 3 , scale talker 3 hey scale to variable scalev6 when 14 called 1 set scale talker 4 hey 14 called 1 cancel kgroup 4 , scale talker 4 hey scale to variable scalev6 when 14 called 1 set scale talker 5 hey 14 called 1 cancel kgroup 5 , scale talker 5 hey scale to variable scalev6 when 14 called 1 set scale talker 6 hey 14 called 1 cancel kgroup 6 , scale talker 6 hey scale to variable scalev6 when 14 called 1 set midi input talker hey 77 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev6 when 77 called 1 set ` do ` scale manager scale browse ` do " when 64 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev7 choose when activation using scale manager ` empty join scale manager activation scale as scalev7 define global scale talker hey 15 called 1 cancel all kgroup , global scale talker hey all scale to variable scalev7 when 15 called 1 set scale talker 1 hey 15 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev7 when 15 called 1 set scale talker 2 hey 15 called 1 cancel kgroup 2 , scale talker 2 hey scale to variable scalev7 when 15 called 1 set scale talker 3 hey 15 called 1 cancel kgroup 3 , scale talker 3 hey scale to variable scalev7 when 15 called 1 set scale talker 4 hey 15 called 1 cancel kgroup 4 , scale talker 4 hey scale to variable scalev7 when 15 called 1 set scale talker 5 hey 15 called 1 cancel kgroup 5 , scale talker 5 hey scale to variable scalev7 when 15 called 1 set scale talker 6 hey 15 called 1 cancel kgroup 6 , scale talker 6 hey scale to variable scalev7 when 15 called 1 set midi input talker hey 78 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev7 when 78 called 1 set ` do ` scale manager scale browse ` do " when 65 do
+
+" empty join scale manager hey cancel scale manager hey variable scalev8 choose when activation using scale manager ` empty join scale manager activation scale as scalev8 define global scale talker hey 16 called 1 cancel all kgroup , global scale talker hey all scale to variable scalev8 when 16 called 1 set scale talker 1 hey 16 called 1 cancel kgroup 1 , scale talker 1 hey scale to variable scalev8 when 16 called 1 set scale talker 2 hey 16 called 1 cancel kgroup 2 , scale talker 2 hey scale to variable scalev8 when 16 called 1 set scale talker 3 hey 16 called 1 cancel kgroup 3 , scale talker 3 hey scale to variable scalev8 when 16 called 1 set scale talker 4 hey 16 called 1 cancel kgroup 4 , scale talker 4 hey scale to variable scalev8 when 16 called 1 set scale talker 5 hey 16 called 1 cancel kgroup 5 , scale talker 5 hey scale to variable scalev8 when 16 called 1 set scale talker 6 hey 16 called 1 cancel kgroup 6 , scale talker 6 hey scale to variable scalev8 when 16 called 1 set midi input talker hey 79 called 1 cancel all kgroup , midi input talker hey all scale to variable scalev8 when 9 called 1 set ` do ` scale manager scale browse ` do " when 66 do
+
+" ultra scale talker hey 45 to 1 from 3 colour ify " when 45 do 
+" ultra scale talker hey 46 to 1 from 3 colour ify " when 46 do 
+" ultra scale talker hey 47 to 1 from 3 colour ify " when 47 do 
+" ultra scale talker hey 48 to 1 from 3 colour ify " when 48 do 
+" ultra scale talker hey 63 to 1 from 3 colour ify " when 63 do 
+" ultra scale talker hey 64 to 1 from 3 colour ify " when 64 do 
+" ultra scale talker hey 65 to 1 from 3 colour ify " when 65 do 
+" ultra scale talker hey 66 to 1 from 3 colour ify " when 66 do 
+
+all join
+
+# user setup talker Tau
+
+empty join midi input talker listen eigend listen
+user 1 when 12 load
+user 2 when 13 load
+user 3 when 14 load
+user 4 when 15 load
+user 5 when 16 load
+user 6 when 17 load
+user 7 when 18 load
+user 8 when 19 load
+user 9 when 20 load
+user 10 when 21 load
+
+# Create pedal calibration output
+#--------------------------------
+
+all join
+
+kgroup 1 hey
+output 8 create
+talker kgroup 1 hey
+output 22 create
+
+talker create
+it to pedal talker 1 name ify
+
+kgroup 1 output 8 to pedal talker 1 connect
+
+pedal talker 1 listen
+keyboard listen
+
+pedal 1 when 10 minimise
+pedal 2 when 11 minimise
+pedal 1 when 26 maximise
+pedal 2 when 27 maximise
+
+# insert script browser key
+empty join
+pedal talker 1 , interpreter hey " eigenbrowser , interpreter hey script browse " when 1 do
+
+# Add talkers for turning overdub recording mode on or off
+#---------------------------------------------------------
+
+empty join
+talker 1 listen
+sampler 1 recorder listen
+overdub when 14 toggle set
+
+empty join
+talker 2 listen
+sampler 2 recorder listen
+overdub when 14 toggle set
+
+empty join
+talker 3 listen
+sampler 3 recorder listen
+overdub when 14 toggle set
+
+empty join
+talker 4 listen
+sampler 4 recorder listen
+overdub when 14 toggle set
+
+empty join
+talker 5 listen
+audio unit rig 1 recorder listen
+overdub when 14 toggle set
+
+empty join
+talker 6 listen
+audio unit rig 2 recorder listen
+overdub when 14 toggle set
+
+empty join
+talker 7 listen
+audio unit rig 3 recorder listen
+overdub when 14 toggle set
+
+empty join
+talker 8 listen
+audio unit rig 4 recorder listen
+overdub when 14 toggle set
+
+empty join
+talker 9 listen
+cello recorder listen
+overdub when 14 toggle set
+
+empty join
+talker 10 listen
+clarinet recorder listen
+overdub when 14 toggle set
+
+empty join
+talker 11 listen
+synth recorder listen
+overdub when 14 toggle set
+
+empty join
+midi talker 1 listen
+midi rig 1 recorder listen
+overdub when 14 toggle set
+
+empty join
+midi talker 2 listen
+midi rig 2 recorder listen
+overdub when 14 toggle set
+
+empty join
+
+# Connect Belcanto interpreter
+#-----------------------------
+
+empty join
+
+kgroup 99 hey output 72 create
+
+kgroup create
+it to interpreter kgroup name ify
+
+kgroup 99 output 72 to interpreter kgroup connect
+
+interpreter kgroup listen
+k 1 to k 4 add
+k 17 to k 20 add
+k 33 to k 36 add
+k 53 to k 56 add
+output 17 create
+
+empty join
+
+kmapper create
+it to interpreter kmapper name ify
+
+interpreter kmapper listen
+k 5 add
+k 6 add
+k 7 add
+k 8 add
+k 9 add
+k 10 add
+k 11 add
+k 12 add
+k 13 add
+k 14 add
+k 15 add
+k 16 add
+k 1 add
+k 2 add
+k 3 add
+k 4 add
+
+empty join
+
+interpreter kgroup output 17 to interpreter kmapper connect
+
+interpreter kmapper activation output to interpreter activation input connect
+interpreter kmapper roll output to interpreter roll input connect
+interpreter kmapper yaw output to interpreter yaw input connect
+interpreter kmapper pressure output to interpreter pressure input connect
+
+# Set talker kgroups blink to 0
+#------------------------------
+
+talker kgroup 1 hey blink to 0 set
+talker kgroup 2 hey blink to 0 set
+talker kgroup 3 hey blink to 0 set
+talker kgroup 4 hey blink to 0 set
+talker kgroup 5 hey blink to 0 set
+talker kgroup 6 hey blink to 0 set

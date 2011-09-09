@@ -1,0 +1,14 @@
+# Set talker kgroups blink to 0
+#------------------------------
+
+talker kgroup 1 hey blink to 0 set
+talker kgroup 2 hey blink to 0 set
+talker kgroup 3 hey blink to 0 set
+talker kgroup 4 hey blink to 0 set
+talker kgroup 5 hey blink to 0 set
+talker kgroup 6 hey blink to 0 set
+talker kgroup 7 hey blink to 0 set
+talker kgroup 8 hey blink to 0 set
+talker kgroup 9 hey blink to 0 set
+talker kgroup 10 hey blink to 0 set
+talker kgroup 11 hey blink to 0 set

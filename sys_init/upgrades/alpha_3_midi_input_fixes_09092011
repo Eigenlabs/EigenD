@@ -1,0 +1,289 @@
+# Fixes the Alpha 3 MIDI input support
+#-------------------------------------
+
+empty join midi input talker hey all phrase cancel
+
+# Tonic
+
+empty join kgroup 1 listen kgroup 2 listen kgroup 3 listen kgroup 4 listen kgroup 5 listen kgroup 6 listen kgroup 7 listen kgroup 8 listen kgroup 9 listen kgroup 10 listen kgroup 11 listen midi input talker listen midi input listen
+all tonic to notec when 60 set
+all tonic to notecsharp when 61 set
+all tonic to noted when 62 set
+all tonic to notedsharp when 63 set
+all tonic to notee when 64 set
+all tonic to notef when 65 set
+all tonic to notefsharp when 66 set
+all tonic to noteg when 67 set
+all tonic to notegsharp when 68 set
+all tonic to notea when 69 set
+all tonic to noteasharp when 70 set
+all tonic to noteb when 71 set
+
+# Scale
+
+all scale to major when 72 called 1 set
+all scale to harmonic minor when 73 called 1 set
+all scale to melodic minor when 74 called 1 set
+all scale to chromatic when 75 called 1 set
+all scale to blues when 76 called 1 set
+all scale to pentatonic major when 77 called 1 set
+all scale to diminished when 78 called 1 set
+all scale to whole tone when 79 called 1 set
+
+# Metronome
+
+empty join metronome listen midi input talker listen midi input listen
+when 59 toggle start
+
+# Lights
+
+empty join interpreter listen midi input talker listen
+
+" global tonic talker 1 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 1 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 2 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 3 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 4 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 5 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 6 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 7 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 8 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 9 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 10 hey 1 to 1 from 2 colour ify " when 60 do
+" tonic talker 11 hey 1 to 1 from 2 colour ify " when 60 do
+" global tonic talker 1 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 1 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 2 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 3 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 4 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 5 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 6 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 7 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 8 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 9 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 10 hey 2 to 1 from 2 colour ify " when 61 do
+" tonic talker 11 hey 2 to 1 from 2 colour ify " when 61 do
+" global tonic talker 1 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 1 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 2 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 3 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 4 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 5 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 6 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 7 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 8 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 9 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 10 hey 3 to 1 from 2 colour ify " when 62 do
+" tonic talker 11 hey 3 to 1 from 2 colour ify " when 62 do
+" global tonic talker 1 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 1 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 2 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 3 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 4 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 5 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 6 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 7 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 8 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 9 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 10 hey 4 to 1 from 2 colour ify " when 63 do
+" tonic talker 11 hey 4 to 1 from 2 colour ify " when 63 do
+" global tonic talker 1 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 1 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 2 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 3 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 4 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 5 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 6 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 7 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 8 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 9 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 10 hey 5 to 1 from 2 colour ify " when 64 do
+" tonic talker 11 hey 5 to 1 from 2 colour ify " when 64 do
+" global tonic talker 1 hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 3 hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 5 hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 6 hey 6 to 1 from 2 colour ify " when 65 do
+" tonic talker 8 hey 6 to 1 from 2 colour ify " when 65 do
+" global tonic talker 1 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 1 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 2 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 3 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 4 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 5 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 6 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 7 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 8 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 9 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 10 hey 7 to 1 from 2 colour ify " when 66 do
+" tonic talker 11 hey 7 to 1 from 2 colour ify " when 66 do
+" global tonic talker 1 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 1 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 2 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 3 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 4 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 5 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 6 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 7 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 8 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 9 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 10 hey 8 to 1 from 2 colour ify " when 67 do
+" tonic talker 11 hey 8 to 1 from 2 colour ify " when 67 do
+" global tonic talker 1 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 1 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 2 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 3 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 4 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 5 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 6 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 7 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 8 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 9 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 10 hey 9 to 1 from 2 colour ify " when 68 do
+" tonic talker 11 hey 9 to 1 from 2 colour ify " when 68 do
+" global tonic talker 1 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 1 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 2 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 3 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 4 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 5 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 6 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 7 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 8 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 9 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 10 hey 10 to 1 from 2 colour ify " when 69 do
+" tonic talker 11 hey 10 to 1 from 2 colour ify " when 69 do
+" global tonic talker 1 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 1 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 2 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 3 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 4 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 5 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 6 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 7 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 8 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 9 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 10 hey 11 to 1 from 2 colour ify " when 70 do
+" tonic talker 11 hey 11 to 1 from 2 colour ify " when 70 do
+" global tonic talker 1 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 1 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 2 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 3 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 4 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 5 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 6 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 7 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 8 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 9 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 10 hey 12 to 1 from 2 colour ify " when 71 do
+" tonic talker 11 hey 12 to 1 from 2 colour ify " when 71 do
+
+" global scale talker hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 1 hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 2 hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 3 hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 4 hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 5 hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 6 hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 7 hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 8 hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 9 hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 10 hey 13 to 1 from 2 colour ify " when 72 do
+" scale talker 11 hey 13 to 1 from 2 colour ify " when 72 do
+" global scale talker hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 1 hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 2 hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 3 hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 4 hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 5 hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 6 hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 7 hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 8 hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 9 hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 10 hey 14 to 1 from 2 colour ify " when 73 do
+" scale talker 11 hey 14 to 1 from 2 colour ify " when 73 do
+" global scale talker hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 1 hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 2 hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 3 hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 4 hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 5 hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 6 hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 7 hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 8 hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 9 hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 10 hey 15 to 1 from 2 colour ify " when 74 do
+" scale talker 11 hey 15 to 1 from 2 colour ify " when 74 do
+" global scale talker hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 1 hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 2 hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 3 hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 4 hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 5 hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 6 hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 7 hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 8 hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 9 hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 10 hey 16 to 1 from 2 colour ify " when 75 do
+" scale talker 11 hey 16 to 1 from 2 colour ify " when 75 do
+" global scale talker hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 1 hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 2 hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 3 hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 3 hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 5 hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 6 hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 7 hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 8 hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 9 hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 10 hey 17 to 1 from 2 colour ify " when 76 do
+" scale talker 11 hey 17 to 1 from 2 colour ify " when 76 do
+" global scale talker hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 1 hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 2 hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 3 hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 4 hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 5 hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 6 hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 7 hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 8 hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 9 hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 10 hey 18 to 1 from 2 colour ify " when 77 do
+" scale talker 11 hey 18 to 1 from 2 colour ify " when 77 do
+" global scale talker hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 1 hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 2 hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 3 hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 4 hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 5 hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 6 hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 7 hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 8 hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 9 hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 10 hey 19 to 1 from 2 colour ify " when 78 do
+" scale talker 11 hey 19 to 1 from 2 colour ify " when 78 do
+" global scale talker hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 1 hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 2 hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 3 hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 4 hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 5 hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 6 hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 7 hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 8 hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 9 hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 10 hey 20 to 1 from 2 colour ify " when 79 do
+" scale talker 11 hey 20 to 1 from 2 colour ify " when 79 do
+
+# user setup talker
+
+empty join midi input talker listen eigend listen
+user 1 when 12 load
+user 2 when 13 load
+user 3 when 14 load
+user 4 when 15 load
+user 5 when 16 load
+user 6 when 17 load
+user 7 when 18 load
+user 8 when 19 load
+user 9 when 20 load
+user 10 when 21 load

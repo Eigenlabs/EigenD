@@ -1,19 +1,15 @@
 # pico upgrade script
 
-# 1.0.0 -> 1.0.6
+# 1.0.7
 synchronise
 ahdsr 1 damper input un connect
 ahdsr 2 damper input un connect
-ahdsr 3 damper input un connect
 cycler 1 damper output to ahdsr 1 damper input connect
 cycler 2 damper output to ahdsr 2 damper input connect
-cycler 3 damper output to ahdsr 3 damper input connect
 ahdsr 1 damper input to 0.5 set
 ahdsr 2 damper input to 0.5 set
-ahdsr 3 damper input to 0.5 set
 cycler 1 damper pedal input to 0 set
 cycler 2 damper pedal input to 0 set
-cycler 3 damper pedal input to 0 set
 ahdsr 1 release input un connect
 ahdsr 2 release input un connect
 ahdsr 3 release input un connect
@@ -22,8 +18,6 @@ sampler oscillator 2 release to ahdsr 2 release connect
 sampler oscillator 3 release to ahdsr 3 release connect
 cycler 1 hold input un connect
 cycler 2 hold input un connect
-cycler 3 hold input un connect
-shaper create it to shaper 4 name ify
 shaper create it to shaper 5 name ify
 shaper create it to shaper 6 name ify
 synchronise
@@ -31,152 +25,17 @@ recorder 1 auxilliary output 3 to shaper 5 activation input connect
 recorder 1 auxilliary output 3 to shaper 5 pressure input connect
 recorder 2 auxilliary output 3 to shaper 6 activation input connect
 recorder 2 auxilliary output 3 to shaper 6 pressure input connect
-recorder 3 auxilliary output 3 to shaper 4 activation input connect
-recorder 3 auxilliary output 3 to shaper 4 pressure input connect
 cycler 1 damper pedal un connect
 cycler 2 damper pedal un connect
-cycler 3 damper pedal un connect
 shaper 5 pressure output to cycler 1 damper pedal connect
 shaper 6 pressure output to cycler 2 damper pedal connect
-shaper 4 pressure output to cycler 3 damper pedal connect
 shaper 4 compression to 0.4 set
 shaper 5 compression to 0.4 set
 shaper 6 compression to 0.4 set
 cycler 1 hey invert
 cycler 2 hey invert
 cycler 3 hey invert
-recorder 6 auxilliary output 2 to stringer 2 controller input connect
-stringer 1 controller output to scaler 7 controller input connect
-
-#---Create Key change controller---#
-
-talker 2 hey all phrase cancel
-empty join kgroup 1 listen talker 2 listen
-
-tonic to notec when 1 set
-tonic to notecsharp when 2 set
-tonic to noted when 3 set
-tonic to notedsharp when 4 set
-tonic to notee when 9 set
-tonic to notef when 10 set
-tonic to notefsharp when 11 set
-tonic to noteg when 12 set
-tonic to notegsharp when 5 set
-tonic to notea when 6 set
-tonic to noteasharp when 7 set
-tonic to noteb when 8 set
-
-empty join talker 2 listen interpreter listen
-
-1 to 2 colour ify
-2 to 2 colour ify
-3 to 2 colour ify
-4 to 2 colour ify
-5 to 2 colour ify
-6 to 2 colour ify
-7 to 2 colour ify
-8 to 2 colour ify
-9 to 2 colour ify
-10 to 2 colour ify
-11 to 2 colour ify
-12 to 2 colour ify
-
-" talker 2 hey 1 to 1 from 2 colour ify " when 1 do
-" talker 2 hey 2 to 1 from 2 colour ify " when 2 do
-" talker 2 hey 3 to 1 from 2 colour ify " when 3 do
-" talker 2 hey 4 to 1 from 2 colour ify " when 4 do
-" talker 2 hey 5 to 1 from 2 colour ify " when 5 do
-" talker 2 hey 6 to 1 from 2 colour ify " when 6 do
-" talker 2 hey 7 to 1 from 2 colour ify " when 7 do
-" talker 2 hey 8 to 1 from 2 colour ify " when 8 do
-" talker 2 hey 9 to 1 from 2 colour ify " when 9 do
-" talker 2 hey 10 to 1 from 2 colour ify " when 10 do
-" talker 2 hey 11 to 1 from 2 colour ify " when 11 do
-" talker 2 hey 12 to 1 from 2 colour ify " when 12 do
-
-all join
-
-# ----
-
-talker 17 hey all phrase cancel
-empty join talker 17 listen interpreter listen
-
-" empty join scale manager hey cancel scale manager hey variable sm1 choose when activation using scale manager ` empty join scale manager activation scale as sm1 define talker 4 hey 5 called 1 cancel kgroup 1 , talker 4 hey all scale to activation when 5 called 1 set ` do ` scale manager scale browse `  do " when 1 do
-" empty join scale manager hey cancel scale manager hey variable sm2 choose when activation using scale manager ` empty join scale manager activation scale as sm2 define talker 4 hey 6 called 1 cancel kgroup 1 , talker 4 hey all scale to activation when 6 called 1 set ` do ` scale manager scale browse `  do " when 2 do
-" empty join scale manager hey cancel scale manager hey variable sm3 choose when activation using scale manager ` empty join scale manager activation scale as sm3 define talker 4 hey 7 called 1 cancel kgroup 1 , talker 4 hey all scale to activation when 7 called 1 set ` do ` scale manager scale browse `  do " when 3 do
-" empty join scale manager hey cancel scale manager hey variable sm4 choose when activation using scale manager ` empty join scale manager activation scale as sm4 define talker 4 hey 8 called 1 cancel kgroup 1 , talker 4 hey all scale to activation when 8 called 1 set ` do ` scale manager scale browse `  do " when 4 do
-" empty join scale manager hey cancel scale manager hey variable sm9 choose when activation using scale manager ` empty join scale manager activation scale as sm9 define talker 4 hey 13 called 1 cancel kgroup 1 , talker 4 hey all scale to activation when 13 called 1 set ` do ` scale manager scale browse `  do " when 9 do
-" empty join scale manager hey cancel scale manager hey variable sm10 choose when activation using scale manager ` empty join scale manager activation scale as sm10 define talker 4 hey 14 called 1 cancel kgroup 1 , talker 4 hey all scale to activation when 14 called 1 set ` do ` scale manager scale browse `  do " when 10 do
-" empty join scale manager hey cancel scale manager hey variable sm11 choose when activation using scale manager ` empty join scale manager activation scale as sm11 define talker 4 hey 15 called 1 cancel kgroup 1 , talker 4 hey all scale to activation when 15 called 1 set ` do ` scale manager scale browse `  do " when 11 do
-" empty join scale manager hey cancel scale manager hey variable sm12 choose when activation using scale manager ` empty join scale manager activation scale as sm12 define talker 4 hey 16 called 1 cancel kgroup 1 , talker 4 hey all scale to activation when 16 called 1 set ` do ` scale manager scale browse `  do " when 12 do
-
-" talker 17 hey 1 to 1 from 3 colour ify " when 1 do 
-" talker 17 hey 2 to 1 from 3 colour ify " when 2 do 
-" talker 17 hey 3 to 1 from 3 colour ify " when 3 do 
-" talker 17 hey 4 to 1 from 3 colour ify " when 4 do 
-" talker 17 hey 9 to 1 from 3 colour ify " when 9 do 
-" talker 17 hey 10 to 1 from 3 colour ify " when 10 do 
-" talker 17 hey 11 to 1 from 3 colour ify " when 11 do 
-" talker 17 hey 12 to 1 from 3 colour ify " when 12 do 
-
-all join
-
-#kgroup 1 hey output 2 create
-#talker create
-
-#kgroup 1 output 2 to talker 4 connect
-
-talker 4 hey all phrase cancel
-empty join kgroup 1 listen talker 4 listen
-
-major as sm1 define
-harmonic minor as sm2 define
-melodic minor as sm3 define
-chromatic as sm4 define
-blues as sm9 define
-pentatonic major as sm10 define
-diminished as sm11 define
-whole tone as sm12 define
-
-all scale to major when 5 called 1 set
-all scale to harmonic minor called 1 when 6 set
-all scale to melodic minor called 1 when 7 set
-all scale to chromatic called 1 when 8 set
-all scale to blues called 1 when 13 set
-all scale to pentatonic major called 1 when 14 set
-all scale to diminished called 1 when 15 set
-all scale to whole tone called 1 when 16 set
-
-5 to 2 colour ify
-6 to 2 colour ify
-7 to 2 colour ify
-8 to 2 colour ify
-13 to 2 colour ify
-14 to 2 colour ify
-15 to 2 colour ify
-16 to 2 colour ify
-
-empty join interpreter listen talker 4 listen
-
-" talker 4 hey 5 to 1 from 2 colour ify " when 5 called 100 do
-" talker 4 hey 6 to 1 from 2 colour ify " when 6 called 100 do
-" talker 4 hey 7 to 1 from 2 colour ify " when 7 called 100 do
-" talker 4 hey 8 to 1 from 2 colour ify " when 8 called 100 do
-" talker 4 hey 13 to 1 from 2 colour ify " when 13 called 100 do
-" talker 4 hey 14 to 1 from 2 colour ify " when 14 called 100 do
-" talker 4 hey 15 to 1 from 2 colour ify " when 15 called 100 do
-" talker 4 hey 16 to 1 from 2 colour ify " when 16 called 100 do
-
-all join
-
-# Kgroup octave upgrade
-
-all join
-talker 6 hey all phrase cancel
-
-empty join talker 6 listen kgroup 1 listen
-octave when 1 up
-octave when 2 down
+talker 21 un create
 
 
 # v2 cello upgrade
@@ -198,7 +57,7 @@ convolver mix to 0.57 set
 # au effect send (reverb)
 console mixer hey channel 5 ultra 1 send to 90 set
 
-empty join talker 8 , interpreter hey \" interpreter script browse \" when 16 do
+#empty join talker 8 , interpreter hey " interpreter script browse " when 16 do
 
 # bar beat input to AU, needed for trac ticket #2155
 empty join plumber listen
@@ -223,8 +82,6 @@ midi input create
 
 talker create it to midi input talker name ify
 midi input to it connect
-
-
 
 # Tonic
 
@@ -440,4 +297,3 @@ audio unit 11 parameter 6 to absolute strip name ify
 audio unit 12 parameter 6 to absolute strip name ify
 
 #include pico_1_overdub_toggle_06102010
-
