@@ -538,3 +538,5 @@ audio unit rig 4 recorder hey scheduler use
 
 #include alpha_2_pedal_fix_27092010
 #include alpha_2_overdub_toggle_06102010
+#include alpha_midi_overdub_talkers_09092011
+#include alpha_2_talker_kgroups_blink_09092011

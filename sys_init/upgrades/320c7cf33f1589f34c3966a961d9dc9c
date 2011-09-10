@@ -1,0 +1,6 @@
+# Tau upgrade script for 1.1.20-testing
+
+#include g_s_talker_tau_fix_04102010
+
+#include tau_overdub
+#include tau_missing_features_09092011

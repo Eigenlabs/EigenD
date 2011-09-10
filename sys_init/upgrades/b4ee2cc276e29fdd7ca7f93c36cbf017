@@ -58,3 +58,6 @@ headphone send with 13 control
 
 #include alpha_3_pedal_fix_28092010
 #include alpha_2_overdub_toggle_06102010
+#include alpha_midi_overdub_talkers_09092011
+#include alpha_3_talker_kgroups_blink_09092011
+#include alpha_3_midi_input_fixes_09092011
