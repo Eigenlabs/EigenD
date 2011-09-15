@@ -540,7 +540,7 @@ namespace
             return;
 
         // pitch bending - a continuous stream of these MIDI packets is sent
-        if(can_pitchbend && std::fabs(n-note_pitch_) > 1e-5)
+        if(can_pitchbend)
         {
             float pb = (1.f+(n-note_pitch_))/2.f;
             pb = std::max(0.f,pb);
