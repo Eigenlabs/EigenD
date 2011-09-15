@@ -31,6 +31,7 @@ alpha 2             | 1.1.21-testing          | 7fe01cb16188aedf0416454f4f57c876
 alpha 2             | 1.2.6-testing           | 98a0ee8ee1ca5e8821ff49b1a4a66d0d
 alpha 2             | 1.3.17-testing          | a6373e0afa1a079bb27d599744d3d828
 alpha 2             | 1.3.20-testing          | c43710fc8d95136a9273c446a01000de
+alpha 2             | 1.3.28-testing          | 7a93a865a7e5a762ce6780e68434027c
                     |                         |
 ---------------------------------------------------------------------------------
                     |                         |
@@ -42,6 +43,7 @@ alpha 3             | 1.1.21-testing          | 92a97dbfd280757d050bcbbf983e93f2
 alpha 3             | 1.2.6-testing           | b8132492e50b82457c00e023b0bba7cd
 alpha 3             | 1.3.17-testing          | 6e9edcb43c7cfead6af5ba9224bec72a
 alpha 3             | 1.3.20-testing          | 81265eacbdae39850b875ecb9673c815
+alpha 3             | 1.3.28-testing          | 20f295fcc6b94c7da660ab8799d973a6
                     |                         |
 ---------------------------------------------------------------------------------
                     |                         |
