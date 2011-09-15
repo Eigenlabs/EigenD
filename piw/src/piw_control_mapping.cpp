@@ -137,7 +137,8 @@ namespace piw
                 float minimum_decimation = 0.f;
                 bool send_notes = true;
                 bool send_pitchbend = true;
-                if(t2.arity() == 3 &&
+                bool send_hires_velocity = false;
+                if(t2.arity() >= 3 &&
                     t2.arg(0).value().type()==BCTVTYPE_FLOAT && 
                     t2.arg(1).value().type()==BCTVTYPE_BOOL && 
                     t2.arg(2).value().type()==BCTVTYPE_BOOL)
@@ -145,9 +146,15 @@ namespace piw
                     minimum_decimation = t2.arg(0).value().as_float();
                     send_notes = t2.arg(1).value().as_bool();
                     send_pitchbend = t2.arg(2).value().as_bool();
+
+                    if(t2.arity() >= 4 &&
+                        t2.arg(3).value().type()==BCTVTYPE_BOOL)
+                    {
+                        send_hires_velocity = t2.arg(3).value().as_bool();
+                    }
                 }
 
-                mapping_.alternate().settings_ = global_settings_t(minimum_decimation, send_notes, send_pitchbend);
+                mapping_.alternate().settings_ = global_settings_t(minimum_decimation, send_notes, send_pitchbend, send_hires_velocity);
             }
             else
             {
@@ -291,10 +298,11 @@ namespace piw
         }
 
         {
-            piw::term_t t2("s",3);
+            piw::term_t t2("s",4);
             t2.set_arg(0,piw::makefloat(mg.value().settings_.minimum_decimation_));
             t2.set_arg(1,piw::makebool(mg.value().settings_.send_notes_));
             t2.set_arg(2,piw::makebool(mg.value().settings_.send_pitchbend_));
+            t2.set_arg(3,piw::makebool(mg.value().settings_.send_hires_velocity_));
             t.set_arg(i,t2);
             ++i;
         }

@@ -81,6 +81,7 @@ namespace piw
         void set_minimum_decimation(float);
         void set_midi_notes(bool);
         void set_midi_pitchbend(bool);
+        void set_midi_hires_velocity(bool);
 
         void remove_upstream_clock(bct_clocksink_t *);
         void add_upstream_clock(bct_clocksink_t *);
@@ -416,6 +417,7 @@ namespace piw
     {
         midi_from_belcanto_.set_send_notes(settings.send_notes_);
         midi_from_belcanto_.set_send_pitchbend(settings.send_pitchbend_);
+        midi_from_belcanto_.set_send_hires_velocity(settings.send_hires_velocity_);
         midi_from_belcanto_.set_control_interval(settings.minimum_decimation_);
     }
 
@@ -456,6 +458,13 @@ namespace piw
     {
         piw::global_settings_t settings = mapping_.get_settings();
         settings.send_pitchbend_= enabled;
+        mapping_.change_settings(settings);
+    }
+
+    void midi_converter_t::impl_t::set_midi_hires_velocity(bool enabled)
+    {
+        piw::global_settings_t settings = mapping_.get_settings();
+        settings.send_hires_velocity_= enabled;
         mapping_.change_settings(settings);
     }
 
@@ -574,6 +583,11 @@ namespace piw
     void midi_converter_t::set_midi_pitchbend(bool enabled)
     {
         impl_->set_midi_pitchbend(enabled);
+    }
+
+    void midi_converter_t::set_midi_hires_velocity(bool enabled)
+    {
+        impl_->set_midi_hires_velocity(enabled);
     }
 
     void midi_converter_t::set_midi_channel(unsigned ch)

@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:50:17pm
+  Creation date:  13 Sep 2011 9:44:00pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_B7EB751B__
-#define __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_B7EB751B__
+#ifndef __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_1A20CA6A__
+#define __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_1A20CA6A__
 
 //[Headers]     -- You can add your own extra header files here --
 #include <piw/piw_gui_mapper.h>
@@ -65,6 +65,7 @@ public:
     void comboBoxChanged (ComboBox* comboBoxThatHasChanged);
 
 
+
     //==============================================================================
     juce_UseDebuggingNewOperator
 
@@ -87,6 +88,8 @@ private:
     ComboBox* min_channel;
     Label* max_channel_label;
     ComboBox* max_channel;
+    ToggleButton* midi_hires_velocity;
+
 
     //==============================================================================
     // (prevent copy constructor and operator= being generated..)
@@ -95,4 +98,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_B7EB751B__
+#endif   // __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_1A20CA6A__
