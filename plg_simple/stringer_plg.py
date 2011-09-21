@@ -29,7 +29,7 @@ class Agent(agent.Agent):
 
         agent.Agent.__init__(self, signature=version, names='stringer',protocols='bind set',container=(5,'stringer',atom.VerbContainer(clock_domain=self.domain)),ordinal=ordinal)
         
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='outputs')
         self[1][1] = bundles.Output(1,False,names='activation output', protocols='')
         self[1][2] = bundles.Output(2,False,names='pressure output', protocols='')
         self[1][3] = bundles.Output(3,False,names='roll output', protocols='')
@@ -52,7 +52,7 @@ class Agent(agent.Agent):
         self.ctl_input = bundles.VectorInput(self.cclone.cookie(),self.domain,signals=(1,))
         self.data_input = bundles.VectorInput(self.stringer.data_cookie(),self.domain,signals=(1,2,3,4,6))
 
-        self[4]=atom.Atom()
+        self[4]=atom.Atom(names='inputs')
         self[4][1]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.data_input.merge_policy(1,False),names='activation input',protocols='nostage')
         self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.data_input.vector_policy(2,False),names='pressure input',protocols='nostage')
         self[4][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.data_input.merge_policy(3,False),names='roll input',protocols='nostage')

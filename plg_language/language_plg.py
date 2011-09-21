@@ -96,7 +96,7 @@ class Agent(agent.Agent):
         self.cloner = piw.clone(True)
         self.input = bundles.VectorInput(self.cloner.cookie(),self.domain,signals=(1,2,3,4),filter=piw.last_filter())
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='inputs')
 
         self[1][1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(1,False),names='activation input')
         self[1][2] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(2,False),names='roll input')

@@ -127,7 +127,7 @@ class Agent(agent.Agent):
         # Inputs for generating keyboard driven MIDI signals
         # MIDI controllers are merged down with signals from keys (driven by pressure)
         self.__kinpt = bundles.VectorInput(self.__kvelo.cookie(),self.__domain,signals=(1,2,5))
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='inputs')
         self[2][1] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.vector_policy(1,False),names='pressure input')
         self[2][2] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.merge_nodefault_policy(2,False),names='frequency input')
         self[2][3] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.merge_nodefault_policy(5,False),names='key input')
@@ -136,7 +136,7 @@ class Agent(agent.Agent):
         self[3] = atom.Atom(domain=domain.BoundedInt(0,16),init=0,names="midi channel",policy=atom.default_policy(self.set_midi_channel))
 
         # inputs to control the velocity curve
-        self[4] = atom.Atom()
+        self[4] = atom.Atom(names='velocity curve controls')
         self[4][1] = atom.Atom(domain=domain.BoundedInt(1,1000),init=4,names="velocity sample",policy=atom.default_policy(self.__set_samples))
         self[4][2] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names="velocity curve",policy=atom.default_policy(self.__set_curve))
         self[4][3] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names="velocity scale",policy=atom.default_policy(self.__set_scale))

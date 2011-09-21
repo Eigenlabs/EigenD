@@ -134,7 +134,7 @@ class Connector(atom.Atom):
     controls = dict(updown=UpDown,selector=Selector,trigger=Trigger,toggle=Toggle)
 
     def __init__(self,controller,index,tag):
-        atom.Atom.__init__(self,domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy())
+        atom.Atom.__init__(self,domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),names="connector",ordinal=index)
         self.set_private(node.Server(value=piw.makestring(tag,0),change=self.__change))
 
         self.set_latency(controller.controller.latency)
@@ -241,7 +241,7 @@ class Controller(agent.Agent):
         self.add_verb2(2,'control([],None,role(None,[concrete,singular]),role(with,[numeric]))',callback=self.__controlwith)
         self.add_verb2(3,'control([un],None)',callback=self.__uncontrol)
 
-        self[4] = atom.Atom(creator=self.__create,wrecker=self.__wreck)
+        self[4] = atom.Atom(creator=self.__create,wrecker=self.__wreck,names="connectors")
 
         self[3] = bundles.Output(1,False,names='light output',protocols='revconnect')
         self.lights = bundles.Splitter(self.domain,self[3])
@@ -251,7 +251,7 @@ class Controller(agent.Agent):
         self.clone.set_output(1,self.controller.event_cookie())
         self.input = bundles.VectorInput(self.clone.cookie(),self.domain,signals=(1,2,3,4,5))
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='inputs')
         self[1][2] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input')
         self[1][3] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(3,False),names='roll input')
         self[1][4] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(4,False),names='yaw input')

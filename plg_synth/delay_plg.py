@@ -22,7 +22,7 @@ import sys
 import piw
 import picross
 import synth_native
-from pi import agent,atom,bundles,domain,paths,upgrade,policy,utils,action
+from pi import agent,atom,bundles,domain,paths,upgrade,policy,utils,action,async,collection
 from plg_synth import delay_version as version
 
 class Channel(atom.Atom):
@@ -95,7 +95,7 @@ class Tap(atom.Atom):
         
         self.__agent = agent
         self.__tapno = tapno
-        atom.Atom.__init__(self,ordinal=tapno,names='tap',container=(None,'tap%s'%tapno,agent[8]))
+        atom.Atom.__init__(self,ordinal=tapno,names='tap',container=(None,'tap%s'%tapno,agent[8]),protocols='remove')
         
         self.input = bundles.ScalarInput(agent.aggregator.get_output(tapno), agent.domain, signals=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))
 
@@ -108,11 +108,11 @@ class Tap(atom.Atom):
         self.__agent.aggregator.clear_output(self.__tapno)
 
         
-class TapList(atom.Atom):
+class TapList(collection.Collection):
 
     def __init__(self,agent):
         self.__agent = agent
-        atom.Atom.__init__(self,creator=self.__create_tap,wrecker=self.__wreck_tap,names='taps')
+        collection.Collection.__init__(self,names='taps',creator=self.__create_tap,wrecker=self.__wreck_tap,inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
 
     # create tap, called when rebuilding state
     def __create_tap(self,tapno):
@@ -125,6 +125,23 @@ class TapList(atom.Atom):
     def __wreck_tap(self,tapno,tapatom):
         print "TapList: wreck tap",tapno
         tapatom.destroy_tap()
+
+    def create_tap(self,ordinal=None):
+        o = ordinal or self.find_hole()
+        e = Tap(self.__agent,o,self.__agent.default_tap_time)
+        self[o] = e
+        self.__agent.update()
+        return e
+    
+    @async.coroutine('internal error')
+    def __create_inst(self,ordinal=None):
+        e=self.create_tap(ordinal)
+        yield async.Coroutine.success(e)
+
+    @async.coroutine('internal error')
+    def __wreck_inst(self,key,inst,ordinal):
+        inst.destroy_tap()
+        yield async.Coroutine.success()
 
 
 

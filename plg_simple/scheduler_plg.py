@@ -240,7 +240,7 @@ class Agent(agent.Agent):
         self.scheduler = piw.scheduler(4)
         self.input = bundles.ScalarInput(self.scheduler.cookie(), self.domain,signals=(1,2,3,4,5))
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='inputs')
         self[2][1] = atom.Atom(domain=domain.Aniso(), policy=self.input.policy(1,False), names='running input')
         self[2][2] = atom.Atom(domain=domain.Aniso(), policy=self.input.policy(2,False), names='song time input')
         self[2][3] = atom.Atom(domain=domain.Aniso(), policy=self.input.policy(3,False), names='bar beat input')
