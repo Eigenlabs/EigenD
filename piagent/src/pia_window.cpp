@@ -29,6 +29,11 @@
 #include <picross/pic_mlock.h>
 
 #include <stdlib.h>
+#include <cstring>
+
+#ifdef PI_WINDOWS
+#define strcasecmp stricmp
+#endif
 
 namespace
 {
