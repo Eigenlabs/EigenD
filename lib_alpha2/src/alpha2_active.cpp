@@ -843,7 +843,7 @@ bool alpha2::active_t::impl_t::poll(unsigned long long t)
             if(heartbeat_==500)
             {
                 pic::logmsg() << "input data stopped, keyboard shutting down";
-                handler_->kbd_dead();
+                handler_->kbd_dead(PIPE_NOT_RESPONDING);
                 //stop();
             }
         }
@@ -1091,13 +1091,7 @@ unsigned alpha2::active_t::impl_t::decode_processed(const unsigned short *payloa
 void alpha2::active_t::impl_t::pipe_died(unsigned reason)
 {
     pipe_stopped();
-
-    if(PIPE_NO_BANDWIDTH==reason)
-    {
-        handler_->insufficient_bandwidth();
-    }
-
-    handler_->kbd_dead();
+    handler_->kbd_dead(reason);
 }
 
 void alpha2::active_t::impl_t::pipe_stopped()
@@ -1184,7 +1178,7 @@ void alpha2::active_t::msg_test_start()
     _impl->led_pipe_.write(msg,BCTKBD_TEST_MSGSIZE_START*2);
 }
 
-void alpha2::printer_t::kbd_dead()
+void alpha2::printer_t::kbd_dead(unsigned reason)
 {
     pic::printmsg() << "(dead)";
 }

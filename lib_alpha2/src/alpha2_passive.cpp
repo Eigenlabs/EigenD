@@ -57,7 +57,7 @@ struct alpha2::passive_t::impl_t: public alpha2::active_t::delegate_t
     impl_t(const char *name,unsigned decim);
     bool wait();
     void kbd_raw(unsigned long long t, unsigned k, unsigned c1, unsigned c2, unsigned c3, unsigned c4);
-    void kbd_dead(){ is_kbd_died = true; }
+    void kbd_dead(unsigned reason){ is_kbd_died = true; }
     pic::usbdevice_t device_;
     active_t loop_;
     pic::poller_t poller_;

@@ -31,6 +31,7 @@
 #define PIPE_UNKNOWN_ERROR 1
 #define PIPE_NO_BANDWIDTH 2
 #define PIPE_NOT_RESPONDING 3
+#define PIPE_BAD_DRIVER 4
 
 namespace pic
 {

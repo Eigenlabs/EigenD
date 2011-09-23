@@ -178,7 +178,7 @@ void micro::active_t::impl_t::in_pipe_data(const unsigned char *frame, unsigned 
 void micro::active_t::impl_t::pipe_died(unsigned reason)
 {
     pic::logmsg() << "micro::active pipe died";
-    handler_->kbd_dead();
+    handler_->kbd_dead(reason);
 }
 
 std::string micro::active_t::debug()

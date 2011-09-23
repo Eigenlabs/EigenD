@@ -39,7 +39,7 @@ struct printer_t: public  alpha1::active_t::delegate_t
 {
     printer_t(): count(0) {}
 
-    void kbd_dead()
+    void kbd_dead(unsigned reason)
     {
         printf("keyboard disconnected\n");
         exit(0);

@@ -189,6 +189,8 @@ struct pic::usbdevice_t::impl_t: pic::thread_t, virtual pic::lckobject_t
 	void stop_pipes();
     void detach();
     void thread_main();
+    void thread_init();
+    bool check_version();
     void pipes_died(unsigned reason);
 
     pic::usbdevice_t::power_t *power;
@@ -736,6 +738,36 @@ void pic::usbdevice_t::bulk_out_pipe_t::impl_t::bulk_write(const void *data, uns
 	}
 }
 
+bool pic::usbdevice_t::impl_t::check_version()
+{
+	unsigned long retval = 0;
+    char version[32];
+
+	if (DeviceIoControl(dhandle_,IOCTL_EIGENHARP_GET_VERSION,NULL,0,version,32,&retval,0)==0)
+	{
+        strcpy(version,"1.0.0");
+	}
+
+    unsigned da,db,dc;
+    unsigned ca,cb,cc;
+
+    sscanf(version,"%u.%u.%u",&da,&db,&dc);
+    sscanf(EigenHarp_CurrentVersion(),"%u.%u.%u",&ca,&cb,&cc);
+
+    pic::logmsg() << "Current driver version: " << da << '.' << db << '.' << dc;
+    pic::logmsg() << "Compiled in driver version: " << ca << '.' << cb << '.' << cc;
+
+    if(da<ca) return false;
+    if(da>ca) return true;
+
+    if(db<cb) return false;
+    if(db>cb) return true;
+
+    if(dc<cc) return false;
+
+    return true;
+}
+
 pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface, pic::usbdevice_t *dev): thread_t(PIC_THREAD_PRIORITY_REALTIME), device_(dev), pipe_out_(0), stopping_(false), count_(0)
 {
     InitializeCriticalSectionAndSpinCount(&device_lock_,0x400);
@@ -756,6 +788,7 @@ pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface, pic::usbdevic
     else
     {
         pic::logmsg() << "USB driver is version " << version;
+        pic::logmsg() << "Compiled in driver is version " << EigenHarp_CurrentVersion();
     }
 
 	if (DeviceIoControl(dhandle_,IOCTL_EIGENHARP_GET_SPEED,NULL,0,&speed,sizeof(ULONG),&retval,0)==0)
@@ -943,14 +976,8 @@ void pic::usbdevice_t::impl_t::stop_pipes()
     wait();
 }
 
-void pic::usbdevice_t::impl_t::start_pipes()
+void pic::usbdevice_t::impl_t::thread_init()
 {
-    if(isrunning())
-    {
-        return;
-    }
-
-	stopping_ = false;
 	pic::lcklist_t<usbpipe_in_t *>::lcktype::const_iterator i;
 	
     if(power)
@@ -963,8 +990,29 @@ void pic::usbdevice_t::impl_t::start_pipes()
 		(*i)->start();				
 	}
 	
-    run();
+}
 
+void pic::usbdevice_t::impl_t::start_pipes()
+{
+    if(isrunning())
+    {
+        return;
+    }
+
+    if(!check_version())
+    {
+        stopping_ = true;
+
+        if(power)
+        {
+            power->pipe_died(PIPE_BAD_DRIVER);
+        }
+
+        return;
+    }
+
+	stopping_ = false;
+    run();
 	pic::logmsg() << "pipes started!" ; 
 }
 

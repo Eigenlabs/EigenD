@@ -272,11 +272,7 @@ void alpha1::active_t::impl_t::in_pipe_data(const unsigned char *frame, unsigned
 void alpha1::active_t::impl_t::pipe_died(unsigned reason)
 {
     pipe_stopped();
-    if(PIPE_NO_BANDWIDTH==reason)
-    {
-        handler_->insufficient_bandwidth();
-    }
-    handler_->kbd_dead();
+    handler_->kbd_dead(reason);
 }
 
 void alpha1::active_t::impl_t::pipe_stopped()

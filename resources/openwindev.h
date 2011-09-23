@@ -38,6 +38,7 @@ typedef struct EIGENHARP_USB_VENDOR_MSG
 #endif
 
 OPENWINDEV_DECLSPEC int __cdecl EigenHarp_Enumerate(unsigned short vid, unsigned short pid, void (__cdecl *visitor)(void *,unsigned short,unsigned short,const char *), void *);
+OPENWINDEV_DECLSPEC const char * __cdecl EigenHarp_CurrentVersion(void);
 
 #endif
 

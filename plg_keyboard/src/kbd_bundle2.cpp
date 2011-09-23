@@ -81,6 +81,13 @@
                     "for your Eigenharp to be able to function correctly.\n\n" \
                     "Your instrument or pedals might not be working until you " \
                     "plug your Eigenharp into another USB bus or remove other devices."
+
+#define DRVMSG_KLASS "Out of Date USB Driver"
+#define DRVMSG_TITLE "Out of Date USB Driver"
+#define DRVMSG_MSG   "Your USB Driver is out of date.\n\n" \
+                     "Please download and install the latest USB driver.\n\n" \
+                     "Drivers can be downloaded from\n\n" \
+                     "http://www.eigenlabs.com"
 namespace
 {
     struct ledsink_t: pic::sink_t<void(const piw::data_nb_t &)>
@@ -106,8 +113,7 @@ namespace
         
         keyboard_t( const piw::cookie_t &c,const pic::notify_t &d,const unsigned num_keys);
         virtual ~keyboard_t();   
-        void kbd_dead();
-        void insufficient_bandwidth();
+        void kbd_dead(unsigned reason);
         void shutdown();
         void thing_trigger_slow();
         void kbd_key( unsigned long long t, unsigned key, unsigned p, int r, int y );
@@ -484,16 +490,23 @@ namespace
         tracked_invalidate();
     }
 
-    void keyboard_t::kbd_dead()
+    void keyboard_t::kbd_dead(unsigned reason)
     {
-         active_ = false;
-         trigger_slow();
-    }
+        active_ = false;
 
-    void keyboard_t::insufficient_bandwidth()
-    {
-        pic::logmsg() << "insufficient USB bandwidth";
-        piw::tsd_alert(BWMSG_KLASS,BWMSG_TITLE,BWMSG_MSG);
+        if(reason==PIPE_BAD_DRIVER)
+        {
+            pic::logmsg() << "bad usb driver";
+            piw::tsd_alert(DRVMSG_KLASS,DRVMSG_TITLE,DRVMSG_MSG);
+        }
+
+        if(reason==PIPE_NO_BANDWIDTH)
+        {
+            pic::logmsg() << "insufficient USB bandwidth";
+            piw::tsd_alert(BWMSG_KLASS,BWMSG_TITLE,BWMSG_MSG);
+        }
+
+        trigger_slow();
     }
 
     void keyboard_t::set_midi_sink(void (*cb)(void *,const unsigned char *,unsigned),void *ctx)

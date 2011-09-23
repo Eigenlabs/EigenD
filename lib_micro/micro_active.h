@@ -39,7 +39,7 @@ namespace micro
             struct delegate_t
             {
                 virtual ~delegate_t() {}
-                virtual void kbd_dead() {}
+                virtual void kbd_dead(unsigned reason) {}
                 virtual void kbd_raw(bool resync,const rawkbd_t &) {}
                 virtual void kbd_key(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y) {}
                 virtual void kbd_strip(unsigned long long t, unsigned s) {}

@@ -249,11 +249,7 @@ void pico::active_t::impl_t::pipe_died(unsigned reason)
 {
     pic::logmsg() << "pico::active pipe died";
     pipe_stopped();
-    if(PIPE_NO_BANDWIDTH==reason)
-    {
-        handler_->insufficient_bandwidth();
-    }
-    handler_->kbd_dead();
+    handler_->kbd_dead(reason);
 }
 
 void pico::active_t::load_calibration_from_device()
