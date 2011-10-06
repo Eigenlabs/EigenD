@@ -156,6 +156,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     
     bool poll(unsigned long long t);
     void msg_set_led(unsigned key, unsigned colour);
+    void msg_set_led_raw(unsigned key, unsigned colour);
     void msg_send_midi(const unsigned char *data, unsigned len);
     void msg_set_leds();
 
@@ -863,8 +864,9 @@ void alpha2::active_t::impl_t::msg_set_leds()
 
     for(unsigned k=0;k<total_keys();k++)
     {
-        msg_set_led(k,ledstates_[k]);
+        msg_set_led_raw(k,ledstates_[k]);
     }
+    led_pipe_.flush();
 }
 
 void alpha2::active_t::impl_t::msg_send_midi(const unsigned char *data, unsigned len)
@@ -919,6 +921,14 @@ void alpha2::active_t::impl_t::msg_set_led(unsigned key, unsigned colour)
 
     ledstates_[key]=colour&0xff;
 
+    if(kbd_state_ == KBD_STARTED)
+    {
+        msg_set_led_raw(key, colour);
+    }
+}
+
+void alpha2::active_t::impl_t::msg_set_led_raw(unsigned key, unsigned colour)
+{
     bool g = (colour&1)!=0;
     bool r = (colour&2)!=0;
     unsigned char msg[BCTKBD_SETLED_MSGSIZE*2];
@@ -929,14 +939,11 @@ void alpha2::active_t::impl_t::msg_set_led(unsigned key, unsigned colour)
     memset(msg+4,g?0xff:0x00,4);
     memset(msg+8,r?0xff:0x00,4);
 
-    if(kbd_state_ == KBD_STARTED)
+    try
     {
-        try
-        {
-            led_pipe_.write(msg,BCTKBD_SETLED_MSGSIZE*2);
-        }
-        CATCHLOG()
+        led_pipe_.write(msg,BCTKBD_SETLED_MSGSIZE*2);
     }
+    CATCHLOG()
 }
 
 void alpha2::active_t::msg_send_midi(const unsigned char *data, unsigned len)

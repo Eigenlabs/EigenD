@@ -611,11 +611,14 @@ class Atom(node.Server):
     def rpc_remove_relation(self,rel):
         self.del_relation(rel)
 
-    def rpc_clear_relation(self):
+    def rpc_clear_relation(self,rel):
         self.clear_relation(rel)
 
     def rpc_set_relation(self,value):
         self.set_relation(value)
+
+    def rpc_clear_ordinal(self,value):
+        self.clear_ordinal()
 
     def rpc_set_ordinal(self,value):
         self.set_ordinal(int(value))
@@ -625,6 +628,9 @@ class Atom(node.Server):
 
     def set_names(self,value):
         self.set_property_string('name',value)
+
+    def clear_ordinal(self):
+        self.del_property('ordinal')
 
     def set_ordinal(self,ordinal):
         self.set_property_long('ordinal',ordinal)

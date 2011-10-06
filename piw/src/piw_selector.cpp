@@ -251,10 +251,26 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
         pic::flipflop_t<pic::lckmap_t<unsigned,slot_t *>::lcktype>::guard_t g(slots_);
         pic::lckmap_t<unsigned,slot_t *>::lcktype::const_iterator ci;
 
+        bool found = false;
         for(ci=g.value().begin(); ci!=g.value().end(); ++ci)
         {
-            ci->second->state_ = (ci->first==idx);
+            if (ci->first==idx)
+            {
+                found = true;
+                ci->second->state_ = true;
+            }
+            else
+            {
+                ci->second->state_ = false;
+            }
+            ci->second->gate(selecting_);
+            ci->second->change_status(&statusbuffer_,selecting_);
         }
+        if (found)
+        {
+            lightswitch_(piw::makelong_nb(idx+1,piw::tsd_time()));
+        }
+        statusbuffer_.send();
     }
 
     void gate_input(unsigned idx, const piw::data_nb_t &d)
@@ -487,11 +503,10 @@ static int __select(void *i_, void *s_, void *e_)
     if(ci!=g.value().end())
     {
         ci->second->state_ = e;
+        if(e) i->lightswitch_(piw::makelong_nb(ci->first+1,t));
         ci->second->gate(MODE_RUNNING);
         ci->second->change_status(&i->statusbuffer_,i->selecting_);
         i->statusbuffer_.send();
-        if(e)
-            i->lightswitch_(piw::makelong_nb(ci->first+1,t));
     }
 
     return 0;

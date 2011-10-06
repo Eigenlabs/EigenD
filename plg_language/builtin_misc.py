@@ -120,6 +120,8 @@ class Builtins:
             yield interpreter.RpcAdapter(proxy.invoke_rpc('set_names',' '.join(words)))
             if ordinal is not None:
                 yield interpreter.RpcAdapter(proxy.invoke_rpc('set_ordinal',str(ordinal)))
+            else:
+                yield interpreter.RpcAdapter(proxy.invoke_rpc('clear_ordinal',''))
 
         return async.Coroutine(co(),interpreter.rpcerrorhandler)
 
