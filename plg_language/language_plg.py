@@ -18,9 +18,9 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,domain,errors,action,logic,async,index,utils,bundles,resource,paths,node,container,upgrade,timeout
+from pi import agent,atom,domain,errors,action,logic,async,index,utils,bundles,resource,paths,node,container,upgrade,timeout,help_manager
 from pi.logic.shortcuts import *
-from plg_language import interpreter,database,feedback,noun,builtin_misc,builtin_conn,controller,context,variable,script,stage_server,widget,help_manager,deferred
+from plg_language import interpreter,database,feedback,noun,builtin_misc,builtin_conn,controller,context,variable,script,stage_server,widget,deferred
 from plg_language import interpreter_version as version
 
 import piw

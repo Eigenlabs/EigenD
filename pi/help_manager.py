@@ -177,6 +177,7 @@ class HelpManager:
             return None
 
         canonical_agent = canonical_path[0].lower()
+
         agent = get_node(self.__agents,canonical_agent)
 
         if not agent:
