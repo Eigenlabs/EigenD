@@ -57,6 +57,12 @@
                     "Your instrument or pedals might not be working until you " \
                     "plug your Eigenharp into another USB bus or remove other devices."
 
+#define DRVMSG_KLASS "Out of Date USB Driver"
+#define DRVMSG_TITLE "Out of Date USB Driver"
+#define DRVMSG_MSG   "Your USB Driver is out of date.\n\n" \
+                     "Please download and install the latest USB driver.\n\n" \
+                     "Drivers can be downloaded from\n\n" \
+                     "http://www.eigenlabs.com"
 namespace
 {
     struct ledsink_t: pic::sink_t<void(const piw::data_nb_t &)>
@@ -222,15 +228,21 @@ namespace
             tracked_invalidate();
         }
 
-        void kbd_dead()
+        void kbd_dead(unsigned reason)
         {
-            trigger_slow();
-        }
+            if(reason==PIPE_BAD_DRIVER)
+            {
+                pic::logmsg() << "bad usb driver";
+                piw::tsd_alert(DRVMSG_KLASS,DRVMSG_TITLE,DRVMSG_MSG);
+            }
 
-        void insufficient_bandwidth()
-        {
-            pic::logmsg() << "insufficient USB bandwidth";
-            piw::tsd_alert(BWMSG_KLASS,BWMSG_TITLE,BWMSG_MSG);
+            if(reason==PIPE_NO_BANDWIDTH)
+            {
+                pic::logmsg() << "insufficient USB bandwidth";
+                piw::tsd_alert(BWMSG_KLASS,BWMSG_TITLE,BWMSG_MSG);
+            }
+
+            trigger_slow();
         }
 
         void shutdown()

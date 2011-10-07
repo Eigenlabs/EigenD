@@ -302,7 +302,7 @@ namespace
             enqueue_slow(data);
         }
 
-        void kbd_dead()
+        void kbd_dead(unsigned reason)
         {
             trigger_slow();
         }

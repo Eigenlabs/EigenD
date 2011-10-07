@@ -37,8 +37,8 @@ ERASE_CAL_DATA_LEN = 2 #no payload
 FRM_REC_EOF = 1
 FRM_REC_EL = 4 #extended linear address record
 VENDOR_ID = 0x2139
-PRODUCT_ID_BSP = 0x0102
-PRODUCT_ID_PSU = 0x0103
+PRODUCT_ID_BSP = 0x0104
+PRODUCT_ID_PSU = 0x0105
 CAL_ERASE_DELAY = 5 #in seconds
 FLASH_PAGE_DELAY = 0.08 #in seconds 
 

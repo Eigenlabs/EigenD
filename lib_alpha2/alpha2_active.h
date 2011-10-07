@@ -59,14 +59,13 @@ namespace alpha2
             struct delegate_t
             {
                 virtual ~delegate_t() {}
-                virtual void kbd_dead() {}
+                virtual void kbd_dead(unsigned reason) {}
                 virtual void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4) {}
                 virtual void kbd_mic(unsigned char s,unsigned long long t, const float *samples) {}
                 virtual void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) {}
                 virtual void kbd_keydown(unsigned long long t, const unsigned short *bitmap) {}
                 virtual void pedal_down(unsigned long long t, unsigned pedal, unsigned p) {}
                 virtual void midi_data(unsigned long long t, const unsigned char *data, unsigned len) {}
-                virtual void insufficient_bandwidth() {}
             };
 
             inline static unsigned word2key(unsigned word) { return word*16; }
@@ -129,7 +128,7 @@ namespace alpha2
 
     struct ALPHA2_DECLSPEC_CLASS printer_t : active_t::delegate_t
     {
-        void kbd_dead();
+        void kbd_dead(unsigned reason);
         void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4);
         void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y);
         void kbd_keydown(unsigned long long t, const unsigned short *bitmap);

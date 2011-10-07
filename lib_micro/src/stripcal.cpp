@@ -40,7 +40,7 @@ struct reader_t: public  micro::active_t::delegate_t
 {
     reader_t() : thresh(0xffff), min(0xffff), max(0), count(0) {}
 
-    void kbd_dead()
+    void kbd_dead(unsigned reason)
     {
         printf("keyboard disconnected\n");
         fflush(stdout);

@@ -46,7 +46,7 @@ struct printer_t: public  alpha2::active_t::delegate_t
         memset(lights_,0,sizeof(lights_));
     }
 
-    void kbd_dead()
+    void kbd_dead(unsigned reason)
     {
         pic::logmsg() << "kbd disconnected";
         exit(0);

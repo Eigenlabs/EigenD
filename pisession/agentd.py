@@ -72,7 +72,7 @@ def natcmp(a, b):
 
 def probe_alpha():
     f = picross.f_string()
-    mm_bases = picross.enumerate(0x2139,0x0102,f)
+    mm_bases = picross.enumerate(0x2139,0x0104,f)
     em_bases = picross.enumerate(0x2139,0x0002,f)
     legacy_alphas = picross.enumerate(0xbeca,0x0102,f)
     return mm_bases!=0 or em_bases!=0 or legacy_alphas!=0

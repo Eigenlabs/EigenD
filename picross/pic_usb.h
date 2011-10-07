@@ -31,6 +31,7 @@
 #define PIPE_UNKNOWN_ERROR 1
 #define PIPE_NO_BANDWIDTH 2
 #define PIPE_NOT_RESPONDING 3
+#define PIPE_BAD_DRIVER 4
 
 namespace pic
 {
@@ -68,10 +69,6 @@ namespace pic
                 iso_in_pipe_t(unsigned name, unsigned size): name_(name), size_(size), fnum_(0),ftime_(0),history_(0),trigger_(0),frame_check_(true) {}
                 virtual ~iso_in_pipe_t() {}
                 virtual void in_pipe_data(const unsigned char *frame, unsigned size, unsigned long long fnum, unsigned long long htime, unsigned long long ptime) = 0;
-                virtual void pipe_error(unsigned long long fnum, int result) {}
-                virtual void pipe_died(unsigned reason) {}
-                virtual void pipe_started() {}
-                virtual void pipe_stopped() {}
 
                 void enable_frame_check(bool e) { frame_check_ = e; }
 
@@ -95,9 +92,9 @@ namespace pic
             struct PIC_DECLSPEC_CLASS power_t
             {
                 virtual ~power_t() {}
-                virtual void on_suspending() {}
-                virtual void on_waking() {}
                 virtual void pipe_died(unsigned reason) {}
+                virtual void pipe_started() {}
+                virtual void pipe_stopped() {}
             };
 
             struct PIC_DECLSPEC_CLASS iso_out_pipe_t
@@ -127,6 +124,22 @@ namespace pic
                 impl_t *impl_;
             };
 
+            class PIC_DECLSPEC_CLASS iso_out_guard_t: public pic::nocopy_t
+            {
+                public:
+                    iso_out_guard_t(usbdevice_t *device);
+                    ~iso_out_guard_t();
+                    bool isvalid() const { return current_!=0; }
+                    void dirty() { dirty_ = true; }
+                    unsigned char *current() { return current_; }
+                    unsigned char *advance();
+                private:
+                    usbdevice_t::impl_t *impl_;
+                    unsigned char *current_;
+                    void *guard_;
+                    bool dirty_;
+            };
+
         public:
             usbdevice_t(const char *name, unsigned iface);
             const char *name();
@@ -152,21 +165,6 @@ namespace pic
 
             void control_in(unsigned char type, unsigned char request, unsigned short value, unsigned short index, void *data, unsigned len, unsigned timeout=500);
             std::string control_in(unsigned char type, unsigned char request, unsigned short value, unsigned short index, unsigned len);
-
-            class PIC_DECLSPEC_CLASS iso_out_guard_t: public pic::nocopy_t
-            {
-                public:
-                    iso_out_guard_t(usbdevice_t *device);
-                    ~iso_out_guard_t();
-                    bool isvalid() const { return current_!=0; }
-                    unsigned char *current() { return current_; }
-                    // advance pointer to next write frame
-                    unsigned char *advance();
-                private:
-                    usbdevice_t::impl_t *impl_;
-                    unsigned char *current_;
-                    void *guard_;
-            };
 
             impl_t *impl() { return impl_; }
 

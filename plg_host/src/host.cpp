@@ -269,7 +269,7 @@ namespace
     // panel holding content and toolbar components
     struct host_panel_t: juce::Component, juce::ComponentListener
     {
-        host_panel_t(Component *content,host::plugin_instance_t::impl_t *controller, piw::toolbar_delegate_t *delegate):
+        host_panel_t(Component *content, host::plugin_instance_t::impl_t *controller, piw::toolbar_delegate_t *delegate):
             toolbar_(new piw::toolbar_t(delegate)), controller_(controller), content_(content)
         {
             addAndMakeVisible(toolbar_);
@@ -282,7 +282,24 @@ namespace
 
         ~host_panel_t()
         {
-            deleteAllChildren();
+            if(content_)
+            {
+                removeChildComponent(content_);
+                content_->removeComponentListener(this);
+                content_->setVisible(false);
+
+                delete content_;
+                content_ = 0;
+            }
+
+            if(toolbar_)
+            {
+                removeChildComponent(toolbar_);
+                toolbar_->setVisible(false);
+
+                delete toolbar_;
+                toolbar_ = 0;
+            }
         }
 
         void resized();
@@ -651,6 +668,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
     {
         if(window_)
         {
+            window_->setVisible(false);
             main_delegate_.close();
             mapping_delegate_.close();
             bounds_.reset(new juce::Rectangle<int>(window_->getBounds()));
@@ -668,7 +686,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
 
     juce::Rectangle<int> get_bounds()
     {
-        if(is_showing())
+        if(window_ && is_showing())
         {
             return window_->getBounds();
         }
@@ -695,6 +713,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
     {
         if(window_)
         {
+            window_->setVisible(false);
             main_delegate_.close();
             mapping_delegate_.close();
             bounds_.reset(new juce::Rectangle<int>(window_->getBounds()));
@@ -1041,7 +1060,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
 
     void refresh_title()
     {
-        if(is_showing())
+        if(window_ && is_showing())
         {
             juce::String title(title_.c_str());
             if(bypassed_)
@@ -1376,10 +1395,10 @@ host::plugin_instance_t::~plugin_instance_t()
 
 void host_panel_t::resized()
 {
-    toolbar_->setBounds(0,0,getWidth(),32);
-    content_->setBounds(0,32,getWidth(),getHeight()-32);
+    if(toolbar_) toolbar_->setBounds(0,0,getWidth(),32);
+    if(content_) content_->setBounds(0,32,getWidth(),getHeight()-32);
     controller_->update_gui();
-    content_->repaint();
+    if(content_) content_->repaint();
 }
 
 void host_panel_t::componentMovedOrResized(Component &c, bool moved, bool resized)
@@ -1387,10 +1406,10 @@ void host_panel_t::componentMovedOrResized(Component &c, bool moved, bool resize
     if(resized)
     {
         setBounds(0,0,c.getWidth(),c.getHeight()+32);
-        toolbar_->setBounds(0,0,c.getWidth(),32);
-        content_->setBounds(0,32,c.getWidth(),c.getHeight());
+        if(toolbar_) toolbar_->setBounds(0,0,c.getWidth(),32);
+        if(content_) content_->setBounds(0,32,c.getWidth(),c.getHeight());
         controller_->update_gui();
-        content_->repaint();
+        if(content_) content_->repaint();
     }
 }
 

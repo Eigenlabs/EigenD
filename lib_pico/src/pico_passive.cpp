@@ -43,7 +43,7 @@ struct pico::passive_t::impl_t : pico::active_t::delegate_t
 {
     impl_t(const char *name, unsigned decim);
     void kbd_raw(bool resync,const pico::active_t::rawkbd_t &);
-    void kbd_dead();
+    void kbd_dead(unsigned reason);
 
     active_t::rawkbd_t data_;
     active_t loop_;
@@ -59,7 +59,7 @@ struct pico::passive_t::impl_t : pico::active_t::delegate_t
     datalist_t datalist_;
 };
 
-void pico::passive_t::impl_t::kbd_dead()
+void pico::passive_t::impl_t::kbd_dead(unsigned reason)
 {
     is_pipe_died = true;
 

@@ -28,7 +28,7 @@ extern "C" {
 
 #define BCTKBD_USBVENDOR_LEGACY             0xbeca
 #define BCTKBD_USBVENDOR                    0x2139
-#define BCTKBD_USBPRODUCT                   0x0102
+#define BCTKBD_USBPRODUCT                   0x0104
 #define BCTKBD_INTERFACE                    0
 
 #define BCTKBD_MSGTYPE_NULL          1

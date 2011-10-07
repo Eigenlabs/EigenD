@@ -40,36 +40,12 @@ struct pico::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice_t
     void pipe_died(unsigned reason);
     void pipe_started();
     void pipe_stopped();
-    void pipe_error(unsigned long long fnum, int err);
     void start();
     void stop();
     void set_led(unsigned,unsigned);
 
     static void decode_cooked(void *ctx,unsigned long long ts,int tp, int id,unsigned a,unsigned p,int r,int y);
     static void decode_raw(void *ctx,int resync,const pico_rawkbd_t *);
-
-    void on_suspending()
-    {
-        printf("keyboard suspending\n");
-    }
-
-    void on_waking()
-    {
-        try
-        {
-            pic::logmsg() << "keyboard waking";
-            control_out(TYPE_VENDOR,BCTPICO_USBCOMMAND_START,0,0,0,0);
-            pic::logmsg() << "restoring led mask:" << ledmask_;
-            pic_microsleep(5000);
-            control(TYPE_VENDOR,BCTPICO_USBCOMMAND_SETMODELED,ledmask_,0);
-            resync_=true;
-        }
-        catch(...)
-        {
-            pic::logmsg() << "device startup failed";
-            pipe_died(PIPE_UNKNOWN_ERROR);
-        }
-    }
 
     pico::active_t::delegate_t *handler_;
     bool raw_;
@@ -144,7 +120,7 @@ void pico::active_t::impl_t::pipe_started()
     control_out(TYPE_VENDOR,BCTPICO_USBCOMMAND_START,0,0,0,0);
     pic::logmsg() << "restoring led mask:" << ledmask_;
     pic_microsleep(5000);
-    //control(TYPE_VENDOR,BCTPICO_USBCOMMAND_SETMODELED,ledmask_,0);
+    control(TYPE_VENDOR,BCTPICO_USBCOMMAND_SETMODELED,ledmask_,0);
 }
 
 void pico::active_t::impl_t::stop()
@@ -186,7 +162,14 @@ void pico::active_t::stop()
 
 bool pico::active_t::poll(unsigned long long t)
 {
-    return _impl->poll_pipe(t);
+    bool skipped = _impl->poll_pipe(t);
+
+    if(skipped)
+    {
+        _impl->resync_ = true;
+    }
+
+    return skipped;
 }
 
 const char *pico::active_t::get_name()
@@ -262,21 +245,11 @@ void pico::active_t::impl_t::in_pipe_data(const unsigned char *frame, unsigned l
     resync_=false;
 }
 
-void pico::active_t::impl_t::pipe_error(unsigned long long fnum, int err)
-{
-    pic::msg() << "usb error in frame " << fnum << " err=" << std::hex << err << pic::log;
-    resync_ = true;
-}
-
 void pico::active_t::impl_t::pipe_died(unsigned reason)
 {
     pic::logmsg() << "pico::active pipe died";
     pipe_stopped();
-    if(PIPE_NO_BANDWIDTH==reason)
-    {
-        handler_->insufficient_bandwidth();
-    }
-    handler_->kbd_dead();
+    handler_->kbd_dead(reason);
 }
 
 void pico::active_t::load_calibration_from_device()

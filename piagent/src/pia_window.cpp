@@ -29,6 +29,11 @@
 #include <picross/pic_mlock.h>
 
 #include <stdlib.h>
+#include <cstring>
+
+#ifdef PI_WINDOWS
+#define strcasecmp stricmp
+#endif
 
 namespace
 {
@@ -46,23 +51,12 @@ namespace
 
         void detach(int);
         void close();
-        void title(const pia_data_t &);
+        void set_title(const pia_data_t &);
         void state(bool);
+        bool before(wnode_t *w);
 
-        std::string get_title() 
-        {
-            if(title_.type()==BCTVTYPE_STRING)
-            {
-                return title_.asstring();
-            }
-
-            return "";
-        }
-
-        void set_state(bool o)
-        {
-            job_state_.idle(entity_->appq(),state_callback,this,entity_->glue()->allocate_bool(o));
-        }
+        const char *get_title();
+        void set_state(bool o);
 
         bct_window_host_ops_t *host_ops_;
 
@@ -87,9 +81,36 @@ namespace
 struct pia_windowlist_t::impl_t
 {
     impl_t(): count_(0) {}
+
     pic::ilist_t<wnode_t> windows_;
+    void add_window(wnode_t *w);
+
     unsigned count_;
 };
+
+bool wnode_t::before(wnode_t *w)
+{
+    return strcasecmp(get_title(),w->get_title())<0;
+}
+
+void pia_windowlist_t::impl_t::add_window(wnode_t *w)
+{
+    windows_.remove(w);
+    wnode_t *i = windows_.head();
+
+    while(i)
+    {
+        if(w->before(i))
+        {
+            windows_.insert(w,i);
+            return;
+        }
+
+        i = windows_.next(i);
+    }
+
+    windows_.append(w);
+}
 
 void wnode_t::state_callback(void *t_, const pia_data_t & d)
 {
@@ -101,6 +122,21 @@ void wnode_t::close_callback(void *t_, const pia_data_t & d)
 {
     wnode_t *t = (wnode_t *)t_;
     bct_window_plug_closed(t->window_,t->entity_->api());
+}
+
+const char *wnode_t::get_title() 
+{
+    if(title_.type()==BCTVTYPE_STRING)
+    {
+        return title_.asstring();
+    }
+
+    return "";
+}
+
+void wnode_t::set_state(bool o)
+{
+    job_state_.idle(entity_->appq(),state_callback,this,entity_->glue()->allocate_bool(o));
 }
 
 void wnode_t::detach(int e)
@@ -156,9 +192,10 @@ void wnode_t::state(bool open)
     entity_->glue()->winch("");
 }
 
-void wnode_t::title(const pia_data_t &t)
+void wnode_t::set_title(const pia_data_t &t)
 {
     title_=t;
+    list_->add_window(this);
     entity_->glue()->winch("");
 }
 
@@ -183,7 +220,7 @@ void wnode_t::api_window_title(bct_window_host_ops_t **t_, const char *ti)
     {
         pia_mainguard_t guard(t->entity_->glue());
         pia_data_t tid = t->entity_->glue()->allocate_string(ti,strlen(ti));
-        t->title(tid);
+        t->set_title(tid);
     }
     PIA_CATCHLOG_EREF(t->entity_)
 }
@@ -286,8 +323,9 @@ wnode_t::wnode_t(pia_windowlist_t::impl_t *tl,const pia_ctx_t &e, bct_window_t *
     window_->host_ops=&host_ops_;
     window_->plg_state = PLG_STATE_OPENED;
 
-    list_->windows_.append(this);
+    list_->add_window(this);
     list_->count_++;
+
     state_=false;
 }
 
