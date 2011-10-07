@@ -20,22 +20,18 @@
 
 Import('env')
 
-import os,glob
+#
+# Compile this directory's python files into a python package,
+# and arrange for installation.  Python modules go into tmp/modules
+# in compiled form.  
+#
 
-lo_dirs = Split("lo .")
+env.PiPythonPackage('0.0',natives=Split('osc_plg_native'),package='eigend')
 
-lo_files = Split("""
-    send.c address.c message.c server.c blob.c			
-    method.c bundle.c pattern_match.c timetag.c
-""")
+#
+# Install the agent contained in the plg_osc module, where the main is
+# located in plg_osc.output_plg.  Automatically create the python file
+# osc_output_version containing version information.
+#
 
-lo_env = env.Clone()
-lo_env.Append(CPPPATH=lo_dirs)
-
-if env['IS_WINDOWS']:
-    lo_files=lo_files+Split('liblo.def')
-    lo_env.Append(LINKFLAGS=' WS2_32.Lib ')
-
-lo_env.PiSharedLibrary('pilo',lo_files,package='eigend',hidden=False)
-#lo_env.PiProgram('oscsend','oscsend.c',libraries=Split('pilo'))
-#lo_env.PiProgram('oscdump','oscdump.c',libraries=Split('pilo'))
+env.PiAgent('osc_output','plg_osc.osc_output_plg','plg_osc:0.0',cversion='1.0.0',package='eigend')

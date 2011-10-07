@@ -77,13 +77,13 @@
 #define PACKAGE_TARNAME "liblo"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION /*VERSION*/
+#define PACKAGE_VERSION "0.26"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION /*VERSION*/
+#define VERSION "0.26"
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */

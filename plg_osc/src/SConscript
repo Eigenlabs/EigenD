@@ -20,22 +20,13 @@
 
 Import('env')
 
-import os,glob
+#
+# Build a shared library called osc_plg.
+#
+env.PiSharedLibrary('osc_plg',Split('osc_output.cpp osc_transport.cpp'),libraries=Split('pic piw pie pia pilo'),package='eigend')
 
-lo_dirs = Split("lo .")
-
-lo_files = Split("""
-    send.c address.c message.c server.c blob.c			
-    method.c bundle.c pattern_match.c timetag.c
-""")
-
-lo_env = env.Clone()
-lo_env.Append(CPPPATH=lo_dirs)
-
-if env['IS_WINDOWS']:
-    lo_files=lo_files+Split('liblo.def')
-    lo_env.Append(LINKFLAGS=' WS2_32.Lib ')
-
-lo_env.PiSharedLibrary('pilo',lo_files,package='eigend',hidden=False)
-#lo_env.PiProgram('oscsend','oscsend.c',libraries=Split('pilo'))
-#lo_env.PiProgram('oscdump','oscdump.c',libraries=Split('pilo'))
+#
+# Build a python native module as described by osc_plg.pip, called osc_plg_native.  Link it against
+# our new shared library and other base libraries
+#
+env.PiPipBinding('osc_plg_native','osc_plg.pip',libraries=Split('osc_plg pic piw pie'),package='eigend')

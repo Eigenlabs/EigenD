@@ -1,0 +1,270 @@
+
+
+Infrastructure
+--------------
+
+    tools
+
+        The scons build system.
+
+    tmp
+
+        Build products.
+
+        The system will run directly from this directory 
+        after a build.
+
+    bld.cmd
+
+        Windows wrapper for calling scons.
+
+        bld.cmd will build a runnable system in tmp.
+        bld.cmd target-mpkg will build installers in tmp/pkg
+
+        executables are in tmp/bin.  GUI executables are
+        built as both GUI subsystem executables (ie, eigend)
+        and Console subsystem versions (ie, eigend_con)
+
+    Makefile
+
+        MacOS/Linux wrapper for calling scons.
+
+        make will build a runnable system in tmp.
+        make mpkg will build installers
+
+        GUI apps are built in tmp/app, command line executables
+        in tmp/bin.
+
+    SConscript.first
+
+        Top level Scons file defining basic release information.
+        tools/SConstruct is the root build file, discovering and
+        executing all SConscript/SConscript.first files from the
+        tree.
+
+
+Fundamental Libraries and Tools
+-------------------------------
+
+    app_pip
+
+        Simple Python wrapper generator that converts pip files
+        into standalone .cpp files which implement a python wrapper.
+
+    picross
+
+        Cross platform abstractions and fundamental utility
+        classes.
+
+        No dependencies.
+
+    piembedded
+
+        Some basic message handling stuff which was written for
+        use in the kernel and on DSP's
+
+        Does depend on picross.
+
+    lib_alpha1
+
+        Basic abstractions for handling an alpha version 1 (an 
+        early non production version)
+
+        Plus a few test and utility programs.
+
+        Depends on picross only.
+
+    lib_alpha2
+
+        Basic abstractions for handling alpha version 2 (Production
+        versions) and Tau's.
+
+        Plus a few test and utility programs.
+
+        Depends on picross only.
+
+    lib_micro
+
+        Basic abstractions for handling Micro's (an early version of
+        pico)
+
+        Plus a few test and utility programs.
+
+        Depends on picross only.
+
+    lib_pico
+
+        Basic abstractions for handling Pico's
+
+        Plus a few test and utility programs.
+
+        Depends on picross only.
+
+    lib_fftw
+
+        The MIT fftw library.  
+
+        The build depends on picross, but only for the pic_config
+        header to choose the correct build configuration.
+
+    lib_juce
+
+
+        The JUCE toolkit, built as a DLL.
+
+    lib_lo
+
+        The liblo OSC library.
+
+        The build depends on picross, but only for the pic_config
+        header to choose the correct build configuration.
+
+    lib_samplerate
+
+        the SRC sample rate conversion library.
+
+        The build depends on picross, but only for the pic_config
+        header to choose the correct build configuration.
+
+
+High Level Libraries
+--------------------
+
+    pibelcanto
+
+        some basic protocol level constants, the C api used by agents,
+        and the current language lexicon.
+
+    piw
+
+        Wraps the agent side of the agent API in C++, and implements
+        many C++ utility classes for dealing with data flow and
+        agent ports.
+
+        via piw.pip, provides python wrappers for many of these
+        utilities.
+
+        Depends on all the low level libraries, and pibelcanto.
+
+        Much of the code in here makes the assumption that it is running
+        inside EigenD.
+
+        Also depends on juce (which is a problem)
+
+    piagent
+
+        Library which forms the core of EigenD.  Implements the
+        host side API used in agents (from pibelcanto)
+
+        Depends on all the low level libraries, and pibelcanto.
+
+    pi
+
+        More high level agent oriented utility functions
+
+    pigui
+
+        Some utilities for writing python wx.  
+
+    pisession
+
+        Utilities for writing standalone programs embedding piagent, and
+        EigenD's setup upgrade logic.
+
+
+Agents
+------
+
+    plg_arranger
+
+        The Arranger
+
+    plg_clock
+
+        Old Metronome Agent, not used any more.
+
+    plg_convolver
+
+        Convolver agent, used by the cello.
+
+    plg_host
+
+        AU/VST hosting
+
+    plg_keyboard
+
+        Alpha and Tau agents
+
+    plg_language
+
+        Interpreter Agent
+
+    plg_loop
+
+        Drummer, Metronome, Clicker
+
+    plg_macosx
+
+        Mac and Windows audio
+
+    plg_midi
+
+        Midi input, output, and conversion
+
+    plg_osc
+
+        OSC example agent
+
+    plg_pkbd
+
+        Pico agent.
+
+    plg_recorder
+
+        Recorder agent.
+
+    plg_sampler2
+
+        Sampler agent.
+
+    plg_simple
+
+        Agents that consist of only 1 file and rely entirely on
+        facilities in pi/piw.
+
+    plg_stk
+
+        Stk (Synthesis toolkit) based agents; Cello and Clarinet.
+
+    plg_synth
+
+        Modular synthesis agents (oscillators and envelope generators)
+
+    plg_ukbd
+
+        Micro keyboard agent.
+
+    resources
+
+        Non free resource files and dll's.
+
+    sys_init
+
+        Release related stuff.
+
+    app_browser2
+
+        The (Python/Wx) based Browser
+
+    app_cmdline
+
+        Command line utility programs.
+
+    app_commander
+
+        The (Python/Wx) based Commander
+
+    app_eigend2
+
+        The eigend GUI
+
