@@ -240,6 +240,7 @@ def event_invoker(interp,mode,mode_args,vlist,text,build_result):
     status_returns = []
 
     for (verb,verb_args) in vlist:
+        print '>>>>>> verb',verb,verb_args,type(verb)
         result0 = verb.defer(interp, trigger, None, *verb_args)
         result2 = async.Deferred()
         result3 = async.Deferred()

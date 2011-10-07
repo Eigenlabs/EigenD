@@ -77,7 +77,7 @@ class List(atom.Atom):
         self.add_verb2(20,'set([un],~a,role(None,[matches([midi,notes])]))',callback=self.__unset_notes)
         self.add_verb2(21,'set([],~a,role(None,[matches([midi,pitch,bend])]))',callback=self.__set_pitchbend)
         self.add_verb2(22,'set([un],~a,role(None,[matches([midi,pitch,bend])]))',callback=self.__unset_pitchbend)
-        for i in range(1,17):
+        for i in range(1,33):
             self[i] = Parameter(i,delegate,clockdomain)
 
     def __map_legacy(self,a,fr,fo,to):

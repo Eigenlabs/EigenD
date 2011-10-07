@@ -900,7 +900,7 @@ namespace piw
 
         table_header_->getHeader().addColumn(juce::String::empty,1,110,110,500,juce::TableHeaderComponent::visible);
 
-        for(unsigned i=1; i<17; ++i)
+        for(unsigned i=1; i<=32; ++i)
         {
             juce::String name(mapping_functors_.get_name_(i).c_str());
             table_mapping_->getHeader().addColumn(name,i,std::max(80,font_.getStringWidth(name)+20),80,200,juce::TableHeaderComponent::visible|juce::TableHeaderComponent::resizable);

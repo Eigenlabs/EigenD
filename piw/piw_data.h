@@ -407,6 +407,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(data_t) pathappend_chaff_ex(unsigned nb, const data_t &d, unsigned p);
     PIW_DECLSPEC_FUNC(data_t) pathtruncate_ex(unsigned nb, const data_t &d);
     PIW_DECLSPEC_FUNC(data_t) pathpretruncate_ex(unsigned nb, const data_t &d);
+    PIW_DECLSPEC_FUNC(data_t) pathpretruncate_ex(unsigned nb, const data_t &d,unsigned l);
     PIW_DECLSPEC_FUNC(data_t) pathreplacegrist_ex(unsigned nb, const data_t &d, unsigned g);
     PIW_DECLSPEC_FUNC(data_t) pathgristpretruncate_ex(unsigned nb, const data_t &d);
     PIW_DECLSPEC_FUNC(data_t) makeblob_ex(unsigned nb, unsigned long long ts, unsigned size, unsigned char **pdata);
@@ -434,6 +435,7 @@ namespace piw
     inline data_t pathappend_chaff(const data_t &d, unsigned p) { return pathappend_chaff_ex(PIC_ALLOC_NORMAL,d,p); }
     inline data_t pathtruncate(const data_t &d) { return pathtruncate_ex(PIC_ALLOC_NORMAL,d); }
     inline data_t pathpretruncate(const data_t &d) { return pathpretruncate_ex(PIC_ALLOC_NORMAL,d); }
+    inline data_t pathpretruncate(const data_t &d,unsigned l) { return pathpretruncate_ex(PIC_ALLOC_NORMAL,d,l); }
     inline data_t pathgristpretruncate(const data_t &d) { return pathgristpretruncate_ex(PIC_ALLOC_NORMAL,d); }
     inline data_t pathreplacegrist(const data_t &d, unsigned g) { return pathreplacegrist_ex(PIC_ALLOC_NORMAL,d,g); }
     inline data_t dictnull(unsigned long long t) { return dictnull_ex(PIC_ALLOC_NORMAL,t); }
@@ -478,6 +480,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(data_nb_t) pathappend_chaff_nb_ex(unsigned nb, const data_nb_t &d, unsigned p);
     PIW_DECLSPEC_FUNC(data_nb_t) pathtruncate_nb_ex(unsigned nb, const data_nb_t &d);
     PIW_DECLSPEC_FUNC(data_nb_t) pathpretruncate_nb_ex(unsigned nb, const data_nb_t &d);
+    PIW_DECLSPEC_FUNC(data_nb_t) pathpretruncate_nb_ex(unsigned nb, const data_nb_t &d,unsigned l);
     PIW_DECLSPEC_FUNC(data_nb_t) pathreplacegrist_nb_ex(unsigned nb, const data_nb_t &d, unsigned g);
     PIW_DECLSPEC_FUNC(data_nb_t) pathgristpretruncate_nb_ex(unsigned nb, const data_nb_t &d);
     PIW_DECLSPEC_FUNC(data_nb_t) makeblob_nb_ex(unsigned nb, unsigned long long ts, unsigned size, unsigned char **pdata);
@@ -505,6 +508,7 @@ namespace piw
     inline data_nb_t pathappend_chaff_nb(const data_nb_t &d, unsigned p) { return pathappend_chaff_nb_ex(PIC_ALLOC_NB,d,p); }
     inline data_nb_t pathtruncate_nb(const data_nb_t &d) { return pathtruncate_nb_ex(PIC_ALLOC_NB,d); }
     inline data_nb_t pathpretruncate_nb(const data_nb_t &d) { return pathpretruncate_nb_ex(PIC_ALLOC_NB,d); }
+    inline data_nb_t pathpretruncate_nb(const data_nb_t &d,unsigned l) { return pathpretruncate_nb_ex(PIC_ALLOC_NB,d,l); }
     inline data_nb_t pathgristpretruncate_nb(const data_nb_t &d) { return pathgristpretruncate_nb_ex(PIC_ALLOC_NB,d); }
     inline data_nb_t pathreplacegrist_nb(const data_nb_t &d, unsigned g) { return pathreplacegrist_nb_ex(PIC_ALLOC_NB,d,g); }
     inline data_nb_t dictnull_nb(unsigned long long t) { return dictnull_nb_ex(PIC_ALLOC_NB,t); }

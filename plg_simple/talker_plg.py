@@ -225,6 +225,7 @@ class Agent(agent.Agent):
         self.add_verb2(8,'cancel([],None,role(None,[singular,numeric]),role(called,[singular,numeric]))', self.__cancel_verb_called)
         self.add_verb2(5,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]))', self.__color_verb)
         self.add_verb2(6,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]),role(from,[singular,numeric]))', self.__all_color_verb)
+        self.add_mode2(10,'mode([silent],role(when,[singular,numeric]),option(using,[instance(~server)]))', self.__mode_silent, self.__query, self.__cancel_mode, self.__attach_mode)
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
@@ -333,6 +334,17 @@ class Agent(agent.Agent):
         id = self[3][k].event(text)
         self[4].update()
         return logic.render_term((id,('echo',)))
+
+    def __mode_silent(self,text,k,u):
+        k = int(action.abstract_string(k))
+
+        if k not in self[3]:
+            self.__update_lights(k)
+            self[3][k] = Key(self,self.controller,k)
+
+        id = self[3][k].event(text)
+        self[4].update()
+        return logic.render_term((id,()))
 
     def __cancel_mode(self,id):
         for k,v in self[3].iteritems():
