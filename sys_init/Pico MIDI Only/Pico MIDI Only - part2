@@ -1,0 +1,215 @@
+description
+	Creates an Pico setup with one playing keygroup that just sends out MIDI.
+	
+	This script should be ran after the first part is finished.
+
+script
+	empty join
+	
+	# create the required agents
+	kgroup create
+	kgroup create
+	scaler create
+	scale manager create
+	midi converter create
+	midi output create
+	
+	# now that the Pico keyboard should be detected in the meantime
+	# connect it up to the kgroup
+	pico keyboard 1 to kgroup 1 connect
+	
+	# set up the playing keygroup
+	kgroup 1 listen
+	
+	output 1 create
+	output 1 choose
+	
+	# playing keys
+	k 1 add
+	k 2 add
+	k 3 add
+	k 4 add
+	k 10 add
+	k 11 add
+	k 12 add
+	k 13 add
+	k 5 add
+	k 6 add
+	k 7 add
+	k 8 add
+	k 14 add
+	k 15 add
+	k 16 add
+	k 17 add
+	
+	# switches
+	k 19 add
+	k 20 add
+	k 21 add
+	k 22 add
+	
+	empty join
+	
+	# configure the scaler to play chromatic and
+	# set the pitch bend range two semitones
+	scaler 1 hey scale to chromatic set
+	scaler 1 hey k bend range to 2 set
+
+	# connect the agents together
+	kgroup 1 output 1 to scaler 1 connect
+	scaler 1 to midi converter 1 connect
+	midi converter 1 to midi output 1 connect
+	kgroup 1 output 1 roll output to scaler 1 k pitch bend input connect
+	
+	# connect other data streams to parameters for expression
+	scaler 1 pressure output to midi converter 1 parameter 1 connect
+	scaler 1 roll output to midi converter 1 parameter 2 connect
+	scaler 1 yaw output to midi converter 1 parameter 3 connect
+	kgroup 1 output 1 breath output to midi converter 1 parameter 4 connect
+	kgroup 1 output 1 strip position output 1 to midi converter 1 parameter 5 connect
+	kgroup 1 output 1 absolute strip output 1 to midi converter 1 parameter 6 connect
+	scaler 1 pressure output to midi converter 1 parameter 16 connect
+	midi converter 1 parameter 1 to pressure name ify
+	midi converter 1 parameter 2 to roll name ify
+	midi converter 1 parameter 3 to yaw name ify
+	midi converter 1 parameter 4 to breath name ify
+	midi converter 1 parameter 5 to strip position 1 name ify	
+	midi converter 1 parameter 6 to absolute strip 1 name ify
+	midi converter 1 parameter 16 to key position name ify
+	
+	# connect the bottom two keys controls directly to midi converter parameters
+	pico keyboard 1 k 9 pressure output to midi converter 1 parameter 7 connect
+	pico keyboard 1 k 9 roll output to midi converter 1 parameter 8 connect
+	pico keyboard 1 k 9 yaw output to midi converter 1 parameter 9 connect
+	pico keyboard 1 k 18 pressure output to midi converter 1 parameter 10 connect
+	pico keyboard 1 k 18 roll output to midi converter 1 parameter 11 connect
+	pico keyboard 1 k 18 yaw output to midi converter 1 parameter 12 connect
+	midi converter 1 parameter 7 to controller pressure 1 name ify
+	midi converter 1 parameter 8 to controller roll 1 name ify
+	midi converter 1 parameter 9 to controller yaw 1 name ify
+	midi converter 1 parameter 10 to controller pressure 2 name ify
+	midi converter 1 parameter 11 to controller roll 2 name ify
+	midi converter 1 parameter 12 to controller yaw 2 name ify
+	
+	midi converter 1 listen
+	
+	# reduce the MIDI data bandwidth to prevent external hosts to be overwhelmed
+	minimum decimation to 10 set
+	
+	# set up some mappings in the routing matrix
+	parameter 1 for polyphonic aftertouch map
+	parameter 3 for midi 1 map
+	parameter 4 for midi 2 map
+	parameter 5 for midi 16 map
+	parameter 7 for midi 17 map
+	parameter 8 for midi 18 map
+	parameter 9 for midi 19 map
+	parameter 10 for midi 80 map
+	parameter 11 for midi 81 map
+	parameter 12 for midi 82 map
+	
+	# set the MIDI channel to 1
+	midi channel to 1 set
+	
+	empty join
+	
+	# create a talker to change tonics
+	talker create
+	it to tonic talker 1 name ify
+	kgroup 1 output 1 to tonic talker 1 connect
+	
+	scaler 1 listen
+	kgroup 1 listen
+	tonic talker 1 listen
+	
+	scaler 1 tonic when 17 down
+	scaler 1 tonic when 18 up
+	
+	17 to 3 colour ify
+	18 to 3 colour ify
+	
+	empty join
+	
+	# create a talker to change octaves
+	talker create
+	it to octave talker 1 name ify
+	kgroup 1 output 1 to octave talker 1 connect
+	
+	scaler 1 listen
+	kgroup 1 listen
+	octave talker 1 listen
+	
+	scaler 1 octave when 19 down
+	scaler 1 octave when 20 up
+	
+	19 to 3 colour ify
+	20 to 3 colour ify
+	
+	empty join
+	
+	# create a talker to change the scales
+	# it can then be connected up to widgets in Stage
+	talker create
+	it to scale talker 1 name ify
+	
+	scaler 1 listen
+	scale talker 1 listen
+	interpreter listen
+
+	" scale talker 1 hey 1 to 1 from 2 colour ify " when 1 do
+	" scale talker 1 hey 2 to 1 from 2 colour ify " when 2 do
+	" scale talker 1 hey 3 to 1 from 2 colour ify " when 3 do
+	" scale talker 1 hey 4 to 1 from 2 colour ify " when 4 do
+	" scale talker 1 hey 5 to 1 from 2 colour ify " when 5 do
+	" scale talker 1 hey 6 to 1 from 2 colour ify " when 6 do
+	" scale talker 1 hey 7 to 1 from 2 colour ify " when 7 do
+	" scale talker 1 hey 8 to 1 from 2 colour ify " when 8 do
+
+	scaler 1 scale to major when 1 set
+	scaler 1 scale to harmonic minor when 2 set
+	scaler 1 scale to melodic minor when 3 set
+	scaler 1 scale to chromatic when 4 set	
+	scaler 1 scale to blues when 5 set
+	scaler 1 scale to pentatonic major when 6 set
+	scaler 1 scale to diminished when 7 set
+	scaler 1 scale to whole tone when 8 set
+	
+	1 to 2 colour ify
+	2 to 2 colour ify
+	3 to 2 colour ify
+	4 to 1 colour ify
+	5 to 2 colour ify
+	6 to 2 colour ify
+	7 to 2 colour ify
+	8 to 2 colour ify
+	
+	empty join
+	
+	# setup a keygroup to colour the MIDI controller keys	
+	pico keyboard 1 to kgroup 2 connect
+	
+	# set up the controller keygroup
+	kgroup 2 listen	
+	output 1 create
+	output 1 choose
+	k 9 add
+	k 18 add	
+	empty join
+
+	# create a talker to color the controller keys
+	talker create
+	it to controller talker 1 name ify
+	
+	kgroup 2 output 1 to controller talker 1 connect
+	
+	kgroup 2 listen
+	controller talker 1 listen
+	interpreter listen
+	
+	" " when 1 silent do
+	" " when 2 silent do
+	
+	1 to 1 colour ify
+	2 to 1 colour ify
+	
+	empty join	

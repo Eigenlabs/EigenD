@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<tabs about="Eigenlabs Stage Tabs File, release version 1.3.30-stable">
+  <tab name="MIDI" aspectMode="1" widthAspect="4" heightAspect="3">
+    <widget name="MIDI Channel (0 = Poly Mode)" path="/midi_converter_1/midi_channel"
+            address="&lt;210eb1693495/midi_converte&gt;#3" enabled="true"
+            userEnabled="1" type="incDecButtons">
+      <bounds x="1.50437319" y="0.0612244904" width="1.01895046" height="0.516034961"
+              textHeight="0.0874635577" textPosition="top"/>
+      <domain type="bint" min="0" max="16" userMin="0" userStep="1" userMax="16"/>
+    </widget>
+    <widget name="Min. Channel (Poly Mode)" path="/midi_converter_1/minimum_channel"
+            address="&lt;210eb1693495/midi_converte&gt;#7" enabled="true"
+            userEnabled="1" type="incDecButtons">
+      <bounds x="1.13702619" y="0.686588943" width="0.874635577" height="0.406705528"
+              textHeight="0.0830903798" textPosition="top"/>
+      <domain type="bint" min="1" max="16" userMin="1" userStep="1" userMax="16"/>
+    </widget>
+    <widget name="Max. Channel (Poly Mode)" path="/midi_converter_1/maximum_channel"
+            address="&lt;210eb1693495/midi_converte&gt;#8" enabled="true"
+            userEnabled="1" type="incDecButtons">
+      <bounds x="2.01603484" y="0.686588943" width="0.874635577" height="0.406705528"
+              textHeight="0.0830903798" textPosition="top"/>
+      <domain type="bint" min="1" max="16" userMin="1" userStep="1" userMax="16"/>
+    </widget>
+    <widget name="Key Pitch Bend Range" path="/scaler_1/k_bend_range_input"
+            address="&lt;8167f86ae241/scaler&gt;#4.10" enabled="true" userEnabled="1"
+            type="rotaryKnob">
+      <bounds x="0.0918367356" y="0.489795923" width="0.795918345" height="0.747813404"
+              textHeight="0.09375" textPosition="top"/>
+      <domain type="bfloat" min="0" max="72" userMin="0" userStep="0.1" userMax="72"/>
+    </widget>
+    <widget name="Pitch Bend Curve" path="/scaler_1/curve" address="&lt;8167f86ae241/scaler&gt;#4.15"
+            enabled="true" userEnabled="1" type="rotaryKnob">
+      <bounds x="0.0918367356" y="1.26384842" width="0.795918345" height="0.747813404"
+              textHeight="0.09375" textPosition="top"/>
+      <domain type="bint" min="1" max="4" userMin="1" userStep="1" userMax="4"/>
+    </widget>
+    <widget name="Velocity Curve" path="/midi_converter_1/velocity_curve"
+            address="&lt;210eb1693495/midi_converte&gt;#4.2" enabled="true"
+            userEnabled="1" type="rotaryKnob">
+      <bounds x="1.26384842" y="1.26822162" width="0.75" height="0.75" textHeight="0.09375"
+              textPosition="top"/>
+      <domain type="bfloat" min="0.1" max="10" userMin="0.1" userStep="1" userMax="10"/>
+    </widget>
+    <widget name="Velocity Choose Time" path="/midi_converter_1/velocity_sample"
+            address="&lt;210eb1693495/midi_converte&gt;#4.1" enabled="true"
+            userEnabled="1" type="incDecButtons">
+      <bounds x="2.95626807" y="1.63994169" width="0.747813404" height="0.376093298"
+              textHeight="0.0787172019" textPosition="top"/>
+      <domain type="bint" min="1" max="1000" userMin="1" userStep="1" userMax="1000"/>
+    </widget>
+    <widget name="Velocity Scale" path="/midi_converter_1/velocity_scale"
+            address="&lt;210eb1693495/midi_converte&gt;#4.3" enabled="true"
+            userEnabled="1" type="rotaryKnob">
+      <bounds x="2.01166177" y="1.26822162" width="0.75" height="0.75" textHeight="0.09375"
+              textPosition="top"/>
+      <domain type="bfloat" min="0.1" max="10" userMin="0.1" userStep="0.1"
+              userMax="10"/>
+    </widget>
+    <widget name="Octave" path="/scaler_1/octave_input" address="&lt;8167f86ae241/scaler&gt;#4.14"
+            enabled="true" userEnabled="1" type="incDecButtons">
+      <bounds x="0.0918367356" y="2.15160346" width="0.747813404" height="0.502915442"
+              textHeight="0.09375" textPosition="top"/>
+      <domain type="bfloat" min="-1" max="9" userMin="-1" userStep="1" userMax="9"/>
+    </widget>
+    <widget name="Tonic" path="/scaler_1/tonic_input" address="&lt;8167f86ae241/scaler&gt;#4.5"
+            enabled="true" userEnabled="1" type="incDecButtons">
+      <bounds x="0.896501422" y="2.15597677" width="0.747813404" height="0.502915442"
+              textHeight="0.09375" textPosition="top"/>
+      <domain type="bfloat" min="0" max="12" userMin="0" userStep="1" userMax="12"/>
+    </widget>
+    <widget name="Major" path="/scale_talker_1/key_1/activate" address="&lt;f97bfd96ed14/talker&gt;#3.1.250"
+            enabled="true" userEnabled="1" type="triggerButton">
+      <bounds x="1.8542273" y="2.14723039" width="0.507288635" height="0.319241971"
+              textHeight="0.0699708462" textPosition="top"/>
+      <domain type="trigger"/>
+    </widget>
+    <widget name="Harmonic Minor" path="/scale_talker_1/key_2/activate" address="&lt;f97bfd96ed14/talker&gt;#3.2.250"
+            enabled="true" userEnabled="1" type="triggerButton">
+      <bounds x="2.37900877" y="2.14723039" width="0.507288635" height="0.319241971"
+              textHeight="0.0699708462" textPosition="top"/>
+      <domain type="trigger"/>
+    </widget>
+    <widget name="Melodic Minor" path="/scale_talker_1/key_3/activate" address="&lt;f97bfd96ed14/talker&gt;#3.3.250"
+            enabled="true" userEnabled="1" type="triggerButton">
+      <bounds x="2.90379" y="2.14723039" width="0.507288635" height="0.314868808"
+              textHeight="0.0699708462" textPosition="top"/>
+      <domain type="trigger"/>
+    </widget>
+    <widget name="Chromatic" path="/scale_talker_1/key_4/activate" address="&lt;f97bfd96ed14/talker&gt;#3.4.250"
+            enabled="true" userEnabled="1" type="triggerButton">
+      <bounds x="3.42857146" y="2.14723039" width="0.507288635" height="0.314868808"
+              textHeight="0.0699708462" textPosition="top"/>
+      <domain type="trigger"/>
+    </widget>
+    <widget name="Blues" path="/scale_talker_1/key_5/activate" address="&lt;f955d442bbbd/talker&gt;#3.5.250"
+            enabled="true" userEnabled="1" type="triggerButton">
+      <bounds x="1.8542273" y="2.47959185" width="0.507288635" height="0.314868808"
+              textHeight="0.0699708462" textPosition="top"/>
+      <domain type="trigger"/>
+    </widget>
+    <widget name="Pentatonic Major" path="/scale_talker_1/key_6/activate"
+            address="&lt;f955d442bbbd/talker&gt;#3.6.250" enabled="true"
+            userEnabled="1" type="triggerButton">
+      <bounds x="2.37900877" y="2.47959185" width="0.507288635" height="0.314868808"
+              textHeight="0.0699708462" textPosition="top"/>
+      <domain type="trigger"/>
+    </widget>
+    <widget name="Diminished" path="/scale_talker_1/key_7/activate" address="&lt;f955d442bbbd/talker&gt;#3.7.250"
+            enabled="true" userEnabled="1" type="triggerButton">
+      <bounds x="2.90379" y="2.47959185" width="0.507288635" height="0.314868808"
+              textHeight="0.0699708462" textPosition="top"/>
+      <domain type="trigger"/>
+    </widget>
+    <widget name="Whole Tone" path="/scale_talker_1/key_8/activate" address="&lt;f955d442bbbd/talker&gt;#3.8.250"
+            enabled="true" userEnabled="1" type="triggerButton">
+      <bounds x="3.42857146" y="2.47959185" width="0.507288635" height="0.314868808"
+              textHeight="0.0699708462" textPosition="top"/>
+      <domain type="trigger"/>
+    </widget>
+  </tab>
+</tabs>

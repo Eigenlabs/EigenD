@@ -1,0 +1,13 @@
+description
+	Creates an Pico setup with one playing keygroup that just sends out MIDI
+	
+	Run this script first and afterwards run the second part from the
+	other script.
+
+script
+	empty join
+	
+	# create the Pico manager that will detect the instrument
+	# give it enough time to detect the Pico before running the second
+	# part of the script
+	pico manager create

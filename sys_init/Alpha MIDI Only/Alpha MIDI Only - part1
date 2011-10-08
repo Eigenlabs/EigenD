@@ -1,0 +1,14 @@
+description
+	Creates an Alpha setup with two keygroups that just send out MIDI,
+	one for the main keyboard and one for the percussion keys.
+	
+	Run this script first and wait for the green blinking light on the
+	Alpha to disappear. After that run the second part from the other script.
+
+script
+	empty join
+	
+	# create the Alpha manager that will detect the instrument
+	# give it enough time to detect the Alpha before running the second
+	# part of the script
+	alpha manager create
