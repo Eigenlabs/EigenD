@@ -1,6 +1,5 @@
-
 #
-# Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
+# Copyright 2011 Eigenlabs Ltd.  http://www.eigenlabs.com
 #
 # This file is part of EigenD.
 #
@@ -23,10 +22,10 @@ Import('env')
 #
 # Build a shared library called osc_plg.
 #
-env.PiSharedLibrary('osc_plg',Split('osc_output.cpp osc_transport.cpp'),libraries=Split('pic piw pie pia pilo'),package='eigend')
+env.PiSharedLibrary('osc_plg', Split('osc_output.cpp osc_transport.cpp'), libraries=Split('pic piw pie pia pilo'), package='eigend')
 
 #
-# Build a python native module as described by osc_plg.pip, called osc_plg_native.  Link it against
-# our new shared library and other base libraries
+# Build a Python native module as described by osc_plg.pip, called osc_plg_native.
+# Link it against our new shared library and other base libraries
 #
-env.PiPipBinding('osc_plg_native','osc_plg.pip',libraries=Split('osc_plg pic piw pie'),package='eigend')
+env.PiPipBinding('osc_plg_native', 'osc_plg.pip', libraries=Split('osc_plg pic piw pie'), package='eigend')

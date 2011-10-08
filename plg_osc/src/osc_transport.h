@@ -1,4 +1,3 @@
-
 /*
  Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
 
@@ -18,12 +17,15 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __OSC_TRANSPORT__
+#define __OSC_TRANSPORT__
+
 #include <piw/piw_tsd.h>
 #include <vector>
 #include <lib_lo/lo/lo.h>
 
 /*
- Classes for dealing with our OSC abstraction
+  Classes for dealing with our OSC abstraction
  */
 
 namespace osc_plg
@@ -31,7 +33,6 @@ namespace osc_plg
     //
     // Used to keep track of subscribers
     //
-
     struct osc_recipient_t: pic::nocopy_t
     {
             osc_recipient_t(const char *host, const char *port, unsigned long long t);
@@ -44,7 +45,6 @@ namespace osc_plg
     //
     // The OSC server.  Uses a background thread to respond to messages
     //
-
     class osc_thread_t: pic::thread_t
     {
         public:
@@ -91,3 +91,5 @@ namespace osc_plg
             std::vector<osc_recipient_t *> fast_recipients_;
     };
 };
+
+#endif

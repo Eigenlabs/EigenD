@@ -18,8 +18,8 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __REC_PLAYER__
-#define __REC_PLAYER__
+#ifndef __OSC_OUTPUT__
+#define __OSC_OUTPUT__
 
 #include "osc_exports.h"
 
@@ -39,28 +39,28 @@ namespace osc_plg
      See plg_osc/OSC
 
      */
-
     class OSC_PLG_DECLSPEC_CLASS osc_server_t : public pic::nocopy_t // cant copy this
     {
         public:
-            // construct a server with a clock domain, and with an agent name.
-
+            // Construct a server with a clock domain, and with an agent name.
             osc_server_t(piw::clockdomain_ctl_t *, const std::string &agent);
             ~osc_server_t();
 
-            // create an output.  Each output transmits a number of signals
+            // Create an output. Each output transmits a number of signals
             // together in each packet.  (signals 1..signals)
             // fake_key causes the output to fake a key number signal (this
-            // won't be necessary in 2.0+)
+            // won't be necessary in EigenD 2.0+)
+            piw::cookie_t create_output(const std::string &prefix, bool fake_key, unsigned signals);
 
-            piw::cookie_t create_output(const std::string &prefix,bool fake_key,unsigned signals);
-
-            // remove an output.  Any bundle component driving this output
+            // Remove an output.  Any bundle component driving this output
             // will be silently disconnected.
-
             void remove_output(const std::string &prefix);
 
+			// Forward implementation class declaration with the private member variable
+			// is a pattern we use to clearly decouple the public agent interface from the
+			// class declaration of the actual implementation.
             class impl_t;
+            
         private:
             impl_t *impl_;
     };

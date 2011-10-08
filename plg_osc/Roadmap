@@ -49,25 +49,35 @@ Trying the agent out
 Starting from a blank setup, all you need is to create an osc output and a 
 keyboard.
 
-# startup eigend and load the blank setup
-# in another window (or use commander or a script)
-tmp/bin/brpc '<interpreter>' exec osc output create
-tmp/bin/brpc '<interpreter>' exec pico manager create
+Startup EigenD and load the blank setup in another window (or use commander or a script).
+To see verbose output from EigenD, start it with the --stdout argument.
 
-# wait for pico to be detected
-tmp/bin/brpc '<interpreter>' exec pico keyboard 1 to osc output 1 connect
+Then use the EigenD brpc command line to send a remote procedure call to an EigenD agent:
 
-# just for laughs, check the connections
-tmp/bin/brpc '<interpreter>' dump osc output 1
+    tmp/bin/brpc '<interpreter>' exec osc output create
+    tmp/bin/brpc '<interpreter>' exec pico manager create
 
-Then, you need something to send and receive OSC messages.  On a mac, you
+Wait for pico to be detected be looking at the console output of EigenD, then do:
+
+    tmp/bin/brpc '<interpreter>' exec pico keyboard 1 to osc output 1 connect
+
+If no specific outputs are connected to inputs, EigenD will match up similarly named endpoints
+when entire agents are connected to each-other.
+
+Just for laughs, check the connections:
+
+    tmp/bin/brpc '<interpreter>' dump osc output 1
+
+Then, you need something to send and receive OSC messages.  On a Mac, you
 can get liblo from macports or homebrew.
 
-# start a listener on port 5555
-oscdump 5555 & 
+Using liblo, start a listener on port 5555:
 
-# subscribe the listener to the fast data flow.
-oscsend localhost 9999 /register-fast si keyboard_1 5555
+    oscdump 5555 & 
+
+Using liblo, subscribe the listener to the fast data flow.
+
+    oscsend localhost 9999 /register-fast si keyboard_1 5555
 
 Press some keys!
 
@@ -76,17 +86,17 @@ output. (They look the same)
 
 If you want to look at the event output of the keyboard, try this:
 
-tmp/bin/brpc '<interpreter>' identify pico keyboard 1
+    tmp/bin/brpc '<interpreter>' identify pico keyboard 1
 
-# press a key, and while holding it down, (substitute whatever you got from 
-# the identify above
+Press a key, and while holding it down (substitute whatever you got from 
+the identify above):
 
-tmp/bin/bcat2 -idD '<4654aecb6829/1pico_manager>'
+    tmp/bin/bcat2 -idD '<4654aecb6829/1pico_manager>'
 
-# in 2.* these silly names are more human friendly
+In EigenD 2.* these silly names with hashes are more human friendly and predictable.
 
 Background Information
-----------------------
+======================
 
 Agent, Atoms, and Nodes
 -----------------------

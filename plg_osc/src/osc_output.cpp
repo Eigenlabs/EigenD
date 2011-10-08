@@ -25,7 +25,7 @@
 #include <map>
 
 // 
-// Read Roadmap in plg_osc/Roadmap for some background information
+// Read the Roadmap in plg_osc/Roadmap for some background information
 //
 
 namespace
@@ -206,11 +206,11 @@ osc_wire_t::~osc_wire_t()
 //
 // Called when an event starts on this wire. (fast thread)
 //
-// The seq is a sequence number for this event on this wire.  Its used
-// for delaying the end of an event, which this bundle never does.
+// The seq argument is a sequence number for this event on this wire.
+// It's used for delaying the end of an event, which this bundle never does.
 // 
-// id and b are the event id and the buffer containing the queues for
-// the different signals.
+// The arguments id and b are the event id and the buffer containing the queues
+// for the different signals.
 //
 
 void osc_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::xevent_data_buffer_t &b)
@@ -234,20 +234,20 @@ void osc_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::
     // work out the key number
     //
     // In EigenD 1.*, key number is encoded in the event ID.
-    // In 2.*, it's carried as a signal and event IDs have no
+    // In EigenD 2.*, it's carried as a signal and event IDs have no
     // overloaded semantics
     //
-    // in 1.* event IDs have 'grist' and 'chaff' components.
+    // In EigenD 1.* event IDs have 'grist' and 'chaff' components.
     // This is being completely flushed out for 2.0 because
-    // it's completely deranged.
+    // time proved that this was not an efficient nor intuitive approach.
     //
-    // the key number is essentially the last component of the path.
+    // The key number is essentially the last component of the path.
     //
-    // 2.* systems have a key identification signal which carries
-    // physical and logical key identification
+    // EigenD 2.* systems have a key identification signal which carries
+    // physical and logical key identification together.
 
-    unsigned lp=id.as_pathgristlen();
-    const unsigned char *p=id.as_pathgrist();
+    unsigned lp = id.as_pathgristlen();
+    const unsigned char *p = id.as_pathgrist();
 
     if(lp>0)
     {
@@ -265,7 +265,7 @@ void osc_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::
 //
 // Called from the core object on clock tick (fast thread)
 //
-// from and to are the timestamps.  Our duty is to emit all
+// The arguments from and to are the timestamps. Our duty is to emit all
 // data up to and including 'to'
 //
 
@@ -300,11 +300,11 @@ void osc_wire_t::ticked(unsigned long long from, unsigned long long to)
 }
 
 //
-// Send an OSC packet.  Given a time, finds the latest
-// data value up to and including the time for each signal
-// in our event.  Reset the iterator to just after that
-// time for each signal so we dont emit more than 1 message
-// for the same time.
+// Send an OSC packet.
+// Given a time, finds the latest data value up to and including
+// the time for each signal in our event. Reset the iterator to
+// just after that time for each signal so we dont emit more
+// than 1 message for the same time.
 //
 
 void osc_wire_t::send(unsigned long long t)
@@ -353,6 +353,13 @@ void osc_wire_t::send(unsigned long long t)
     lo_message_free(msg);
 }
 
+//
+// Called when an event end on this wire. (fast thread)
+//
+// This does the required cleanup and send out the last data that
+// was still present when the event ended.
+//
+
 bool osc_wire_t::event_end(unsigned long long t)
 {
     // get us off the active queue.
@@ -391,9 +398,9 @@ bool osc_wire_t::event_end(unsigned long long t)
 
 //
 // Sometimes, during an event, a source might go away and be
-// substituted for another.  This happens in particular with
+// substituted for another. This happens in particular with
 // something like a breath pipe which generates events only
-// when blown.  The signal carrying default values wil get
+// when blown. The signal carrying default values wil get
 // overridden by the BP signal.
 //
 

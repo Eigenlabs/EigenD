@@ -1,9 +1,19 @@
+EigenD OSC Protocol v0.1
+========================
+
+This is an initial prototype implementation of the EigenD OSC protocol, which uses OSC in an
+idiomatic fashion to expose very high resolution and very high bandwidth performance data of
+a potentially large number of data streams.
 
 Each server we implement will contain a number of agents.
 Each agent is independent.
 
-Persistent state values and fast data is logically independent.
-You can subscribe to one without the other.
+Persistent state values and fast data is logically independent to allow performance data to be
+migrated to other network ports when there's a risk of overloading the network stack.
+
+You can subscribe to state values without subscribing to the fast data and vice-versa.
+
+This is the initial behavior that has been implemented.
 
 /register AGENT [port [ address] ]
 
@@ -22,7 +32,7 @@ Streaming data will be transmitted to subscribers as
 
 This server currently supports only 1 agent in each server.
 It will be called keyboard_1, and the udp port is hardcoded 
-to 9999
+to 9999. This might change as the implementation and protocol matures.
 
 Other data isn't implemented yet.  We need mechanisms for:
 
