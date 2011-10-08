@@ -193,13 +193,13 @@ There are a number of standard mechanisms in use:
     the exchange has completed, it is guaranteed that the fast thread is now
     using the updated copy.
 
-At a higher level, the piw 'thing' class object provides timers and inter thread
-asynchronous callback mechanisms.
+At a higher level, the piw class object called 'thing' provides timers and inter
+thread asynchronous callback mechanisms.
 
 Events
 ------
 
-'fast' data (ie keyboard streams or audio) is inherently read only, and is
+'fast' data (ie. keyboard streams or audio) is inherently read only, and is
 carried on the 254 node and its children using the fastdata mechanism.  This
 is a separate api to the slow data model.  Remember that nodes may have fast
 *and* slow data.
@@ -210,7 +210,7 @@ buffer (aka dataqueue) which represents the data flow for that event.  The
 event source will continue to feed data into the ring buffer until the event
 ends.
 
-The fastdata api's in nodes are geared to carrying events and communicating
+The fastdata API's in nodes are geared to carrying events and communicating
 references to the data queues.  In this way, the bulk of the data is only
 handled by agents that manipulate it.  Many agents 'steer' events without
 dealing with the actual data.  In the fastdata model, there are event sources
@@ -233,16 +233,16 @@ correlate the 2 data streams.
 
 This allows (for instance) the pressure signal to go straight from keyboard to
 instrument, and the roll signal to be routed through some sort of transforming
-agent before going to the instrument.  As long as the transformer doesn't mess
-with the ID, its output will be correlated along with the original pressure.
+agent before going to the instrument.  As long as the transformer doesn't modify
+the event ID, its output will be correlated along with the original pressure.
 
 The event hierarchy can get more complicated.  For example, in a recorder there
 are inputs for key signals, breath controller, pedals, and strips.  From the
 keyboard, key events have single component ID's.  The other signals (Breath,
 Strip, Pedal, etc) use empty ID's.
 
-The controller events (with empty ids) are correlated with the key events
-because the ID's are a prefixing subset of the key event ID's.
+The controller events (with empty IDs) are correlated with the key events
+because the IDs are a prefixing subset of the key event IDs.
 
 The recorder has all the same outputs; key streams, pedals, strip, etc.  On
 these outputs, the 'live' event stream from the keyboard and all the recorder
@@ -262,7 +262,7 @@ be influenced by a controller with event '2.1' but not a controller with event
 
 Internally to agents, its much more convenient to invert this behaviour, and
 deal with data organised by event, where each event contains a number of data
-streams that belong together.  the piw_bundles.h file provides abstractions to
+streams that belong together.  The piw_bundles.h file provides abstractions to
 do this.  C++ components are connected into a graph, where each connection
 carries events, and each event carries multiple signals.  We call these
 connections 'bundles.'  
@@ -280,8 +280,8 @@ use to which an agent puts the data stream.
 There are bundle classes for cloning bundles, aggregating them, gating them
 on and off, and transforming event id's and event data.
 
-bcat2 -idD '<agent>' will dump the state tree, including the current values 
-of its fast event channels.
+The command bcat2 -idD '<agent>' will dump the state tree, including the
+current values of its fast event channels.
 
 Clocking
 --------
@@ -297,12 +297,12 @@ relationships are made by the connection system and can propagate along bundles.
 In this way, each node in the graph is clocked only after all its producers
 have been clocked, minimising the latency involved in data traversing the system.
 
-clock sinks (piw::clocksink_t) belong to clock domains (piw::clockdomain_t) which
+Clock sinks (piw::clocksink_t) belong to clock domains (piw::clockdomain_t) which
 can be either anisochronous, or isochronous.  There is 1 anisochronous domain, and
 potentially many isochronous domains.  Connection between different isochronous
 domains currently isn't supported, and would require resampling.
 
-clock loops aren't currently allowed.  Some agents contain multiple clock sinks
+Clock loops aren't currently allowed.  Some agents contain multiple clock sinks
 to obviate the need for looping.  For example, the alpha keyboard agent has
 different clock sinks for audio in and out, so audio data can be taken from the
 Microphone, through the mixer, and back to the headphones.
