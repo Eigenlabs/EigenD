@@ -361,7 +361,7 @@ namespace piw
 
         for(ip=bp; ip!=ep; ++ip)
         {
-            if(GLOBAL_SCOPE==ip->second.scope_ && !first_wire || d.is_null())
+            if(GLOBAL_SCOPE==ip->second.scope_ && !first_wire)
             {
                 continue;
             }
@@ -411,7 +411,7 @@ namespace piw
 
         for(ic=bc; ic!=ec; ++ic)
         {
-            if(!accept_global_scope && GLOBAL_SCOPE==ic->second.scope_ || d.is_null())
+            if(!accept_global_scope && GLOBAL_SCOPE==ic->second.scope_)
             {
                 continue;
             }
