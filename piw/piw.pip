@@ -565,7 +565,6 @@ class midi_converter[piw::midi_converter_t]
     void set_minimum_decimation(float)
     void set_midi_notes(bool)
     void set_midi_pitchbend(bool)
-    void set_midi_hires_velocity(bool)
     void set_midi_channel(unsigned)
     void set_min_midi_channel(unsigned)
     void set_max_midi_channel(unsigned)

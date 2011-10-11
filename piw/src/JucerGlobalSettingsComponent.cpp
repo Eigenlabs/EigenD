@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  13 Sep 2011 9:44:00pm
+  Creation date:  28 Jan 2011 3:50:17pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -54,7 +54,6 @@ void GlobalSettingsComponent::updateComponent(piw::mapping_delegate_t *mapping_d
     data_decimation->setValue(settings.minimum_decimation_, true, true);
     midi_notes->setToggleState(settings.send_notes_, false);
     midi_pitchbend->setToggleState(settings.send_pitchbend_, false);
-    midi_hires_velocity->setToggleState(settings.send_hires_velocity_, false);
 
     unsigned midi_channel = mapping_delegate->get_midi_channel();
     if(0==midi_channel)
@@ -79,9 +78,8 @@ void GlobalSettingsComponent::updateSettings()
 
     bool send_notes = midi_notes->getToggleState();
     bool send_pitchbend = midi_pitchbend->getToggleState();
-    bool send_hires_velocity = midi_hires_velocity->getToggleState();
 
-    mapping_delegate_->change_settings(piw::global_settings_t(data_decimation->getValue(), send_notes, send_pitchbend, send_hires_velocity));
+    mapping_delegate_->change_settings(piw::global_settings_t(data_decimation->getValue(), send_notes, send_pitchbend));
 }
 //[/MiscUserDefs]
 
@@ -99,8 +97,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
       min_channel_label (0),
       min_channel (0),
       max_channel_label (0),
-      max_channel (0),
-      midi_hires_velocity (0)
+      max_channel (0)
 {
     addAndMakeVisible (midi_group = new GroupComponent (T("midi group"),
                                                         T("MIDI")));
@@ -236,17 +233,11 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     max_channel->addItem (T("16"), 16);
     max_channel->addListener (this);
 
-    addAndMakeVisible (midi_hires_velocity = new ToggleButton (T("midi hires velocity toggle button")));
-    midi_hires_velocity->setButtonText (T("send high resolution velocity"));
-    midi_hires_velocity->addListener (this);
-    midi_hires_velocity->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
-
 
     //[UserPreSize]
     //[/UserPreSize]
 
-    setSize (256, 290);
-
+    setSize (256, 266);
 
     //[Constructor] You can add your own custom stuff here..
     window_ = 0;
@@ -271,8 +262,6 @@ GlobalSettingsComponent::~GlobalSettingsComponent()
     deleteAndZero (min_channel);
     deleteAndZero (max_channel_label);
     deleteAndZero (max_channel);
-    deleteAndZero (midi_hires_velocity);
-
 
     //[Destructor]. You can add your own custom destruction code here..
     //[/Destructor]
@@ -290,19 +279,18 @@ void GlobalSettingsComponent::paint (Graphics& g)
 
 void GlobalSettingsComponent::resized()
 {
-    midi_group->setBounds (8, 72, 240, 176);
+    midi_group->setBounds (8, 72, 240, 152);
     ok->setBounds (200, getHeight() - 24, 48, 24);
     midi_notes->setBounds (16, 88, 104, 24);
     midi_pitchbend->setBounds (118, 88, 128, 24);
     min_data_decimation_group->setBounds (8, 8, 240, 56);
     data_decimation->setBounds (21, 30, 214, 24);
-    active_channel_label->setBounds (16, 144, 136, 24);
-    active_channel->setBounds (176, 144, 56, 24);
-    min_channel_label->setBounds (16, 176, 152, 24);
-    min_channel->setBounds (176, 176, 56, 24);
-    max_channel_label->setBounds (16, 208, 160, 24);
-    max_channel->setBounds (176, 208, 56, 24);
-    midi_hires_velocity->setBounds (16, 112, 216, 24);
+    active_channel_label->setBounds (16, 120, 136, 24);
+    active_channel->setBounds (176, 120, 56, 24);
+    min_channel_label->setBounds (16, 152, 152, 24);
+    min_channel->setBounds (176, 152, 56, 24);
+    max_channel_label->setBounds (16, 184, 160, 24);
+    max_channel->setBounds (176, 184, 56, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -332,12 +320,6 @@ void GlobalSettingsComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_midi_pitchbend] -- add your button handler code here..
         updateSettings();
         //[/UserButtonCode_midi_pitchbend]
-    }
-    else if (buttonThatWasClicked == midi_hires_velocity)
-    {
-        //[UserButtonCode_midi_hires_velocity] -- add your button handler code here..
-        updateSettings();
-        //[/UserButtonCode_midi_hires_velocity]
     }
 
     //[UserbuttonClicked_Post]
@@ -414,10 +396,10 @@ BEGIN_JUCER_METADATA
                  componentName="GlobalSettings" parentClasses="public Component"
                  constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
                  snapShown="1" overlayOpacity="0.330000013" fixedSize="1" initialWidth="256"
-                 initialHeight="290">
+                 initialHeight="266">
   <BACKGROUND backgroundColour="0"/>
   <GROUPCOMPONENT name="midi group" id="237080525f93b812" memberName="midi_group"
-                  virtualName="" explicitFocusOrder="0" pos="8 72 240 176" outlinecol="66eeeeee"
+                  virtualName="" explicitFocusOrder="0" pos="8 72 240 152" outlinecol="66eeeeee"
                   textcol="ffeeeeee" title="MIDI"/>
   <TEXTBUTTON name="ok button" id="489abe6be4232158" memberName="ok" virtualName=""
               explicitFocusOrder="0" pos="200 24R 48 24" bgColOff="ffc1c1c1"
@@ -440,36 +422,32 @@ BEGIN_JUCER_METADATA
           max="100" int="1" style="LinearBar" textBoxPos="TextBoxLeft"
           textBoxEditable="0" textBoxWidth="45" textBoxHeight="20" skewFactor="1"/>
   <LABEL name="active channel label" id="d74fb4f0a0a61833" memberName="active_channel_label"
-         virtualName="" explicitFocusOrder="0" pos="16 144 136 24" textCol="ffeeeeee"
+         virtualName="" explicitFocusOrder="0" pos="16 120 136 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="Active midi channel"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
   <COMBOBOX name="active channel combo box" id="cf5597acdc45560c" memberName="active_channel"
-            virtualName="" explicitFocusOrder="0" pos="176 144 56 24" editable="0"
+            virtualName="" explicitFocusOrder="0" pos="176 120 56 24" editable="0"
             layout="34" items="1&#10;2&#10;3&#10;4&#10;5&#10;6&#10;7&#10;8&#10;9&#10;10&#10;11&#10;12&#10;13&#10;14&#10;15&#10;16&#10;Poly"
             textWhenNonSelected="" textWhenNoItems="(no choices)"/>
   <LABEL name="min channel label" id="1b3bcc844c3b5b67" memberName="min_channel_label"
-         virtualName="" explicitFocusOrder="0" pos="16 176 152 24" textCol="ffeeeeee"
+         virtualName="" explicitFocusOrder="0" pos="16 152 152 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="Minimum poly channel"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
   <COMBOBOX name="min channel combo box" id="74cbf8d0e6dce2b4" memberName="min_channel"
-            virtualName="" explicitFocusOrder="0" pos="176 176 56 24" editable="0"
+            virtualName="" explicitFocusOrder="0" pos="176 152 56 24" editable="0"
             layout="34" items="1&#10;2&#10;3&#10;4&#10;5&#10;6&#10;7&#10;8&#10;9&#10;10&#10;11&#10;12&#10;13&#10;14&#10;15&#10;16"
             textWhenNonSelected="" textWhenNoItems="(no choices)"/>
   <LABEL name="max channel label" id="4ff09523d24f844" memberName="max_channel_label"
-         virtualName="" explicitFocusOrder="0" pos="16 208 160 24" textCol="ffeeeeee"
+         virtualName="" explicitFocusOrder="0" pos="16 184 160 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="Maximum poly channel"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
   <COMBOBOX name="max channel combo box" id="1531558de1c1a2c1" memberName="max_channel"
-            virtualName="" explicitFocusOrder="0" pos="176 208 56 24" editable="0"
+            virtualName="" explicitFocusOrder="0" pos="176 184 56 24" editable="0"
             layout="34" items="1&#10;2&#10;3&#10;4&#10;5&#10;6&#10;7&#10;8&#10;9&#10;10&#10;11&#10;12&#10;13&#10;14&#10;15&#10;16"
             textWhenNonSelected="" textWhenNoItems="(no choices)"/>
-  <TOGGLEBUTTON name="midi hires velocity toggle button" id="127457ac3bc55b74"
-                memberName="midi_hires_velocity" virtualName="" explicitFocusOrder="0"
-                pos="16 112 216 24" txtcol="ffeeeeee" buttonText="send high resolution velocity"
-                connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

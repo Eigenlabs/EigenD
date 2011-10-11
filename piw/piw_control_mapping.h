@@ -51,13 +51,12 @@ namespace piw
 
     struct PIW_DECLSPEC_CLASS global_settings_t
     {
-        global_settings_t(): minimum_decimation_(0.f), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false) {};
-        global_settings_t(float minimum_decimation, bool send_notes, bool send_pitchbend, bool send_hires_velocity): minimum_decimation_(minimum_decimation), send_notes_(send_notes), send_pitchbend_(send_pitchbend), send_hires_velocity_(send_hires_velocity)  {};
+        global_settings_t(): minimum_decimation_(0.f), send_notes_(true), send_pitchbend_(true) {};
+        global_settings_t(float minimum_decimation, bool send_notes, bool send_pitchbend): minimum_decimation_(minimum_decimation), send_notes_(send_notes), send_pitchbend_(send_pitchbend)  {};
 
         float minimum_decimation_;
         bool send_notes_;
         bool send_pitchbend_;
-        bool send_hires_velocity_;
     };
 
     struct PIW_DECLSPEC_CLASS mapping_data_t
