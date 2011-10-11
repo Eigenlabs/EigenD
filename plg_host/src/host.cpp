@@ -1121,6 +1121,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
     {
         midi_from_belcanto_->set_send_notes(settings.send_notes_);
         midi_from_belcanto_->set_send_pitchbend(settings.send_pitchbend_);
+        midi_from_belcanto_->set_send_hires_velocity(settings.send_hires_velocity_);
         midi_from_belcanto_->set_control_interval(settings.minimum_decimation_);
     }
 
@@ -1591,6 +1592,13 @@ void host::plugin_instance_t::set_midi_pitchbend(bool enabled)
 {
     piw::global_settings_t settings = impl_->mapping_.get_settings();
     settings.send_pitchbend_= enabled;
+    impl_->change_settings(settings);
+}
+
+void host::plugin_instance_t::set_midi_hires_velocity(bool enabled)
+{
+    piw::global_settings_t settings = impl_->mapping_.get_settings();
+    settings.send_hires_velocity_= enabled;
     impl_->change_settings(settings);
 }
 

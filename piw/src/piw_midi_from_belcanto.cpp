@@ -349,6 +349,7 @@ namespace piw
 
         bool send_notes_;
         bool send_pitchbend_;
+        bool send_hires_velocity_;
     };
 
 } // namespace piw
@@ -375,6 +376,7 @@ namespace
         // decode signals to MIDI data and write to the MIDI data queue when ticked
         void ticked(unsigned long long from, unsigned long long to);
         // create MIDI data from various signal types...
+        void send_note(unsigned long long t);
         void set_velocity(const piw::data_nb_t &d, unsigned long long t);
         void set_frequency(const piw::data_nb_t &d, unsigned long long t, bool can_pitchbend);
 
@@ -386,7 +388,7 @@ namespace
         piw::data_nb_t id_;
 
         float note_id_;
-        float note_velocity_;
+        unsigned note_velocity_;
         float note_pitch_;
 
         unsigned long long last_from_;
@@ -415,7 +417,7 @@ namespace
 #endif // MIDI_FROM_BELCANTO_DEBUG>0
 
         iterator_ = b.iterator();
-        note_velocity_ = -1.f;
+        note_velocity_ = 0;
         note_pitch_ = -1.f;
         note_id_ = 0;
 
@@ -481,6 +483,28 @@ namespace
 
     }
 
+    void belcanto_note_wire_t::send_note(unsigned long long t)
+    {
+        // create and queue midi data
+        if(root_->send_notes_)
+        {
+            unsigned vel_msb = (note_velocity_&0x3fff)>>7;
+            unsigned vel_lsb = note_velocity_&0x7f;
+
+#if MIDI_FROM_BELCANTO_DEBUG>0
+            pic::logmsg() << "send_note: note_id_=" << note_id_ << " note_vel_=" << note_velocity_ << " vel_msb=" << vel_msb << " vel_lsb=" << vel_lsb;
+#endif // MIDI_FROM_BELCANTO_DEBUG>0
+
+            if(root_->send_hires_velocity_)
+            {
+                root_->add_midi_data(false, 0xb0+channel_-1,(unsigned)0x58,vel_lsb,t);
+                root_->time_ = std::max(root_->time_+1,t++);
+                t = root_->time_;
+            }
+            root_->add_midi_data(false, 0x90+channel_-1,(unsigned)note_id_,vel_msb,t);
+        }
+    }
+
     void belcanto_note_wire_t::set_velocity(const piw::data_nb_t &d, unsigned long long t)
     {
 #if MIDI_FROM_BELCANTO_DEBUG>0
@@ -493,29 +517,25 @@ namespace
             return;
         }
 
-        // the range is 1 to 127 to ensure a note on velocity 0 (=note off) is not sent
-        note_velocity_ = 126.f*fabsf(d.as_norm()) + 1;
+        // the range is 0x80 to 0x3fff to ensure a note on velocity 0 (=note off) is not sent
+        note_velocity_ = (0x3fff-0x80)*fabsf(d.as_norm()) + 0x80;
 
         if(note_pitch_>0)
         {
             note_id_ = note_pitch_;
 
-            // create and queue midi data
-            if(root_->send_notes_)
-            {
-                root_->add_midi_data(false, 0x90+channel_-1,(unsigned)note_id_,(unsigned)note_velocity_,t);
-            }
+            send_note(t);
         }
     }
 
     void belcanto_note_wire_t::set_frequency(const piw::data_nb_t &d, unsigned long long t, bool can_pitchbend)
     {
-#if MIDI_FROM_BELCANTO_DEBUG>0
-        pic::logmsg() << "set_frequency: note_id_=" << note_id_ << " note_vel_=" << note_velocity_ << " note_pitch_=" << note_pitch_;
-#endif // MIDI_FROM_BELCANTO_DEBUG>0
-
         float f = d.as_renorm_float(BCTUNIT_HZ,0,96000,0);
         float n = (NOTE_CONST*std::log(f/BASE_FREQ))+BASE_NOTE;
+
+#if MIDI_FROM_BELCANTO_DEBUG>0
+        pic::logmsg() << "set_frequency: note_id_=" << note_id_ << " note_vel_=" << note_velocity_ << " note_pitch_=" << note_pitch_ << " n=" << n;
+#endif // MIDI_FROM_BELCANTO_DEBUG>0
 
         if(n>127.f)
             return;
@@ -529,19 +549,16 @@ namespace
             {
                 note_id_ = note_pitch_;
 
-                if(root_->send_notes_)
-                {
-                    root_->add_midi_data(false, 0x90+channel_-1,(unsigned)note_id_,(unsigned)note_velocity_,t++);
-                }
+                send_note(t);
             }
         }
-
-        if(!note_id_)
-            return;
 
         // pitch bending - a continuous stream of these MIDI packets is sent
         if(can_pitchbend)
         {
+            root_->time_ = std::max(root_->time_+1,t++);
+            t = root_->time_;
+
             float pb = (1.f+(n-note_pitch_))/2.f;
             pb = std::max(0.f,pb);
             pb = std::min(1.f,pb);
@@ -564,9 +581,16 @@ namespace
         if(note_id_)
         {
             root_->time_ = std::max(root_->time_+1,t);
+            t = root_->time_;
             if(root_->send_notes_)
             {
-                root_->add_midi_data(false, 0x80+channel_-1,(unsigned)note_id_,0x40,root_->time_);
+                if(root_->send_hires_velocity_)
+                {
+                    root_->add_midi_data(false, 0xb0+channel_-1,(unsigned)0x58,0x0,t);
+                    root_->time_ = std::max(root_->time_+1,t++);
+                    t = root_->time_;
+                }
+                root_->add_midi_data(false, 0x80+channel_-1,(unsigned)note_id_,0x40,t);
             }
         }
 
@@ -603,7 +627,7 @@ namespace piw
         clk_state_(CLKSTATE_IDLE), clk_domain_(clk_domain),
         channel_(1), poly_(false), omni_(false), time_(0ULL),
         resend_current_(piw::resend_current_t::method(this,&midi_from_belcanto_t::impl_t::dummy)),
-        ctrl_interval_(DEFAULT_CTRL_INTERVAL), send_notes_(true), send_pitchbend_(true)
+        ctrl_interval_(DEFAULT_CTRL_INTERVAL), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false)
     {
         // one MIDI output channel
         sigmask_=1ULL;
@@ -1273,6 +1297,14 @@ namespace piw
         return 0;
     }
 
+    static int __set_send_hires_velocity(void *i_, void *send_)
+    {
+        midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
+        bool send = *(bool *)send_;
+        i->send_hires_velocity_ = send;
+        return 0;
+    }
+
     static int __get_channel(void *i_, void *d_)
     {
         midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
@@ -1307,6 +1339,7 @@ namespace piw
     void midi_from_belcanto_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &data) { impl_->set_midi(data); }
     void midi_from_belcanto_t::set_send_notes(bool send) { piw::tsd_fastcall(__set_send_notes,impl_,&send); }
     void midi_from_belcanto_t::set_send_pitchbend(bool send) { piw::tsd_fastcall(__set_send_pitchbend,impl_,&send); }
+    void midi_from_belcanto_t::set_send_hires_velocity(bool send) { piw::tsd_fastcall(__set_send_hires_velocity,impl_,&send); }
     unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &d) { return piw::tsd_fastcall(__get_channel,impl_,(void *)&d); }
 
 } // namespace piw

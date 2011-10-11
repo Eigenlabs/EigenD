@@ -77,6 +77,8 @@ class List(atom.Atom):
         self.add_verb2(20,'set([un],~a,role(None,[matches([midi,notes])]))',callback=self.__unset_notes)
         self.add_verb2(21,'set([],~a,role(None,[matches([midi,pitch,bend])]))',callback=self.__set_pitchbend)
         self.add_verb2(22,'set([un],~a,role(None,[matches([midi,pitch,bend])]))',callback=self.__unset_pitchbend)
+        self.add_verb2(23,'set([],~a,role(None,[matches([midi,high,resolution,velocity])]))',callback=self.__set_hires_velocity)
+        self.add_verb2(24,'set([un],~a,role(None,[matches([midi,high,resolution,velocity])]))',callback=self.__unset_hires_velocity)
         for i in range(1,33):
             self[i] = Parameter(i,delegate,clockdomain)
 
@@ -398,5 +400,17 @@ class List(atom.Atom):
     def __unset_pitchbend(self,a,prop):
         try:
             self.__delegate.set_midi_pitchbend(False)
+        except RuntimeError,e:
+            return e.message
+
+    def __set_hires_velocity(self,a,prop):
+        try:
+            self.__delegate.set_midi_hires_velocity(True)
+        except RuntimeError,e:
+            return e.message
+
+    def __unset_hires_velocity(self,a,prop):
+        try:
+            self.__delegate.set_midi_hires_velocity(False)
         except RuntimeError,e:
             return e.message

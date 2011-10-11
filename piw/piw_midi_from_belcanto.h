@@ -56,6 +56,7 @@ namespace piw
         void set_midi(pic::lckvector_t<piw::midi_data_t>::nbtype &);
         void set_send_notes(bool);
         void set_send_pitchbend(bool);
+        void set_send_hires_velocity(bool);
         unsigned get_active_midi_channel(const piw::data_nb_t &);
 
         class impl_t;

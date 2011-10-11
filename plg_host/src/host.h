@@ -149,6 +149,7 @@ namespace host
             void set_minimum_decimation(float);
             void set_midi_notes(bool);
             void set_midi_pitchbend(bool);
+            void set_midi_hires_velocity(bool);
 
             bool open(const plugin_description_t &);
             void close();
