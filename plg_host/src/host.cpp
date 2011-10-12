@@ -502,15 +502,24 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
         d->sink(this,"host");
         piw::tsd_thing(this);
         d->add_listener(pic::notify_t::method(this,&impl_t::clock_changed));
+
         midi_output_.scalar_connect(midi_out);
+
         for(unsigned i=0; i<15; i++)
         {
             param_input_[i] = std::auto_ptr<piw::param_input_t>(new piw::param_input_t(this,i+1));
         }
         param_input_[15] = std::auto_ptr<piw::param_input_t>(new piw::keynum_input_t(this,16));
+        for(unsigned i=16; i<32; i++)
+        {
+            param_input_[i] = std::auto_ptr<piw::param_input_t>(new piw::param_input_t(this,i+1));
+        }
+
         audio_output_.set_clock(this);
         midi_output_.set_clock(this);
+
         recalc_idle_time();
+
         host_window_.set_state_handler(window_state);
 
         midi_aggregator_ = new piw::aggregator_t(piw::cookie_t(&midi_input_), clockdomain_);
@@ -773,11 +782,15 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
         {
             param_input_[i]->schedule(from,to);
         }
+        for(unsigned i=16; i<32; ++i)
+        {
+            param_input_[i]->schedule(from,to);
+        }
     }
 
     void resend_parameter_current(const piw::data_nb_t &d)
     {
-        for(unsigned i=0; i<16; ++i)
+        for(unsigned i=0; i<32; ++i)
         {
             param_input_[i]->resend_current(d);
         }
@@ -791,7 +804,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
     static int __update_parameter_origins(void *i_, void *)
     {
         host::plugin_instance_t::impl_t *impl = (host::plugin_instance_t::impl_t *)i_;
-        for(unsigned i=0; i<16; ++i)
+        for(unsigned i=0; i<32; ++i)
         {
             impl->param_input_[i]->update_origins();
         }
@@ -1123,7 +1136,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
     host_scalar_t audio_input_;
     midi_input_t midi_input_;
     metronome_input_t metronome_input_;
-    std::auto_ptr<piw::param_input_t> param_input_[16];
+    std::auto_ptr<piw::param_input_t> param_input_[32];
 
     piw::controllers_mapping_t mapping_;
 

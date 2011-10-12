@@ -80,7 +80,7 @@ class List(atom.Atom):
         self.add_verb2(22,'set([un],~a,role(None,[matches([midi,pitch,bend])]))',callback=self.__unset_pitchbend)
         self.add_verb2(23,'set([],~a,role(None,[matches([midi,high,resolution,velocity])]))',callback=self.__set_hires_velocity)
         self.add_verb2(24,'set([un],~a,role(None,[matches([midi,high,resolution,velocity])]))',callback=self.__unset_hires_velocity)
-        for i in range(1,17):
+        for i in range(1,33):
             self[i] = Parameter(i,delegate,clockdomain)
 
     def __map_legacy(self,a,fr,fo,to):
@@ -319,7 +319,7 @@ class List(atom.Atom):
         # determine the input parameter number
         from_match = re.match('^parameter\s+(\d+)$',from_str,re.IGNORECASE)
         if not from_match:
-            for i in range(1,17):
+            for i in range(1,33):
                 param_name = self[i].get_property_string('name')
                 param_ordinal = self[i].get_property_long('ordinal')
                 if param_ordinal:
@@ -330,7 +330,7 @@ class List(atom.Atom):
         else:
             iparam_number = int(from_match.group(1))
 
-        if iparam_number < 1 or iparam_number > 16:
+        if iparam_number < 1 or iparam_number > 32:
             raise RuntimeError(errors.invalid_thing(from_str, 'map'))
 
         # determine the output parameter or midi mapping

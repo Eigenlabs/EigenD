@@ -262,6 +262,10 @@ class Builtins:
         words = action.abstract_wordlist(arg)
         interp = interpreter.Interpreter(self.agent,self.database, SubDelegate(self.agent))
 
+        if not len(words):
+            print 'nothing to do',arg
+            return
+
         print 'doing',words
         self.agent.register_interpreter(interp)
 

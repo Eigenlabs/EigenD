@@ -137,8 +137,8 @@ Not properly assigned, in use:
 8   8   7   5  : Controls      : Noun              : None
 8   8   7   6  : Buffer        : Noun              : None
 8   8   7   7  : Size          : Noun              : None
-8   8   7   8  : Unused        : Unused            : None
-8   8   8   1  : Unused        : Unused            : None
+8   8   7   8  : Silent        : Modifier          : None
+8   8   8   1  : Osc           : Noun              : None
 8   8   8   2  : Unused        : Unused            : None
 8   8   8   3  : Unused        : Unused            : None
 8   8   8   4  : Unused        : Unused            : None

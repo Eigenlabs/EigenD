@@ -337,6 +337,8 @@ namespace
             {
                 piw::data_nb_t d = x;
                 
+                d=piw::pathpretruncate_nb(d,p_.as_pathlen());
+                
                 if(g_)
                 {
                     d=piw::pathprepend_grist_nb(d,g_);

@@ -266,11 +266,7 @@ static T __pathpretruncate(unsigned nb,const T &o)
     op=(const unsigned char *)o.host_data();
     oc=*op;
 
-#ifndef PI_WINDOWS 
-	if(ol<=1 or oc==0)
-#else
 	if(ol<=1 || oc==0)
-#endif
     {
         return o;
     }
@@ -279,6 +275,38 @@ static T __pathpretruncate(unsigned nb,const T &o)
 
     dp[0]=oc-1;
     memcpy(&dp[1],op+2,ol-1);
+    *vv=0;
+
+    return d;
+}
+
+template <class T>
+static T __pathpretruncate(unsigned nb,const T &o, unsigned l)
+{
+    if (0==l) return o;
+
+    unsigned char *dp; float *vv;
+    T d;
+    unsigned ol,oc;
+    const unsigned char *op;
+
+    PIC_ASSERT(o.type()==BCTVTYPE_PATH);
+
+    ol=o.host_length();
+    op=(const unsigned char *)o.host_data();
+    oc=*op;
+
+	if(ol<=l)
+    {
+        return o;
+    }
+
+    oc = oc-std::min(oc,l);
+
+    d=T::from_given(__allocate_host(nb,o.time(),1,0,0,BCTVTYPE_PATH,ol-l,&dp,1,&vv));
+
+    dp[0]=oc;
+    memcpy(&dp[1],op+l+1,ol-l);
     *vv=0;
 
     return d;
@@ -857,6 +885,7 @@ piw::data_t piw::pathprepend_grist_ex(unsigned nb,const data_t &d, unsigned p) {
 piw::data_t piw::pathappend_chaff_ex(unsigned nb,const data_t &d, unsigned p) { return (__pathappend_chaff<data_t>(nb,d,p)); }
 piw::data_t piw::pathtruncate_ex(unsigned nb,const data_t &d) { return (__pathtruncate<data_t>(nb,d)); }
 piw::data_t piw::pathpretruncate_ex(unsigned nb,const data_t &d) { return (__pathpretruncate<data_t>(nb,d)); }
+piw::data_t piw::pathpretruncate_ex(unsigned nb,const data_t &d,unsigned l) { return (__pathpretruncate<data_t>(nb,d,l)); }
 piw::data_t piw::pathreplacegrist_ex(unsigned nb,const data_t &d,unsigned g) { return (__pathreplacegrist<data_t>(nb,d,g)); }
 piw::data_t piw::pathgristpretruncate_ex(unsigned nb,const data_t &d) { return (__pathgristpretruncate<data_t>(nb,d)); }
 piw::data_t piw::makeblob_ex(unsigned nb,unsigned long long ts, unsigned size, unsigned char **pdata) { return __makeblob_ex<data_t>(nb,ts,size,pdata); }
@@ -895,6 +924,7 @@ piw::data_nb_t piw::pathprepend_grist_nb_ex(unsigned nb,const data_nb_t &d, unsi
 piw::data_nb_t piw::pathappend_chaff_nb_ex(unsigned nb,const data_nb_t &d, unsigned p) { return (__pathappend_chaff<data_nb_t>(nb,d,p)); }
 piw::data_nb_t piw::pathtruncate_nb_ex(unsigned nb,const data_nb_t &d) { return (__pathtruncate<data_nb_t>(nb,d)); }
 piw::data_nb_t piw::pathpretruncate_nb_ex(unsigned nb,const data_nb_t &d) { return (__pathpretruncate<data_nb_t>(nb,d)); }
+piw::data_nb_t piw::pathpretruncate_nb_ex(unsigned nb,const data_nb_t &d,unsigned l) { return (__pathpretruncate<data_nb_t>(nb,d,l)); }
 piw::data_nb_t piw::pathreplacegrist_nb_ex(unsigned nb,const data_nb_t &d,unsigned g) { return (__pathreplacegrist<data_nb_t>(nb,d,g)); }
 piw::data_nb_t piw::pathgristpretruncate_nb_ex(unsigned nb,const data_nb_t &d) { return (__pathgristpretruncate<data_nb_t>(nb,d)); }
 piw::data_nb_t piw::makeblob_nb_ex(unsigned nb,unsigned long long ts, unsigned size, unsigned char **pdata) { return __makeblob_ex<data_nb_t>(nb,ts,size,pdata); }

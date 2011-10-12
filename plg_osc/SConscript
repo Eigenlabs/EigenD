@@ -1,0 +1,35 @@
+#
+# Copyright 2011 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+#
+# Compile this directory's Python files into a Python package,
+# and arrange for installation.  Python modules go into tmp/modules
+# in compiled form.  
+#
+env.PiPythonPackage('0.0', natives=Split('osc_plg_native'), package='eigend')
+
+#
+# Install the agent contained in the plg_osc module, where the main is
+# located in plg_osc.output_plg. Automatically create the python file
+# osc_output_version containing version information. This version information
+# can be used later to upgrade setups when agents change.
+#
+env.PiAgent('osc_output', 'plg_osc.osc_output_plg', 'plg_osc:0.0', cversion='0.0.1', package='eigend')

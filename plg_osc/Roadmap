@@ -1,0 +1,308 @@
+
+Structure of this Agent
+-----------------------
+
+SConscript
+
+    Build file for the agent's python module.  Also creates the agent file itself which
+    tells EigenD about the agent (in tmp/plugins)
+
+osc_output_plg.py,__init__.py
+
+    The top level agent itself.  __init__.py is just a marker to make the directory
+    a python package.
+
+src/
+
+    Most of the agent is implemented in a shared library, which is in turn wrapped in 
+    a python extension.
+
+src/SConscript
+
+    Builds the shared library tmp/bin/osc_plg_xxx.{dll,dylib}
+    and the python extension tmp/bin/osc_plg_native.{pyd,dylib}
+
+src/osc_exports.h
+
+    Macros for doing DLL symbol visibility for the shared library
+
+src/osc_transport.cpp
+src/osc_transport.h
+
+    Class for transmitting and receiving OSC using liblo, and handling 
+    the protocol level messages.
+
+src/osc_output.cpp
+src/osc_output.h
+
+    The OSC output itself.  Manages the data flow and uses the OSC 
+    transport class to send it.
+
+src/osc_plg.pip
+
+    Wraps the top level class from osc_output.h for use in python.
+
+
+Trying the agent out
+--------------------
+
+Starting from a blank setup, all you need is to create an osc output and a 
+keyboard.
+
+Startup EigenD and load the blank setup in another window (or use commander or a script).
+To see verbose output from EigenD, start it with the --stdout argument.
+
+Then use the EigenD brpc command line to send a remote procedure call to an EigenD agent:
+
+    tmp/bin/brpc '<interpreter>' exec osc output create
+    tmp/bin/brpc '<interpreter>' exec pico manager create
+
+Wait for pico to be detected be looking at the console output of EigenD, then do:
+
+    tmp/bin/brpc '<interpreter>' exec pico keyboard 1 to osc output 1 connect
+
+If no specific outputs are connected to inputs, EigenD will match up similarly named endpoints
+when entire agents are connected to each-other.
+
+Just for laughs, check the connections:
+
+    tmp/bin/brpc '<interpreter>' dump osc output 1
+
+Then, you need something to send and receive OSC messages.  On a Mac, you
+can get liblo from macports or homebrew.
+
+Using liblo, start a listener on port 5555:
+
+    oscdump 5555 & 
+
+Using liblo, subscribe the listener to the fast data flow.
+
+    oscsend localhost 9999 /register-fast si keyboard_1 5555
+
+Press some keys!
+
+This could be connected to a raw keyboard as shown, or to a kgroup
+output. (They look the same)
+
+If you want to look at the event output of the keyboard, try this:
+
+    tmp/bin/brpc '<interpreter>' identify pico keyboard 1
+
+Press a key, and while holding it down (substitute whatever you got from 
+the identify above):
+
+    tmp/bin/bcat2 -idD '<4654aecb6829/1pico_manager>'
+
+In EigenD 2.* these silly names with hashes are more human friendly and predictable.
+
+Background Information
+======================
+
+Agent, Atoms, and Nodes
+-----------------------
+
+The most fundamental object in EigenD is the state variable, implemented in C++
+as a piw::server_t and mostly created in python as a pi.node.Server
+
+A state variable has a 'slow' value, some flags, and an (optional) 'fast'
+value.  All setup information is contained in slow values.  There are various
+types allowed, represented by piw.data (C++ piw::data_t) including things like
+strings, floats, dictionaries.
+
+State variables come in trees, and the root of a tree has a string ID enclosed
+in <>.  The variable is identified by dotted numeric paths, ie,
+'<interpreter>#1.2.3'
+
+EigenD can mirror a tree over the network, providing continuous updates as the
+tree changes (in both shape and in the data values)  
+
+An Atom is a tree of nodes, where various positions in the tree have some
+idiomatic meaning, and an Agent is a tree of Atoms.
+
+EigenD also provides an RPC mechanism where RPC's are addressed to atoms.  All
+changes to the agent are made via RPC.
+
+The root node of an Atom is a dictionary type containing metadata describing
+the atom.
+
+The 254 child of an atom is its data value.  The domain metadata tag describes
+the type of data allowed here.  There is only 1 'slow' value for each atom.
+All setup is done by remembering the values of the metadata and slow values,
+and using RPC's to restore those values.
+
+Agents are a tree of Atoms.  The root atom has some additional metadata
+describing the agent, and implements certain agent level RPC's
+
+You can use the bcat2 command line utility to dump all aspects of a state tree.  
+
+bls '<main>' will list all agents
+bcat2 '<agent>' will dump the state tree
+
+An atom is prepresented by pi.atom.Atom.  This class just deals with metadata
+and tree structure.  How the fast and slow data is handled is delegated to a
+policy.  Creating an atom with no policy results in a read only atom.  The
+simplest policy is atom.default_policy() which accepts a callback.  This
+results in a writable atom.  The callback will be called when the slow value
+changes, as a result of loading a setup or using 'set' in belcanto.
+
+
+Functors
+--------
+
+Functors are heavily used in EigenD.  Basic functors are defined in pic_functor.h
+
+A functor is essentially a reference counting pointer to a functor sink object.
+Facilities exist to create functors from functions, methods on objects, and python
+callables.  All these can be passed between python and C++.
+
+
+Threading
+---------
+
+EigenD has a number of 'slow' threads, used for handling the slow data changes in
+atoms, rpc calls, and gui events.  All python is executed in the slow thread.
+
+All the slow threads serve EigenD's event driven environment.  One of the slow
+threads is unified with the GUI event loop.  All GUI operations have to be handled
+by this thread.
+
+Agents have only 1 slow thread executing within the agent at any given time.
+Agents can be annotated as 'gui' agents, which means that only the GUI thread will
+be used to service them.
+
+EigenD has 1 fast thread, used to render audio and handle performance information.
+This is a very high priority thread, and operates under a number of restrictions:
+
+ *) No locking, or anything else which would cause the fast thread to wait.
+ *) All objects should be locked into memory and prevented from swapping.
+ *) Memory should be allocated from the special fast memory allocator, which 
+    won't block, and provides locked memory.
+
+In the absence of locks, it can be fiddly to communicate with the fast thread.
+There are a number of standard mechanisms in use:
+
+ *) fastcalls.  This is a facility which allows a function to be executed
+    in the fast thread, from a slow thread, which waits until the function
+    has executed.  It works by scheduling the function for execution by the
+    fast event loop, and using a semaphore to wait for it.
+
+ *) flipflops.   These maintain 2 copies of a given object.  They are read-only
+    by the fast thread, (and other threads) and writable by the slow thread.
+    The slow thread updates the standby copy of the object, and the flipflop
+    provides an exchange operation which switches the two objects over.  When
+    the exchange has completed, it is guaranteed that the fast thread is now
+    using the updated copy.
+
+At a higher level, the piw class object called 'thing' provides timers and inter
+thread asynchronous callback mechanisms.
+
+Events
+------
+
+'fast' data (ie. keyboard streams or audio) is inherently read only, and is
+carried on the 254 node and its children using the fastdata mechanism.  This
+is a separate api to the slow data model.  Remember that nodes may have fast
+*and* slow data.
+
+Fast data is event based, where an event represents something like a keypress.
+Events are not like MIDI note on; When an event starts, it carries a ring
+buffer (aka dataqueue) which represents the data flow for that event.  The
+event source will continue to feed data into the ring buffer until the event
+ends.
+
+The fastdata API's in nodes are geared to carrying events and communicating
+references to the data queues.  In this way, the bulk of the data is only
+handled by agents that manipulate it.  Many agents 'steer' events without
+dealing with the actual data.  In the fastdata model, there are event sources
+and event subscribers.  Although the model is network transparent, agents
+within a single EigenD are short circuited to avoid data copying.
+
+Each event has an ID (a dotted numeric, ie 1.2 or . or 1.2.3) which is unique
+for that event at that time for that source.
+
+Its basically a circuit switched model.  Connections between agents are made
+between Atoms representing the kind of signal.  For example, the keyboard has
+'pressure', 'roll' and 'yaw' atoms (among others).  When a key is pressed, the
+keyboard agent uses the key number as event ID.  It starts events on all the
+output atoms using the same ID, carrying the different aspects of the key
+press.  The event is output on whatever carrier node (in the 254 sub tree) is
+free at the time.
+
+A receiver which has inputs for pressure and roll, say, has to use the IDs to
+correlate the 2 data streams.
+
+This allows (for instance) the pressure signal to go straight from keyboard to
+instrument, and the roll signal to be routed through some sort of transforming
+agent before going to the instrument.  As long as the transformer doesn't modify
+the event ID, its output will be correlated along with the original pressure.
+
+The event hierarchy can get more complicated.  For example, in a recorder there
+are inputs for key signals, breath controller, pedals, and strips.  From the
+keyboard, key events have single component ID's.  The other signals (Breath,
+Strip, Pedal, etc) use empty ID's.
+
+The controller events (with empty IDs) are correlated with the key events
+because the IDs are a prefixing subset of the key event IDs.
+
+The recorder has all the same outputs; key streams, pedals, strip, etc.  On
+these outputs, the 'live' event stream from the keyboard and all the recorder
+takes are multiplexed.
+
+Incoming events from the keyboard (keys and controllers) are prefixed with '1.'
+on the output so that key stream events might look like '1.1' '1.2' etc, and
+breath pipe events will be '1'.
+
+Takes being played back are prefixed with '2.N' where N is chosen to separate
+all the takes currently being played.  So key events from take 1 will look
+like '2.1.1' '2.1.2' etc, and breath pipe events will be '2.1'
+
+When all this gets to an instrument, notes started by a key event '2.1.2' will
+be influenced by a controller with event '2.1' but not a controller with event
+'1' or '2.2'
+
+Internally to agents, its much more convenient to invert this behaviour, and
+deal with data organised by event, where each event contains a number of data
+streams that belong together.  The piw_bundles.h file provides abstractions to
+do this.  C++ components are connected into a graph, where each connection
+carries events, and each event carries multiple signals.  We call these
+connections 'bundles.'  
+
+There are input classes which do the correlation of events by ID, processor
+classes which handle events, and output classes which generate the outputs.
+
+There are lots of corner cases to do with this conversion, the correct treatment
+of which often depends on the application and can't be handled in a generic
+way.
+
+For this reason, inputs are handled by various policies, which depend on the
+use to which an agent puts the data stream.
+
+There are bundle classes for cloning bundles, aggregating them, gating them
+on and off, and transforming event id's and event data.
+
+The command bcat2 -idD '<agent>' will dump the state tree, including the
+current values of its fast event channels.
+
+Clocking
+--------
+
+Many agents operate in a clocked mode, processing data on data queues once per
+audio clock tick.  This is essential for audio processing, and convenient for
+anisochronous performance data.
+
+EigenD provides a clocking mechanism.  Agents can define clock sinks, and 
+relationships can be made between them to create a clocking graph.  Clocking
+relationships are made by the connection system and can propagate along bundles.
+
+In this way, each node in the graph is clocked only after all its producers
+have been clocked, minimising the latency involved in data traversing the system.
+
+Clock sinks (piw::clocksink_t) belong to clock domains (piw::clockdomain_t) which
+can be either anisochronous, or isochronous.  There is 1 anisochronous domain, and
+potentially many isochronous domains.  Connection between different isochronous
+domains currently isn't supported, and would require resampling.
+
+Clock loops aren't currently allowed.  Some agents contain multiple clock sinks
+to obviate the need for looping.  For example, the alpha keyboard agent has
+different clock sinks for audio in and out, so audio data can be taken from the
+Microphone, through the mixer, and back to the headphones.

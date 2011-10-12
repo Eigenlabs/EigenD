@@ -1,0 +1,358 @@
+description
+	Creates an Alpha setup with two keygroups that just send out MIDI,
+	one for the main keyboard and one for the percussion keys.
+	
+	This script should be ran after the first part is finished and the
+	green blinking light on the Alpha is gone.
+
+script
+	empty join
+	
+	# create the required agents
+	scale manager create
+	
+	kgroup create
+	scaler create
+	midi converter create
+	midi output create
+	
+	kgroup create
+	scaler create
+	midi converter create
+	midi output create
+
+	kgroup create
+	
+	# now that the Alpha keyboard should be detected in the meantime
+	# connect it up to the kgroups
+	alpha keyboard 1 to kgroup 1 connect		
+	alpha keyboard 1 to kgroup 2 connect		
+	alpha keyboard 1 to kgroup 3 connect		
+	
+	# set up the main keyboard keygroup
+	###################################
+	kgroup 1 listen
+	
+	output 1 create
+	output 1 choose
+	
+	k 1 to k 23 as course 1 add
+	k 25 to k 47 as course 2 add
+	k 49 to k 71 as course 3 add
+	k 73 to k 95 as course 4 add
+	k 97 to k 119 as course 5 add
+	
+	course 1 offset to 0 interval set
+	course 2 offset to 4 interval set
+	course 3 offset to 4 interval set
+	course 4 offset to 4 interval set
+	course 5 offset to 4 interval set
+	
+	empty join
+	
+	# configure the scaler to play chromatic and
+	# set the pitch bend range two semitones
+	scaler 1 hey scale to chromatic set
+	scaler 1 hey octave to 2 set
+	scaler 1 hey k bend range to 2 set
+
+	# connect the agents together
+	kgroup 1 output 1 to scaler 1 connect
+	scaler 1 to midi converter 1 connect
+	midi converter 1 to midi output 1 connect
+	kgroup 1 output 1 roll output to scaler 1 k pitch bend input connect
+	
+	# connect other data streams to parameters for expression
+	scaler 1 pressure output to midi converter 1 parameter 1 connect
+	scaler 1 roll output to midi converter 1 parameter 2 connect
+	scaler 1 yaw output to midi converter 1 parameter 3 connect
+	kgroup 1 output 1 breath output to midi converter 1 parameter 4 connect
+	kgroup 1 output 1 strip position output 1 to midi converter 1 parameter 5 connect
+	kgroup 1 output 1 absolute strip output 1 to midi converter 1 parameter 6 connect
+	kgroup 1 output 1 strip position output 2 to midi converter 1 parameter 7 connect
+	kgroup 1 output 1 absolute strip output 2 to midi converter 1 parameter 8 connect
+	kgroup 1 output 1 pedal output 1 to midi converter 1 parameter 9 connect
+	kgroup 1 output 1 pedal output 2 to midi converter 1 parameter 10 connect
+	kgroup 1 output 1 pedal output 3 to midi converter 1 parameter 11 connect
+	kgroup 1 output 1 pedal output 4 to midi converter 1 parameter 12 connect
+	scaler 1 pressure output to midi converter 1 parameter 16 connect	
+	midi converter 1 parameter 1 to pressure name ify
+	midi converter 1 parameter 2 to roll name ify
+	midi converter 1 parameter 3 to yaw name ify
+	midi converter 1 parameter 4 to breath name ify
+	midi converter 1 parameter 5 to strip position 1 name ify	
+	midi converter 1 parameter 6 to absolute strip 1 name ify
+	midi converter 1 parameter 7 to strip position 2 name ify	
+	midi converter 1 parameter 8 to absolute strip 2 name ify
+	midi converter 1 parameter 9 to pedal 1 name ify
+	midi converter 1 parameter 10 to pedal 2 name ify
+	midi converter 1 parameter 11 to pedal 3 name ify
+	midi converter 1 parameter 12 to pedal 4 name ify
+	midi converter 1 parameter 16 to key position name ify
+	
+	# connect the bottom rows of keys controls directly to midi converter parameters
+	alpha keyboard 1 k 24 pressure output to midi converter 1 parameter 17 connect
+	alpha keyboard 1 k 24 roll output to midi converter 1 parameter 18 connect
+	alpha keyboard 1 k 24 yaw output to midi converter 1 parameter 19 connect
+	alpha keyboard 1 k 48 pressure output to midi converter 1 parameter 20 connect
+	alpha keyboard 1 k 48 roll output to midi converter 1 parameter 21 connect
+	alpha keyboard 1 k 48 yaw output to midi converter 1 parameter 22 connect
+	alpha keyboard 1 k 72 pressure output to midi converter 1 parameter 23 connect
+	alpha keyboard 1 k 72 roll output to midi converter 1 parameter 24 connect
+	alpha keyboard 1 k 72 yaw output to midi converter 1 parameter 25 connect
+	alpha keyboard 1 k 96 pressure output to midi converter 1 parameter 26 connect
+	alpha keyboard 1 k 96 roll output to midi converter 1 parameter 27 connect
+	alpha keyboard 1 k 96 yaw output to midi converter 1 parameter 28 connect
+	alpha keyboard 1 k 120 pressure output to midi converter 1 parameter 29 connect
+	alpha keyboard 1 k 120 roll output to midi converter 1 parameter 30 connect
+	alpha keyboard 1 k 120 yaw output to midi converter 1 parameter 31 connect
+	midi converter 1 parameter 17 to controller pressure 1 name ify
+	midi converter 1 parameter 18 to controller roll 1 name ify
+	midi converter 1 parameter 19 to controller yaw 1 name ify
+	midi converter 1 parameter 20 to controller pressure 2 name ify
+	midi converter 1 parameter 21 to controller roll 2 name ify
+	midi converter 1 parameter 22 to controller yaw 2 name ify
+	midi converter 1 parameter 23 to controller pressure 3 name ify
+	midi converter 1 parameter 24 to controller roll 3 name ify
+	midi converter 1 parameter 25 to controller yaw 3 name ify
+	midi converter 1 parameter 26 to controller pressure 4 name ify
+	midi converter 1 parameter 27 to controller roll 4 name ify
+	midi converter 1 parameter 28 to controller yaw 4 name ify
+	midi converter 1 parameter 29 to controller pressure 5 name ify
+	midi converter 1 parameter 30 to controller roll 5 name ify
+	midi converter 1 parameter 31 to controller yaw 5 name ify
+
+	midi converter 1 listen
+	
+	# reduce the MIDI data bandwidth to prevent external hosts to be overwhelmed
+	minimum decimation to 10 set
+	
+	# set up some mappings in the routing matrix
+	parameter 1 for polyphonic aftertouch map
+	parameter 3 for midi 1 map
+	parameter 4 for midi 2 map
+	parameter 5 for midi 16 map
+	parameter 7 for midi 80 map
+	parameter 9 for midi 64 map
+	parameter 10 for midi 11 map
+	parameter 17 for midi 12 map
+	parameter 18 for midi 13 map
+	parameter 19 for midi 14 map
+	parameter 20 for midi 16 map
+	parameter 21 for midi 17 map
+	parameter 22 for midi 18 map
+	parameter 23 for midi 19 map	
+	parameter 24 for midi 20 map
+	parameter 25 for midi 21 map
+	parameter 26 for midi 22 map
+	parameter 27 for midi 23 map	
+	parameter 28 for midi 24 map	
+	parameter 29 for midi 80 map
+	parameter 30 for midi 81 map
+	parameter 31 for midi 82 map
+	
+	# set the MIDI channel to 1
+	midi channel to 1 set
+	
+	empty join
+	
+	# create a talker to change the scales
+	# it can then be connected up to widgets in Stage
+	talker create
+	it to scale talker 1 name ify
+	
+	scaler 1 listen
+	scale talker 1 listen
+	interpreter listen
+
+	" scale talker 1 hey 1 to 1 from 2 colour ify " when 1 do
+	" scale talker 1 hey 2 to 1 from 2 colour ify " when 2 do
+	" scale talker 1 hey 3 to 1 from 2 colour ify " when 3 do
+	" scale talker 1 hey 4 to 1 from 2 colour ify " when 4 do
+	" scale talker 1 hey 5 to 1 from 2 colour ify " when 5 do
+	" scale talker 1 hey 6 to 1 from 2 colour ify " when 6 do
+	" scale talker 1 hey 7 to 1 from 2 colour ify " when 7 do
+	" scale talker 1 hey 8 to 1 from 2 colour ify " when 8 do
+
+	scaler 1 scale to major when 1 set
+	scaler 1 scale to harmonic minor when 2 set
+	scaler 1 scale to melodic minor when 3 set
+	scaler 1 scale to chromatic when 4 set	
+	scaler 1 scale to blues when 5 set
+	scaler 1 scale to pentatonic major when 6 set
+	scaler 1 scale to diminished when 7 set
+	scaler 1 scale to whole tone when 8 set
+	
+	1 to 2 colour ify
+	2 to 2 colour ify
+	3 to 2 colour ify
+	4 to 1 colour ify
+	5 to 2 colour ify
+	6 to 2 colour ify
+	7 to 2 colour ify
+	8 to 2 colour ify
+	
+	empty join
+	
+	# set up the percussion keygroup
+	################################
+	kgroup 2 listen
+	
+	output 1 create
+	output 1 choose
+	
+	k 121 to k 132 as course 1 add
+	
+	course 1 offset to 0 interval set
+	
+	empty join
+	
+	# configure the scaler to play chromatic and
+	# set the pitch bend range two semitones
+	scaler 2 hey scale to chromatic set
+	scaler 2 hey octave to 2 set
+	scaler 2 hey k bend range to 2 set
+
+	# connect the agents together
+	kgroup 2 output 1 to scaler 2 connect
+	scaler 2 to midi converter 2 connect
+	midi converter 2 to midi output 2 connect
+	kgroup 2 output 1 roll output to scaler 2 k pitch bend input connect
+	
+	# connect other data streams to parameters for expression
+	scaler 2 pressure output to midi converter 2 parameter 1 connect
+	scaler 2 roll output to midi converter 2 parameter 2 connect
+	scaler 2 yaw output to midi converter 2 parameter 3 connect
+	kgroup 2 output 1 breath output to midi converter 2 parameter 4 connect
+	kgroup 2 output 1 strip position output 1 to midi converter 2 parameter 5 connect
+	kgroup 2 output 1 absolute strip output 1 to midi converter 2 parameter 6 connect
+	kgroup 2 output 1 strip position output 2 to midi converter 2 parameter 7 connect
+	kgroup 2 output 1 absolute strip output 2 to midi converter 2 parameter 8 connect
+	kgroup 2 output 1 pedal output 1 to midi converter 2 parameter 9 connect
+	kgroup 2 output 1 pedal output 2 to midi converter 2 parameter 10 connect
+	kgroup 2 output 1 pedal output 3 to midi converter 2 parameter 11 connect
+	kgroup 2 output 1 pedal output 4 to midi converter 2 parameter 12 connect
+	scaler 2 pressure output to midi converter 2 parameter 16 connect
+	midi converter 2 parameter 1 to pressure name ify
+	midi converter 2 parameter 2 to roll name ify
+	midi converter 2 parameter 3 to yaw name ify
+	midi converter 2 parameter 4 to breath name ify
+	midi converter 2 parameter 5 to strip position 1 name ify	
+	midi converter 2 parameter 6 to absolute strip 1 name ify
+	midi converter 2 parameter 7 to strip position 2 name ify	
+	midi converter 2 parameter 8 to absolute strip 2 name ify
+	midi converter 2 parameter 9 to pedal 1 name ify
+	midi converter 2 parameter 10 to pedal 2 name ify
+	midi converter 2 parameter 11 to pedal 3 name ify
+	midi converter 2 parameter 12 to pedal 4 name ify
+	midi converter 2 parameter 16 to key position name ify
+	
+	midi converter 2 listen
+	
+	# reduce the MIDI data bandwidth to prevent external hosts to be overwhelmed
+	minimum decimation to 10 set
+	
+	# set up some mappings in the routing matrix
+	parameter 5 for midi 16 map
+	parameter 7 for midi 80 map
+	parameter 1 for polyphonic aftertouch map
+	parameter 3 for midi 1 map
+	parameter 4 for midi 2 map
+	parameter 9 for midi 64 map
+	parameter 10 for midi 11 map
+
+	# set the MIDI channel to 1
+	midi channel to 1 set
+	
+	empty join
+	
+	# create a talker to change the scales
+	# it can then be connected up to widgets in Stage
+	talker create
+	it to scale talker 2 name ify
+	
+	scaler 2 listen
+	scale talker 2 listen
+	interpreter listen
+
+	" scale talker 2 hey 1 to 1 from 2 colour ify " when 1 do
+	" scale talker 2 hey 2 to 1 from 2 colour ify " when 2 do
+	" scale talker 2 hey 3 to 1 from 2 colour ify " when 3 do
+	" scale talker 2 hey 4 to 1 from 2 colour ify " when 4 do
+	" scale talker 2 hey 5 to 1 from 2 colour ify " when 5 do
+	" scale talker 2 hey 6 to 1 from 2 colour ify " when 6 do
+	" scale talker 2 hey 7 to 1 from 2 colour ify " when 7 do
+	" scale talker 2 hey 8 to 1 from 2 colour ify " when 8 do
+
+	scaler 2 scale to major when 1 set
+	scaler 2 scale to harmonic minor when 2 set
+	scaler 2 scale to melodic minor when 3 set
+	scaler 2 scale to chromatic when 4 set	
+	scaler 2 scale to blues when 5 set
+	scaler 2 scale to pentatonic major when 6 set
+	scaler 2 scale to diminished when 7 set
+	scaler 2 scale to whole tone when 8 set
+	
+	1 to 2 colour ify
+	2 to 2 colour ify
+	3 to 2 colour ify
+	4 to 1 colour ify
+	5 to 2 colour ify
+	6 to 2 colour ify
+	7 to 2 colour ify
+	8 to 2 colour ify
+	
+	empty join
+	
+	# create a talker to calibrate the pedal bounds
+	# it can then be connected up to widgets in Stage
+	#################################################
+	talker create
+	it to pedal talker 1 name ify
+	
+	pedal talker 1 listen
+	alpha keyboard 1 listen
+	
+	pedal 1 when 1 minimise
+	pedal 2 when 2 minimise
+	pedal 1 when 3 maximise
+	pedal 2 when 4 maximise
+	
+	pedal minimum threshold 1 to 0 set
+	pedal maximum threshold 1 to 0 set
+	pedal minimum threshold 2 to 0 set
+	pedal maximum threshold 2 to 0 set
+	
+	empty join
+			
+	# setup a keygroup to colour the MIDI controller keys
+	#####################################################
+	
+	# set up the controller keygroup
+	kgroup 3 listen	
+	output 1 create
+	output 1 choose
+	k 24 add
+	k 48 add
+	k 72 add
+	k 96 add
+	k 120 add
+	empty join
+
+	# create a talker to color the controller keys
+	talker create
+	it to controller talker 1 name ify
+	
+	kgroup 3 output 1 to controller talker 1 connect
+	
+	kgroup 3 listen
+	controller talker 1 listen
+	interpreter listen
+	
+	" " when 1 silent do
+	" " when 2 silent do
+	" " when 3 silent do
+	" " when 4 silent do
+	" " when 5 silent do
+	
+	empty join

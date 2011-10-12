@@ -90,7 +90,7 @@ namespace piw
         void set_parameters(pic::lckvector_t<param_data_t>::nbtype &);
         void set_midi(pic::lckvector_t<midi_data_t>::nbtype &);
 
-        std::auto_ptr<piw::param_input_t> param_input_[16];
+        std::auto_ptr<piw::param_input_t> param_input_[32];
 
         piw::midi_channel_delegate_t &channel_delegate_;
         piw::settings_functors_t settings_functors_;
@@ -251,8 +251,11 @@ namespace piw
         {
             param_input_[i] = std::auto_ptr<piw::param_input_t>(new piw::param_input_t(this,i+1));
         }
-
         param_input_[15] = std::auto_ptr<piw::param_input_t>(new piw::keynum_input_t(this,16));
+        for(unsigned i=16; i<32; i++)
+        {
+            param_input_[i] = std::auto_ptr<piw::param_input_t>(new piw::param_input_t(this,i+1));
+        }
 
         midi_from_belcanto_.set_resend_current(piw::resend_current_t::method(this, &midi_converter_t::impl_t::resend_parameter_current));
 
@@ -288,7 +291,7 @@ namespace piw
 
     void midi_converter_t::impl_t::resend_parameter_current(const piw::data_nb_t &d)
     {
-        for(unsigned i=0; i<16; ++i)
+        for(unsigned i=0; i<32; ++i)
         {
             param_input_[i]->resend_current(d);
         }
@@ -323,6 +326,10 @@ namespace piw
         // schedule the key input parameter before anything else
         param_input_[15]->schedule(from,to);
         for(unsigned i=0; i<15; ++i)
+        {
+            param_input_[i]->schedule(from,to);
+        }
+        for(unsigned i=16; i<32; ++i)
         {
             param_input_[i]->schedule(from,to);
         }
