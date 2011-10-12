@@ -19,7 +19,7 @@
 */
 
 #ifdef _WIN32
-  #ifdef BUILDING_MIDI
+  #ifdef BUILDING_MIDILIB
     #define MIDI_DECLSPEC_FUNC(rt) rt __declspec(dllexport)
     #define MIDI_DECLSPEC_CLASS __declspec(dllexport)
   #else
@@ -28,7 +28,7 @@
   #endif
 #else
   #if __GNUC__ >= 4
-    #ifdef BUILDING_MIDI
+    #ifdef BUILDING_MIDILIB
       #define MIDI_DECLSPEC_FUNC(rt) rt __attribute__ ((visibility("default")))
       #define MIDI_DECLSPEC_CLASS __attribute__ ((visibility("default")))
       #ifndef JUCE_API
