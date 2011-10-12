@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  13 Sep 2011 9:44:00pm
+  Creation date:  28 Jan 2011 3:49:45pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,11 +19,11 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_1A20CA6A__
-#define __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_1A20CA6A__
+#ifndef __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_74F99BDF__
+#define __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_74F99BDF__
 
 //[Headers]     -- You can add your own extra header files here --
-#include <piw/piw_gui_mapper.h>
+#include <lib_midi/control_mapper_gui.h>
 
 #include "juce.h"
 //[/Headers]
@@ -38,32 +38,30 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class GlobalSettingsComponent  : public Component,
-                                 public ButtonListener,
-                                 public SliderListener,
-                                 public ComboBoxListener
+class CellPopupComponent  : public Component,
+                            public SliderListener,
+                            public ButtonListener,
+                            public ComboBoxListener
 {
 public:
     //==============================================================================
-    GlobalSettingsComponent ();
-    ~GlobalSettingsComponent();
+    CellPopupComponent ();
+    ~CellPopupComponent();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void initialize(piw::mapping_delegate_t *mapping_delegate);
+    void initialize(midi::mapper_cell_editor_t *cell_editor);
     void updateComponent();
-    void updateComponent(piw::mapping_delegate_t *mapping_delegate);
-    void setDialogWindow(DialogWindow *window);
+    void updateComponent(midi::mapper_cell_editor_t *cell_editor);
     void setFocusOrder();
-    void updateSettings();
+    void updateMapping();
     //[/UserMethods]
 
     void paint (Graphics& g);
     void resized();
-    void buttonClicked (Button* buttonThatWasClicked);
     void sliderValueChanged (Slider* sliderThatWasMoved);
+    void buttonClicked (Button* buttonThatWasClicked);
     void comboBoxChanged (ComboBox* comboBoxThatHasChanged);
-
 
 
     //==============================================================================
@@ -71,31 +69,45 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-    DialogWindow* window_;
-    piw::mapping_delegate_t *mapping_delegate_;
+    midi::mapper_cell_editor_t *cell_editor_;
+    unsigned curve_;
     //[/UserVariables]
 
     //==============================================================================
-    GroupComponent* midi_group;
+    GroupComponent* bounds_group;
+    Label* lo_label;
+    Label* base_label;
+    GroupComponent* scale_group;
+    GroupComponent* control_scope_group;
+    Slider* scale_factor;
+    ToggleButton* mapping_enabled;
+    ToggleButton* control_scope_global;
+    ToggleButton* control_scope_pernote;
+    TextButton* clear_mapping;
+    GroupComponent* resolution_group;
+    ToggleButton* resolution_7bit;
+    ToggleButton* resolution_14bit;
+    ComboBox* secondary_cc;
+    Label* lo;
+    Label* base;
+    Label* hi_label;
+    Label* hi;
     TextButton* ok;
-    ToggleButton* midi_notes;
-    ToggleButton* midi_pitchbend;
-    GroupComponent* min_data_decimation_group;
+    Slider* boundslo;
+    Slider* boundsbase;
+    Slider* boundshi;
+    ToggleButton* scale_factor_invert;
+    GroupComponent* data_decimation_group;
     Slider* data_decimation;
-    Label* active_channel_label;
-    ComboBox* active_channel;
-    Label* min_channel_label;
-    ComboBox* min_channel;
-    Label* max_channel_label;
-    ComboBox* max_channel;
-    ToggleButton* midi_hires_velocity;
-
+    ToggleButton* control_scope_channel;
+    ComboBox* control_scope_channel_number;
+    ToggleButton* bounds_origin_return;
 
     //==============================================================================
     // (prevent copy constructor and operator= being generated..)
-    GlobalSettingsComponent (const GlobalSettingsComponent&);
-    const GlobalSettingsComponent& operator= (const GlobalSettingsComponent&);
+    CellPopupComponent (const CellPopupComponent&);
+    const CellPopupComponent& operator= (const CellPopupComponent&);
 };
 
 
-#endif   // __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_1A20CA6A__
+#endif   // __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_74F99BDF__

@@ -21,8 +21,9 @@
 #include <sstream>
 
 #include <piw/piw_tsd.h>
-#include <piw/piw_gui_mapper.h>
-#include <piw/piw_midi_gm.h>
+
+#include <lib_midi/control_mapper_gui.h>
+#include <lib_midi/midi_gm.h>
 
 #include "juce.h"
 #include "JucerPopupDialogComponent.h"
@@ -137,7 +138,7 @@ static const char *mapping_help_text = ""
 ;
 
 
-namespace piw
+namespace midi
 {
 
     /*
@@ -461,7 +462,7 @@ namespace piw
         settings_functors_.change_settings_(settings);
     }
 
-    piw::global_settings_t mapping_delegate_t::get_settings()
+    global_settings_t mapping_delegate_t::get_settings()
     {
         return settings_functors_.get_settings_();
     }
@@ -593,7 +594,7 @@ namespace piw
 
     juce::Component *header_table_model_t::refreshComponentForCell(int row, int col, bool sel, juce::Component *existing)
     {
-        piw::mapper_yaxis_editor_t *e = (piw::mapper_yaxis_editor_t *)existing;
+        mapper_yaxis_editor_t *e = (mapper_yaxis_editor_t *)existing;
         if(!e)
         {
             e = mapper_.create_yaxis_editor();
@@ -639,7 +640,7 @@ namespace piw
 
     juce::Component *mapping_table_model_t::refreshComponentForCell(int row, int col, bool sel, juce::Component *existing)
     {
-        piw::mapper_cell_editor_t *e = (piw::mapper_cell_editor_t *)existing;
+        mapper_cell_editor_t *e = (mapper_cell_editor_t *)existing;
         if(!e)
         {
             e = mapper_.create_cell_editor(row, col);
@@ -881,7 +882,7 @@ namespace piw
      * mapper_table_t
      */
 
-    mapper_table_t::mapper_table_t(piw::settings_functors_t settings, piw::mapping_functors_t mapping): settings_functors_(settings), mapping_functors_(mapping), header_table_model_(*this), mapping_table_model_(*this), font_(12.f), last_modal_dismissal_(0), initialized_(false)
+    mapper_table_t::mapper_table_t(settings_functors_t settings, mapping_functors_t mapping): settings_functors_(settings), mapping_functors_(mapping), header_table_model_(*this), mapping_table_model_(*this), font_(12.f), last_modal_dismissal_(0), initialized_(false)
     {
         addAndMakeVisible(table_header_ = new juce::TableListBox(juce::String::empty,&header_table_model_));
         table_header_->getViewport()->setScrollBarsShown(false, false);
@@ -1026,7 +1027,7 @@ namespace piw
             oss << ": CC ";
             if(row<MIDI_CC_MAX)
             {
-                oss << piw::midi_cc[row];
+                oss << midi::midi_cc[row];
             }
         }
         return juce::String(oss.str().c_str());
@@ -1118,4 +1119,4 @@ namespace piw
     {
         e.map(true,1.f,1.f,0.f,1.f,false,10.f,GLOBAL_SCOPE,0,BITS_7,-1,CURVE_LINEAR);
     }
-}
+} // namespace midi

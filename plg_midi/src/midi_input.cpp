@@ -21,12 +21,13 @@
 #include <piw/piw_tsd.h>
 #include <piw/piw_thing.h>
 #include <piw/piw_fastdata.h>
-#include <piw/piw_midi_decoder.h>
 #include <piw/piw_bundle.h>
 
 #include <picross/pic_time.h>
 #include <picross/pic_log.h>
 #include <picross/pic_config.h>
+
+#include <lib_midi/midi_decoder.h>
 
 #include <plg_midi/midi_input.h>
 
@@ -162,7 +163,7 @@ namespace
     // Is a midi receiver and decoder
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    struct keyboard_t: piw::root_ctl_t, piw::thing_t, piw::mididecoder_t
+    struct keyboard_t: piw::root_ctl_t, piw::thing_t, midi::mididecoder_t
     {
         keyboard_t()
         {
@@ -360,7 +361,7 @@ namespace
     // streams midi outputs from the midi input port, unfiltered and filtered (midi clock)
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    struct midi_stream_t: piw::root_ctl_t, piw::thing_t, piw::mididecoder_t
+    struct midi_stream_t: piw::root_ctl_t, piw::thing_t, midi::mididecoder_t
     {
         midi_stream_t() : buffer_p_(0), remaining_clock_bytes_(0)
         {

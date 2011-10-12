@@ -17,19 +17,20 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MIDI_CONVERTER_H_
-#define MIDI_CONVERTER_H_
+#ifndef __MIDI_CONVERTER_H__
+#define __MIDI_CONVERTER_H__
 
-#include <piw/piw_exports.h>
-#include <piw/piw_midi_from_belcanto.h>
-#include <piw/piw_gui_mapper.h>
-#include <piw/piw_control_mapping.h>
+#include <lib_midi/lib_midi_exports.h>
 
-namespace piw
+#include <lib_midi/midi_from_belcanto.h>
+#include <lib_midi/control_mapper_gui.h>
+#include <lib_midi/control_mapping.h>
+
+namespace midi
 {
-    struct PIW_DECLSPEC_CLASS midi_converter_t
+    struct MIDI_DECLSPEC_CLASS midi_converter_t
     {
-        midi_converter_t(piw::mapping_observer_t &, piw::midi_channel_delegate_t &, piw::clockdomain_ctl_t *, piw::midi_from_belcanto_t &, const std::string &);
+        midi_converter_t(mapping_observer_t &, midi_channel_delegate_t &, piw::clockdomain_ctl_t *, midi_from_belcanto_t &, const std::string &);
         ~midi_converter_t();
 
         piw::clockdomain_ctl_t *clock_domain();
@@ -38,14 +39,14 @@ namespace piw
         void set_mapping(const std::string &);
         std::string get_mapping();
         void parameter_name_changed(unsigned);
-        void map_param(unsigned, piw::mapping_info_t);
-        void map_midi(unsigned, piw::mapping_info_t);
+        void map_param(unsigned, mapping_info_t);
+        void map_midi(unsigned, mapping_info_t);
         void unmap_param(unsigned, unsigned);
         void unmap_midi(unsigned, unsigned);
         bool is_mapped_param(unsigned, unsigned);
         bool is_mapped_midi(unsigned, unsigned);
-        piw::mapping_info_t get_info_param(unsigned, unsigned);
-        piw::mapping_info_t get_info_midi(unsigned, unsigned);
+        mapping_info_t get_info_param(unsigned, unsigned);
+        mapping_info_t get_info_midi(unsigned, unsigned);
         void set_minimum_decimation(float);
         void set_midi_notes(bool);
         void set_midi_pitchbend(bool);
@@ -54,11 +55,11 @@ namespace piw
         void set_min_midi_channel(unsigned);
         void set_max_midi_channel(unsigned);
         void set_program_change(unsigned);
-        change_nb_t change_program();
+        piw::change_nb_t change_program();
         void set_bank_change(unsigned);
-        change_nb_t change_bank();
+        piw::change_nb_t change_bank();
         void set_cc(unsigned, unsigned);
-        change_nb_t change_cc();
+        piw::change_nb_t change_cc();
         void close();
 
         int gc_clear();
@@ -69,6 +70,6 @@ namespace piw
         impl_t *impl_;
     };
 
-}; // namespace piw
+}; // namespace midi
 
-#endif /* MIDI_CONVERTER_H_ */
+#endif /* __MIDI_CONVERTER_H__ */

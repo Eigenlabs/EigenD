@@ -17,9 +17,9 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <piw/piw_control_params.h>
+#include <lib_midi/control_params.h>
 
-namespace piw
+namespace midi
 {
     /**
      * param_wire_t
@@ -126,7 +126,7 @@ namespace piw
     piw::wire_t *input_root_t::root_wire(const piw::event_data_source_t &es)
     {
         piw::data_t path = es.path();
-        host_wire_map_t::const_iterator i = wires_.alternate().find(path);
+        param_wire_map_t::const_iterator i = wires_.alternate().find(path);
 
         if(i != wires_.alternate().end())
             delete i->second;
@@ -139,7 +139,7 @@ namespace piw
      * param_input_t
      */
 
-    param_input_t::param_input_t(params_delegate_t *d, unsigned name): input_root_t(d), params_delegate_(d), control_mapping_(name), current_id_(makenull(0)), current_data_(makenull(0))
+    param_input_t::param_input_t(params_delegate_t *d, unsigned name): input_root_t(d), params_delegate_(d), control_mapping_(name), current_id_(piw::makenull(0)), current_data_(piw::makenull(0))
     {
     }
 
@@ -191,11 +191,11 @@ namespace piw
 
         control_mapping_.touch_origins_update();
 
-        piw::nb_param_map_t::iterator ip,bp,ep;
+        nb_param_map_t::iterator ip,bp,ep;
         bp = control_mapping_.params().begin();
         ep = control_mapping_.params().end();
 
-        piw::nb_origin_map_t::iterator io,bo,eo;
+        nb_origin_map_t::iterator io,bo,eo;
         bo = control_mapping_.origins().begin();
         eo = control_mapping_.origins().end();
 
@@ -226,12 +226,12 @@ namespace piw
         }
     }
 
-    float param_input_t::calculate_param_value(const piw::data_nb_t &id, const float d, const piw::mapping_data_t &mapping, const float origin)
+    float param_input_t::calculate_param_value(const piw::data_nb_t &id, const float d, const mapping_data_t &mapping, const float origin)
     {
         return origin + mapping.calculate(d);
     }
 
-    long param_input_t::calculate_midi_value(const piw::data_nb_t &id, const float d, const piw::mapping_data_t &mapping)
+    long param_input_t::calculate_midi_value(const piw::data_nb_t &id, const float d, const mapping_data_t &mapping)
     {
         return mapping.calculate(d) * 16383.f;
     }
@@ -318,7 +318,7 @@ namespace piw
         // handle the case where the input is ending, but there's no more data
         if(!more_data && ending)
         {
-            current_data_.set_nb(makenull_nb(piw::tsd_time()));
+            current_data_.set_nb(piw::makenull_nb(piw::tsd_time()));
             process_wire_data(w, params, midi, first_wire, true);
         }
 
@@ -349,11 +349,11 @@ namespace piw
 
     void param_input_t::process_params(pic::lckvector_t<param_data_t>::nbtype &params, const piw::data_nb_t &id, const piw::data_nb_t &d, bool first_wire, bool ending)
     {
-        piw::nb_param_map_t::iterator ip,bp,ep;
+        nb_param_map_t::iterator ip,bp,ep;
         bp = control_mapping_.params().begin();
         ep = control_mapping_.params().end();
 
-        piw::nb_origin_map_t::iterator io,bo,eo;
+        nb_origin_map_t::iterator io,bo,eo;
         bo = control_mapping_.origins().begin();
         eo = control_mapping_.origins().end();
 
@@ -405,7 +405,7 @@ namespace piw
 
     void param_input_t::process_midi(pic::lckvector_t<midi_data_t>::nbtype &midi, const piw::data_nb_t &id, const piw::data_nb_t &d, bool continuous, bool accept_global_scope, bool ending)
     {
-        piw::nb_midi_map_t::iterator ic,bc,ec;
+        nb_midi_map_t::iterator ic,bc,ec;
         bc = control_mapping_.midi().begin();
         ec = control_mapping_.midi().end();
 
@@ -469,12 +469,12 @@ namespace piw
     {
     }
 
-    float keynum_input_t::calculate_param_value(const piw::data_nb_t &id, const float d, const piw::mapping_data_t &mapping, const float origin)
+    float keynum_input_t::calculate_param_value(const piw::data_nb_t &id, const float d, const mapping_data_t &mapping, const float origin)
     {
         return origin + mapping.calculate(extract_keynum(id));
     }
 
-    long keynum_input_t::calculate_midi_value(const piw::data_nb_t &id, const float d, const piw::mapping_data_t &mapping)
+    long keynum_input_t::calculate_midi_value(const piw::data_nb_t &id, const float d, const mapping_data_t &mapping)
     {
         long value = extract_keynum(id) - 1;
         if(BITS_7 == mapping.resolution_)
@@ -489,4 +489,5 @@ namespace piw
         w->ended_ = true;
         return false;
     }
-}
+    
+} // namespace midi

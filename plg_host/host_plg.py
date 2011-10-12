@@ -31,6 +31,7 @@ import shutil
 import zlib
 import host_native
 import piw_native
+import midilib_native
 import string
 
 response_size = 1200
@@ -243,9 +244,9 @@ class PluginState(node.server):
         self[6].store(bounds)
 
 
-class MidiChannelDelegate(piw_native.midi_channel_delegate):
+class MidiChannelDelegate(midilib_native.midi_channel_delegate):
     def __init__(self,agent):
-        piw_native.midi_channel_delegate.__init__(self)
+        midilib_native.midi_channel_delegate.__init__(self)
         self.__agent = agent
 
     def set_midi_channel(self, channel):

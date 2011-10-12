@@ -27,7 +27,6 @@
 #include <piw/piw_tsd.h>
 #include <piw/piw_thing.h>
 #include <piw/piw_fastdata.h>
-#include <piw/piw_midi_decoder.h>
 #include <piw/piw_bundle.h>
 #include <piw/piw_cfilter.h>
 #include <piw/piw_clock.h>
@@ -36,6 +35,8 @@
 #include <picross/pic_log.h>
 
 #include <picross/pic_cfrunloop.h>
+
+#include <lib_midi/midi_decoder.h>
 
 #include <plg_midi/midi_merge_output.h>
 

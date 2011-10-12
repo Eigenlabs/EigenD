@@ -32,9 +32,10 @@
 #include <piw/piw_sclone.h>
 #include <piw/piw_state.h>
 #include <piw/piw_aggregator.h>
-#include <piw/piw_midi_from_belcanto.h>
-#include <piw/piw_gui_mapper.h>
-#include <piw/piw_control_params.h>
+
+#include <lib_midi/midi_from_belcanto.h>
+#include <lib_midi/control_mapper_gui.h>
+#include <lib_midi/control_params.h>
 
 #include "juce.h"
 
@@ -146,7 +147,7 @@ namespace
         return std::min((bs-1),(unsigned)offset);
     }
 
-    struct midi_input_t: piw::input_root_t
+    struct midi_input_t: midi::input_root_t
     {
         midi_input_t(host::plugin_instance_t::impl_t *);
         bool schedule(unsigned long long,unsigned long long);
@@ -224,17 +225,17 @@ namespace
         void resized() { tabs_->setBoundsInset(juce::BorderSize<int>(8)); }
 
         juce::TabbedComponent *tabs_;
-        piw::mapping_functors_t au_mapper_;
-        piw::mapping_functors_t midi_cc_mapper_;
-        piw::mapping_functors_t midi_behaviour_mapper_;
+        midi::mapping_functors_t au_mapper_;
+        midi::mapping_functors_t midi_cc_mapper_;
+        midi::mapping_functors_t midi_behaviour_mapper_;
     };
 
-    struct host_param_table_t: piw::mapper_table_t
+    struct host_param_table_t: midi::mapper_table_t
     {
-        host_param_table_t(piw::settings_functors_t settings, piw::mapping_functors_t mapping, host::plugin_instance_t::impl_t *c): mapper_table_t(settings, mapping), controller_(c), parameter_count_(0), last_parameter_check_(0) {};
+        host_param_table_t(midi::settings_functors_t settings, midi::mapping_functors_t mapping, host::plugin_instance_t::impl_t *c): mapper_table_t(settings, mapping), controller_(c), parameter_count_(0), last_parameter_check_(0) {};
         int getNumRows();
         juce::String getRowName(int);
-        void default_mapping(piw::mapper_cell_editor_t &);
+        void default_mapping(midi::mapper_cell_editor_t &);
         int get_parameter_count();
 
         host::plugin_instance_t::impl_t *controller_;
@@ -269,8 +270,8 @@ namespace
     // panel holding content and toolbar components
     struct host_panel_t: juce::Component, juce::ComponentListener
     {
-        host_panel_t(Component *content, host::plugin_instance_t::impl_t *controller, piw::toolbar_delegate_t *delegate):
-            toolbar_(new piw::toolbar_t(delegate)), controller_(controller), content_(content)
+        host_panel_t(Component *content, host::plugin_instance_t::impl_t *controller, midi::toolbar_delegate_t *delegate):
+            toolbar_(new midi::toolbar_t(delegate)), controller_(controller), content_(content)
         {
             addAndMakeVisible(toolbar_);
 
@@ -311,7 +312,7 @@ namespace
         juce::Component *content_;
     };
 
-    struct mainpanel_delegate_t: piw::toolbar_delegate_t
+    struct mainpanel_delegate_t: midi::toolbar_delegate_t
     {
         mainpanel_delegate_t(host::plugin_instance_t::impl_t *c): controller_(c), mapping_dialog_(0)
         {
@@ -346,7 +347,7 @@ namespace
             switch(id)
             {
                 case id_automation:
-                    return button0_=new piw::toolbar_button_t(id,"Configure");
+                    return button0_=new midi::toolbar_button_t(id,"Configure");
             }
             return 0;
         }
@@ -475,9 +476,9 @@ namespace
     };
 }
 
-struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_observer_t, piw::clocksink_t, piw::thing_t, virtual pic::tracked_t
+struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_observer_t, piw::clocksink_t, piw::thing_t, virtual pic::tracked_t
 {
-    impl_t(plugin_observer_t *obs, piw::midi_channel_delegate_t *channel_delegate, piw::clockdomain_ctl_t *d,
+    impl_t(plugin_observer_t *obs, midi::midi_channel_delegate_t *channel_delegate, piw::clockdomain_ctl_t *d,
         const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, const pic::status_t &window_state): 
             audio_output_cookie_(audio_out), audio_input_(this), midi_input_(this), metronome_input_(this), 
             mapping_(*this), plugin_(0), window_(0), audio_buffer_(0,0), num_input_channels_(0), num_output_channels_(0),
@@ -485,16 +486,16 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
             observer_(obs), channel_delegate_(channel_delegate), active_(false),
             idle_count_(0), idle_time_ticks_(0), idle_time_sec_(10.f),
             main_delegate_(this),
-            settings_functors_(piw::settings_functors_t::init(
-                    piw::clearall_t::method(this,&host::plugin_instance_t::impl_t::clear_all),
-                    piw::get_settings_t::method(this,&host::plugin_instance_t::impl_t::get_settings),
-                    piw::change_settings_t::method(this,&host::plugin_instance_t::impl_t::change_settings),
-                    piw::set_channel_t::method(channel_delegate_,&piw::midi_channel_delegate_t::set_midi_channel),
-                    piw::set_channel_t::method(channel_delegate_,&piw::midi_channel_delegate_t::set_min_channel),
-                    piw::set_channel_t::method(channel_delegate_,&piw::midi_channel_delegate_t::set_max_channel),
-                    piw::get_channel_t::method(channel_delegate_,&piw::midi_channel_delegate_t::get_midi_channel),
-                    piw::get_channel_t::method(channel_delegate_,&piw::midi_channel_delegate_t::get_min_channel),
-                    piw::get_channel_t::method(channel_delegate_,&piw::midi_channel_delegate_t::get_max_channel)
+            settings_functors_(midi::settings_functors_t::init(
+                    midi::clearall_t::method(this,&host::plugin_instance_t::impl_t::clear_all),
+                    midi::get_settings_t::method(this,&host::plugin_instance_t::impl_t::get_settings),
+                    midi::change_settings_t::method(this,&host::plugin_instance_t::impl_t::change_settings),
+                    midi::set_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::set_midi_channel),
+                    midi::set_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::set_min_channel),
+                    midi::set_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::set_max_channel),
+                    midi::get_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::get_midi_channel),
+                    midi::get_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::get_min_channel),
+                    midi::get_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::get_max_channel)
                     )),
             mapping_delegate_(settings_functors_),
             midi_aggregator_(0), midi_from_belcanto_(0)
@@ -507,12 +508,12 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
 
         for(unsigned i=0; i<15; i++)
         {
-            param_input_[i] = std::auto_ptr<piw::param_input_t>(new piw::param_input_t(this,i+1));
+            param_input_[i] = std::auto_ptr<midi::param_input_t>(new midi::param_input_t(this,i+1));
         }
-        param_input_[15] = std::auto_ptr<piw::param_input_t>(new piw::keynum_input_t(this,16));
+        param_input_[15] = std::auto_ptr<midi::param_input_t>(new midi::keynum_input_t(this,16));
         for(unsigned i=16; i<32; i++)
         {
-            param_input_[i] = std::auto_ptr<piw::param_input_t>(new piw::param_input_t(this,i+1));
+            param_input_[i] = std::auto_ptr<midi::param_input_t>(new midi::param_input_t(this,i+1));
         }
 
         audio_output_.set_clock(this);
@@ -524,8 +525,8 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
 
         midi_aggregator_ = new piw::aggregator_t(piw::cookie_t(&midi_input_), clockdomain_);
 
-        midi_from_belcanto_ = new piw::midi_from_belcanto_t(midi_aggregator_->get_output(1), clockdomain_);
-        midi_from_belcanto_->set_resend_current(piw::resend_current_t ::method(this, &host::plugin_instance_t::impl_t::resend_parameter_current));
+        midi_from_belcanto_ = new midi::midi_from_belcanto_t(midi_aggregator_->get_output(1), clockdomain_);
+        midi_from_belcanto_->set_resend_current(midi::resend_current_t ::method(this, &host::plugin_instance_t::impl_t::resend_parameter_current));
         midi_from_belcanto_->set_midi_channel(0);
     }
 
@@ -901,7 +902,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
         add_upstream(c);
     }
 
-    void update_origins(piw::control_mapping_t &control_mapping)
+    void update_origins(midi::control_mapping_t &control_mapping)
     {
         pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
         if(!pg.value()) return;
@@ -910,17 +911,17 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
         mapping_.refresh_origins(control_mapping, pic::i2f_t::method(&wrapper,&plugin_guard_wrapper::get_parameter));
     }
 
-    void update_mapping(piw::control_mapping_t &control_mapping)
+    void update_mapping(midi::control_mapping_t &control_mapping)
     {
         mapping_.refresh_mappings(control_mapping);
     }
 
-    void set_parameters(pic::lckvector_t<piw::param_data_t>::nbtype &params)
+    void set_parameters(pic::lckvector_t<midi::param_data_t>::nbtype &params)
     {
         pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
         if(!pg.value()) return;
 
-        pic::lckvector_t<piw::param_data_t>::nbtype::iterator i,e;
+        pic::lckvector_t<midi::param_data_t>::nbtype::iterator i,e;
 
         i = params.begin();
         e = params.end();
@@ -940,7 +941,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
         }
     }
 
-    void set_midi(pic::lckvector_t<piw::midi_data_t>::nbtype &midi)
+    void set_midi(pic::lckvector_t<midi::midi_data_t>::nbtype &midi)
     {
         midi_from_belcanto_->set_midi(midi);
     }
@@ -1112,12 +1113,12 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
         mapping_.clear_midi_behaviour();
     }
 
-    void change_settings(piw::global_settings_t settings)
+    void change_settings(midi::global_settings_t settings)
     {
         mapping_.change_settings(settings);
     }
 
-    void perform_settings_updates(piw::global_settings_t settings)
+    void perform_settings_updates(midi::global_settings_t settings)
     {
         midi_from_belcanto_->set_send_notes(settings.send_notes_);
         midi_from_belcanto_->set_send_pitchbend(settings.send_pitchbend_);
@@ -1125,7 +1126,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
         midi_from_belcanto_->set_control_interval(settings.minimum_decimation_);
     }
 
-    piw::global_settings_t get_settings()
+    midi::global_settings_t get_settings()
     {
         return mapping_.get_settings();
     }
@@ -1136,9 +1137,9 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
     host_scalar_t audio_input_;
     midi_input_t midi_input_;
     metronome_input_t metronome_input_;
-    std::auto_ptr<piw::param_input_t> param_input_[32];
+    std::auto_ptr<midi::param_input_t> param_input_[32];
 
-    piw::controllers_mapping_t mapping_;
+    midi::controllers_mapping_t mapping_;
 
     host_output_scalar_t audio_output_;
     host_output_scalar_t midi_output_;
@@ -1161,7 +1162,7 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
     bool bypassed_;
 
     plugin_observer_t *observer_;
-    piw::midi_channel_delegate_t *channel_delegate_;
+    midi::midi_channel_delegate_t *channel_delegate_;
     pic::f_int_t parameter_changed_params_;
     pic::f_int_t parameter_changed_midi_cc_;
     pic::f_int_t parameter_changed_midi_behaviour_;
@@ -1176,11 +1177,11 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
 
     mainpanel_delegate_t main_delegate_;
 
-    piw::settings_functors_t settings_functors_;
-    piw::mapping_delegate_t mapping_delegate_;
+    midi::settings_functors_t settings_functors_;
+    midi::mapping_delegate_t mapping_delegate_;
 
     piw::aggregator_t *midi_aggregator_;
-    piw::midi_from_belcanto_t *midi_from_belcanto_;
+    midi::midi_from_belcanto_t *midi_from_belcanto_;
 };
 
 
@@ -1233,14 +1234,14 @@ host_view_t::host_view_t(const juce::String &name, Component *content, host::plu
     toFront(false);
 }
 
-midi_input_t::midi_input_t(host::plugin_instance_t::impl_t *c): piw::input_root_t(c), controller_(c)
+midi_input_t::midi_input_t(host::plugin_instance_t::impl_t *c): midi::input_root_t(c), controller_(c)
 {
 }
 
 bool midi_input_t::schedule(unsigned long long from, unsigned long long to)
 {
-    piw::host_wire_map_flipflop_t::guard_t guard(wires_);
-    piw::host_wire_map_t::const_iterator wi = guard.value().begin(), we = guard.value().end();
+    midi::param_wire_map_flipflop_t::guard_t guard(wires_);
+    midi::param_wire_map_t::const_iterator wi = guard.value().begin(), we = guard.value().end();
 
     controller_->midi_buffer_.clear();
 
@@ -1301,42 +1302,42 @@ bool metronome_input_t::getCurrentPosition(CurrentPositionInfo &result)
 }
 
 host_param_tabs_t::host_param_tabs_t(host::plugin_instance_t::impl_t *c) : 
-    au_mapper_(piw::mapping_functors_t::init(
-                piw::is_mapped_t::method(&c->mapping_,&piw::controllers_mapping_t::is_mapped_param),
-                piw::get_info_t::method(&c->mapping_,&piw::controllers_mapping_t::get_info_param),
-                piw::map_t::method(&c->mapping_,&piw::controllers_mapping_t::map_param),
-                piw::unmap_t::method(&c->mapping_,&piw::controllers_mapping_t::unmap_param),
-                piw::get_name_t::method(c,&host::plugin_instance_t::impl_t::get_parameter_name),
-                piw::clear_t::method(&c->mapping_,&piw::controllers_mapping_t::clear_params)
+    au_mapper_(midi::mapping_functors_t::init(
+                midi::is_mapped_t::method(&c->mapping_,&midi::controllers_mapping_t::is_mapped_param),
+                midi::get_info_t::method(&c->mapping_,&midi::controllers_mapping_t::get_info_param),
+                midi::map_t::method(&c->mapping_,&midi::controllers_mapping_t::map_param),
+                midi::unmap_t::method(&c->mapping_,&midi::controllers_mapping_t::unmap_param),
+                midi::get_name_t::method(c,&host::plugin_instance_t::impl_t::get_parameter_name),
+                midi::clear_t::method(&c->mapping_,&midi::controllers_mapping_t::clear_params)
                 )),
-    midi_cc_mapper_(piw::mapping_functors_t::init(
-                piw::is_mapped_t::method(&c->mapping_,&piw::controllers_mapping_t::is_mapped_midi),
-                piw::get_info_t::method(&c->mapping_,&piw::controllers_mapping_t::get_info_midi),
-                piw::map_t::method(&c->mapping_,&piw::controllers_mapping_t::map_midi),
-                piw::unmap_t::method(&c->mapping_,&piw::controllers_mapping_t::unmap_midi),
-                piw::get_name_t::method(c,&host::plugin_instance_t::impl_t::get_parameter_name),
-                piw::clear_t::method(&c->mapping_,&piw::controllers_mapping_t::clear_midi_cc)
+    midi_cc_mapper_(midi::mapping_functors_t::init(
+                midi::is_mapped_t::method(&c->mapping_,&midi::controllers_mapping_t::is_mapped_midi),
+                midi::get_info_t::method(&c->mapping_,&midi::controllers_mapping_t::get_info_midi),
+                midi::map_t::method(&c->mapping_,&midi::controllers_mapping_t::map_midi),
+                midi::unmap_t::method(&c->mapping_,&midi::controllers_mapping_t::unmap_midi),
+                midi::get_name_t::method(c,&host::plugin_instance_t::impl_t::get_parameter_name),
+                midi::clear_t::method(&c->mapping_,&midi::controllers_mapping_t::clear_midi_cc)
                 )),
-    midi_behaviour_mapper_(piw::mapping_functors_t::init(
-                piw::is_mapped_t::method(&c->mapping_,&piw::controllers_mapping_t::is_mapped_midi),
-                piw::get_info_t::method(&c->mapping_,&piw::controllers_mapping_t::get_info_midi),
-                piw::map_t::method(&c->mapping_,&piw::controllers_mapping_t::map_midi),
-                piw::unmap_t::method(&c->mapping_,&piw::controllers_mapping_t::unmap_midi),
-                piw::get_name_t::method(c,&host::plugin_instance_t::impl_t::get_parameter_name),
-                piw::clear_t::method(&c->mapping_,&piw::controllers_mapping_t::clear_midi_behaviour)
+    midi_behaviour_mapper_(midi::mapping_functors_t::init(
+                midi::is_mapped_t::method(&c->mapping_,&midi::controllers_mapping_t::is_mapped_midi),
+                midi::get_info_t::method(&c->mapping_,&midi::controllers_mapping_t::get_info_midi),
+                midi::map_t::method(&c->mapping_,&midi::controllers_mapping_t::map_midi),
+                midi::unmap_t::method(&c->mapping_,&midi::controllers_mapping_t::unmap_midi),
+                midi::get_name_t::method(c,&host::plugin_instance_t::impl_t::get_parameter_name),
+                midi::clear_t::method(&c->mapping_,&midi::controllers_mapping_t::clear_midi_behaviour)
                 ))
 {
     host_param_table_t *pt = new host_param_table_t(c->settings_functors_, au_mapper_, c);
-    piw::mapper_midi_cc_table_t *ct = new piw::mapper_midi_cc_table_t(c->settings_functors_, midi_cc_mapper_);
-    piw::mapper_midi_behaviour_table_t *mt = new piw::mapper_midi_behaviour_table_t(c->settings_functors_, midi_behaviour_mapper_);
+    midi::mapper_midi_cc_table_t *ct = new midi::mapper_midi_cc_table_t(c->settings_functors_, midi_cc_mapper_);
+    midi::mapper_midi_behaviour_table_t *mt = new midi::mapper_midi_behaviour_table_t(c->settings_functors_, midi_behaviour_mapper_);
 
     pt->initialize();
     ct->initialize();
     mt->initialize();
 
     c->parameter_changed_params_ = pic::f_int_t::method(pt,&host_param_table_t::column_changed);
-    c->parameter_changed_midi_cc_ = pic::f_int_t::method(ct,&piw::mapper_midi_cc_table_t::column_changed);
-    c->parameter_changed_midi_behaviour_ = pic::f_int_t::method(mt,&piw::mapper_midi_behaviour_table_t::column_changed);
+    c->parameter_changed_midi_cc_ = pic::f_int_t::method(ct,&midi::mapper_midi_cc_table_t::column_changed);
+    c->parameter_changed_midi_behaviour_ = pic::f_int_t::method(mt,&midi::mapper_midi_behaviour_table_t::column_changed);
 
     addAndMakeVisible (tabs_ = new TabbedComponent(TabbedButtonBar::TabsAtTop));
     tabs_->setTabBarDepth(30);
@@ -1389,12 +1390,12 @@ juce::String host_param_table_t::getRowName(int row)
     }
 }
 
-void host_param_table_t::default_mapping(piw::mapper_cell_editor_t &e)
+void host_param_table_t::default_mapping(midi::mapper_cell_editor_t &e)
 {
     e.map(true,1.f,1.f,0.f,1.f,true,0.f,GLOBAL_SCOPE,0,BITS_7,-1,CURVE_LINEAR);
 }
 
-host::plugin_instance_t::plugin_instance_t(host::plugin_observer_t *obs, piw::midi_channel_delegate_t *channel_delegate,
+host::plugin_instance_t::plugin_instance_t(host::plugin_observer_t *obs, midi::midi_channel_delegate_t *channel_delegate,
     piw::clockdomain_ctl_t *d, const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, 
     const pic::status_t &window_state_changed):
         impl_(new impl_t(obs,channel_delegate,d,audio_out,midi_out,window_state_changed))
@@ -1519,12 +1520,12 @@ void host::plugin_instance_t::parameter_name_changed(unsigned iparam)
     impl_->parameter_changed(iparam);
 }
 
-void host::plugin_instance_t::map_param(unsigned iparam, piw::mapping_info_t info)
+void host::plugin_instance_t::map_param(unsigned iparam, midi::mapping_info_t info)
 {
     impl_->mapping_.map_param(iparam,info);
 }
 
-void host::plugin_instance_t::map_midi(unsigned iparam, piw::mapping_info_t info)
+void host::plugin_instance_t::map_midi(unsigned iparam, midi::mapping_info_t info)
 {
     impl_->mapping_.map_midi(iparam,info);
 }
@@ -1549,12 +1550,12 @@ bool host::plugin_instance_t::is_mapped_midi(unsigned iparam, unsigned short opa
     return impl_->mapping_.is_mapped_midi(iparam,oparam);
 }
 
-piw::mapping_info_t host::plugin_instance_t::get_info_param(unsigned iparam, unsigned short oparam)
+midi::mapping_info_t host::plugin_instance_t::get_info_param(unsigned iparam, unsigned short oparam)
 {
     return impl_->mapping_.get_info_param(iparam,oparam);
 }
 
-piw::mapping_info_t host::plugin_instance_t::get_info_midi(unsigned iparam, unsigned short oparam)
+midi::mapping_info_t host::plugin_instance_t::get_info_midi(unsigned iparam, unsigned short oparam)
 {
     return impl_->mapping_.get_info_midi(iparam,oparam);
 }
@@ -1576,28 +1577,28 @@ void host::plugin_instance_t::clear_midi_behaviour()
 
 void host::plugin_instance_t::set_minimum_decimation(float decimation)
 {
-    piw::global_settings_t settings = impl_->mapping_.get_settings();
+    midi::global_settings_t settings = impl_->mapping_.get_settings();
     settings.minimum_decimation_= decimation;
     impl_->change_settings(settings);
 }
 
 void host::plugin_instance_t::set_midi_notes(bool enabled)
 {
-    piw::global_settings_t settings = impl_->mapping_.get_settings();
+    midi::global_settings_t settings = impl_->mapping_.get_settings();
     settings.send_notes_= enabled;
     impl_->change_settings(settings);
 }
 
 void host::plugin_instance_t::set_midi_pitchbend(bool enabled)
 {
-    piw::global_settings_t settings = impl_->mapping_.get_settings();
+    midi::global_settings_t settings = impl_->mapping_.get_settings();
     settings.send_pitchbend_= enabled;
     impl_->change_settings(settings);
 }
 
 void host::plugin_instance_t::set_midi_hires_velocity(bool enabled)
 {
-    piw::global_settings_t settings = impl_->mapping_.get_settings();
+    midi::global_settings_t settings = impl_->mapping_.get_settings();
     settings.send_hires_velocity_= enabled;
     impl_->change_settings(settings);
 }

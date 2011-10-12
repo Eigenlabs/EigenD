@@ -19,14 +19,15 @@
 */
 
 #include <picross/pic_log.h>
-#include <piw/piw_midi_decoder.h>
 
-piw::mididecoder_t::mididecoder_t()
+#include <lib_midi/midi_decoder.h>
+
+midi::mididecoder_t::mididecoder_t()
 {
     _state=START;
 }
 
-void piw::mididecoder_t::start_state(unsigned char octet)
+void midi::mididecoder_t::start_state(unsigned char octet)
 {
     unsigned hi = (octet&0x70)>>4;
     static state_t __states[] = { GET1OF2, GET1OF2, GET1OF2, GET1OF2, GET1OF1, GET1OF1, GET1OF2 };
@@ -47,17 +48,17 @@ void piw::mididecoder_t::start_state(unsigned char octet)
     _state=START;
 }
 
-void piw::mididecoder_t::decode1(unsigned char b1)
+void midi::mididecoder_t::decode1(unsigned char b1)
 {
     decoder_generic1(false,b1);
 }
 
-void piw::mididecoder_t::decode2(unsigned char b1,unsigned char b2)
+void midi::mididecoder_t::decode2(unsigned char b1,unsigned char b2)
 {
     decoder_generic2(false,b1,b2);
 }
 
-void piw::mididecoder_t::decode3(unsigned char b1,unsigned char b2,unsigned char b3)
+void midi::mididecoder_t::decode3(unsigned char b1,unsigned char b2,unsigned char b3)
 {
     unsigned hi = (b1&0x70)>>4;
     unsigned lo = (b1&0x0f);
@@ -96,7 +97,7 @@ void piw::mididecoder_t::decode3(unsigned char b1,unsigned char b2,unsigned char
     decoder_generic3(h,b1,b2,b3);
 }
 
-void piw::mididecoder_t::decoder_input(const unsigned char *buffer, unsigned length)
+void midi::mididecoder_t::decoder_input(const unsigned char *buffer, unsigned length)
 {
     for(unsigned i=0;i<length;i++)
     {
@@ -104,7 +105,7 @@ void piw::mididecoder_t::decoder_input(const unsigned char *buffer, unsigned len
     }
 }
 
-void piw::mididecoder_t::decoder_input(unsigned char octet)
+void midi::mididecoder_t::decoder_input(unsigned char octet)
 {
     bool cmd = (octet&0x80)!=0;
 

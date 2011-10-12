@@ -9,8 +9,6 @@
 #include <piw/piw_gate.h>
 #include <piw/piw_index.h>
 #include <piw/piw_table.h>
-#include <piw/piw_midi_from_belcanto.h>
-#include <piw/piw_midi_decoder.h>
 #include <piw/piw_bundle.h>
 #include <piw/piw_aggregator.h>
 #include <piw/piw_clone.h>
@@ -58,9 +56,6 @@
 #include <piw/piw_window.h>
 #include <piw/piw_status.h>
 #include <piw/piw_controllerdict.h>
-#include <piw/piw_midi_converter.h>
-#include <piw/piw_gui_mapper.h>
-#include <piw/piw_control_mapping.h>
 #include <piw/piw_strummer.h>
 >>>
 
@@ -524,70 +519,6 @@ class controllerdict[piw::controllerdict_t]
     void put(const stdstr &,const data &)
     change changetonic(unsigned)
     change changescale(const stdstr &)
-}
-
-class mapping_info[piw::mapping_info_t]
-{
-    mapping_info(const mapping_info &)
-    mapping_info(unsigned short)
-    mapping_info(unsigned short, bool, float, float, float, float, bool, float, unsigned, unsigned, unsigned, int, unsigned)
-
-    mapping_info clone_with_enabled(bool)
-    mapping_info clone_with_scale(float)
-    mapping_info clone_with_lo(float)
-    mapping_info clone_with_base(float)
-    mapping_info clone_with_hi(float)
-    mapping_info clone_with_origin_return(bool)
-    mapping_info clone_with_decimation(float)
-    mapping_info clone_with_scope(unsigned)
-    mapping_info clone_with_channelscope(unsigned)
-    mapping_info clone_with_resolution(unsigned)
-    mapping_info clone_with_secondarycc(int)
-    mapping_info clone_with_curve(unsigned)
-}
-
-class midi_converter[piw::midi_converter_t]
-{
-    midi_converter(mapping_observer &, midi_channel_delegate &, clockdomain_ctl *, midi_from_belcanto &, const stdstr &)
-
-    clockdomain_ctl *clock_domain()
-
-    cookie parameter_input(unsigned)
-    void set_mapping(const stdstr &)
-    stdstr get_mapping()
-    void parameter_name_changed(unsigned)
-    void map_param(unsigned,mapping_info)
-    void map_midi(unsigned,mapping_info)
-    void unmap_param(unsigned,unsigned short)
-    void unmap_midi(unsigned,unsigned short)
-    bool is_mapped_param(unsigned, unsigned short)
-    bool is_mapped_midi(unsigned, unsigned short)
-    mapping_info get_info_param(unsigned, unsigned short)
-    mapping_info get_info_midi(unsigned, unsigned short)
-    void set_minimum_decimation(float)
-    void set_midi_notes(bool)
-    void set_midi_pitchbend(bool)
-    void set_midi_hires_velocity(bool)
-    void set_midi_channel(unsigned)
-    void set_min_midi_channel(unsigned)
-    void set_max_midi_channel(unsigned)
-    void set_program_change(unsigned)
-    change_nb change_program()
-    void set_bank_change(unsigned)
-    change_nb change_bank()
-    void set_cc(unsigned, unsigned)
-    change_nb change_cc()
-
-    void close()
-}
-
-class mapping_observer[piw::mapping_observer_t]
-{
-    mapping_observer()
-    virtual void mapping_changed(const stdstr &) = 0
-    virtual void settings_changed() = 0
-    virtual void parameter_changed(unsigned) = 0
-    virtual stdstr get_parameter_name(unsigned) = 0
 }
 
 class kgroup_mapper[piw::kgroup_mapper_t]
@@ -1999,33 +1930,6 @@ class python_delegate[piw::python_delegate_t]
     virtual PyObject *py_make_variable(PyObject *) [locked] = 0;
     virtual PyObject *py_make_subst1(PyObject *) [locked] = 0;
     virtual PyObject *py_make_subst2(PyObject *, PyObject *) [locked] = 0;
-}
-
-class midi_channel_delegate[piw::midi_channel_delegate_t]
-{
-    midi_channel_delegate()
-    virtual void set_midi_channel(unsigned) = 0
-    virtual void set_min_channel(unsigned) = 0
-    virtual void set_max_channel(unsigned) = 0
-    virtual unsigned get_midi_channel() = 0
-    virtual unsigned get_min_channel() = 0
-    virtual unsigned get_max_channel() = 0
-}
-
-class midi_from_belcanto[piw::midi_from_belcanto_t]
-{
-    midi_from_belcanto(const cookie &, clockdomain_ctl *)
-    cookie cookie()
-    void set_midi_channel(unsigned)   
-    void set_min_midi_channel(unsigned)   
-    void set_max_midi_channel(unsigned)   
-    void set_program_change(unsigned)
-    change_nb change_program()
-    void set_bank_change(unsigned)
-    change_nb change_bank()
-    void set_cc(unsigned, unsigned)
-    change_nb change_cc()
-    void set_omni(bool)
 }
 
 PyObject *parse_clause[piw::py_parse_clause](python_delegate *, const char *) [locked]

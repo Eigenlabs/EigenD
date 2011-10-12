@@ -30,6 +30,7 @@ import piw,urllib,sys,os,operator,glob,shutil,string
 from plg_midi import midi_converter_version as version
 
 import piw_native
+import midilib_native
 
 class AgentStateNode(node.server):
     def __init__(self,**kw):
@@ -48,9 +49,9 @@ class AgentState(node.server):
         self.__load_callback(delegate,mapping)
 
 
-class MidiChannelDelegate(piw_native.midi_channel_delegate):
+class MidiChannelDelegate(midilib_native.midi_channel_delegate):
     def __init__(self,agent):
-        piw_native.midi_channel_delegate.__init__(self)
+        midilib_native.midi_channel_delegate.__init__(self)
         self.__agent = agent
 
     def set_midi_channel(self, channel):
@@ -75,9 +76,9 @@ class MidiChannelDelegate(piw_native.midi_channel_delegate):
         return int(self.__agent[8].get_value())
 
 
-class MappingObserver(piw_native.mapping_observer):
+class MappingObserver(midilib_native.mapping_observer):
     def __init__(self,state,agent):
-        piw_native.mapping_observer.__init__(self)
+        midilib_native.mapping_observer.__init__(self)
         self.__state = state
         self.__agent = agent
 
@@ -116,8 +117,8 @@ class Agent(agent.Agent):
 
         self.__observer = MappingObserver(self.__state,self)
         self.__channel_delegate = MidiChannelDelegate(self)
-        self.__midi_from_belcanto = piw.midi_from_belcanto(self.__output.cookie(), self.__domain)
-        self.__midi_converter = piw.midi_converter(self.__observer, self.__channel_delegate, self.__domain, self.__midi_from_belcanto, self.__get_title())
+        self.__midi_from_belcanto = midilib_native.midi_from_belcanto(self.__output.cookie(), self.__domain)
+        self.__midi_converter = midilib_native.midi_converter(self.__observer, self.__channel_delegate, self.__domain, self.__midi_from_belcanto, self.__get_title())
  
         self.parameter_list = inputparameter.List(self.__midi_converter,self.__midi_converter.clock_domain(),self.verb_container())
 

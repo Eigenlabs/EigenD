@@ -21,7 +21,6 @@
 #include <piw/piw_tsd.h>
 #include <piw/piw_thing.h>
 #include <piw/piw_fastdata.h>
-#include <piw/piw_midi_decoder.h>
 #include <piw/piw_bundle.h>
 
 #include <picross/pic_time.h>
@@ -29,6 +28,7 @@
 #include <picross/pic_config.h>
 
 #include <plg_midi/midi_input.h>
+
 #include <lib_juce/juce.h>
 
 #include <iostream>

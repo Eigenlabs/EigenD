@@ -20,14 +20,15 @@
 
 Import('env')
 
-plg_files=Split(""" 
-    midi_merge_output.cpp midi_input.cpp midi_clock.cpp
-    midi_output_juce.cpp midi_input_juce.cpp
-""")
+midilib_files=Split("""
+	midi_decoder.cpp midi_from_belcanto.cpp 
+	control_mapper_gui.cpp midi_converter.cpp control_mapping.cpp
+    control_params.cpp JucerPopupDialogComponent.cpp
+    JucerCellPopupComponent.cpp JucerGlobalSettingsComponent.cpp JucerHelpComponent.cpp
+    """)
 
-plg_libs=Split("""
-    pic piw pie pia juce midilib
-""")
+midilib_env=env.Clone()
 
-env.PiSharedLibrary('pimidi',plg_files,plg_libs,package='eigend')
-env.PiPipBinding('midi_native','midi.pip',libraries=Split('pimidi')+plg_libs,package='eigend')
+midilib_env.PiSharedLibrary('midilib',midilib_files,libraries=Split('pia pic pie piw juce'),package='eigend')
+
+env.PiPipBinding('midilib_native',env.Pipfile('midilib.pip'),libraries=Split('midilib pic pia pie piw juce'),package='eigend')

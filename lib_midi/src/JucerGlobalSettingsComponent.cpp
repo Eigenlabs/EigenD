@@ -26,7 +26,7 @@
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
-void GlobalSettingsComponent::initialize(piw::mapping_delegate_t *mapping_delegate)
+void GlobalSettingsComponent::initialize(midi::mapping_delegate_t *mapping_delegate)
 {
     mapping_delegate_ = 0;
 
@@ -45,11 +45,11 @@ void GlobalSettingsComponent::updateComponent()
     updateComponent(mapping_delegate_);
 }
 
-void GlobalSettingsComponent::updateComponent(piw::mapping_delegate_t *mapping_delegate)
+void GlobalSettingsComponent::updateComponent(midi::mapping_delegate_t *mapping_delegate)
 {
     if(!mapping_delegate) return;
 
-    piw::global_settings_t settings = mapping_delegate->get_settings();
+    midi::global_settings_t settings = mapping_delegate->get_settings();
 
     data_decimation->setValue(settings.minimum_decimation_, true, true);
     midi_notes->setToggleState(settings.send_notes_, false);
@@ -81,7 +81,7 @@ void GlobalSettingsComponent::updateSettings()
     bool send_pitchbend = midi_pitchbend->getToggleState();
     bool send_hires_velocity = midi_hires_velocity->getToggleState();
 
-    mapping_delegate_->change_settings(piw::global_settings_t(data_decimation->getValue(), send_notes, send_pitchbend, send_hires_velocity));
+    mapping_delegate_->change_settings(midi::global_settings_t(data_decimation->getValue(), send_notes, send_pitchbend, send_hires_velocity));
 }
 //[/MiscUserDefs]
 

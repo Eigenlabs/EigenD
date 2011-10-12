@@ -19,7 +19,7 @@
 */
 
 /*
- * piw_midi_converter.cpp
+ * midi_converter.cpp
  *
  */
 
@@ -31,19 +31,20 @@
 #include <piw/piw_thing.h>
 #include <piw/piw_tsd.h>
 #include <piw/piw_window.h>
-#include <piw/piw_midi_converter.h>
+
+#include <lib_midi/midi_converter.h>
 
 #include <lib_juce/juce.h>
 
 using namespace std;
 
-namespace piw
+namespace midi
 {
     struct ConverterDialog;
 
-    struct midi_converter_t::impl_t: piw::params_delegate_t, piw::mapping_observer_t, piw::clocksink_t, piw::thing_t, virtual pic::tracked_t
+    struct midi_converter_t::impl_t: params_delegate_t, mapping_observer_t, piw::clocksink_t, piw::thing_t, virtual pic::tracked_t
     {
-        impl_t(piw::mapping_observer_t &, piw::midi_channel_delegate_t &, clockdomain_ctl_t *, midi_from_belcanto_t &, const std::string &);
+        impl_t(mapping_observer_t &, midi_channel_delegate_t &, piw::clockdomain_ctl_t *, midi_from_belcanto_t &, const std::string &);
         ~impl_t() { invalidate(); }
 
         void resend_parameter_current(const piw::data_nb_t &d);
@@ -63,18 +64,18 @@ namespace piw
         void set_mapping(const std::string &mapping);
         std::string get_mapping();
         void parameter_name_changed(unsigned);
-        void map_param(unsigned, piw::mapping_info_t);
-        void map_midi(unsigned, piw::mapping_info_t);
+        void map_param(unsigned, mapping_info_t);
+        void map_midi(unsigned, mapping_info_t);
         void unmap_param(unsigned, unsigned short);
         void unmap_midi(unsigned, unsigned short);
         bool is_mapped_param(unsigned, unsigned short);
         bool is_mapped_midi(unsigned, unsigned short);
-        piw::mapping_info_t get_info_param(unsigned, unsigned short);
-        piw::mapping_info_t get_info_midi(unsigned, unsigned short);
+        mapping_info_t get_info_param(unsigned, unsigned short);
+        mapping_info_t get_info_midi(unsigned, unsigned short);
         void clear_all();
-        void change_settings(piw::global_settings_t);
-        void perform_settings_updates(piw::global_settings_t);
-        piw::global_settings_t get_settings();
+        void change_settings(global_settings_t);
+        void perform_settings_updates(global_settings_t);
+        global_settings_t get_settings();
         void clear_params();
         void clear_midi_cc();
         void clear_midi_behaviour();
@@ -85,19 +86,19 @@ namespace piw
 
         void remove_upstream_clock(bct_clocksink_t *);
         void add_upstream_clock(bct_clocksink_t *);
-        void update_origins(piw::control_mapping_t &);
-        void update_mapping(piw::control_mapping_t &);
+        void update_origins(control_mapping_t &);
+        void update_mapping(control_mapping_t &);
         void set_parameters(pic::lckvector_t<param_data_t>::nbtype &);
         void set_midi(pic::lckvector_t<midi_data_t>::nbtype &);
 
-        std::auto_ptr<piw::param_input_t> param_input_[32];
+        std::auto_ptr<param_input_t> param_input_[32];
 
-        piw::midi_channel_delegate_t &channel_delegate_;
-        piw::settings_functors_t settings_functors_;
+        midi_channel_delegate_t &channel_delegate_;
+        settings_functors_t settings_functors_;
 
-        clockdomain_ctl_t *clockdomain_;
+        piw::clockdomain_ctl_t *clockdomain_;
 
-        piw::mapping_observer_t &observer_;
+        mapping_observer_t &observer_;
         pic::f_int_t parameter_changed_midi_cc_;
         pic::f_int_t parameter_changed_midi_behaviour_;
 
@@ -106,8 +107,8 @@ namespace piw
         const std::string title_;
         piw::window_t params_window_;
         ConverterDialog *params_;
-        piw::controllers_mapping_t mapping_;
-        piw::mapping_delegate_t mapping_delegate_;
+        controllers_mapping_t mapping_;
+        mapping_delegate_t mapping_delegate_;
     };
 
     /*
@@ -116,35 +117,35 @@ namespace piw
 
     struct ConverterDialogComponent: juce::Component, juce::ComponentListener
     {
-        ConverterDialogComponent(piw::midi_converter_t::impl_t *root, ConverterDialog *dialog):
+        ConverterDialogComponent(midi_converter_t::impl_t *root, ConverterDialog *dialog):
             root_(root), dialog_(dialog),
-            midi_cc_mapper_(piw::mapping_functors_t::init(
-                    piw::is_mapped_t::method(&root->mapping_,&piw::controllers_mapping_t::is_mapped_midi),
-                    piw::get_info_t::method(&root->mapping_,&piw::controllers_mapping_t::get_info_midi),
-                    piw::map_t::method(&root->mapping_,&piw::controllers_mapping_t::map_midi),
-                    piw::unmap_t::method(&root->mapping_,&piw::controllers_mapping_t::unmap_midi),
-                    piw::get_name_t::method(root,&piw::midi_converter_t::impl_t::get_parameter_name),
-                    piw::clear_t::method(root,&piw::midi_converter_t::impl_t::clear_midi_cc)
+            midi_cc_mapper_(midi::mapping_functors_t::init(
+                    is_mapped_t::method(&root->mapping_,&controllers_mapping_t::is_mapped_midi),
+                    get_info_t::method(&root->mapping_,&controllers_mapping_t::get_info_midi),
+                    map_t::method(&root->mapping_,&controllers_mapping_t::map_midi),
+                    unmap_t::method(&root->mapping_,&controllers_mapping_t::unmap_midi),
+                    get_name_t::method(root,&midi_converter_t::impl_t::get_parameter_name),
+                    clear_t::method(root,&midi_converter_t::impl_t::clear_midi_cc)
                     )),
-            midi_behaviour_mapper_(piw::mapping_functors_t::init(
-                    piw::is_mapped_t::method(&root->mapping_,&piw::controllers_mapping_t::is_mapped_midi),
-                    piw::get_info_t::method(&root->mapping_,&piw::controllers_mapping_t::get_info_midi),
-                    piw::map_t::method(&root->mapping_,&piw::controllers_mapping_t::map_midi),
-                    piw::unmap_t::method(&root->mapping_,&piw::controllers_mapping_t::unmap_midi),
-                    piw::get_name_t::method(root,&piw::midi_converter_t::impl_t::get_parameter_name),
-                    piw::clear_t::method(root,&piw::midi_converter_t::impl_t::clear_midi_behaviour)
+            midi_behaviour_mapper_(midi::mapping_functors_t::init(
+                    is_mapped_t::method(&root->mapping_,&controllers_mapping_t::is_mapped_midi),
+                    get_info_t::method(&root->mapping_,&controllers_mapping_t::get_info_midi),
+                    map_t::method(&root->mapping_,&controllers_mapping_t::map_midi),
+                    unmap_t::method(&root->mapping_,&controllers_mapping_t::unmap_midi),
+                    get_name_t::method(root,&midi_converter_t::impl_t::get_parameter_name),
+                    clear_t::method(root,&midi_converter_t::impl_t::clear_midi_behaviour)
                     ))
         {
-            piw::mapper_midi_cc_table_t *ct = new piw::mapper_midi_cc_table_t(root_->settings_functors_, midi_cc_mapper_);
-            piw::mapper_midi_behaviour_table_t *mt = new piw::mapper_midi_behaviour_table_t(root_->settings_functors_, midi_behaviour_mapper_);
+            mapper_midi_cc_table_t *ct = new mapper_midi_cc_table_t(root_->settings_functors_, midi_cc_mapper_);
+            mapper_midi_behaviour_table_t *mt = new mapper_midi_behaviour_table_t(root_->settings_functors_, midi_behaviour_mapper_);
 
             ct->initialize();
             mt->initialize();
 
-            root->parameter_changed_midi_cc_ = pic::f_int_t::method(ct,&piw::mapper_midi_cc_table_t::column_changed);
-            root->parameter_changed_midi_behaviour_ = pic::f_int_t::method(mt,&piw::mapper_midi_behaviour_table_t::column_changed);
+            root->parameter_changed_midi_cc_ = pic::f_int_t::method(ct,&mapper_midi_cc_table_t::column_changed);
+            root->parameter_changed_midi_behaviour_ = pic::f_int_t::method(mt,&mapper_midi_behaviour_table_t::column_changed);
 
-            addAndMakeVisible(toolbar_ = new piw::toolbar_t(&root->mapping_delegate_));
+            addAndMakeVisible(toolbar_ = new toolbar_t(&root->mapping_delegate_));
 
             addAndMakeVisible(content_ = new juce::TabbedComponent(juce::TabbedButtonBar::TabsAtTop));
             content_->setTabBarDepth(30);
@@ -179,10 +180,10 @@ namespace piw
             }
         }
 
-        piw::midi_converter_t::impl_t *root_;
+        midi_converter_t::impl_t *root_;
         ConverterDialog *dialog_;
-        piw::mapping_functors_t midi_cc_mapper_;
-        piw::mapping_functors_t midi_behaviour_mapper_;
+        midi::mapping_functors_t midi_cc_mapper_;
+        midi::mapping_functors_t midi_behaviour_mapper_;
         juce::Toolbar *toolbar_;
         juce::TabbedComponent *content_;
     };
@@ -193,7 +194,7 @@ namespace piw
 
     struct ConverterDialog: juce::DocumentWindow
     {
-        ConverterDialog(piw::midi_converter_t::impl_t *root):
+        ConverterDialog(midi_converter_t::impl_t *root):
             juce::DocumentWindow(root->get_title().c_str(),juce::Colours::black,juce::DocumentWindow::closeButton,true), root_(root), component_(0)
         {
             component_ = new ConverterDialogComponent(root_,this);
@@ -217,7 +218,7 @@ namespace piw
             setVisible(false);
         }
 
-        piw::midi_converter_t::impl_t *root_;
+        midi_converter_t::impl_t *root_;
         ConverterDialogComponent *component_;
     };
 
@@ -225,19 +226,19 @@ namespace piw
      * midi_converter_t::impl_t
      */
 
-    midi_converter_t::impl_t::impl_t(piw::mapping_observer_t &observer, piw::midi_channel_delegate_t &channel_delegate,
+    midi_converter_t::impl_t::impl_t(mapping_observer_t &observer, midi_channel_delegate_t &channel_delegate,
         piw::clockdomain_ctl_t *d, midi_from_belcanto_t &midi_from_belcanto, const std::string &title):
         channel_delegate_(channel_delegate),
         settings_functors_(settings_functors_t::init(
-                piw::clearall_t::method(this,&piw::midi_converter_t::impl_t::clear_all),
-                piw::get_settings_t::method(this,&piw::midi_converter_t::impl_t::get_settings),
-                piw::change_settings_t::method(this,&piw::midi_converter_t::impl_t::change_settings),
-                piw::set_channel_t::method(&channel_delegate_,&piw::midi_channel_delegate_t::set_midi_channel),
-                piw::set_channel_t::method(&channel_delegate_,&piw::midi_channel_delegate_t::set_min_channel),
-                piw::set_channel_t::method(&channel_delegate_,&piw::midi_channel_delegate_t::set_max_channel),
-                piw::get_channel_t::method(&channel_delegate_,&piw::midi_channel_delegate_t::get_midi_channel),
-                piw::get_channel_t::method(&channel_delegate_,&piw::midi_channel_delegate_t::get_min_channel),
-                piw::get_channel_t::method(&channel_delegate_,&piw::midi_channel_delegate_t::get_max_channel)
+                clearall_t::method(this,&midi_converter_t::impl_t::clear_all),
+                get_settings_t::method(this,&midi_converter_t::impl_t::get_settings),
+                change_settings_t::method(this,&midi_converter_t::impl_t::change_settings),
+                set_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::set_midi_channel),
+                set_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::set_min_channel),
+                set_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::set_max_channel),
+                get_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::get_midi_channel),
+                get_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::get_min_channel),
+                get_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::get_max_channel)
                 )),
         clockdomain_(d), observer_(observer), midi_from_belcanto_(midi_from_belcanto),
         title_(title), params_(0), mapping_(*this),
@@ -249,15 +250,15 @@ namespace piw
 
         for(unsigned i=0; i<15; i++)
         {
-            param_input_[i] = std::auto_ptr<piw::param_input_t>(new piw::param_input_t(this,i+1));
+            param_input_[i] = std::auto_ptr<param_input_t>(new param_input_t(this,i+1));
         }
-        param_input_[15] = std::auto_ptr<piw::param_input_t>(new piw::keynum_input_t(this,16));
+        param_input_[15] = std::auto_ptr<param_input_t>(new keynum_input_t(this,16));
         for(unsigned i=16; i<32; i++)
         {
-            param_input_[i] = std::auto_ptr<piw::param_input_t>(new piw::param_input_t(this,i+1));
+            param_input_[i] = std::auto_ptr<param_input_t>(new param_input_t(this,i+1));
         }
 
-        midi_from_belcanto_.set_resend_current(piw::resend_current_t::method(this, &midi_converter_t::impl_t::resend_parameter_current));
+        midi_from_belcanto_.set_resend_current(resend_current_t::method(this, &midi_converter_t::impl_t::resend_parameter_current));
 
         params_window_.set_state_handler(pic::status_t::method(this,&midi_converter_t::impl_t::window_state));
         params_window_.set_window_title(title.c_str());
@@ -369,11 +370,11 @@ namespace piw
         return mapping_.get_mapping();
     }
 
-    void midi_converter_t::impl_t::map_param(unsigned iparam, piw::mapping_info_t info)
+    void midi_converter_t::impl_t::map_param(unsigned iparam, mapping_info_t info)
     {
     }
 
-    void midi_converter_t::impl_t::map_midi(unsigned iparam, piw::mapping_info_t info)
+    void midi_converter_t::impl_t::map_midi(unsigned iparam, mapping_info_t info)
     {
         mapping_.map_midi(iparam,info);
     }
@@ -397,12 +398,12 @@ namespace piw
         return mapping_.is_mapped_midi(iparam,oparam);
     }
 
-    piw::mapping_info_t midi_converter_t::impl_t::get_info_param(unsigned iparam, unsigned short oparam)
+    mapping_info_t midi_converter_t::impl_t::get_info_param(unsigned iparam, unsigned short oparam)
     {
         return mapping_info_t();
     }
 
-    piw::mapping_info_t midi_converter_t::impl_t::get_info_midi(unsigned iparam, unsigned short oparam)
+    mapping_info_t midi_converter_t::impl_t::get_info_midi(unsigned iparam, unsigned short oparam)
     {
         return mapping_.get_info_midi(iparam,oparam);
     }
@@ -414,13 +415,13 @@ namespace piw
         clear_midi_behaviour();
     }
 
-    void midi_converter_t::impl_t::change_settings(piw::global_settings_t settings)
+    void midi_converter_t::impl_t::change_settings(global_settings_t settings)
     {
         perform_settings_updates(settings);
         mapping_.change_settings(settings);
     }
 
-    void midi_converter_t::impl_t::perform_settings_updates(piw::global_settings_t settings)
+    void midi_converter_t::impl_t::perform_settings_updates(global_settings_t settings)
     {
         midi_from_belcanto_.set_send_notes(settings.send_notes_);
         midi_from_belcanto_.set_send_pitchbend(settings.send_pitchbend_);
@@ -428,7 +429,7 @@ namespace piw
         midi_from_belcanto_.set_control_interval(settings.minimum_decimation_);
     }
 
-    piw::global_settings_t midi_converter_t::impl_t::get_settings()
+    global_settings_t midi_converter_t::impl_t::get_settings()
     {
         return mapping_.get_settings();
     }
@@ -449,28 +450,28 @@ namespace piw
 
     void midi_converter_t::impl_t::set_minimum_decimation(float decimation)
     {
-        piw::global_settings_t settings = mapping_.get_settings();
+        global_settings_t settings = mapping_.get_settings();
         settings.minimum_decimation_= decimation;
         mapping_.change_settings(settings);
     }
 
     void midi_converter_t::impl_t::set_midi_notes(bool enabled)
     {
-        piw::global_settings_t settings = mapping_.get_settings();
+        global_settings_t settings = mapping_.get_settings();
         settings.send_notes_= enabled;
         mapping_.change_settings(settings);
     }
 
     void midi_converter_t::impl_t::set_midi_pitchbend(bool enabled)
     {
-        piw::global_settings_t settings = mapping_.get_settings();
+        global_settings_t settings = mapping_.get_settings();
         settings.send_pitchbend_= enabled;
         mapping_.change_settings(settings);
     }
 
     void midi_converter_t::impl_t::set_midi_hires_velocity(bool enabled)
     {
-        piw::global_settings_t settings = mapping_.get_settings();
+        global_settings_t settings = mapping_.get_settings();
         settings.send_hires_velocity_= enabled;
         mapping_.change_settings(settings);
     }
@@ -485,20 +486,20 @@ namespace piw
         add_upstream(c);
     }
 
-    void midi_converter_t::impl_t::update_origins(piw::control_mapping_t &control_mapping)
+    void midi_converter_t::impl_t::update_origins(control_mapping_t &control_mapping)
     {
     }
 
-    void midi_converter_t::impl_t::update_mapping(piw::control_mapping_t &control_mapping)
+    void midi_converter_t::impl_t::update_mapping(control_mapping_t &control_mapping)
     {
         mapping_.refresh_mappings(control_mapping);
     }
 
-    void midi_converter_t::impl_t::set_parameters(pic::lckvector_t<piw::param_data_t>::nbtype &params)
+    void midi_converter_t::impl_t::set_parameters(pic::lckvector_t<param_data_t>::nbtype &params)
     {
     }
 
-    void midi_converter_t::impl_t::set_midi(pic::lckvector_t<piw::midi_data_t>::nbtype &midi)
+    void midi_converter_t::impl_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &midi)
     {
         midi_from_belcanto_.set_midi(midi);
     }
@@ -507,8 +508,8 @@ namespace piw
      * midi_converter_t
      */
 
-    midi_converter_t::midi_converter_t(piw::mapping_observer_t &observer, piw::midi_channel_delegate_t &channel_delegate,
-        clockdomain_ctl_t *d, midi_from_belcanto_t &midi_from_belcanto, const std::string &title): impl_(new impl_t(observer, channel_delegate, d, midi_from_belcanto, title)) {}
+    midi_converter_t::midi_converter_t(mapping_observer_t &observer, midi_channel_delegate_t &channel_delegate,
+        piw::clockdomain_ctl_t *d, midi_from_belcanto_t &midi_from_belcanto, const std::string &title): impl_(new impl_t(observer, channel_delegate, d, midi_from_belcanto, title)) {}
     midi_converter_t::~midi_converter_t() { delete impl_; }
 
     piw::clockdomain_ctl_t* midi_converter_t::clock_domain()
@@ -537,12 +538,12 @@ namespace piw
         impl_->parameter_changed_midi_behaviour_(iparam);
     }
 
-    void midi_converter_t::map_param(unsigned iparam, piw::mapping_info_t info)
+    void midi_converter_t::map_param(unsigned iparam, mapping_info_t info)
     {
         impl_->map_param(iparam,info);
     }
 
-    void midi_converter_t::map_midi(unsigned iparam, piw::mapping_info_t info)
+    void midi_converter_t::map_midi(unsigned iparam, mapping_info_t info)
     {
         impl_->map_midi(iparam,info);
     }
@@ -567,12 +568,12 @@ namespace piw
         return impl_->is_mapped_midi(iparam,oparam);
     }
 
-    piw::mapping_info_t midi_converter_t::get_info_param(unsigned iparam, unsigned oparam)
+    mapping_info_t midi_converter_t::get_info_param(unsigned iparam, unsigned oparam)
     {
         return impl_->get_info_param(iparam,oparam);
     }
 
-    piw::mapping_info_t midi_converter_t::get_info_midi(unsigned iparam, unsigned oparam)
+    mapping_info_t midi_converter_t::get_info_midi(unsigned iparam, unsigned oparam)
     {
         return impl_->get_info_midi(iparam,oparam);
     }
@@ -620,7 +621,7 @@ namespace piw
         impl_->midi_from_belcanto_.set_program_change(c);
     }
 
-    change_nb_t midi_converter_t::change_program()
+    piw::change_nb_t midi_converter_t::change_program()
     {
         return impl_->midi_from_belcanto_.change_program();
     }
@@ -630,7 +631,7 @@ namespace piw
         impl_->midi_from_belcanto_.set_bank_change(c);
     }
 
-    change_nb_t midi_converter_t::change_bank()
+    piw::change_nb_t midi_converter_t::change_bank()
     {
         return impl_->midi_from_belcanto_.change_bank();
     }
@@ -640,7 +641,7 @@ namespace piw
         impl_->midi_from_belcanto_.set_cc(c, v);
     }
 
-    change_nb_t midi_converter_t::change_cc()
+    piw::change_nb_t midi_converter_t::change_cc()
     {
         return impl_->midi_from_belcanto_.change_cc();
     }
@@ -660,4 +661,4 @@ namespace piw
         return impl_->params_window_.gc_traverse(a,b);
     }
 
-} // namespace piw
+} // namespace midi

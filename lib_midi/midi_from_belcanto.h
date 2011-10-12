@@ -17,43 +17,45 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MIDI_FROM_BELCANTO_H_
-#define MIDI_FROM_BELCANTO_H_
+#ifndef __MIDI_FROM_BELCANTO_H__
+#define __MIDI_FROM_BELCANTO_H__
 
-#include "piw_exports.h"
+#include <lib_midi/lib_midi_exports.h>
+
 #include <picross/pic_functor.h>
 #include <piw/piw_data.h>
 #include <piw/piw_bundle.h>
-#include <piw/piw_control_mapping.h>
-#include <piw/piw_control_params.h>
+
+#include <lib_midi/control_mapping.h>
+#include <lib_midi/control_params.h>
 
 namespace piw { class clockdomain_ctl_t; }
 
-namespace piw
+namespace midi
 {
 
     typedef pic::functor_t<void(const piw::data_nb_t&)> resend_current_t;
 
-    struct PIW_DECLSPEC_CLASS midi_from_belcanto_t
+    struct MIDI_DECLSPEC_CLASS midi_from_belcanto_t
     {
         midi_from_belcanto_t(const piw::cookie_t &, piw::clockdomain_ctl_t *);
         ~midi_from_belcanto_t();
 
         piw::cookie_t cookie();
-        piw::control_mapping_t &get_mapping(unsigned);
-        void set_resend_current(piw::resend_current_t);
+        control_mapping_t &get_mapping(unsigned);
+        void set_resend_current(midi::resend_current_t);
         void set_midi_channel(unsigned);
         void set_min_midi_channel(unsigned);
         void set_max_midi_channel(unsigned);
         void set_omni(bool);
         void set_program_change(unsigned);
-        change_nb_t change_program();
+        piw::change_nb_t change_program();
         void set_bank_change(unsigned);
-        change_nb_t change_bank();
+        piw::change_nb_t change_bank();
         void set_cc(unsigned, unsigned);
-        change_nb_t change_cc();
+        piw::change_nb_t change_cc();
         void set_control_interval(float);
-        void set_midi(pic::lckvector_t<piw::midi_data_t>::nbtype &);
+        void set_midi(pic::lckvector_t<midi_data_t>::nbtype &);
         void set_send_notes(bool);
         void set_send_pitchbend(bool);
         void set_send_hires_velocity(bool);
@@ -64,7 +66,7 @@ namespace piw
         impl_t *impl_;
     };
 
-}; // namespace piw
+}; // namespace midi
 
 
-#endif /* MIDI_FROM_BELCANTO_H_ */
+#endif /* __MIDI_FROM_BELCANTO_H__ */

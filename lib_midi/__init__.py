@@ -18,16 +18,4 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-Import('env')
-
-plg_files=Split(""" 
-    midi_merge_output.cpp midi_input.cpp midi_clock.cpp
-    midi_output_juce.cpp midi_input_juce.cpp
-""")
-
-plg_libs=Split("""
-    pic piw pie pia juce midilib
-""")
-
-env.PiSharedLibrary('pimidi',plg_files,plg_libs,package='eigend')
-env.PiPipBinding('midi_native','midi.pip',libraries=Split('pimidi')+plg_libs,package='eigend')
+from midilib_native import *

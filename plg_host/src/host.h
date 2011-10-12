@@ -24,7 +24,8 @@
 #include <piw/piw_bundle.h>
 #include <piw/piw_clock.h>
 #include <plg_host/host_exports.h>
-#include <piw/piw_control_mapping.h>
+
+#include <lib_midi/control_mapping.h>
 
 #include <string>
 #include <lib_juce/juce.h>
@@ -109,7 +110,7 @@ namespace host
     class PIHOST_DECLSPEC_CLASS plugin_instance_t: public pic::nocopy_t
     {
         public:
-            plugin_instance_t(plugin_observer_t *, piw::midi_channel_delegate_t *,
+            plugin_instance_t(plugin_observer_t *, midi::midi_channel_delegate_t *,
                 piw::clockdomain_ctl_t *, const piw::cookie_t &audio_out, const piw::cookie_t &midi_out,
                 const pic::status_t &window_state_changed);
             ~plugin_instance_t();
@@ -135,14 +136,14 @@ namespace host
             void set_mapping(const std::string &);
             std::string get_mapping();
             void parameter_name_changed(unsigned);
-            void map_param(unsigned, piw::mapping_info_t);
-            void map_midi(unsigned, piw::mapping_info_t);
+            void map_param(unsigned, midi::mapping_info_t);
+            void map_midi(unsigned, midi::mapping_info_t);
             void unmap_param(unsigned, unsigned short);
             void unmap_midi(unsigned, unsigned short);
             bool is_mapped_param(unsigned, unsigned short);
             bool is_mapped_midi(unsigned, unsigned short);
-            piw::mapping_info_t get_info_param(unsigned, unsigned short);
-            piw::mapping_info_t get_info_midi(unsigned, unsigned short);
+            midi::mapping_info_t get_info_param(unsigned, unsigned short);
+            midi::mapping_info_t get_info_midi(unsigned, unsigned short);
             void clear_params();
             void clear_midi_cc();
             void clear_midi_behaviour();

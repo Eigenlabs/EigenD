@@ -19,18 +19,19 @@
 */
 
 /*
- * piw_midi_from_belcanto.cpp.cpp
+ * midi_from_belcanto.cpp
  *
  */
 
-#include <piw/piw_midi_from_belcanto.h>
 #include <piw/piw_clock.h>
 #include <piw/piw_tsd.h>
 #include <piw/piw_logtable.h>
 #include <picross/pic_ilist.h>
 #include <piw/piw_bundle.h>
 #include <piw/piw_clockclient.h>
-#include <piw/piw_midi_gm.h>
+
+#include <lib_midi/midi_gm.h>
+#include <lib_midi/midi_from_belcanto.h>
 
 #include <cmath>
 //#include <sys/param.h>
@@ -206,7 +207,7 @@ namespace
 
 } // namespace
 
-namespace piw
+namespace midi
 {
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -244,7 +245,7 @@ namespace piw
 
         void add_midi_data(bool global, unsigned status, unsigned d1, unsigned d2, unsigned long long t);
         void add_midi_data(bool global, unsigned status, unsigned d1, unsigned long long t);
-        void set_resend_current(piw::resend_current_t);
+        void set_resend_current(midi::resend_current_t);
         void dummy(const piw::data_nb_t &d) { /* dummy method for none existing notification */ }
 
         // queue up midi data from the input wires
@@ -317,7 +318,7 @@ namespace piw
         // monotonically increasing packet timestamp
         unsigned long long time_;
 
-        piw::resend_current_t resend_current_;
+        midi::resend_current_t resend_current_;
 
         unsigned long long ctrl_interval_;
 
@@ -332,7 +333,7 @@ namespace piw
         bool send_hires_velocity_;
     };
 
-} // namespace piw
+} // namespace midi
 
 
 namespace
@@ -340,7 +341,7 @@ namespace
 
     struct belcanto_note_wire_t: piw::wire_t, piw::event_data_sink_t, pic::element_t<>
     {
-        belcanto_note_wire_t(piw::midi_from_belcanto_t::impl_t *root, const piw::event_data_source_t &es);
+        belcanto_note_wire_t(midi::midi_from_belcanto_t::impl_t *root, const piw::event_data_source_t &es);
         ~belcanto_note_wire_t() { invalidate(); }
         void wire_closed() { delete this; }
         void invalidate();
@@ -360,7 +361,7 @@ namespace
         void set_velocity(const piw::data_nb_t &d, unsigned long long t);
         void set_frequency(const piw::data_nb_t &d, unsigned long long t, bool can_pitchbend);
 
-        piw::midi_from_belcanto_t::impl_t *root_;
+        midi::midi_from_belcanto_t::impl_t *root_;
         piw::xevent_data_buffer_t::iter_t iterator_;
         unsigned channel_;
         piw::data_t path_;
@@ -375,7 +376,7 @@ namespace
         unsigned long long last_from_;
     };
 
-    belcanto_note_wire_t::belcanto_note_wire_t(piw::midi_from_belcanto_t::impl_t *root, const piw::event_data_source_t &es):
+    belcanto_note_wire_t::belcanto_note_wire_t(midi::midi_from_belcanto_t::impl_t *root, const piw::event_data_source_t &es):
         root_(root), path_(es.path()), note_id_(0)
     {
         root_->input_wires_.insert(std::make_pair(path_,this));
@@ -606,7 +607,7 @@ namespace
 
 
 
-namespace piw
+namespace midi
 {
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -620,7 +621,7 @@ namespace piw
         upstream_clk_(0), downstream_clk_(0), output_buffer_(1,4*PIW_DATAQUEUE_SIZE_NORM),
         clk_state_(CLKSTATE_IDLE), clk_domain_(clk_domain),
         channel_(1), poly_(false), omni_(false), time_(0ULL),
-        resend_current_(piw::resend_current_t::method(this,&midi_from_belcanto_t::impl_t::dummy)),
+        resend_current_(midi::resend_current_t::method(this,&midi_from_belcanto_t::impl_t::dummy)),
         ctrl_interval_(DEFAULT_CTRL_INTERVAL), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false)
     {
         // one MIDI output channel
@@ -757,7 +758,7 @@ namespace piw
         return channel_;
     }
 
-    void midi_from_belcanto_t::impl_t::set_resend_current(piw::resend_current_t resend_current)
+    void midi_from_belcanto_t::impl_t::set_resend_current(midi::resend_current_t resend_current)
     {
         resend_current_ = resend_current;
     }
@@ -900,7 +901,7 @@ namespace piw
 
     void midi_from_belcanto_t::impl_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &data)
     {
-        pic::lckvector_t<piw::midi_data_t>::nbtype::iterator i,e;
+        pic::lckvector_t<midi_data_t>::nbtype::iterator i,e;
         i = data.begin();
         e = data.end();
         for(; i!=e; ++i)
@@ -1317,17 +1318,17 @@ namespace piw
 
     piw::cookie_t midi_from_belcanto_t::cookie() { return piw::cookie_t(impl_); }
 
-    void midi_from_belcanto_t::set_resend_current(piw::resend_current_t f) { impl_->set_resend_current(f); }
+    void midi_from_belcanto_t::set_resend_current(midi::resend_current_t f) { impl_->set_resend_current(f); }
     void midi_from_belcanto_t::set_midi_channel(unsigned c) { impl_->set_midi_channel(c); }
     void midi_from_belcanto_t::set_min_midi_channel(unsigned c) { piw::tsd_fastcall(__set_min_midi_channel,impl_,&c); }
     void midi_from_belcanto_t::set_max_midi_channel(unsigned c) { piw::tsd_fastcall(__set_max_midi_channel,impl_,&c); }
     void midi_from_belcanto_t::set_omni(bool b) { impl_->set_omni(b); }
     void midi_from_belcanto_t::set_program_change(unsigned p) { impl_->set_program_change(p); }
-    change_nb_t midi_from_belcanto_t::change_program() { return change_nb_t::method(impl_,&impl_t::set_program_change_data); }
+    piw::change_nb_t midi_from_belcanto_t::change_program() { return piw::change_nb_t::method(impl_,&impl_t::set_program_change_data); }
     void midi_from_belcanto_t::set_bank_change(unsigned b) { impl_->set_bank_change(b); }
-    change_nb_t midi_from_belcanto_t::change_bank() { return change_nb_t::method(impl_,&impl_t::set_bank_change_data); }
+    piw::change_nb_t midi_from_belcanto_t::change_bank() { return piw::change_nb_t::method(impl_,&impl_t::set_bank_change_data); }
     void midi_from_belcanto_t::set_cc(unsigned c, unsigned v) { impl_->set_cc(c, v); }
-    change_nb_t midi_from_belcanto_t::change_cc() { return change_nb_t::method(impl_,&impl_t::set_cc_data); }
+    piw::change_nb_t midi_from_belcanto_t::change_cc() { return piw::change_nb_t::method(impl_,&impl_t::set_cc_data); }
     void midi_from_belcanto_t::set_control_interval(float interval) { impl_->set_control_interval(interval); }
     void midi_from_belcanto_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &data) { impl_->set_midi(data); }
     void midi_from_belcanto_t::set_send_notes(bool send) { piw::tsd_fastcall(__set_send_notes,impl_,&send); }
@@ -1335,7 +1336,7 @@ namespace piw
     void midi_from_belcanto_t::set_send_hires_velocity(bool send) { piw::tsd_fastcall(__set_send_hires_velocity,impl_,&send); }
     unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &id) { return piw::tsd_fastcall(__get_channel,impl_,(void *)&id); }
 
-} // namespace piw
+} // namespace midi
 
 
 

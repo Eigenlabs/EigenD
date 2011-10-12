@@ -4,7 +4,8 @@
 >>>
 
 from picross[picross/picross.pip] import notify,status
-from piw[piw/piw.pip] import cookie,clockdomain_ctl,data,change_nb,mapping_info,midi_channel_delegate
+from piw_native[piw/piw.pip] import cookie,clockdomain_ctl,data,change_nb
+from midilib_native[lib_midi/midilib.pip] import mapping_info,midi_channel_delegate
 
 class plugin_description[host::plugin_description_t]
 {

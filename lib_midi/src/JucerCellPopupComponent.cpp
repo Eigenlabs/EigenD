@@ -20,15 +20,15 @@
 */
 
 //[Headers] You can add your own extra header files here...
-#include <piw/piw_control_mapping.h>
-#include <piw/piw_midi_gm.h>
+#include <lib_midi/control_mapping.h>
+#include <lib_midi/midi_gm.h>
 //[/Headers]
 
 #include "JucerCellPopupComponent.h"
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
-void CellPopupComponent::initialize(piw::mapper_cell_editor_t *cell_editor)
+void CellPopupComponent::initialize(midi::mapper_cell_editor_t *cell_editor)
 {
     cell_editor_ = 0;
 
@@ -84,7 +84,7 @@ void CellPopupComponent::updateComponent()
     updateComponent(cell_editor_);
 }
 
-void CellPopupComponent::updateComponent(piw::mapper_cell_editor_t *cell_editor)
+void CellPopupComponent::updateComponent(midi::mapper_cell_editor_t *cell_editor)
 {
     if(!cell_editor->is_mapped())
     {
@@ -92,7 +92,7 @@ void CellPopupComponent::updateComponent(piw::mapper_cell_editor_t *cell_editor)
         return;
     }
 
-    piw::mapping_info_t info = cell_editor->get_info();
+    midi::mapping_info_t info = cell_editor->get_info();
     if(info.scale_<0)
     {
         scale_factor_invert->setToggleState(true,false);
@@ -530,7 +530,7 @@ CellPopupComponent::CellPopupComponent ()
         oss << "CC# ";
         oss << cc;
         oss << " : ";
-        oss << piw::midi_cc[cc];
+        oss << midi::midi_cc[cc];
         secondary_cc->addItem(juce::String(oss.str().c_str()), cc);
         secondary_cc->setEnabled(false);
     }

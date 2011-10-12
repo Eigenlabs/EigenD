@@ -17,26 +17,27 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __PIW_CONTROL_PARAMS__
-#define __PIW_CONTROL_PARAMS__
+#ifndef __CONTROL_PARAMS__
+#define __CONTROL_PARAMS__
 
-#include "piw_exports.h"
+#include <lib_midi/lib_midi_exports.h>
 
 #include <picross/pic_fastalloc.h>
 #include <picross/pic_flipflop.h>
 #include <picross/pic_stl.h>
 #include <piw/piw_bundle.h>
 #include <piw/piw_data.h>
-#include <piw/piw_control_mapping.h>
 
-namespace piw
+#include <lib_midi/control_mapping.h>
+
+namespace midi
 {
     class param_wire_t;
 
-    typedef pic::lckmap_t<piw::data_t,param_wire_t *,piw::path_less>::lcktype host_wire_map_t;
-    typedef pic::flipflop_t<host_wire_map_t> host_wire_map_flipflop_t;
+    typedef pic::lckmap_t<piw::data_t,param_wire_t *,piw::path_less>::lcktype param_wire_map_t;
+    typedef pic::flipflop_t<param_wire_map_t> param_wire_map_flipflop_t;
 
-    class PIW_DECLSPEC_CLASS clocking_delegate_t
+    class MIDI_DECLSPEC_CLASS clocking_delegate_t
     {
         public:
             virtual ~clocking_delegate_t() {};
@@ -44,7 +45,7 @@ namespace piw
             virtual void add_upstream_clock(bct_clocksink_t *) = 0;
     };
 
-    struct PIW_DECLSPEC_CLASS param_data_t
+    struct MIDI_DECLSPEC_CLASS param_data_t
     {
         param_data_t(unsigned p, float v, unsigned s, piw::data_nb_t id, unsigned key): param_(p), value_(v), scope_(s), id_(id), key_(key) {};
 
@@ -55,7 +56,7 @@ namespace piw
         unsigned key_;
     };
 
-    struct PIW_DECLSPEC_CLASS midi_data_t
+    struct MIDI_DECLSPEC_CLASS midi_data_t
     {
         midi_data_t(unsigned long long time, unsigned char mcc, unsigned char lcc, unsigned value, unsigned scope, unsigned channel, piw::data_nb_t id, unsigned key, bool continuous): time_(time), mcc_(mcc), lcc_(lcc), value_(value), scope_(scope), channel_(channel), id_(id), key_(key), continuous_(continuous) {};
 
@@ -70,17 +71,17 @@ namespace piw
         bool continuous_;
     };
 
-    class PIW_DECLSPEC_CLASS params_delegate_t: public clocking_delegate_t
+    class MIDI_DECLSPEC_CLASS params_delegate_t: public clocking_delegate_t
     {
         public:
             virtual ~params_delegate_t() {};
-            virtual void update_origins(piw::control_mapping_t &) {};
-            virtual void update_mapping(piw::control_mapping_t &) {};
+            virtual void update_origins(control_mapping_t &) {};
+            virtual void update_mapping(control_mapping_t &) {};
             virtual void set_parameters(pic::lckvector_t<param_data_t>::nbtype &) {};
             virtual void set_midi(pic::lckvector_t<midi_data_t>::nbtype &) {};
     };
 
-    class PIW_DECLSPEC_CLASS input_root_t: public piw::root_t, virtual public pic::lckobject_t
+    class MIDI_DECLSPEC_CLASS input_root_t: public piw::root_t, virtual public pic::lckobject_t
     {
         public:
             input_root_t(clocking_delegate_t *);
@@ -98,19 +99,19 @@ namespace piw
             friend class param_wire_t;
 
             clocking_delegate_t *clocking_delegate_;
-            host_wire_map_flipflop_t wires_;
+            param_wire_map_flipflop_t wires_;
             bct_clocksink_t *clk_;
             pic::ilist_t<param_wire_t, 0> active_;
             pic::ilist_t<param_wire_t, 1> rotating_active_;
     };
     
-    class PIW_DECLSPEC_CLASS param_input_t: public input_root_t
+    class MIDI_DECLSPEC_CLASS param_input_t: public input_root_t
     {
         public:
             param_input_t(params_delegate_t *, unsigned);
 
-            virtual float calculate_param_value(const piw::data_nb_t &, const float, const piw::mapping_data_t&, const float);
-            virtual long calculate_midi_value(const piw::data_nb_t &, const float, const piw::mapping_data_t&);
+            virtual float calculate_param_value(const piw::data_nb_t &, const float, const mapping_data_t&, const float);
+            virtual long calculate_midi_value(const piw::data_nb_t &, const float, const mapping_data_t&);
             virtual bool wiredata_processed(param_wire_t *, const piw::data_nb_t &) { return true; };
 
             void started(param_wire_t *);
@@ -129,21 +130,21 @@ namespace piw
             void process_midi(pic::lckvector_t<midi_data_t>::nbtype &, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool, bool);
             void end_with_origins(param_wire_t *w, bool);
             params_delegate_t *params_delegate_;
-            piw::control_mapping_t control_mapping_;
+            control_mapping_t control_mapping_;
             piw::dataholder_nb_t current_id_;
             piw::dataholder_nb_t current_data_;
     };
     
-    class PIW_DECLSPEC_CLASS keynum_input_t: public param_input_t
+    class MIDI_DECLSPEC_CLASS keynum_input_t: public param_input_t
     {
         public:
             keynum_input_t(params_delegate_t *, unsigned);
-            float calculate_param_value(const piw::data_nb_t &, const float, const piw::mapping_data_t&, const float);
-            long calculate_midi_value(const piw::data_nb_t &, const float, const piw::mapping_data_t&);
+            float calculate_param_value(const piw::data_nb_t &, const float, const mapping_data_t&, const float);
+            long calculate_midi_value(const piw::data_nb_t &, const float, const mapping_data_t&);
             bool wiredata_processed(param_wire_t *, const piw::data_nb_t &);
     };
 
-    class PIW_DECLSPEC_CLASS param_wire_t: public piw::wire_t, public piw::event_data_sink_t, public pic::element_t<0>, public pic::element_t<1>
+    class MIDI_DECLSPEC_CLASS param_wire_t: public piw::wire_t, public piw::event_data_sink_t, public pic::element_t<0>, public pic::element_t<1>
     {
         public:
             param_wire_t(input_root_t *, const piw::event_data_source_t &);
@@ -170,4 +171,4 @@ namespace piw
     };
 }
 
-#endif
+#endif /* __CONTROL_PARAMS__ */

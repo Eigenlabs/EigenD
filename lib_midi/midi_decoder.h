@@ -17,13 +17,14 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __PIW_MIDI__
-#define __PIW_MIDI__
+#ifndef __MIDI_DECODER__
+#define __MIDI_DECODER__
 
-#include "piw_exports.h"
-namespace piw
+#include <lib_midi/lib_midi_exports.h>
+
+namespace midi
 {
-    class PIW_DECLSPEC_CLASS mididecoder_t
+    class MIDI_DECLSPEC_CLASS mididecoder_t
     {
         private:
             enum state_t { START, STATUS, GET1OF1, GET1OF2, GET2OF2, GETSYSEX };
@@ -54,6 +55,6 @@ namespace piw
             unsigned char _buffer[2];
     };
 
-};
+}; // namespace midi
 
-#endif
+#endif /* __MIDI_DECODER__ */

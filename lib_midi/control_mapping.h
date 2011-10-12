@@ -17,12 +17,13 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __PIW_CONTROL_MAPPING__
-#define __PIW_CONTROL_MAPPING__
+#ifndef __CONTROL_MAPPING__
+#define __CONTROL_MAPPING__
 
-#include "piw_exports.h"
-#include "piw_tsd.h"
-#include "picross/pic_functor.h"
+#include <lib_midi/lib_midi_exports.h>
+
+#include <piw/piw_tsd.h>
+#include <picross/pic_functor.h>
 
 #define GLOBAL_SCOPE 0
 #define PERNOTE_SCOPE 1
@@ -36,9 +37,9 @@
 #define CURVE_QUADRATIC 2
 #define CURVE_STEP 3
 
-namespace piw
+namespace midi
 {
-    class PIW_DECLSPEC_CLASS mapping_observer_t
+    class MIDI_DECLSPEC_CLASS mapping_observer_t
     {
         public:
             virtual ~mapping_observer_t() {};
@@ -49,7 +50,7 @@ namespace piw
             virtual std::string get_parameter_name(unsigned i) = 0;
     };
 
-    struct PIW_DECLSPEC_CLASS global_settings_t
+    struct MIDI_DECLSPEC_CLASS global_settings_t
     {
         global_settings_t(): minimum_decimation_(0.f), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false) {};
         global_settings_t(float minimum_decimation, bool send_notes, bool send_pitchbend, bool send_hires_velocity): minimum_decimation_(minimum_decimation), send_notes_(send_notes), send_pitchbend_(send_pitchbend), send_hires_velocity_(send_hires_velocity)  {};
@@ -60,7 +61,7 @@ namespace piw
         bool send_hires_velocity_;
     };
 
-    struct PIW_DECLSPEC_CLASS mapping_data_t
+    struct MIDI_DECLSPEC_CLASS mapping_data_t
     {
         mapping_data_t(): scale_(0.f), lo_(0.f), base_(0.f), hi_(1.f), origin_return_(false), decimation_(0.f), scope_(GLOBAL_SCOPE), channel_(0), resolution_(BITS_7), secondary_cc_(-1), curve_(CURVE_LINEAR) {};
         mapping_data_t(float scale, float lo, float base, float hi, bool origin_return, float decimation, unsigned scope, unsigned channel, unsigned resolution, int secondary, unsigned curve): scale_(scale), lo_(lo), base_(base), hi_(hi), origin_return_(origin_return), decimation_(decimation), scope_(scope), channel_(channel), resolution_(resolution), secondary_cc_(secondary), curve_(curve) {};
@@ -80,14 +81,14 @@ namespace piw
         const unsigned curve_; 
     };
 
-    struct PIW_DECLSPEC_CLASS mapping_wrapper_t: public mapping_data_t
+    struct MIDI_DECLSPEC_CLASS mapping_wrapper_t: public mapping_data_t
     {
         mapping_wrapper_t(float scale, float lo, float base, float hi, bool origin_return, float decimation, unsigned scope, unsigned channel, unsigned resolution, int secondary, unsigned curve): mapping_data_t(scale, lo, base, hi, origin_return, decimation, scope, channel, resolution, secondary, curve), last_processed_(0) {};
 
         unsigned long long last_processed_;
     };
 
-    class PIW_DECLSPEC_CLASS midi_channel_delegate_t: public virtual pic::tracked_t
+    class MIDI_DECLSPEC_CLASS midi_channel_delegate_t: public virtual pic::tracked_t
     {
         public:
             virtual ~midi_channel_delegate_t() {}
@@ -105,7 +106,7 @@ namespace piw
     typedef pic::lckmap_t<unsigned,float>::nbtype nb_origin_map_t;
     typedef pic::lckmap_t<unsigned,mapping_wrapper_t>::nbtype nb_midi_map_t;
 
-    class PIW_DECLSPEC_CLASS control_mapping_t
+    class MIDI_DECLSPEC_CLASS control_mapping_t
     {
         public:
             control_mapping_t(unsigned name) : name_(name), mapping_serial_(0), origins_update_(0) {};
@@ -128,7 +129,7 @@ namespace piw
             unsigned long long origins_update_;
     };
 
-    struct PIW_DECLSPEC_CLASS mapping_info_t: public mapping_data_t
+    struct MIDI_DECLSPEC_CLASS mapping_info_t: public mapping_data_t
     {
         mapping_info_t(): oparam_(-1), enabled_(true) {};
         mapping_info_t(unsigned short oparam): mapping_data_t(1.f, 0.f, 0.f, 1.f, false, 0.f, GLOBAL_SCOPE, 0, BITS_7, -1, CURVE_LINEAR), oparam_(oparam), enabled_(true) {};
@@ -157,7 +158,7 @@ namespace piw
     typedef pic::lckmultimap_t<unsigned,mapping_info_t>::lcktype control_map_t;
     typedef std::pair<control_map_t::const_iterator,control_map_t::const_iterator> controllers_map_range_t;
 
-    class PIW_DECLSPEC_CLASS controllers_mapping_t: public pic::guarded_t, virtual public pic::tracked_t
+    class MIDI_DECLSPEC_CLASS controllers_mapping_t: public pic::guarded_t, virtual public pic::tracked_t
     {
         public:
             controllers_mapping_t(mapping_observer_t &l) : listener_(l), acquired_(0) {};
@@ -201,7 +202,7 @@ namespace piw
             void refresh_origins_(control_mapping_t &, pic::i2f_t &);
             void refresh_midi_(control_mapping_t &);
 
-            struct PIW_DECLSPEC_CLASS mapping_t
+            struct MIDI_DECLSPEC_CLASS mapping_t
             {
                 control_map_t map_params_;
                 control_map_t map_midi_;
@@ -223,7 +224,7 @@ namespace piw
             const mapping_t* acquired_;
     };
 
-}; // namespace piw
+}; // namespace midi
 
 
-#endif /* __PIW_CONTROL_MAPPING__ */
+#endif /* __CONTROL_MAPPING__ */

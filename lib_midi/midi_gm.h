@@ -17,14 +17,14 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __PIW_MIDI_GM__
-#define __PIW_MIDI_GM__
+#ifndef __MIDI_GM__
+#define __MIDI_GM__
 
 #define MIDI_CC_MAX 128
 #define MIDI_STATUS_MAX 4 
 #define MIDI_EIGEND_MAX 1 
 
-namespace piw
+namespace midi
 {
     enum midi_eigend_t {LEGATO_TRIGGER};
 
@@ -171,7 +171,7 @@ namespace piw
         "Mono Mode On (+ poly off, + all notes off)",
         "Poly Mode On (+ mono off, +all notes off)"
     };
-} // namespace piw
+} // namespace midi
 
 
-#endif /* __PIW_MIDI_GM__ */
+#endif /* __MIDI_GM__ */

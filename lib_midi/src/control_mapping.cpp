@@ -19,10 +19,11 @@
 
 #include <piw/piw_state.h>
 #include <piw/piw_tsd.h>
-#include <piw/piw_control_mapping.h>
-#include <piw/piw_midi_gm.h>
 
-namespace piw
+#include <lib_midi/control_mapping.h>
+#include <lib_midi/midi_gm.h>
+
+namespace midi
 {
     /*
      * mapping_data_t
@@ -636,4 +637,5 @@ namespace piw
         acquired_=0;
         mapping_.release(acquired);
     }
-}
+    
+} // namespace midi
