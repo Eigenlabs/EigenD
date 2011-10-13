@@ -1079,6 +1079,10 @@ class Agent(agent.Agent):
         yield self.index.sync()
         e = r.args()[0]
 
+        for m in self.index.members():
+            ma = m.address
+            if ma in agents:
+                yield rpc.invoke_rpc(ma,'postload','')
 
         if upgrade_flag and r.status():
             self.load_status('Upgrading',100)

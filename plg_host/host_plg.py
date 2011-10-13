@@ -228,16 +228,21 @@ class PluginState(node.server):
         self[4] = PluginStateNode()
         self[5] = PluginStateNode()
         self[6] = PluginStateBlob()
+        self.__state_loaded = False
 
     def load_state(self,state,delegate,phase):
         node.server.load_state(self,state,delegate,phase)
-        show = self[1].get_data().as_bool() if self[1].get_data().is_bool() else False
-        state = self[2].get_blob()
-        desc = urllib.unquote(self[3].get_data().as_string()) if self[3].get_data().is_string() else ''
-        bypassed = self[4].get_data().as_bool() if self[4].get_data().is_bool() else False
-        mapping = self[5].get_data().as_string() if self[5].get_data().is_string() else '[]'
-        bounds = self[6].get_blob()
-        self.__load_callback(delegate,state,desc,show,bypassed,mapping,bounds)
+        self.__state_loaded = True
+
+    def apply_state(self):
+        if self.__state_loaded:
+            show = self[1].get_data().as_bool() if self[1].get_data().is_bool() else False
+            state = self[2].get_blob()
+            desc = urllib.unquote(self[3].get_data().as_string()) if self[3].get_data().is_string() else ''
+            bypassed = self[4].get_data().as_bool() if self[4].get_data().is_bool() else False
+            mapping = self[5].get_data().as_string() if self[5].get_data().is_string() else '[]'
+            bounds = self[6].get_blob()
+            self.__load_callback(state,desc,show,bypassed,mapping,bounds)
 
     def save_state(self,state,bounds):
         self[2].store(state)
@@ -518,7 +523,7 @@ class Agent(agent.Agent):
                 return True
         return False
 
-    def __plugin_state_loaded(self,delegate,state,desc_xml,show,bypassed,mapping,bounds):
+    def __plugin_state_loaded(self,state,desc_xml,show,bypassed,mapping,bounds):
         if desc_xml:
             desc = host_native.create_plugin_description(desc_xml)
 
@@ -542,10 +547,6 @@ class Agent(agent.Agent):
 
                     return
 
-                delegate.add_error("Can't load " + desc.description());
-            else:
-                delegate.add_error("Can't load Audio Plugin");
-
         self.__host.close()
 
     def __set_title(self):
@@ -561,6 +562,9 @@ class Agent(agent.Agent):
 
     def agent_preload(self):
         self.agent_presave(None)
+
+    def agent_postload(self):
+        self.__state.apply_state()
 
     def agent_presave(self,tag):
         state = self.__host.get_state()
