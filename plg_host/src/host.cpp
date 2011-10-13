@@ -538,19 +538,18 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     void clock_changed()
     {
-        juce::AudioPluginInstance *plg = plugin_.current();
-        if(!plg)
+        pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
+        juce::AudioPluginInstance *p(pg.value());
+        if(!p)
         {
             return;
         }
-        plugin_.set(0);
-        plg->releaseResources();
+        p->releaseResources();
         sample_rate_ = clockdomain_->get_sample_rate();
         buffer_size_ = clockdomain_->get_buffer_size();
-        allocate_buffer(plg);
+        allocate_buffer(p);
+        p->prepareToPlay(sample_rate_, buffer_size_);
         recalc_idle_time();
-        plg->prepareToPlay(sample_rate_, buffer_size_);
-        plugin_.set(plg);
     }
     
     juce::AudioPluginInstance *find_plugin(juce::PluginDescription &desc,juce::String &err)
@@ -596,7 +595,6 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     void allocate_buffer(juce::AudioPluginInstance *plg)
     {
-        PIC_ASSERT(plugin_.current()==0);
         deallocate_buffer();
 
         int buffer_channels = std::max(plg->getNumInputChannels(),plg->getNumOutputChannels());
@@ -617,7 +615,6 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     void deallocate_buffer()
     {
-        PIC_ASSERT(plugin_.current()==0);
         for(int i=0; i<audio_buffer_.getNumChannels(); ++i)
         {
             pic_thread_lck_free(audio_buffer_.getSampleData(i,0),buffer_size_*sizeof(float));
@@ -629,12 +626,14 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     {
         if(!window_)
         {
-            if(plugin_.current())
+            pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
+            juce::AudioPluginInstance *p(pg.value());
+            if(p)
             {
-                juce::Component *editor = plugin_.current()->createEditorIfNeeded();
+                juce::Component *editor = p->createEditorIfNeeded();
                 if(0 == editor)
                 {
-                    editor = new juce::GenericAudioProcessorEditor(plugin_.current());
+                    editor = new juce::GenericAudioProcessorEditor(p);
                 }
                 if(editor != 0)
                 {
@@ -660,7 +659,12 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     void update_gui()
     {
-        plugin_.current()->updateHostDisplay();
+        pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
+        juce::AudioPluginInstance *p(pg.value());
+        if(p)
+        {
+            p->updateHostDisplay();
+        }
     }
 
     void thing_timer_slow()
@@ -733,17 +737,18 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
         host_window_.close_window();
 
-        juce::AudioPluginInstance *plg = plugin_.current();
+        juce::AudioPluginInstance *p(plugin_.current());
+
         plugin_.set(0);
 
         deallocate_buffer();
 
         set_bypassed(true);
 
-        if(plg)
+        if(p)
         {
-            plg->releaseResources();
-            delete plg;
+            p->releaseResources();
+            delete p;
         }
 
         observer_->description_changed("");
@@ -1351,7 +1356,8 @@ host_param_tabs_t::host_param_tabs_t(host::plugin_instance_t::impl_t *c) :
 
 int host_param_table_t::get_parameter_count()
 {
-    juce::AudioPluginInstance *p(controller_->plugin_.current());
+    pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(controller_->plugin_);
+    juce::AudioPluginInstance *p(pg.value());
     if(!p) return 0;
 
     unsigned long long now = piw::tsd_time();
@@ -1375,7 +1381,10 @@ int host_param_table_t::getNumRows()
 
 juce::String host_param_table_t::getRowName(int row)
 {
-    juce::AudioPluginInstance *p(controller_->plugin_.current());
+    pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(controller_->plugin_);
+    juce::AudioPluginInstance *p(pg.value());
+    if(!p) return juce::String("");
+
     if(row < get_parameter_count())
     {
         std::stringstream oss;
@@ -1657,20 +1666,25 @@ void host::plugin_instance_t::set_title(const std::string &s)
 
 host::plugin_description_t host::plugin_instance_t::get_description()
 {
-    juce::AudioPluginInstance *plg = impl_->plugin_.current();
+    pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(impl_->plugin_);
+    juce::AudioPluginInstance *p(pg.value());
+
     host::plugin_description_t d;
-    if(plg)
-        plg->fillInPluginDescription(d.desc_);
+    if(p)
+    {
+        p->fillInPluginDescription(d.desc_);
+    }
     return d;
 }
 
 piw::data_t host::plugin_instance_t::get_state()
 {
-    juce::AudioPluginInstance *plg = impl_->plugin_.current();
-    if(plg)
+    pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(impl_->plugin_);
+    juce::AudioPluginInstance *p(pg.value());
+    if(p)
     {
         juce::MemoryBlock mb;
-        plg->getStateInformation(mb);
+        p->getStateInformation(mb);
         unsigned char *c;
         piw::data_t d = piw::makeblob(0,mb.getSize(),&c);
         memcpy(c,mb.getData(),mb.getSize());
@@ -1681,8 +1695,9 @@ piw::data_t host::plugin_instance_t::get_state()
 
 piw::data_t host::plugin_instance_t::get_bounds()
 {
-    juce::AudioPluginInstance *plg = impl_->plugin_.current();
-    if(plg)
+    pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(impl_->plugin_);
+    juce::AudioPluginInstance *p(pg.value());
+    if(p)
     {
         juce::Rectangle<int> bounds(impl_->get_bounds());
         int bounds_array[4]={bounds.getX(),bounds.getY(),bounds.getWidth(),bounds.getHeight()};
@@ -1702,10 +1717,11 @@ void host::plugin_instance_t::set_state(const piw::data_t &blob)
         return;
     }
 
-    juce::AudioPluginInstance *plg = impl_->plugin_.current();
-    if(plg)
+    pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(impl_->plugin_);
+    juce::AudioPluginInstance *p(pg.value());
+    if(p)
     {
-        plg->setStateInformation(blob.as_blob(), blob.as_bloblen());
+        p->setStateInformation(blob.as_blob(), blob.as_bloblen());
     }
 }
 
