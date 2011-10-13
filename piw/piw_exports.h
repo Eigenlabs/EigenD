@@ -31,15 +31,9 @@
     #ifdef BUILDING_PIW
       #define PIW_DECLSPEC_FUNC(rt) rt __attribute__ ((visibility("default")))
       #define PIW_DECLSPEC_CLASS __attribute__ ((visibility("default")))
-      #ifndef JUCE_API
-          #define JUCE_API __attribute__ ((visibility("hidden")))
-      #endif
     #else
       #define PIW_DECLSPEC_FUNC(rt) rt  __attribute__ ((visibility("default")))
       #define PIW_DECLSPEC_CLASS  __attribute__ ((visibility("default")))
-      #ifndef JUCE_API
-          #define JUCE_API __attribute__ ((visibility("hidden")))
-      #endif
     #endif
   #else
     #define PIW_DECLSPEC_FUNC(rt) rt
