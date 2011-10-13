@@ -953,7 +953,8 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
     void clocksink_ticked(unsigned long long from, unsigned long long to)
     {
         pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
-        if(!pg.value())
+        juce::AudioPluginInstance *p(pg.value());
+        if(!p)
         {
             end_output_events(to);
             return;
@@ -968,18 +969,21 @@ struct host::plugin_instance_t::impl_t: piw::params_delegate_t, piw::mapping_obs
         input_metronome(from,to);
 
         bool any_input = input_audio(from,to);
-        if(pg.value()->acceptsMidi() && input_midi(from,to))
+        if(p->acceptsMidi() && input_midi(from,to))
         {
             any_input = true;
         }
 
         bool any_output = false;
+
         if(any_input || idle_count_<idle_time_ticks_)
         {
-            pg.value()->processBlock(audio_buffer_, midi_buffer_);
+            p->processBlock(audio_buffer_, midi_buffer_);
             any_output = output_audio(from,to);
-            if(pg.value()->producesMidi() && output_midi(from,to))
+            if(p->producesMidi() && output_midi(from,to))
+            {
                 any_output = true;
+            }
         }
 
         if(any_output || any_input)

@@ -286,11 +286,17 @@ class Agent(atom.Atom):
     def rpc_preload(self,arg):
         self.agent_preload()
 
+    def rpc_postload(self,arg):
+        self.agent_postload()
+
     def rpc_presave(self,arg):
         tag = action.unmarshal(arg)[0]
         self.agent_presave(tag)
 
     def agent_preload(self):
+        pass
+
+    def agent_postload(self):
         pass
 
     def agent_presave(self,tag):
