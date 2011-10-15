@@ -316,6 +316,7 @@ namespace midi
         piw::data_nb_t d;
         bool more_data = w->iterator_->nextsig(1,d,to);
         // handle the case where the input is ending, but there's no more data
+        // this allows return to original configurations to be processed
         if(!more_data && ending)
         {
             current_data_.set_nb(piw::makenull_nb(piw::tsd_time()));
@@ -384,6 +385,12 @@ namespace midi
             }
             else
             {
+                // if the data was generated because at event end there was nothing to process
+                // don't send out the value if a return to origin wasn't configured
+                if(ending && d.is_null())
+                {
+                    continue;
+                }
                 value = calculate_param_value(id, d.as_norm(), ip->second, origin);
             }
 
@@ -424,6 +431,12 @@ namespace midi
             }
             else
             {
+                // if the data was generated because at event end there was nothing to process
+                // don't send out the value if a return to origin wasn't configured
+                if(ending && d.is_null())
+                {
+                    continue;
+                }
                 value = calculate_midi_value(id, d.as_norm(), ic->second);
             }
 
