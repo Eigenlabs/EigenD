@@ -131,7 +131,7 @@ class Agent(agent.Agent):
 	# is connection up through the policy.
 	#
     def __minimum(self,m):
-        self[3].set_value(value)
+        self[3].set_value(m)
         self.native.set_minimum(m)
         return True
 
@@ -140,7 +140,7 @@ class Agent(agent.Agent):
 	# is connection up through the policy.
 	#
     def __controller(self,c):
-        self[4].set_value(value)
+        self[4].set_value(c)
         self.native.set_controller(c)
         return True
 
