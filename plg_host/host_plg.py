@@ -105,7 +105,10 @@ class PluginBrowser(atom.Atom):
         self.__update()
 
     def rpc_current(self,args):
-        return '[]'
+        c = self.__agent.get_title()
+        if c is None:
+            return '[]'
+        return '[["%s",[]]]' % c
 
     def rpc_resolve(self,args):
         return '[]'
@@ -555,6 +558,12 @@ class Agent(agent.Agent):
         desc = self.__host.get_description()
         t = '%s %s %d' % (desc.name(),desc.format(),o)
         self.__host.set_title(t)
+
+    def get_title(self):
+        if self.__host is None:return
+        desc = self.__host.get_description()
+        t = '%s %s' % (desc.name(),desc.format())
+        return t 
 
     def property_change(self,key,value):
         if key == 'ordinal':
