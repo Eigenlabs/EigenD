@@ -52,7 +52,6 @@ namespace
         prim::angle_radius_t::impl_t *root_;
         piw::xevent_data_buffer_t::iter_t input_;
         piw::xevent_data_buffer_t output_;
-        unsigned seq_;
         unsigned long long last_from_;
         bool roll_set_;
         bool yaw_set_;
@@ -106,9 +105,9 @@ struct prim::angle_radius_t::impl_t: piw::root_t, piw::root_ctl_t, virtual pic::
 
     void invalidate()
     {
-        pic::lckmap_t<piw::data_t,angle_radius_wire_t *>::lcktype::iterator ci;
         tick_disable();
 
+        pic::lckmap_t<piw::data_t,angle_radius_wire_t *>::lcktype::iterator ci;
         while((ci=children_.begin())!=children_.end())
         {
             delete ci->second;
@@ -177,9 +176,6 @@ void angle_radius_wire_t::invalidate()
 
 void angle_radius_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::xevent_data_buffer_t &b)
 {
-    piw::data_nb_t d;
-
-    seq_ = seq;
     output_ = piw::xevent_data_buffer_t(SIG2(ANGLE,RADIUS),PIW_DATAQUEUE_SIZE_NORM);
     input_ = b.iterator();
 
@@ -189,7 +185,6 @@ void angle_radius_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, co
     source_start(seq,id,output_);
 
     root_->add_ticker(this);
-
 }
 
 void angle_radius_wire_t::event_buffer_reset(unsigned s,unsigned long long t, const piw::dataqueue_t &o, const piw::dataqueue_t &n)
