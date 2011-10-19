@@ -139,9 +139,9 @@ Not properly assigned, in use:
 8   8   7   7  : Size          : Noun              : None
 8   8   7   8  : Silent        : Modifier          : None
 8   8   8   1  : Osc           : Noun              : None
-8   8   8   2  : Unused        : Unused            : None
-8   8   8   3  : Unused        : Unused            : None
-8   8   8   4  : Unused        : Unused            : None
+8   8   8   2  : Latch         : Noun              : None
+8   8   8   3  : Angle         : Noun              : None
+8   8   8   4  : Radius        : Noun              : None
 8   8   8   5  : Unused        : Unused            : None
 8   8   8   6  : Unused        : Unused            : None
 8   8   8   7  : Unused        : Unused            : None
