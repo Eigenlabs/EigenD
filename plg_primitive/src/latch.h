@@ -65,7 +65,7 @@ namespace prim
              */
             void set_controller(unsigned c);
 
-			/*
+            /*
              * Forward implementation class declaration with the private member 
              * variable is a pattern we use to clearly decouple the public agent 
              * interface from the class declaration of the actual implementation.
