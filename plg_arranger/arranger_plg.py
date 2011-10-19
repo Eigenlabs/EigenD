@@ -131,7 +131,7 @@ class EventList(node.Server):
     def __encode(self,str):
         r,c,e = self.__split(str)
         t = (c<<32)|r
-        return piw.makefloat_nb(e,t)
+        return piw.makefloat(e,t)
 
     def __decode(self,d):
         if d.is_float():
@@ -175,7 +175,7 @@ class Parameters(atom.Atom):
 
     def __start_change(self,v):
         fc = piw.fastchange(self.__agent.model.set_loopstart())
-        fc(piw.makelong_nb(v-1,0))
+        fc(piw.makelong(v-1,0))
         return True
 
     def __start_create(self,ctx,subj,dummy,arg):
@@ -190,7 +190,7 @@ class Parameters(atom.Atom):
 
     def __end_change(self,v):
         fc = piw.fastchange(self.__agent.model.set_loopend())
-        fc(piw.makelong_nb(v-1,0))
+        fc(piw.makelong(v-1,0))
         return True
 
     def __end_create(self,ctx,subj,dummy,arg):
@@ -205,7 +205,7 @@ class Parameters(atom.Atom):
 
     def __step_change(self,v):
         fc = piw.fastchange(self.__agent.model.set_stepnumerator())
-        fc(piw.makefloat_nb(v,0))
+        fc(piw.makefloat(v,0))
         return True
 
     def __step_create(self,ctx,subj,dummy,arg):
@@ -220,7 +220,7 @@ class Parameters(atom.Atom):
 
     def __fraction_change(self,v):
         fc = piw.fastchange(self.__agent.model.set_stepdenominator())
-        fc(piw.makefloat_nb(v,0))
+        fc(piw.makefloat(v,0))
         return True
 
     def __fraction_create(self,ctx,subj,dummy,arg):
@@ -242,7 +242,7 @@ class Parameters(atom.Atom):
 
     def __doubletap_change(self,v):
         fc = piw.fastchange(self.__agent.view.set_doubletap())
-        fc(piw.makefloat_nb(v,0))
+        fc(piw.makefloat(v,0))
         return True
 
     def __doubletap_set(self,d):
