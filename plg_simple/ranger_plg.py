@@ -27,7 +27,7 @@ class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         agent.Agent.__init__(self, signature=version,names='ranger',ordinal=ordinal)
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='outputs')
         self[2][1] = bundles.Output(1,False,names='output')
 
         self.domain = piw.clockdomain_ctl()

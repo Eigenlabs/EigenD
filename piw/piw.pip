@@ -1861,12 +1861,13 @@ class linear_gain[piw::linear_gain_t]
 
 class selector[piw::selector_t] /gc/
 {
-    selector(const cookie &, const change_nb &, const change_nb &, unsigned, bool)
+    selector(const cookie &, const cookie &, const change_nb &, const change_nb &, unsigned, bool)
 
     void gate_output(unsigned, const change_nb &, const change_nb &)
     void gate_status_index(unsigned, unsigned)
     change_nb gate_input(unsigned)
     change_nb mode_input()
+    change_nb gate_selection_input()
     void clear_output(unsigned)
     void choose(bool)
     void activate(unsigned)

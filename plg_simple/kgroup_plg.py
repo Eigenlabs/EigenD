@@ -468,11 +468,14 @@ class Agent(agent.Agent):
 
         self.mapper = piw.kgroup_mapper()
 
-        self[15] = bundles.Output(1,False, names='light output',protocols='revconnect')
+        self[15] = bundles.Output(1,False,names='light output',protocols='revconnect')
         self.lights = bundles.Splitter(self.domain,self[15])
         self.status_mapper = piw.function1(False,1,1,piw.makenull(0),self.lights.cookie())
         self.status_mapper.set_functor(self.mapper.light_filter())
         self.light_switch = piw.multiplexer(self.status_mapper.cookie(),self.domain)
+
+        self[34] = bundles.Output(1,False,names='selection output')
+        self.outputselection = bundles.Splitter(self.domain,self[34])
 
         self.kclone = piw.clone(False) # keys
         self.s1clone = piw.clone(False) # strip 1
@@ -529,7 +532,7 @@ class Agent(agent.Agent):
         self.status_buffer.autosend(False)
         lightselection = self.status_buffer.enabler()
         modeselection = utils.make_change_nb(piw.slowchange(utils.changify(self.__mode_selection)))
-        self.mode_selector = piw.selector(self.light_switch.get_input(250),lightselection,modeselection,250,False)
+        self.mode_selector = piw.selector(self.light_switch.get_input(250),self.outputselection.cookie(),lightselection,modeselection,250,False)
 
         self.modepulse = piw.changelist_nb()
         piw.changelist_connect_nb(self.modepulse,self.status_buffer.blinker())
@@ -539,6 +542,8 @@ class Agent(agent.Agent):
         self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key row', init=None, policy=atom.default_policy(self.__change_mode_key_row))
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key column', init=None, policy=atom.default_policy(self.__change_mode_key_column))
         self[26] = atom.Atom(domain=domain.String(), init='[]', names='key map', policy=atom.default_policy(self.__set_members))
+
+        self[27] = atom.Atom(domain=domain.Aniso(), names='selection input', policy=policy.FastPolicy(self.mode_selector.gate_selection_input(),policy.AnisoStreamPolicy()))
 
         self.add_verb2(3,'set([un],None)',callback=self.__untune)
 

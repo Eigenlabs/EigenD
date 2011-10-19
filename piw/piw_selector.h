@@ -30,11 +30,12 @@ namespace piw
     class PIW_DECLSPEC_CLASS selector_t
     {
         public:
-            selector_t(const cookie_t &light_output, const change_nb_t &lights_selector, const change_nb_t &mode_selector, unsigned name, bool initial);
+            selector_t(const cookie_t &light_output, const cookie_t &gates_output, const change_nb_t &lights_selector, const change_nb_t &mode_selector, unsigned name, bool initial);
             ~selector_t();
 
             change_nb_t mode_input();
             change_nb_t gate_input(unsigned);
+            change_nb_t gate_selection_input();
             void gate_output(unsigned, const change_nb_t &gate, const change_nb_t &selected);
             void gate_status_index(unsigned, unsigned);
             void clear_output(unsigned);

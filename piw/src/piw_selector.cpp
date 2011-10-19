@@ -143,10 +143,22 @@ namespace
     };
 };
 
-struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
+struct piw::selector_t::impl_t: piw::event_data_source_real_t, virtual pic::lckobject_t, virtual pic::tracked_t
 {
-    impl_t(const cookie_t &lo, const change_nb_t &ls, const change_nb_t &ms, unsigned n, bool initial): selecting_(MODE_RUNNING),initial_(initial),lightswitch_(ls),modeselector_(ms),lightchannel_(n),statusbuffer_(piw::change_nb_t(),0,lo)
+    impl_t(const cookie_t &lo, const cookie_t &go, const change_nb_t &ls, const change_nb_t &ms, unsigned n, bool initial):
+        piw::event_data_source_real_t(piw::pathnull(0)),
+        selecting_(MODE_RUNNING),
+        initial_(initial),
+        lightswitch_(ls),
+        modeselector_(ms),
+        lightchannel_(n),
+        statusbuffer_(piw::change_nb_t(),0,lo)
     {
+        root_.connect(go);
+        root_.connect_wire(&wire_, source());
+        buffer_ = piw::xevent_data_buffer_t(1,PIW_DATAQUEUE_SIZE_TINY);
+        piw::tsd_fastcall(init__,this,0);
+
         statusbuffer_.autosend(false);
     }
 
@@ -168,6 +180,17 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
             slots_.exchange();
             delete sl;
         }
+    }
+
+    static int init__(void *self_, void *arg_)
+    {
+        impl_t *self = (impl_t *)self_;
+
+        unsigned long long t = piw::tsd_time();
+        self->buffer_.add_value(1,piw::dictnull_nb(t));
+        self->source_start(0,piw::pathnull_nb(t),self->buffer_);
+        
+        return 1;
     }
 
     int gc_traverse(void *v, void *a) const
@@ -294,11 +317,31 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
             ci->second->gate(selecting_);
             ci->second->change_status(&statusbuffer_,selecting_);
         }
-        if (found)
+        if(found)
         {
             lightswitch_(piw::makelong_nb(idx,piw::tsd_time()));
         }
         statusbuffer_.send();
+        gates_changed(piw::tsd_time());
+    }
+
+    void select(unsigned slot, bool state)
+    {
+        unsigned long long t  = piw::tsd_time();
+
+        pic::flipflop_t<pic::lckmap_t<unsigned,slot_t *>::lcktype>::guard_t g(slots_);
+        pic::lckmap_t<unsigned,slot_t *>::lcktype::const_iterator ci;
+
+        ci=g.value().find(slot);
+        if(ci!=g.value().end())
+        {
+            ci->second->state_ = state;
+            if(state) lightswitch_(piw::makelong_nb(ci->first,t));
+            ci->second->gate(MODE_RUNNING);
+            ci->second->change_status(&statusbuffer_,selecting_);
+            statusbuffer_.send();
+        }
+        gates_changed(t);
     }
 
     void gate_input(unsigned idx, const piw::data_nb_t &d)
@@ -337,6 +380,7 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
             {
                 counter_--;
             }
+            gates_changed(piw::tsd_time());
         }
     }
 
@@ -434,7 +478,69 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
             statusbuffer_.send();
         }
     }
+    
+    void gate_selection_input(const piw::data_nb_t &d)
+    {
+        if(!d.is_tuple()) return;
 
+        std::set<unsigned> active_slots;
+        for(unsigned i = 0; i < d.as_tuplelen(); ++i)
+        {
+            piw::data_nb_t v = d.as_tuple_value(i);
+            if(!v.is_long()) return;
+            active_slots.insert((unsigned)v.as_long());
+        }
+
+        pic::flipflop_t<pic::lckmap_t<unsigned,slot_t *>::lcktype>::guard_t g(slots_);
+        pic::lckmap_t<unsigned,slot_t *>::lcktype::const_iterator ci;
+
+        unsigned lightswitch = 0;
+        for(ci=g.value().begin(); ci!=g.value().end(); ++ci)
+        {
+            if (active_slots.find(ci->first) != active_slots.end())
+            {
+                ci->second->state_ = true;
+                if(!lightswitch)
+                {
+                    lightswitch = ci->first;
+                }
+            }
+            else
+            {
+                ci->second->state_ = false;
+            }
+            ci->second->gate(selecting_);
+            ci->second->change_status(&statusbuffer_,selecting_);
+        }
+        if(lightswitch)
+        {
+            lightswitch_(piw::makelong_nb(lightswitch,piw::tsd_time()));
+        }
+        statusbuffer_.send();
+        gates_changed(piw::tsd_time());
+    }
+
+    void gates_changed(unsigned long long t)
+    {
+        piw::data_nb_t active_gates = piw::tuplenull_nb(t);
+
+        pic::flipflop_t<pic::lckmap_t<unsigned,slot_t *>::lcktype>::guard_t g(slots_);
+        pic::lckmap_t<unsigned,slot_t *>::lcktype::const_iterator ci;
+
+        for(ci=g.value().begin(); ci!=g.value().end(); ++ci)
+        {
+            if(ci->second->state_)
+            {
+                active_gates = piw::tupleadd_nb(active_gates, piw::makelong_nb(ci->first, t));
+            }
+        }
+
+        buffer_.add_value(1,active_gates);
+    }
+
+    piw::root_ctl_t root_;
+    piw::wire_ctl_t wire_;
+    piw::xevent_data_buffer_t buffer_;
     unsigned counter_;
     unsigned selecting_;
     bool initial_;
@@ -455,7 +561,7 @@ void gatesink_t::invoke(const piw::data_nb_t &d) const
     i_->gate_input(s_,piw::makebool_nb(s,d.time()));
 }
 
-piw::selector_t::selector_t(const cookie_t &lo, const change_nb_t &ls, const change_nb_t &ms, unsigned n, bool initial): impl_(new impl_t(lo,ls,ms,n,initial))
+piw::selector_t::selector_t(const cookie_t &lo, const cookie_t &go, const change_nb_t &ls, const change_nb_t &ms, unsigned n, bool initial): impl_(new impl_t(lo,go,ls,ms,n,initial))
 {
 }
 
@@ -512,6 +618,11 @@ piw::change_nb_t piw::selector_t::mode_input()
     return piw::change_nb_t::method(impl_,&impl_t::mode_input);
 }
 
+piw::change_nb_t piw::selector_t::gate_selection_input()
+{
+    return piw::change_nb_t::method(impl_,&impl_t::gate_selection_input);
+}
+
 static int __activate(void *i_, void *s_)
 {
     piw::selector_t::impl_t *i = (piw::selector_t::impl_t *)i_;
@@ -530,20 +641,8 @@ static int __select(void *i_, void *s_, void *e_)
     piw::selector_t::impl_t *i = (piw::selector_t::impl_t *)i_;
     unsigned s = *(unsigned *)s_;
     bool e = *(bool *)e_;
-    unsigned long long t  = piw::tsd_time();
 
-    pic::flipflop_t<pic::lckmap_t<unsigned,slot_t *>::lcktype>::guard_t g(i->slots_);
-    pic::lckmap_t<unsigned,slot_t *>::lcktype::const_iterator ci;
-
-    ci=g.value().find(s);
-    if(ci!=g.value().end())
-    {
-        ci->second->state_ = e;
-        if(e) i->lightswitch_(piw::makelong_nb(ci->first,t));
-        ci->second->gate(MODE_RUNNING);
-        ci->second->change_status(&i->statusbuffer_,i->selecting_);
-        i->statusbuffer_.send();
-    }
+    i->select(s,e);
 
     return 0;
 }
