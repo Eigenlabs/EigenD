@@ -738,7 +738,7 @@ class Agent(agent.Agent):
 
         f = self.player.player(cookie,mode)
         ff = piw.fastchange(f)
-        ff(piw.makefloat_bounded_nb(1,0,0,1,0))
+        ff(piw.makefloat_bounded(1,0,0,1,0))
         self.player.unload(cookie,False)
         return action.nosync_return()
 
