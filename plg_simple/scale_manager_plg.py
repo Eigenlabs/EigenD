@@ -56,8 +56,8 @@ class EventList(atom.Atom):
         atom.Atom.__init__(self,creator=self.__create,wrecker=self.__wreck)
         self.__event = bundles.FastSender(2)
 
-    def __create(self,text,i):
-        return Event(self,self.__event,text,i)
+    def __create(self,i):
+        return Event(self,self.__event,"",i)
 
     def __wreck(self,k,v):
         pass
