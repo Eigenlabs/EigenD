@@ -1,0 +1,7 @@
+This is a collection of work-in-progress primitive agents to massage the data
+that's flowing through EigenD.
+
+At this point the agents and the code here is mainly intended as examples and
+documentation for developers that want to contribute to EigenD. These agents are
+not part of the public EigenD and Belcanto functionality and are not guaranteed
+to continue to behave or to exist.

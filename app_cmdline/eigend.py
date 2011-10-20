@@ -129,8 +129,9 @@ def main():
         print 'load failed',errs
 
     def hostlogger(msg):
-        print >>logfile,msg
-        logfile.flush()
+        if logfile:
+            print >>logfile,msg
+            logfile.flush()
 
     def startup(mgr):
         a=Agent(mgr,opts.name,opts.path,logger=hostlogger, icon='app_cmdline/agentd.png')

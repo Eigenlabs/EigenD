@@ -72,10 +72,11 @@ class Builtins:
         ruleset([],None)
         """
         print "== ruleset =="
-        r=resource.open_logfile('ruleset')
-        for t in enumerate(self.database.iterrules()):
-            print >>r,"%i: %s" % t
-        r.flush()
+        if r:
+            r=resource.open_logfile('ruleset')
+            for t in enumerate(self.database.iterrules()):
+                print >>r,"%i: %s" % t
+            r.flush()
         return async.success()
 
     def primitive_context(self,interp,word):

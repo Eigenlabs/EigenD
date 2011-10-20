@@ -360,8 +360,9 @@ def cli():
             logfile=resource.open_logfile( name )
         
     def logger(msg):
-        print >>logfile,name,msg
-        logfile.flush()
+        if logfile:
+            print >>logfile,name,msg
+            logfile.flush()
     
     try:
         app=browserApp(name,logfunc=logger)

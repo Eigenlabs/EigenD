@@ -92,7 +92,7 @@ class Selector:
         self.__selector.detach()
         self.__controller.clone.clear_output(self.__index+1)
         fc = piw.fastchange(self.__gate)
-        fc(piw.makefloat_bounded_nb(1,0,0,1,0))
+        fc(piw.makefloat_bounded(1,0,0,1,0))
 
     def fastdata(self):
         return self.__selector.fastdata()
