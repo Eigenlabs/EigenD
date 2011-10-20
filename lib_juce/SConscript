@@ -38,9 +38,9 @@ if env['IS_MACOSX']:
     juce_files = Split('juce_LibrarySource.mm')
     juce_env.Append(CCFLAGS='-Wno-deprecated-declarations -Wno-sign-compare -Wno-reorder -Wno-unused-function -Wno-uninitialized -DJUCE_DLL -DJUCE_DLL_BUILD')
     juce_env.Append(LINKFLAGS='-framework CoreAudio -framework CoreMIDI -framework AudioUnit -framework IOKit')
-    juce_env.Append(LINKFLAGS='-framework Cocoa -framework Carbon -framework AppKit')
-    juce_env.Append(LINKFLAGS='-framework CoreFoundation -framework CoreAudioKit')
-    juce_env.Append(LINKFLAGS='-framework WebKit -framework OpenGL')
+    juce_env.Append(LINKFLAGS='-framework Cocoa -framework Carbon -framework AppKit -framework QuartzCore')
+    juce_env.Append(LINKFLAGS='-framework CoreFoundation -framework CoreAudioKit -framework AudioToolbox')
+    juce_env.Append(LINKFLAGS='-framework WebKit -framework OpenGL -framework DiscRecording')
 
 juce_env.Append(CPPPATH=me)
 juce_env.PiSharedLibrary('juce',juce_files,package='eigend')

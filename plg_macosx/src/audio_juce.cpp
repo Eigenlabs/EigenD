@@ -415,7 +415,7 @@ void AudioDialogComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 SettingsDialog::SettingsDialog(pi_audio::audioctl_t::impl_t *root): juce::DocumentWindow(T("Audio Settings"),juce::Colours::black,juce::DocumentWindow::closeButton,true), root_(root), component_(this)
 {
     setUsingNativeTitleBar(true);
-    setContentComponent(&component_,true,true);
+    setContentOwned(&component_,true);
     centreAroundComponent(&component_,getWidth(),getHeight());
     setVisible(true);
     setTopLeftPosition(150,150);
@@ -514,12 +514,12 @@ pi_audio::audioctl_t::impl_t::impl_t(piw::clockdomain_ctl_t *d, const std::strin
     piw::tsd_thing(this);
     piw::tsd_clocksource(piw::makestring("juceaudio"),512,48000,this);
 
-    add_type(T("Core Audio"),juce::AudioDeviceManager::createAudioIODeviceType_CoreAudio());
-    add_type(T("ALSA"),juce::AudioDeviceManager::createAudioIODeviceType_ALSA());
-    add_type(T("Jack"),juce::AudioDeviceManager::createAudioIODeviceType_JACK());
-    add_type(T("DirectX 10"),juce::AudioDeviceManager::createAudioIODeviceType_WASAPI());
-    add_type(T("ASIO"),juce::AudioDeviceManager::createAudioIODeviceType_ASIO());
-    //add_type(T("DirectX 9"),juce::AudioDeviceManager::createAudioIODeviceType_DirectSound());
+    add_type(T("Core Audio"),juce::AudioIODeviceType::createAudioIODeviceType_CoreAudio());
+    add_type(T("ALSA"),juce::AudioIODeviceType::createAudioIODeviceType_ALSA());
+    add_type(T("Jack"),juce::AudioIODeviceType::createAudioIODeviceType_JACK());
+    add_type(T("DirectX 10"),juce::AudioIODeviceType::createAudioIODeviceType_WASAPI());
+    add_type(T("ASIO"),juce::AudioIODeviceType::createAudioIODeviceType_ASIO());
+    //add_type(T("DirectX 9"),juce::AudioIODeviceType::createAudioIODeviceType_DirectSound());
 
     d->set_source(piw::makestring("juceaudio"));
     d->sink(this,"coreaudio");
@@ -601,7 +601,7 @@ void pi_audio::audioctl_t::impl_t::thing_trigger_slow()
         float sr = device_->getCurrentSampleRate();
         unsigned bs = device_->getCurrentBufferSizeSamples();
         juce::String uid(current_uid_);
-        pic::logmsg() << "restarting " << uid.toUTF8() << " sr=" << sr << " bs=" << bs;
+        pic::logmsg() << "restarting " << std::string(uid.getCharPointer()) << " sr=" << sr << " bs=" << bs;
 
         close_device();
         open_device(uid,sr,bs);
@@ -807,7 +807,7 @@ bool pi_audio::audioctl_t::impl_t::open_device(const juce::String &requested_uid
     changing_ = false;
     running_ = true;
 
-    pic::logmsg() << "opened " << current_uid_.toUTF8() << " sr=" << sr << ':' << new_sr << " bs=" << bs << ':' << new_bs << " out channels=" << ocn.size() << " in channels=" << icn.size();
+    pic::logmsg() << "opened " << std::string(current_uid_.getCharPointer()) << " sr=" << sr << ':' << new_sr << " bs=" << bs << ':' << new_bs << " out channels=" << ocn.size() << " in channels=" << icn.size();
 
     return true;
 }
@@ -946,7 +946,7 @@ std::string pi_audio::audioctl_t::impl_t::device_name(unsigned index)
             juce::String dt = d.substring(0,i);
             juce::String dn = d.substring(i+1);
             juce::String n = dn+T(" (")+dt+T(")");
-            return n.toUTF8();
+            return std::string(n.getCharPointer());
         }
     }
 
@@ -957,7 +957,7 @@ std::string pi_audio::audioctl_t::impl_t::device_uid(unsigned index)
 {     
     if(index<devices_.size())
     {
-        return devices_[index].toUTF8();
+        return std::string(devices_[index].getCharPointer());
     }
 
     return "";
@@ -1047,7 +1047,7 @@ void pi_audio::audioctl_t::unmute()
 
 std::string pi_audio::audioctl_t::get_uid()
 {
-    return impl_->get_uid().toUTF8();
+    return std::string(impl_->get_uid().getCharPointer());
 }
 
 unsigned long pi_audio::audioctl_t::get_dropout_count()

@@ -116,7 +116,7 @@ struct pi_midi::midi_output_t::impl_t: piw::thing_t, pic::safe_worker_t
 
         for(int i=0;i<new_devices.size();i++)
         {
-            delegate_->sink_added(new_devices[i].hashCode(),new_devices[i].toCString());
+            delegate_->sink_added(new_devices[i].hashCode(),std::string(new_devices[i].getCharPointer()));
         }
 
 

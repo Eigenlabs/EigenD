@@ -248,7 +248,7 @@ namespace
             DocumentWindow(title,juce::Colours::black,juce::DocumentWindow::closeButton,true)
         {
             setUsingNativeTitleBar(true);
-            setContentComponent(c,true,true);
+            setContentOwned(c,true);
             centreAroundComponent(c,getWidth(),getHeight());
             setVisible(true);
             setTopLeftPosition(150,150);
@@ -381,7 +381,7 @@ namespace
 
         ~host_view_t()
         {
-            setContentComponent(0,true);
+            clearContentComponent();
         }
 
         void closeButtonPressed();
@@ -1227,7 +1227,7 @@ host_view_t::host_view_t(const juce::String &name, Component *content, host::plu
     setResizable(true,true);
     setUsingNativeTitleBar(true);
     host_panel_t *c = new host_panel_t(content,controller,&controller_->main_delegate_);
-    setContentComponent(c,true,true);
+    setContentOwned(c,true);
     if(bounds.get())
     {
         setTopLeftPosition(bounds->getX(),bounds->getY());
@@ -1368,7 +1368,7 @@ int host_param_table_t::get_parameter_count()
         return parameter_count_;
     }
 
-    p->getParameterListFromPlugin();
+    p->refreshParameterListFromPlugin();
     int count = p->getNumParameters();
     parameter_count_ = count;
     last_parameter_check_ = now;

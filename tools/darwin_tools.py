@@ -112,17 +112,10 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         os_major=uname()[2].split('.')[0]
         self.Append(LIBS=Split('dl m pthread'))
 
-        self.Replace(MACOSXSDK='/Developer/SDKs/MacOSX10.4u.sdk')
-
-        #self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED'))
-        #self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate'))
-        #self.Replace(CXX='g++-4.2')
-        #self.Replace(CC='gcc-4.2')
-
-        self.Append(CCFLAGS=Split('-isysroot ${MACOSXSDK} -mmacosx-version-min=10.4 -arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED'))
-        self.Append(LINKFLAGS=Split('-isysroot ${MACOSXSDK} -mmacosx-version-min=10.4 -arch i386 -framework Accelerate'))
-        self.Replace(CXX='g++-4.0')
-        self.Replace(CC='gcc-4.0')
+        self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED'))
+        self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate'))
+        self.Replace(CXX='g++-4.2')
+        self.Replace(CC='gcc-4.2')
 
         self.Append(CCFLAGS=Split('-ggdb -Werror -Wall -O3 -fmessage-length=0 -falign-loops=16 -msse3'))
 

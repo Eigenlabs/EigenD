@@ -199,7 +199,7 @@ namespace piw
             component_ = new ConverterDialogComponent(root_,this);
 
             setUsingNativeTitleBar(true);
-            setContentComponent(component_,true,true);
+            setContentOwned(component_,true);
             centreAroundComponent(component_,getWidth(),getHeight());
             setTopLeftPosition(150,150);
             setResizable(true,true);
@@ -208,7 +208,7 @@ namespace piw
         ~ConverterDialog()
         {
             deleteAllChildren();
-            setContentComponent(0,true);
+            clearContentComponent();
         }
 
         void closeButtonPressed()
