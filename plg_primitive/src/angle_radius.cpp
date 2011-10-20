@@ -20,6 +20,8 @@
 
 #include "angle_radius.h"
 
+#define _USE_MATH_DEFINES
+
 #include <piw/piw_clock.h>
 #include <piw/piw_tsd.h>
 #include <picross/pic_ilist.h>
