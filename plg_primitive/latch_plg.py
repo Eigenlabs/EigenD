@@ -68,12 +68,10 @@ class Agent(agent.Agent):
         self[2][3] = bundles.Output(3, False, names='roll output')
         self[2][4] = bundles.Output(4, False, names='yaw output')
 
-		#
-		# By putting a splitter in between the Latch output and the actual outputs, the bundle
-		# data that is output from the Latch implementation will automatically be split based on
-		# the signal number of inside the bundle. In this case it allows the Latch agent to
-		# just output everything together on the same bundle and still be able to access the
-		# individual streams afterwards when they passed through the splitter.
+        #
+        # bundles.Splitter is a bundle component which demultiplexes the events onto separate
+        # Outputs, 1 output per signal.  The bundle, which carries events containing signals,
+        # is represented on the output as signals containing events.
 		#
         self.output = bundles.Splitter(self.domain,*self[2].values())
         
