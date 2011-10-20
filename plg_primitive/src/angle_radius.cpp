@@ -164,11 +164,22 @@ angle_radius_wire_t::angle_radius_wire_t(prim::angle_radius_t::impl_t *p, const 
     subscribe_and_ping(es);
 }
 
+static int __wire_invalidator(void *w_, void *_)
+{
+    angle_radius_wire_t *w = (angle_radius_wire_t *)w_;
+    if(w->root_)
+    {
+        w->root_->del_ticker(w);
+    }
+    return 0;
+}
+
 void angle_radius_wire_t::invalidate()
 {
     source_shutdown();
     unsubscribe();
 
+    piw::tsd_fastcall(__wire_invalidator, this, 0);
     if(root_)
     {
         root_->children_.erase(path());

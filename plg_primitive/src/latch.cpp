@@ -34,11 +34,11 @@ namespace
     * active wires (across all outputs) for servicing during each
     * clock tick.
     */ 
-    struct latch_wire_t:
-        piw::wire_t, // used to terminate the wire
-        piw::wire_ctl_t, // used to manage the wire and allow its connected to the the bundle root
-        piw::event_data_sink_t, // event subscriber, used to receive events
-        piw::event_data_source_real_t, // acts as a source of fast data events
+    struct latch_wire_t: 
+        piw::wire_t, // used to terminate the upstream wire
+        piw::wire_ctl_t, // used to manage the downstream wire
+        piw::event_data_sink_t, // receive events from the upstream wire
+        piw::event_data_source_real_t, // used to generate events going downstream
         virtual public pic::lckobject_t, // stop this object being paged out
         pic::element_t<> // allow this object to be part of an intrusive list (pic_ilist.h)
     {
@@ -248,6 +248,19 @@ latch_wire_t::latch_wire_t(prim::latch_t::impl_t *p, const piw::event_data_sourc
 }
 
 /*
+ * Static method to be called by the fast thread.
+ */
+static int __wire_invalidator(void *w_, void *_)
+{
+    latch_wire_t *w = (latch_wire_t *)w_;
+    if(w->root_)
+    {
+        w->root_->del_ticker(w);
+    }
+    return 0;
+}
+
+/*
  * Properly clean up the wire
  */
 void latch_wire_t::invalidate()
@@ -257,6 +270,9 @@ void latch_wire_t::invalidate()
 
     // Unsubscribe from the upstream data source
     unsubscribe();
+
+    // Remove ourselves from the active list of wires
+    piw::tsd_fastcall(__wire_invalidator, this, 0);
 
     // Remove ourselves from the root's list of wires
     if(root_)
