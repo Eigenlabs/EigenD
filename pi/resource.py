@@ -26,6 +26,7 @@ import datetime
 import picross
 import shutil
 import sys
+import traceback
 
 from pi import version,utils
 
@@ -287,5 +288,10 @@ class LogFile:
         self.__file.flush()
 
 def open_logfile(target,logfile_max=7):
-    return LogFile(target,logfile_max)
+    try:
+        return LogFile(target,logfile_max)
+    except:
+        print >>sys.__stderr__,"Unexpected error while opening logfile target '%s'" % (target)
+        traceback.print_exc()
+        return None
 
