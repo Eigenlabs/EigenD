@@ -52,7 +52,7 @@ def log_error(func):
 # XMLRPC server functions
 #---------------------------------------------------------------------------
 
-class stageXMLRPCFuncs:
+class StageXMLRPCFuncs:
 
     def __init__(self, languageAgent):
         # the tab atoms stored in the interpreter
@@ -298,7 +298,11 @@ class stageXMLRPCFuncs:
     def getValue(self, argument):
         piw.tsd_lock()
 
-        r = self.__languageAgent.basic_get_value(argument)
+        try:
+            r = self.__languageAgent.basic_get_value(argument)
+        except:
+            piw.tsd_unlock()
+            return False
 
         args = [None,None,None]
 
@@ -331,7 +335,11 @@ class stageXMLRPCFuncs:
     def execBelcanto(self, argument):
         piw.tsd_lock()
 
-        r = self.__languageAgent.rpc_script(argument)
+        try:
+            r = self.__languageAgent.rpc_script(argument)
+        except:
+            piw.tsd_unlock()
+            return False
 
         if r.status() is not None:
             piw.tsd_unlock()
@@ -365,10 +373,12 @@ class stageXMLRPCFuncs:
         return True
 
     def getSessionID(self):
+        print "get session ID"
         #print 'get session id = ',self.__sessionID
         return self.__sessionID
 
     def getSetupName(self):
+        print "get setup name"
         return self.setupName
 
     def getOSCPort(self):
@@ -456,6 +466,7 @@ class stageXMLRPCFuncs:
             return ''
 
     def getAgent(self, agentID):
+        print "get agent",agentID
         #print 'get agent ',agentID
         # return xml for an agent with a given ID
         self.__buildAgentXml(agentID)
@@ -476,13 +487,16 @@ class stageXMLRPCFuncs:
 
     def getNumTabs(self):
         try:
+            print 'get num tabs'
             piw.tsd_lock()
-            numTabs = len(self.__tabs)
-            piw.tsd_unlock()
-            #print 'get num tabs =',numTabs
+            try:
+                numTabs = len(self.__tabs)
+            finally:
+                piw.tsd_unlock()
         except:
             traceback.print_exc(limit=None)
             return 0
+        print 'get num tabs',numTabs
         return numTabs
         
     def addTab(self, tabXML):
@@ -491,8 +505,10 @@ class stageXMLRPCFuncs:
             # receive new tab xml from stage for an empty tab - no widgets to add to manager
             piw.tsd_lock()
             # tab added with index numTabs
-            self.__tabs.new_tab(tabXML)
-            piw.tsd_unlock()
+            try:
+                self.__tabs.new_tab(tabXML)
+            finally:
+                piw.tsd_unlock()
         except:
             traceback.print_exc(limit=None)
             return False
@@ -502,8 +518,10 @@ class stageXMLRPCFuncs:
         try:
             print 'set tab',index
             piw.tsd_lock()
-            self.__tabs.get_tab(index).setXML(tabXML)
-            piw.tsd_unlock()
+            try:
+                self.__tabs.get_tab(index).setXML(tabXML)
+            finally:
+                piw.tsd_unlock()
         except:
             traceback.print_exc(limit=None)
             return False
@@ -514,8 +532,10 @@ class stageXMLRPCFuncs:
         try:
             print 'get tab',index
             piw.tsd_lock()
-            tabXML = self.__tabs.get_tab(index).getXML()
-            piw.tsd_unlock()
+            try:
+                tabXML = self.__tabs.get_tab(index).getXML()
+            finally:
+                piw.tsd_unlock()
         except:
             traceback.print_exc(limit=None)
             return ''
@@ -527,9 +547,11 @@ class stageXMLRPCFuncs:
         try:
             print 'move tab', currentTabIndex, 'to', newTabIndex
             piw.tsd_lock()
-            # current and new must be valid tab indices
-            self.__tabs.move_tab(currentTabIndex, newTabIndex);
-            piw.tsd_unlock()
+            try:
+                # current and new must be valid tab indices
+                self.__tabs.move_tab(currentTabIndex, newTabIndex);
+            finally:
+                piw.tsd_unlock()
         except:
             traceback.print_exc(limit=None)
             return False
@@ -548,8 +570,10 @@ class stageXMLRPCFuncs:
                 self.removeWidget(tabIndex,0)
             
             piw.tsd_lock()
-            self.__tabs.remove_tab(tabIndex)
-            piw.tsd_unlock()
+            try:
+                self.__tabs.remove_tab(tabIndex)
+            finally:
+                piw.tsd_unlock()
 
         except:
             traceback.print_exc(limit=None)
@@ -560,13 +584,16 @@ class stageXMLRPCFuncs:
         # return the number of tab session changes
         # each time a tab is changed, the session change count is incremented
         try:
+            #print 'get tab session changes', index
             piw.tsd_lock()
-            tab = self.__tabs.get_tab(index)
-            if tab is not None:
-                changes = tab.get_session_changes()
-            else:
-                changes = -1
-            piw.tsd_unlock()
+            try:
+                tab = self.__tabs.get_tab(index)
+                if tab is not None:
+                    changes = tab.get_session_changes()
+                else:
+                    changes = -1
+            finally:
+                piw.tsd_unlock()
             #print 'get tab session changes index =',index,'changes =',changes
             return changes
         except:
@@ -582,11 +609,14 @@ class stageXMLRPCFuncs:
     #---------------------------------------------------------------------------
     
     def getNumWidgets(self, tabIndex):
+        print 'get num widgets',tabIndex
         # get number of widgets in a tab
         try:
             piw.tsd_lock()
-            numWidgets = len(self.__tabs.get_tab(tabIndex)[1])
-            piw.tsd_unlock()
+            try:
+                numWidgets = len(self.__tabs.get_tab(tabIndex)[1])
+            finally:
+                piw.tsd_unlock()
             print 'get num widgets =',numWidgets
         except:
             traceback.print_exc(limit=None)
@@ -598,10 +628,12 @@ class stageXMLRPCFuncs:
         # add widget to tab
         try:
             piw.tsd_lock()
-            widgets = self.__tabs.get_tab(tabIndex)[1]
+            try:
+                widgets = self.__tabs.get_tab(tabIndex)[1]
 
-            widgets.new_widget(widgetXML)
-            piw.tsd_unlock()
+                widgets.new_widget(widgetXML)
+            finally:
+                piw.tsd_unlock()
 
             # parse widget xml to get node
             widgetDoc = xml.dom.minidom.parseString(widgetXML)
@@ -625,9 +657,11 @@ class stageXMLRPCFuncs:
         # set widget xml
         try:
             piw.tsd_lock()
-            widgets = self.__tabs.get_tab(tabIndex)[1]
-            widgets.get_widget(widgetIndex).setXML(widgetXML)
-            piw.tsd_unlock()
+            try:
+                widgets = self.__tabs.get_tab(tabIndex)[1]
+                widgets.get_widget(widgetIndex).setXML(widgetXML)
+            finally:
+                piw.tsd_unlock()
         except:
             traceback.print_exc(limit=None)
             return ''
@@ -639,9 +673,11 @@ class stageXMLRPCFuncs:
         # get widget xml
         try:
             piw.tsd_lock()
-            widgets = self.__tabs.get_tab(tabIndex)[1]
-            widgetXML = widgets.get_widget(widgetIndex).getXML()
-            piw.tsd_unlock()
+            try:
+                widgets = self.__tabs.get_tab(tabIndex)[1]
+                widgetXML = widgets.get_widget(widgetIndex).getXML()
+            finally:
+                piw.tsd_unlock()
         except:
             traceback.print_exc(limit=None)
             return ''
@@ -652,12 +688,14 @@ class stageXMLRPCFuncs:
         print 'remove widget',widgetIndex,'from tab',tabIndex
         try:
             piw.tsd_lock()
-            widgetXML = self.__tabs.get_tab(tabIndex)[1].get_widget(widgetIndex).getXML()
-            widgetDoc = xml.dom.minidom.parseString(widgetXML)
-            widgetNode = widgetDoc.documentElement
-            OSCPath = widgetNode.getAttribute('path')
-            self.__tabs.get_tab(tabIndex)[1].remove_widget(widgetIndex)
-            piw.tsd_unlock()
+            try:
+                widgetXML = self.__tabs.get_tab(tabIndex)[1].get_widget(widgetIndex).getXML()
+                widgetDoc = xml.dom.minidom.parseString(widgetXML)
+                widgetNode = widgetDoc.documentElement
+                OSCPath = widgetNode.getAttribute('path')
+                self.__tabs.get_tab(tabIndex)[1].remove_widget(widgetIndex)
+            finally:
+                piw.tsd_unlock()
 
             # remove widget from widget manager, reference count deletion in destroy_widget
             if OSCPath!='':
@@ -722,51 +760,91 @@ class stageXMLRPCFuncs:
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
-class stageXMLRPCServer(threading.Thread):
+class StageXMLRPCServer:
     def __init__(self, languageAgent, snapshot, xmlrpc_server_port):
         print "stage __init__"
-        self.__languageAgent = languageAgent
-        self.snapshot = snapshot
-        self.xmlrpc_server_port = xmlrpc_server_port
 
-        threading.Thread.__init__(self)
-        self.timeToQuit = threading.Event()
-        self.timeToQuit.clear()      
-
-    def stop(self):    
-        print "Shutting down stage xmlrpc server"
-        self.server.server_close()
-        self.timeToQuit.set()
-
-    def run(self):
-        print "Running stage xmlrpc server"
-
-        self.snapshot.install()
-
-        self.server = SimpleXMLRPCServer(("0.0.0.0", self.xmlrpc_server_port), requestHandler=RequestHandler, logRequests=False)
-
-        self.server.register_introspection_functions()
+        self.__server = InterruptableXMLRPCServer(snapshot, "0.0.0.0", xmlrpc_server_port, RequestHandler, False)
+        self.__server.register_introspection_functions()
 
         # advertise service through Bonjour
-        self.__bonjour = language_native.bonjour(self.xmlrpc_server_port)
+        self.__bonjour = language_native.bonjour(xmlrpc_server_port)
         self.__bonjour.service_register()
         
         # Register an instance; all the methods of the instance are
         # published as XML-RPC methods
-        self.server_instance = stageXMLRPCFuncs(self.__languageAgent)
-        self.server.register_instance(self.server_instance)
-        self.__languageAgent.widgets.set_stage_server(self.server_instance)
+        self.__server_instance = StageXMLRPCFuncs(languageAgent)
+        self.__server.register_instance(self.__server_instance)
 
-        # run loop
-        while not self.timeToQuit.isSet():
+        languageAgent.widgets.set_stage_server(self.__server_instance)
+
+    def start(self):
+        print "running stage xmlrpc server"
+        self.__server.start()
+
+    def stop(self):    
+        print "shutting down stage xmlrpc server"
+        if self.__server:
+            self.__server.stop()
+            self.__server = None
+
+class InterruptableXMLRPCServer(SimpleXMLRPCServer):
+    allow_reuse_address = True
+
+    def __init__(self, snapshot, host, port, handler, log):
+        SimpleXMLRPCServer.__init__(self, (host,port), requestHandler=handler, logRequests=log)
+        self.__snapshot = snapshot
+
+    def server_bind(self):
+        self.__timeToQuit = threading.Event()
+        self.__timeToQuit.clear()      
+
+        SimpleXMLRPCServer.server_bind(self)
+        self.socket.settimeout(1)
+
+    def get_request(self):
+        while not self.__timeToQuit.isSet():
             try:
-                self.server.handle_request()
-            except socket.error, e:
-                print 'Stage server error: xmlrpc server raised socket error ',e
+                sock, addr = self.socket.accept()
+                sock.settimeout(None)
+                return (sock, addr)
+            except socket.timeout:
+                if self.__timeToQuit.isSet():
+                    raise socket.error
+
+        raise socket.error
+
+    def close_request(self, request):
+        if (request is None): return
+        SimpleXMLRPCServer.close_request(self, request)
+
+    def process_request(self, request, client_address):
+        if (request is None): return
+        SimpleXMLRPCServer.process_request(self, request, client_address)
+
+    def start(self):
+        self.__timeToQuit.clear()      
+        threading.Thread(target=self.serve).start()
+
+    def stop(self):
+        print "requesting xmlrpc server to stop"
+        self.__timeToQuit.set()
+
+        print "xmlrpc server stopped"
+
+    def serve(self):
+        self.__snapshot.install()
+
+        while not self.__timeToQuit.isSet():
+            try:
+                self.handle_request()
             except:
                 print 'Stage server error: unexpected error'
 
+        print "closing xmlrpc server"
+        self.server_close()
 
+        print "xmlrpc server closed"
 
 #-------------------------------------------------------------------------------        
 # Widget atom for storing widget xml

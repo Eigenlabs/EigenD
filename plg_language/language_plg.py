@@ -26,7 +26,6 @@ from plg_language import interpreter_version as version
 import piw
 import time
 import os
-import xmlrpclib
 
 def read_script(filename):
     filename = os.path.abspath(filename)
@@ -588,12 +587,8 @@ class Agent(agent.Agent):
 
         self.snapshot = piw.tsd_snapshot()
 
-        self.stageServer = stage_server.stageXMLRPCServer(self, self.snapshot, self.xmlrpc_server_port)
+        self.stageServer = stage_server.StageXMLRPCServer(self, self.snapshot, self.xmlrpc_server_port)
         self.stageServer.start()
-
-        print "server proxy","http://0.0.0.0:"+str(self.xmlrpc_server_port)
-        self.dummyStageClient = xmlrpclib.ServerProxy( "http://0.0.0.0:"+str(self.xmlrpc_server_port) )
-
 
     def close_server(self):
         self.database.stop()
@@ -603,16 +598,8 @@ class Agent(agent.Agent):
         print "shutting down stage server"
         self.stageServer.stop()
 
-        try:
-            # dummy call to unlock the socket deadlock
-            print self.dummyStageClient.ping()
-        except:
-            print 'caught xmlrpc server shutdown exception'
-
-
     def buffer_done(self,status,msg,repeat):
         self.__history.buffer_done(status,msg,repeat)
-
 
     @async.coroutine('internal error')
     def rpc_create_action(self,arg):
@@ -633,7 +620,6 @@ class Agent(agent.Agent):
         if not result.status():
             yield async.Coroutine.failure(*result.args(),**result.kwds())
         yield async.Coroutine.success()
-
 
 class Upgrader(upgrade.Upgrader):
     def upgrade_1_0_1_to_1_0_2(self,tools,address):
