@@ -80,6 +80,20 @@ namespace piw
                     return notes_.at(i);
                 }
 
+                float interpolate(float i)
+                {
+                    unsigned s = notes_.size();
+                    unsigned j = i;
+                    float r = i-(float)j;
+
+                    if(j<0) return notes_[0];
+                    if(j>=s-1) return notes_[s-1];
+
+                    float x1 = notes_[j];
+                    float x2 = notes_[j+1]; // j+1 < s
+                    return x1+r*(x2-x1);
+                }
+
                 pic::lckvector_t<float>::nbtype notes_;
             };
 
@@ -101,6 +115,8 @@ namespace piw
                     }
 
                     notes_.reserve(ncourses_*(int)lengths_.at(0));
+                    course_offset_key_.reserve(ncourses_);
+                    course_offset_note_.reserve(ncourses_);
 
                     int number = 0;
                     float note = 0.f;
@@ -119,10 +135,14 @@ namespace piw
                         }
 
                         unsigned nk = (unsigned)lengths_.at(c);
+
                         for(unsigned k=0; k<nk; ++k)
                         {
                             notes_.push_back(std::make_pair(number+k,note));
                         }
+
+                        course_offset_key_.push_back(number);
+                        course_offset_note_.push_back(note);
                     }
                 }
 
@@ -172,8 +192,25 @@ namespace piw
                     return notes_.at(i).second;
                 }
 
+                void offsets(unsigned course, float &knum, float &note)
+                {
+                    if(ncourses_==0)
+                    {
+                        knum=0.0;
+                        note=0.0;
+                        return;
+                    }
+
+                    course=std::min(course,ncourses_);
+
+                    knum = course_offset_key_[course];
+                    note = course_offset_note_[course];
+                }
+
                 unsigned ncourses_;
                 pic::lckvector_t<std::pair<int,float> >::nbtype notes_;
+                pic::lckvector_t<int>::nbtype course_offset_key_;
+                pic::lckvector_t<float>::nbtype course_offset_note_;
                 pic::lckvector_t<float>::nbtype lengths_;
             };
 
