@@ -69,6 +69,7 @@ namespace
         ~service_broadcast_t();
 
         void receive();
+        void shutdown();
         
         static int request_addr__(const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data);
         
@@ -192,6 +193,8 @@ void language::oscserver_t::impl_t::shutdown()
 {
     stop_=true;
     wait();
+    service_broadcast_.shutdown();
+    pic::logmsg() << "oscserver shut down";
 }
 
 language::oscserver_t::impl_t::impl_t(const char *server_port, const char *xmlrpc_server_port): 
@@ -393,29 +396,39 @@ widget_t::~widget_t()
 
 service_broadcast_t::service_broadcast_t(language::oscserver_t::impl_t *impl) : impl_(impl)
 {
-    broadcast_server_ = lo_server_new(OSC_RENDEZVOUS_PORT, 0);
-    
     pic::logmsg() << "start service broadcast server";
-    
+    broadcast_server_ = lo_server_new(OSC_RENDEZVOUS_PORT, 0);
     request_addr_ = lo_server_add_method(broadcast_server_,"/eigend","",request_addr__,this);
-    
-    
-
+    pic::logmsg() << "service broadcast server started";
 }
 
 service_broadcast_t::~service_broadcast_t()
 {
-    lo_server_del_method(broadcast_server_,"/eigend","",request_addr__,this);
-    lo_server_free(broadcast_server_);
+    shutdown();
+}
+
+void service_broadcast_t::shutdown()
+{
+    if(impl_)
+    {
+        impl_ = 0;
+        lo_server_del_method(broadcast_server_,"/eigend","",request_addr__,this);
+        lo_server_free(broadcast_server_);
+        pic::logmsg() << "service broadcast server shut down";
+    }
 }
 
 void service_broadcast_t::receive()
 {
+    if(!impl_) return;
+
     lo_server_recv_noblock(broadcast_server_, 10);
 }
 
 int service_broadcast_t::request_addr__(const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data)
 {
+    if(!((service_broadcast_t*)user_data)->impl_) return 0;
+
     lo_address source_addr = lo_message_get_source(msg);
 
     // get the hostname and the port of the xmlrpc server

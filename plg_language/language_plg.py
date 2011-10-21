@@ -598,7 +598,7 @@ class Agent(agent.Agent):
     def close_server(self):
         self.database.stop()
         agent.Agent.close_server(self)
-        
+
         # shutdown stage server
         print "shutting down stage server"
         self.stageServer.stop()
