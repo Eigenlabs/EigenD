@@ -142,9 +142,9 @@ Not properly assigned, in use:
 8   8   8   2  : Latch         : Noun              : None
 8   8   8   3  : Angle         : Noun              : None
 8   8   8   4  : Radius        : Noun              : None
-8   8   8   5  : Unused        : Unused            : None
-8   8   8   6  : Unused        : Unused            : None
-8   8   8   7  : Unused        : Unused            : None
+8   8   8   5  : Fingerer      : Unused            : None
+8   8   8   6  : Fingering     : Unused            : None
+8   8   8   7  : Programmer    : Unused            : None
 8   8   8   8  : Unused        : Unused            : None
 
 
