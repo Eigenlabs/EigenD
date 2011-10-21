@@ -62,7 +62,9 @@ namespace piw
     {
         if(d)
         {
+#ifdef DEBUG_DATA_ATOMICITY
             data_atomicity_assertion(d);
+#endif
 
             ++d->count;
         }
@@ -72,7 +74,9 @@ namespace piw
     {
         if(d)
         {
+#ifdef DEBUG_DATA_ATOMICITY
             data_atomicity_assertion(d);
+#endif
 
             if(--d->count==0)
             {
