@@ -38,7 +38,7 @@ class Agent(agent.Agent):
         self.ctl_input = bundles.ScalarInput(self.ranger.ctl_cookie(), self.domain,signals=(1,2,3))
         self.data_input = bundles.VectorInput(self.ranger.data_cookie(), self.domain,signals=(1,))
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='controls')
         self[1][1]=atom.Atom(domain=domain.BoundedFloat(-10000000,10000000),init=-1,policy=self.ctl_input.policy(1,False),names='minimum')
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(-10000000,10000000),init=1,policy=self.ctl_input.policy(2,False),names='maximum')
         self[1][3]=atom.Atom(domain=domain.BoundedFloat(-10000000,10000000),init=0,policy=self.ctl_input.policy(3,False),names='rest')
