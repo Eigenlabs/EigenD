@@ -58,8 +58,8 @@ class VerbProxy:
             raise RuntimeError("invalid verb schema")
 
         self.__mods = set(schema.args[0])
-        self.__options = set()
-        self.__fixed = set()
+        self.__options = None 
+        self.__fixed = None
         self.__verbname = schema.pred
         self.__constraints = dict()
         self.__order = []
@@ -73,11 +73,15 @@ class VerbProxy:
         for r in schema.args[2:]:
             if logic.is_pred(r,'role'):
                 role = r.args[0]
+                if self.__fixed is None:
+                    self.__fixed = set()
                 self.__fixed.add(role)
                 self.__constraints[role] = r.args[1]
                 self.__order.append(role)
             if logic.is_pred(r,'option'):
                 role = r.args[0]
+                if self.__options is None:
+                    self.__options = set()
                 self.__options.add(role)
                 self.__constraints[role] = r.args[1]
                 self.__order.append(role)
@@ -154,19 +158,23 @@ class ModeProxy:
             raise RuntimeError("invalid mode schema")
 
         self.__mods = set(schema.args[0])
-        self.__options = set()
-        self.__fixed = set()
+        self.__options = None
+        self.__fixed = None
         self.__constraints = dict()
         self.__order = []
 
         for r in schema.args[1:]:
             if logic.is_pred(r,'role'):
                 role = r.args[0]
+                if self.__fixed is None:
+                    self.__fixed = set()
                 self.__fixed.add(role)
                 self.__constraints[role] = r.args[1]
                 self.__order.append(role)
             if logic.is_pred(r,'option'):
                 role = r.args[0]
+                if self.__options is None:
+                    self.__options = set()
                 self.__options.add(role)
                 self.__constraints[role] = r.args[1]
                 self.__order.append(role)
@@ -828,14 +836,15 @@ class PropertyCache:
 
 class DatabaseProxy(proxy.AtomProxy):
 
+    __slots__ = ('database','parent','__rules','__changed','__timestamp')
+
     def __init__(self,database,parent = None):
         proxy.AtomProxy.__init__(self)
 
-        self.database=database
-        self.parent=parent
-        self.rules={}
+        self.database = database
+        self.parent = parent
 
-        self.__root = parent.root() if parent else self
+        self.__rules = None
         self.__changed = False
         self.__timestamp = 0
         
@@ -849,7 +858,7 @@ class DatabaseProxy(proxy.AtomProxy):
         return self.parent.id() if self.parent else None
 
     def root(self):
-        return self.__root
+        return self.parent.root() if self.parent else self
 
     def client_sync(self):
         proxy.AtomProxy.client_sync(self)
@@ -861,9 +870,11 @@ class DatabaseProxy(proxy.AtomProxy):
         return self.__class__(self.database,self)
 
     def node_ready(self):
-        self.__root.__changed = True
+        self.root().__changed = True
 
-        self.rules,props,modes,verbs = self.database.make_rules(self,True,self.monitor)
+        self.__rules,props,modes,verbs = self.database.make_rules(self,True,self.monitor)
+        if 0 == len(self.__rules):
+            self.__rules = None
 
         myid = self.id()
 
@@ -873,8 +884,9 @@ class DatabaseProxy(proxy.AtomProxy):
         if verbs is not None:
             self.database.get_verbcache().set_verbs(myid,verbs)
 
-        for v in self.rules.itervalues():
-            self.database.assert_rules(v)
+        if self.__rules is not None:
+            for v in self.__rules.itervalues():
+                self.database.assert_rules(v)
 
         for c,(a,r) in props.iteritems():
             self.database.get_propcache(c).set_id(myid,a);
@@ -883,17 +895,17 @@ class DatabaseProxy(proxy.AtomProxy):
 
         #print 'node_ready',self.id(),'protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
         if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.id()):
-            self.__root.__timestamp = piw.tsd_time()
-            self.database.set_timestamp(self.__root.__timestamp)
+            self.root().__timestamp = piw.tsd_time()
+            self.database.set_timestamp(self.root().__timestamp)
 
 
     def node_changed(self,parts):
-        self.__root.__changed = True
+        self.root().__changed = True
         
         #print 'node_changed protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
         if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.id()):
-            self.__root.__timestamp = piw.tsd_time()
-            self.database.set_timestamp(self.__root.__timestamp)
+            self.root().__timestamp = piw.tsd_time()
+            self.database.set_timestamp(self.root().__timestamp)
         
         newrules,newprops,newmodes,newverbs = self.database.make_rules(self,False,parts)
 
@@ -905,13 +917,22 @@ class DatabaseProxy(proxy.AtomProxy):
         if newverbs is not None:
             self.database.get_verbcache().set_verbs(myid,newverbs)
 
-        oldrules = self.rules
+        oldrules = self.__rules
+        if oldrules is None:
+            oldrules = {}
         for (k,v) in newrules.iteritems():
             o = oldrules.get(k)
             if o is not None:
                 self.database.retract_rules(o)
             self.database.assert_rules(v)
-        self.rules.update(newrules)
+
+        if 0 == len(newrules):
+            newrules = None
+
+        if self.__rules is None:
+            self.__rules = newrules
+        elif newrules is not None:
+            self.__rules.update(newrules)
 
         for c,(a,r) in newprops.iteritems():
             if r is None:
@@ -922,24 +943,24 @@ class DatabaseProxy(proxy.AtomProxy):
         utils.safe(self.database.object_changed,self,parts)
 
     def node_removed(self):
-        self.__root.__changed = True
+        self.root().__changed = True
 
         #print 'node_removed protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
         if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.id()):
-            self.__root.__timestamp = piw.tsd_time()
-            self.database.set_timestamp(self.__root.__timestamp)
+            self.root().__timestamp = piw.tsd_time()
+            self.database.set_timestamp(self.root().__timestamp)
         
-        #if self.__root==self:
+        #if self.root()==self:
         #    print 'node_removed ',self.id()
-
 
         myid = self.id()
 
         self.database.get_verbcache().retract_verbs(myid)
         self.database.get_verbcache().retract_modes(myid)
 
-        for v in self.rules.itervalues():
-            self.database.retract_rules(v)
+        if self.__rules is not None:
+            for v in self.__rules.itervalues():
+                self.database.retract_rules(v)
 
         for c in self.database.get_propcaches():
             self.database.get_propcache(c).remove_id(myid)
@@ -982,10 +1003,12 @@ class VerbCache:
                 self.__modes.add(m)
                 for mm in m.mods():
                     self.__mod2modes.setdefault(mm,set()).add(m)
-                for mm in m.fixed_roles():
-                    self.__role2modes.setdefault(mm,set()).add(m)
-                for mm in m.option_roles():
-                    self.__role2modes.setdefault(mm,set()).add(m)
+                if m.fixed_roles() is not None:
+                    for mm in m.fixed_roles():
+                        self.__role2modes.setdefault(mm,set()).add(m)
+                if m.option_roles() is not None:
+                    for mm in m.option_roles():
+                        self.__role2modes.setdefault(mm,set()).add(m)
 
     def retract_modes(self,id):
         modes = self.__id2modes.get(id)
@@ -999,14 +1022,16 @@ class VerbCache:
                     ms = self.__mod2modes[mm]
                     ms.discard(m)
                     if not ms: del self.__mod2modes[mm]
-                for mm in m.fixed_roles():
-                    ms = self.__role2modes[mm]
-                    ms.discard(m)
-                    if not ms: del self.__role2modes[mm]
-                for mm in m.option_roles():
-                    ms = self.__role2modes[mm]
-                    ms.discard(m)
-                    if not ms: del self.__role2modes[mm]
+                if m.fixed_roles() is not None:
+                    for mm in m.fixed_roles():
+                        ms = self.__role2modes[mm]
+                        ms.discard(m)
+                        if not ms: del self.__role2modes[mm]
+                if m.option_roles() is not None:
+                    for mm in m.option_roles():
+                        ms = self.__role2modes[mm]
+                        ms.discard(m)
+                        if not ms: del self.__role2modes[mm]
 
     def set_verbs(self,id,verbs):
         self.retract_verbs(id)

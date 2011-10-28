@@ -37,12 +37,14 @@ class pia_buffer_t: pic::nocopy_t
         void buffer_enable();
         void buffer_disable();
 
-        unsigned char *buffer_transmit_fast(unsigned space,bool audoflush);
+        unsigned char *buffer_begin_transmit_fast(unsigned space,bool audoflush);
+        void buffer_end_transmit_fast();
         virtual void buffer_receive_fast(const unsigned char *data, unsigned len) = 0;
         virtual void buffer_fixup_fast(unsigned char *data, unsigned len) = 0;
         void buffer_flush_fast();
 
-        unsigned char *buffer_transmit_slow(unsigned space);
+        unsigned char *buffer_begin_transmit_slow(unsigned space);
+        void buffer_end_transmit_slow();
         virtual void buffer_receive_slow(const unsigned char *data, unsigned len) = 0;
         virtual void buffer_fixup_slow(unsigned char *data, unsigned len) = 0;
         void buffer_flush_slow(bool force=false);
@@ -54,17 +56,25 @@ class pia_buffer_t: pic::nocopy_t
         static void buffer_transmit_slow_thunk(void *, const pia_data_t &);
 
     private:
+
+        void slow_buffer_prepare();
+        void slow_buffer_release();
+        void fast_buffer_prepare();
+        void fast_buffer_release();
+
         unsigned header_;
 
         pia_eventq_t *slowloop_;
         unsigned char *slowbuffer_;
         unsigned slowused_;
+        unsigned slowactive_;
         pia_sockref_t slowsocket_;
         pia_job_t slowjob_transmit_;
 
         pia_eventq_t *fastloop_;
         unsigned char *fastbuffer_;
         unsigned fastused_;
+        unsigned fastactive_;
         pia_sockref_t fastsocket_;
         pia_job_t fastjob_transmit_;
 

@@ -157,6 +157,7 @@ struct pia_lroot_t: pia_buffer_t, pia_lnode_t, pic::element_t<>
     pic::ref_t<pia_linterlock_t> linterlock_;
     unsigned long sequence_;
     unsigned long old_tseq_;
+    pia_buffer_t *buffer_;
 };
 
 pia_lroot_t *pia_lnode_t::root()
@@ -178,10 +179,11 @@ void pia_lnode_t::job_transient_id(void *n_, const pia_data_t & d)
     pia_data_t path = n->path();
     l = pie_stanzalen_fevt(path.aspathlen(), d.wirelen(), 0);
 
-    b=n->root()->buffer_transmit_fast(l,false);
+    b=n->root()->buffer_begin_transmit_fast(l,false);
     o=pie_setstanza(b,l,BCTMTYPE_IDNT_EVT,(const unsigned char *)path.aspath(),path.aspathlen(), 0);
     pie_setdata(b+o,l-o,0,d.wirelen(),d.wiredata());
     n->root()->buffer_flush_fast();
+    n->root()->buffer_end_transmit_fast();
 
     return;
 }
@@ -200,10 +202,11 @@ void pia_lnode_t::job_transient_data(void *n_, const pia_data_t & d)
     pia_data_t path = n->path();
     l = pie_stanzalen_fevt(path.aspathlen(), d.wirelen(), 0);
 
-    b=n->root()->buffer_transmit_fast(l,false);
+    b=n->root()->buffer_begin_transmit_fast(l,false);
     o=pie_setstanza(b,l,BCTMTYPE_FAST_EVT,(const unsigned char *)path.aspath(),path.aspathlen(), 0);
     pie_setdata(b+o,l-o,0,d.wirelen(),d.wiredata());
     n->root()->buffer_flush_fast();
+    n->root()->buffer_end_transmit_fast();
 
     return;
 }
@@ -305,9 +308,10 @@ void pia_lnode_t::transmit_tree()
     v = visible_children();
     l = pie_stanzalen_tevt(p.aspathlen(), v, 0);
 
-    b=root()->buffer_transmit_slow(l);
+    b=root()->buffer_begin_transmit_slow(l);
     o=pie_setstanza(b,l,BCTMTYPE_TREE_EVT,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
     o+=pie_setevthdr(b+o,l-o,dseq(),nseq(),tseq());
+    root()->buffer_end_transmit_slow();
 
     f.msg=b;
     f.used=o;
@@ -357,11 +361,12 @@ void pia_lnode_t::transmit_data(const pia_data_t &d)
     pia_data_t p = path();
     l = pie_stanzalen_devt(p.aspathlen(), d.wirelen(), 0);
 
-    b=root()->buffer_transmit_slow(l);
+    b=root()->buffer_begin_transmit_slow(l);
     o=pie_setstanza(b,l,BCTMTYPE_DATA_EVT,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
     o+=pie_setevthdr(b+o,l-o,dseq(),nseq(),tseq());
 
     pie_setdata(b+o,l-o,flags(),d.wirelen(),d.wiredata());
+    root()->buffer_end_transmit_slow();
 }
 
 void pia_lroot_t::job_sync(void *r_, const pia_data_t & d)

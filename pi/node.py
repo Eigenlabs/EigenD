@@ -45,7 +45,7 @@ class server(piw.server):
     """
 
     def __init__(self,value=None,change=None,rtransient=False,transient=False,creator=None,wrecker=None,extension=None,dynlist=False):
-        self.__children={}
+        self.__children=None
         self.__creator=utils.weaken(creator or getattr(self,'dynamic_create',None))
         self.__wrecker=utils.weaken(wrecker or self.dynamic_destroy)
         self.__extension=extension
@@ -90,7 +90,7 @@ class server(piw.server):
             if c.pred()=='p':
                 continue
 
-            n = self.__children.get(i)
+            n = self.get_internal(i)
             if n is not None:
                 if hasattr(n,'load_state'):
                     n.load_state(c,delegate,phase)
@@ -137,12 +137,12 @@ class server(piw.server):
         Find an unused index
         """
         for i in xrange(1,255):
-            if not self.isinternal(i) and not self.__children.has_key(i):
+            if not self.isinternal(i) and self.__children is not None and not self.__children.has_key(i):
                 return i
 
         ex = self.__extension
         if ex:
-            en = self.__children.get(ex)
+            en = self.get_internal(ex)
             if en is None:
                 en=self.__make_extension()
                 self.set_internal(ex,en)
@@ -194,7 +194,10 @@ class server(piw.server):
         return self
 
     def get_internal(self,key):
-        return self.__children.get(key)
+        if self.__children is None:
+            return None
+        else:
+            return self.__children.get(key)
 
     def __getitem__(self,key):
         ex = self.__extension
@@ -204,10 +207,13 @@ class server(piw.server):
                 raise KeyError('invalid internal access')
         else:
             if key>=ex:
-                en = self.__children.get(ex)
+                en = self.get_internal(ex)
                 if en is None:
                     raise KeyError('invalid key')
                 return en.__getitem__(key-ex+1)
+
+        if self.__children is None:
+            raise KeyError('invalid key')
 
         return self.__children.__getitem__(key)
 
@@ -225,10 +231,13 @@ class server(piw.server):
         if key<1 or key>255:
             raise OverflowError('key %d not in range'%key)
 
-        if self.__children.has_key(key):
+        if self.__children is not None and self.__children.has_key(key):
             oldval=self.__children[key]
             del self.__children[key]
             oldval.close_server()
+
+        if self.__children is None:
+            self.__children={}
 
         self.__children[key]=val
         if self.open():
@@ -242,7 +251,7 @@ class server(piw.server):
                 raise KeyError('invalid internal access')
         else:
             if key>=ex:
-                en = self.__children.get(ex)
+                en = self.get_internal(ex)
                 if en is None:
                     en=self.__make_extension()
                     self.set_internal(ex,en)
@@ -251,9 +260,11 @@ class server(piw.server):
         self.set_internal(key,val)
 
     def del_internal(self,key):
-        if self.__children.has_key(key):
+        if self.__children is not None and self.__children.has_key(key):
             oldval=self.__children[key]
             del self.__children[key]
+            if len(self.__children) == 0:
+                self.__children=None
             if self.open(): oldval.close_server()
 
     def __delitem__(self,key):
@@ -264,7 +275,7 @@ class server(piw.server):
                 raise KeyError('invalid internal access')
         else:
             if key>=ex:
-                en = self.__children.get(ex)
+                en = self.get_internal(ex)
                 if en is not None:
                     return en.__delitem__(key-ex+1)
                 return
@@ -284,12 +295,13 @@ class server(piw.server):
         return self.iterkeys()
 
     def iterkeys(self):
-        for k in self.__children:
-            if not self.isinternal(k):
-                yield k
+        if self.__children is not None:
+            for k in self.__children:
+                if not self.isinternal(k):
+                    yield k
 
         ex = self.__extension
-        en = self.__children.get(ex)
+        en = self.get_internal(ex)
 
         if en is None:
             return
@@ -298,12 +310,13 @@ class server(piw.server):
             yield k-1+ex
 
     def itervalues(self):
-        for (k,v) in self.__children.iteritems():
-            if not self.isinternal(k):
-                yield v
+        if self.__children is not None:
+            for (k,v) in self.__children.iteritems():
+                if not self.isinternal(k):
+                    yield v
 
         ex = self.__extension
-        en = self.__children.get(ex)
+        en = self.get_internal(ex)
 
         if en is None:
             return
@@ -312,12 +325,13 @@ class server(piw.server):
             yield v
 
     def iteritems(self):
-        for (k,v) in self.__children.iteritems():
-            if not self.isinternal(k):
-                yield (k,v)
+        if self.__children is not None:
+            for (k,v) in self.__children.iteritems():
+                if not self.isinternal(k):
+                    yield (k,v)
 
         ex = self.__extension
-        en = self.__children.get(ex)
+        en = self.get_internal(ex)
 
         if en is None:
             return
@@ -326,11 +340,11 @@ class server(piw.server):
             yield (k-1+ex,v)
 
     def has_key(self,k):
-        if self.__children.has_key(k):
+        if self.__children is not None and self.__children.has_key(k):
             return True
 
         ex = self.__extension
-        en = self.__children.get(ex)
+        en = self.get_internal(ex)
 
         if en is None:
             return False
@@ -399,17 +413,19 @@ class server(piw.server):
 
     def server_opened(self):
         piw.server.server_opened(self)
-        for (k,v) in self.__children.iteritems():
-            if not v.open():
-                self.child_add(k,v)
+        if self.__children is not None:
+            for (k,v) in self.__children.iteritems():
+                if not v.open():
+                    self.child_add(k,v)
 
     def clear_source(self):
         self.set_source(None)
 
     def close_server(self):
         piw.server.close_server(self)
-        for (k,v) in self.__children.iteritems():
-            v.close_server()
+        if self.__children is not None:
+            for (k,v) in self.__children.iteritems():
+                v.close_server()
 
     def server_tree(self,data):
         self.populate([ord(c) for c in data.as_string()])
@@ -421,11 +437,12 @@ class server(piw.server):
         want = set(child_list)
         ditch = []
 
-        for k in self.__children:
-            if k in want:
-                want.discard(k)
-            else:
-                ditch.append(k)
+        if self.__children is not None:
+            for k in self.__children:
+                if k in want:
+                    want.discard(k)
+                else:
+                    ditch.append(k)
 
         for k in ditch:
             if self.isinternal(k):
@@ -456,8 +473,8 @@ class client(piw.client):
         if sync:
             flags = flags | const.client_sync
 
-        self.__children={}
-        self.__dynamic={}
+        self.__children=None
+        self.__dynamic=None
         self.__sync=sync
         self.__auto=auto
         self.__creator=creator or self.dynamic_create
@@ -494,10 +511,22 @@ class client(piw.client):
     def __child_exists(self,name):
         return self.enum_child(name-1)==name
 
+    def __child(self,key):
+        if self.__children is None:
+            return None
+        else:
+            return self.__children.get(key,None)
+
+    def __dyn(self,key):
+        if self.__dynamic is None:
+            return None
+        else:
+            return self.__dynamic.get(key,None)
+
     def get_internal(self,key):
-        s=self.__children.get(key,None)
+        s=self.__child(key)
         if s is not None: return s
-        return self.__dynamic.get(key)
+        return self.__dyn(key)
 
     def __getitem__(self,key):
         ex = self.__extension
@@ -505,25 +534,31 @@ class client(piw.client):
         if not ex:
             if self.isinternal(key):
                 raise KeyError('invalid internal access')
-            s=self.__children.get(key,None)
+            s=self.__child(key)
             if s is not None: return s
+            if self.__dynamic is None:
+                raise KeyError('invalid key')
             return self.__dynamic.__getitem__(key)
 
         if key>=ex:
-            en = self.__children.get(ex)
+            en = self.__child(ex)
             if en is None:
                 raise KeyError('invalid key')
             return en.__getitem__(key-ex+1)
 
-        s=self.__children.get(key,None)
+        s=self.__child(key)
         if s is not None: return s
+        if self.__dynamic is None:
+            raise KeyError('invalid key')
         return self.__dynamic.__getitem__(key)
 
     def keys(self):
         ks=[]
 
-        ks.extend([k for k in self.__children.keys() if not self.isinternal(k)])
-        ks.extend([k for k in self.__dynamic.keys() if not self.isinternal(k)])
+        if self.__children is not None:
+            ks.extend([k for k in self.__children.keys() if not self.isinternal(k)])
+        if self.__dynamic is not None:
+            ks.extend([k for k in self.__dynamic.keys() if not self.isinternal(k)])
 
         ex = self.__extension
         if ex:
@@ -537,10 +572,10 @@ class client(piw.client):
         if self.isinternal(key):
             return False
 
-        if self.__children.__contains__(key):
+        if self.__children is not None and self.__children.__contains__(key):
             return True
             
-        if self.__dynamic.__contains__(key):
+        if self.__dynamic is not None and self.__dynamic.__contains__(key):
             return True
 
         ex = self.__extension
@@ -552,13 +587,15 @@ class client(piw.client):
         return False
 
     def __iter__(self):
-        for k in self.__children:
-            if not self.isinternal(k):
-                yield k
+        if self.__children is not None:
+            for k in self.__children:
+                if not self.isinternal(k):
+                    yield k
 
-        for k in self.__dynamic:
-            if not self.isinternal(k):
-                yield k
+        if self.__dynamic is not None:
+            for k in self.__dynamic:
+                if not self.isinternal(k):
+                    yield k
 
         ex = self.__extension
         if ex:
@@ -568,12 +605,14 @@ class client(piw.client):
                     yield k+ex-1
 
     def iteritems(self):
-        for i in self.__children.iteritems():
-            if not self.isinternal(i[0]):
-                yield i
-        for i in self.__dynamic.iteritems():
-            if not self.isinternal(i[0]):
-                yield i
+        if self.__children is not None:
+            for i in self.__children.iteritems():
+                if not self.isinternal(i[0]):
+                    yield i
+        if self.__dynamic is not None:
+            for i in self.__dynamic.iteritems():
+                if not self.isinternal(i[0]):
+                    yield i
 
         ex = self.__extension
         if ex:
@@ -590,16 +629,20 @@ class client(piw.client):
         if key<1 or key>255:
             raise OverflowError('key not in range')
 
-        old = self.__dynamic.get(key,None)
+        old = self.__dyn(key)
         if old is not None:
             self.__wreck(key,old)
             del self.__dynamic[key]
+            if len(self.__dynamic) == 0:
+                self.__dynamic = None
 
-        old = self.__children.get(key,None)
+        old = self.__child(key)
         if old is not None:
             self.safe_close(old)
             del self.__children[key]
 
+        if self.__children is None:
+            self.__children = {}
         self.__children[key]=val
         if self.open():
             try:
@@ -623,16 +666,20 @@ class client(piw.client):
         return self.set_internal(key,val)
 
     def del_internal(self,key):
-        if self.__children.has_key(key):
+        if self.__children is not None and self.__children.has_key(key):
             oldval=self.__children[key]
             self.safe_close(oldval)
             del self.__children[key]
+            if len(self.__children) == 0:
+                self.__children = None
             return
 
-        if self.__dynamic.has_key(key):
+        if self.__dynamic is not None and self.__dynamic.has_key(key):
             oldval=self.__dynamic[key]
             self.__wreck(key,oldval)
             del self.__dynamic[key]
+            if len(self.__dynamic) == 0:
+                self.__dynamic = None
             return
 
         raise KeyError(key)
@@ -653,9 +700,9 @@ class client(piw.client):
     def populate(self, dynamic=True):
         if self.open():
             for k in utils.client_iter(self):
-                v = self.__children.get(k)
+                v = self.__child(k)
                 if v is None:
-                    v = self.__dynamic.get(k)
+                    v = self.__dyn(k)
 
                 if v is None:
                     if not dynamic: continue
@@ -666,6 +713,8 @@ class client(piw.client):
                     if v is None: continue
                     try:
                         self.child_add(k,v)
+                        if self.__dynamic is None:
+                            self.__dynamic={}
                         self.__dynamic[k]=v
                     except:
                         #utils.log_trace()
@@ -679,15 +728,18 @@ class client(piw.client):
                             #utils.log_trace()
                             print 'child',k,'of',self.id(),'disappeared'
 
-            rep = {}
-            for (k,v) in self.__dynamic.iteritems():
-                if not v.open():
-                    if self.__extension and k==self.__extension:
-                        v.close_client()
+            rep=None 
+            if self.__dynamic is not None:
+                for (k,v) in self.__dynamic.iteritems():
+                    if not v.open():
+                        if self.__extension and k==self.__extension:
+                            v.close_client()
+                        else:
+                            self.__wreck(k,v)
                     else:
-                        self.__wreck(k,v)
-                else:
-                    rep[k]=v
+                        if rep is None:
+                            rep={}
+                        rep[k]=v
 
             self.__dynamic=rep
 
@@ -719,11 +771,14 @@ class client(piw.client):
 
     def close_client(self):
         piw.client.close_client(self)
-        for (k,v) in self.__children.iteritems():
-            self.safe_close(v)
-        for (k,v) in self.__dynamic.items():
-            self.__wreck(k,v)
-        self.__dynamic.clear()
+        if self.__children is not None:
+            for (k,v) in self.__children.iteritems():
+                self.safe_close(v)
+        if self.__dynamic is not None:
+            for (k,v) in self.__dynamic.items():
+                self.__wreck(k,v)
+            self.__dynamic.clear()
+            self.__dynamic=None
 
     def __wreck(self,k,v):
         try: v.close_client()

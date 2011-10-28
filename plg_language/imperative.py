@@ -88,7 +88,7 @@ def run(interp,verb,mods,roles,args,text,build_result):
     # verb's role set = set((None,to), (None), (None,with))
 
     for v in verb_set:
-        if not cmdline_roles.issuperset(v.fixed_roles()):
+        if v.fixed_roles() is not None and not cmdline_roles.issuperset(v.fixed_roles()):
             continue
 
         if not cmdline_mods.issuperset(v.mods()):
@@ -99,8 +99,10 @@ def run(interp,verb,mods,roles,args,text,build_result):
         # mod_set holds modifiers from command line but not supported by verb v
 
         role_set = set(cmdline_roles)
-        role_set.difference_update(v.fixed_roles())
-        role_set.difference_update(v.option_roles())
+        if v.fixed_roles() is not None:
+            role_set.difference_update(v.fixed_roles())
+        if v.option_roles() is not None:
+            role_set.difference_update(v.option_roles())
         # role_set holds roles from command line but not supported by verb v
 
         args_tmp = arg_values.copy()
@@ -124,7 +126,7 @@ def run(interp,verb,mods,roles,args,text,build_result):
         for m in working_mode_set:
             if mod_set != m.mods():
                 continue
-            if not role_set.issuperset(m.fixed_roles()):
+            if m.fixed_roles() is not None and not role_set.issuperset(m.fixed_roles()):
                 continue
             if v.subject() == m.subject():
                 continue
