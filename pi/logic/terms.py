@@ -19,7 +19,6 @@
 #
 
 import string
-import weakref
 
 __tx = string.maketrans('','')
 
@@ -314,37 +313,37 @@ def term_hash(pred, *args):
 
     return h, b
 
-# keeping a cache of predicates in a list here
-# since they're so common, we're not bothering with weak dicts
-# to reduce the overhead
-predicates = list()
+# can't use weak dicts since it's not possible to
+# create a weak ref to a string
+predicates = dict()
 """
+stringargs = dict()
 signatures = list()
-stringargs = list()
 """
+
+def tuplify(t):
+    return tuple(map(tuplify, t)) if isinstance(t, list) else t
 
 class Term(object):
     __slots__ = ('pred','args','bound','hash')
 
-    def __init__(self, pred, hash, bound, *args):
+    def __init__(self, pred, hash, bound, *argsraw):
         # replace the predicate with an existing one if possible
-        try:
-            i = predicates.index(pred)
-            self.pred = predicates[i]
-        except:
-            predicates.append(pred)
+        self.pred = predicates.get(pred, None)
+        if self.pred is None:
+            predicates[pred] = pred
             self.pred = pred
 
         self.hash = hash
         self.bound = bound
-        self.args = args
+        self.args = argsraw
 
         # commenting out code that hasn't resulted in much memory gain
         # keeping it in for now in case we want to still try it out
         # again soon
-        """
         # traverse the arguments to replace comment string
         # arguments
+        """
         argsnew = list()
 
         argstmp = list()
@@ -367,18 +366,21 @@ class Term(object):
                 for i in a:
                     argstack.append(i)
             elif isinstance(a, str):
-                try:
-                    i = stringargs.index(a)
-                    argstmp[-1].insert(0, stringargs[i])
-                except:
-                    stringargs.append(a)
+                i = stringargs.get(a, None)
+                if i is None:
+                    stringargs[a] = a
                     argstmp[-1].insert(0, a)
+                else:
+                    argstmp[-1].insert(0, i)
             else:
                 argstmp[-1].insert(0, a)
 
 
         #print '->',argsraw,tuplify(argsnew[0])
-        
+        self.args = tuplify(argsnew[0])
+        """
+
+        """ 
         # replace the signature with an existing on if possible
         isig = "%s/%u" % (self.pred,self.arity)
         try:

@@ -688,7 +688,10 @@ class PropertyCache:
 
     def iterrules(self,pred):
         for (id,props) in self.__id2value.iteritems():
-            yield "%s(%s,[%s])" % (pred,id,','.join(props))
+            if isinstance(props,frozenset):
+                yield "%s(%s,[%s])" % (pred,id,','.join(props))
+            else:
+                yield "%s(%s,[%s])" % (pred,id,props)
         for (prop,ids) in self.__value2id.iteritems():
             yield "%s_reverse(%s,[%s])" % (pred,prop,','.join(ids))
 
@@ -699,7 +702,10 @@ class PropertyCache:
             self.remove_id(id)
 
         if values:
-            self.__id2value[id]=frozenset(values)
+            if 1 == len(values):
+                self.__id2value[id]=iter(values).next()
+            else:
+                self.__id2value[id]=frozenset(values)
             vs = frozenset((id,))
 
             for v in values:
@@ -712,6 +718,9 @@ class PropertyCache:
             return
 
         del self.__id2value[id]
+
+        if not isinstance(t,frozenset):
+            t = frozenset((t,))
 
         vs = frozenset((id,))
         for v in t:
@@ -733,6 +742,9 @@ class PropertyCache:
                 return
             t = frozenset()
 
+        if not isinstance(t,frozenset):
+            t = frozenset((t,))
+
         n = t.union(add).difference(remove)
 
         for v in n.difference(t):
@@ -746,13 +758,20 @@ class PropertyCache:
                 del self.__value2id[v]
 
         if n:
-            self.__id2value[id] = n
+            if 1 == len(n):
+                self.__id2value[id]=iter(n).next()
+            else:
+                self.__id2value[id]=n
         else:
             try: del self.__id2value[id]
             except: pass
 
     def get_valueset(self,id):
-        return self.__id2value.get(id,frozenset())
+        vs = self.__id2value.get(id,frozenset())
+        if isinstance(vs,frozenset):
+            return vs
+        else:
+            return frozenset((vs,))
 
     def get_idset(self,value):
         return self.__value2id.get(value,frozenset())
@@ -767,7 +786,7 @@ class PropertyCache:
         if logic.is_bound(id):
             vs = self.__id2value.get(id,frozenset())
             if logic.is_bound(value):
-                return value in vs
+                return (isinstance(vs,frozenset) and value in vs) or value == vs
 
             r = []
             for v in vs:
@@ -831,6 +850,9 @@ class PropertyCache:
 
         if logic.is_bound(list_out):
             return list_in==list_out
+
+        if not isinstance(fs,frozenset):
+            fs = frozenset((fs,))
 
         return logic.unify(fs,{},list_out,env)
 
@@ -1100,7 +1122,7 @@ class Database(logic.Engine):
                               'bind': self.__bindcache,
                               'desc': self.__desccache,
                               'canonical': self.__canonical,
-                              'help': self.__helpcache,
+                              'help': self.__helpcache
                             }
 
     def set_timestamp(self,ts):
