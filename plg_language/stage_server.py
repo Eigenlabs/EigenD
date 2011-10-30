@@ -642,6 +642,9 @@ class StageXMLRPCFuncs:
             # create widget in widget manager
             name = widgetNode.getAttribute('name')
             OSCPath = widgetNode.getAttribute('path')
+
+            widgetNode.unlink()
+
             if OSCPath!='':
                 self.__widgetManager.create_widget(OSCPath)
                 print "created widget",name,OSCPath
@@ -692,7 +695,11 @@ class StageXMLRPCFuncs:
                 widgetXML = self.__tabs.get_tab(tabIndex)[1].get_widget(widgetIndex).getXML()
                 widgetDoc = xml.dom.minidom.parseString(widgetXML)
                 widgetNode = widgetDoc.documentElement
+
                 OSCPath = widgetNode.getAttribute('path')
+
+                widgetNode.unlink()
+
                 self.__tabs.get_tab(tabIndex)[1].remove_widget(widgetIndex)
             finally:
                 piw.tsd_unlock()
@@ -732,8 +739,10 @@ class StageXMLRPCFuncs:
                     widgetXML = widgets.get_widget(widgetIndex).getXML()
                     widgetDoc = xml.dom.minidom.parseString(widgetXML)
                     widgetNode = widgetDoc.documentElement
+
                     widgetAddress = widgetNode.getAttribute('address')
                     widgetPath = widgetNode.getAttribute('path')
+
                     if widgetAddress in changedNodes:
                         # update the widget xml with the new osc path
                         newOSCPath = changedNodes[widgetAddress]
@@ -742,6 +751,8 @@ class StageXMLRPCFuncs:
                         widgetDoc.documentElement = widgetNode
                         widgetXML = widgetDoc.documentElement.toxml()
                         widgets.get_widget(widgetIndex).setXML(widgetXML)
+
+                    widgetNode.unlink()
         except:
             traceback.print_exc(limit=None)
             return False

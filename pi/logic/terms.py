@@ -22,6 +22,7 @@ import string
 
 __tx = string.maketrans('','')
 
+
 def make_subst(word):
     return Subst(word)
 
@@ -50,7 +51,7 @@ def make_rule(h,*g):
     return Rule(h,g)
 
 def make_term(t,*a):
-    return Term(str(t),*a)
+    return Term.create(str(t),*a)
 
 def make_expansion(p):
     return Expansion(p)
@@ -295,28 +296,120 @@ class Split(object):
         if x != 0: return x
         return cmp(self.tail,other.tail)
 
+def term_hash(pred, *args):
+    b = True
+    h = 13
+
+    if pred.startswith('$'):
+        b = False
+
+    for a in args:
+        h = h^hash(a)
+        if is_unbound(a):
+            b = False
+
+    h = h^hash(pred)
+    h = h^hash(b)
+
+    return h, b
+
+# can't use weak dicts since it's not possible to
+# create a weak ref to a string
+predicates = dict()
+"""
+stringargs = dict()
+signatures = list()
+"""
+
+def tuplify(t):
+    return tuple(map(tuplify, t)) if isinstance(t, list) else t
+
 class Term(object):
-    __slots__ = ('pred','args','bound','hash','arity','isig')
+    __slots__ = ('pred','args','bound','hash')
 
-    def __init__(self, pred, *args):
-        self.pred = pred
-        self.args = args
-        self.bound = True
-        self.hash=13
+    def __init__(self, pred, hash, bound, *argsraw):
+        # replace the predicate with an existing one if possible
+        self.pred = predicates.get(pred, None)
+        if self.pred is None:
+            predicates[pred] = pred
+            self.pred = pred
 
-        self.isig="%s/%u" % (pred,len(args))
-        self.arity=len(args)
+        self.hash = hash
+        self.bound = bound
+        self.args = argsraw
 
-        if pred.startswith('$'):
-            self.bound = False
+        # commenting out code that hasn't resulted in much memory gain
+        # keeping it in for now in case we want to still try it out
+        # again soon
+        # traverse the arguments to replace comment string
+        # arguments
+        """
+        argsnew = list()
 
-        for a in args:
-            self.hash=self.hash^hash(a)
-            if is_unbound(a):
-                self.bound=False
+        argstmp = list()
+        argstmp.append(argsnew)
 
-        self.hash=self.hash^hash(pred)
-        self.hash=self.hash^hash(self.bound)
+        argstack = list()
+        argstack.append(argsraw)
+        while len(argstack):
+            a = argstack.pop()
+            if id(a) == id(argstmp):
+                argstmp.pop()
+                continue
+
+            #print '->',a,type(a)
+            if getattr(a, '__iter__', False):
+                l = list()
+                argstmp[-1].insert(0, l)
+                argstmp.append(l)
+                argstack.append(argstmp)
+                for i in a:
+                    argstack.append(i)
+            elif isinstance(a, str):
+                i = stringargs.get(a, None)
+                if i is None:
+                    stringargs[a] = a
+                    argstmp[-1].insert(0, a)
+                else:
+                    argstmp[-1].insert(0, i)
+            else:
+                argstmp[-1].insert(0, a)
+
+
+        #print '->',argsraw,tuplify(argsnew[0])
+        self.args = tuplify(argsnew[0])
+        """
+
+        """ 
+        # replace the signature with an existing on if possible
+        isig = "%s/%u" % (self.pred,self.arity)
+        try:
+            i = signatures.index(isig)
+            self.isig = signatures[i]
+        except:
+            signatures.append(isig)
+            self.isig = isig
+        """
+
+    """
+    @staticmethod
+    def create_cached(pred, *args):
+        hash, bound = term_hash(pred, *args)
+        #print '>>>>>> checking term',hash,pred
+        if hash in hash2term_dict:
+            term = hash2term_dict[hash]
+            #print '>>>>>> cached term',hash,pred
+        else:
+            term = Term(pred, hash, bound, *args)
+            hash2term_dict[hash] = term
+            #print '>>>>>> created term',len(hash2term_dict),hash,pred,args
+        return term
+    """
+
+    @staticmethod
+    def create(pred, *args):
+        hash, bound = term_hash(pred, *args)
+        return Term(pred, hash, bound, *args)
 
     def __ne__(self,other):
         return not self.__eq__(other)
@@ -348,7 +441,6 @@ class Term(object):
 
     def __str__(self):
         p = self.pred
-        a = self.arity
         return "%s(%s)" % (p,','.join(map(render_term,self.args)))
 
     def __repr__(self):
@@ -357,8 +449,12 @@ class Term(object):
     def __hash__(self):
         return self.hash
 
+    @property
+    def arity(self):
+        return len(self.args)
+
     def signature(self):
-        return self.isig
+        return "%s/%u" % (self.pred,self.arity)
 
 class Rule:
 

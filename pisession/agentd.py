@@ -18,10 +18,16 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import atom,agent,action,errors,node,utils,async,index,guid,logic,files,resource,state,rpc,async,timeout,version,container
+from pi import atom,agent,action,errors,node,utils,async,index,guid,logic,files,resource,state,rpc,async,timeout,version,container,database
 from pi.logic.shortcuts import *
+from pi.logic.terms import *
 from pisession import registry,upgrade,upgrade_agentd,session
 from pibelcanto import translate
+
+"""
+import cherrypy
+import dowser
+"""
 
 import picross
 import piw
@@ -35,6 +41,11 @@ import glob
 import urllib
 import binascii
 import traceback
+import gc
+
+"""
+from guppy import hpy; h=hpy()
+"""
 
 blacklisted_versions = ()
 first_upgradeable_version = '2.0.20'
@@ -1057,6 +1068,19 @@ class Agent(agent.Agent):
 
     @async.coroutine('internal error')
     def __load(self,snapshot,label,upgrade_flag = False):
+
+        """
+        cherrypy.config.update({'server.socket_port': 8088})
+        cherrypy.tree.mount(dowser.Root())
+        cherrypy.engine.autoreload.unsubscribe()
+        cherrypy.engine.start()
+        """
+        """
+        print h.heap()
+        print h.heapu()
+
+        h.setref()
+        """
         self.load_started(label)
         self.stop_gc()
 
@@ -1091,6 +1115,84 @@ class Agent(agent.Agent):
 
         self.load_status('Cleaning up',100)
         yield timeout.Timer(1000)
+
+        """
+        o = gc.collect()
+        if o: print 'gc collected',o
+        o = gc.collect()
+        if o: print 'gc collected',o
+        yield timeout.Timer(1000)
+
+        x=h.heap()
+        print "Total Heap"
+        print "=========="
+        print x
+
+        print "dict"
+        print "===="
+        xd = x[0]
+        print xd.byid
+        print xd.byvia
+        print xd.rp
+        print xd.rp.more
+        print xd.rp.more.more
+        print xd.rp.more.more.more
+        print xd.shpaths
+        print xd.shpaths.more
+        print xd.shpaths.more.more
+        print xd.shpaths.more.more.more
+
+        print "DatabaseProxy"
+        print "===="
+        xp = (x&database.DatabaseProxy)
+        print xp.byid
+        print xp.byvia
+        print xp.rp
+        print xp.rp.more
+        print xp.rp.more.more
+        print xp.rp.more.more.more
+        print xp.shpaths
+        print xp.shpaths.more
+        print xp.shpaths.more.more
+        print xp.shpaths.more.more.more
+
+        print "str"
+        print "==="
+        xs = (x&str)
+        xs_ = xs.byid
+        #for i in range(100):
+        #   print xs_
+        #   xs_ = xs_.more
+        print xs.byvia
+        print xs.rp
+        print xs.rp.more
+        print xs.rp.more.more
+        print xs.rp.more.more.more
+        print xs.shpaths
+        print xs.shpaths.more
+        print xs.shpaths.more.more
+        print xs.shpaths.more.more.more
+
+        print "Term"
+        print "===="
+        xt = (x&Term)
+        print xt.byid
+        print xt.byvia
+        print xt.rp
+        print xt.rp.more
+        print xt.rp.more.more
+        print xt.rp.more.more.more
+        print xt.shpaths
+        print xt.shpaths.more
+        print xt.shpaths.more.more
+        print xt.shpaths.more.more.more
+
+        print "Not reachable from root"
+        print "======================="
+        print h.heapu()
+
+        hpy().heap().stat.dump("/Users/gbevin/Desktop/heap.txt")
+        """ 
         self.start_gc()
 
         if e:

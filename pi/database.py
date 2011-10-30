@@ -96,8 +96,8 @@ class VerbProxy:
             raise RuntimeError("invalid verb schema")
 
         self.__mods = set(schema.args[0])
-        self.__options = set()
-        self.__fixed = set()
+        self.__options = None 
+        self.__fixed = None
         self.__verbname = schema.pred
         self.__constraints = dict()
         self.__order = []
@@ -111,11 +111,15 @@ class VerbProxy:
         for r in schema.args[2:]:
             if logic.is_pred(r,'role'):
                 role = r.args[0]
+                if self.__fixed is None:
+                    self.__fixed = set()
                 self.__fixed.add(role)
                 self.__constraints[role] = r.args[1]
                 self.__order.append(role)
             if logic.is_pred(r,'option'):
                 role = r.args[0]
+                if self.__options is None:
+                    self.__options = set()
                 self.__options.add(role)
                 self.__constraints[role] = r.args[1]
                 self.__order.append(role)
@@ -179,7 +183,6 @@ class VerbProxy:
 
     def id(self):
         return self.__id
-
 
 class Relation:
     def __init__(self,r,o,c):
@@ -645,7 +648,10 @@ class PropertyCache:
 
     def iterrules(self,pred):
         for (id,props) in self.__id2value.iteritems():
-            yield "%s(%s,[%s])" % (pred,id,','.join(props))
+            if isinstance(props,frozenset):
+                yield "%s(%s,[%s])" % (pred,id,','.join(props))
+            else:
+                yield "%s(%s,[%s])" % (pred,id,props)
         for (prop,ids) in self.__value2id.iteritems():
             yield "%s_reverse(%s,[%s])" % (pred,prop,','.join(ids))
 
@@ -656,7 +662,10 @@ class PropertyCache:
             self.remove_id(id)
 
         if values:
-            self.__id2value[id]=frozenset(values)
+            if 1 == len(values):
+                self.__id2value[id]=iter(values).next()
+            else:
+                self.__id2value[id]=frozenset(values)
             vs = frozenset((id,))
 
             for v in values:
@@ -669,6 +678,9 @@ class PropertyCache:
             return
 
         del self.__id2value[id]
+
+        if not isinstance(t,frozenset):
+            t = frozenset((t,))
 
         vs = frozenset((id,))
         for v in t:
@@ -690,6 +702,9 @@ class PropertyCache:
                 return
             t = frozenset()
 
+        if not isinstance(t,frozenset):
+            t = frozenset((t,))
+
         n = t.union(add).difference(remove)
 
         for v in n.difference(t):
@@ -703,13 +718,20 @@ class PropertyCache:
                 del self.__value2id[v]
 
         if n:
-            self.__id2value[id] = n
+            if 1 == len(n):
+                self.__id2value[id]=iter(n).next()
+            else:
+                self.__id2value[id]=n
         else:
             try: del self.__id2value[id]
             except: pass
 
     def get_valueset(self,id):
-        return self.__id2value.get(id,frozenset())
+        vs = self.__id2value.get(id,frozenset())
+        if isinstance(vs,frozenset):
+            return vs
+        else:
+            return frozenset((vs,))
 
     def get_idset(self,value):
         return self.__value2id.get(value,frozenset())
@@ -724,7 +746,7 @@ class PropertyCache:
         if logic.is_bound(id):
             vs = self.__id2value.get(id,frozenset())
             if logic.is_bound(value):
-                return value in vs
+                return (isinstance(vs,frozenset) and value in vs) or value == vs
 
             r = []
             for v in vs:
@@ -789,18 +811,22 @@ class PropertyCache:
         if logic.is_bound(list_out):
             return list_in==list_out
 
+        if not isinstance(fs,frozenset):
+            fs = frozenset((fs,))
+
         return logic.unify(fs,{},list_out,env)
 
 class DatabaseProxy(proxy.AtomProxy):
 
+    __slots__ = ('database','parent','__rules','__changed','__timestamp')
+
     def __init__(self,database,parent = None):
         proxy.AtomProxy.__init__(self)
 
-        self.database=database
-        self.parent=parent
-        self.rules={}
+        self.database = database
+        self.parent = parent
 
-        self.__root = parent.root() if parent else self
+        self.__rules = None
         self.__changed = False
         self.__timestamp = 0
         
@@ -814,7 +840,7 @@ class DatabaseProxy(proxy.AtomProxy):
         return self.parent.id() if self.parent else None
 
     def root(self):
-        return self.__root
+        return self.parent.root() if self.parent else self
 
     def client_sync(self):
         proxy.AtomProxy.client_sync(self)
@@ -826,17 +852,20 @@ class DatabaseProxy(proxy.AtomProxy):
         return self.__class__(self.database,self)
 
     def node_ready(self):
-        self.__root.__changed = True
+        self.root().__changed = True
 
-        self.rules,props,verbs = self.database.make_rules(self,True,self.monitor)
+        self.__rules,props,verbs = self.database.make_rules(self,True,self.monitor)
+        if 0 == len(self.__rules):
+            self.__rules = None
 
         myid = self.id()
 
         if verbs is not None:
             self.database.get_verbcache().set_verbs(myid,verbs)
 
-        for v in self.rules.itervalues():
-            self.database.assert_rules(v)
+        if self.__rules is not None:
+            for v in self.__rules.itervalues():
+                self.database.assert_rules(v)
 
         for c,(a,r) in props.iteritems():
             self.database.get_propcache(c).set_id(myid,a);
@@ -845,17 +874,17 @@ class DatabaseProxy(proxy.AtomProxy):
 
         #print 'node_ready',self.id(),'protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
         if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.id()):
-            self.__root.__timestamp = piw.tsd_time()
-            self.database.set_timestamp(self.__root.__timestamp)
+            self.root().__timestamp = piw.tsd_time()
+            self.database.set_timestamp(self.root().__timestamp)
 
 
     def node_changed(self,parts):
-        self.__root.__changed = True
+        self.root().__changed = True
         
         #print 'node_changed protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
         if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.id()):
-            self.__root.__timestamp = piw.tsd_time()
-            self.database.set_timestamp(self.__root.__timestamp)
+            self.root().__timestamp = piw.tsd_time()
+            self.database.set_timestamp(self.root().__timestamp)
         
         newrules,newprops,newverbs = self.database.make_rules(self,False,parts)
 
@@ -864,13 +893,22 @@ class DatabaseProxy(proxy.AtomProxy):
         if newverbs is not None:
             self.database.get_verbcache().set_verbs(myid,newverbs)
 
-        oldrules = self.rules
+        oldrules = self.__rules
+        if oldrules is None:
+            oldrules = {}
         for (k,v) in newrules.iteritems():
             o = oldrules.get(k)
             if o is not None:
                 self.database.retract_rules(o)
             self.database.assert_rules(v)
-        self.rules.update(newrules)
+
+        if 0 == len(newrules):
+            newrules = None
+
+        if self.__rules is None:
+            self.__rules = newrules
+        elif newrules is not None:
+            self.__rules.update(newrules)
 
         for c,(a,r) in newprops.iteritems():
             if r is None:
@@ -881,23 +919,23 @@ class DatabaseProxy(proxy.AtomProxy):
         utils.safe(self.database.object_changed,self,parts)
 
     def node_removed(self):
-        self.__root.__changed = True
+        self.root().__changed = True
 
         #print 'node_removed protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
         if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.id()):
-            self.__root.__timestamp = piw.tsd_time()
-            self.database.set_timestamp(self.__root.__timestamp)
+            self.root().__timestamp = piw.tsd_time()
+            self.database.set_timestamp(self.root().__timestamp)
         
-        #if self.__root==self:
+        #if self.root()==self:
         #    print 'node_removed ',self.id()
-
 
         myid = self.id()
 
         self.database.get_verbcache().retract_verbs(myid)
 
-        for v in self.rules.itervalues():
-            self.database.retract_rules(v)
+        if self.__rules is not None:
+            for v in self.__rules.itervalues():
+                self.database.retract_rules(v)
 
         for c in self.database.get_propcaches():
             self.database.get_propcache(c).remove_id(myid)
@@ -984,7 +1022,7 @@ class Database(logic.Engine):
                               'bind': self.__bindcache,
                               'desc': self.__desccache,
                               'canonical': self.__canonical,
-                              'help': self.__helpcache,
+                              'help': self.__helpcache
                             }
 
     def set_timestamp(self,ts):

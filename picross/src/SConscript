@@ -31,6 +31,7 @@ pic_env = env.Clone()
 pic_env.PiProgram('isotest','iso_out_test.cpp',libraries=Split('pic'))
 pic_env.Append(CCFLAGS='-DPI_RELEASE=\\"$PI_RELEASE\\"')
 pic_env.Append(CCFLAGS='-DPI_COLLECTION=\\"$PI_COLLECTION\\"')
+pic_env.Append(CCFLAGS='-DPI_PREFIX=\\"$PI_PREFIX\\"')
 
 if env['IS_MACOSX']:
     pic_files=pic_files+Split('pic_thread_posix.cpp pic_cfrunloop.cpp pic_usb_macosx.cpp pic_tool_macosx.cpp')

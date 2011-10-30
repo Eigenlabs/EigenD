@@ -29,6 +29,8 @@ import copy
 
 class DataProxy(node.Client):
 
+    __slots__ = ('__clone','__cloned')
+
     def __init__(self,clone=None):
         node.Client.__init__(self)
         self.__clone = clone
@@ -57,18 +59,19 @@ class DataProxy(node.Client):
 
 class AtomProxy(node.Client):
 
+    __slots__ = ('__ready','__domain','__syncers','__data','__meta','__current_meta')
+
     monitor = set(['domain','master','protocols','ordinal','name',
                    'latency','frelation','fuzzy','relation','insert',
                    'ideals','verbs','modes','cname','cordinal','help'])
 
     def __init__(self):
-        self.__children={}
         self.__ready=False
         self.__domain=None
-        self.__syncers=[]
+        self.__syncers=None
         self.__data=DataProxy()
         self.__meta=DataProxy()
-        self.__current_meta=piw.dictnull(0)
+        self.__current_meta=None
 
         flags = const.client_sync
 
@@ -112,6 +115,8 @@ class AtomProxy(node.Client):
         pass
 
     def get_property(self,key,default):
+        if self.__current_meta is None:
+            return default
         v = self.__current_meta.as_dict_lookup(key)
 
         if not v.is_null():
@@ -245,6 +250,8 @@ class AtomProxy(node.Client):
         r = async.Deferred()
         if not self.__syncers and self.open():
             self.sync()
+        if self.__syncers is None:
+            self.__syncers = []
         self.__syncers.append(r)
         return r
 
@@ -252,7 +259,7 @@ class AtomProxy(node.Client):
         old_value = self.__current_meta
         new_value = node.Client.get_data(self)
 
-        old_keys = set(utils.dict_keys(old_value))
+        old_keys = set(utils.dict_keys(old_value)) if old_value is not None else set()
         new_keys = set(utils.dict_keys(new_value))
         all_keys = old_keys.union(new_keys)
         common_keys = old_keys.intersection(new_keys)
@@ -279,9 +286,9 @@ class AtomProxy(node.Client):
             if parts:
                 self.__nodechanged(parts)
 
-        while self.__syncers:
+        while self.__syncers is not None:
             syncers = self.__syncers
-            self.__syncers = []
+            self.__syncers = None
 
             for s in syncers:
                 s.succeeded()
@@ -296,8 +303,8 @@ class AtomProxy(node.Client):
 
         node.Client.close_client(self)
 
-        if self.__syncers:
+        if self.__syncers is not None:
             syncers = self.__syncers
-            self.__syncers = []
+            self.__syncers = None
             for s in syncers:
                 s.failed()

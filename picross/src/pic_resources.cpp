@@ -150,8 +150,7 @@ namespace
 
     static void get_pyprefix(char *buffer)
     {
-        get_prefix(buffer);
-        strcat(buffer,"/Python.framework/Versions/2.5");
+        strcpy(buffer,PI_PREFIX);
     }
 
     static void get_pubtool(char *buffer)
