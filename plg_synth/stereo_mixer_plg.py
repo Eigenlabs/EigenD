@@ -70,7 +70,7 @@ class Agent(agent.Agent):
         self.vol = piw.make_f2f_table(0,120,1000,picross.make_f2f_functor(volume_function))
         self.pan = piw.make_f2f_table(-1,1,1000,picross.make_f2f_functor(pan_function))
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names="outputs")
         self[1][1] = bundles.Output(1, True, names='left audio output')
         self[1][2] = bundles.Output(2, True, names='right audio output')
 
@@ -80,7 +80,7 @@ class Agent(agent.Agent):
 
         self.ctl_input = bundles.ScalarInput(self.aggregator.get_output(1),self.clk,signals=(1,2))
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names="master")
         self[2][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))),
                             init=100, names='master volume',
                             policy=self.ctl_input.policy(1,policy.LopassStreamPolicy(1000,0.97)))
