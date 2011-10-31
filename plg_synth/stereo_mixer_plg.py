@@ -89,7 +89,7 @@ class Agent(agent.Agent):
                             policy=self.ctl_input.policy(2,policy.LopassStreamPolicy(1000,0.97)))
 
         for n in range(0,num_inputs):
-            ss = Input(n+1,self.vol,self.pan,self.clk,self.aggregator.get_output(n+2),self.signature)
+            ss = Input(n+1,self.vol,self.pan,self.clk,self.aggregator.get_output(n+2),self.signature())
             self.add_subsystem(str(n),ss)
 
     def rpc_addinput(self,dummy):
