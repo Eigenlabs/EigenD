@@ -40,7 +40,7 @@ def pan_function(f):
     return (f+1.0)/2.0
 
 class Input(agent.Agent):
-    def __init__(self,index,vol,pan,clk,cookie,sig):
+    def __init__(self,index,vol,pan,clk,cookie):
         agent.Agent.__init__(self,names='mixer channel',ordinal=index, protocols='bind is_subsys notagent',subsystem='channel',signature=version)
 
         self.channel_mixer = piw.stereomixer(vol,pan,clk,cookie)
@@ -89,7 +89,7 @@ class Agent(agent.Agent):
                             policy=self.ctl_input.policy(2,policy.LopassStreamPolicy(1000,0.97)))
 
         for n in range(0,num_inputs):
-            ss = Input(n+1,self.vol,self.pan,self.clk,self.aggregator.get_output(n+2),self.signature())
+            ss = Input(n+1,self.vol,self.pan,self.clk,self.aggregator.get_output(n+2))
             self.add_subsystem(str(n),ss)
 
     def rpc_addinput(self,dummy):

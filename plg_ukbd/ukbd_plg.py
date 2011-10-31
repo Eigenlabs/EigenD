@@ -23,7 +23,7 @@ import picross
 import piw
 import ukbd_native
 from pi import atom, utils, bundles, domain, agent, paths, policy, action, logic, upgrade
-from micro_native import ezload
+from lib_micro import ezload
 from plg_ukbd import micro_manager_version as version
 
 class VirtualKey(atom.Atom):
@@ -49,7 +49,7 @@ class VirtualKey(atom.Atom):
 class Keyboard(agent.Agent):
     subsys_relation = ('create','by')
 
-    def __init__(self,signature,usbname,ordinal,dom,remove):
+    def __init__(self,usbname,ordinal,dom,remove):
         agent.Agent.__init__(self,names='keyboard micro',ordinal=ordinal,subsystem='kbd',volatile=True,signature=version, container=102,protocols='is_subsys')
 
         self.usbname=usbname
@@ -143,7 +143,7 @@ class KeyboardAgent(agent.Agent):
 
     def add_keyboard(self,usbname):
         i=self.next_keyboard()
-        k=Keyboard(self.signature(),usbname,i,self.domain,lambda: self.del_keyboard(i))
+        k=Keyboard(usbname,i,self.domain,lambda: self.del_keyboard(i))
         self.add_subsystem(str(i),k)
         print 'added keyboard',i,k.name()
 
