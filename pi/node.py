@@ -137,7 +137,7 @@ class server(piw.server):
         Find an unused index
         """
         for i in xrange(1,255):
-            if not self.isinternal(i) and self.__children is not None and not self.__children.has_key(i):
+            if not self.isinternal(i) and (self.__children is None or not self.__children.has_key(i)):
                 return i
 
         ex = self.__extension
