@@ -143,7 +143,7 @@ class KeyboardAgent(agent.Agent):
 
     def add_keyboard(self,usbname):
         i=self.next_keyboard()
-        k=Keyboard(self.signature,usbname,i,self.domain,lambda: self.del_keyboard(i))
+        k=Keyboard(self.signature(),usbname,i,self.domain,lambda: self.del_keyboard(i))
         self.add_subsystem(str(i),k)
         print 'added keyboard',i,k.name()
 
