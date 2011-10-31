@@ -780,7 +780,7 @@ class Agent(agent.Agent):
 
     def __getkeys(self):
         mapping = self.__cur_mapping()
-        courses = [i.as_long() for i in self.getlist('courselen')]
+        courses = [i.as_long() for i in self.controller.getlist('courselen')]
 
         if not courses:
             courses = [len(mapping)]
