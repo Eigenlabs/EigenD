@@ -25,7 +25,7 @@
 #include <piw/piw_clock.h>
 #include <piw/piw_tsd.h>
 #include <picross/pic_ilist.h>
-#include <cmath>
+#include <math.h>
 #include <map>
 
 
