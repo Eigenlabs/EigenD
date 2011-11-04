@@ -38,7 +38,7 @@ class Agent(agent.Agent):
         self.data_input = bundles.VectorInput(self.strummer.data_cookie(),self.domain,signals=(1,))
 
         self[4]=atom.Atom()
-        self[4][1]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.ctl_input.vector_policy(1,False),names='breath input')
+        self[4][1]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.ctl_input.vector_policy(1,False),names='controller input')
         self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.data_input.vector_policy(1,False),names='pressure input')
 
         self[2]=atom.Atom()
@@ -49,8 +49,8 @@ class Agent(agent.Agent):
         self[2][5] = atom.Atom(domain=domain.BoundedInt(0,2000),init=400,names='trigger window',policy=atom.default_policy(self.strummer.set_trigger_window))
 
         self.strummer.enable(False)
-        self.strummer.set_on_threshold(0.01)
-        self.strummer.set_off_threshold(0.08)
+        self.strummer.set_on_threshold(0.2)
+        self.strummer.set_off_threshold(0.1)
         self.strummer.set_key_mix(0.0)
         self.strummer.set_trigger_window(400)
 
