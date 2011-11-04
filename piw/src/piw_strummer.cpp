@@ -23,6 +23,7 @@
 
 namespace
 {
+    struct ctl_wire_t;
     struct ctl_input_t;
     struct correlator_t;
     struct producer_t;
@@ -43,6 +44,7 @@ namespace
         private:
             friend class correlator_t;
             friend class consumer_t;
+            friend class ctl_wire_t;
 
             static int ender__(void *this_, void *time_) { ((producer_t *)this_)->end_event(*(unsigned long long *)time_); return 0; }
 
@@ -376,14 +378,10 @@ void data_wire_t::producer_start(unsigned long long t, const piw::data_nb_t &dat
 
 void data_wire_t::producer_join(unsigned long long t, const piw::data_nb_t &data_id, const piw::xevent_data_buffer_t &buffer)
 {
-    unsigned long long now = piw::tsd_time();
-    if(now - t < input_->trigger_window_)
-    {
-        from_ = t;
-        producer_reset(1,now,ctl_queue_,buffer.signal(1));
-        source_start(seq_,id().restamp(t),data_buffer_);
-        running_ = true;
-    }
+    from_ = t;
+    producer_reset(1,piw::tsd_time(),ctl_queue_,buffer.signal(1));
+    source_start(seq_,id().restamp(t),data_buffer_);
+    running_ = true;
 }
 
 void data_wire_t::producer_end(unsigned long long t)
@@ -581,7 +579,9 @@ void ctl_wire_t::wire_ticked(unsigned long long f, unsigned long long t)
             }
             else
             {
-                if(av > input_->impl_->threshold_on_ && low_ctl_ <= input_->impl_->threshold_on_)
+                if(d.time() - producer_.last_event_start_ > input_->impl_->trigger_window_ &&
+                   av > input_->impl_->threshold_on_ &&
+                   low_ctl_ <= input_->impl_->threshold_on_)
                 {
                     producer_.start_event(d.time(), id_, buffer_);
                     running_ = true;
