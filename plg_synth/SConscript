@@ -38,3 +38,4 @@ env.PiAgent('sine_oscillator','plg_synth.sine_oscillator_plg','plg_synth:0.0',cv
 env.PiAgent('stereo_mixer','plg_synth.stereo_mixer_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
 env.PiAgent('delay','plg_synth.delay_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
 env.PiAgent('console_mixer','plg_synth.console_mixer_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('poly_summer','plg_synth.poly_summer_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')

@@ -58,7 +58,10 @@ class Collection(atom.Atom):
             yield async.Coroutine.failure(*oresult.args(),**oresult.kwds())
 
         output = oresult.args()[0]
-        yield async.Coroutine.success(output.id())
+        if hasattr(output,'id'):
+            yield async.Coroutine.success(output.id())
+        else:
+            yield async.Coroutine.failure(str(output))
 
     @async.coroutine('internal error')
     def rpc_delinstance(self,arg):

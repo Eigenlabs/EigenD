@@ -26,7 +26,7 @@ synthfiles = Split("""
     synth_blepdata.cpp synth_minblep.cpp synth_adsr.cpp
     synth_wavetable.cpp synth_sinetable.cpp 
     synth_filter.cpp synth_shaper.cpp synth_adsr2.cpp
-    synth_filter2.cpp synth_fastmark.cpp
+    synth_filter2.cpp synth_fastmark.cpp polysummer.cpp
     """)
 
 if env['IS_MACOSX']:

@@ -63,9 +63,9 @@ namespace
         bool cfilterfunc_start(piw::cfilterenv_t *env, const piw::data_nb_t &id)
         {
             unsigned long long t=id.time();
-            for(unsigned i=0; i<MAX_SIGNALS; ++i)
+            for(unsigned i=1; i<=MAX_SIGNALS; ++i)
             {
-                env->cfilterenv_reset(i+1,t);
+                env->cfilterenv_reset(i,t);
             }
 
             return true;

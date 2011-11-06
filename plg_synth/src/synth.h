@@ -132,6 +132,18 @@ namespace synth
             impl_t *impl_;
     };
 
+    class PISYNTH_DECLSPEC_CLASS polysummer_t
+    {
+        public:
+            polysummer_t(const piw::cookie_t &o, piw::clockdomain_ctl_t *d);
+            ~polysummer_t();
+            piw::cookie_t cookie();
+
+            class impl_t;
+        private:
+            impl_t *impl_;
+    };
+
     PISYNTH_DECLSPEC_FUNC(piw::dd2d_nb_t) sharpener(float sharpness);
     PISYNTH_DECLSPEC_FUNC(piw::d2d_nb_t) compressor(float compression);
 };

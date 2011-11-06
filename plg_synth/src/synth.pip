@@ -75,6 +75,15 @@ class synthfilter2[synth::synthfilter2_t]
     cookie cookie()
 }
 
+class polysummer[synth::polysummer_t]
+    """
+    summer that preserves the polyphony.
+    """
+{
+    polysummer(const cookie &,clockdomain_ctl *)
+    cookie cookie()
+}
+
 d2d_nb compressor[synth::compressor](float)
 dd2d_nb sharpener[synth::sharpener](float)
 
