@@ -314,7 +314,7 @@ bool osc_plg::osc_thread_t::build_channel_url(char *buf, unsigned len, const std
 
 void osc_plg::osc_thread_t::osc_send_fast(const char *name,lo_message m)
 {
-    // send widget value to all recipients (Stage clients)
+    // send value to all recipients
     for(unsigned i=0;i<fast_recipients_.size();i++)
     {
         if(!fast_recipients_[i])

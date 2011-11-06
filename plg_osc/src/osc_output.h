@@ -56,9 +56,12 @@ namespace osc_plg
             // will be silently disconnected.
             void remove_output(const std::string &prefix);
 
-			// Forward implementation class declaration with the private member variable
-			// is a pattern we use to clearly decouple the public agent interface from the
-			// class declaration of the actual implementation.
+            // Changes the value of the decimation rate
+            void set_decimation(unsigned);
+
+            // Forward implementation class declaration with the private member variable
+            // is a pattern we use to clearly decouple the public agent interface from the
+            // class declaration of the actual implementation.
             class impl_t;
             
         private:

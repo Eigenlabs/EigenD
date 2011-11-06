@@ -143,7 +143,8 @@ class Agent(agent.Agent):
 	#
     def __decimation(self,value):
         self[3].set_value(value)
-
+        self.osc.set_decimation(value)
+        return True
 
 #
 # Define Agent as this agents top level class
