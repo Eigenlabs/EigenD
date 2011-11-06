@@ -11,4 +11,5 @@ class osc_server[osc_plg::osc_server_t]
     osc_server(clockdomain_ctl *, const stdstr &)
     cookie create_output(const stdstr &,bool,unsigned)
     void remove_output(const stdstr &)
+    void set_decimation(unsigned)
 }

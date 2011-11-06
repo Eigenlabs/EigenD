@@ -132,6 +132,9 @@ namespace
 
         // keynumber derived from the event ID
         unsigned keynum_;
+
+        // the last time data was processed
+        unsigned long long last_processed_;
     };
 
 };
@@ -173,9 +176,12 @@ struct osc_plg::osc_server_t::impl_t:
     // list of active wires (fast thread only)
     // this is intrusive list.
     pic::ilist_t<osc_wire_t> active_wires_;
+
+    // the decimation rate in micro seconds
+    unsigned decimation_;
 };
 
-osc_wire_t::osc_wire_t(osc_output_t *output, unsigned index, const piw::event_data_source_t &es): output_(output), index_(index)
+osc_wire_t::osc_wire_t(osc_output_t *output, unsigned index, const piw::event_data_source_t &es): output_(output), index_(index), last_processed_(0)
 {
     // build our URL.  Something like /keyboard_1/key/1
     PIC_ASSERT(output_->server_->build_channel_url(osc_path_,sizeof(osc_path_),output_->prefix_,index));
@@ -309,6 +315,17 @@ void osc_wire_t::ticked(unsigned long long from, unsigned long long to)
 
 void osc_wire_t::send(unsigned long long t)
 {
+    // don't send data until the decimation interval has expired
+    // note that this is only done on processing real performance data
+    // and not the data that's synthetically generated, for instance
+    // at event end
+    if(output_->server_->decimation_ &&
+       last_processed_ + output_->server_->decimation_ > t)
+    {
+        return;
+    }
+
+    // initialize a new OSC message
     lo_message msg = lo_message_new();
     piw::data_nb_t d;
 
@@ -351,6 +368,9 @@ void osc_wire_t::send(unsigned long long t)
     // send the message
     output_->server_->osc_send_fast(osc_path_,msg);
     lo_message_free(msg);
+    
+    // store the last processing time for each wire
+    last_processed_ = t;
 }
 
 //
@@ -549,7 +569,7 @@ void osc_output_t::root_latency()
 // main server initialisation
 //
 
-osc_plg::osc_server_t::impl_t::impl_t(piw::clockdomain_ctl_t *d, const std::string &a): osc_thread_t(a)
+osc_plg::osc_server_t::impl_t::impl_t(piw::clockdomain_ctl_t *d, const std::string &a): osc_thread_t(a), decimation_(0)
 {
     // start the OSC threads.
     osc_startup();
@@ -691,6 +711,18 @@ void osc_plg::osc_server_t::impl_t::clocksink_ticked(unsigned long long f, unsig
     }
 }
 
+/*
+ * Static methods that can be called from the fast thread.
+ */
+
+static int __set_decimation(void *i_, void *d_)
+{
+    osc_plg::osc_server_t::impl_t *i = (osc_plg::osc_server_t::impl_t *)i_;
+    unsigned d = *(unsigned *)d_;
+    i->decimation_ = d*1000;
+    return 0;
+}
+
 // 
 // pimpl wrapper functions
 //
@@ -712,4 +744,9 @@ piw::cookie_t osc_plg::osc_server_t::create_output(const std::string &prefix,boo
 void osc_plg::osc_server_t::remove_output(const std::string &prefix)
 {
     impl_->remove_output(prefix);
+}
+
+void osc_plg::osc_server_t::set_decimation(unsigned decimation)
+{
+    piw::tsd_fastcall(__set_decimation,impl_,&decimation);
 }
