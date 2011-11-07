@@ -25,6 +25,8 @@
 
 #include "synth.h"
 
+#define MAX_CHANNEL 12
+
 #define IN_MASK SIG24(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
 
 #define OUT_AUDIO 1
@@ -34,12 +36,18 @@ namespace
 {
     struct sumfunc_t: piw::cfilterfunc_t
     {
-        sumfunc_t() {}
+        sumfunc_t()
+        {
+            for(int sig = 0; sig < MAX_CHANNEL; ++sig)
+            {
+                gains_[sig] = 0.0f;
+            }
+        }
 
         bool cfilterfunc_start(piw::cfilterenv_t *env, const piw::data_nb_t &id)
         {
             unsigned long long t=id.time();
-            for(unsigned i=1; i<=24; ++i)
+            for(unsigned i=1; i<=MAX_CHANNEL*2; ++i)
             {
                 env->cfilterenv_reset(i,t);
             }
@@ -54,13 +62,27 @@ namespace
             memset(f,0,buffersize*sizeof(float));
 
             piw::data_nb_t d;
-            unsigned sig;
-            while(env->cfilterenv_next(sig,d,to))
+
+            for(unsigned sig = MAX_CHANNEL+1; sig <= MAX_CHANNEL*2; ++sig)
             {
-                const float *df = d.as_array();
-                unsigned dfl = std::min(buffersize,d.as_arraylen());
-                pic::vector::vectadd(df,1,f,1,f,1,dfl);
+                if(env->cfilterenv_nextsig(sig,d,to))
+                {
+                    gains_[sig-MAX_CHANNEL-1] = d.as_norm();
+                }
             }
+
+            for(unsigned sig = 1; sig <= MAX_CHANNEL; ++sig)
+            {
+                if(env->cfilterenv_nextsig(sig,d,to))
+                {
+                    if(!d.is_array() || 0.0f == gains_[sig-1]) continue;
+
+                    const float *df = d.as_array();
+                    unsigned dfl = std::min(buffersize,d.as_arraylen());
+                    pic::vector::vectmuladd(df,1,&gains_[sig-1],f,1,f,1,dfl);
+                }
+            }
+
             env->cfilterenv_output(OUT_AUDIO,buffer);
 
             return true;
@@ -70,6 +92,8 @@ namespace
         {
             return false;
         }
+
+        float gains_[MAX_CHANNEL];
     };
 };
 

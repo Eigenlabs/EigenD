@@ -102,6 +102,22 @@ namespace pic
 #endif
         }
 
+        inline void vectmuladd(const float *a, unsigned sa, const float *b, const float *c, unsigned sc, float *d, unsigned sd, unsigned n)
+        {
+#ifdef PI_MACOSX
+            vDSP_vsma(a,sa,b,c,sc,d,sd,n);
+#else
+            while(n>0)
+            {
+                *d = (*a)*(*b)+(*c);
+                a+=sa;
+                c+=sc;
+                d+=sd;
+                --n;
+            }
+#endif
+        }
+
         inline void vectdiv(float *a, unsigned sa, float *b, unsigned sb, float *c, unsigned sc, unsigned n)
         {
 #ifdef PI_MACOSX

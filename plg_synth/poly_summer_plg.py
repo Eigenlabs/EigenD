@@ -18,13 +18,13 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,domain,errors,action,utils,bundles,async,paths,collection
+from pi import agent,atom,domain,errors,action,policy,utils,bundles,async,paths,collection
 from plg_synth import summer_version as version
 
 import piw
 import synth_native
 
-MAX_CHANNEL = 24
+MAX_CHANNEL = 12 
 
 class AudioInput(atom.Atom):
     
@@ -33,7 +33,10 @@ class AudioInput(atom.Atom):
         self.__agent = agent
         self.__index = index
 
-        atom.Atom.__init__(self,domain=domain.BoundedFloat(-1,1),names='audio input',policy=agent.input.vector_policy(index,True),protocols='remove nostage',ordinal=index)
+        atom.Atom.__init__(self,names='channel',ordinal=index,protocols='remove nostage')
+
+        self[1] = atom.Atom(domain=domain.BoundedFloat(-1,1),names='audio input',policy=self.__agent.input.vector_policy(index,True),protocols='nostage')
+        self[2] = atom.Atom(domain=domain.BoundedFloat(0,1),names="volume input",policy=self.__agent.input.merge_policy(index+MAX_CHANNEL,policy.IsoStreamPolicy(1,0,0)))
 
     def disconnect(self):
         pass
