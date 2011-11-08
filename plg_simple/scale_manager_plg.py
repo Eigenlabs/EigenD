@@ -270,6 +270,7 @@ class VirtualScale(atom.Atom):
         self.__activate = activate
         self.__timestamp = piw.tsd_time()
         self.__usercounter = 1
+        self.values = list(self.init_values)
         self.update_scales()
         self.update_timestamp()
 
