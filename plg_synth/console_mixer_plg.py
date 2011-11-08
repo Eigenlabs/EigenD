@@ -24,26 +24,11 @@
 # Agent of a console style mixer with input channels and effect send/return channels.
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
-# TODO:                     status
-#
-# 1. remove fx chans        done
-# 2. send levels            done
-# 3. volume & pan           done, can use instrument name?
-
-# testing:
-# 1. create fx chan         done
-# 2. erase fx chan          done
-# 3. recreate fx chan       done
-# 4. send levels            done
-# 5. pans                   done
-# 6. numbered fx            done
-# 7. same name fx           done
-
 import sys
 import math
 import piw
 import picross
-from pi import agent, atom, bundles, domain, async, action, upgrade, policy, node, container, utils, logic, const, errors
+from pi import agent, atom, bundles, domain, async, action, upgrade, policy, node, container, utils, logic, const, errors, collection
 from pi.logic.shortcuts import T
 from plg_synth import console_mixer_version as version
 import synth_native
@@ -92,7 +77,7 @@ class FxSendControls(atom.Atom):
     
     def __init__(self, chan_agent, cookie, name, ordinal_str, fx_chan_num, is_fx_chan):
         self.chan_agent = chan_agent
-        self.fx_chan_num=fx_chan_num
+        self.fx_chan_num = fx_chan_num
         self.__is_fx_chan = is_fx_chan
 
         if ordinal_str!='':
@@ -111,34 +96,34 @@ class FxSendControls(atom.Atom):
         self[1] = atom.Atom(domain=domain.Bool(), init=False, names='enable', policy=atom.default_policy(self.__set_fx_send_enable))
         # send
         self.send_input = bundles.ScalarInput(cookie,chan_agent.main_agent.clk,signals=(1,))
-        self[2] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))), init=120, names='send', policy=self.send_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=self.chan_agent.main_agent.volume_changed), protocols='bind input')
+        self[2] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))), init=120, names='send', policy=self.send_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=self.chan_agent.main_agent.changes_pending), protocols='bind input')
         self[3] = atom.Atom(domain=domain.Bool(), init=False, names='prefader', policy=atom.default_policy(self.__set_fx_send_prefader))
 
     def __set_fx_send_enable(self, value):
         self.chan_agent.main_agent.mixer.set_fx_send_enable(value, self.chan_agent.get_chan_num()-1, self.fx_chan_num-1, self.__is_fx_chan)
-        self.chan_agent.main_agent.volume_changed()
+        self.chan_agent.main_agent.changes_pending()
         
     def __set_fx_send_prefader(self, value):
         self.chan_agent.main_agent.mixer.set_fx_send_prefader(value, self.chan_agent.get_chan_num()-1, self.fx_chan_num-1, self.__is_fx_chan)
-        self.chan_agent.main_agent.volume_changed()
+        self.chan_agent.main_agent.changes_pending()
 
         
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
-# Effects send channel agent
+# Effects send channel 
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
-class FxChannel(agent.Agent):
+class FxChannel(atom.Atom):
 
     def __init__(self,main_agent,fx_chan_num):
-        agent.Agent.__init__(self,names='effect', protocols='bind is_subsys notagent',signature=version,subsystem='fxchannel',ordinal=fx_chan_num)
+        atom.Atom.__init__(self,names='effect',protocols='remove',ordinal=fx_chan_num)
         self.main_agent = main_agent
         self.fx_chan_num = fx_chan_num
            
         # audio send output
-        self[3] = atom.Atom()
-        self[3][1] = bundles.Output(1, True, names='left effect audio output')
-        self[3][2] = bundles.Output(2, True, names='right effect audio output')
+        self[3] = atom.Atom(names='outputs')
+        self[3][1] = bundles.Output(1, True, names='left audio output')
+        self[3][2] = bundles.Output(2, True, names='right audio output')
         self.send_output = bundles.Splitter(main_agent.clk, self[3][1], self[3][2])
 
         output_cookie = self.send_output.cookie()
@@ -151,17 +136,19 @@ class FxChannel(agent.Agent):
         self.set_private(node.server(change=self.__setlabel,value=piw.makestring(self.__label,0)))
 
         self.control_input = bundles.ScalarInput(self.aggregator.get_output(1),main_agent.clk,signals=(1,2))        
-        self[4] = atom.Atom()
-        self[4][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='volume', policy=self.control_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.volume_changed), protocols='bind input')
-        self[4][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.volume_changed), protocols='bind input')
+        self[4] = atom.Atom(names='controls')
+        self[4][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='volume', policy=self.control_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
+        self[4][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
                 
         # audio return input
         self.return_input = bundles.VectorInput(self.aggregator.get_output(2),main_agent.clk,signals=(1,2))
-        self[1] = atom.Atom(domain=domain.BoundedFloat(-1,1), init=0, names='left effect audio input',policy=self.return_input.vector_policy(1,True), protocols='obm')
-        self[2] = atom.Atom(domain=domain.BoundedFloat(-1,1), init=0, names='right effect audio input',policy=self.return_input.vector_policy(2,True), protocols='obm')
+        self[1] = atom.Atom(domain=domain.BoundedFloat(-1,1), init=0, names='left audio input',policy=self.return_input.vector_policy(1,True), protocols='obm')
+        self[2] = atom.Atom(domain=domain.BoundedFloat(-1,1), init=0, names='right audio input',policy=self.return_input.vector_policy(2,True), protocols='obm')
 
         # fx send controls
-        self[5] = atom.Atom()
+        self[5] = atom.Atom(names='effect send')
+
+        self.set_id_data(None, None, str(fx_chan_num))
 
     def __setlabel(self,label):
         if label.is_string():
@@ -170,7 +157,7 @@ class FxChannel(agent.Agent):
     def set_label(self,label):
         self.get_private().set_data(piw.makestring(label,0))
         self.__label = label
-        self.main_agent.volume_changed()
+        self.main_agent.changes_pending()
 
     def inuse(self):
         return self[1].is_connected() or self[2].is_connected()
@@ -186,7 +173,7 @@ class FxChannel(agent.Agent):
         if not veto:
             if key == 'name':
                 self.name = value.as_string()
-                self.main_agent.volume_changed()
+                self.main_agent.changes_pending()
 
     def get_dinfo_pan(self):
         v = '%d' % self[4][2].get_value()
@@ -210,8 +197,18 @@ class FxChannel(agent.Agent):
 
         return logic.render_term(T('keyval',tuple(l)))
 
-    def destroy_fx_channel(self):
+    def disconnect(self):
+        # remove send controls from input channels
+        for k in self.main_agent.channels.iterkeys():
+            self.main_agent.channels[k].remove_fx_send_ctrls(self.fx_chan_num)
+        # remove send controls from fx channels
+        for k in self.main_agent[4].iterkeys():
+            if k!=self.fx_chan_num:
+                self.main_agent[4][k].remove_fx_send_ctrls(self.fx_chan_num)
+
         self.main_agent.mixer.remove_fx_channel(self.fx_chan_num-1)
+
+        self.main_agent.changes_pending()
         
     def add_fx_send_ctrls(self, key, name, ordinal, index):
         # add new atom with signals to the effects channel
@@ -225,10 +222,24 @@ class FxChannel(agent.Agent):
         return self.fx_chan_num
 
     def set_id_data(self, key, name, ordinal_str):
+        if not name:
+            name = ''
+
+        if not key:
+            if len(name) > 0:
+                key = name+' '+ordinal_str
+            else:
+                key = ordinal_str
+
         self.key = key
         self.name = name
         self.ordinal_str = ordinal_str
-        self.set_names('effect '+name)
+
+        if len(name) > 0:
+            self.set_names('effect '+name)
+        else:
+            self.set_names('effect')
+
         if ordinal_str!='':
             ordinal = int(ordinal_str)
             self.set_ordinal(ordinal)
@@ -236,7 +247,95 @@ class FxChannel(agent.Agent):
     def get_id_data(self):
         return (self.key, self.name, self.ordinal_str, self.fx_chan_num)
 
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# Effects send channel list
+# -------------------------------------------------------------------------------------------------------------------------------------------
+
+class FxChannelList(collection.Collection):
+
+    def __init__(self,agent):
+        self.__agent = agent
+        self.__timestamp = piw.tsd_time()
+
+        collection.Collection.__init__(self,names='effect channel',creator=self.__create_fxchannel,wrecker=self.__wreck_fxchannel,inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
+        self.update()
+
+    def update(self):
+        self.__timestamp = self.__timestamp+1
+        self.set_property_string('timestamp',str(self.__timestamp))
+
+    def __create_fxchannel(self, index):
+        return FxChannel(self.__agent,index)
     
+    def __wreck_fxchannel(self, index, node):
+        node.disconnect()
+
+    def create_fxchannel(self,o=None):
+        o = o or self.find_hole()
+        e = FxChannel(self.__agent,o)
+        self[o] = e
+
+        self.__connect_fxchannel(e)
+
+        return e
+
+    def create_named_fxchannel(self,key):
+        # get list of strings
+        key_words = key.split()
+        # name can be anything, but check for an integer in last element and handle it like an ordinal
+        last = key_words[len(key_words)-1]
+        if last.isdigit():
+            # strip off ordinal
+            name = ' '.join(key_words[:len(key_words)-1])
+            ordinal = last
+        else:
+            name = key
+            ordinal = ''
+
+        o = self.find_hole()
+        e = FxChannel(self.__agent,o)
+        self[o] = e
+
+        # set id data - the key(=name+ordinal), name and ordinal
+        e.set_id_data(key, name, ordinal)
+
+        self.__connect_fxchannel(e)
+
+        return e
+
+    def __connect_fxchannel(self,channel):
+        (key, name, ordinal, index) = channel.get_id_data()
+
+        # add new fx chan to all other input chans
+        for k in self.__agent.channels.iterkeys():
+            self.__agent.channels[k].add_fx_send_ctrls(key, name, ordinal, index)
+
+        # add new fx chan to all other fx chans and vice versa
+        for k in self.iterkeys():
+            if k!=index:
+                self[k].add_fx_send_ctrls(key, name, ordinal, index)
+                # get data of other channels
+                (key2, name2, ordinal2, index2) = self[k].get_id_data()
+                # add to this channel
+                self[index].add_fx_send_ctrls(key2, name2, ordinal2, index2)
+
+        self.__agent.changes_pending()
+
+    def del_fxchannel(self,index):
+        v = self[index]
+        del self[index]
+        v.disconnect()
+    
+    @async.coroutine('internal error')
+    def __create_inst(self,ordinal=None):
+        e=self.create_fxchannel(ordinal)
+        yield async.Coroutine.success(e)
+
+    @async.coroutine('internal error')
+    def __wreck_inst(self,key,inst,ordinal):
+        inst.disconnect()
+        yield async.Coroutine.success()
+
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # Input channel agent
 # -------------------------------------------------------------------------------------------------------------------------------------------
@@ -259,11 +358,11 @@ class Channel(agent.Agent):
         self[2] = atom.Atom(domain=domain.BoundedFloat(-1,1), init=0, names='right audio input', policy=self.audio_input.vector_policy(2,True), protocols='obm')
 
         self[3] = atom.Atom(names='controls')
-        self[3][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='volume', policy=self.control_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.volume_changed), protocols='bind input')
-        self[3][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.volume_changed), protocols='bind input')
+        self[3][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='volume', policy=self.control_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
+        self[3][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
 
         # fx send controls
-        self[4] = atom.Atom()
+        self[4] = atom.Atom(names='effect send')
 
     def __setlabel(self,label):
         if label.is_string():
@@ -272,7 +371,7 @@ class Channel(agent.Agent):
     def set_label(self,label):
         self.get_private().set_data(piw.makestring(label,0))
         self.__label = label
-        self.main_agent.volume_changed()
+        self.main_agent.changes_pending()
 
     def inuse(self):
         return self[1].is_connected() or self[2].is_connected()
@@ -331,12 +430,6 @@ class Agent(agent.Agent):
         # self[3] is the verb container
         agent.Agent.__init__(self, signature=version, names='console mixer', protocols='inputlist has_subsys browse', icon='plg_synth/mixer.png', container=3,ordinal=ordinal)
 
-        self.__private = node.Server()
-        self.set_private(self.__private)
-        self.__private[1] = container.PersistentFactory(asserted=self.__inst_asserted, retracted=self.__inst_retracted)
-
-        self.__private[2] = node.server(value=piw.makestring('testing1',0))
-
         self.clk = piw.clockdomain_ctl()
 
         pan_function = pan_laws[default_pan]
@@ -357,7 +450,6 @@ class Agent(agent.Agent):
 
         # channel dicts
         self.channels = {}
-        self.fxchannels = {}
 
         # adds subsystems numbered 1..24, which means effect channels cannot be called 1..24 ...
         for n in range(0,num_inputs):
@@ -370,15 +462,17 @@ class Agent(agent.Agent):
         self[2] = atom.Atom(names='master')
         self[2][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))),
                             init=100, names='master volume',
-                            policy=self.master_controls_input.notify_policy(1,policy.LopassStreamPolicy(100,0.97),notify=self.volume_changed))
+                            policy=self.master_controls_input.notify_policy(1,policy.LopassStreamPolicy(100,0.97),notify=self.changes_pending))
         self[2][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('inc',0.02),T('biginc',0.2),T('control','updown'))),
                             init=0, names='master pan',
                             policy=self.master_controls_input.policy(2,policy.LopassStreamPolicy(100,0.97)))
 
+        self[4] = FxChannelList(self)
+
         # verbs
         # verb to create a named effect channel
         self.add_verb2(1,'create([],None,role(None,[abstract,matches([effect])]), role(called,[abstract]))',self.__create_named_fx_chan)
-        self.add_verb2(2,'create([un],None,role(None, [abstract,matches([effect])]), role(called,[abstract]))',self.__uncreate_named_fx_chan)
+        self.add_verb2(2,'create([un],None,role(None,[abstract,matches([effect])]), role(called,[abstract]))',self.__uncreate_named_fx_chan)
 
         self.add_verb2(3,'label([],None,role(None,[mass([channel])]),role(to,[abstract]))', self.__label)
         self.add_verb2(4,'label([un],None,role(None,[mass([channel])]))', self.__unlabel)
@@ -403,41 +497,41 @@ class Agent(agent.Agent):
         print 'set pan law',v,self.pan(-1),self.pan(0),self.pan(1)
         self.mixer.set_curves(self.vol,self.pan)
 
-
-    def volume_changed(self):
+    def changes_pending(self):
         self.__pending = True
 
     def __labelfx(self,subj,channel,label):
         channel = int(action.mass_quantity(channel))
         label = action.abstract_string(label)
-        if channel in self.fxchannels:
-            self.fxchannels[channel].set_label(label)
-        self.volume_changed()
+        if channel in self[4]:
+            self[4][channel].set_label(label)
+        self.changes_pending()
 
     def __unlabelfx(self,subj,channel):
         channel = action.mass_quantity(channel)
-        if channel in self.fxchannels:
-            self.fxchannels[channel].set_label('')
-        self.volume_changed()
+        if channel in self[4]:
+            self[4][channel].set_label('')
+        self.changes_pending()
 
     def __label(self,subj,channel,label):
         channel = int(action.mass_quantity(channel))-1
         label = action.abstract_string(label)
         if channel in self.channels:
             self.channels[channel].set_label(label)
-        self.volume_changed()
+        self.changes_pending()
 
     def __unlabel(self,subj,channel):
         channel = action.mass_quantity(channel)-1
         if channel in self.channels:
             self.channels[channel].set_label('')
-        self.volume_changed()
+        self.changes_pending()
 
     def update(self):
         if self.__pending:
             self.__pending = False
             self.__timestamp = self.__timestamp+1
             self.set_property_string('timestamp',str(self.__timestamp))
+            self[4].update()
 
     def __channels(self):
         channels = [c for c in self.channels.itervalues() if c.inuse()]
@@ -559,77 +653,24 @@ class Agent(agent.Agent):
         return async.success(action.marshal(r))
 
 
-    def __inst_asserted(self,index,value):
-        # could construct with ordinal etc
-        new_fx_chan = FxChannel(self, index)
-        self.fxchannels[index] = new_fx_chan
-        self.add_subsystem(value, new_fx_chan)
-
-        key = value
-        # get list of strings
-        key_words = key.split()
-        # name can be anything, but check for an integer in last element and handle it like an ordinal
-        last = key_words[len(key_words)-1]
-        if last.isdigit():
-            # strip off ordinal
-            name = ' '.join(key_words[:len(key_words)-1])
-            ordinal = last
-        else:
-            name = key
-            ordinal = ''
-
-        # set id data - the key(=name+ordinal), name and ordinal
-        self.fxchannels[index].set_id_data(key, name, ordinal)
-
-        # add new fx chan to all other input chans
-        for k in self.channels.iterkeys():
-            self.channels[k].add_fx_send_ctrls(key, name, ordinal, index)
-
-        # add new fx chan to all other fx chans and vice versa
-        for k in self.fxchannels.iterkeys():
-            if k!=index:
-                self.fxchannels[k].add_fx_send_ctrls(key, name, ordinal, index)
-                # get data of other channels
-                (key2, name2, ordinal2, index2) = self.fxchannels[k].get_id_data()
-                # add to this channel
-                self.fxchannels[index].add_fx_send_ctrls(key2, name2, ordinal2, index2)
-
-        return new_fx_chan
-
-    def __inst_retracted(self,index,value,state):
-
-        # remove send controls from input channels
-        for k in self.channels.iterkeys():
-            self.channels[k].remove_fx_send_ctrls(index)
-        # remove send controls from fx channels
-        for k in self.fxchannels.iterkeys():
-            if k!=index:
-                self.fxchannels[k].remove_fx_send_ctrls(index)
-
-        self.fxchannels[index].destroy_fx_channel()
-
-        # remove from fxchannels
-        del self.fxchannels[index]
-
-        self.remove_subsystem(value)
-
     def __create_named_fx_chan(self,subject,dummy,tags):
         key = action.abstract_string(tags)
 
-        if self.get_subsystem(key):
-            return async.failure('Console Mixer: effect channel %d already exists' % key)
+        for v in self[4].itervalues():
+            if key == v.get_id_data()[0]:
+                return async.failure('Console Mixer: effect channel %s already exists' % key)
 
-        # create fx channel in persistant factory
-        g = self.__private[1].assert_state(key)
-        return action.concrete_return(g.id())
+        new_fx_chan = self[4].create_named_fxchannel(key)
+
+        return action.concrete_return(new_fx_chan.id())
 
     def __uncreate_named_fx_chan(self,subject,dummy,tags):
         key = action.abstract_string(tags)
 
-        def test_state(val,fxchan):
-            return key==val
-        
-        self.__private[1].retract_state(test_state)
+        for k,v in self[4].iteritems():
+            if key == v.get_id_data()[0]:
+                self[4].del_fxchannel(k)
+                break
         
 
 class Upgrader(upgrade.Upgrader):
