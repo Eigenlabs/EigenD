@@ -28,7 +28,7 @@ import sys
 import math
 import piw
 import picross
-from pi import agent, atom, bundles, domain, async, action, upgrade, policy, node, container, utils, logic, const, errors, collection
+from pi import agent,atom,bundles,domain,async,action,upgrade,policy,node,container,utils,logic,const,errors,collection
 from pi.logic.shortcuts import T
 from plg_synth import console_mixer_version as version
 import synth_native
@@ -202,9 +202,9 @@ class FxChannel(atom.Atom):
         for k in self.main_agent.channels.iterkeys():
             self.main_agent.channels[k].remove_fx_send_ctrls(self.fx_chan_num)
         # remove send controls from fx channels
-        for k in self.main_agent[4].iterkeys():
+        for k in self.main_agent.fxchannels.iterkeys():
             if k!=self.fx_chan_num:
-                self.main_agent[4][k].remove_fx_send_ctrls(self.fx_chan_num)
+                self.main_agent.fxchannels[k].remove_fx_send_ctrls(self.fx_chan_num)
 
         self.main_agent.mixer.remove_fx_channel(self.fx_chan_num-1)
 
@@ -257,7 +257,7 @@ class FxChannelList(collection.Collection):
         self.__agent = agent
         self.__timestamp = piw.tsd_time()
 
-        collection.Collection.__init__(self,names='effect channel',creator=self.__create_fxchannel,wrecker=self.__wreck_fxchannel,inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
+        collection.Collection.__init__(self,names='effect channels',creator=self.__create_fxchannel,wrecker=self.__wreck_fxchannel,inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
         self.update()
 
     def update(self):
@@ -340,16 +340,16 @@ class FxChannelList(collection.Collection):
 # Input channel agent
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
-class Channel(agent.Agent):
-    def __init__(self,main_agent,chan_num,clk,cookie):
-        agent.Agent.__init__(self,names='mixer channel',ordinal=chan_num, protocols='bind is_subsys notagent',subsystem='channel',signature=version)
+class Channel(atom.Atom):
+    def __init__(self,main_agent,chan_num):
+        atom.Atom.__init__(self,names='mixer channel',ordinal=chan_num)
         self.main_agent = main_agent
         self.chan_num = chan_num 
 
-        self.aggregator = piw.aggregator(cookie,clk)
+        self.aggregator = piw.aggregator(main_agent.mixer.create_channel(chan_num-1),main_agent.clk)
 
-        self.control_input = bundles.ScalarInput(self.aggregator.get_output(1),clk,signals=(1,2))        
-        self.audio_input = bundles.VectorInput(self.aggregator.get_output(2),clk,signals=(1,2))
+        self.control_input = bundles.ScalarInput(self.aggregator.get_output(1),main_agent.clk,signals=(1,2))        
+        self.audio_input = bundles.VectorInput(self.aggregator.get_output(2),main_agent.clk,signals=(1,2))
 
         self.__label = ''
         self.set_private(node.server(change=self.__setlabel,value=piw.makestring(self.__label,0)))
@@ -409,6 +409,10 @@ class Channel(agent.Agent):
         self[1].clear_connections()
         self[2].clear_connections()
 
+        self.main_agent.mixer.remove_channel(self.chan_num-1)
+
+        self.main_agent.changes_pending()
+
     def add_fx_send_ctrls(self, key, name, ordinal, index):
         # add new atom with signals to the effects channel
         self[4][index] = FxSendControls(self, self.aggregator.get_output(2+index), name, ordinal, index, False)
@@ -419,6 +423,36 @@ class Channel(agent.Agent):
 
     def get_chan_num(self):
         return self.chan_num
+
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# Channel list
+# -------------------------------------------------------------------------------------------------------------------------------------------
+
+class ChannelList(atom.Atom):
+
+    def __init__(self,agent):
+        self.__agent = agent
+        self.__timestamp = piw.tsd_time()
+
+        atom.Atom.__init__(self,names='channels')
+        self.update()
+
+    def update(self):
+        self.__timestamp = self.__timestamp+1
+        self.set_property_string('timestamp',str(self.__timestamp))
+
+    def create_channel(self,o=None):
+        o = o or self.find_hole()
+        e = Channel(self.__agent,o)
+        self[o] = e
+
+        return e
+
+    def del_channel(self,index):
+        v = self[index]
+        del self[index]
+        v.disconnect()
+
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # Main agent
@@ -448,15 +482,6 @@ class Agent(agent.Agent):
         sh=(T('choices',*pan_laws.keys()), T('control','selector'))
         self[10] = atom.Atom(names='pan curve',domain=domain.String(hints=sh),init='default',policy=atom.default_policy(self.__set_pan))
 
-        # channel dicts
-        self.channels = {}
-
-        # adds subsystems numbered 1..24, which means effect channels cannot be called 1..24 ...
-        for n in range(0,num_inputs):
-            ss = Channel(self,n+1,self.clk,self.mixer.create_channel(n))
-            self.add_subsystem(str(n),ss)
-            self.channels[n] = ss
-            
         self.master_controls_input = bundles.ScalarInput(self.mixer.master_controls_cookie(),self.clk,signals=(1,2))
 
         self[2] = atom.Atom(names='master')
@@ -467,8 +492,16 @@ class Agent(agent.Agent):
                             init=0, names='master pan',
                             policy=self.master_controls_input.policy(2,policy.LopassStreamPolicy(100,0.97)))
 
+        self[3] = ChannelList(self)
         self[4] = FxChannelList(self)
 
+        self.channels = self[3]
+        self.fxchannels = self[4]
+
+        # adds subsystems numbered 1..24, which means effect channels cannot be called 1..24 ...
+        for n in range(0,num_inputs):
+            self.channels.create_channel(n+1)
+            
         # verbs
         # verb to create a named effect channel
         self.add_verb2(1,'create([],None,role(None,[abstract,matches([effect])]), role(called,[abstract]))',self.__create_named_fx_chan)
@@ -503,14 +536,14 @@ class Agent(agent.Agent):
     def __labelfx(self,subj,channel,label):
         channel = int(action.mass_quantity(channel))
         label = action.abstract_string(label)
-        if channel in self[4]:
-            self[4][channel].set_label(label)
+        if channel in self.fxchannels:
+            self.fxchannels[channel].set_label(label)
         self.changes_pending()
 
     def __unlabelfx(self,subj,channel):
         channel = action.mass_quantity(channel)
-        if channel in self[4]:
-            self[4][channel].set_label('')
+        if channel in self.fxchannels:
+            self.fxchannels[channel].set_label('')
         self.changes_pending()
 
     def __label(self,subj,channel,label):
@@ -531,7 +564,8 @@ class Agent(agent.Agent):
             self.__pending = False
             self.__timestamp = self.__timestamp+1
             self.set_property_string('timestamp',str(self.__timestamp))
-            self[4].update()
+            self.channels.update()
+            self.fxchannels.update()
 
     def __channels(self):
         channels = [c for c in self.channels.itervalues() if c.inuse()]
@@ -656,24 +690,31 @@ class Agent(agent.Agent):
     def __create_named_fx_chan(self,subject,dummy,tags):
         key = action.abstract_string(tags)
 
-        for v in self[4].itervalues():
+        for v in self.fxchannels.itervalues():
             if key == v.get_id_data()[0]:
                 return async.failure('Console Mixer: effect channel %s already exists' % key)
 
-        new_fx_chan = self[4].create_named_fxchannel(key)
+        new_fx_chan = self.fxchannels.create_named_fxchannel(key)
 
         return action.concrete_return(new_fx_chan.id())
 
     def __uncreate_named_fx_chan(self,subject,dummy,tags):
         key = action.abstract_string(tags)
 
-        for k,v in self[4].iteritems():
+        for k,v in self.fxchannels.iteritems():
             if key == v.get_id_data()[0]:
-                self[4].del_fxchannel(k)
+                self.fxchannels.del_fxchannel(k)
                 break
         
 
 class Upgrader(upgrade.Upgrader):
+    def upgrade_1_0_0_to_1_0_1(self,tools,address):
+        channels = tools.get_subsystems(address)
+        for i in channels:
+            tools.delete_agent(i)
+
+        tools.invalidate_connections()
+
     def upgrade_1_0_to_2_0(self,tools,address):
         for ss in tools.get_subsystems(address):
             ssr = tools.root(ss)
