@@ -23,7 +23,6 @@ Import('env')
 env.PiPythonPackage('0.0',package='eigend',natives=Split('synth_native'), resources=Split('mixer.png'),pi='0.0')
 
 env.PiAgent('ahdsr','plg_synth.ahdsr_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('bleeper','plg_synth.bleeper_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
 env.PiAgent('envelope','plg_synth.envelope_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
 env.PiAgent('gain','plg_synth.gain_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
 env.PiAgent('panner','plg_synth.panner_plg','plg_synth:0.0',cversion='1.0.0',package='eigend')
