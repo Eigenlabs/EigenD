@@ -770,7 +770,6 @@ class client(piw.client):
         self.set_sink(None)
 
     def close_client(self):
-        piw.client.close_client(self)
         if self.__children is not None:
             for (k,v) in self.__children.iteritems():
                 self.safe_close(v)
@@ -779,6 +778,7 @@ class client(piw.client):
                 self.__wreck(k,v)
             self.__dynamic.clear()
             self.__dynamic=None
+        piw.client.close_client(self)
 
     def __wreck(self,k,v):
         try: v.close_client()

@@ -301,7 +301,13 @@ class AtomProxy(node.Client):
         except:
             traceback.print_stack()
 
-        node.Client.close_client(self)
+        try:
+            node.Client.close_client(self)
+        except:
+            print '************************'
+            traceback.print_stack()
+            print '************************'
+            raise
 
         if self.__syncers is not None:
             syncers = self.__syncers

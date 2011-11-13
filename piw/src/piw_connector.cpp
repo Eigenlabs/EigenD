@@ -104,6 +104,7 @@ struct piw::connector_t::impl_t: piw::client_t
             unsigned long long t = piw::tsd_time();
             piw::data_nb_t d = piw::data_nb_t::from_given((bct_data_t)d_);
             i->queue_.write_fast(d.restamp(t));
+            //pic::logmsg() << "data " << d << " for signal" << i->signal_ << " at path " << i->path_ << " connector=" << (void *)i->connector_ << " correlator=" << i->correlator_;
         }
         return 0;
     }

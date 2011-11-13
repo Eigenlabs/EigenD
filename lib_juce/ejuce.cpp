@@ -23,7 +23,7 @@
 
 struct ejuce::Application::impl_t: public juce::MessageListener, virtual public pic::tracked_t
 {
-    impl_t(Application *app,const char *name,const pic::f_string_t &,bool ck,bool rt);
+    impl_t(Application *app,const pic::f_string_t &,bool ck,bool rt);
     ~impl_t();
     void handleMessage(const juce::Message &message);
     void handleGone();
@@ -55,10 +55,10 @@ void ejuce::Application::impl_t::handleWinch(const std::string &message)
     application_->handleWinch(message);
 }
 
-ejuce::Application::impl_t::impl_t(Application *app,const char *name,const pic::f_string_t &l,bool ck,bool rt): application_(app)
+ejuce::Application::impl_t::impl_t(Application *app,const pic::f_string_t &l,bool ck,bool rt): application_(app)
 {
     pic_init_time();
-    scaffold_ = new pia::scaffold_gui_t(name, pic::notify_t::method(this,&impl_t::handleService), pic::notify_t::method(this,&impl_t::handleGone),l,pic::f_string_t::method(this,&impl_t::handleWinch),ck,rt);
+    scaffold_ = new pia::scaffold_gui_t(pic::notify_t::method(this,&impl_t::handleService), pic::notify_t::method(this,&impl_t::handleGone),l,pic::f_string_t::method(this,&impl_t::handleWinch),ck,rt);
 }
 
 ejuce::Application::impl_t::~impl_t()
@@ -79,9 +79,9 @@ pia::scaffold_gui_t *ejuce::Application::scaffold()
     return messages_->scaffold_;
 }
 
-void ejuce::Application::initialise (const juce::String& commandLine,const char *user,const pic::f_string_t &l,bool ck,bool rt)
+void ejuce::Application::initialise (const juce::String& commandLine,const pic::f_string_t &l,bool ck,bool rt)
 {
-    messages_ = new impl_t(this,user,l,ck,rt);
+    messages_ = new impl_t(this,l,ck,rt);
 }
 
 void ejuce::Application::shutdown()

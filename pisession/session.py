@@ -63,8 +63,8 @@ def run_session(session,user=None,mt=1,name='ctx',logger=None,clock=True,rt=True
     def ctxdun(status):
         context.release()
 
-    scaffold = piagent.scaffold_mt(u,mt,utils.stringify(logfunc),utils.stringify(None),clock,rt)
-    context = scaffold.context(utils.statusify(ctxdun),utils.stringify(logfunc),name)
+    scaffold = piagent.scaffold_mt(mt,utils.stringify(logfunc),utils.stringify(None),clock,rt)
+    context = scaffold.context(u,utils.statusify(ctxdun),utils.stringify(logfunc),name)
     stdio = (sys.stdout,sys.stderr)
     x = None
 

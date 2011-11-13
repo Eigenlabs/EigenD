@@ -44,6 +44,7 @@ class Domain:
 
     def __init__(self,hints=()):
         self.hints = hints
+        self.control = None
 
     def __cmp__(self,other):
         if self is other:
@@ -124,6 +125,10 @@ class BoundedInt(Domain):
 
         biginc=self.hint('biginc')
         self.biginc = biginc[0] if biginc is not None else 10
+
+        control=self.hint('control')
+        self.control = control[0] if control is not None else 'updown'
+
     def normalizer(self):
         return piw.bint_normalizer(self.min,self.max,self.rest)
     def denormalizer(self):
@@ -157,6 +162,10 @@ class Enum(Domain):
         self.values.sort()
         self.min = self.values[0]
         self.max = self.values[-1]
+
+        control=self.hint('control')
+        self.control = control[0] if control is not None else 'updown'
+
     def normalizer(self):
         return piw.bint_normalizer(self.min,self.max,self.min)
     def denormalizer(self):
@@ -241,6 +250,9 @@ class BoundedFloat(Domain):
         biginc = self.hint('biginc')
         self.biginc = biginc[0] if biginc is not None else 10*self.inc
 
+        control=self.hint('control')
+        self.control = control[0] if control is not None else 'updown'
+
     def normalizer(self):
         return piw.bfloat_normalizer(self.min,self.max,self.rest)
     def denormalizer(self):
@@ -307,6 +319,10 @@ class BoundedIntOrNull(BoundedInt):
         return None
 
 class Bool(Domain):
+    def __init__(self,hints=()):
+        Domain.__init__(self,hints)
+        control=self.hint('control')
+        self.control = control[0] if control is not None else 'toggle'
     def normalizer(self):
         return piw.bool_normalizer()
     def denormalizer(self):
@@ -330,6 +346,10 @@ class Bool(Domain):
     def down_by(self,val,inc): return not val
 
 class Trigger(Domain):
+    def __init__(self,hints=()):
+        Domain.__init__(self,hints)
+        control=self.hint('control')
+        self.control = control[0] if control is not None else 'trigger'
     def normalizer(self):
         return piw.bool_normalizer()
     def denormalizer(self):
@@ -354,6 +374,8 @@ class String(Domain):
     def __init__(self,hints=()):
         Domain.__init__(self,hints)
         self.__choices = self.hint('choices')
+        control=self.hint('control')
+        self.control = control[0] if control is not None else 'selector'
     def normalizer(self):
         return piw.string_normalizer()
     def denormalizer(self):
@@ -403,7 +425,10 @@ class Null(Domain):
     def down_by(self,val,inc): return None
 
 class Aniso(Domain):
-
+    def __init__(self,hints=()):
+        Domain.__init__(self,hints)
+        control=self.hint('control')
+        self.control = control[0] if control is not None else None
     def data2value(self,d):
         return d
     def value2data(self,v,t=0L):

@@ -539,7 +539,7 @@ class Agent(agent.Agent):
     def library_deleted(self,c):
         self[4].update()
 
-    def agent_presave(self,tag):
+    def agent_presave(self,filename):
         self.library.save()
 
     def rpc_resolve_ideal(self,arg):

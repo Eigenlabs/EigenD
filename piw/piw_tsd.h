@@ -73,6 +73,19 @@ namespace piw
 
     PIW_DECLSPEC_FUNC(std::string) tsd_user();
 
+    class PIW_DECLSPEC_CLASS tsd_subcontext_t: public pic::nocopy_t
+    {
+        public:
+            tsd_subcontext_t(bool,const char *,const char *);
+            ~tsd_subcontext_t();
+            void kill();
+            void install();
+            void clear();
+            bct_entity_t entity() { return entity_; }
+        private:
+            bct_entity_t entity_;
+    };
+
     class PIW_DECLSPEC_CLASS tsd_snapshot_t: public pic::nocopy_t
     {
         public:

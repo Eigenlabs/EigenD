@@ -822,13 +822,15 @@ class DatabaseProxy(proxy.AtomProxy):
 
     def __init__(self,database,parent = None):
         proxy.AtomProxy.__init__(self)
-
         self.database = database
         self.parent = parent
 
         self.__rules = None
         self.__changed = False
         self.__timestamp = 0
+
+    def relative_id(self):
+        return self.database.unqualify(self.id())
         
     def set_timestamp(self,ts):
         self.__timestamp = ts
@@ -837,7 +839,7 @@ class DatabaseProxy(proxy.AtomProxy):
         return self.__timestamp
 
     def parent_id(self):
-        return self.parent.id() if self.parent else None
+        return self.parent.relative_id() if self.parent else None
 
     def root(self):
         return self.parent.root() if self.parent else self
@@ -858,7 +860,7 @@ class DatabaseProxy(proxy.AtomProxy):
         if 0 == len(self.__rules):
             self.__rules = None
 
-        myid = self.id()
+        myid = self.relative_id()
 
         if verbs is not None:
             self.database.get_verbcache().set_verbs(myid,verbs)
@@ -873,22 +875,23 @@ class DatabaseProxy(proxy.AtomProxy):
         utils.safe(self.database.object_added,self)
 
         #print 'node_ready',self.id(),'protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
-        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.id()):
+        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.relative_id()):
             self.root().__timestamp = piw.tsd_time()
             self.database.set_timestamp(self.root().__timestamp)
+
 
 
     def node_changed(self,parts):
         self.root().__changed = True
         
-        #print 'node_changed protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
-        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.id()):
+        #print 'node_changed protocols=',self.database.get_propcache('protocol').get_valueset(self.relative_id())
+        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.relative_id()):
             self.root().__timestamp = piw.tsd_time()
             self.database.set_timestamp(self.root().__timestamp)
         
         newrules,newprops,newverbs = self.database.make_rules(self,False,parts)
 
-        myid = self.id()
+        myid = self.relative_id()
         
         if newverbs is not None:
             self.database.get_verbcache().set_verbs(myid,newverbs)
@@ -922,14 +925,14 @@ class DatabaseProxy(proxy.AtomProxy):
         self.root().__changed = True
 
         #print 'node_removed protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
-        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.id()):
+        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.relative_id()):
             self.root().__timestamp = piw.tsd_time()
             self.database.set_timestamp(self.root().__timestamp)
         
         #if self.root()==self:
         #    print 'node_removed ',self.id()
 
-        myid = self.id()
+        myid = self.relative_id()
 
         self.database.get_verbcache().retract_verbs(myid)
 
@@ -1034,6 +1037,14 @@ class Database(logic.Engine):
     def get_timestamp(self):
         return self.__timestamp
 
+    def qualify(self,id):
+        qid = self.__index.qualify(id)
+        return qid
+
+    def unqualify(self,id):
+        uid = self.__index.unqualify(id)
+        return uid
+
     def update_all_agents(self):
         new_timstamp = piw.tsd_time()
         self.__timestamp = new_timstamp
@@ -1046,12 +1057,9 @@ class Database(logic.Engine):
             for ap in self.__index.members():
                 ats = ap.get_timestamp()
                 if ats > since_time:
-                    #print 'change: database time=',ats,' > stage server time=',since_time
-                    #master = self.find_joined_master(ap.id)
-                    #print ap.id(), 'master=',master,'slaves=',self.find_joined_slaves(ap.id)
-                    agents += [ap.id()]
+                    agents += [ap.relative_id()]
                 else:
-                    agent_slaves = self.find_joined_slaves(ap.id())
+                    agent_slaves = self.find_joined_slaves(ap.relative_id())
                     # if any subsystem has updated then add the agent to the change list
                     for slave in agent_slaves:
                         item = self.find_item(slave)
@@ -1059,7 +1067,7 @@ class Database(logic.Engine):
                             sts = item.get_timestamp()
                             #print slave,sts,since_time
                             if sts > since_time:
-                                agents += [ap.id()]
+                                agents += [ap.relative_id()]
                                 break
             return agents
         else:
@@ -1239,7 +1247,7 @@ class Database(logic.Engine):
         ids = []
 
         for t in terms:
-            if logic.is_pred_arity(t,'conn',4,4):
+            if logic.is_pred_arity(t,'conn',5,5):
                 ids.append((t.args[2],t.args[0],t.args[3]))
 
         return ids
@@ -1248,7 +1256,7 @@ class Database(logic.Engine):
         rules = {}
         props = {}
 
-        id = ap.id()
+        id = ap.relative_id()
         pid = ap.parent_id()
         desc = False
         cdesc = False
@@ -1414,9 +1422,9 @@ class Database(logic.Engine):
             self.__index.close_index()
             self.__index=None
 
-    def sync(self, *args):
+    def sync(self, *args,**kwds):
         if self.__index:
-            return self.__index.sync(*args)
+            return self.__index.sync(*args,**kwds)
         return async.success()
 
     def classify(self,word):
@@ -1582,10 +1590,10 @@ class Database(logic.Engine):
         obsflag = 'obs' in p
         osflag = 'os' in p
         if obsflag or osflag:
-            self.__ccache.add_master(proxy.id(),osflag,obsflag)
+            self.__ccache.add_master(proxy.relative_id(),osflag,obsflag)
 
     def object_removed(self,proxy):
-        id=proxy.id()
+        id=proxy.relative_id()
         self.__ccache.remove_master(id)
         self.__ccache.connect(id,paths.id2server(id),[])
 

@@ -163,13 +163,25 @@ class VectorPolicyImpl(policy.ConnectablePolicyImpl):
         self.__input = input
         self.__signal = signal
         self.__callback = callback
+        self.__ctrl = None
         policy.ConnectablePolicyImpl.__init__(self,atom,data_domain,init,clocked,node.Server(transient=transient),auto_slot)
 
-    def create_controller(self):
-        return policy.FunctorController(self.__input.clock_domain)
+    def prepare_plumber(self,plumber):
+        if plumber.connect_static():
+            if self.__ctrl is None:
+                self.__ctrl = policy.FunctorController(self.__input.clock_domain)
+            self.__ctrl.prepare(plumber)
+        else:
+            plumber.prepare(self.__input.correlator,self.__stream_policy)
 
-    def create_plumber(self,init,address,filter,slot,clocked):
-        return policy.Plumber(self.__input.correlator,self.__signal,slot,-1,policy.Plumber.input_input,self.__stream_policy,address,filter,clocked,self.__callback)
+    def create_plumber(self,init,config):
+        config.signal=self.__signal
+        config.callback=self.__callback
+        return policy.Plumber(self,config)
+
+    def destroy_plumber(self,term,plumber):
+        if term:
+            self.__ctrl = None
 
 class LatchPolicyImpl(policy.ConnectablePolicyImpl):
     def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,clocked,callback):
@@ -177,19 +189,34 @@ class LatchPolicyImpl(policy.ConnectablePolicyImpl):
         self.__input = input
         self.__signal = signal
         self.__callback = callback
+        self.__ctrl = None
         policy.ConnectablePolicyImpl.__init__(self,atom,data_domain,init,clocked,node.Server(transient=transient),False)
 
     def __change(self,d):
         v = self.get_domain().data2value(d)
         self.change_value(v,d.time(),True)
 
-    def create_controller(self):
-        f=piw.slowchange(utils.changify(self.__change))
-        return policy.FunctorController(self.__input.clock_domain,functor=f)
+    def prepare_plumber(self,plumber):
+        if plumber.connect_static():
+            if self.__ctrl is None:
+                f=piw.slowchange(utils.changify(self.__change))
+                self.__ctrl = policy.FunctorController(self.__input.clock_domain,functor=f)
+            self.__ctrl.prepare(plumber)
+        else:
+            plumber.prepare(self.__input.correlator,self.__stream_policy)
 
-    def create_plumber(self,init,address,filter,slot,clocked):
-        assert clocked
-        return policy.Plumber(self.__input.correlator,self.__signal,slot,1,policy.Plumber.input_latch,self.__stream_policy,address,filter,clocked,self.__callback)
+    def create_plumber(self,init,config):
+        assert config.clocked
+        config.clocked=True
+        config.signal=self.__signal
+        config.priority=1
+        config.type=policy.Plumber.input_latch
+        config.callback=self.__callback
+        return policy.Plumber(self,config)
+
+    def destroy_plumber(self,term,plumber):
+        if term:
+            self.__ctrl = None
 
 class LocalPolicyImpl(policy.ConnectablePolicyImpl):
     def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,clocked,callback):
@@ -198,6 +225,7 @@ class LocalPolicyImpl(policy.ConnectablePolicyImpl):
         self.__signal = signal
         self.__static_data = FastSender()
         self.__callback = callback
+        self.__ctrl = None
         policy.ConnectablePolicyImpl.__init__(self,atom,data_domain,init,clocked,node.Server(transient=transient),False)
         self.data_node().set_change_handler(self.__change)
         self.__input.correlator.plumb_input(self.__signal,1,piw.pathnull(0),-1,False,self.__static_data,self.__stream_policy.create_converter(False),piw.null_filter())
@@ -220,18 +248,28 @@ class LocalPolicyImpl(policy.ConnectablePolicyImpl):
         self.__input.correlator.unplumb_input(self.__signal,1,piw.pathnull(0),-1)
 
     def destroy_plumber(self,term,plumber):
-        if term and not self.closed():
-            self.__input.correlator.plumb_input(self.__signal,1,piw.pathnull(0),-1,False,self.__static_data,self.__stream_policy.create_converter(False),piw.null_filter())
+        if term:
+            self.__ctrl = None
+            if not self.closed():
+                self.__input.correlator.plumb_input(self.__signal,1,piw.pathnull(0),-1,False,self.__static_data,self.__stream_policy.create_converter(False),piw.null_filter())
 
-    def create_controller(self):
-        f=piw.slowchange(utils.changify(self.__change))
-        return policy.FunctorController(self.__input.clock_domain,functor=f)
+    def prepare_plumber(self,plumber):
+        if plumber.connect_static():
+            if self.__ctrl is None:
+                f=piw.slowchange(utils.changify(self.__change))
+                self.__ctrl = policy.FunctorController(self.__input.clock_domain,functor=f)
+            self.__ctrl.prepare(plumber)
+        else:
+            plumber.prepare(self.__input.correlator,self.__stream_policy)
 
-    def create_plumber(self,init,address,filter,slot,clocked):
-        assert clocked
+    def create_plumber(self,init,config):
+        assert config.clocked
         if init:
             self.__input.correlator.unplumb_input(self.__signal,1,piw.pathnull(0),-1)
-        return policy.Plumber(self.__input.correlator,self.__signal,slot,-1,policy.Plumber.input_input,self.__stream_policy,address,filter,True,self.__callback)
+        config.clocked=True
+        config.signal=self.__signal
+        config.callback=self.__callback
+        return policy.Plumber(self,config)
 
 class LingerPolicyImpl(policy.ConnectablePolicyImpl):
     def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,clocked,callback):
@@ -240,6 +278,7 @@ class LingerPolicyImpl(policy.ConnectablePolicyImpl):
         self.__signal = signal
         self.__static_data = FastSender()
         self.__callback = callback
+        self.__ctrl = None
         policy.ConnectablePolicyImpl.__init__(self,atom,data_domain,init,clocked,node.Server(transient=transient),False)
         self.data_node().set_change_handler(self.__change)
         self.__input.correlator.plumb_input(self.__signal,255,piw.pathnull(0),10,policy.Plumber.input_linger,self.__static_data,self.__stream_policy.create_converter(False),piw.null_filter())
@@ -262,15 +301,26 @@ class LingerPolicyImpl(policy.ConnectablePolicyImpl):
         self.__input.correlator.unplumb_input(self.__signal,255,piw.pathnull(0),10)
 
     def destroy_plumber(self,term,plumber):
-        pass
+        if term:
+            self.__ctrl = None
 
-    def create_controller(self):
-        f=piw.slowchange(utils.changify(self.__change))
-        return policy.FunctorController(self.__input.clock_domain,functor=f)
+    def prepare_plumber(self,plumber):
+        if plumber.connect_static():
+            if self.__ctrl is None:
+                f=piw.slowchange(utils.changify(self.__change))
+                self.__ctrl = policy.FunctorController(self.__input.clock_domain,functor=f)
+            self.__ctrl.prepare(plumber)
+        else:
+            plumber.prepare(self.__input.correlator,self.__stream_policy)
 
-    def create_plumber(self,init,address,filter,slot,clocked):
-        assert clocked
-        return policy.Plumber(self.__input.correlator,self.__signal,slot,1,policy.Plumber.input_linger,self.__stream_policy,address,filter,True,self.__callback)
+    def create_plumber(self,init,config):
+        assert config.clocked
+        config.clocked=True
+        config.signal=self.__signal
+        config.priority=1
+        config.type=policy.Plumber.input_linger
+        config.callback=self.__callback
+        return policy.Plumber(self,config)
 
 class MergePolicyImpl(policy.ConnectablePolicyImpl):
     protocols = 'input'
@@ -281,6 +331,7 @@ class MergePolicyImpl(policy.ConnectablePolicyImpl):
         self.__signal = signal
         self.__callback = callback
         self.__static_data = FastSender()
+        self.__ctrl = None
         policy.ConnectablePolicyImpl.__init__(self,atom,data_domain,init,clocked,node.Server(transient=transient),False)
         self.data_node().set_change_handler(self.__change)
         self.__input.correlator.plumb_input(self.__signal,255,piw.pathnull(0),10,policy.Plumber.input_merge,self.__static_data,self.__stream_policy.create_converter(False),piw.null_filter())
@@ -303,15 +354,26 @@ class MergePolicyImpl(policy.ConnectablePolicyImpl):
         policy.ConnectablePolicyImpl.close(self)
 
     def destroy_plumber(self,term,plumber):
-        pass
+        if term:
+            self.__ctrl = None
 
-    def create_controller(self):
-        f=piw.slowchange(utils.changify(self.__change))
-        return policy.FunctorController(self.__input.clock_domain,functor=f)
+    def prepare_plumber(self,plumber):
+        if plumber.connect_static():
+            if self.__ctrl is None:
+                f=piw.slowchange(utils.changify(self.__change))
+                self.__ctrl = policy.FunctorController(self.__input.clock_domain,functor=f)
+            self.__ctrl.prepare(plumber)
+        else:
+            plumber.prepare(self.__input.correlator,self.__stream_policy)
 
-    def create_plumber(self,init,address,filter,slot,clocked):
-        assert clocked
-        return policy.Plumber(self.__input.correlator,self.__signal,slot,1,policy.Plumber.input_merge,self.__stream_policy,address,filter,True,self.__callback)
+    def create_plumber(self,init,config):
+        assert config.clocked
+        config.clocked=True
+        config.signal=self.__signal
+        config.priority=1
+        config.type=policy.Plumber.input_merge
+        config.callback=self.__callback
+        return policy.Plumber(self,config)
 
 class MergeNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
     protocols = 'input nostage'
@@ -321,6 +383,7 @@ class MergeNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
         self.__input = input
         self.__signal = signal
         self.__callback = callback
+        self.__ctrl = None
         policy.ConnectablePolicyImpl.__init__(self,atom,data_domain,init,clocked,node.Server(transient=transient),False)
         self.data_node().set_change_handler(self.__change)
 
@@ -341,15 +404,26 @@ class MergeNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
         policy.ConnectablePolicyImpl.close(self)
 
     def destroy_plumber(self,term,plumber):
-        pass
+        if term:
+            self.__ctrl = None
 
-    def create_controller(self):
-        f=piw.slowchange(utils.changify(self.__change))
-        return policy.FunctorController(self.__input.clock_domain,functor=f)
+    def prepare_plumber(self,plumber):
+        if plumber.connect_static():
+            if self.__ctrl is None:
+                f=piw.slowchange(utils.changify(self.__change))
+                self.__ctrl = policy.FunctorController(self.__input.clock_domain,functor=f)
+            self.__ctrl.prepare(plumber)
+        else:
+            plumber.prepare(self.__input.correlator,self.__stream_policy)
 
-    def create_plumber(self,init,address,filter,slot,clocked):
-        assert clocked
-        return policy.Plumber(self.__input.correlator,self.__signal,slot,1,policy.Plumber.input_merge,self.__stream_policy,address,filter,True,self.__callback)
+    def create_plumber(self,init,config):
+        assert config.clocked
+        config.clocked=True
+        config.signal=self.__signal
+        config.priority=1
+        config.type=policy.Plumber.input_merge
+        config.callback=self.__callback
+        return policy.Plumber(self,config)
 
 class PlumbingController:
     def __init__(self,corr,sig,pol):
@@ -357,11 +431,8 @@ class PlumbingController:
         self.__sig = sig
         self.__pol = pol
 
-    def create_plumber(self,address,filter,slot):
-        return policy.Plumber(self.__correlator,self.__sig,slot,-1,policy.Plumber.input_input,self.__pol,address,filter,True,None)
-
-    def disconnect(self):
-        pass
+    def prepare(self,plumber):
+        plumber.prepare(self.__correlator,self.__pol)
 
 class ScalarNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
     protocols = 'input nostage'
@@ -370,6 +441,7 @@ class ScalarNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
         self.__stream_policy = stream_policy
         self.__input = input
         self.__signal = signal
+        self.__ctrl = None
         policy.ConnectablePolicyImpl.__init__(self,atom,data_domain,init,True,node.Server(transient=transient),False)
         self.data_node().set_change_handler(self.__change)
 
@@ -377,16 +449,27 @@ class ScalarNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
         v = self.get_domain().data2value(d)
         self.change_value(v)
 
-    def create_controller(self):
-        return PlumbingController(self.__input.correlator,self.__signal,self.__stream_policy)
+    def destroy_plumber(self,term,plumber):
+        if term:
+            self.__ctrl = None
+
+    def prepare_plumber(self,plumber):
+        if plumber.connect_static():
+            if self.__ctrl is None:
+                self.__ctrl = PlumbingController(self.__input.correlator,self.__signal,self.__stream_policy)
+            self.__ctrl.prepare(plumber)
+        else:
+            plumber.prepare(self.__input.correlator,self.__stream_policy)
 
     def close(self):
         self.data_node().clear_change_handler()
         policy.ConnectablePolicyImpl.close(self)
 
-    def create_plumber(self,init,address,filter,slot,clocked):
-        assert clocked
-        return policy.Plumber(self.__input.correlator,self.__signal,slot,-1,policy.Plumber.input_input,self.__stream_policy,address,filter,True,None)
+    def create_plumber(self,init,config):
+        assert config.clocked
+        config.clocked=True
+        config.signal=self.__signal
+        return policy.Plumber(self,config)
 
 class ScalarPolicyImpl(policy.ConnectablePolicyImpl):
     def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,merge=False):
@@ -395,6 +478,7 @@ class ScalarPolicyImpl(policy.ConnectablePolicyImpl):
         self.__input = input
         self.__signal = signal
         self.__static_data = FastSender()
+        self.__ctrl = None
         policy.ConnectablePolicyImpl.__init__(self,atom,data_domain,init,True,node.Server(transient=transient),False)
         self.data_node().set_change_handler(self.__change)
         self.__plumb_static()
@@ -429,18 +513,28 @@ class ScalarPolicyImpl(policy.ConnectablePolicyImpl):
         policy.ConnectablePolicyImpl.close(self)
 
     def destroy_plumber(self,term,plumber):
-        if term and not self.closed():
-            self.__plumb_static()
+        if term:
+            self.__ctrl = None
+            if not self.closed():
+                self.__plumb_static()
 
-    def create_controller(self):
-        f=piw.slowchange(utils.changify(self.__change))
-        return policy.FunctorController(self.__input.clock_domain,functor=f)
+    def prepare_plumber(self,plumber):
+        if plumber.connect_static():
+            if self.__ctrl is None:
+                f=piw.slowchange(utils.changify(self.__change))
+                self.__ctrl = policy.FunctorController(self.__input.clock_domain,functor=f)
+            self.__ctrl.prepare(plumber)
+        else:
+            plumber.prepare(self.__input.correlator,self.__stream_policy)
 
-    def create_plumber(self,init,address,filter,slot,clocked):
-        assert clocked
+
+    def create_plumber(self,init,config):
+        assert config.clocked
         if init:
             self.__unplumb_static()
-        return policy.Plumber(self.__input.correlator,self.__signal,slot,-1,policy.Plumber.input_input,self.__stream_policy,address,filter,True,None)
+        config.clocked=True
+        config.signal=self.__signal
+        return policy.Plumber(self,config)
 
 class NotifyScalarPolicyImpl(ScalarPolicyImpl):
     def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,merge=False,notify=None):

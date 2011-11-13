@@ -20,7 +20,7 @@
 
 import eigend_native
 
-from pi import agent,resource,utils
+from pi import agent,resource,utils,state
 from pibelcanto import translate
 from app_eigend2 import version
 from pisession import agentd,session,upgrade
@@ -33,6 +33,7 @@ import os
 import sys
 import time
 import threading
+import traceback
 import gc
 
 class EigenOpts:
@@ -91,45 +92,6 @@ class GarbageCollector(threading.Thread):
                 self.run_pass(p)
 
 
-class Agent(agentd.Agent):
-    def __init__(self,backend):
-        self.backend = backend
-        path = [os.path.join(picross.release_root_dir(),'plugins')]
-        agentd.Agent.__init__(self,1,path)
-        piw.tsd_server('<eigend1>',self)
-
-    def stop_gc(self):
-        self.backend.stop_gc()
-
-    def start_gc(self):
-        self.backend.start_gc()
-
-    def load_started(self,setup):
-        self.backend.load_started(setup)
-
-    def load_ended(self):
-        self.backend.load_ended()
-
-    def load_status(self,message,progress):
-        self.backend.load_status(message,progress)
-
-    def load_complete(self,errors=[]):
-        self.backend.load_ended()
-        if errors:
-            self.backend.alert_dialog('Load Problems','Load Problems','\n'.join(errors))
-
-    def create_context(self,name,callback,gui):
-        return self.backend.create_context(name,callback,gui)
-
-    def run_in_gui(self,func,*args,**kwds):
-        return self.backend.run_foreground_sync(func,*args,**kwds)
-
-    def setups_changed(self,file=None):
-        self.backend.setups_changed(file)
-
-    def set_default_setup(self,path):
-        self.backend.set_default_setup(path)
-
 
 class Backend(eigend_native.c2p):
     def __init__(self):
@@ -185,24 +147,19 @@ class Backend(eigend_native.c2p):
     def __load_started(self,setup):
         self.frontend.load_started(setup)
 
-    def __load_ended(self):
+    def __load_ended(self,errors):
         self.frontend.load_ended()
+        if errors:
+            self.frontent.alert_dialog('Load Problems','Load Problems','\n'.join(errors))
 
     def __set_latest_release(self,release):
         self.frontend.set_latest_release(release)
 
-    def __create_context(self,name,callback,gui):
-        logger = self.frontend.make_logger(name)
-        if gui:
-            return self.scaffold.context(utils.statusify(callback),logger,name)
-        else:
-            return self.scaffold.bgcontext(utils.statusify(callback),logger,name)
-
     def load_started(self,setup):
         self.run_foreground_async(self.__load_started,setup)
 
-    def load_ended(self):
-        self.run_foreground_async(self.__load_ended)
+    def load_ended(self,errors=[]):
+        self.run_foreground_async(self.__load_ended,errors)
 
     def __load_status(self):
         old = None
@@ -233,9 +190,6 @@ class Backend(eigend_native.c2p):
 
     def set_latest_release(self,release):
         self.run_foreground_async(self.__set_latest_release,release)
-
-    def create_context(self,name,callback,gui):
-        return self.run_foreground_sync(self.__create_context,name,callback,gui)
 
     def run_background(self,func,*args,**kwds):
         current_context = piw.tsd_snapshot()
@@ -323,31 +277,41 @@ class Backend(eigend_native.c2p):
 
         return agentd.get_default_setup()
 
+    def __create_context(self,name):
+        logger = self.frontend.make_logger(name)
+        return self.scaffold.bgcontext(piw.tsd_user(),utils.statusify(None),logger,name)
+
+    @utils.nothrow
     def initialise(self,frontend,scaffold,cookie,info):
-        self.scaffold = scaffold
-        self.frontend = frontend
-        self.frontend_context = piw.tsd_snapshot()
+        try:
+            self.scaffold = scaffold
+            self.frontend = frontend
+            self.frontend_context = piw.tsd_snapshot()
 
-        self.garbage_context = self.__create_context('eigend-garbage',None,False)
+            self.garbage_context = self.__create_context('eigend-garbage')
 
-        piw.tsd_thing(self.fgthing)
+            piw.tsd_thing(self.fgthing)
 
-        self.stdio = (sys.stdout,sys.stderr)
+            self.stdio = (sys.stdout,sys.stderr)
 
-        if not self.opts.noredirect:
-            sys.stdout = session.Logger()
-            sys.stderr = sys.stdout
+            if not self.opts.noredirect:
+                sys.stdout = session.Logger()
+                sys.stderr = sys.stdout
 
-        self.backend_context = self.__create_context('eigend-backend',None,False)
+            self.backend_context = self.__create_context('eigend-backend')
 
-        def bginit():
-            self.agent = Agent(self)
-            piw.tsd_thing(self.bgthing)
+            def bginit():
+                self.agent = agentd.Agent(self,1)
+                piw.tsd_thing(self.bgthing)
 
-        self.collector = GarbageCollector(self.scaffold,self.garbage_context)
-        self.collector.start()
-        self.bugfiler.start(cookie,info)
-        self.run_background(bginit)
+            self.collector = GarbageCollector(self.scaffold,self.garbage_context)
+            self.collector.start()
+            self.bugfiler.start(cookie,info)
+            self.run_background(bginit)
+        except:
+            print >>sys.__stdout__,'Initialisation failure'
+            traceback.print_exc(limit=None,file=sys.__stdout__)
+            raise
 
     def upgrade_setups(self):
         agentd.upgrade_default_setup()
@@ -416,6 +380,23 @@ class Backend(eigend_native.c2p):
         agentd.delete_user_slot(slot)
         self.setups_changed()
 
+    def save_rename(self,root,prefix,final):
+        root_d = os.path.dirname(root)
+        root_f = prefix+os.path.basename(root)
+        prefix_len = len(prefix)
+
+        for f in os.listdir(root_d):
+            if f.startswith(root_f):
+                f2 = os.path.join(root_d,f[prefix_len:])
+                try: os.unlink(f2)
+                except: pass
+                os.rename(os.path.join(root_d,f),f2)
+
+    def save_tmp(self,root,prefix):
+        root_d = os.path.dirname(root)
+        root_f = prefix+os.path.basename(root)
+        return os.path.join(root_d,root_f)
+
     def save_setup(self,slot,tag,desc,make_default):
         self.savcond.acquire()
         try:
@@ -427,11 +408,10 @@ class Backend(eigend_native.c2p):
             self.savcond.release()
 
         filename = agentd.user_setup_file(slot,tag)
-        filenamesave = filename+"~"
 
         def done(*args,**kwds):
             agentd.delete_user_slot(slot)
-            os.rename(filenamesave,filename)
+            self.save_rename(filename,'~',filename)
 
             if make_default:
                 agentd.set_default_setup(filename)
@@ -448,7 +428,7 @@ class Backend(eigend_native.c2p):
             print 'save complete',filename
             self.info_dialog('Setup Saved','Setup Saved',"The user setup '"+slot+"' was successfully saved")
 
-        r = self.run_background(self.agent.save_file,filenamesave,desc)
+        r = self.run_background(self.agent.save_file,self.save_tmp(filename,'~'),desc)
         r.setCallback(done,r).setErrback(done,r)
         return filename
 
@@ -462,10 +442,26 @@ class Backend(eigend_native.c2p):
         finally:
             self.savcond.release()
 
-        filename = agentd.user_setup_file(slot,tag)
-        self.agent.edit_file(orig,filename,desc)
+        path = agentd.user_setup_file(slot,tag)
 
-        self.setups_changed(filename)
+        if orig!=path:
+            orig_d = os.path.dirname(orig)
+            orig_f = os.path.basename(orig)
+            path_d = os.path.dirname(path)
+            path_f = os.path.basename(path)
+
+            for f in os.listdir(orig_d):
+                if f.startswith(orig_f):
+                    f2 = os.path.join(path_d,path_f+f[len(orig_f):])
+                    os.rename(os.path.join(orig_d,f),f2)
+
+        database = state.open_database(path,True)
+        trunk = database.get_trunk()
+        upgrade.set_description(trunk,desc)
+        trunk.save(piw.tsd_time(),'')
+        database.flush()
+
+        self.setups_changed(path)
 
         self.savcond.acquire()
         try:
@@ -474,10 +470,10 @@ class Backend(eigend_native.c2p):
         finally:
             self.savcond.release()
 
-        print 'editing complete',filename
+        print 'editing complete',path
         self.info_dialog('Setup Edited','Setup Edited',"The user setup '"+slot+"' was successfully edited")
 
-        return filename
+        return path
 
     def get_description(self,setup):
         return upgrade.get_description_from_file(setup)

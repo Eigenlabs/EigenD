@@ -39,8 +39,10 @@ namespace piw
             void set_change_handler(const pic::notify_t &f) { _fchange=f; }
             void clear_change_handler() { _fchange.clear(); }
 
-            inline piw::data_t index_name() { PIC_ASSERT(open()); return piw::data_t::from_given(bct_index_host_name(this)); }
-            inline piw::data_t member_name(int i) { PIC_ASSERT(open()); return piw::data_t::from_given(bct_index_host_member_name(this,i)); }
+            inline piw::data_t index_name() { PIC_ASSERT(open()); return piw::data_t::from_given(bct_index_host_name(this,0)); }
+            inline piw::data_t member_name(int i) { PIC_ASSERT(open()); return piw::data_t::from_given(bct_index_host_member_name(this,i,0)); }
+            inline piw::data_t index_name_fq() { PIC_ASSERT(open()); return piw::data_t::from_given(bct_index_host_name(this,1)); }
+            inline piw::data_t member_name_fq(int i) { PIC_ASSERT(open()); return piw::data_t::from_given(bct_index_host_member_name(this,i,1)); }
             inline int member_count() { PIC_ASSERT(open()); return bct_index_host_member_count(this); }
             inline unsigned short member_cookie(int i) { PIC_ASSERT(open()); return bct_index_host_member_cookie(this,i); }
             inline void member_died(const piw::data_t &n, unsigned short c) { PIC_ASSERT(open()); bct_index_host_member_died(this,n.lend(),c); }

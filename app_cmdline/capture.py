@@ -35,8 +35,8 @@ class Plumber:
         self.__filter = piw.signal_cnc_filter(0,0)
         self.__plumber = policy.Plumber(self.__correlator,1,1,-1,policy.Plumber.input_input,policy.AnisoStreamPolicy(),address,self.__filter,False,self.__connected)
 
-    def __connected(self,id,domain):
-        print 'connected to',id,domain
+    def __connected(self,plumber):
+        print 'connected to',plumber.id(),plumber.domain()
 
 def main():
     parser = optparse.OptionParser(usage=sys.argv[0]+' [options] tag=id ..')

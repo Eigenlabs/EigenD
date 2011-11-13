@@ -100,7 +100,7 @@ struct language::updown_t::uimpl_t
     static int init__(void *self_, void *arg_);
 
     void control_init();
-    void control_receive(unsigned index, const piw::data_nb_t &value);
+    void control_receive(unsigned, const piw::data_nb_t &);
     void control_term(unsigned long long t);
     static int reset(void *i, void *d);
     piw::data_nb_t adjusted(unsigned long long t);
@@ -176,7 +176,7 @@ struct language::toggle_t::timpl_t
     timpl_t(language::toggle_t *host,piw::data_t v);
 
     void control_init();
-    void control_receive(unsigned index, const piw::data_nb_t &value);
+    void control_receive(unsigned, const piw::data_nb_t &);
     static int reset(void *i, void *d);
 
     int gc_traverse(void *v, void *a) const
@@ -265,17 +265,17 @@ void language::updown_t::uimpl_t::activate(bool on, unsigned long long t)
     adjusted_=current_.get().as_denorm_float();
 }
 
-void language::updown_t::uimpl_t::control_receive(unsigned index, const piw::data_nb_t &d)
+void language::updown_t::uimpl_t::control_receive(unsigned s, const piw::data_nb_t &d)
 {
     float a=adjusted_;
 
-    switch(index)
+    switch(s)
     {
-        case 0:
+        case 1:
             activate(d.is_tuple() && 4 == d.as_tuplelen(), d.time());
             break;
 
-        case 2:
+        case 3:
             if(d.as_arraylen()==0) return;
             if(!on_) return;
             adjust(d);
@@ -329,9 +329,9 @@ piw::wire_t *language::xselector_t::simpl_t::wire_create(const piw::event_data_s
     return new swire_t(this,es);
 }
 
-void language::xselector_t::simpl_t::control_receive(unsigned index, const piw::data_nb_t &value)
+void language::xselector_t::simpl_t::control_receive(unsigned s, const piw::data_nb_t &value)
 {
-    if(index!=0)
+    if(s!=1)
         return;
     if(!value.is_tuple() || value.as_tuplelen() != 4)
         return;
@@ -483,11 +483,11 @@ int language::toggle_t::timpl_t::reset(void *i_, void *d_)
     return 0;
 }
 
-void language::toggle_t::timpl_t::control_receive(unsigned index, const piw::data_nb_t &d)
+void language::toggle_t::timpl_t::control_receive(unsigned s, const piw::data_nb_t &d)
 {
     if(!d.is_null())
     {
-        if(index==0 && d.is_tuple() && 4 == d.as_tuplelen())
+        if(s==1 && d.is_tuple() && 4 == d.as_tuplelen())
         {
             output_(piw::makebool_nb(!on_,d.time()));
         }
@@ -499,13 +499,13 @@ language::updown_t::~updown_t() { delete uimpl_; }
 void language::updown_t::control_init() { uimpl_->control_init(); }
 void language::updown_t::reset(const piw::data_t &v) { piw::tsd_fastcall(&uimpl_t::reset,(void *)uimpl_,(void *)v.give_copy(PIC_ALLOC_NB)); } 
 void language::updown_t::control_term(unsigned long long t) { xcontrolled_t::control_term(t); uimpl_->control_term(t); }
-void language::updown_t::control_receive(unsigned index, const piw::data_nb_t &d) { uimpl_->control_receive(index,d); }
+void language::updown_t::control_receive(unsigned s, const piw::data_nb_t &d) { uimpl_->control_receive(s,d); }
 int language::updown_t::gc_traverse(void *v,void *a) const { return uimpl_->gc_traverse(v,a); }
 int language::updown_t::gc_clear() { return uimpl_->gc_clear(); }
 
 language::xselector_t::xselector_t(const piw::change_nb_t &g,const piw::data_t &v): simpl_(new simpl_t(g,v,this)) {}
 language::xselector_t::~xselector_t() { delete simpl_; }
-void language::xselector_t::control_receive(unsigned index, const piw::data_nb_t &value) { simpl_->control_receive(index,value); }
+void language::xselector_t::control_receive(unsigned s, const piw::data_nb_t &value) { simpl_->control_receive(s,value); }
 void language::xselector_t::control_term(unsigned long long t) { xcontrolled_t::control_term(t); simpl_->control_term(t); }
 void language::xselector_t::set_choice(unsigned i, const piw::data_t &v) { simpl_->set_choice(i,v); }
 piw::cookie_t language::xselector_t::cookie() { return simpl_->cookie(); }
@@ -518,7 +518,7 @@ language::toggle_t::toggle_t(const piw::data_t &v): timpl_(new timpl_t(this,v)) 
 language::toggle_t::~toggle_t() { delete timpl_; }
 void language::toggle_t::control_init() { timpl_->control_init(); }
 void language::toggle_t::reset(const piw::data_t &v) { piw::tsd_fastcall(&timpl_t::reset,(void *)timpl_,(void *)v.give_copy(PIC_ALLOC_NB)); }
-void language::toggle_t::control_receive(unsigned index, const piw::data_nb_t &d) { timpl_->control_receive(index,d); }
+void language::toggle_t::control_receive(unsigned s, const piw::data_nb_t &d) { timpl_->control_receive(s,d); }
 int language::toggle_t::gc_traverse(void *v,void *a) const { return timpl_->gc_traverse(v,a); }
 int language::toggle_t::gc_clear() { return timpl_->gc_clear(); }
 

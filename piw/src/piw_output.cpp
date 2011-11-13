@@ -360,6 +360,32 @@ splitter_wire_t::splitter_wire_t(const piw::event_data_source_t &es, piw::splitt
     subscribe_and_ping(source_);
 }
 
+static int __add_signal_for_event(void *i_, void *s_)
+{
+    splitter_wire_t *i = (splitter_wire_t *)i_;
+    unsigned s = *(unsigned *)s_;
+
+    // if an event is running,  
+    piw::data_nb_t id = i->event_.get();
+    if(!id.is_null())
+    {
+        pic::flipflop_t<pic::lckvector_t<pic::ref_t<splitter_sig_t> >::lcktype>::guard_t g(i->children_);
+        const pic::lckvector_t<pic::ref_t<splitter_sig_t> >::lcktype &c(g.value());
+
+        if(c[s].isvalid())
+        {
+            piw::dataqueue_t q(i->current_data().signal(s));
+            if(q.isvalid())
+            {
+                bct_fastdata_t *f(c[s].ptr());
+                bct_fastdata_host_send_fast(f,id.lend(),q.lend());
+            }
+        }
+    }
+
+    return 0;
+}
+
 void splitter_wire_t::add_signal(unsigned s, piw::splitter_node_t *r)
 {
     if(children_.alternate().size() < s+1)
@@ -372,6 +398,8 @@ void splitter_wire_t::add_signal(unsigned s, piw::splitter_node_t *r)
     r->add_signal(voice_,sig.ptr());
 
     children_.exchange();
+
+    piw::tsd_fastcall(__add_signal_for_event,this,&s);
 }
 
 void splitter_wire_t::remove_signal(unsigned s, piw::splitter_node_t *r)

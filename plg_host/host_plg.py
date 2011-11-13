@@ -569,13 +569,13 @@ class Agent(agent.Agent):
         if key == 'ordinal':
             self.__set_title()
 
-    def agent_preload(self):
-        self.agent_presave(None)
+    def agent_preload(self,filename):
+        self.agent_presave(filename)
 
-    def agent_postload(self):
+    def agent_postload(self,filename):
         self.__state.apply_state()
 
-    def agent_presave(self,tag):
+    def agent_presave(self,filename):
         state = self.__host.get_state()
         bounds = self.__host.get_bounds()
         self.__state.save_state(state,bounds)

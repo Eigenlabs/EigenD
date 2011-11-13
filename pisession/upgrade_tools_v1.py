@@ -331,13 +331,12 @@ class Node:
             
 
 class Agent:
-    def __init__(self,name,version,cversion,module=None,zip=None,instance=None):
+    def __init__(self,name,version,cversion,module=None,instance=None):
         self.name = name
         self.version = version
         self.cversion = cversion
         self.module = module
         self.instance = instance
-        self.zip = zip
 
     def signature(self):
         return '%s:%s:%s' % (self.name,self.version,self.cversion)
@@ -348,7 +347,7 @@ class Registry(registry.Registry):
         registry.Registry.__init__(self)
         self.__instances = {}
         zd=os.path.join(picross.release_root_dir(),'plugins')
-        self.scan_path(zd, lambda n,v,c,z,m: Agent(n,v,c,module=m,zip=z))
+        self.scan_path(zd, lambda n,v,c,m: Agent(n,v,c,module=m))
         self.add_agentd()
 
     def add_module(self,name,version,cversion,module):

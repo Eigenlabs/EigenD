@@ -263,6 +263,9 @@ struct bct_entity_ops_s
 	void *(*entity_winctx)(bct_entity_t);
 	void (*entity_winch)(bct_entity_t, const char *);
 	bool (*entity_is_fast)(bct_entity_t);
+	bct_entity_t (*entity_new)(bct_entity_t,bool,const char *,const char *);
+	void (*entity_incref)(bct_entity_t);
+	void (*entity_decref)(bct_entity_t);
 };
 
 #define bct_entity_server(bc,n,s)               ((*(bc))->entity_server((bc),(n),(s)))
@@ -291,9 +294,12 @@ struct bct_entity_ops_s
 #define bct_entity_unique(bc)                   ((*(bc))->entity_unique((bc)))
 #define bct_entity_exit(bc)                     ((*(bc))->entity_exit((bc)))
 #define bct_entity_dump(bc)                     ((*(bc))->entity_dump((bc)))
+#define bct_entity_incref(bc)                   ((*(bc))->entity_incref((bc)))
+#define bct_entity_decref(bc)                   ((*(bc))->entity_decref((bc)))
 #define bct_entity_winctx(bc)                   ((*(bc))->entity_winctx((bc)))
 #define bct_entity_winch(bc,m)                  ((*(bc))->entity_winch((bc),(m)))
 #define bct_entity_is_fast(bc)                  ((*(bc))->entity_is_fast((bc)))
+#define bct_entity_new(bc,gui,u,t)              ((*(bc))->entity_new((bc),(gui),(u),(t)))
 
 /**
  * Host side RPC client operations
@@ -367,8 +373,8 @@ struct bct_rpcserver_s
 struct bct_index_host_ops_s
 {
     void (*index_close)(bct_index_host_ops_t **);
-    bct_data_t (*index_name)(bct_index_host_ops_t **);
-    bct_data_t (*index_member_name)(bct_index_host_ops_t **, int);
+    bct_data_t (*index_name)(bct_index_host_ops_t **,int);
+    bct_data_t (*index_member_name)(bct_index_host_ops_t **, int,int);
     int (*index_member_count)(bct_index_host_ops_t **);
     unsigned short (*index_member_cookie)(bct_index_host_ops_t **, int);
     void (*index_member_died)(bct_index_host_ops_t **, bct_data_t, unsigned short);
@@ -386,9 +392,9 @@ struct bct_index_plug_ops_s
 };
 
 #define bct_index_host_close(bc)            ((*((bc)->host_ops))->index_close)((bc)->host_ops)
-#define bct_index_host_name(bc)             ((*((bc)->host_ops))->index_name)((bc)->host_ops)
+#define bct_index_host_name(bc,fq)          ((*((bc)->host_ops))->index_name)((bc)->host_ops,(fq))
 #define bct_index_host_member_count(bc)     ((*((bc)->host_ops))->index_member_count)((bc)->host_ops)
-#define bct_index_host_member_name(bc,i)    ((*((bc)->host_ops))->index_member_name)((bc)->host_ops,(i))
+#define bct_index_host_member_name(bc,i,fq) ((*((bc)->host_ops))->index_member_name)((bc)->host_ops,(i),(fq))
 #define bct_index_host_member_cookie(bc,i)  ((*((bc)->host_ops))->index_member_cookie)((bc)->host_ops,(i))
 #define bct_index_host_member_died(bc,n,c)  ((*((bc)->host_ops))->index_member_died)((bc)->host_ops,(n),(c))
 
@@ -410,7 +416,7 @@ struct bct_index_s
 struct bct_server_host_ops_s
 {
     void (*server_host_close)(bct_server_host_ops_t **);
-    bct_data_t (*server_host_servername)(bct_server_host_ops_t **);
+    bct_data_t (*server_host_servername)(bct_server_host_ops_t **,int);
     bct_data_t (*server_host_path)(bct_server_host_ops_t **);
     int (*server_host_child_add)(bct_server_host_ops_t **, unsigned char, bct_server_t *);
     int (*server_host_shutdown)(bct_server_host_ops_t **);
@@ -438,7 +444,7 @@ struct bct_server_s
 };
 
 #define bct_server_host_close(bc)               ((*((bc)->host_ops))->server_host_close)((bc)->host_ops)
-#define bct_server_host_servername(bc)          ((*((bc)->host_ops))->server_host_servername)((bc)->host_ops)
+#define bct_server_host_servername(bc,fq)       ((*((bc)->host_ops))->server_host_servername)((bc)->host_ops,(fq))
 #define bct_server_host_path(bc)                ((*((bc)->host_ops))->server_host_path)((bc)->host_ops)
 #define bct_server_host_child_add(bc,n,c)       ((*((bc)->host_ops))->server_host_child_add)((bc)->host_ops,(n),(c))
 #define bct_server_host_shutdown(bc)            ((*((bc)->host_ops))->server_host_shutdown)((bc)->host_ops)
@@ -457,7 +463,7 @@ struct bct_server_s
 struct bct_client_host_ops_s
 {
     void (*client_host_close)(bct_client_host_ops_t **);
-    bct_data_t (*client_host_server_name)(bct_client_host_ops_t **);
+    bct_data_t (*client_host_server_name)(bct_client_host_ops_t **,int);
     bct_data_t (*client_host_path)(bct_client_host_ops_t **);
     int (*client_host_child_add)(bct_client_host_ops_t **, const unsigned char *, unsigned, bct_client_t *);
     int (*client_host_child_remove)(bct_client_host_ops_t **, const unsigned char *, unsigned, bct_client_t *);
@@ -499,7 +505,7 @@ struct bct_client_s
 };
 
 #define bct_client_host_close(bc)               ((*((bc)->host_ops))->client_host_close)((bc)->host_ops)
-#define bct_client_host_server_name(bc)         ((*((bc)->host_ops))->client_host_server_name)((bc)->host_ops)
+#define bct_client_host_server_name(bc,fq)      ((*((bc)->host_ops))->client_host_server_name)((bc)->host_ops,(fq))
 #define bct_client_host_path(bc)                ((*((bc)->host_ops))->client_host_path)((bc)->host_ops)
 #define bct_client_host_current_slow(bc)        ((*((bc)->host_ops))->client_host_current_slow)((bc)->host_ops)
 #define bct_client_host_child_add(bc,o,l,c)     ((*((bc)->host_ops))->client_host_child_add)((bc)->host_ops,(o),(l),(c))

@@ -284,22 +284,21 @@ class Agent(atom.Atom):
         return delegate.retval()
 
     def rpc_preload(self,arg):
-        self.agent_preload()
+        return self.agent_preload(arg)
 
     def rpc_postload(self,arg):
-        self.agent_postload()
+        return self.agent_postload(arg)
 
     def rpc_presave(self,arg):
-        tag = action.unmarshal(arg)[0]
-        self.agent_presave(tag)
+        return self.agent_presave(arg)
 
-    def agent_preload(self):
+    def agent_preload(self,filename):
         pass
 
-    def agent_postload(self):
+    def agent_postload(self,filename):
         pass
 
-    def agent_presave(self,tag):
+    def agent_presave(self,filename):
         pass
 
     def __get_child(self,path):

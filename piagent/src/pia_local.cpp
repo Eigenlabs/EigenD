@@ -90,7 +90,7 @@ struct pia_lnode_t: pia_server_t
     unsigned server_fastflags() { return 0; }
 
     static void api_close(bct_server_host_ops_t **);
-    static bct_data_t api_servername(bct_server_host_ops_t **);
+    static bct_data_t api_servername(bct_server_host_ops_t **,int fq);
     static bct_data_t api_path(bct_server_host_ops_t **);
     static int api_child_add(bct_server_host_ops_t **,unsigned char, bct_server_t *);
     static int api_shutdown(bct_server_host_ops_t **);
@@ -151,7 +151,6 @@ struct pia_lroot_t: pia_buffer_t, pia_lnode_t, pic::element_t<>
     pic::ref_t<pia_linterlock_t> linterlock_;
     unsigned long sequence_;
     unsigned long old_tseq_;
-    pia_buffer_t *buffer_;
 };
 
 pia_lroot_t *pia_lnode_t::root()
@@ -412,14 +411,18 @@ void pia_lnode_t::job_open(void *n_, const pia_data_t & d)
     bct_server_plug_opened(n->_client,n->entity()->api());
 }
 
-bct_data_t pia_lnode_t::api_servername(bct_server_host_ops_t **s)
+bct_data_t pia_lnode_t::api_servername(bct_server_host_ops_t **s, int fqn)
 {
     pia_lnode_t *n = PIC_STRBASE(pia_lnode_t,s,_client_ops);
 
     try
     {
         pia_logguard_t guard(n->entity()->glue());
-        return n->addr().give_copy(n->entity()->glue()->allocator(), PIC_ALLOC_NORMAL);
+
+        if(!fqn)
+            return n->entity()->collapse_address(n->addr()).give();
+        else
+            return n->addr().give();
     }
     PIA_CATCHLOG_EREF(n->entity())
 
@@ -510,7 +513,7 @@ int pia_lnode_t::api_advertise(bct_server_host_ops_t **s, const char *i)
 
         if(n->isopen())
         {
-            pia_data_t id = n->entity()->glue()->allocate_address(i);
+            pia_data_t id = n->entity()->expand_address(i);
             if(!id) return PLG_STATUS_ADDR;
             n->glue()->advertise(id,n->root(),n->addr(), n->getcookie());
             return 0;
@@ -531,7 +534,7 @@ int pia_lnode_t::api_unadvertise(bct_server_host_ops_t **s, const char *i)
 
         if(n->isopen())
         {
-            pia_data_t id = n->entity()->glue()->allocate_address(i);
+            pia_data_t id = n->entity()->expand_address(i);
             if(!id) return PLG_STATUS_ADDR;
             n->glue()->unadvertise(id,n->root(),n->addr());
             return 0;

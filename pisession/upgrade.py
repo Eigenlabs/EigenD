@@ -70,28 +70,9 @@ def get_version(snap):
 
     return v
 
-def get_uid(snap):
-    a = snap.get_agent_address(255,'meta',False)
-
-    if not a.isvalid():
-        return '<agent>'
-
-    r = a.get_root()
-    c = map(ord,r.list_children())
-    u = r.get_child(1).get_data().as_string() if 1 in c else None
-
-    if not u: u='<eigend1>'
-    if not u.startswith('<'): u='<%s>' % u
-
-    return u
-
 def set_format(snap,fmt):
     a = snap.get_agent_address(255,'meta',True)
     a.get_root().get_child(6).set_data(piw.makelong(fmt,0))
-
-def set_uid(snap,uid):
-    a = snap.get_agent_address(255,'meta',True)
-    a.get_root().get_child(1).set_data(piw.makestring(uid,0))
 
 def set_version(snap,version):
     a = snap.get_agent_address(255,'meta',True)
@@ -292,7 +273,7 @@ def clr_tmp_setup():
         except:
             pass
 
-def prepare_file(srcfile,uid,version):
+def prepare_file(srcfile,version):
     dbfile = get_tmp_setup()
 
     if dbfile != srcfile:
@@ -303,10 +284,9 @@ def prepare_file(srcfile,uid,version):
 
     print srcfile,'version',snap.version()
 
-    srcuid = get_uid(snap)
     srcversion = get_version(snap)
 
-    print 'prepare:',srcversion,srcuid,'for',version,uid,'to',dbfile
+    print 'prepare:',srcversion,'for',version,'to',dbfile
 
     if srcversion != version:
         if not do_upgrade(snap):
@@ -314,19 +294,6 @@ def prepare_file(srcfile,uid,version):
         set_version(snap,version)
         snap.save(0,'upgraded to %s' % version)
         db.flush()
-
-    if srcuid and srcuid==uid:
-        return snap
-
-    print srcfile,'name adjustment',srcuid,uid
-
-    dstsnap = db.get_trunk()
-    map_snap(snap,srcuid,dstsnap,uid)
-    set_version(dstsnap,version)
-    set_uid(dstsnap,uid)
-    dstsnap.save(0,'renaming for %s->%s' % (srcuid,uid))
-    db.flush()
-    snap = dstsnap
 
     return snap
 
@@ -347,3 +314,12 @@ def get_setup_signature(snap,text=False):
         return upgrade_tools_v0.get_setup_signature(snap,text)
     else:
         return upgrade_tools_v1.get_setup_signature(snap,text)
+
+def split_setup(s):
+    split1 = s.split('~',1)
+
+    if len(split1) == 1:
+        return '',s.strip()
+
+    return split1[1].strip(),split1[0].strip()
+

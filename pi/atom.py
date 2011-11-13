@@ -688,18 +688,6 @@ class Atom(node.Server):
     def get_domain(self):
         return domain.traits(self.get_property_string('domain'))
 
-    def add_control(self,src):
-        self.add_property_termlist('control',src)
-
-    def set_controls(self,srcs):
-        self.set_property_string('control',srcs)
-
-    def clear_controls(self):
-        self.del_property('control')
-
-    def remove_control(self,src):
-        self.del_property_termlist('control',src)
-
     def add_connection(self,src):
         self.add_property_termlist('master',src)
 
@@ -729,12 +717,6 @@ class Atom(node.Server):
 
     def get_policy(self):
         return self.__policy
-
-    def rpc_control(self,v):
-        self.add_control(v)
-
-    def rpc_uncontrol(self,v):
-        self.remove_control(v)
 
 class Null(Atom):
     def __init__(self,**kwd):
@@ -927,7 +909,7 @@ class VerbContainer(Atom):
         self.add(event)
 
         if trigger:
-            c = logic.render_term(logic.make_term('conn',None,None,trigger,None))
+            c = logic.render_term(logic.make_term('conn',None,None,trigger,None,None))
             event.add_connection(c)
 
         return (event.id(),event.status)

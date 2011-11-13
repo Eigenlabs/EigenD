@@ -230,7 +230,7 @@ static int api_server(bct_entity_t e_, const char *n, bct_server_t *s)
     try
     {
         pia_mainguard_t guard(e->glue());
-        pia_data_t nd = e->glue()->allocate_address(n);
+        pia_data_t nd = e->expand_address(n);
         if(!nd) return PLG_STATUS_ADDR;
         e->glue()->create_server(e,nd,s);
         return 1;
@@ -242,10 +242,11 @@ static int api_server(bct_entity_t e_, const char *n, bct_server_t *s)
 static int api_client(bct_entity_t e_, const char *n, bct_client_t *s, int fast)
 {
     pia::context_t::impl_t *e = pia::context_t::impl_t::from_entity(e_);
+
     try
     {
         pia_mainguard_t guard(e->glue());
-        pia_data_t nd = e->glue()->allocate_address(n);
+        pia_data_t nd = e->expand_address(n);
         if(!nd) return PLG_STATUS_ADDR;
         e->glue()->create_client(e,nd,s,fast);
         return 1;
@@ -261,7 +262,7 @@ static int api_index(bct_entity_t e_, const char *n, bct_index_t *s)
     try
     {
         pia_mainguard_t guard(e->glue());
-        pia_data_t nd = e->glue()->allocate_address(n);
+        pia_data_t nd = e->expand_address(n);
         if(!nd) return PLG_STATUS_ADDR;
         e->glue()->create_index(e,nd,s);
         return 1;
@@ -434,7 +435,7 @@ static bct_data_t api_user(bct_entity_t e_)
     try
     {
         pia_logguard_t guard(e->glue());
-        return e->glue()->user().give();
+        return e->user().give();
     }
     PIA_CATCHLOG_EREF(e)
     return 0;
@@ -503,6 +504,46 @@ static bool api_is_fast(bct_entity_t e_)
     return false;
 }
 
+static void api_incref(bct_entity_t e_)
+{
+    pia::context_t::impl_t *e = pia::context_t::impl_t::from_entity(e_);
+
+    try
+    {
+        pia_mainguard_t guard(e->glue());
+        e->weak_inc();
+    }
+    PIA_CATCHLOG_EREF(e)
+}
+
+static void api_decref(bct_entity_t e_)
+{
+    pia::context_t::impl_t *e = pia::context_t::impl_t::from_entity(e_);
+
+    try
+    {
+        pia_mainguard_t guard(e->glue());
+        e->weak_dec();
+    }
+    PIA_CATCHLOG_EREF(e)
+}
+
+static bct_entity_t api_new(bct_entity_t e_, bool isgui, const char *user, const char *tag)
+{
+    pia::context_t::impl_t *e = pia::context_t::impl_t::from_entity(e_);
+
+    try
+    {
+        pia_mainguard_t guard(e->glue());
+        int grp;
+        pic::f_string_t logger = e->glue()->handle()->service_context(isgui,tag,&grp);
+        pia::context_t::impl_t *i = new pia::context_t::impl_t(e->glue(),user,grp,pic::status_t(),logger,tag,false);
+        return i->api();
+    }
+    PIA_CATCHLOG_EREF(e)
+    return 0;
+}
+
 static void api_dump(bct_entity_t e_)
 {
     pia::context_t::impl_t *e = pia::context_t::impl_t::from_entity(e_);
@@ -563,7 +604,7 @@ static int api_rpcserver(bct_entity_t e_, bct_rpcserver_t *rs, const char *id)
     try
     {
         pia_mainguard_t guard(e->glue());
-        pia_data_t nd = e->glue()->allocate_address(id);
+        pia_data_t nd = e->expand_address(id);
         if(!nd) return PLG_STATUS_ADDR;
         e->glue()->create_rpcserver( e, rs, nd);
         return 1;
@@ -580,7 +621,7 @@ static int api_rpcclient(bct_entity_t e_, bct_rpcclient_t *rc, const char *id, b
     try
     {
         pia_mainguard_t guard(e->glue());
-        pia_data_t nd = e->glue()->allocate_address(id);
+        pia_data_t nd = e->expand_address(id);
         if(!nd) return PLG_STATUS_ADDR;
         e->glue()->create_rpcclient( e, rc,nd,pia_data_t::from_lent(p),pia_data_t::from_lent(n),pia_data_t::from_lent(v),t);
         return 1;
@@ -636,7 +677,10 @@ bct_entity_ops_t pia::context_t::impl_t::dispatch__ =
     api_dump,
 	api_winctx,
     api_winch,
-    api_is_fast
+    api_is_fast,
+    api_new,
+    api_incref,
+    api_decref
 };
 
 void pia::context_t::impl_t::idle_callback(void *e_, const pia_data_t & d)
@@ -648,9 +692,9 @@ void pia::context_t::impl_t::idle_callback(void *e_, const pia_data_t & d)
 }
 
 
-pia::manager_t::manager_t(const char *u, pia::controller_t *c, pic::nballocator_t *a, network_t *n, const pic::f_string_t &log, const pic::f_string_t &winch,void *winctx)
+pia::manager_t::manager_t(pia::controller_t *c, pic::nballocator_t *a, network_t *n, const pic::f_string_t &log, const pic::f_string_t &winch,void *winctx)
 {
-    impl_=new pia::manager_t::impl_t(u,c,a,n,log,winch,winctx);
+    impl_=new pia::manager_t::impl_t(c,a,n,log,winch,winctx);
 }
 
 pia::manager_t::~manager_t()
@@ -820,35 +864,141 @@ pia_data_t pia::manager_t::impl_t::unique() const
     return allocate_cstring_nb(s.str().c_str());
 }
 
-pia_data_t pia::manager_t::impl_t::allocate_address(const char *addr)
-{
-    unsigned l = strlen(addr);
-
-    if(l<2) return pia_data_t();
-    if(addr[0]!='<' || addr[l-1]!='>') return pia_data_t();
-
-    return allocate_cstring_nb(addr);
-}
-
-pia_data_t pia::manager_t::impl_t::expand_address(const pia_data_t &addr)
+pia_data_t pia::context_t::impl_t::collapse_address_relative(const pia_data_t &addr, const pia_data_t &user)
 {
     PIC_ASSERT(addr.type()==BCTVTYPE_STRING);
 
     const char *a = addr.asstring();
     unsigned al = addr.asstringlen();
+    const char *acp;
 
-    if(al<3 || strchr(a,':'))
+    if(al<3 || !(acp=strchr(a,':')))
     {
         return addr;
     }
 
-    const char *u = user_.asstring();
-    unsigned ul = std::min(BCTLINK_GROUP_SIZE-(al+1),user_.asstringlen());
+    unsigned aul = (acp-a)-1;
+    unsigned aal = al-aul-3;
+
+    const char *u = user.asstring();
+    unsigned ul = user.asstringlen();
+    const char *ucp;
+
+    if(ul<3 || !(ucp=strchr(u,':')))
+    {
+        return addr;
+    }
+
+    unsigned uul = (ucp-u)-1;
+
+    if(aul!=uul || strncmp(u+1,a+1,uul))
+    {
+        return addr;
+    }
 
     float *v;
     unsigned char *dp;
 
-    pia_data_t d = allocate_host(PIC_ALLOC_NB,0,1,-1,0,BCTVTYPE_STRING,al-2+ul+1+2,&dp,1,&v);
+    pia_data_t d = glue()->allocate_host(PIC_ALLOC_NB,0,1,-1,0,BCTVTYPE_STRING,aal+2,&dp,1,&v);
+    *v=0;
+
+    dp[0]='<';
+    memcpy(dp+1,acp+1,aal);
+    dp[aal+1]='>';
+
+    return d;
+
+}
+pia_data_t pia::context_t::impl_t::collapse_address(const pia_data_t &addr)
+{
+    PIC_ASSERT(addr.type()==BCTVTYPE_STRING);
+
+    const char *a = addr.asstring();
+    unsigned al = addr.asstringlen();
+    const char *cp;
+
+    if(al<3 || !(cp=strchr(a,':')))
+    {
+        return addr;
+    }
+
+    unsigned aul = (cp-a)-1;
+    unsigned aal = al-aul-3;
+
+    const char *u = user().asstring();
+    unsigned ul = std::min(BCTLINK_GROUP_SIZE-(al+1),user().asstringlen());
+
+    if(aul!=ul || strncmp(u,a+1,ul))
+    {
+        return addr;
+    }
+
+    float *v;
+    unsigned char *dp;
+
+    pia_data_t d = glue()->allocate_host(PIC_ALLOC_NB,0,1,-1,0,BCTVTYPE_STRING,aal+2,&dp,1,&v);
+    *v=0;
+
+    dp[0]='<';
+    memcpy(dp+1,cp+1,aal);
+    dp[aal+1]='>';
+
+    return d;
+
+}
+
+pia_data_t pia::context_t::impl_t::expand_address_relative(const char *a,const pia_data_t &user)
+{
+    unsigned al = strlen(a);
+
+    if(al<3 || strchr(a,':'))
+    {
+        return glue()->allocate_cstring_nb(a);
+    }
+
+    const char *u = user.asstring();
+    unsigned ul = user.asstringlen();
+    const char *ucp;
+
+    if(ul<3 || !(ucp=strchr(u,':')))
+    {
+        return glue()->allocate_cstring_nb(a);
+    }
+
+    unsigned uul = (ucp-u)-1;
+
+    float *v;
+    unsigned char *dp;
+
+    pia_data_t d = glue()->allocate_host(PIC_ALLOC_NB,0,1,-1,0,BCTVTYPE_STRING,al-2+uul+1+2,&dp,1,&v);
+    *v=0;
+
+    dp[0]='<';
+    memcpy(dp+1,u+1,uul);
+    dp[ul+1]=':';
+    memcpy(dp+uul+1+1,a+1,al-2);
+    dp[1+ul+1+al-2]='>';
+
+    return d;
+
+}
+
+pia_data_t pia::context_t::impl_t::expand_address(const char *a)
+{
+    unsigned al = strlen(a);
+
+    if(al<3 || strchr(a,':'))
+    {
+        return glue()->allocate_cstring_nb(a);
+    }
+
+    const char *u = user().asstring();
+    unsigned ul = std::min(BCTLINK_GROUP_SIZE-(al+1),user().asstringlen());
+
+    float *v;
+    unsigned char *dp;
+
+    pia_data_t d = glue()->allocate_host(PIC_ALLOC_NB,0,1,-1,0,BCTVTYPE_STRING,al-2+ul+1+2,&dp,1,&v);
     *v=0;
 
     dp[0]='<';
@@ -1005,10 +1155,10 @@ void pia::manager_t::set_window_state(unsigned w, bool o)
     impl_->set_window_state(w,o);
 }
 
-pia::context_t pia::manager_t::context(int grp, const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
+pia::context_t pia::manager_t::context(int grp, const char *user, const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
 {
     pia_mainguard_t guard(impl_);
-    pia::context_t::impl_t *i = new pia::context_t::impl_t(impl_,grp,gone,log,tag,false);
+    pia::context_t::impl_t *i = new pia::context_t::impl_t(impl_,user,grp,gone,log,tag,false);
     return pia::context_t(i);
 }
 
@@ -1017,14 +1167,14 @@ static void fast_pinger(void *g_) { ((pia::manager_t::impl_t *)g_)->service_fast
 static void aux_pinger(void *g_) { ((pia::manager_t::impl_t *)g_)->service_aux(); }
 static void ctx_pinger(void *c_) { ((pia::context_t::impl_t *)c_)->service_ctx(); }
 
-pia::context_t::impl_t::impl_t(pia::manager_t::impl_t *g, int grp, const pic::status_t &gone, const pic::f_string_t &log, const char *t, bool strong): gone_(gone), log_(log), glue_(g), appq_(g->allocator(),ctx_pinger,this), queued_(0), killed_(false), exited_(false), group_(grp)
+pia::context_t::impl_t::impl_t(pia::manager_t::impl_t *g, const char *u, int grp, const pic::status_t &gone, const pic::f_string_t &log, const char *t, bool strong): gone_(gone), log_(log), glue_(g), appq_(g->allocator(),ctx_pinger,this), queued_(0), killed_(false), exited_(false), group_(grp)
 {
     ops_=&dispatch__;
     strong_=strong?1:0;
     weak_=1;
     cpoint_=pia_make_cpoint();
-
     tag_ = glue_->allocate_cstring(t?t:"");
+    user_ = glue_->allocate_cstring(u?u:"");
     g->context_add(this);
 }
 
@@ -1033,7 +1183,7 @@ pia::context_t::impl_t::~impl_t()
     cpoint_->disable();
 }
 
-pia::manager_t::impl_t::impl_t(const char *user, pia::controller_t *h, pic::nballocator_t *a, network_t *n, const pic::f_string_t &log, const pic::f_string_t &winch,void *winctx): handle_(h), seed_(pic_microtime()), network_(n), allocator_(a), auxq_(a,aux_pinger,this), fastq_(a,fast_pinger,this), mainq_(a,main_pinger,this),
+pia::manager_t::impl_t::impl_t(pia::controller_t *h, pic::nballocator_t *a, network_t *n, const pic::f_string_t &log, const pic::f_string_t &winch,void *winctx): handle_(h), seed_(pic_microtime()), network_(n), allocator_(a), auxq_(a,aux_pinger,this), fastq_(a,fast_pinger,this), mainq_(a,main_pinger,this),
     index_(this), clock_(this), rpc_(this), log_(log), auxflag_(0), auxbusy_(false), winctx_(winctx), winch_(winch), fast_lock_(true), fastactive_(1)
 {
     unsigned char *p = (unsigned char *)&chuff_;
@@ -1048,7 +1198,6 @@ pia::manager_t::impl_t::impl_t(const char *user, pia::controller_t *h, pic::nbal
     }
 
     chuff_ |= 0x800000000000ULL;
-    user_ = allocate_cstring(user);
     timer_count_=0;
 
     mainq_.timer(timer_cpoint_,timer_callback,this,1000);

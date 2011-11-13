@@ -19,7 +19,7 @@
 #
 
 import piw
-from pi import const,async,utils
+from pi import const,async,utils,paths
 
 class Monitor(piw.client):
     def __init__(self,index,name,real):
@@ -45,7 +45,7 @@ class Monitor(piw.client):
                 self.real.close_client()
             except:
                 pass
-        self.index.member_died(self.servername(),self.cookie(),self)
+        self.index.member_died(self.servername_fq(),self.cookie(),self)
         piw.client.close_client(self)
 
 class Index(piw.index):
@@ -105,16 +105,35 @@ class Index(piw.index):
         return c.real if c else None
 
     def member_died(self,name,cookie,client):
+        sname = self.unqualify(name.as_string())
+
         piw.index.member_died(self,name,cookie)
 
-        name = name.as_string()
-        c=self.__members.get(name)
+        c=self.__members.get(sname)
         if c is client:
             self.synced(client)
-            del self.__members[name]
+            del self.__members[sname]
+
+    def unqualify(self,a):
+        return paths.unqualify(a,self.__user)
+
+    def qualify(self,a):
+        return paths.qualify(a,self.__user)
+
+    def user(self):
+        return self.__user
 
     def index_opened(self):
         piw.index.index_opened(self)
+
+        a = self.index_name().as_string()
+        cp = a.find(':')
+
+        if cp < 0:
+            self.__user = piw.tsd_user()
+        else:
+            self.__user = a[1:cp]
+
         self.scan()
 
     def index_changed(self):
@@ -132,5 +151,5 @@ class Index(piw.index):
             c=self.__members.get(n)
             if c is None:
                 c=Monitor(self,n,self.__factory(n))
-                piw.tsd_client(n,c,self.__fast)
+                piw.tsd_client(self.qualify(n),c,self.__fast)
                 self.__members[n]=c

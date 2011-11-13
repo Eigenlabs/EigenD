@@ -68,7 +68,7 @@ struct cnode_t: pic::element_t<CNODE_CHILDREN>, pic::element_t<CNODE_RECEIVE>, p
     cnode_t(pia_server_t *s, const pia_ctx_t &e, cnode_t *p, bct_client_t *cl);
 
     static void api_close(bct_client_host_ops_t **);
-    static bct_data_t api_servername(bct_client_host_ops_t **);
+    static bct_data_t api_servername(bct_client_host_ops_t **,int fq);
     static bct_data_t api_path(bct_client_host_ops_t **);
     static int api_child_add(bct_client_host_ops_t **, const unsigned char *, unsigned, bct_client_t *);
     static int api_child_remove(bct_client_host_ops_t **, const unsigned char *, unsigned, bct_client_t *);
@@ -274,14 +274,18 @@ bct_data_t cnode_t::api_path(bct_client_host_ops_t  **co)
     return 0;
 }
 
-bct_data_t cnode_t::api_servername(bct_client_host_ops_t  **co)
+bct_data_t cnode_t::api_servername(bct_client_host_ops_t  **co, int fqn)
 {
     cnode_t *c = PIC_STRBASE(cnode_t,co,client_ops_);
 
     try
     {
         pia_logguard_t guard(c->entity_->glue());
-        return c->local_->global_->addr_.give_copy(c->entity_->glue()->allocator(), PIC_ALLOC_NORMAL);
+
+        if(!fqn)
+            return c->entity_->collapse_address(c->local_->global_->addr_).give();
+        else
+            return c->local_->global_->addr_.give();
     }
     PIA_CATCHLOG_EREF(c->entity_)
     return 0;

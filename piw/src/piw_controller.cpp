@@ -278,7 +278,7 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
     void filter(piw::ufilterenv_t *env, unsigned s, const piw::data_nb_t &d, const piw::data_nb_t &key)
     {
         xxcontrolled_t *c = get_controlled(key);
-        if(c) c->control_receive(s-1,d);
+        if(c) c->control_receive(s,d);
     }
 
     void term(piw::ufilterenv_t *env, unsigned long long t, const piw::data_nb_t &key)
@@ -764,9 +764,9 @@ int piw::controlled_t::__disable_direct(void *c_, void *_)
     return 0;
 }
 
-void piw::controlled_t::control_receive(unsigned index,const piw::data_nb_t &value)
+void piw::controlled_t::control_receive(unsigned s,const piw::data_nb_t &value)
 {
-    if(index!=0) return;
+    if(s!=1) return;
 
     if(enabled_)
         disable();
@@ -842,9 +842,10 @@ void piw::fasttrigger_t::control_term(unsigned long long t)
     }
 }
 
-void piw::fasttrigger_t::control_receive(unsigned index,const piw::data_nb_t &value)
+void piw::fasttrigger_t::control_receive(unsigned s,const piw::data_nb_t &value)
 {
-    if(index!=0) return;
+    if(s!=1) return;
+
     unsigned long long t = value.time();
     tsd_fastcall(__ping_direct,this,&t);
 }

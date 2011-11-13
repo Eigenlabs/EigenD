@@ -57,8 +57,7 @@ namespace
         bool cfilterfunc_process(piw::cfilterenv_t *env, unsigned long long from, unsigned long long to, unsigned long samplerate, unsigned buffersize)
         {
             float *f,*fs;
-            piw::data_nb_t buffer;
-            buffer = piw::makenorm_nb(to,buffersize,&f,&fs);
+            piw::data_nb_t buffer = piw::makenorm_nb(to,buffersize,&f,&fs);
             memset(f,0,buffersize*sizeof(float));
 
             piw::data_nb_t d;

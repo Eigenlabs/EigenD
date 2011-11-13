@@ -50,7 +50,7 @@ struct pia_timer_t;
 class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual public pic::lckobject_t
 {
     public:
-        impl_t(const char *u, pia::controller_t *h, pic::nballocator_t *a, pia::network_t *n, const pic::f_string_t &log, const pic::f_string_t &winch, void *winctx);
+        impl_t(pia::controller_t *h, pic::nballocator_t *a, pia::network_t *n, const pic::f_string_t &log, const pic::f_string_t &winch, void *winctx);
         ~impl_t();
 
         void kill(const pia_ctx_t &e);
@@ -85,8 +85,6 @@ class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual publi
         pia_data_t allocate_string(const char *s, unsigned sl,unsigned long long ts = 0ULL) const { return pia_data_t::allocate_string(allocator(),s,sl,ts); }
         pia_data_t allocate_bool(bool v,unsigned long long ts = 0ULL) const { return pia_data_t::allocate_bool(allocator(),v,ts); }
         pia_data_t allocate_cstring(const char *s, unsigned long long ts = 0ULL) const { return pia_data_t::allocate_cstring(allocator(),s,strlen(s),ts); }
-        pia_data_t allocate_address(const char *addr);
-        pia_data_t expand_address(const pia_data_t &addr);
         pia_data_t allocate_cstring_nb(const char *s, unsigned long long ts = 0ULL) const { return pia_data_t::allocate_cstring_nb(allocator(),s,strlen(s),ts); }
 
         pia_data_nb_t allocate_host_nb(unsigned long long ts, float u, float l, float r, unsigned t, unsigned dl, unsigned char **dp, unsigned vl, float **vp) const { return pia_data_nb_t::allocate_host(allocator(),ts,u,l,r,t,dl,dp,vl,vp); }
@@ -120,7 +118,6 @@ class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual publi
         void log(const char *msg);
         void winch(const char *msg);
         pia_data_t unique() const;
-        pia_data_t user() const { return user_; }
         void *winctx() const { return winctx_; }
 
         void *add_timer(void (*cb)(void *arg), void *arg, unsigned sec);
@@ -170,7 +167,6 @@ class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual publi
         pic_atomic_t auxflag_;
         bool auxbusy_;
         pia_cref_t cpoint_;
-        pia_data_t user_;
 
         pic::ilist_t<pia_timer_t> timers_;
         pia_cref_t timer_cpoint_;
@@ -239,13 +235,18 @@ class pia_mainguard_t: pia_logguard_t
 class pia::context_t::impl_t: pic::nocopy_t, public pic::element_t<>, virtual public pic::lckobject_t
 {
     public:
-        impl_t(pia::manager_t::impl_t *, int, const pic::status_t &, const pic::f_string_t &, const char *, bool);
+        impl_t(pia::manager_t::impl_t *, const char *user, int, const pic::status_t &, const pic::f_string_t &, const char *, bool);
         ~impl_t();
 
         void kill();
         const char *tag() const { return (const char *)(tag_.hostdata()); }
         pia::manager_t::impl_t *glue() { return glue_; }
+        pia_data_t user() { return user_; }
 
+        pia_data_t expand_address(const char *addr);
+        pia_data_t expand_address_relative(const char *addr, const pia_data_t &user);
+        pia_data_t collapse_address(const pia_data_t &addr);
+        pia_data_t collapse_address_relative(const pia_data_t &addr, const pia_data_t &user);
         unsigned weak_count() { return weak_; }
         unsigned strong_count() { return strong_; }
         void weak_inc() { weak_++; }
@@ -293,6 +294,7 @@ class pia::context_t::impl_t: pic::nocopy_t, public pic::element_t<>, virtual pu
         bool exited_;
         int group_;
         pia_cref_t cpoint_;
+        pia_data_t user_;
 };
 
 class pia_ctx_t
@@ -301,7 +303,7 @@ class pia_ctx_t
 		pia_ctx_t() { entity_=0; }
 		pia_ctx_t(pia::context_t::impl_t *e): entity_(e) { if(entity_) entity_->strong_inc(); }
         pia_ctx_t(const pia_ctx_t &e): entity_(e.entity_) { if(entity_) entity_->strong_inc(); }
-        pia_ctx_t(pia::manager_t::impl_t *g, int grp, const pic::status_t &n, const pic::f_string_t &l, const char *tag): entity_(new pia::context_t::impl_t(g,grp,n,l,tag,true)) {}
+        pia_ctx_t(pia::manager_t::impl_t *g, const char *u, int grp, const pic::status_t &n, const pic::f_string_t &l, const char *tag): entity_(new pia::context_t::impl_t(g,u,grp,n,l,tag,true)) {}
 		~pia_ctx_t() { release(); }
 
         pia_ctx_t &operator=(const pia_ctx_t &e) { release(); entity_=e.entity_; if(entity_) entity_->strong_inc(); return *this; }

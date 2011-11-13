@@ -57,9 +57,9 @@ namespace pia
     class PIA_DECLSPEC_CLASS scaffold_mt_t: pic::nocopy_t
     {
         public:
-            scaffold_mt_t(const char *user, unsigned mt, const pic::f_string_t &log, const pic::f_string_t &winch, bool ck, bool rt);
+            scaffold_mt_t(unsigned mt, const pic::f_string_t &log, const pic::f_string_t &winch, bool ck, bool rt);
             ~scaffold_mt_t();
-			context_t context(const pic::status_t &gone, const pic::f_string_t &log, const char *tag = "");
+			context_t context(const char *user,const pic::status_t &gone, const pic::f_string_t &log, const char *tag = "");
             void wait();
             bool global_lock();
             void global_unlock();
@@ -72,10 +72,10 @@ namespace pia
     class PIA_DECLSPEC_CLASS scaffold_gui_t: pic::nocopy_t
     {
         public:
-            scaffold_gui_t(const char *user, const pic::notify_t &service, const pic::notify_t &gone, const pic::f_string_t &log, const pic::f_string_t &winch, bool ck, bool rt);
+            scaffold_gui_t(const pic::notify_t &service, const pic::notify_t &gone, const pic::f_string_t &log, const pic::f_string_t &winch, bool ck, bool rt);
             ~scaffold_gui_t();
-			context_t context(const pic::status_t &gone, const pic::f_string_t &log, const char *tag = "");
-			context_t bgcontext(const pic::status_t &gone, const pic::f_string_t &log, const char *tag = "");
+			context_t context(const char *user,const pic::status_t &gone, const pic::f_string_t &log, const char *tag = "");
+			context_t bgcontext(const char *user,const pic::status_t &gone, const pic::f_string_t &log, const char *tag = "");
             void process_ctx();
             unsigned cpu_usage();
             unsigned window_count();

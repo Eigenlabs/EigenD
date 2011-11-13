@@ -368,19 +368,18 @@ void network_t::decode_rsp(const pia_data_t &key, int st, const pia_data_t &dp)
 
 netref_t pia_rpclist_t::impl_t::get_network(const pia_data_t &addr)
 {
-    pia_data_t eaddr = glue_->expand_address(addr);
     std::map<pia_data_t,netwref_t,pia_notime_less>::iterator i;
 
-    if((i=networks_.find(eaddr))==networks_.end())
+    if((i=networks_.find(addr))==networks_.end())
     {
-        network_t *n = new network_t(glue_,eaddr);
-        networks_.insert(std::make_pair(eaddr,n));
+        network_t *n = new network_t(glue_,addr);
+        networks_.insert(std::make_pair(addr,n));
         return netref_t::from_given(n);
     }
 
     if(!i->second.isvalid())
     {
-        network_t *n = new network_t(glue_,eaddr);
+        network_t *n = new network_t(glue_,addr);
         i->second.assign(n);
         return netref_t::from_given(n);
     }

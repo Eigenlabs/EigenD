@@ -32,6 +32,21 @@
 
 namespace
 {
+    class logger_t
+    {
+        public:
+            logger_t(const char *prefix, const pic::f_string_t &logger);
+            logger_t(const logger_t &l);
+            logger_t &operator=(const logger_t &l);
+            bool operator==(const logger_t &l) const;
+            static pic::f_string_t create(const char *prefix, const pic::f_string_t &logger);
+            void operator()(const char *msg) const;
+
+        private:
+            std::string prefix_;
+            pic::f_string_t logger_;
+    };
+
     struct usage_t: virtual public pic::lckobject_t
     {
         usage_t(unsigned *u, pic::xgate_t *g): usage_(u), ousage_(0), gate_(g) {}
@@ -149,16 +164,17 @@ namespace
 
     struct mtscaffold_t: pia::controller_t, virtual pic::lckobject_t
     {
-        mtscaffold_t(const char *user,pic::nballocator_t *a, unsigned mt, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck, bool rt);
+        mtscaffold_t(pic::nballocator_t *a, unsigned mt, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck, bool rt);
         ~mtscaffold_t();
 
-        pia::context_t context(const pic::status_t &gone, const pic::f_string_t &log, const char *tag);
+        pia::context_t context(const char *user,const pic::status_t &gone, const pic::f_string_t &log, const char *tag);
         void wait();
         void service_fast();
         void service_main();
         void service_ctx(int group);
         bool service_isfast();
         void service_gone();
+        pic::f_string_t service_context(bool isgui, const char *tag, int *group);
 
         pia::realnet_t network_;
         fastthread_t fast_;
@@ -167,20 +183,23 @@ namespace
         bool shutdown_;
         pic::lckvector_t<pic::ref_t<ctxthread_t> >::lcktype context_;
         unsigned mt_;
+        pic::f_string_t logger_;
     };
 
     struct guiscaffold_t: pia::controller_t
     {
-        guiscaffold_t(const char *user,pic::nballocator_t *a, const pic::notify_t &s, const pic::notify_t &g,const pic::f_string_t &l,const pic::f_string_t &winch, bool ck,bool rt);
+        guiscaffold_t(pic::nballocator_t *a, const pic::notify_t &s, const pic::notify_t &g,const pic::f_string_t &l,const pic::f_string_t &winch, bool ck,bool rt);
         ~guiscaffold_t();
 
-        pia::context_t context(int grp,const pic::status_t &gone, const pic::f_string_t &log, const char *tag);
+        pia::context_t context(int grp,const char *user,const pic::status_t &gone, const pic::f_string_t &log, const char *tag);
 
         void process_ctx();
         void service_fast();
         void service_main();
         bool service_isfast();
         void service_gone();
+        pic::f_string_t service_context(bool isgui, const char *tag, int *group);
+
         unsigned cpu_usage() { return cpu_usage_; }
 
         void service_ctx(int group);
@@ -196,17 +215,17 @@ namespace
         ctxthread_t ctx0_;
         pia::manager_t manager_;
         pingerthread_t pinger_;
-
+        pic::f_string_t logger_;
     };
 };
 
 struct pia::scaffold_mt_t::impl_t
 {
-    impl_t(const char *user, unsigned mt,const pic::f_string_t &l,const pic::f_string_t &w,bool ck,bool rt)
+    impl_t(unsigned mt,const pic::f_string_t &l,const pic::f_string_t &w,bool ck,bool rt)
     {
         pia_logguard_t guard(0,&allocator_);
         pic_set_foreground(rt);
-        scaffold_=new mtscaffold_t(user,&allocator_,mt,l,w,ck,rt);
+        scaffold_=new mtscaffold_t(&allocator_,mt,l,w,ck,rt);
     }
 
     ~impl_t()
@@ -221,11 +240,11 @@ struct pia::scaffold_mt_t::impl_t
 
 struct pia::scaffold_gui_t::impl_t
 {
-    impl_t(const char *user, const pic::notify_t &s, const pic::notify_t &g,const pic::f_string_t &l,const pic::f_string_t &w,bool ck,bool rt)
+    impl_t(const pic::notify_t &s, const pic::notify_t &g,const pic::f_string_t &l,const pic::f_string_t &w,bool ck,bool rt)
     {
         pia_logguard_t guard(0,&allocator_);
         pic_set_foreground(rt);
-        scaffold_=new guiscaffold_t(user,&allocator_,s,g,l,w,ck,rt);
+        scaffold_=new guiscaffold_t(&allocator_,s,g,l,w,ck,rt);
     }
 
     ~impl_t()
@@ -243,9 +262,9 @@ void fastthread_t::service()
     gate_.open();
 }
 
-pia::scaffold_mt_t::scaffold_mt_t(const char *user, unsigned mt,const pic::f_string_t &l,const pic::f_string_t &winch,bool ck,bool rt)
+pia::scaffold_mt_t::scaffold_mt_t(unsigned mt,const pic::f_string_t &l,const pic::f_string_t &winch,bool ck,bool rt)
 {
-    impl_=new impl_t(user,(mt==0)?1:mt,l,winch,ck,rt);
+    impl_=new impl_t((mt==0)?1:mt,l,winch,ck,rt);
 }
 
 pia::scaffold_mt_t::~scaffold_mt_t()
@@ -268,14 +287,14 @@ bool pia::scaffold_mt_t::global_lock()
     return impl_->scaffold_->manager_.global_lock();
 }
 
-pia::context_t pia::scaffold_mt_t::context(const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
+pia::context_t pia::scaffold_mt_t::context(const char *user,const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
 {
-    return impl_->scaffold_->context(gone,log,tag);
+    return impl_->scaffold_->context(user,gone,log,tag);
 }
 
-pia::scaffold_gui_t::scaffold_gui_t(const char *user, const pic::notify_t &svc, const pic::notify_t &gone,const pic::f_string_t &l,const pic::f_string_t &winch,bool ck,bool rt)
+pia::scaffold_gui_t::scaffold_gui_t(const pic::notify_t &svc, const pic::notify_t &gone,const pic::f_string_t &l,const pic::f_string_t &winch,bool ck,bool rt)
 {
-    impl_=new impl_t(user,svc,gone,l,winch,ck,rt);
+    impl_=new impl_t(svc,gone,l,winch,ck,rt);
 }
 
 unsigned pia::scaffold_gui_t::window_count()
@@ -330,14 +349,14 @@ unsigned pia::scaffold_gui_t::cpu_usage()
     return impl_->scaffold_->cpu_usage();
 }
 
-pia::context_t pia::scaffold_gui_t::context(const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
+pia::context_t pia::scaffold_gui_t::context(const char *user,const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
 {
-    return impl_->scaffold_->context(1,gone,log,tag);
+    return impl_->scaffold_->context(1,user,gone,log,tag);
 }
 
-pia::context_t pia::scaffold_gui_t::bgcontext(const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
+pia::context_t pia::scaffold_gui_t::bgcontext(const char *user,const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
 {
-    return impl_->scaffold_->context(0,gone,log,tag);
+    return impl_->scaffold_->context(0,user,gone,log,tag);
 }
 
 void pia::scaffold_gui_t::process_ctx()
@@ -558,7 +577,7 @@ void mainthread_t::thread_main()
     }
 }
 
-mtscaffold_t::mtscaffold_t(const char *user,pic::nballocator_t *a, unsigned mt, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck,bool rt): network_(a,ck), fast_(rt?PIC_THREAD_PRIORITY_REALTIME:PIC_THREAD_PRIORITY_NORMAL,&manager_), main_(PIC_THREAD_PRIORITY_NORMAL,&manager_,&network_), manager_(user,this,a,&network_,l,winch), context_(mt), mt_(mt)
+mtscaffold_t::mtscaffold_t(pic::nballocator_t *a, unsigned mt, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck,bool rt): network_(a,ck), fast_(rt?PIC_THREAD_PRIORITY_REALTIME:PIC_THREAD_PRIORITY_NORMAL,&manager_), main_(PIC_THREAD_PRIORITY_NORMAL,&manager_,&network_), manager_(this,a,&network_,l,winch), context_(mt), mt_(mt), logger_(l)
 {
     fast_.run();
 
@@ -579,9 +598,9 @@ mtscaffold_t::~mtscaffold_t()
     fast_.shutdown(true);
 }
 
-pia::context_t mtscaffold_t::context(const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
+pia::context_t mtscaffold_t::context(const char *user, const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
 {
-    return manager_.context(0,gone,log,tag);
+    return manager_.context(0,user,gone,log,tag);
 }
 
 void mtscaffold_t::wait()
@@ -592,6 +611,12 @@ void mtscaffold_t::wait()
 
 void mtscaffold_t::service_fast() { fast_.service(); }
 void mtscaffold_t::service_main() { main_.service(); }
+
+pic::f_string_t mtscaffold_t::service_context(bool isgui, const char *tag, int *grp)
+{
+    *grp = 0;
+    return logger_t::create(tag,logger_);
+}
 
 void mtscaffold_t::service_ctx(int group)
 {
@@ -604,7 +629,7 @@ void mtscaffold_t::service_ctx(int group)
 bool mtscaffold_t::service_isfast() { return fast_.isfast(); }
 void mtscaffold_t::service_gone() { main_.shutdown(false); }
 
-guiscaffold_t::guiscaffold_t(const char *user,pic::nballocator_t *a, const pic::notify_t &s, const pic::notify_t &g, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck, bool rt): gone_(g), network_(a,ck), main_(2,&manager_,&network_), usage_(&cpu_usage_,&gate_), fast_(rt?PIC_THREAD_PRIORITY_REALTIME:PIC_THREAD_PRIORITY_NORMAL,&manager_,&usage_),  ctx0_(PIC_THREAD_PRIORITY_NORMAL,0,&manager_), manager_(user,this,a,&network_,l,winch), pinger_(PIC_THREAD_PRIORITY_NORMAL,s)
+guiscaffold_t::guiscaffold_t(pic::nballocator_t *a, const pic::notify_t &s, const pic::notify_t &g, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck, bool rt): gone_(g), network_(a,ck), main_(2,&manager_,&network_), usage_(&cpu_usage_,&gate_), fast_(rt?PIC_THREAD_PRIORITY_REALTIME:PIC_THREAD_PRIORITY_NORMAL,&manager_,&usage_),  ctx0_(PIC_THREAD_PRIORITY_NORMAL,0,&manager_), manager_(this,a,&network_,l,winch), pinger_(PIC_THREAD_PRIORITY_NORMAL,s), logger_(l)
 {
     cpu_usage_ = 0;
     fast_.run();
@@ -621,9 +646,9 @@ guiscaffold_t::~guiscaffold_t()
     pinger_.quit();
 }
 
-pia::context_t guiscaffold_t::context(int grp,const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
+pia::context_t guiscaffold_t::context(int grp,const char *user, const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
 {
-    return manager_.context(grp,gone,log,tag);
+    return manager_.context(grp,user,gone,log,tag);
 }
 
 void guiscaffold_t::process_ctx()
@@ -638,6 +663,12 @@ void guiscaffold_t::service_main() { main_.service(); }
 bool guiscaffold_t::service_isfast() { return fast_.isfast(); }
 void guiscaffold_t::service_gone() { gone_(); }
 
+pic::f_string_t guiscaffold_t::service_context(bool isgui, const char *tag, int *grp)
+{
+    *grp = isgui?1:0;
+    return logger_t::create(tag,logger_);
+}
+
 void guiscaffold_t::service_ctx(int group)
 {
     if(group!=0)
@@ -648,3 +679,35 @@ void guiscaffold_t::service_ctx(int group)
 
     ctx0_.service();
 }
+
+logger_t::logger_t(const char *prefix, const pic::f_string_t &logger): prefix_(prefix), logger_(logger)
+{
+}
+
+logger_t::logger_t(const logger_t &l): prefix_(l.prefix_), logger_(l.logger_)
+{
+}
+
+logger_t &logger_t::operator=(const logger_t &l)
+{
+    prefix_=l.prefix_;
+    logger_=l.logger_;
+    return *this;
+}
+
+bool logger_t::operator==(const logger_t &l) const
+{
+    return (logger_==l.logger_) && (prefix_.compare(l.prefix_)==0);
+}
+
+pic::f_string_t logger_t::create(const char *prefix, const pic::f_string_t &logger)
+{
+    return pic::f_string_t::callable(logger_t(prefix,logger));
+}
+
+void logger_t::operator()(const char *msg) const
+{
+    std::string buffer = prefix_ + ": " + msg;
+    logger_(buffer.c_str());
+}
+

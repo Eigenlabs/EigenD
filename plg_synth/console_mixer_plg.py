@@ -498,7 +498,7 @@ class Agent(agent.Agent):
         self.channels = self[3]
         self.fxchannels = self[4]
 
-        # adds subsystems numbered 1..24, which means effect channels cannot be called 1..24 ...
+        # add channels numbered 1..24, which means effect channels cannot be called 1..24 ...
         for n in range(0,num_inputs):
             self.channels.create_channel(n+1)
             

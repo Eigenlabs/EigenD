@@ -1802,12 +1802,12 @@ void EigenD::initialise (const String& commandLine)
     pic::f_string_t primary_logger = pic::f_string_t::method(this,&EigenD::log);
     pic::f_string_t eigend_logger = EigenLogger::create("eigend",primary_logger);
 
-    ejuce::Application::initialise(commandLine,get_user(),eigend_logger,false,true);
+    ejuce::Application::initialise(commandLine,eigend_logger,false,true);
     LookAndFeel::setDefaultLookAndFeel(new ejuce::EJuceLookandFeel);
     ApplicationCommandManager *manager = new ApplicationCommandManager();
 
     python_ = new epython::PythonInterface();
-    context_ = scaffold()->context(pic::status_t(),eigend_logger,"eigend");
+    context_ = scaffold()->context(get_user(),pic::status_t(),eigend_logger,"eigend");
 
     piw::tsd_setcontext(context_.entity());
     python_->py_startup();

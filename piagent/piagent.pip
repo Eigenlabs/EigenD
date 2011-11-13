@@ -20,7 +20,7 @@ class scaffold_mt[pia::scaffold_mt_t]
     This one is completely multi threaded
     """
 {
-    scaffold_mt(const char *,unsigned,const f_string &,const f_string &,bool,bool)
+    scaffold_mt(unsigned,const f_string &,const f_string &,bool,bool)
     bool global_lock()
     void global_unlock()
     void wait()
@@ -28,7 +28,7 @@ class scaffold_mt[pia::scaffold_mt_t]
         self.wait() -> .
         run the scaffolds main loop
         """
-    context context(const status &, const f_string &,const char *)
+    context context(const char *, const status &, const f_string &,const char *)
         """
         self.context(notify,tag) -> context
         
@@ -49,14 +49,14 @@ class scaffold_gui[pia::scaffold_gui_t]
     Background contexts are driven by a separate thread.
     """
 {
-    scaffold_gui(const char *,const notify &, const notify &, const f_string &, const f_string &, bool,bool)
+    scaffold_gui(const notify &, const notify &, const f_string &, const f_string &, bool,bool)
 
     void process_ctx()
     unsigned cpu_usage()
     bool global_lock()
     void global_unlock()
 
-    context bgcontext(const status &, const f_string &,const char *)
+    context bgcontext(const char *, const status &, const f_string &,const char *)
         """
         self.context(notify,tag) -> context
         
@@ -64,7 +64,7 @@ class scaffold_gui[pia::scaffold_gui_t]
         context has gone.  tag is used to tag log messages by agent
         """
 
-    context context(const status &, const f_string &,const char *)
+    context context(const char *, const status &, const f_string &,const char *)
         """
         self.context(notify,tag) -> context
         

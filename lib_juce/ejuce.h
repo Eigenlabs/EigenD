@@ -34,7 +34,7 @@ namespace ejuce
         public:
             Application();
             ~Application();
-            void initialise (const juce::String& commandLine,const char *user,const pic::f_string_t &,bool ck, bool rt);
+            void initialise (const juce::String& commandLine,const pic::f_string_t &,bool ck, bool rt);
             void shutdown();
             virtual void handleGone();
             virtual void handleWinch(const std::string &);

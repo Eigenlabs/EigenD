@@ -1069,6 +1069,8 @@ class index[piw::index_t] /gc/
     bool running()
     void set_change_handler(const notify &)
     void clear_change_handler()
+    data index_name_fq()
+    data member_name_fq(int)
     data index_name()
     data member_name(int)
     int member_count()
@@ -1192,6 +1194,7 @@ class server[piw::server_t] /gc/
 
         Stop advertising this server on index name
         """
+    data servername_fq()
     data servername()
         """
         self.servername() -> belcanto name of state tree
@@ -1258,6 +1261,7 @@ class client[piw::client_t] /gc/
     unsigned get_plug_flags()
 
     data servername()
+    data servername_fq()
     data path()
 
     void sync()
@@ -1989,6 +1993,20 @@ class tsd_snapshot[piw::tsd_snapshot_t]
     void log(const char *)
     void save()
     void install()
+}
+
+class tsd_subcontext[piw::tsd_subcontext_t]
+{
+    tsd_subcontext(bool,const char *,const char *)
+
+    void install()
+    void kill()
+    void clear()
+
+    inline getenv(self,args)
+    <<<
+        return PyCObject_FromVoidPtr(self->entity(),0);
+    >>>
 }
 
 epilog <<<

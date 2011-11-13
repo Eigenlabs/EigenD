@@ -286,7 +286,7 @@ class Interpreter:
 
     @async.coroutine('internal error')
     def __checkpoint(self):
-        r = rpc.invoke_rpc(self.__statemgr,'get','')
+        r = rpc.invoke_rpc(self.__statemgr,'get_checkpoint','')
         yield r
 
         if not r.status():
@@ -312,7 +312,7 @@ class Interpreter:
 
         @async.coroutine('internal error')
         def __undo():
-            r = rpc.invoke_rpc(self.__statemgr,'load',l)
+            r = rpc.invoke_rpc(self.__statemgr,'load_checkpoint',l)
             yield r
 
             if not r.status():

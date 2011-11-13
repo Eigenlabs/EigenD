@@ -27,7 +27,6 @@ import synth_native
 MAX_CHANNEL = 12 
 
 class AudioInput(atom.Atom):
-    
     def __init__(self, agent, index):
         
         self.__agent = agent
@@ -42,7 +41,6 @@ class AudioInput(atom.Atom):
         pass
         
 class AudioInputList(collection.Collection):
-
     def __init__(self,agent):
         self.__agent = agent
         self.__timestamp = piw.tsd_time()

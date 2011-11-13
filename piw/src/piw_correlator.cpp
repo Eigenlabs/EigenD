@@ -63,7 +63,7 @@ namespace
         correlator_source_t(impl_t *root, unsigned signal, unsigned signame, unsigned iid,const piw::data_t &path, const piw::d2d_nb_t &flt, piw::fastdata_t *data, int priority, unsigned type);
         virtual ~correlator_source_t() { tracked_invalidate(); }
 
-        virtual void source_detached(correlator_buffer_t *voice) = 0;
+        virtual void source_detached(correlator_buffer_t *voice, bool reset_queue) = 0;
         virtual bool input_ticked(unsigned long long f, unsigned long long t, unsigned long sr, unsigned bs) = 0;
 
         static int __plumb(void *input_, void *) { correlator_source_t *input = (correlator_source_t *)input_; input->startup_fast(); return 0; }
@@ -95,7 +95,7 @@ namespace
     {
         correlator_buffer_t(correlator_voice_t *voice, unsigned long long t);
 
-        void detach_source(correlator_source_t *,unsigned long long);
+        void detach_source(correlator_source_t *, unsigned long long, bool);
         void set_signal(unsigned s, unsigned long long t, const piw::dataqueue_t &q,bool linger);
         void detach_sources();
 
@@ -139,7 +139,7 @@ namespace
         bool input_ticked(unsigned long long f, unsigned long long t, unsigned long sr, unsigned bs);
         void set_queue(unsigned long long t,const piw::dataqueue_t &q,bool linger);
         void default_attached(correlator_buffer_t *voice, unsigned long long time);
-        void source_detached(correlator_buffer_t *voice);
+        void source_detached(correlator_buffer_t *voice, bool reset_queue);
         void release_voices(unsigned long long time);
         bool fastdata_receive_event(const piw::data_nb_t &d, const piw::dataqueue_t &q);
         void dump_buffers();
@@ -160,7 +160,7 @@ namespace
 
         bool input_ticked(unsigned long long f, unsigned long long t, unsigned long sr, unsigned bs);
         bool fastdata_receive_event(const piw::data_nb_t &d, const piw::dataqueue_t &q);
-        void source_detached(correlator_buffer_t *voice);
+        void source_detached(correlator_buffer_t *voice, bool reset_queue);
 
         void set_queue(unsigned long long t,const piw::dataqueue_t &q);
 
@@ -360,7 +360,7 @@ correlator_buffer_t *piw::correlator_t::impl_t::allocate_voice(unsigned long lon
                             return 0;
                         }
 
-                        b->inputs_[s]->source_detached(b);
+                        b->inputs_[s]->source_detached(b,false);
                         b->inputs_[s]=0;
                     }
 
@@ -560,7 +560,7 @@ void piw::correlator_t::impl_t::default_ready(correlator_default_t *d, const piw
 
         if(b->inputs_[s])
         {
-            b->inputs_[s]->source_detached(b);
+            b->inputs_[s]->source_detached(b,false);
         }
 
         b->inputs_[s]=d;
@@ -640,7 +640,7 @@ restart:
 
                 if(cs && cs->type_!=INPUT_LINGER)
                 {
-                    cs->source_detached(b);
+                    cs->source_detached(b,false);
                     b->inputs_[s]=0;
                 }
             }
@@ -719,7 +719,7 @@ restart:
     }
 }
 
-void correlator_buffer_t::detach_source(correlator_source_t *input, unsigned long long t)
+void correlator_buffer_t::detach_source(correlator_source_t *input, unsigned long long t, bool reset_queue)
 {
     //pic::logmsg() << "detach source " << (void *)input << " " << input->signame_ << " refc " << refcount_ << " from " << (void *)this << " " << input->type_;
 
@@ -727,7 +727,7 @@ void correlator_buffer_t::detach_source(correlator_source_t *input, unsigned lon
     correlator_voice_t *v = voice_;
     impl_t *root = v->root_;
 
-    input->source_detached(this);
+    input->source_detached(this,reset_queue);
     inputs_[s]=0;
 
     if(input->type_==INPUT_MERGE)
@@ -916,6 +916,8 @@ void correlator_default_t::erase_defaultbyid()
 
 bool correlator_default_t::fastdata_receive_event(const piw::data_nb_t &d, const piw::dataqueue_t &q)
 {
+    //pic::logmsg() << "default: " << (void *)this << " " << signame_ << " iid " << iid_ << " path " << path_ << " event " << d;
+
     if(current_id_.get().is_path())
     {
         //pic::logmsg() << (void *)this << "release voices";
@@ -982,7 +984,7 @@ bool correlator_input_t::fastdata_receive_event(const piw::data_nb_t &d, const p
         }
 
         //pic::logmsg() << "input " << signame_ << " detaching from buffer " << (void *)buffer_;
-        buffer_->detach_source(this,d.time());
+        buffer_->detach_source(this,d.time(),false);
         buffer_=0;
     }
 
@@ -1032,7 +1034,7 @@ void correlator_input_t::shutdown_fast()
 
     if(buffer_)
     {
-        buffer_->detach_source(this,piw::tsd_time());
+        buffer_->detach_source(this,piw::tsd_time(),true);
         buffer_=0;
     }
 }
@@ -1078,19 +1080,25 @@ void correlator_input_t::set_queue(unsigned long long t,const piw::dataqueue_t &
     root_->enable_ticking();
 }
 
-void correlator_input_t::source_detached(correlator_buffer_t *buffer)
+void correlator_input_t::source_detached(correlator_buffer_t *buffer, bool reset_queue)
 {
-    //buffer->set_signal(signame_,0,piw::dataqueue_t());
+    if(reset_queue)
+    {
+        buffer->set_signal(signame_,0,piw::dataqueue_t(),false);
+    }
     buffer=0;
     root_->deactivate_input(this);
 }
 
-void correlator_default_t::source_detached(correlator_buffer_t *buffer)
+void correlator_default_t::source_detached(correlator_buffer_t *buffer, bool reset_queue)
 {
     //pic::logmsg() << "detaching buffer " << (void *)buffer << " from " << (void *)this;
     //dump_buffers();
     buffers_.remove(buffer);
-    //buffer->set_signal(signame_,0,piw::dataqueue_t());
+    if(reset_queue)
+    {
+        buffer->set_signal(signame_,0,piw::dataqueue_t(),false);
+    }
     //dump_buffers();
 
 
@@ -1149,7 +1157,7 @@ void correlator_default_t::release_voices(unsigned long long time)
     while(!buffers_.empty())
     {
         b = buffers_.front();
-        b->detach_source(this,time);
+        b->detach_source(this,time,false);
     }
 }
 
@@ -1518,7 +1526,7 @@ void correlator_buffer_t::detach_sources()
     {
         if(inputs_[s])
         {
-            inputs_[s]->source_detached(this);
+            inputs_[s]->source_detached(this,false);
             inputs_[s]=0;
         }
     }

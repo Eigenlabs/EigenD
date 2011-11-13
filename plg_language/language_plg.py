@@ -20,7 +20,7 @@
 
 from pi import agent,atom,domain,errors,action,logic,async,index,utils,bundles,resource,paths,node,container,upgrade,timeout,help_manager
 from pi.logic.shortcuts import *
-from plg_language import interpreter,database,feedback,noun,builtin_misc,builtin_conn,controller,context,variable,script,stage_server,widget,deferred
+from plg_language import interpreter,database,feedback,noun,builtin_misc,builtin_conn,context,variable,script,stage_server,widget,deferred
 from plg_language import interpreter_version as version
 
 import piw
@@ -75,7 +75,6 @@ class Agent(agent.Agent):
 
         self.__state = node.Server()
         self.__state[1] = self.__statemgr
-        self.__state[2] = container.PersistentFactory(asserted=self.__ctlassert,retracted=self.__ctlretract)
         self.__state[3] = self.__ctxmgr
         
         self.set_private(self.__state)
@@ -124,8 +123,6 @@ class Agent(agent.Agent):
         self.cloner.set_filtered_output(3,self.output1.cookie(), piw.last_lt_filter(9))
         self.cloner.set_filtered_output(4,self.output2.cookie(), piw.last_gt_filter(10))
 
-        self.add_verb2(100,'create([],None,role(None,[matches([controller])]))',self.__ctlcreate)
-        self.add_verb2(101,'create([un],None,role(None,[concrete,singular,issubject(create,[role(by,[cnc(~self)])])]))', self.__ctluncreate)
         self.add_verb2(30,'message([],None,role(None,[abstract]))', self.__message)
         self.add_verb2(150,'execute([],None,role(None,[abstract]))',self.__runscript)
         self.add_verb2(151,'load([],None,role(None,[matches([help])]))',self.__loadhelp)
@@ -134,7 +131,6 @@ class Agent(agent.Agent):
         self.add_builtins(self.__ctxmgr)
 
         self.database.add_module(context)
-        self.database.add_module(controller)
 
         self.__messages_on = True
         self[4] = atom.Atom(names='messages',policy=atom.default_policy(self.__messages),domain=domain.Bool(),init=True)
@@ -389,32 +385,6 @@ class Agent(agent.Agent):
             if ctx in triggers:
                 print 'cancelling echo',id
                 self.verb_cancel(id)
-
-    def __ctlassert(self,index,value):
-        c = controller.Controller(self.database,self,int(value))
-        self.add_subsystem(index,c)
-        return c
-
-    def __ctlretract(self,index,value,state):
-        self.remove_subsystem(index)
-        state.disconnect()
-
-    def __ctlcreate(self,subj,dummy):
-        index=0
-        for ss in self.iter_subsystem():
-            if ss != 'plumber':
-                index=max(index,int(ss))
-        index=index+1
-        s = self.__state[2].assert_state(str(index))
-        return action.created_return(s.id())
-
-    def __ctluncreate(self,subj,c):
-        a = action.concrete_object(c)
-        for (i,p) in self.iter_subsys_items():
-            if p.id()==a:
-                self.__state[2].retract_state(lambda v,s: v==str(i))
-                return action.removed_return(a)
-        return async.failure('not found')
 
     def __setstatemgr(self,arg):
         if arg.is_string():

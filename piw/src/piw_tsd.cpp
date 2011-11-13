@@ -373,6 +373,45 @@ void piw::tsd_snapshot_t::log(const char *msg)
     writelog(entity_,msg);
 }
 
+piw::tsd_subcontext_t::tsd_subcontext_t(bool gui, const char *user, const char *tag)
+{
+    entity_ = bct_entity_new(tsd_getcontext(),gui,user,tag);
+}
+
+void piw::tsd_subcontext_t::install()
+{
+    if(entity_)
+    {
+        tsd_setcontext(entity_);
+    }
+    else
+    {
+        tsd_clearcontext();
+    }
+}
+
+void piw::tsd_subcontext_t::kill()
+{
+    if(entity_)
+    {
+        bct_entity_kill(entity_);
+    }
+}
+
+void piw::tsd_subcontext_t::clear()
+{
+    if(entity_)
+    {
+        bct_entity_decref(entity_);
+        entity_=0;
+    }
+}
+
+piw::tsd_subcontext_t::~tsd_subcontext_t()
+{
+    clear();
+}
+
 int piw::tsd_snapshot_t::fastcall(int (*cb)(void *arg1, void *arg2), void *arg1, void *arg2)
 {
     fastcall_t call(arg1,arg2,0,0);

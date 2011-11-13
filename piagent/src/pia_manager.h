@@ -43,6 +43,7 @@ namespace pia
             virtual void service_ctx(int grp) = 0;
             virtual void service_gone() = 0;
             virtual bool service_isfast() = 0;
+            virtual pic::f_string_t service_context(bool isgui, const char *tag, int *grp) = 0;
     };
 
 	class manager_t: public pic::nocopy_t, virtual public pic::lckobject_t
@@ -50,7 +51,7 @@ namespace pia
 		public:
             class impl_t;
 		public:
-			manager_t(const char *, controller_t *, pic::nballocator_t *, pia::network_t *, const pic::f_string_t &log, const pic::f_string_t &winch, void *winctx = 0);
+			manager_t(controller_t *, pic::nballocator_t *, pia::network_t *, const pic::f_string_t &log, const pic::f_string_t &winch, void *winctx = 0);
 			virtual ~manager_t();
 
             void process_fast(unsigned long long, unsigned long long *timer, bool *activity);
@@ -65,7 +66,7 @@ namespace pia
             void fast_pause();
             void fast_resume();
 
-			context_t context(int grp, const pic::status_t &gone, const pic::f_string_t &log, const char *tag = ""); 
+			context_t context(int grp, const char *user, const pic::status_t &gone, const pic::f_string_t &log, const char *tag = ""); 
 
             impl_t *impl() { return impl_; }
 		private:

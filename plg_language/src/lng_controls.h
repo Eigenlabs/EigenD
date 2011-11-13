@@ -33,7 +33,7 @@ namespace language
             virtual ~toggle_t(); 
 
             virtual void control_init();
-            virtual void control_receive(unsigned index, const piw::data_nb_t &value);
+            virtual void control_receive(unsigned, const piw::data_nb_t &);
             void reset(const piw::data_t &); // slow
 
             int gc_traverse(void *,void *) const;
@@ -52,8 +52,8 @@ namespace language
             virtual ~updown_t(); 
 
             virtual void control_init();
-            virtual void control_receive(unsigned index, const piw::data_nb_t &value);
-            virtual void control_term(unsigned long long t);
+            virtual void control_receive(unsigned, const piw::data_nb_t &);
+            virtual void control_term(unsigned long long);
             void reset(const piw::data_t &); // slow
 
             int gc_traverse(void *,void *) const;
@@ -73,14 +73,14 @@ namespace language
             piw::cookie_t cookie();
 
             virtual void control_init();
-            virtual void control_receive(unsigned index, const piw::data_nb_t &value);
-            virtual void control_term(unsigned long long t);
+            virtual void control_receive(unsigned, const piw::data_nb_t &);
+            virtual void control_term(unsigned long long);
             void reset(const piw::data_t &); // slow
 
             int gc_traverse(void *,void *) const;
             int gc_clear();
 
-            void set_choice(unsigned index,const piw::data_t &v);
+            void set_choice(unsigned,const piw::data_t &);
             
             class simpl_t;
 

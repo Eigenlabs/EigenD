@@ -107,6 +107,6 @@ class Registry:
             for a in m.splitlines():
                 a = a.split(':')
                 (name,module,cversion,version) = a[0:4]
-                self.add_module(name,version,cversion,klass(name,version,cversion,p,module))
+                self.add_module(name,version,cversion,klass(name,version,cversion,module))
                 for e in a[4:]:
-                    self.add_module(e,version,cversion,klass(name,version,cversion,p,module))
+                    self.add_module(e,version,cversion,klass(name,version,cversion,module))

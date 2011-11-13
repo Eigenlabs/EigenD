@@ -988,7 +988,7 @@ void pia_proxylist_t::client(const pia_data_t &name, const pia_ctx_t &e, bct_cli
         }
     }
 
-    pia_ctx_t e2(e->glue(),0,pic::status_t(),pic::f_string_t(), "proxy");
+    pia_ctx_t e2(e->glue(),e->user().asstring(),0,pic::status_t(),pic::f_string_t(), "proxy");
     pia_pnode_t *n = new pia_proot_t(impl_,name,e2,fast);
     n->add(e,c);
 }
@@ -1032,7 +1032,7 @@ pia_pnode_t::pia_pnode_t(const pia_data_t &addr, const pia_ctx_t &e): pia_server
     setvisible(false);
 }
 
-pia_proot_t::pia_proot_t(pia_proxylist_t::impl_t *l, const pia_data_t &addr, const pia_ctx_t &e, bool fast): pia_buffer_t(e->glue(),addr,pie_headerlen()), pia_pnode_t(addr, e), job_timer_(e->glue())
+pia_proot_t::pia_proot_t(pia_proxylist_t::impl_t *l, const pia_data_t &a, const pia_ctx_t &e, bool fast): pia_buffer_t(e->glue(),a,pie_headerlen()), pia_pnode_t(a, e), job_timer_(e->glue())
 {
     list_=l;
     slowtick_=PIA_TIMER_SLOW_TICKS_START;

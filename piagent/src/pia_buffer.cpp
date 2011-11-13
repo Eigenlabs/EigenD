@@ -35,10 +35,8 @@ pia_buffer_t::pia_buffer_t(pia::manager_t::impl_t *glue, const pia_data_t &addr,
 {
     PIC_ASSERT(header_<BCTLINK_MAXPAYLOAD);
 
-    pia_data_t fqa = glue->expand_address(addr);
-
-    slowsocket_.open(glue->network(),BCTLINK_NAMESPACE_SLOW,fqa);
-    fastsocket_.open(glue->network(),BCTLINK_NAMESPACE_FAST,fqa);
+    slowsocket_.open(glue->network(),BCTLINK_NAMESPACE_SLOW,addr);
+    fastsocket_.open(glue->network(),BCTLINK_NAMESPACE_FAST,addr);
 }
 
 pia_buffer_t::~pia_buffer_t()
@@ -129,18 +127,20 @@ void pia_buffer_t::buffer_flush_slow(bool force)
             buffer_fixup_slow(slowbuffer_,slowused_);
             slowsocket_.write(slowbuffer_,slowused_);
             slow_buffer_release();
-        }
-        else
-        {
-            if(force)
-            {
-                buffer_fixup_slow(slowbuffer_,header_);
-                slowsocket_.write(slowbuffer_,header_);
-                slow_buffer_release();
-            }
+            slowused_ = header_;
+            return;
         }
     }
+
     slowused_ = header_;
+
+    if(force)
+    {
+        unsigned char *tmp = (unsigned char *)pic::nb_malloc(PIC_ALLOC_NORMAL,glue_->allocator(),header_);
+        buffer_fixup_slow(tmp,header_);
+        slowsocket_.write(tmp,header_);
+        pic::nb_free(tmp);
+    }
 }
 
 unsigned char *pia_buffer_t::buffer_begin_transmit_slow(unsigned len)

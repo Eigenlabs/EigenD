@@ -58,6 +58,7 @@ namespace piw
             int gc_clear() { return _fchanged.gc_clear(); }
 
             piw::data_t servername();
+            piw::data_t servername_fq();
             piw::data_t path();
             void child_add(const unsigned char *o, unsigned l, bct_client_t *c);
             void child_add(unsigned char n, bct_client_t *c);

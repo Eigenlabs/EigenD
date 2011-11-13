@@ -134,7 +134,7 @@ class Monitor(proxy.AtomProxy):
 
 class Widget(atom.Atom):
     def __init__(self,osc):
-        atom.Atom.__init__(self,policy=policy.FastReadOnlyPolicy(),domain=domain.Aniso(),protocols='nostage')
+        atom.Atom.__init__(self,policy=policy.FastReadOnlyPolicy(),domain=domain.Aniso(),protocols='connect-static output nostage')
         self.__send_queue = piw.fastdata(0)
         self.__recv_queue = piw.fastdata(0)
         piw.tsd_fastdata(self.__send_queue)
@@ -214,18 +214,18 @@ class Widget(atom.Atom):
             
     def destroy(self):
         # remove this widget from the targets controllers
-        cs = logic.render_term(logic.make_term('ctl',self.id(),None))
+        cs = logic.render_term(logic.make_term('conn',None,None,self.id(),None,'ctl'))
         address = self.get_property_string('target-id')
         if address!='':
-            rpc.invoke_rpc(address,'uncontrol',cs)
+            rpc.invoke_rpc(address,'disconnect',cs)
     
     def setup(self,address,name):
         self.set_property_long('ref-count',1)
         self.set_property_string('target-name',name)
         self.set_property_string('target-id',address)
-        cs = logic.render_term(logic.make_term('ctl',self.id(),None))
+        cs = logic.render_term(logic.make_term('conn',None,None,self.id(),None,'ctl'))
         if address!='':
-            return rpc.invoke_rpc(address,'control',cs)
+            return rpc.invoke_rpc(address,'connect',cs)
         else:
             return False
 

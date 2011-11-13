@@ -101,9 +101,9 @@ struct inode_t: pic::element_t<>
     static int api_member_count(bct_index_host_ops_t **o);
     static void api_member_died(bct_index_host_ops_t **o, bct_data_t name, unsigned short cookie);
     static unsigned short api_member_cookie(bct_index_host_ops_t **o, int c);
-    static bct_data_t api_name(bct_index_host_ops_t **o);
+    static bct_data_t api_name(bct_index_host_ops_t **o,int fq);
     static void api_close(bct_index_host_ops_t **o);
-    static bct_data_t api_member_name(bct_index_host_ops_t **o, int c);
+    static bct_data_t api_member_name(bct_index_host_ops_t **o, int c,int fq);
 
     bct_index_host_ops_t *ops_;
 
@@ -373,7 +373,7 @@ pia_data_t inode_t::name()
     return name_;
 }
 
-bct_data_t inode_t::api_name(bct_index_host_ops_t **o)
+bct_data_t inode_t::api_name(bct_index_host_ops_t **o,int fqn)
 {
     inode_t *h = PIC_STRBASE(inode_t,o,ops_);
 
@@ -381,7 +381,10 @@ bct_data_t inode_t::api_name(bct_index_host_ops_t **o)
     {
         pia_mainguard_t guard(h->entity_->glue());
 
-        return h->name().give_copy(h->entity_->glue()->allocator(), PIC_ALLOC_NORMAL);
+        if(!fqn)
+            return h->entity_->collapse_address(h->name()).give();
+        else
+            return h->name().give();
     }
     PIA_CATCHLOG_EREF(h->entity_)
 
@@ -475,7 +478,7 @@ pia_data_t inode_t::member_name(int c)
     return pia_data_t();
 }
 
-bct_data_t inode_t::api_member_name(bct_index_host_ops_t **o, int c)
+bct_data_t inode_t::api_member_name(bct_index_host_ops_t **o, int c, int fqn)
 {
     inode_t *h = PIC_STRBASE(inode_t,o,ops_);
 
@@ -483,7 +486,10 @@ bct_data_t inode_t::api_member_name(bct_index_host_ops_t **o, int c)
     {
         pia_mainguard_t guard(h->entity_->glue());
 
-        return h->member_name(c).give_copy(h->entity_->glue()->allocator(), PIC_ALLOC_NORMAL);
+        if(!fqn)
+            return h->entity_->collapse_address_relative(h->member_name(c),h->name()).give();
+        else
+            return h->member_name(c).give();
     }
     PIA_CATCHLOG_EREF(h->entity_)
 
@@ -686,9 +692,9 @@ iserver_t::~iserver_t()
 
 iserver_t::iserver_t(pia_indexlist_t::impl_t *l, const pia_data_t &n): name_(n), list_(l), socket_(list_->glue_->allocator())
 {
-    entity_ = pia_ctx_t(list_->glue_,0,pic::status_t(),pic::f_string_t(), "index server");
+    entity_ = pia_ctx_t(list_->glue_,"",0,pic::status_t(),pic::f_string_t(), "index server");
 
-    socket_.open(entity_->glue()->network(), BCTLINK_NAMESPACE_INDEX, entity_->glue()->expand_address(name_));
+    socket_.open(entity_->glue()->network(), BCTLINK_NAMESPACE_INDEX, name_);
     socket_.callback(entity_->glue()->mainq(),job_network,this);
     job_timer_.timer(entity_->glue()->mainq(),iserver_job_timer,this,ISERVER_TICK_INTERVAL);
 

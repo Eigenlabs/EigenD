@@ -6,10 +6,12 @@ class Endpoint:
         proxy = db.find_item(id)
 
         self.id=id
+        self.qid=db.qualify(id)
         self.words = {}
         self.ordinal=proxy.ordinal()
         self.domain=proxy.domain() or domain.Null()
         self.channel=channel
+        self.connect_static="connect-static" in proxy.protocols()
 
         self.__add_words(*[n for n in proxy.names() if n not in ['input','output']])
         self.__add_words(*proxy.fuzzy())
@@ -20,9 +22,9 @@ class Endpoint:
             self.words[w] = self.words.get(w,0) + s
 
     def connect(self,ostuff,u):
-        d=logic.render_term(logic.make_term('conn',u,self.channel,ostuff.id,ostuff.channel))
+        d=logic.render_term(logic.make_term('conn',u,self.channel,ostuff.id,ostuff.channel,ostuff.connect_static and 'ctl' or None))
         print 'connecting',d,'->',self.id,'using',u
-        rpc.invoke_rpc(self.id,'connect',d)
+        rpc.invoke_rpc(self.qid,'connect',d)
 
     def __repr__(self):
         return '<%s %s %s>' % (self.id,self.channel,self.words)
@@ -106,7 +108,7 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
         if using is not None:
             yield async.Coroutine.failure('using and inputlist incompatible')
 
-        ar = rpc.invoke_rpc(ti,'addinput','')
+        ar = rpc.invoke_rpc(db.qualify(ti),'addinput','')
         yield ar
         if not ar.status():
             yield async.Coroutine.failure('addinput failed')
@@ -124,6 +126,25 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
     print 'connect2 from:',from_descriptors
     print '-          to:',ti,tp
     print '-       using:',using
+
+    if 1 == len(from_descriptors) and 0 == len(partof_cache.direct_lefts(ti)) and 0 == len(partof_cache.direct_lefts(from_descriptors[0][0])):
+        (fi,fp) = from_descriptors[0]
+        print 'direct connect from:',fi,fp
+        print '-                to:',ti,tp
+        fe = Endpoint(db,fi,channel=fp)
+        te = Endpoint(db,ti,channel=tp)
+        if using is True:
+            iix = set()
+            iim = db.find_masters(te.id)
+            for ii2 in iim:
+                iixm = db.get_inputs(te.id,ii2)
+                iix = iix.union(iixm)
+            using = 1+reduce(max,iix,0)
+            print 'using',using,iix
+        if using == 0:
+            using = None
+        te.connect(fe,using)
+        yield async.Coroutine.success(created)
 
     normoutputs = []
     revoutputs = []
@@ -144,10 +165,10 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
     else:
         if ti in all_reversed:
             if ti in all_output:
-                revoutputs.append(Endpoint(db,ti,channel=p))
+                revoutputs.append(Endpoint(db,ti,channel=tp))
         else:
             if ti in all_input:
-                norminputs.append(Endpoint(db,ti,channel=p))
+                norminputs.append(Endpoint(db,ti,channel=tp))
 
     for (fi,fp) in from_descriptors:
         if fp is None:
@@ -159,10 +180,10 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
         else:
             if fi in all_reversed:
                 if fi in all_input:
-                    revinputs.append(Endpoint(db,fi,channel=p))
+                    revinputs.append(Endpoint(db,fi,channel=fp))
             else:
                 if fi in all_output:
-                    normoutputs.append(Endpoint(db,fi,channel=p))
+                    normoutputs.append(Endpoint(db,fi,channel=fp))
 
     print 'ni=',norminputs
     print 'ro=',revoutputs
@@ -237,7 +258,7 @@ def find_conn(aproxy,id):
     cnxs = logic.parse_clauselist(aproxy.get_master())
     r = []
     for cnx in cnxs:
-        if logic.is_pred_arity(cnx,'conn',4) and cnx.args[2]==id:
+        if logic.is_pred_arity(cnx,'conn',5) and cnx.args[2]==id:
             r.append(logic.render_term(cnx))
 
     return r

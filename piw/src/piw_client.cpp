@@ -112,10 +112,18 @@ unsigned short piw::client_t::cookie()
     return (unsigned short)cookie;
 }
 
+piw::data_t piw::client_t::servername_fq() 
+{
+    PIC_ASSERT(open());
+    bct_data_t d = bct_client_host_server_name(this,1);
+    PIC_ASSERT(d);
+    return piw::data_t::from_given(d); 
+}
+
 piw::data_t piw::client_t::servername() 
 {
     PIC_ASSERT(open());
-    bct_data_t d = bct_client_host_server_name(this);
+    bct_data_t d = bct_client_host_server_name(this,0);
     PIC_ASSERT(d);
     return piw::data_t::from_given(d); 
 }

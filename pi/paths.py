@@ -88,3 +88,50 @@ def id2child(id,*c):
     (s,p) = breakid_list(id)
     p.extend(c)
     return makeid_list(s,*p)
+
+def qualify(id,scope=None):
+    if '#' not in id:
+        (a,p) = (id,'')
+    else:
+        (a,p) = id.split('#')
+        
+    if len(a)<3 or a[0]!='<' or a[-1] != '>':
+        return id
+
+    a2 = a[1:-1]
+
+    if a2.find(':') >= 0:
+        return id
+
+    s = scope or piw.tsd_user()
+
+    if p:
+        aq = '<%s:%s>#%s' % (s,a2,p)
+    else:
+        aq = '<%s:%s>' % (s,a2)
+
+    return aq
+
+def unqualify(id,scope=None):
+    if '#' not in id:
+        (a,p) = (id,'')
+    else:
+        (a,p) = id.split('#')
+
+    a2 = a[1:-1]
+    cp = a2.find(':')
+    if cp < 0:
+        return id
+
+    u = a2[:cp]
+    n = a2[cp+1:]
+
+    s = scope or piw.tsd_user()
+
+    if u == s:
+        if p:
+            return '<%s>#%s' % (n,p)
+        else:
+            return '<%s>' % n
+
+    return id
