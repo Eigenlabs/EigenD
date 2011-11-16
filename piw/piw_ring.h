@@ -40,7 +40,10 @@ namespace piw
             {
                 for(unsigned i=0;i<SIZE;i++)
                 {
-                    piw_data_decref_atomic(buffer_[i]);
+                    if(buffer_[i])
+                    {
+                        piw_data_decref_atomic(buffer_[i]);
+                    }
                 }
             }
 
