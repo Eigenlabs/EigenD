@@ -23,9 +23,8 @@
 #include <picross/pic_functor.h>
 #include <piw/piw_bundle.h>
 #include <piw/piw_clock.h>
-#include <plg_host/host_exports.h>
-
-#include <lib_midi/control_mapping.h>
+#include <pihost_exports.h>
+#include <lib_midi/piw_control_mapping.h>
 
 #include <string>
 #include <lib_juce/juce.h>
@@ -46,11 +45,11 @@ namespace host
             }
 
 
-            std::string name() const         { return desc_.name.toCString(); }
-            std::string format() const       { return desc_.pluginFormatName.toCString(); }
-            std::string manufacturer() const { return desc_.manufacturerName.toCString(); }
-            std::string version() const      { return desc_.version.toCString(); }
-            std::string id() const           { return desc_.fileOrIdentifier.toCString(); }
+            std::string name() const         { return std::string(desc_.name.getCharPointer()); }
+            std::string format() const       { return std::string(desc_.pluginFormatName.getCharPointer()); }
+            std::string manufacturer() const { return std::string(desc_.manufacturerName.getCharPointer()); }
+            std::string version() const      { return std::string(desc_.version.getCharPointer()); }
+            std::string id() const           { return std::string(desc_.fileOrIdentifier.getCharPointer()); }
             std::string description() const  { return name()+" "+format()+" from "+manufacturer(); }
 
             bool from_xml(const std::string &xml)
@@ -64,7 +63,7 @@ namespace host
             {
                 std::auto_ptr<juce::XmlElement> element(desc_.createXml());
                 juce::String doc = element->createDocument(juce::String::empty,true);
-                return doc.toCString();
+                return std::string(doc.getCharPointer());
             }
 
             juce::PluginDescription desc_;

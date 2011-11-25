@@ -21,7 +21,7 @@
 #define __LNG_WORDREC__
 
 #include <piw/piw_bundle.h>
-#include <plg_language/src/lng_exports.h>
+#include <pilanguage_exports.h>
 
 namespace language
 {

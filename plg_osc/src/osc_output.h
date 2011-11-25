@@ -21,7 +21,7 @@
 #ifndef __OSC_OUTPUT__
 #define __OSC_OUTPUT__
 
-#include "osc_exports.h"
+#include "osc_plg_exports.h"
 
 #include <piw/piw_bundle.h>
 #include <piw/piw_data.h>

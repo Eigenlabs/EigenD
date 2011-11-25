@@ -21,7 +21,7 @@
 #ifndef __LNG_OSC__
 #define __LNG_OSC__
 
-#include <plg_language/src/lng_exports.h>
+#include <pilanguage_exports.h>
 #include <piw/piw_fastdata.h>
 
 namespace language

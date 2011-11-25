@@ -27,7 +27,7 @@
 #include <picross/pic_endian.h>
 #include <vector>
 
-#include <plg_loop/src/loop_exports.h>
+#include <piloop_exports.h>
 
 namespace loop
 {

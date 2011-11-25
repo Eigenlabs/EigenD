@@ -112,10 +112,13 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         os_major=uname()[2].split('.')[0]
         self.Append(LIBS=Split('dl m pthread'))
 
-        self.Replace(MACOSXSDK='/Developer/SDKs/MacOSX10.4u.sdk')
-        self.Append(CCFLAGS=Split('-isysroot ${MACOSXSDK} -mmacosx-version-min=10.4 -arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED'))
-        self.Append(LINKFLAGS=Split('-isysroot ${MACOSXSDK} -mmacosx-version-min=10.4 -arch i386 -framework Accelerate'))
-        self.Append(CCFLAGS=Split('-ggdb -Werror -Wall -Wno-long-double -O3 -fmessage-length=0 -falign-loops=16 -msse3'))
+        self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED'))
+        self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate'))
+        self.Replace(CXX='g++-4.2')
+        self.Replace(CC='gcc-4.2')
+
+        self.Append(CCFLAGS=Split('-ggdb -Werror -Wall -O3 -fmessage-length=0 -falign-loops=16 -msse3'))
+
         self.Replace(IS_MACOSX=os_major)
         self.Replace(PI_MODLINKFLAGS='$LINKFLAGS -bundle')
         self.Replace(PI_DLLENVNAME='DYLD_LIBRARY_PATH')
@@ -127,9 +130,6 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         self.Replace(APPINSTALLDIR=join('/','Applications','Eigenlabs','$PI_RELEASE'))
         self.Replace(APPSTAGEDIR_PRIV=join('$RELEASESTAGEDIR','Applications'))
         self.Replace(APPINSTALLDIR_PRIV=join('/','$INSTALLDIR','Applications'))
-
-        self.Replace(CXX='g++-4.0')
-        self.Replace(CC='gcc-4.0')
 
         self.Alias('target-default','#tmp/app')
 

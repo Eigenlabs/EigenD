@@ -20,7 +20,7 @@
 
 
 #include "rec_recording.h"
-#include <plg_recorder/pirecorder_exports.h>
+#include <pirecorder_exports.h>
 #include <piw/piw_address.h>
 #include <piembedded/pie_wire.h>
 #include <picross/pic_log.h>

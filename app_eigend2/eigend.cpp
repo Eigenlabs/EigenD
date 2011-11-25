@@ -752,7 +752,7 @@ std::string EigenMainWindow::get_os()
 
 #ifdef JUCE_MAC
 
-    os_name = os_name+T(" 10.")+String(juce::PlatformUtilities::getOSXMinorVersionNumber());
+    os_name = os_name+T(" 10.")+String(juce::SystemStats::getOSXMinorVersionNumber());
 
 #endif
 
@@ -761,7 +761,7 @@ std::string EigenMainWindow::get_os()
         os_name = os_name+T(" (64)");
     }
 
-    std::string rv = os_name.toUTF8();
+    std::string rv = std::string(os_name.getCharPointer());
     return rv;
 }
 
@@ -772,11 +772,11 @@ std::string EigenMainWindow::get_cookie()
 
     if(mac_addresses.size()>0)
     {
-        std::string rv = mac_addresses[0].toString().toUTF8();
+        std::string rv = std::string(mac_addresses[0].toString().getCharPointer());
         return rv;
     }
 
-    return "";
+    return std::string();
 
 }
 
@@ -811,15 +811,14 @@ File getGlobalDir()
 EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_gui_t *scaffold, eigend::c2p_t *backend, const pic::f_string_t &log):
     DocumentWindow (T("eigenD"), Colours::black, DocumentWindow::allButtons, true),
     manager_(mgr), scaffold_(scaffold), backend_(backend), status_(0), saving_(0), editing_(0), about_(0), logger_(log), bug_(0),
-    browser_(pic::private_tools_dir(),TOOL_BROWSER), commander_(pic::private_tools_dir(),TOOL_COMMANDER),
-    scanner_(pic::private_tools_dir(),TOOL_SCANNER), workbench_(pic::private_tools_dir(),TOOL_WORKBENCH),
-    stage_(pic::public_tools_dir(),TOOL_STAGE),
+    browser_(pic::private_tools_dir(),TOOL_BROWSER), commander_(pic::private_tools_dir(),TOOL_COMMANDER), scanner_(pic::private_tools_dir(),TOOL_SCANNER), 
+    stage_(pic::public_tools_dir(),TOOL_STAGE), workbench_(pic::private_tools_dir(),TOOL_WORKBENCH),
     progress_(0), help_(0), ignores_(getGlobalDir().getChildFile(T("ignores")), 0, juce::PropertiesFile::storeAsXML)
 {
     backend->upgrade_setups();
 
     component_ = new EigenLoadComponent(this);
-    setContentComponent (component_, true, true);
+    setContentOwned(component_, true);
     centreWithSize (getWidth(), getHeight());
     setUsingNativeTitleBar(true);
     setResizable(true,true);
@@ -937,7 +936,7 @@ void EigenMainWindow::getCommandInfo (const CommandID commandID, ApplicationComm
     {
         unsigned w = commandID-commandWindow+1;
         String j = String(T("Plugin Window "));
-        j += w;
+        j += String::String(w);
         result.setInfo (j,j, generalCategory, 0);
         if(w<10)
         {
@@ -1175,13 +1174,13 @@ const StringArray EigenMainWindow::getMenuBarNames()
 {
     if(new_version_.length()>0)
     {
-        const tchar* const names[] = { T("File"), T("Window"), T("Tools"), T("Update Available"),0 };
-        return StringArray ((const tchar**) names);
+        const wchar_t* const names[] = { T("File"), T("Window"), T("Tools"), T("Update Available"),0 };
+        return StringArray ((const wchar_t**) names);
     }
     else
     {
-        const tchar* const names[] = { T("File"), T("Window"), T("Tools"), 0 };
-        return StringArray ((const tchar**) names);
+        const wchar_t* const names[] = { T("File"), T("Window"), T("Tools"), 0 };
+        return StringArray ((const wchar_t**) names);
     }
 }
 
@@ -1312,19 +1311,19 @@ EigenBugComponent::EigenBugComponent(EigenMainWindow *mediator): mediator_(media
     pic::msg_t bug_report;
 
     bug_report << "Explain what happened:\n"
-               << "\n\n"
-               << "System information:\n"
-               << "OS: " << SystemStats::getOperatingSystemName().toUTF8() << " "
+        << "\n\n"
+        << "System information:\n"
+        << "OS: " << SystemStats::getOperatingSystemName().toUTF16() << " "
 
 #if JUCE_MAC
-               << "10." << PlatformUtilities::getOSXMinorVersionNumber() << ", "
+        << "10." << SystemStats::getOSXMinorVersionNumber() << ", "
 #endif
-               << "64 bit: " << (SystemStats::isOperatingSystem64Bit()?"yes":"no") << "\n"
-               << "CPU: " << SystemStats::getCpuVendor() << ", "
-               << "Cores: " << SystemStats::getNumCpus() << ", "
-               << "Speed: " << SystemStats::getCpuSpeedInMegaherz() << " MHz\n"
-               << "Memory: " << SystemStats::getMemorySizeInMegabytes() << " MB\n"
-               << "Version: " << pic::release() << "\n" << "\n";
+        << "64 bit: " << (SystemStats::isOperatingSystem64Bit()?"yes":"no") << "\n"
+        << "CPU: " << SystemStats::getCpuVendor() << ", "
+        << "Cores: " << SystemStats::getNumCpus() << ", "
+        << "Speed: " << SystemStats::getCpuSpeedInMegaherz() << " MHz\n"
+        << "Memory: " << SystemStats::getMemorySizeInMegabytes() << " MB\n"
+        << "Version: " << pic::release() << "\n" << "\n";
 
     name_editor()->setText(mediator->backend()->get_username().c_str(),false);
     email_editor()->setText(mediator->backend()->get_email().c_str(),false);
@@ -1359,11 +1358,11 @@ EigenBugComponent::~EigenBugComponent()
 void EigenBugComponent::buttonClicked (Button* buttonThatWasClicked)
 {
     mediator_->backend()->file_bug(
-          name_editor()->getText().trim().toUTF8(),
-          email_editor()->getText().trim().toUTF8(),
-          subject_editor()->getText().trim().toUTF8(),
-          description_editor()->getText().trim().toUTF8()
-    );
+            std::string(name_editor()->getText().trim().getCharPointer()),
+            std::string(email_editor()->getText().trim().getCharPointer()),
+            std::string(subject_editor()->getText().trim().getCharPointer()),
+            std::string(description_editor()->getText().trim().getCharPointer())
+            );
 
     delete getTopLevelComponent();
 }
@@ -1403,7 +1402,7 @@ EigenSaveComponent::EigenSaveComponent(EigenMainWindow *mediator, const std::str
     for(unsigned i=1;i<term_.arity();i++)
     {
         juce::String sltt = term_.arg(i).arg(1).value().as_string();
-        juce::String sltt2 = mediator_->backend()->words_to_notes(sltt.toUTF8()).c_str();
+        juce::String sltt2 = mediator_->backend()->words_to_notes(std::string(sltt.getCharPointer())).c_str();
 
         getWordsChooser()->addItem(sltt,i);
         getNotesChooser()->addItem(sltt2,i);
@@ -1530,7 +1529,7 @@ void EigenSaveComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
         }
 
         getWordsChooser()->setText(t,true);
-        std::string n = mediator_->backend()->words_to_notes(t.toUTF8());
+        std::string n = std::string(mediator_->backend()->words_to_notes(std::string(t.getCharPointer())));
         getErrorLabel()->setVisible(false);
 
         if(n.length()==0)
@@ -1547,14 +1546,14 @@ void EigenSaveComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
             getNotesChooser()->setText(n.c_str(),true);
             getSaveButton()->setEnabled(true);
         }
-        
+
         return;
     }
 
     if(comboBoxThatHasChanged == getNotesChooser())
     {
         juce::String t = getNotesChooser()->getText();
-        std::string n = mediator_->backend()->notes_to_words(t.toUTF8());
+        std::string n = std::string(mediator_->backend()->notes_to_words(std::string(t.getCharPointer())));
         juce::String tn(n.c_str());
         getWordsChooser()->setText(tn,true);
         comboBoxChanged(getWordsChooser());
@@ -1739,7 +1738,7 @@ bool EigenMainWindow::select_setup(const char *setup)
 
 EigenDialog::EigenDialog(EigenMainWindow *main,Component *content,int w,int h,int mw,int mh,int xw,int xh,Component *position): DocumentWindow(content->getName(), Colours::black, DocumentWindow::closeButton, true), main_(main)
 {
-    setContentComponent (content, true, true);
+    setContentOwned(content, true);
     setSize(w,h);
 
     if(position)
@@ -1912,7 +1911,7 @@ void EigenMainWindow::windowClosed(Component *window)
 pic::f_string_t EigenMainWindow::make_logger(const char *prefix)
 {
     JUCE_AUTORELEASEPOOL
-    return EigenLogger::create(prefix,logger_);
+        return EigenLogger::create(prefix,logger_);
 }
 
 void EigenMainWindow::save_dialog(const std::string &current)
@@ -1939,7 +1938,7 @@ void EigenMainWindow::alert_dialog(const char *klass, const char *label, const c
 
 EigenDialog *EigenMainWindow::alert1(const String &klass, const String &label, const String &text)
 {
-    std::string cklass = klass.toUTF8();
+    std::string cklass = std::string(klass.getCharPointer());
 
     if(ignores_.getBoolValue(juce::String("ignores.")+klass, false))
     {
@@ -1963,7 +1962,7 @@ EigenDialog *EigenMainWindow::alert1(const String &klass, const String &label, c
 
 EigenDialog *EigenMainWindow::alert2(const String &klass, const String &label, const String &text, EigenAlertDelegate *l)
 {
-    std::string cklass = klass.toUTF8();
+    std::string cklass = std::string(klass.getCharPointer());
 
     if(ignores_.getBoolValue(juce::String("ignores.")+klass, false))
     {
@@ -1993,7 +1992,7 @@ void EigenMainWindow::info_dialog(const char *klass, const char *label, const ch
 
 EigenDialog *EigenMainWindow::info(const String &klass, const String &label, const String &text)
 {
-    std::string cklass = klass.toUTF8();
+    std::string cklass = std::string(klass.getCharPointer());
 
     EigenInfoComponent *c = new EigenInfoComponent(this,klass,label,text);
     EigenDialog *e = new EigenDialog(this,c,400,300,400,300,2000,2000,this);
@@ -2161,12 +2160,12 @@ void EigenLogger::operator()(const char *msg) const
 {
     juce::String buffer(prefix_);
     buffer += T(": "); buffer+=msg;
-    logger_(buffer.toCString());
+    logger_(std::string(buffer.getCharPointer()).c_str());
 }
 
 void EigenMainWindow::ignore_klass(const juce::String &klass)
 {
-    std::string cklass = klass.toUTF8();
+    std::string cklass = std::string(klass.getCharPointer());
     ignores_.setValue(juce::String("ignores.")+klass, true);
 }
 

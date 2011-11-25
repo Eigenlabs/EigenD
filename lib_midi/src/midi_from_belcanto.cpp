@@ -34,7 +34,7 @@
 #include <lib_midi/midi_from_belcanto.h>
 
 #include <cmath>
-//#include <sys/param.h>
+#include <limits.h>
 
 #include <iostream>
 #include <iomanip>
@@ -221,7 +221,7 @@ namespace midi
         impl_t(const piw::cookie_t &output_cookie, piw::clockdomain_ctl_t *clk_domain);
         ~impl_t() { invalidate(); }
 
-        static int midi_from_belcanto_t::impl_t::init__(void *self_, void *arg_);
+        static int init__(void *self_, void *arg_);
 
         void invalidate();
 

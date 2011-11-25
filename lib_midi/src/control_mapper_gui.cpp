@@ -185,7 +185,7 @@ namespace midi
             DocumentWindow(title, juce::Colours::black, juce::DocumentWindow::closeButton, true)
         {
             setUsingNativeTitleBar(true);
-            setContentComponent(c, true, true);
+            setContentOwned(c, true);
             centreAroundComponent(c, getWidth(), getHeight());
             setVisible(true);
             setResizable(true,true);
@@ -520,7 +520,7 @@ namespace midi
         GlobalSettingsComponent dialogContent;
 
         dialogContent.initialize(this);
-        window.setContentComponent(&dialog, false, true);
+        window.setContentNonOwned(&dialog, true);
         window.setSize(dialogContent.getWidth()+32, dialogContent.getHeight()+42);
         window.centreAroundComponent(button_settings_, dialog.getWidth(), dialog.getHeight());
         window.setVisible(true);
@@ -784,7 +784,7 @@ namespace midi
             CellPopupComponent dialogContent;
 
             dialogContent.initialize(this);
-            window.setContentComponent(&dialog, false, true);
+            window.setContentNonOwned(&dialog, true);
             window.setSize(dialogContent.getWidth()+32, dialogContent.getHeight()+42);
             window.centreAroundComponent(this, dialog.getWidth(), dialog.getHeight());
             window.setVisible(true);

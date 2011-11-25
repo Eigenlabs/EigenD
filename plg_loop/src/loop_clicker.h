@@ -23,7 +23,7 @@
 
 #include <piw/piw_clock.h>
 #include <piw/piw_bundle.h>
-#include <plg_loop/src/loop_exports.h>
+#include <piloop_exports.h>
 
 namespace loop
 {

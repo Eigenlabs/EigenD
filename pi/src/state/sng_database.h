@@ -22,6 +22,7 @@
 
 #include "sng_file.h"
 #include "sng_mapping.h"
+#include "sng_exports.h"
 
 #include <piw/piw_data.h>
 #include <picross/pic_ref.h>
@@ -43,7 +44,7 @@ namespace pi
         typedef pic::ref_t<agent_t> agentref_t;
         typedef pic::ref_t<node_t> noderef_t;
 
-        struct node_t: public pic::nocopy_t, virtual public pic::counted_t
+        struct SNG_DECLSPEC_CLASS node_t: public pic::nocopy_t, virtual public pic::counted_t
         {
             virtual ~node_t() {}
             virtual piw::data_t get_data() const = 0;
@@ -58,7 +59,7 @@ namespace pi
             virtual void copy(const noderef_t &,const mapref_t &) = 0;
         };
 
-        struct agent_t: public pic::nocopy_t, virtual public pic::counted_t
+        struct SNG_DECLSPEC_CLASS agent_t: public pic::nocopy_t, virtual public pic::counted_t
         {
             virtual ~agent_t() {}
             virtual std::string get_address() const = 0;
@@ -73,7 +74,7 @@ namespace pi
             virtual void set_type(unsigned) = 0;
         };
 
-        struct snapshot_t: public pic::nocopy_t, virtual public pic::counted_t
+        struct SNG_DECLSPEC_CLASS snapshot_t: public pic::nocopy_t, virtual public pic::counted_t
         {
             virtual ~snapshot_t() {}
             virtual unsigned long previous() = 0;
@@ -91,7 +92,7 @@ namespace pi
             virtual void erase() = 0;
         };
 
-        struct database_t: public pic::nocopy_t, virtual public pic::counted_t
+        struct SNG_DECLSPEC_CLASS database_t: public pic::nocopy_t, virtual public pic::counted_t
         {
             virtual ~database_t() {}
             virtual snapref_t get_trunk() = 0;
@@ -102,7 +103,7 @@ namespace pi
             virtual bool writeable() = 0;
         };
 
-        dbref_t open_database(const char *filename, bool writeable);
+        SNG_DECLSPEC_FUNC(dbref_t) open_database(const char *filename, bool writeable);
     };
 }
 

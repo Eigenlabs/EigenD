@@ -23,7 +23,7 @@
 #include <piw/piw_bundle.h>
 #include <piw/piw_data.h>
 #include <picross/pic_functor.h>
-#include <plg_synth/src/synth_exports.h>
+#include <pisynth_exports.h>
 
 /**
  *  Components for modelling analogue synths.

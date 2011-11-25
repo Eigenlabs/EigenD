@@ -21,7 +21,7 @@
 #ifndef __MICRO_PASSIVE__
 #define __MICRO_PASSIVE__
 
-#include <lib_micro/micro_exports.h>
+#include <micro_exports.h>
 #include <string>
 
 namespace micro

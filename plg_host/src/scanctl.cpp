@@ -66,7 +66,7 @@ namespace
             EigenScanPrgWindow(EigenScanner *app, const StringArray &skip,bool fullscan,const FileSearchPath &path): DocumentWindow(T("Plugin Scanner"),Colours::black,DocumentWindow::allButtons,true), app_(app), tool_(pic::private_tools_dir(),SCAN_HELPER_NAME), skip_(skip), fullscan_(fullscan),path_(path)
             {
                 component_ = new EigenScanPrgComponent();
-                setContentComponent(component_,true,true);
+                setContentOwned(component_,true);
                 setSize(400,60);
                 setResizable(false,false);
                 centreWithSize (getWidth(), getHeight());
@@ -168,7 +168,7 @@ namespace
                     if(d)
                     {
                         plugin_list_.addType(*d);
-                        printf("skip %s (good)\n",plugins_[cur_plugin_].toCString());
+                        printf("skip %s (good)\n",std::string(plugins_[cur_plugin_].getCharPointer()).c_str());
 
                         String name = format->getNameOfPluginFromIdentifier(plugins_[cur_plugin_]);
                         String goodmsg = plugins_[cur_plugin_];
@@ -182,12 +182,12 @@ namespace
                         {
                             plugin_failed();
                             scan = false;
-                            printf("skip %s (bad)\n",plugins_[cur_plugin_].toCString());
+                            printf("skip %s (bad)\n",std::string(plugins_[cur_plugin_].getCharPointer()).c_str());
                         }
                         else
                         {
                             scan = true;
-                            printf("rescan %s (bad)\n",plugins_[cur_plugin_].toCString());
+                            printf("rescan %s (bad)\n",std::string(plugins_[cur_plugin_].getCharPointer()).c_str());
                         }
                     }
                 }
@@ -578,7 +578,7 @@ namespace
             EigenScanCtlWindow(EigenScanner *app): DocumentWindow(T("Plugin Scanner"),Colours::black,DocumentWindow::allButtons,true), app_(app)
             {
                 component_ = new EigenScanCtlComponent(app);
-                setContentComponent(component_,true,true);
+                setContentOwned(component_,true);
                 centreWithSize (getWidth(), getHeight());
                 setSize(component_->getWidth(),component_->getHeight());
                 setResizable(false,false);
@@ -658,7 +658,7 @@ namespace
             EigenScanCompleteWindow(bool ok, const StringArray &bad_plugins, const StringArray &good_plugins): DocumentWindow(T("Scan results"),Colours::black,DocumentWindow::allButtons,true)
             {
                 component_ = new EigenScanCompleteComponent(ok,good_plugins,bad_plugins);
-                setContentComponent(component_,true,true);
+                setContentOwned(component_,true);
                 centreWithSize (getWidth(), getHeight());
                 setSize(component_->getWidth(),component_->getHeight());
                 setResizable(false,false);

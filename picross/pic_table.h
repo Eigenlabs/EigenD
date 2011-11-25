@@ -22,7 +22,7 @@
 #define __PICROSS_TABLE__
 
 #include <picross/pic_stl.h>
-#include <picross/pic_exports.h>
+#include <pic_exports.h>
 #include <picross/pic_error.h>
 
 namespace pic

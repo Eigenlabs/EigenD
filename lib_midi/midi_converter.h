@@ -21,7 +21,6 @@
 #define __MIDI_CONVERTER_H__
 
 #include <lib_midi/lib_midi_exports.h>
-
 #include <lib_midi/midi_from_belcanto.h>
 #include <lib_midi/control_mapper_gui.h>
 #include <lib_midi/control_mapping.h>

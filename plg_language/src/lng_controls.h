@@ -22,7 +22,7 @@
 #define __LNG_CONTROLS__
 
 #include <piw/piw_controller.h>
-#include <plg_language/src/lng_exports.h>
+#include <pilanguage_exports.h>
 
 namespace language
 {

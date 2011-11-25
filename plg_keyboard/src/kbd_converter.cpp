@@ -24,6 +24,7 @@
 #include <lib_samplerate/lib_samplerate.h>
 #include <picross/pic_log.h>
 #include <piw/piw_resampler.h>
+#include <string.h>
 
 #define PERIOD_US_44 11609
 #define PERIOD_US_48 10666

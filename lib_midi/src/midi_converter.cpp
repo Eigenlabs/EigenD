@@ -24,6 +24,7 @@
  */
 
 #include <sstream>
+#include <memory>
 
 #include <picross/pic_weak.h>
 #include <piw/piw_bundle.h>
@@ -200,7 +201,7 @@ namespace midi
             component_ = new ConverterDialogComponent(root_,this);
 
             setUsingNativeTitleBar(true);
-            setContentComponent(component_,true,true);
+            setContentOwned(component_,true);
             centreAroundComponent(component_,getWidth(),getHeight());
             setTopLeftPosition(150,150);
             setResizable(true,true);
@@ -209,7 +210,7 @@ namespace midi
         ~ConverterDialog()
         {
             deleteAllChildren();
-            setContentComponent(0,true);
+            clearContentComponent();
         }
 
         void closeButtonPressed()

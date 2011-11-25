@@ -33,9 +33,8 @@ lo_env = env.Clone()
 lo_env.Append(CPPPATH=lo_dirs)
 
 if env['IS_WINDOWS']:
-    lo_files=lo_files+Split('liblo.def')
     lo_env.Append(LINKFLAGS=' WS2_32.Lib ')
 
-lo_env.PiSharedLibrary('pilo',lo_files,package='eigend',hidden=False)
 #lo_env.PiProgram('oscsend','oscsend.c',libraries=Split('pilo'))
 #lo_env.PiProgram('oscdump','oscdump.c',libraries=Split('pilo'))
+lo_env.PiSharedLibrary('pilo',lo_files,package='eigend',hidden=False,deffile='liblo.def')

@@ -20,7 +20,7 @@
 #ifndef __UKBD_BUNDLE__
 #define __UKBD_BUNDLE__
 
-#include <plg_ukbd/src/ukbd_exports.h>
+#include <piukbdplg_exports.h>
 #include <piw/piw_bundle.h>
 #include <picross/pic_functor.h>
 

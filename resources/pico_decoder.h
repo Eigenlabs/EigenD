@@ -20,8 +20,8 @@
       #define PICO_DECODER_DECLSPEC_FUNC(rt) rt __attribute__ ((visibility("default")))
       #define PICO_DECODER_DECLSPEC_CLASS __attribute__ ((visibility("default")))
     #else
-      #define PICO_DECODER_DECLSPEC_FUNC(rt) rt  __attribute__ ((visibility("hidden")))
-      #define PICO_DECODER_DECLSPEC_CLASS  __attribute__ ((visibility("hidden")))
+      #define PICO_DECODER_DECLSPEC_FUNC(rt) rt  __attribute__ ((visibility("default")))
+      #define PICO_DECODER_DECLSPEC_CLASS  __attribute__ ((visibility("default")))
     #endif
   #else
     #define PICO_DECODER_DECLSPEC_FUNC(rt) rt

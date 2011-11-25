@@ -27,7 +27,7 @@
 
 namespace piw
 {
-    class  anchor_t
+    class PIW_DECLSPEC_INLINE_CLASS anchor_t
     {
         public:
             anchor_t(): address_("")

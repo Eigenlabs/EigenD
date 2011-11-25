@@ -28,6 +28,7 @@
 #define snprintf _snprintf
 #else
 #include <unistd.h>
+#include <time.h>
 #endif
 
 #ifdef WIN32

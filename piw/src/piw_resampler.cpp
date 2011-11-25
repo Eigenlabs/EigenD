@@ -22,6 +22,7 @@
 #include <lib_samplerate/lib_samplerate.h>
 #include <picross/pic_log.h>
 #include <string>
+#include <cstring>
 
 #define BUFFER_LENGTH 8192
 #define AVG_LENGTH 512

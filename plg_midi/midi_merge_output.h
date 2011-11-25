@@ -23,7 +23,7 @@
 
 #include <piw/piw_bundle.h>
 #include <piw/piw_clock.h>
-#include <plg_midi/midi_exports.h>
+#include <pimidi_exports.h>
 
 namespace pi_midi
 {

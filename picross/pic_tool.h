@@ -21,7 +21,7 @@
 #ifndef __PICROSS_TOOL__
 #define __PICROSS_TOOL__
 
-#include <picross/pic_exports.h>
+#include <pic_exports.h>
 #include <string>
 
 namespace pic

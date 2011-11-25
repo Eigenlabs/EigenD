@@ -34,7 +34,7 @@
 #define LOG2DB(x) (x*(20.f/PIC_LN10))
 #define ANTI_DENORMAL 1.0e-20
 
-#include <plg_synth/src/synth_exports.h>
+#include <pisynth_exports.h>
 
 namespace synth
 {

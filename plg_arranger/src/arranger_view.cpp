@@ -27,7 +27,7 @@
 #include <piw/piw_fastdata.h>
 #include <memory>
 #include <algorithm>
-#include <plg_arranger/piarranger_exports.h>
+#include <piarranger_exports.h>
 
 #define MODES 6  // mode 0==normal view
 

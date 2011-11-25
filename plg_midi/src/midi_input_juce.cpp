@@ -167,7 +167,7 @@ struct pi_midi::midi_input_port_t::impl_t: piw::thing_t, juce::MidiInputCallback
 
         for(int i=0;i<new_devices.size();i++)
         {
-            delegate_->source_added(new_devices[i].hashCode(),new_devices[i].toCString());
+            delegate_->source_added(new_devices[i].hashCode(),std::string(new_devices[i].getCharPointer()));
         }
 
 

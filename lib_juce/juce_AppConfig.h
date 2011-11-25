@@ -15,6 +15,7 @@
 
 #include <picross/pic_config.h>
 
+#define JUCE_DLL  1
 #define JUCE_QUICKTIME  0
 #define JUCE_FORCE_DEBUG  0
 #define JUCE_LOG_ASSERTIONS 0
@@ -30,7 +31,6 @@
 #define JUCE_ENABLE_REPAINT_DEBUGGING  0
 #define JUCE_USE_XINERAMA  0
 #define JUCE_USE_XSHM  1
-#define JUCE_INCLUDE_PNGLIB_CODE      1
 #ifndef PI_LINUX
 #define JUCE_PLUGINHOST_VST  1
 #define JUCE_PLUGINHOST_AU  1
