@@ -91,7 +91,7 @@ struct piw::connector_t::impl_t: piw::client_t
         correlator_->plumb_input(signal_,iid_,path_,pri_,type_,data2_,converter_,filter_);
     }
 
-    void client_data(const piw::data_nb_t &d)
+    void client_data(const piw::data_t &d)
     {
         piw::tsd_fastcall(__data,this,(void *)d.give_copy());
     }
