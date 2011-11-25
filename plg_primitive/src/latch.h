@@ -21,7 +21,7 @@
 #ifndef __LATCH__
 #define __LATCH__
 
-#include "primitive_exports.h"
+#include "primitive_plg_exports.h"
 
 #include <piw/piw_bundle.h>
 #include <piw/piw_data.h>
