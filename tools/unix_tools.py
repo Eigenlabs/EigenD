@@ -27,6 +27,8 @@ class PiUnixEnvironment(generic_tools.PiGenericEnvironment):
     def __init__(self,platform,install_prefix,userdir_suffix,python = None):
         generic_tools.PiGenericEnvironment.__init__(self,platform,install_prefix,userdir_suffix,python)
         self.Append(LINKFLAGS=Split('-ggdb'))
+        self.Append(SHLINKCOM=' $LIBMAPPER')
+        self.Append(LINKCOM=' $LIBMAPPER')
 
     def Initialise(self):
         generic_tools.PiGenericEnvironment.Initialise(self)

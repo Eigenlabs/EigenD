@@ -231,7 +231,6 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         self.Replace(ROOTINSTALLDIR=os.path.join('/',install_prefix))
 
-        self.Append(LINKFLAGS=Split('$LIBMAPPER'))
         self.Replace(LIBMAPPER=self.libmapper)
 
         self.Replace(EXPDIR=join('#tmp','exp'))

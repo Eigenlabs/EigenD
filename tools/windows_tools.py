@@ -133,6 +133,8 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         self.Append(CCFLAGS='/EHsc /w34355 /MD /O2 /fp:fast /arch:SSE2 /DWIN32')
         self.Replace(PI_PLATFORMTYPE='windows')
         self.Append(LINKFLAGS=Split('/MANIFEST /INCREMENTAL:NO'))
+        self.Append(SHLINK=' $LIBMAPPER')
+        self.Append(LINK=' $LIBMAPPER')
 
         if os.environ.get('PI_DEBUGBUILD'):
             self.Append(CCFLAGS=Split('/Zi'))

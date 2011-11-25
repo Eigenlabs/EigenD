@@ -304,8 +304,6 @@ static int resolve_address(lo_address a)
 
 static int create_socket(lo_address a)
 {
-    int ret = 0;
-    
     if (a->protocol == LO_UDP || a->protocol == LO_TCP) {
 
 	a->socket = socket(a->ai->ai_family, a->ai->ai_socktype, 0);
@@ -337,7 +335,7 @@ static int create_socket(lo_address a)
         if (ip[0]==255 && ip[1]==255 && ip[2]==255 && ip[3]==255)
         {
             int opt = 1;
-            ret = setsockopt(a->socket, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt));
+            setsockopt(a->socket, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt));
         }
 	}
 	

@@ -429,7 +429,7 @@ void ranger_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw
             n=d.as_norm();
         }
 
-        float f = parent_->curve(d.as_norm());
+        float f = parent_->curve(n);
         bias_ = parent_->static_.start(t,f);
         last_ = f;
         initial_ = f;

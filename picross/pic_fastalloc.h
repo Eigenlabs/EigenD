@@ -22,9 +22,10 @@
 
 #include "pic_exports.h"
 
-#include <stdlib.h>
-#include <new>
+#include <cstdlib>
+#include <cstddef>
 #include <cstdio>
+#include <new>
 #include "pic_config.h"
 #include <picross/pic_thread.h>
 #include <picross/pic_nocopy.h>

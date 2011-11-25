@@ -936,7 +936,7 @@ void EigenMainWindow::getCommandInfo (const CommandID commandID, ApplicationComm
     {
         unsigned w = commandID-commandWindow+1;
         String j = String(T("Plugin Window "));
-        j += String::String(w);
+        j += String(w);
         result.setInfo (j,j, generalCategory, 0);
         if(w<10)
         {

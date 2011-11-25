@@ -30,7 +30,7 @@ if env['IS_WINDOWS']:
 
 if env['IS_LINUX']:
     juce_files = Split('juce_LibrarySource.cpp')
-    juce_env.Append(CCFLAGS='-Wno-strict-overflow -Wno-multichar -Wno-reorder -Wno-sign-compare -DLINUX=1 -DNDEBUG=1 -DJUCE_DLL_BUILD -DJUCE_DLL')
+    juce_env.Append(CCFLAGS='-Wno-unused-but-set-variable -Wno-strict-overflow -Wno-multichar -Wno-reorder -Wno-sign-compare -DLINUX=1 -DNDEBUG=1 -DJUCE_DLL_BUILD -DJUCE_DLL')
     juce_env.Append(CPPPATH='/usr/include/freetype2')
     juce_env.Append(LIBS=Split('X11 freetype Xext asound'))
 

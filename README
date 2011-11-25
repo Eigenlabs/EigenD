@@ -66,6 +66,7 @@ Linux
 
 These packages
 
+build-essential
 libiw-dev
 libfreetype6-dev
 libx11-dev
