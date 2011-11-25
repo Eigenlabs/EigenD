@@ -812,8 +812,8 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
     DocumentWindow (T("eigenD"), Colours::black, DocumentWindow::allButtons, true),
     manager_(mgr), scaffold_(scaffold), backend_(backend), status_(0), saving_(0), editing_(0), about_(0), logger_(log), bug_(0),
     browser_(pic::private_tools_dir(),TOOL_BROWSER), commander_(pic::private_tools_dir(),TOOL_COMMANDER), scanner_(pic::private_tools_dir(),TOOL_SCANNER), 
-    stage_(pic::public_tools_dir(),TOOL_STAGE), workbench_(pic::private_tools_dir(),TOOL_WORKBENCH),
-    progress_(0), help_(0), ignores_(getGlobalDir().getChildFile(T("ignores")), 0, juce::PropertiesFile::storeAsXML)
+    workbench_(pic::private_tools_dir(),TOOL_WORKBENCH), stage_(pic::public_tools_dir(),TOOL_STAGE),
+    progress_(0), help_(0), ignores_(getGlobalDir().getChildFile(T("ignores")), PropertiesFile::Options())
 {
     backend->upgrade_setups();
 

@@ -20,14 +20,14 @@
 #ifndef __MIDI_CONVERTER_H__
 #define __MIDI_CONVERTER_H__
 
-#include <lib_midi/lib_midi_exports.h>
+#include <midilib_exports.h>
 #include <lib_midi/midi_from_belcanto.h>
 #include <lib_midi/control_mapper_gui.h>
 #include <lib_midi/control_mapping.h>
 
 namespace midi
 {
-    struct MIDI_DECLSPEC_CLASS midi_converter_t
+    struct MIDILIB_DECLSPEC_CLASS midi_converter_t
     {
         midi_converter_t(mapping_observer_t &, midi_channel_delegate_t &, piw::clockdomain_ctl_t *, midi_from_belcanto_t &, const std::string &);
         ~midi_converter_t();

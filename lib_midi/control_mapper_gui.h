@@ -20,7 +20,7 @@
 #ifndef __CONTROL_MAPPER_GUI__
 #define __CONTROL_MAPPER_GUI__
 
-#include <lib_midi/lib_midi_exports.h>
+#include <midilib_exports.h>
 
 #include <picross/pic_functor.h>
 #include <picross/pic_weak.h>
@@ -31,11 +31,11 @@
 
 namespace midi
 {
-    class MIDI_DECLSPEC_CLASS toolbar_delegate_t: public juce::ToolbarItemFactory, public juce::Button::Listener
+    class MIDILIB_DECLSPEC_CLASS toolbar_delegate_t: public juce::ToolbarItemFactory, public juce::Button::Listener
     {
     };
 
-    class MIDI_DECLSPEC_CLASS toolbar_t: public juce::Toolbar
+    class MIDILIB_DECLSPEC_CLASS toolbar_t: public juce::Toolbar
     {
         public:
             toolbar_t(toolbar_delegate_t *);
@@ -44,7 +44,7 @@ namespace midi
             toolbar_delegate_t *delegate_;
     };
 
-    class MIDI_DECLSPEC_CLASS toolbar_button_t: public juce::ToolbarButton
+    class MIDILIB_DECLSPEC_CLASS toolbar_button_t: public juce::ToolbarButton
     {
         public:
             toolbar_button_t(int, const juce::String &);
@@ -57,7 +57,7 @@ namespace midi
     typedef pic::functor_t<void(unsigned)> set_channel_t;
     typedef pic::functor_t<unsigned()> get_channel_t;
 
-    struct MIDI_DECLSPEC_CLASS settings_functors_t
+    struct MIDILIB_DECLSPEC_CLASS settings_functors_t
     {
         clearall_t clearall_;
         get_settings_t get_settings_;
@@ -78,7 +78,7 @@ namespace midi
         }
     };
 
-    class MIDI_DECLSPEC_CLASS mapping_delegate_t: public toolbar_delegate_t
+    class MIDILIB_DECLSPEC_CLASS mapping_delegate_t: public toolbar_delegate_t
     {
         public:
             mapping_delegate_t(settings_functors_t functors) : settings_functors_(functors), button_clearall_(0), button_settings_(0), button_help_(0), help_(0), global_settings_(0) { }
@@ -118,7 +118,7 @@ namespace midi
     typedef pic::functor_t<std::string(unsigned)> get_name_t;
     typedef pic::functor_t<void()> clear_t;
 
-    struct MIDI_DECLSPEC_CLASS mapping_functors_t
+    struct MIDILIB_DECLSPEC_CLASS mapping_functors_t
     {
         is_mapped_t is_mapped_;
         get_info_t get_info_;
@@ -136,7 +136,7 @@ namespace midi
 
     class mapper_table_t;
 
-    class MIDI_DECLSPEC_CLASS mapper_yaxis_editor_t: public juce::Component
+    class MIDILIB_DECLSPEC_CLASS mapper_yaxis_editor_t: public juce::Component
     {
         public:
             mapper_yaxis_editor_t(mapper_table_t &);
@@ -153,7 +153,7 @@ namespace midi
             int row_;
     };
 
-    class MIDI_DECLSPEC_CLASS modal_dialog_listener_t
+    class MIDILIB_DECLSPEC_CLASS modal_dialog_listener_t
     {
         public:
             virtual ~modal_dialog_listener_t() {};
@@ -162,7 +162,7 @@ namespace midi
 
     class PopupDialogWindow;
 
-    class MIDI_DECLSPEC_CLASS mapper_cell_editor_t: public modal_dialog_listener_t, public juce::Component
+    class MIDILIB_DECLSPEC_CLASS mapper_cell_editor_t: public modal_dialog_listener_t, public juce::Component
     {
         public:
             mapper_cell_editor_t(mapper_table_t &);
@@ -208,14 +208,14 @@ namespace midi
             Component *cell_popup_;
     };
 
-    class MIDI_DECLSPEC_CLASS mapper_midi_cell_editor_t: public mapper_cell_editor_t
+    class MIDILIB_DECLSPEC_CLASS mapper_midi_cell_editor_t: public mapper_cell_editor_t
     {
         public:
             mapper_midi_cell_editor_t(mapper_table_t &t) : mapper_cell_editor_t(t) {};
             void setup(int, int);
     };
 
-    class MIDI_DECLSPEC_CLASS mapper_table_model_t: public juce::TableListBoxModel
+    class MIDILIB_DECLSPEC_CLASS mapper_table_model_t: public juce::TableListBoxModel
     {
         public:
             mapper_table_model_t(mapper_table_t &mapper): mapper_(mapper) { };
@@ -228,7 +228,7 @@ namespace midi
             mapper_table_t &mapper_;
     };
 
-    class MIDI_DECLSPEC_CLASS header_table_model_t: public mapper_table_model_t
+    class MIDILIB_DECLSPEC_CLASS header_table_model_t: public mapper_table_model_t
     {
         public:
             header_table_model_t(mapper_table_t &mapper): mapper_table_model_t(mapper), mapper_(mapper) { };
@@ -243,7 +243,7 @@ namespace midi
             mapper_table_t &mapper_;
     };
 
-    class MIDI_DECLSPEC_CLASS mapping_table_model_t: public mapper_table_model_t
+    class MIDILIB_DECLSPEC_CLASS mapping_table_model_t: public mapper_table_model_t
     {
         public:
             mapping_table_model_t(mapper_table_t &mapper): mapper_table_model_t(mapper), mapper_(mapper) { };
@@ -256,7 +256,7 @@ namespace midi
             mapper_table_t &mapper_;
     };
 
-    class MIDI_DECLSPEC_CLASS mapper_table_t: public juce::Component, public juce::Button::Listener, public virtual pic::tracked_t
+    class MIDILIB_DECLSPEC_CLASS mapper_table_t: public juce::Component, public juce::Button::Listener, public virtual pic::tracked_t
     {
         public:
             mapper_table_t(settings_functors_t, mapping_functors_t);
@@ -302,7 +302,7 @@ namespace midi
             bool initialized_;
     };
 
-    class MIDI_DECLSPEC_CLASS mapper_midi_cc_table_t: public mapper_table_t
+    class MIDILIB_DECLSPEC_CLASS mapper_midi_cc_table_t: public mapper_table_t
     {
         public:
             mapper_midi_cc_table_t(settings_functors_t settings, mapping_functors_t mapping): mapper_table_t(settings, mapping) {};
@@ -316,7 +316,7 @@ namespace midi
             void default_mapping(mapper_cell_editor_t &);
     };
 
-    class MIDI_DECLSPEC_CLASS mapper_midi_behaviour_table_t: public mapper_table_t
+    class MIDILIB_DECLSPEC_CLASS mapper_midi_behaviour_table_t: public mapper_table_t
     {
         public:
             mapper_midi_behaviour_table_t(settings_functors_t settings, mapping_functors_t mapping): mapper_table_t(settings, mapping) {};

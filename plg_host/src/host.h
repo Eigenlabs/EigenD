@@ -24,7 +24,7 @@
 #include <piw/piw_bundle.h>
 #include <piw/piw_clock.h>
 #include <pihost_exports.h>
-#include <lib_midi/piw_control_mapping.h>
+#include <lib_midi/control_mapping.h>
 
 #include <string>
 #include <lib_juce/juce.h>

@@ -20,7 +20,7 @@
 #ifndef __MIDI_FROM_BELCANTO_H__
 #define __MIDI_FROM_BELCANTO_H__
 
-#include <lib_midi/lib_midi_exports.h>
+#include <midilib_exports.h>
 
 #include <picross/pic_functor.h>
 #include <piw/piw_data.h>
@@ -36,7 +36,7 @@ namespace midi
 
     typedef pic::functor_t<void(const piw::data_nb_t&)> resend_current_t;
 
-    struct MIDI_DECLSPEC_CLASS midi_from_belcanto_t
+    struct MIDILIB_DECLSPEC_CLASS midi_from_belcanto_t
     {
         midi_from_belcanto_t(const piw::cookie_t &, piw::clockdomain_ctl_t *);
         ~midi_from_belcanto_t();

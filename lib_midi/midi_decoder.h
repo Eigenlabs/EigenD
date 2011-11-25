@@ -20,11 +20,11 @@
 #ifndef __MIDI_DECODER__
 #define __MIDI_DECODER__
 
-#include <lib_midi/lib_midi_exports.h>
+#include <midilib_exports.h>
 
 namespace midi
 {
-    class MIDI_DECLSPEC_CLASS mididecoder_t
+    class MIDILIB_DECLSPEC_CLASS mididecoder_t
     {
         private:
             enum state_t { START, STATUS, GET1OF1, GET1OF2, GET2OF2, GETSYSEX };

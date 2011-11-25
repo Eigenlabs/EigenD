@@ -20,7 +20,7 @@
 #ifndef __CONTROL_PARAMS__
 #define __CONTROL_PARAMS__
 
-#include <lib_midi/lib_midi_exports.h>
+#include <midilib_exports.h>
 
 #include <picross/pic_fastalloc.h>
 #include <picross/pic_flipflop.h>
@@ -37,7 +37,7 @@ namespace midi
     typedef pic::lckmap_t<piw::data_t,param_wire_t *,piw::path_less>::lcktype param_wire_map_t;
     typedef pic::flipflop_t<param_wire_map_t> param_wire_map_flipflop_t;
 
-    class MIDI_DECLSPEC_CLASS clocking_delegate_t
+    class MIDILIB_DECLSPEC_CLASS clocking_delegate_t
     {
         public:
             virtual ~clocking_delegate_t() {};
@@ -45,7 +45,7 @@ namespace midi
             virtual void add_upstream_clock(bct_clocksink_t *) = 0;
     };
 
-    struct MIDI_DECLSPEC_CLASS param_data_t
+    struct MIDILIB_DECLSPEC_CLASS param_data_t
     {
         param_data_t(unsigned p, float v, unsigned s, piw::data_nb_t id, unsigned key): param_(p), value_(v), scope_(s), id_(id), key_(key) {};
 
@@ -56,7 +56,7 @@ namespace midi
         unsigned key_;
     };
 
-    struct MIDI_DECLSPEC_CLASS midi_data_t
+    struct MIDILIB_DECLSPEC_CLASS midi_data_t
     {
         midi_data_t(unsigned long long time, unsigned char mcc, unsigned char lcc, unsigned value, unsigned scope, unsigned channel, piw::data_nb_t id, unsigned key, bool continuous): time_(time), mcc_(mcc), lcc_(lcc), value_(value), scope_(scope), channel_(channel), id_(id), key_(key), continuous_(continuous) {};
 
@@ -71,7 +71,7 @@ namespace midi
         bool continuous_;
     };
 
-    class MIDI_DECLSPEC_CLASS params_delegate_t: public clocking_delegate_t
+    class MIDILIB_DECLSPEC_CLASS params_delegate_t: public clocking_delegate_t
     {
         public:
             virtual ~params_delegate_t() {};
@@ -81,7 +81,7 @@ namespace midi
             virtual void set_midi(pic::lckvector_t<midi_data_t>::nbtype &) {};
     };
 
-    class MIDI_DECLSPEC_CLASS input_root_t: public piw::root_t, virtual public pic::lckobject_t
+    class MIDILIB_DECLSPEC_CLASS input_root_t: public piw::root_t, virtual public pic::lckobject_t
     {
         public:
             input_root_t(clocking_delegate_t *);
@@ -105,7 +105,7 @@ namespace midi
             pic::ilist_t<param_wire_t, 1> rotating_active_;
     };
     
-    class MIDI_DECLSPEC_CLASS param_input_t: public input_root_t
+    class MIDILIB_DECLSPEC_CLASS param_input_t: public input_root_t
     {
         public:
             param_input_t(params_delegate_t *, unsigned);
@@ -135,7 +135,7 @@ namespace midi
             piw::dataholder_nb_t current_data_;
     };
     
-    class MIDI_DECLSPEC_CLASS keynum_input_t: public param_input_t
+    class MIDILIB_DECLSPEC_CLASS keynum_input_t: public param_input_t
     {
         public:
             keynum_input_t(params_delegate_t *, unsigned);
@@ -144,7 +144,7 @@ namespace midi
             bool wiredata_processed(param_wire_t *, const piw::data_nb_t &);
     };
 
-    class MIDI_DECLSPEC_CLASS param_wire_t: public piw::wire_t, public piw::event_data_sink_t, public pic::element_t<0>, public pic::element_t<1>
+    class MIDILIB_DECLSPEC_CLASS param_wire_t: public piw::wire_t, public piw::event_data_sink_t, public pic::element_t<0>, public pic::element_t<1>
     {
         public:
             param_wire_t(input_root_t *, const piw::event_data_source_t &);
