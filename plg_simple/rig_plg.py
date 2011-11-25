@@ -106,7 +106,7 @@ class OuterAgent(agent.Agent):
         self.__inner_agent = InnerAgent(self)
         self.__domain = piw.clockdomain_ctl()
 
-        self.set_property_string('rig',self.inner_name)
+        self.set_property_string('rig',self.file_name)
 
         self[2] = OutputList()
         self[3] = InputList(self.__domain,self.__inner_agent[2])
