@@ -45,7 +45,8 @@ struct piw::controller_t::control_t: piw::ufilterctl_t, piw::ufilter_t
     unsigned long long ufilterctl_inputs() { return SIG1(1); }
     unsigned long long ufilterctl_outputs() { return 0; }
     unsigned long long ufilterctl_thru() { return 0; }
-    void update_layout(piw::data_nb_t rowlen);
+    void update_layout();
+    void change_layout(piw::data_nb_t rowlen);
     void refresh_layout();
 
     piw::controller_t *host_;
@@ -64,91 +65,6 @@ namespace
         piw::controller_t::impl_t *controller_;
         piw::dataholder_nb_t k_;
         piw::dataholder_nb_t last_;
-    };
-
-    struct ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_real_t
-    {
-        ctlsignal_t(piw::xxcontrolled_t *c, unsigned id): piw::event_data_source_real_t(piw::pathone(id+1,0)), id_(id), client_(c), state_(0), savestate_(0)
-        {
-        }
-
-        ~ctlsignal_t()
-        {
-            source_shutdown();
-        }
-
-        void save()
-        {
-            savestate_=state_;
-            state_=0;
-
-            if(savestate_ != state_)
-            {
-                source_end(piw::tsd_time());
-            }
-        }
-
-        void restore()
-        {
-            set(savestate_);
-        }
-
-        void source_ended(unsigned seq)
-        {
-        }
-
-        void set(unsigned v)
-        {
-            if(v==state_)
-            {
-                return;
-            }
-
-            if(v)
-            {
-                if(state_)
-                {
-                    buffer_.add_value(1,piw::makefloat_bounded_nb(5.0,0.0,0.0,v,piw::tsd_time()));
-                }
-                else
-                {
-                    buffer_=piw::xevent_data_buffer_t(1,PIW_DATAQUEUE_SIZE_TINY);
-                    unsigned long long t = piw::tsd_time();
-                    buffer_.add_value(1,piw::makefloat_bounded_nb(5.0,0.0,0.0,v,t));
-                    source_start(0,piw::pathone_nb(id_,t+1),buffer_);
-                }
-            }
-            else
-            {
-                piw::tsd_fastcall(__unset,this,0);
-            }
-
-            state_=v;
-        }
-
-        void set_key(const piw::data_t &key)
-        {
-            key_.alternate().set_normal(key);
-            key_.exchange();
-        }
-
-        static int __unset(void *self_, void *)
-        {
-            ctlsignal_t *self = (ctlsignal_t *)self_;
-
-            if(self->state_)
-            {
-                self->source_end(piw::tsd_time());
-            }
-
-            return 1;
-        }
-
-        unsigned id_;
-        piw::xxcontrolled_t *client_;
-        unsigned state_,savestate_;
-        pic::flipflop_t<piw::dataholder_nb_t> key_;
-        piw::xevent_data_buffer_t buffer_;
     };
 
     static int __init(void *xctl_, void *)
@@ -175,13 +91,140 @@ namespace
             if(0 == rowlen.compare(last_rowlen_)) return;
             last_rowlen_ = rowlen;
 
-            control_->update_layout(rowlen);
+            control_->change_layout(rowlen);
         }
 
         piw::controller_t::control_t *control_;
         piw::data_nb_t last_rowlen_;
     };
 }
+
+struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_real_t
+{
+    ctlsignal_t(piw::xxcontrolled_t *c, unsigned id): piw::event_data_source_real_t(piw::pathone(id,0)), id_(id), client_(c), state_(0), savestate_(0), buffer_(piw::xevent_data_buffer_t(1,PIW_DATAQUEUE_SIZE_TINY))
+    {
+    }
+
+    ~ctlsignal_t()
+    {
+        source_shutdown();
+    }
+
+    void save()
+    {
+        savestate_=state_;
+        state_=0;
+
+        if(savestate_ != state_)
+        {
+            source_end(piw::tsd_time());
+        }
+    }
+
+    void restore()
+    {
+        set(savestate_);
+    }
+
+    void source_ended(unsigned seq)
+    {
+    }
+
+    void set(unsigned v)
+    {
+        if(v==state_)
+        {
+            return;
+        }
+
+        if(v)
+        {
+
+            if(state_)
+            {
+                light(v,piw::tsd_time());
+            }
+            else
+            {
+                start(v);
+            }
+        }
+        else
+        {
+            piw::tsd_fastcall(__end,this,0);
+        }
+
+        state_=v;
+    }
+
+    void start(unsigned v)
+    {
+        pic::flipflop_t<unsigned>::guard_t gk(keynumber_);
+        unsigned long long t = piw::tsd_time();
+        light(v,t);
+        source_start(0,piw::pathone_nb(gk.value(),t+1),buffer_);
+    }
+
+    void light(unsigned v, unsigned long long t)
+    {
+        buffer_.add_value(1,piw::makefloat_bounded_nb(5.0,0.0,0.0,v,t));
+    }
+
+    static int __end(void *self_, void *)
+    {
+        ctlsignal_t *self = (ctlsignal_t *)self_;
+
+        if(self->state_)
+        {
+            self->source_end(piw::tsd_time());
+        }
+
+        return 1;
+    }
+
+    void set_key(const piw::data_t &key)
+    {
+        key_.alternate().set_normal(key);
+        key_.exchange();
+        update_layout();
+    }
+
+    void update_layout()
+    {
+        pic::flipflop_t<piw::dataholder_nb_t>::guard_t gr(client_->controller_->control_->rowlen_);
+        pic::flipflop_t<piw::dataholder_nb_t>::guard_t gk(key_);
+        piw::data_nb_t rowlen = gr.value().get();
+        piw::data_nb_t key = gk.value().get();
+        int row = key.as_tuple_value(0).as_long();
+        int col = key.as_tuple_value(1).as_long();
+
+        unsigned keynumber = 0;
+        if(0 == row && col > 0)
+        {
+            keynumber = col;
+        }
+        else
+        {
+            keynumber = piw::calc_keynum(rowlen, row, col);
+        }
+
+        keynumber_.alternate() = keynumber;
+        keynumber_.exchange();
+
+        if(state_)
+        {
+            piw::tsd_fastcall(__end,this,0);
+            start(state_);
+        }
+    }
+
+    unsigned id_;
+    piw::xxcontrolled_t *client_;
+    unsigned state_,savestate_;
+    pic::flipflop_t<piw::dataholder_nb_t> key_;
+    pic::flipflop_t<unsigned> keynumber_;
+    piw::xevent_data_buffer_t buffer_;
+};
 
 struct piw::xxcontrolled_t::impl_t
 {
@@ -320,6 +363,8 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
 
     void set_key(unsigned index, const piw::data_t &key)
     {
+        if(!key.is_tuple() || key.as_tuplelen() != 2) return;
+
         pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t gc(controllist_);
         pic::flipflop_t<piw::dataholder_nb_t>::guard_t gr(host_->control_->rowlen_);
 
@@ -329,50 +374,8 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
 
             if(c)
             {
-                piw::data_nb_t rowlen = gr.value().get();
-                if(!rowlen.is_null() && key.is_tuple() && 2 == key.as_tuplelen())
-                {
-                    int row = key.as_tuple_value(0).as_long();
-                    int col = key.as_tuple_value(1).as_long();
-
-                    if(0 == row && col > 0)
-                    {
-                        std::vector<unsigned> &m(controlseqmap_.alternate());
-
-                        unsigned c = col + 1;
-
-                        if(m.size()<c)
-                        {
-                            m.resize(c);
-                        }
-
-                        // offset the index by 1 to enable the possibility of using 0 for indicating
-                        // the absence of a ctlsignal
-                        m[c-1] = index+1;
-
-                        controlseqmap_.exchange();
-                    }
-                    else
-                    {
-                        unsigned keynumber = piw::calc_keynum(rowlen, row, col);
-
-                        if(keynumber != 0)
-                        {
-                            std::vector<unsigned> &m(controlabsmap_.alternate());
-
-                            if(keynumber < m.size())
-                            {
-                                // offset the index by 1 to enable the possibility of using 0 for indicating
-                                // the absence of a ctlsignal
-                                m[keynumber] = index+1;
-
-                                controlabsmap_.exchange();
-                            }
-                        }
-                    }
-                }
-
                 c->set_key(key);
+                host_->control_->update_layout();
             }
         }
     }
@@ -522,11 +525,11 @@ piw::ufilterfunc_t *piw::controller_t::control_t::ufilterctl_create(const piw::d
     return new ctlfunc_t(this);
 }
 
-void piw::controller_t::control_t::update_layout(piw::data_nb_t rowlen)
+void piw::controller_t::control_t::update_layout()
 {
-    if(rowlen.is_null() || !rowlen.is_tuple() || 0 == rowlen.as_tuplelen()) return;
+    pic::flipflop_t<piw::dataholder_nb_t>::guard_t gr(rowlen_);
 
-    piw::dataholder_nb_t &r(rowlen_.alternate());
+    piw::data_nb_t rowlen = gr.value().get();
 
     unsigned total_length = 0;
     for(unsigned i=0; i<rowlen.as_tuplelen(); ++i)
@@ -586,8 +589,25 @@ void piw::controller_t::control_t::update_layout(piw::data_nb_t rowlen)
     host_->impl_->controlabsmap_.exchange();
     host_->impl_->controlseqmap_.exchange();
 
-    r.set_nb(rowlen);
+    pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t g(host_->impl_->controllist_);
+    for(unsigned i=0; i<g.value().size(); ++i)
+    {
+        ctlsignal_t *c = g.value()[i];
+        if(c)
+        {
+            c->update_layout();
+        }
+    }
+}
+
+void piw::controller_t::control_t::change_layout(piw::data_nb_t rowlen)
+{
+    if(rowlen.is_null() || !rowlen.is_tuple() || 0 == rowlen.as_tuplelen()) return;
+
+    rowlen_.alternate().set_nb(rowlen);
     rowlen_.exchange();
+
+    update_layout();
 }
 
 piw::controller_t::controller_t(const piw::cookie_t &c,const std::string &sigmap): impl_(new impl_t(this,c,sigmap)), control_(new control_t(this)) { } 

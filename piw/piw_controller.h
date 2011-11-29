@@ -34,6 +34,7 @@ namespace piw
         public:
             class impl_t;
             class control_t;
+            class ctlsignal_t;
 
         public:
             controller_t(const cookie_t &cookie,const std::string &sigmap);
@@ -51,6 +52,7 @@ namespace piw
     class PIW_DECLSPEC_CLASS xxcontrolled_t: public pic::nocopy_t
     {
         friend class controller_t::impl_t;
+        friend class controller_t::ctlsignal_t;
 
         public:
             class impl_t;
