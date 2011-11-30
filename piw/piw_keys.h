@@ -26,7 +26,7 @@
 
 namespace piw
 {
-    PIW_DECLSPEC_FUNC(unsigned) calc_keynum(piw::data_nb_t geo, int row, int col);
+    PIW_DECLSPEC_FUNC(unsigned) calc_keynum(piw::data_t geo, int row, int col);
     PIW_DECLSPEC_FUNC(piw::data_nb_t) key_position(unsigned key, const piw::data_nb_t &lengths, unsigned long long t);
 };
 

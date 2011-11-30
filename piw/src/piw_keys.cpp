@@ -19,7 +19,7 @@
 
 #include <piw/piw_keys.h>
 
-unsigned piw::calc_keynum(piw::data_nb_t geo, int row, int col)
+unsigned piw::calc_keynum(piw::data_t geo, int row, int col)
 {
     if(geo.is_null() || !geo.is_tuple())
         return 0;
