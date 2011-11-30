@@ -682,9 +682,6 @@ class Atom(node.Server):
         if not o: return n
         return "%s %d" % (n,o)
 
-    def set_domain(self,domain):
-        self.set_property_string('domain',str(domain))
-
     def get_domain(self):
         return domain.traits(self.get_property_string('domain'))
 

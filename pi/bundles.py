@@ -106,7 +106,7 @@ class Output(atom.Atom):
 
     def set_iso_domain(self,src,bs,sr):
         if self.iso:
-            self.set_domain(domain.Iso(src,sr,bs,hints=self.hints))
+            self.set_property_string('domain',str(domain.Iso(src,sr,bs,hints=self.hints)))
 
 class BundleOutputPolicyImpl:
     protocols = 'output'

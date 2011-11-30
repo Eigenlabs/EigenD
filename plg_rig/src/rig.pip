@@ -1,0 +1,18 @@
+<<<
+#include "rig_connector.h"
+>>>
+
+from piw[piw/piw.pip] import d2d_nb,client,data,server
+
+class output[rig::output_t]: server
+{
+    output()
+}
+
+class connector[rig::connector_t]: client /gc/
+{
+    connector(output *,unsigned,const d2d_nb &)
+    void client_opened()
+    void client_clock()
+    void close_client()
+}
