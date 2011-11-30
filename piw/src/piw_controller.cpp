@@ -195,19 +195,21 @@ struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_r
         update_layout();
     }
 
-    void update_layout()
+    bool update_keynumber()
     {
         if(!client_ || !client_->controller_ || !client_->controller_->control_)
         {
-            return;
+            return false;
         }
 
-        piw::data_t rowlen = client_->controller_->control_->rowlen_.current();
-        piw::data_t key = key_.current();
+        pic::flipflop_t<piw::data_t>::guard_t gr(client_->controller_->control_->rowlen_);
+        pic::flipflop_t<piw::data_t>::guard_t gk(key_);
+        piw::data_t rowlen = gr.value();
+        piw::data_t key = gk.value();
 
         if(!key.is_tuple() || !rowlen.is_tuple())
         {
-            return;
+            return false;
         }
 
         int row = key.as_tuple_value(0).as_long();
@@ -224,6 +226,16 @@ struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_r
         }
 
         keynumber_.set(keynumber);
+        
+        return true;
+    }
+
+    void update_layout()
+    {
+        if(!update_keynumber())
+        {
+            return;
+        }
 
         if(state_)
         {
@@ -561,7 +573,8 @@ void piw::controller_t::control_t::update_layout()
     keyctlmap_t &ms(host_->impl_->controlseqmap_.alternate());
     ms.clear();
 
-    piw::data_t rowlen = rowlen_.alternate();
+    pic::flipflop_t<piw::data_t>::guard_t gr(rowlen_);
+    piw::data_t rowlen = gr.value();
     if(rowlen.is_tuple())
     {
         pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t gl(host_->impl_->controllist_);
@@ -570,7 +583,8 @@ void piw::controller_t::control_t::update_layout()
             ctlsignal_t *c = gl.value()[i];
             if(c)
             {
-                piw::data_t key = c->key_.alternate();
+                pic::flipflop_t<piw::data_t>::guard_t gk(c->key_);
+                piw::data_t key = gk.value();
 
                 if(key.is_tuple() && 2 == key.as_tuplelen())
                 {
