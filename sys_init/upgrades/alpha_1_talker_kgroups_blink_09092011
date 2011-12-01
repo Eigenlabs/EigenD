@@ -1,4 +1,0 @@
-# Set talker kgroups blink to 0
-#------------------------------
-
-talker kgroup 1 hey blink to 0 set

@@ -1,4 +1,0 @@
-# Script to add a toggle talker to enable/disable overdub mode in the recorders for Factory Tau 1
-
-empty join all recorder listen light recorder talker 1 listen
-all overdub when 15 toggle set
