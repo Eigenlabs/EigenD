@@ -45,8 +45,5 @@ class Agent(agent.Agent):
 
         self[3]=atom.Atom(domain=domain.BoundedFloat(-1,1), names="pan input", policy=self.input.merge_policy(1,policy.IsoStreamPolicy(1,-1,0)))
 
-class Upgrader(upgrade.Upgrader):
-    pass
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)
 

@@ -82,7 +82,4 @@ class Agent(agent.Agent):
         fc(piw.makefloat(v,0))
         return True
 
-class Upgrader(upgrade.Upgrader):
-    pass
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)

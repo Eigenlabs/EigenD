@@ -256,19 +256,7 @@ class Agent(agent.Agent):
         return True
 
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_0_0_to_1_0(self,tools,address):
-        root = tools.root(address)
-        root.remove(9)
-        root.remove(12)
-        return True
-      
-    def upgrade_1_0_to_2_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(8).erase_children()
-        return True
-
-agent.main(Agent, Upgrader)
+agent.main(Agent)
 
 
 

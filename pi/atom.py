@@ -160,16 +160,16 @@ class Atom(node.Server):
             keys_common = old_keys.intersection(new_keys)
 
             for k in keys_del:
-                self.set_property(k,None,True)
+                self.set_property(k,None,allow_veto=True)
 
             for k in keys_create:
                 v = new_value.as_dict_lookup(k)
-                self.set_property(k,v,True)
+                self.set_property(k,v,allow_veto=True)
 
             for k in keys_common:
                 v = new_value.as_dict_lookup(k)
                 if old_value.as_dict_lookup(k) != v:
-                    self.set_property(k,v,True)
+                    self.set_property(k,v,allow_veto=True)
 
 
     def set_property_long(self,key,value,allow_veto=False,notify=True):
@@ -643,16 +643,16 @@ class Atom(node.Server):
         self.set_names(value)
 
     def set_names(self,value):
-        self.set_property_string('name',value)
+        self.set_property_string('name',value,allow_veto=True)
 
     def clear_ordinal(self):
         self.del_property('ordinal')
 
     def set_ordinal(self,ordinal):
-        self.set_property_long('ordinal',ordinal)
+        self.set_property_long('ordinal',ordinal,allow_veto=True)
 
     def set_latency(self,l):
-        self.set_property_long('latency',l)
+        self.set_property_long('latency',l,allow_veto=True)
 
     def set_private(self,private_node):
         if private_node is None:

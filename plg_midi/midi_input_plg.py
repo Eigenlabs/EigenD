@@ -400,29 +400,5 @@ class Agent(agent.Agent):
         print type,thing
         self[5].setport(thing)
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_0_0_to_1_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(255,6).set_data(piw.makestring('[]',0))
-        return True
 
-    def upgrade_1_0_to_2_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(6).erase_children()
-        return True
-
-    def upgrade_2_0_to_3_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(6,254)
-        root.ensure_node(6,255,1)
-        root.ensure_node(6,255,3)
-        root.ensure_node(6).setmeta(8,'midi','output')
-        root.ensure_node(6,255,9)
-        root.ensure_node(7,254)
-        root.ensure_node(7,255,1)
-        root.ensure_node(7,255,3)
-        root.ensure_node(7).setmeta(8,'midi','clock','output')
-        root.ensure_node(7,255,9)
-        return True
-
-agent.main(Agent,Upgrader,gui=True)
+agent.main(Agent,gui=True)

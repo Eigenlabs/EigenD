@@ -152,26 +152,4 @@ class KeyboardAgent(agent.Agent):
         self.remove_subsystem(str(i))
 
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_1_0_0_to_1_0_1(self,tools,address):
-        for ss in tools.get_subsystems(address):
-            print 'upgrading keyboard',ss
-            ssr = tools.get_root(ss)
-            ssr.ensure_node(17).set_name('key output')
-
-    def upgrade_3_0_to_4_0(self,tools,address):
-        for ss in tools.get_subsystems(address):
-            print 'upgrading',ss
-            ssr = tools.root(ss)
-            ssr.ensure_node(102).erase_children()
-
-        return True
-
-    def upgrade_2_0_to_3_0(self,tools,address):
-        for ss in tools.get_subsystems(address):
-            print 'upgrading',ss
-            ssr = tools.root(ss)
-            ssr.rename(names='keyboard micro')
-        return True
-
-agent.main(KeyboardAgent,Upgrader)
+agent.main(KeyboardAgent)

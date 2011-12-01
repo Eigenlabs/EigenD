@@ -424,30 +424,5 @@ class Agent(agent.Agent):
         self.vdetector.set_scale(x)
         return True
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_5_0_to_6_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(6,255,1).set_string('bool([])')
-        root.ensure_node(6,255,8).set_string('fade enable')
-        root.ensure_node(6,255,3)
-        root.ensure_node(6,254).set_data(piw.makebool(False,0))
-        return True
-
-    def upgrade_4_0_to_5_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(8).erase_children()
-        return True
-
-    def upgrade_3_0_to_4_0(self,tools,address):
-        root = tools.root(address)
-        root.get_node(1,1).rename(names='audio output',adjectives='left')
-        return True
-
-    def upgrade_2_0_to_3_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(2,1,255,const.meta_ordinal).set_data(piw.makelong(1,0))
-
-        return True
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)
 

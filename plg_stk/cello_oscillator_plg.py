@@ -119,19 +119,4 @@ class Agent(agent.Agent):
         return False
 
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_1_0_to_2_0(self,tools,address):
-        root = tools.root(address)
-
-        node = root.get_node(2,23)
-        if(node==None):
-            print 'cello upgrade warning: no bow velocity factor node found so creating one'
-            root.ensure_node(2,23)
-            root.ensure_node(2,23,254).set_data(piw.makefloat(1.0,0))
-            root.ensure_node(2,23,255)
-            root.ensure_node(2,23,255,1)
-            root.ensure_node(2,23,255,3)
-            root.ensure_node(2,23).setmeta(8,'bow','velocity','factor')
-        return True
-  
-agent.main(Agent,Upgrader)
+agent.main(Agent)

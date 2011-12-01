@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pisession import session,upgrade_tools_v0,upgrade_v0,upgrade_tools_v1
+from pisession import session,upgrade_tools_v1
 from pi import utils,paths,resource,guid,state
 import os,sys,traceback,shutil
 import pisession_native
@@ -124,16 +124,6 @@ def copy_snap(src,dst):
         copy_node(src_agent.get_root(),dst_agent.get_root())
 
 def do_upgrade(snap):
-    srcformat = get_format(snap)
-
-    if srcformat == 0:
-        if not upgrade_tools_v0.do_upgrade(snap):
-            print 'v0 upgrade failed'
-            return False
-
-        upgrade_v0.do_upgrade(snap)
-        set_format(snap,1)
-
     upgrade_tools_v1.do_upgrade(snap)
     return True
  
@@ -310,10 +300,7 @@ def copy_snap2file(srcsnap,dstfile,tweaker=None):
     return dstdb.get_trunk()
 
 def get_setup_signature(snap,text=False):
-    if get_format(snap)==0:
-        return upgrade_tools_v0.get_setup_signature(snap,text)
-    else:
-        return upgrade_tools_v1.get_setup_signature(snap,text)
+    return upgrade_tools_v1.get_setup_signature(snap,text)
 
 def split_setup(s):
     split1 = s.split('~',1)

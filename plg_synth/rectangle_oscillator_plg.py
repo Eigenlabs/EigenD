@@ -41,10 +41,4 @@ class Agent(agent.Agent):
         self[5]=atom.Atom(domain=domain.BoundedFloat(-1200,1200), names='detune input',policy=self.input.merge_policy(4,False))
 
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_2_0_to_3_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(2,254).set_data(piw.makefloat_bounded(1,0,0,0,0));
-        return True
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)

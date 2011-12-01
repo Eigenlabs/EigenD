@@ -54,7 +54,4 @@ class Agent(agent.Agent):
         self.strummer.set_key_mix(0.0)
         self.strummer.set_trigger_window(400)
 
-class Upgrader(upgrade.Upgrader):
-    pass
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)

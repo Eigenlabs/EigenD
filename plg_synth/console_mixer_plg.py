@@ -462,7 +462,7 @@ class Agent(agent.Agent):
 
     def __init__(self, address, ordinal):
         # self[3] is the verb container
-        agent.Agent.__init__(self, signature=version, names='console mixer', protocols='inputlist has_subsys browse', icon='plg_synth/mixer.png', container=3,ordinal=ordinal)
+        agent.Agent.__init__(self, signature=version, names='console mixer', protocols='inputlist has_subsys browse', container=3,ordinal=ordinal)
 
         self.clk = piw.clockdomain_ctl()
 
@@ -707,22 +707,7 @@ class Agent(agent.Agent):
                 break
         
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_1_0_0_to_1_0_1(self,tools,address):
-        channels = tools.get_subsystems(address)
-        for i in channels:
-            tools.delete_agent(i)
 
-        tools.invalidate_connections()
-
-    def upgrade_1_0_to_2_0(self,tools,address):
-        for ss in tools.get_subsystems(address):
-            ssr = tools.root(ss)
-            ssr.ensure_node(255,6)
-        return True
-        
-        
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------

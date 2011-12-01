@@ -106,21 +106,5 @@ class Agent(agent.Agent):
         self.cycler.set_curve(x)
         return True
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_3_0_to_4_0(self,tools,address):
-        root = tools.root(address)
-        #root.ensure_node(10).erase_children()
-        return True
-        
-    def upgrade_2_0_to_3_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(255,17)
-        p = root.ensure_node(255,6)
-        oc = p.get_data()
-        if not oc.is_bool(): oc=piw.makebool(False,0)
-        p.set_data(piw.data())
-        p.ensure_node(1).set_data(oc)
-        p.ensure_node(2).set_data(piw.makebool(False,0))
-        return True
 
-agent.main(Agent,Upgrader)
+agent.main(Agent)

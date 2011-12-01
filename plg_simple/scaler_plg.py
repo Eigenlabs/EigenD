@@ -33,7 +33,7 @@ curves = (linear,quadratic,cubic,step)
 
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
-        agent.Agent.__init__(self, signature=version, names='scaler',protocols='bind set',icon='plg_simple/scaler.png',container=5,ordinal=ordinal)
+        agent.Agent.__init__(self, signature=version, names='scaler',protocols='bind set',container=5,ordinal=ordinal)
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
 
@@ -125,46 +125,5 @@ class Agent(agent.Agent):
             self.__fixed=d.as_bool()
             self.get_private().set_data(d)
 
-class Upgrader(upgrade.Upgrader):
 
-    def upgrade_1_0_0_to_1_0_1(self,tools,address):
-        print 'upgrading scaler',address
-        root = tools.get_root(address)
-
-        # rename existing key input and name new one
-        root.ensure_node(4,16).set_name('k number input')
-        root.ensure_node(4,22).set_name('key input')
-
-        # ensure key output
-        root.ensure_node(1,7).set_name('key output')
-
-    def phase2_1_0_1(self,tools,address):
-        root = tools.get_root(address)
-        root.mimic_connections((4,1),(4,22),'key output')
-
-    def upgrade_7_0_to_8_0(self,tools,address):
-        root = tools.root(address)
-        rnode = root.ensure_node(4,17,255)
-        rnode.ensure_node(1).set_data(piw.makestring('',0))
-        rnode.ensure_node(8).set_data(piw.makestring('relative octave input',0))
-        root.ensure_node(4,17,254).set_data(piw.makelong(0,0))
-        return True
-
-    def upgrade_4_0_to_5_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(4,5,255,17)
-        root.ensure_node(4,7,255,17)
-        root.ensure_node(4,14,255,17)
-        return True
-
-    def upgrade_5_0_to_6_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(255,6).set_data(piw.makebool(False,0))
-        return True
-
-    def upgrade_6_0_to_7_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(5).erase_children()
-        return True
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)

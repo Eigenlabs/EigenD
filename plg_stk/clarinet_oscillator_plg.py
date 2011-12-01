@@ -57,29 +57,8 @@ class Agent(agent.Agent):
 #        self[2][9] = atom.Atom(names='refl frequency', domain=domain.BoundedFloat(1,96000,1), init=3400, policy=self.input.merge_policy(9,False))
 #        self[2][10] = atom.Atom(names='refl width', domain=domain.BoundedFloat(0.01,100), init=0.28, policy=self.input.merge_policy(10,False))
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_3_0_to_4_0(self,tools,address):
-        root = tools.root(address)
-        
-        node = root.get_node(2,9)
-        if(node==None):
-            print 'clarinet upgrade warning: no pitch time node found so creating one'
-            root.ensure_node(2,9)
-            root.ensure_node(2,9,254).set_data(piw.makefloat(10.0,0))
-            root.ensure_node(2,9,255)
-            root.ensure_node(2,9,255,1)
-            root.ensure_node(2,9).setmeta(8,'pitch','time','input')
-        
-        root.get_node(2,8).copy(root.get_node(2,9))
-        root.get_node(2,9).erase()
-        return True
 
-    def upgrade_2_0_to_3_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(2,3,254).set_data(piw.makefloat(0.0,0))
-        return True
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)
 
 
 

@@ -48,10 +48,4 @@ class Agent(agent.Agent):
         self[2][6] = atom.Atom(names='vibrato frequency input', domain=domain.BoundedFloat(0,1,hints=param), init=0.2, policy=self.input.merge_policy(6,False), protocols='explicit')
         self[2][7] = atom.Atom(names='vibrato gain input', domain=domain.BoundedFloat(0,1,hints=param), init=0, policy=self.input.merge_policy(7,False))
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_2_0_to_3_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(2,3,254).set_data(piw.makefloat(0.0,0))
-        return True
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)

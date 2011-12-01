@@ -117,14 +117,4 @@ class Agent(agent.Agent):
             self.__playing=d.as_bool()
             self.clicker.play(d.as_bool())
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_1_0_to_2_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(3).erase_children()
-        return True
-    def upgrade_0_0_to_1_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(255,6).set_data(piw.makebool(True,0))
-        return True
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)

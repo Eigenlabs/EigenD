@@ -30,7 +30,7 @@ def sc(f):
 class Agent(agent.Agent):
 
     def __init__(self, address, ordinal):
-        agent.Agent.__init__(self, signature=version,names='metronome',icon='plg_loop/metronome_64.png',container=4,protocols='browse',ordinal=ordinal)
+        agent.Agent.__init__(self, signature=version,names='metronome',container=4,protocols='browse',ordinal=ordinal)
 
         self[1] = atom.Atom(names='outputs')
         self[1][1] = bundles.Output(1,False,names='bar beat output')
@@ -226,84 +226,8 @@ class Agent(agent.Agent):
     def __status(self,subj):
         return 'dsc(~(s)"#14",None)'
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_3_0_to_4_0(self,tools,address):
-        root = tools.root(address)
-        knode = root.ensure_node(12)
-        knode.delmeta(const.meta_names,'key')
-        knode.addmeta(const.meta_names,'k')
-        return True
 
-    def upgrade_4_0_to_5_0(self,tools,address):
-        root = tools.root(address)
-        tnode = root.ensure_node(2)
-        tnode.addmeta(const.meta_names,'input')
-        return True
-
-    def upgrade_5_0_to_6_0(self,tools,address):
-        root = tools.root(address)
-        tnode = root.ensure_node(1,5)
-        tnode.rename(adjectives='tempo',names='output')
-        return True
-
-    def upgrade_6_0_to_7_0(self,tools,address):
-        root = tools.root(address)
-        tnode = root.ensure_node(1,5)
-        tnode.setmeta(const.meta_domain,domain.Aniso().canonical())
-        tnode.setmetalong(const.meta_latency,0)
-        return True
-
-    def upgrade_7_0_to_8_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(4).erase_children()
-        return True
-
-    def upgrade_8_0_to_9_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(255,3)
-        root.ensure_node(255,6)
-        icon='ideal([~self,file],[True,[metronome_64.png,png,4975,ae403082470f2feee1639a34099d0efb],"pkg_res:plg_loop/metronome_64.png"])'
-        root.ensure_node(255,16).set_data(piw.makestring(icon,0))
-        return True
-
-    def upgrade_9_0_to_10_0(self,tools,address):
-        root = tools.root(address)
-        if root.get_node(11):
-            root.get_node(11).erase()
-        if root.get_node(12):
-            root.get_node(12).erase()
-        if root.get_node(13):
-            root.get_node(13).erase()
-        root.ensure_node(15)
-        root.ensure_node(15,254)
-        root.ensure_node(15,255)
-        root.ensure_node(15,255,1)
-        root.ensure_node(15,255,3)
-        root.ensure_node(15).setmeta(8,'midi','clock','input')
-        root.ensure_node(16)
-        root.ensure_node(16,1)
-        root.ensure_node(16,1,254)
-        root.ensure_node(16,1,255)
-        root.ensure_node(16,1,255,1)
-        root.ensure_node(16,1,255,3)
-        root.ensure_node(16,1).setmeta(8,'status','output')
-        root.ensure_node(16,1,255,9)
-        root.ensure_node(16,254).set_data(piw.makebool(False,0))
-        root.ensure_node(16,255)
-        root.ensure_node(16,255,1)
-        root.ensure_node(16,255,3)
-        root.ensure_node(16).setmeta(8,'midi','clock','enable')
-        root.ensure_node(16,255,17)
-        root.ensure_node(16,255,18)
-        root.ensure_node(17)
-        root.ensure_node(17,254).set_data(piw.makefloat(0.0,0))
-        root.ensure_node(17,255)
-        root.ensure_node(17,255,1)
-        root.ensure_node(17,255,3)
-        root.ensure_node(17).setmeta(8,'midi','clock','latency')
-        return True
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)
 
 
 

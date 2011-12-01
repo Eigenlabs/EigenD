@@ -29,5 +29,5 @@ else:
     from keyboard1 import *
 """
 
-agent.main(KeyboardFactory, Upgrader)
+agent.main(KeyboardFactory)
 

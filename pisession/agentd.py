@@ -48,7 +48,7 @@ from guppy import hpy; h=hpy()
 """
 
 blacklisted_versions = ()
-first_upgradeable_version = '2.0.20'
+first_upgradeable_version = '2.0.32'
 
 def filter_valid_setup(s):
     if s.startswith('tmpsetup') or '.' in s or '#' in s or s.startswith('~'):

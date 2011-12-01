@@ -100,16 +100,4 @@ class Agent(agent.Agent):
         return 'dsc(~(s)"#7",None)'
 
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_1_0_0_to_1_0_1(self,tools,address):
-        print 'upgrading stringer',address
-        root = tools.get_root(address)
-        root.ensure_node(4,6).set_name('key input')
-        root.ensure_node(1,5).set_name('k number output')
-        root.ensure_node(1,6).set_name('key output')
-
-    def phase2_1_0_1(self,tools,address):
-        root = tools.get_root(address)
-        root.mimic_connections((4,1),(4,6),'key output')
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)

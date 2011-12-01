@@ -41,18 +41,5 @@ class Agent(agent.Agent):
 
         self[3]=atom.Atom(domain=domain.BoundedFloat(0,1), names="volume input", policy=self.input.merge_policy(1,policy.IsoStreamPolicy(1,0,0)))
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_2_0_to_3_0(self,tools,address):
-        root = tools.root(address)
-        root.get_node(1).erase()
-        tools.substitute_connection(paths.makeid_list(address,1),paths.makeid_list(address,1,1))
-
-        old_2 = root.get_node(2)
-        root.get_node(2).erase()
-        root.ensure_node(2,1).copy(old_2)
-        root.ensure_node(2,1).rename(names='audio input')
-        root.ensure_node(2,1,255,7).set_data(piw.makelong(1,0))
-        return True
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)
 

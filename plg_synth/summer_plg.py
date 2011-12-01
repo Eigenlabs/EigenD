@@ -38,13 +38,5 @@ class Agent(agent.Agent):
         self[1] = audio.AudioInput(self.input,1,1,names='inputs')
         self[4] = audio.AudioChannels(self[1],self[2],self.mixer)
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_2_0_to_3_0(self,tools,address):
-        root = tools.root(address)
-        root.get_node(2).erase()
-        root.ensure_node(1,1,255,7).set_data(piw.makelong(1,0))
-        tools.substitute_connection(paths.makeid_list(address,2),paths.makeid_list(address,2,1))
-        return True
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)
 

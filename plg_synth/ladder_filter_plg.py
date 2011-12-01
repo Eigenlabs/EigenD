@@ -65,15 +65,5 @@ class Agent(agent.Agent):
         fc(piw.makefloat(v,0))
         return True
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_1_0_to_2_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(2).erase_children()
-        return True
-    def upgrade_0_0_to_1_0(self,tools,address):
-        n = tools.root(address).get_node(5,255,8)
-        if n and n.get_string()=='filterq input':
-            n.set_string('resonance input')
-        return True
 
-agent.main(Agent,Upgrader)
+agent.main(Agent)

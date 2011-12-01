@@ -326,33 +326,5 @@ class Agent(agent.Agent):
 
         return self[5].resolve_name(' '.join(name))
 
-class Upgrader(upgrade.Upgrader):
-    def upgrade_5_0_to_6_0(self,tools,address):
-        root = tools.root(address)
-        events = root.get_node(3)
-        for e in events.iter():
-            schema = e.get_node(255,6).get_data()
-            e.ensure_node(255,6).set_data(piw.makenull(0))
-            e.ensure_node(255,6,1).set_data(schema)
-            e.ensure_node(255,6,2).set_data(piw.makebool(False,0))
-        return True
 
-    def upgrade_4_0_to_5_0(self,tools,address):
-        root = tools.root(address)
-        root.ensure_node(6).erase_children()
-        root.ensure_node(3).erase_children()
-        return True
-
-    def upgrade_3_0_to_4_0(self,tools,address):
-        root = tools.root(address)
-        events = root.get_node(3)
-        for e in events.iter():
-            schema_node = e.get_node(255,6)
-            old_schema=schema_node.get_string()
-            old_schema_term=logic.parse_clause(old_schema)
-            new_schema=logic.render_term(T('schema',None,old_schema_term))
-            schema_node.set_string(new_schema)
-        return True
-
-
-agent.main(Agent,Upgrader)
+agent.main(Agent)
