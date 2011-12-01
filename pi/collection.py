@@ -36,6 +36,13 @@ class Collection(atom.Atom):
     def listinstances(self):
         return [ self[i].get_property_long('ordinal',0) for i in self ]
 
+    def freeinstance(self):
+        current = self.listinstances()
+        i = 1
+        while i in current:
+            i = i+1
+        return i
+
     def rpc_listinstances(self,arg):
         i = self.listinstances()
         return logic.render_termlist(i)

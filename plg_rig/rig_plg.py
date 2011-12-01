@@ -1,5 +1,5 @@
 
-from pi import agent,atom,domain,utils,bundles,upgrade,paths,audio,async,collection,policy,proxy,node,container,logic
+from pi import agent,atom,domain,utils,bundles,upgrade,paths,audio,async,collection,policy,proxy,node,container,logic,action
 from pisession import workspace
 import piw
 from plg_rig import rig_version as version
@@ -254,15 +254,41 @@ class RigInput(atom.Atom):
             self.__output.set_property(key,value,notify=False,allow_veto=False)
 
 class InputList(collection.Collection):
-    def __init__(self,scope,peer):
-        self.__peer = peer
+    def __init__(self,scope):
+        self.__peer = None
         self.__scope = scope
         collection.Collection.__init__(self,names='input')
 
+    def set_peer(self,peer):
+        self.__peer = peer
+        self.__peer.set_peer(self)
+
+    def create_input(self,name):
+        names = name.split()
+
+        if names:
+            try:
+                ordinal=int(names[-1])
+                names = names[:-1]
+            except:
+                ordinal = None
+        else:
+            ordinal = self.freeinstance()
+            names = ''
+
+        k = self.find_hole()
+        j = RigInput(self.__scope,self.__peer,k)
+        j.set_names(' '.join(names))
+        j.set_ordinal(ordinal)
+        self[k] = j
+
+
     @async.coroutine('internal error')
     def instance_create(self,name):
-        j = self.dynamic_create(name)
-        self[name] = j
+        k = self.find_hole()
+        j = RigInput(self.__scope,self.__peer,k)
+        j.set_ordinal(name)
+        self[k] = j
         yield async.Coroutine.success(j)
 
     @async.coroutine('internal error')
@@ -278,7 +304,23 @@ class InputList(collection.Collection):
         
 class OutputList(atom.Atom):
     def __init__(self):
-        atom.Atom.__init__(self,names='output')
+        atom.Atom.__init__(self,names='output',protocols='create')
+        self.__peer = None
+
+    def set_peer(self,peer):
+        self.__peer = peer
+
+    def rpc_createinstance(self,arg):
+        return self.__peer.rpc_createinstance(arg)
+
+    def rpc_listinstances(self,arg):
+        return self.__peer.rpc_listinstances(arg)
+
+    def rpc_instancename(self,arg):
+        return self.__peer.rpc_instancename(arg)
+
+    def rpc_delinstance(self,arg):
+        return self.__peer.rpc_delinstance(arg)
 
 class InnerAgent(agent.Agent):
     def __init__(self,outer_agent):
@@ -291,6 +333,18 @@ class InnerAgent(agent.Agent):
 
         self[1] = self.__workspace
         self[2] = OutputList()
+        self[3] = InputList(self.__name)
+
+        self.add_verb2(1,'create([],None,role(None,[abstract,matches([input])]),option(called,[abstract]))',self.__create_input)
+        self.add_verb2(2,'create([],None,role(None,[abstract,matches([output])]),option(called,[abstract]))',self.__create_output)
+
+    def __create_input(self,subject,dummy,name):
+        name = action.abstract_string(name)
+        self[3].create_input(name)
+
+    def __create_output(self,subject,dummy,name):
+        name = action.abstract_string(name)
+        self.__outer_agent[3].create_input(name)
 
     def save(self,filename):
         print 'saving rig',self.__name,'to',filename
@@ -342,8 +396,13 @@ class OuterAgent(agent.Agent):
         self.set_property_string('rig',self.file_name)
 
         self[2] = OutputList()
-        self[3] = InputList(None,self.__inner_agent[2])
-        self.__inner_agent[3] = InputList(self.inner_name,self[2])
+        self[3] = InputList(None)
+
+        self[3].set_peer(self.__inner_agent[2])
+        self.__inner_agent[3].set_peer(self[2])
+
+        self.add_verb2(1,'create([],None,role(None,[abstract,matches([input])]),option(called,[abstract]))',self.__create_input)
+        self.add_verb2(2,'create([],None,role(None,[abstract,matches([output])]),option(called,[abstract]))',self.__create_output)
 
     def rig_file(self,filename):
         return "%s#%s" % (filename,self.file_name)
@@ -352,6 +411,14 @@ class OuterAgent(agent.Agent):
         if agent.Agent.property_veto(self,key,value):
             return True
         return key == 'rig'
+
+    def __create_input(self,subject,dummy,name):
+        name = action.abstract_string(name)
+        self[3].create_input(name)
+
+    def __create_output(self,subject,dummy,name):
+        name = action.abstract_string(name)
+        self.__inner_agent[3].create_input(name)
 
     @async.coroutine('internal error')
     def agent_postload(self,filename):
