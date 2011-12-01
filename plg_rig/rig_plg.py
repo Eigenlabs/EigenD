@@ -37,10 +37,11 @@ def RigOutputPolicy(*args,**kwds):
     return policy.PolicyFactory(RigOutputPolicyImpl,*args,**kwds)
 
 class RigOutput(atom.Atom):
-    def __init__(self,ordinal):
+    def __init__(self,master,ordinal):
         atom.Atom.__init__(self,ordinal=ordinal,policy=RigOutputPolicy())
 
         self.__inputs = {}
+        self.__master = master
 
         self.__clockdom = piw.clockdomain_ctl()
         self.__clockdom.set_source(piw.makestring('*',0))
@@ -50,6 +51,18 @@ class RigOutput(atom.Atom):
         self.__output.set_clock(self.__clock)
 
         self.set_domain(domain.Aniso())
+
+    def set_ordinal(self,value):
+        self.__master.set_ordinal(value)
+
+    def set_names(self,value):
+        self.__master.set_names(value)
+
+    def property_veto(self,key,value):
+        if atom.Atom.property_veto(self,key,value):
+            return True
+
+        return key in ['name','ordinal']
 
     def set_domain(self,dom):
         self.unplumb_clocks()
@@ -93,8 +106,6 @@ class RigOutput(atom.Atom):
             v.clear_downstream()
 
     def add_input(self,iid,inp):
-        print 'add input',inp.servername(),inp.path(),inp.domain()
-
         if iid in self.__inputs:
             self.__inputs[iid].clear_downstream()
             del self.__inputs[iid]
@@ -226,17 +237,21 @@ def RigInputPolicy(*args,**kwds):
     return policy.PolicyFactory(RigInputPolicyImpl,*args,**kwds)
 
 
-class Input(atom.Atom):
+class RigInput(atom.Atom):
     def __init__(self,scope,peer,index):
         self.__peer = peer
         self.__index = index
         self.__scope = scope
-        self.__output = RigOutput(ordinal=index)
+        self.__output = RigOutput(self,ordinal=index)
         atom.Atom.__init__(self,ordinal=index,domain=domain.Aniso(),policy=RigInputPolicy(self.__scope,self.__output))
         self.__peer[self.__index] = self.__output
 
     def destroy_input(self):
         del self.__peer[self.__index]
+
+    def property_change(self,key,value):
+        if key in ['name','ordinal']:
+            self.__output.set_property(key,value,notify=False,allow_veto=False)
 
 class InputList(collection.Collection):
     def __init__(self,scope,peer):
@@ -256,7 +271,7 @@ class InputList(collection.Collection):
         e.destroy_input()
 
     def dynamic_create(self,i):
-        return Input(self.__scope,self.__peer,i)
+        return RigInput(self.__scope,self.__peer,i)
 
     def dynamic_destroy(self,i,v):
         v.destroy_input()
