@@ -686,16 +686,42 @@ class Atom(node.Server):
         return domain.traits(self.get_property_string('domain'))
 
     def add_connection(self,src):
+        old = self.get_property_termlist('master')
         self.add_property_termlist('master',src)
+        self.__update_listeners(old)
 
     def set_connections(self,srcs):
+        old = self.get_property_termlist('master')
         self.set_property_string('master',srcs)
+        self.__update_listeners(old)
 
     def clear_connections(self):
+        old = self.get_property_termlist('master')
         self.del_property('master')
+        self.__update_listeners(old)
 
     def remove_connection(self,src):
+        old = self.get_property_termlist('master')
         self.del_property_termlist('master',src)
+        self.__update_listeners(old)
+
+    def rpc_connected(self,arg):
+        self.add_property_termlist('slave',arg)
+
+    def rpc_disconnected(self,arg):
+        self.del_property_termlist('slave',arg)
+
+    def __update_listeners(self,old):
+        masterids = set([x.args[2] for x in self.get_property_termlist('master')])
+        previous = set([x.args[2] for x in old])
+        dead_listeners = previous.difference(masterids)
+        new_listeners = masterids.difference(previous)
+        print 'adding new listeners',new_listeners
+        print 'removing old listeners',dead_listeners
+        for id in dead_listeners:
+            rpc.invoke_async_rpc(id,'disconnected',self.id())
+        for id in new_listeners:
+            rpc.invoke_async_rpc(id,'connected',self.id())
 
     def is_connected(self):
         return not not self.get_property_termlist('master')

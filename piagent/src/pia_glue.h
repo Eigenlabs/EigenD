@@ -69,6 +69,7 @@ class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual publi
         void create_index(const pia_ctx_t &e, const pia_data_t &addr, bct_index_t *i);
         void create_rpcserver(const pia_ctx_t &e, bct_rpcserver_t *i, const pia_data_t &id);
         void create_rpcclient(const pia_ctx_t &e, bct_rpcclient_t *i, const pia_data_t &id, const pia_data_t &p, const pia_data_t &n, const pia_data_t &val, unsigned long t);
+        void create_rpcasync(const pia_ctx_t &e, const pia_data_t &id, const pia_data_t &p, const pia_data_t &n, const pia_data_t &val, unsigned long t);
         unsigned window_count() { return window_.window_count(); }
         std::string window_title(unsigned w) { return window_.window_title(w); }
         void set_window_state(unsigned w,bool o) { window_.set_window_state(w,o); }

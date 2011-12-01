@@ -1978,6 +1978,7 @@ void tsd_log[piw::tsd_log](const char *)
 void tsd_alert[piw::tsd_alert](const char *,const char *, const char *)
 void tsd_rpcserver[piw::tsd_rpcserver](rpcserver *,const char *)
 void tsd_rpcclient[piw::tsd_rpcclient](rpcclient *,const char *, const data &, const data &, const data &, unsigned long)
+void tsd_rpcasync[piw::tsd_rpcasync](const char *, const data &, const data &, const data &, unsigned long)
 stdstr tsd_user[piw::tsd_user]()
 unsigned long long tsd_time[piw::tsd_time]()
 void tsd_clocksource(const data &,unsigned,unsigned,clocksource *);

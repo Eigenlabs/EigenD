@@ -133,6 +133,17 @@ void piw::tsd_rpcserver(bct_rpcserver_t *s, const char *id)
     }
 }
 
+void piw::tsd_rpcasync(const char *id, const piw::data_t &p, const piw::data_t &n, const piw::data_t &v, unsigned long t)
+{
+    bct_entity_t e = tsd_getcontext();
+    PIC_ASSERT(e);
+
+    if(bct_entity_rpcasync(e,id,p.lend(),n.lend(),v.lend(),t)<0)
+    {
+        PIC_THROW("can't create async rpc");
+    }
+}
+
 void piw::tsd_rpcclient(bct_rpcclient_t *s, const char *id, const piw::data_t &p, const piw::data_t &n, const piw::data_t &v, unsigned long t)
 {
     bct_entity_t e = tsd_getcontext();

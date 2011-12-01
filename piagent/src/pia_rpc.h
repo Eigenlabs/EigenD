@@ -38,6 +38,7 @@ struct pia_rpclist_t
         void dump(const pia_ctx_t &e);
         void server(const pia_ctx_t &e, bct_rpcserver_t *s, const pia_data_t &id);
         void client(const pia_ctx_t &e, bct_rpcclient_t *s, const pia_data_t &id, const pia_data_t &path, const pia_data_t &n, const pia_data_t &val, unsigned long);
+        void async(const pia_ctx_t &e, const pia_data_t &id, const pia_data_t &path, const pia_data_t &n, const pia_data_t &val, unsigned long);
 
     private:
         impl_t *impl_;

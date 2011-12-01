@@ -266,6 +266,7 @@ struct bct_entity_ops_s
 	bct_entity_t (*entity_new)(bct_entity_t,bool,const char *,const char *);
 	void (*entity_incref)(bct_entity_t);
 	void (*entity_decref)(bct_entity_t);
+    int (*entity_rpcasync)(bct_entity_t, const char *id, bct_data_t path, bct_data_t name, bct_data_t val, unsigned long timeout);
 };
 
 #define bct_entity_server(bc,n,s)               ((*(bc))->entity_server((bc),(n),(s)))
@@ -276,6 +277,7 @@ struct bct_entity_ops_s
 #define bct_entity_window(bc,i)                 ((*(bc))->entity_window((bc),(i)))
 #define bct_entity_rpcserver(bc,r,id)           ((*(bc))->entity_rpcserver((bc),(r),(id)))
 #define bct_entity_rpcclient(bc,r,id,p,n,v,t)   ((*(bc))->entity_rpcclient((bc),(r),(id),(p),(n),(v),(t)))
+#define bct_entity_rpcasync(bc,id,p,n,v,t)      ((*(bc))->entity_rpcasync((bc),(id),(p),(n),(v),(t)))
 #define bct_entity_time(bc)                     ((*(bc))->entity_time((bc)))
 #define bct_entity_allocate_host(bc,nb,ts,u,l,r,t,dl,dp,vl,vp)  ((*(bc))->entity_allocate_host((bc),(nb),(ts),(u),(l),(r),(t),(dl),(dp),(vl),(vp)))
 #define bct_entity_allocate_wire(bc,nb,l,d)     ((*(bc))->entity_allocate_wire((bc),(nb),(l),(d)))

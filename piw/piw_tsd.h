@@ -56,6 +56,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(void) tsd_window(bct_window_t *t);
     PIW_DECLSPEC_FUNC(void) tsd_rpcserver(bct_rpcserver_t *, const char *id);
     PIW_DECLSPEC_FUNC(void) tsd_rpcclient(bct_rpcclient_t *, const char *id, const piw::data_t &p, const piw::data_t &name, const piw::data_t &val, unsigned long);
+    PIW_DECLSPEC_FUNC(void) tsd_rpcasync(const char *id, const piw::data_t &p, const piw::data_t &name, const piw::data_t &val, unsigned long);
     PIW_DECLSPEC_FUNC(unsigned long long) tsd_time();
     PIW_DECLSPEC_FUNC(void) *tsd_alloc(unsigned nb,unsigned size, void (**dealloc)(void *, void *), void **dealloc_arg);
     PIW_DECLSPEC_FUNC(void) tsd_lock();

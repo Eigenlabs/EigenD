@@ -614,6 +614,23 @@ static int api_rpcserver(bct_entity_t e_, bct_rpcserver_t *rs, const char *id)
     return -1;
 }
 
+static int api_rpcasync(bct_entity_t e_, const char *id, bct_data_t p, bct_data_t n, bct_data_t v, unsigned long t)
+{
+    pia::context_t::impl_t *e = pia::context_t::impl_t::from_entity(e_);
+
+    try
+    {
+        pia_mainguard_t guard(e->glue());
+        pia_data_t nd = e->expand_address(id);
+        if(!nd) return PLG_STATUS_ADDR;
+        e->glue()->create_rpcasync( e,nd,pia_data_t::from_lent(p),pia_data_t::from_lent(n),pia_data_t::from_lent(v),t);
+        return 1;
+    }
+    PIA_CATCHLOG_EREF(e)
+
+    return -1;
+}
+
 static int api_rpcclient(bct_entity_t e_, bct_rpcclient_t *rc, const char *id, bct_data_t p, bct_data_t n, bct_data_t v, unsigned long t)
 {
     pia::context_t::impl_t *e = pia::context_t::impl_t::from_entity(e_);
@@ -680,7 +697,8 @@ bct_entity_ops_t pia::context_t::impl_t::dispatch__ =
     api_is_fast,
     api_new,
     api_incref,
-    api_decref
+    api_decref,
+    api_rpcasync
 };
 
 void pia::context_t::impl_t::idle_callback(void *e_, const pia_data_t & d)
@@ -766,6 +784,12 @@ void pia::manager_t::impl_t::create_rpcserver(const pia_ctx_t &e, bct_rpcserver_
 {
     PIC_ASSERT(!e->killed());
     rpc_.server(e,i,id);
+}
+
+void pia::manager_t::impl_t::create_rpcasync(const pia_ctx_t &e, const pia_data_t &id, const pia_data_t &p, const pia_data_t &n, const pia_data_t &v, unsigned long t)
+{
+    PIC_ASSERT(!e->killed());
+    rpc_.async(e,id,p,n,v,t);
 }
 
 void pia::manager_t::impl_t::create_rpcclient(const pia_ctx_t &e, bct_rpcclient_t *i, const pia_data_t &id, const pia_data_t &p, const pia_data_t &n, const pia_data_t &v, unsigned long t)

@@ -47,3 +47,10 @@ class RpcInvocation(async.Deferred,piw.rpcclient):
 def invoke_rpc(id,name,arg,timeout=30000):
     (addr,path) = paths.breakid(id)
     return RpcInvocation(addr,path,name,arg,timeout)
+
+def invoke_async_rpc(id,name,arg,timeout=30000):
+    (addr,path) = paths.breakid(id)
+    arg = piw.makestring_len(arg,len(arg),0)
+    name = piw.makestring(name,0)
+    piw.tsd_rpcasync(addr.as_string(),path.make_normal(),name,arg,timeout)
+

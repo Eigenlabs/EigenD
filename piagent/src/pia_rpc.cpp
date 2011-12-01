@@ -284,7 +284,12 @@ snode_t::snode_t(pia_rpclist_t::impl_t *l, const pia_ctx_t &e, bct_rpcserver_t *
 cnode_t::cnode_t(pia_rpclist_t::impl_t *l, const pia_ctx_t &e, bct_rpcclient_t *i, const pia_data_t &id, const pia_data_t &path, const pia_data_t &n, const pia_data_t &v, unsigned long t): invocation_t(path,n,v), list_(l), open_(true), entity_(e), rpcclient_(i)
 {
     host_ops_ = &dispatch__;
-    rpcclient_->host_ops=&host_ops_;
+
+    if(rpcclient_)
+    {
+        rpcclient_->host_ops=&host_ops_;
+    }
+
     l->clients_.append(this);
     network_ = l->get_network(id);
     network_->invoke(this);
@@ -477,6 +482,17 @@ void pia_rpclist_t::client(const pia_ctx_t &e, bct_rpcclient_t *i, const pia_dat
     pia_data_t key = e->glue()->allocate_path(path.aspathlen(),path.aspath(),cookie);
 
     new cnode_t(impl_,e,i,id,key,n,v,t);
+}
+
+void pia_rpclist_t::async(const pia_ctx_t &e, const pia_data_t &id, const pia_data_t &path, const pia_data_t &n, const pia_data_t &v, unsigned long t)
+{
+    unsigned long long cookie = e->glue()->random();
+    cookie <<=32;
+    cookie += rand();
+
+    pia_data_t key = e->glue()->allocate_path(path.aspathlen(),path.aspath(),cookie);
+
+    new cnode_t(impl_,e,0,id,key,n,v,t);
 }
 
 void pia_rpclist_t::dump(const pia_ctx_t &e)
@@ -940,7 +956,7 @@ void cnode_t::detach(int e)
     
     job_close_.cancel();
 
-    if(e)
+    if(e && rpcclient_)
     {
         job_close_.idle(entity_->appq(),close_callback,this,pia_data_t());
     }
