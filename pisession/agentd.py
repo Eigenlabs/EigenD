@@ -62,6 +62,12 @@ def filter_valid_setup(s):
     return False
 
 
+def safe_walk(rd):
+    if rd and os.path.isdir(rd):
+        for (a,b,c) in os.walk(rd):
+            yield (a,b,c)
+
+
 def try_int(s):
     try: return int(s)
     except: return s
@@ -150,7 +156,7 @@ def user_setup_file(slot,tag):
 def delete_user_slot(slot):
     slot = slot.strip()
     rd = resource.user_resource_dir(resource.setup_dir)
-    for (sp,sd,sn) in os.walk(rd):
+    for (sp,sd,sn) in safe_walk(rd):
         for s in sn:
             if s.startswith(slot):
                 os.unlink(os.path.join(rd,s))
@@ -160,7 +166,7 @@ def get_setup_slot(slot):
     slot = slot.strip()
     rd = resource.user_resource_dir(resource.setup_dir)
 
-    for (sp,sd,sn) in os.walk(rd):
+    for (sp,sd,sn) in safe_walk(rd):
         for s in filter(filter_valid_setup,sn):
             s3 = upgrade.split_setup(s)
             if s3[1]==slot:
@@ -175,7 +181,7 @@ def find_user_setups_flat():
     t = piw.term("tree",0)
     t.add_arg(-1,piw.term(piw.makestring('user setups',0)))
 
-    for (sp,sd,sn) in os.walk(rd):
+    for (sp,sd,sn) in safe_walk(rd):
         for s in filter(filter_valid_setup,sn):
             t3 = piw.term('leaf',0)
             s3 = upgrade.split_setup(s)
@@ -261,7 +267,7 @@ def find_user_setups():
     rd = resource.user_resource_dir(resource.setup_dir)
     m = Menu('User Setups')
 
-    for (sp,sd,sn) in os.walk(rd):
+    for (sp,sd,sn) in safe_walk(rd):
         for s in filter(filter_valid_setup,sn):
             s3 = upgrade.split_setup(s)
             m.add_setup(urllib.unquote(s3[0]),s3[1],os.path.join(rd,s),False,True)
@@ -273,7 +279,7 @@ def find_factory_setups():
     rd = resource.get_release_dir('state')
     m = Menu('Factory Setups')
 
-    for (sp,sd,sn) in os.walk(rd):
+    for (sp,sd,sn) in safe_walk(rd):
         for s in filter(filter_valid_setup,sn):
             s3 = upgrade.split_setup(s)
             m.add_setup(urllib.unquote(s3[0]),s3[1],os.path.join(rd,s),False,False)
@@ -286,7 +292,7 @@ def find_old_setups():
 
     for v in resource.find_installed_versions(filter_upgradeable_version):
         rd = resource.user_resource_dir(resource.setup_dir,version=v)
-        for (sp,sd,sn) in os.walk(rd):
+        for (sp,sd,sn) in safe_walk(rd):
             sd=()
             sv = filter(filter_valid_setup,sn)
             if sv:
@@ -300,11 +306,15 @@ def find_old_setups():
 
 
 def find_all_setups():
-    m = Menu('Setups')
-    m.add_child(find_user_setups())
-    m.add_child(find_factory_setups())
-    m.add_child(find_old_setups())
-    return m.term()
+    try:
+        m = Menu('Setups')
+        m.add_child(find_user_setups())
+        m.add_child(find_factory_setups())
+        m.add_child(find_old_setups())
+        return m.term()
+    except:
+        utils.log_exception()
+        return Menu('Setups')
 
 def annotate(file,text):
     database = state.open_database(file,True)
@@ -339,7 +349,7 @@ def upgradeable_old_setups():
     for v in resource.find_installed_versions(filter_upgradeable_version):
         rd = resource.user_resource_dir(resource.setup_dir,version=v)
         (vs,ts) = resource.split_version(v)
-        for (sp,sd,sn) in os.walk(rd):
+        for (sp,sd,sn) in safe_walk(rd):
             sd=()
             for s in filter(filter_valid_setup,sn):
                 slot = upgrade.split_setup(s)[1]

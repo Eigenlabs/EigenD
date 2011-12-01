@@ -70,12 +70,12 @@ def weaken(callback,default=None):
 
 def log_exception():
     print 'start traceback:'
-    traceback.print_exc(file=sys.__stdout__,limit=None)
+    traceback.print_exc(limit=None)
     print 'end traceback:'
 
 def log_trace():
     print 'start traceback:'
-    traceback.print_stack(file=sys.__stdout__,limit=None)
+    traceback.print_stack(limit=None)
     print 'end traceback:'
 
 def __nothrow(func,ret):
@@ -84,7 +84,7 @@ def __nothrow(func,ret):
             return func(*args,**kwds)
         except:
             print 'ignored:'
-            traceback.print_exc(file=sys.__stdout__,limit=None)
+            traceback.print_exc(limit=None)
             return ret
     return __do_nothrow
 
