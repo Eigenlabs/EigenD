@@ -23,7 +23,7 @@ import traceback
 
 from pi import logic,action,async,errors
 from pi.logic.shortcuts import *
-from plg_language import interpreter,imperative,noun,initialise,referent
+from plg_language import interpreter,imperative,noun,referent
 
 rules_verb = """
     # subject qualification
@@ -314,13 +314,9 @@ def run_imperative_co(interp,verb,mods,roles,args,flags,fg,text):
         print 'sync done'
 
     if created:
-        yield initialise.initialise_set(interp.get_database(),created)
         print 'starting resync'
         yield interp.sync()
         print 'resync done'
-
-    if removed:
-        yield initialise.uninitialise_set(interp.get_database(),removed)
 
     if nsucceeded:
         yield async.Coroutine.success('%d verbs failed: %d verbs succeeded' % (nerr,nsucceeded),user_errors=tuple(errs))

@@ -18,9 +18,9 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,domain,errors,action,logic,async,index,utils,bundles,resource,paths,node,container,upgrade,timeout,help_manager
+from pi import agent,atom,domain,errors,action,logic,async,index,utils,bundles,resource,paths,node,container,upgrade,timeout,help_manager,plumber
 from pi.logic.shortcuts import *
-from plg_language import interpreter,database,feedback,noun,builtin_misc,builtin_conn,context,variable,script,stage_server,widget,deferred
+from plg_language import interpreter,database,feedback,noun,builtin_misc,context,variable,script,stage_server,widget,deferred
 from plg_language import interpreter_version as version
 
 import piw
@@ -66,7 +66,6 @@ class Agent(agent.Agent):
         self.database = database.Database()
         self.help_manager = help_manager.HelpManager()
 
-        self.__plumber = builtin_conn.Plumber(self,self.database,ordinal)
         self.__builtin = builtin_misc.Builtins(self,self.database)
         self[12] = script.ScriptManager(self,self.__runner)
 
@@ -126,6 +125,9 @@ class Agent(agent.Agent):
         self.add_verb2(30,'message([],None,role(None,[abstract]))', self.__message)
         self.add_verb2(150,'execute([],None,role(None,[abstract]))',self.__runscript)
         self.add_verb2(151,'load([],None,role(None,[matches([help])]))',self.__loadhelp)
+        self.add_verb2(20,'connect([],None,role(None,[or([concrete],[composite([descriptor])])]),role(to,[concrete,singular]),option(using,[numeric,singular]))',self.__verb_connect)
+        self.add_verb2(18,'connect([un],None,role(None,[concrete]))',self.__verb_unconnect)
+        self.add_verb2(19,'connect([un],None,role(None,[concrete]),role(from,[concrete,singular]))',self.__verb_unconnect_from)
 
         self.add_builtins(self.__builtin)
         self.add_builtins(self.__ctxmgr)
@@ -137,8 +139,6 @@ class Agent(agent.Agent):
         self[3] = variable.VariableManager(self)
 
         self.add_builtins(self[3])
-
-        self.add_subsystem('plumber',self.__plumber)
 
         # TODO: how should the port number be chosen to avoid clashes with multiple eigenDs?
         # perhaps could get a free socket like this:
@@ -590,5 +590,113 @@ class Agent(agent.Agent):
         if not result.status():
             yield async.Coroutine.failure(*result.args(),**result.kwds())
         yield async.Coroutine.success()
+
+    @async.coroutine('internal error')
+    def __unconnect_from(self,t,tproxy,f):
+        objs = self.database.search_any_key('W',T('unconnect_from_list',t,f,V('W')))
+
+        for (s,m) in objs:
+            sproxy = self.database.find_item(s)
+            sconn = plumber.find_conn(sproxy,m)
+            for c in sconn:
+                print 'disconnect',c,'from',s
+                yield interpreter.RpcAdapter(sproxy.invoke_rpc('disconnect',c))
+
+        yield async.Coroutine.success()
+
+    @async.coroutine('internal error')
+    def __unconnect(self,t,tproxy):
+        print '__unconnect',t
+        objs = self.database.search_any_key('W',T('input_list',t,V('W')))
+        print '__unconnect',t,objs
+
+        for (s,m) in objs:
+            sproxy = self.database.find_item(s)
+            yield interpreter.RpcAdapter(sproxy.invoke_rpc('clrconnect',''))
+
+        yield async.Coroutine.success()
+
+    @async.coroutine('internal error')
+    def __unconnect_inputlist_from(self,t,tproxy,f):
+        print 'deleting',f,'inputs from',t
+
+        inputs = yield interpreter.RpcAdapter(tproxy.invoke_rpc('lstinput',''))
+        inputs = action.unmarshal(inputs)
+        print 'candidate inputs are:',inputs
+
+        for input in inputs:
+            print 'unconnecting',input
+            iproxy = self.database.find_item(input)
+            objs = self.database.search_any_key('W',T('unconnect_from_list',input,f,V('W')))
+
+            if objs:
+                yield self.__unconnect(input,iproxy)
+                print 'deleting input',input
+                yield interpreter.RpcAdapter(tproxy.invoke_rpc('delinput',input))
+
+        yield async.Coroutine.success()
+
+    @async.coroutine('internal error')
+    def __unconnect_inputlist(self,t,tproxy):
+        print 'deleting all inputs from',t
+
+        inputs = yield interpreter.RpcAdapter(tproxy.invoke_rpc('lstinput',''))
+        inputs = action.unmarshal(inputs)
+        print 'candidate inputs are:',inputs
+
+        for input in inputs:
+            print 'unconnecting',input
+            iproxy = self.database.find_item(input)
+            yield self.__unconnect(input,iproxy)
+            print 'deleting input',input
+            yield interpreter.RpcAdapter(tproxy.invoke_rpc('delinput',input))
+
+        yield async.Coroutine.success()
+
+    def __verb_unconnect(self,subject,t):
+        print 'un connect',t
+        t = action.concrete_object(t)
+        tproxy = self.database.find_item(t)
+
+        if 'inputlist' in tproxy.protocols():
+            return self.__unconnect_inputlist(t,tproxy)
+        else:
+            return self.__unconnect(t,tproxy)
+
+    def __verb_unconnect_from(self,subject,t,f):
+        f = action.concrete_object(f)
+        t = action.concrete_object(t)
+        print 'un connect',t,'from',f
+        tproxy = self.database.find_item(t)
+
+        if 'inputlist' in tproxy.protocols():
+            return self.__unconnect_inputlist_from(t,tproxy,f)
+        else:
+            return self.__unconnect_from(t,tproxy,f)
+
+
+    @async.coroutine('internal error')
+    def __verb_connect(self,subject,f,t,u):
+        if u is not None:
+            u=int(action.abstract_string(u))
+
+        to_descriptor = (action.concrete_object(t),None)
+        created = []
+
+        for ff in action.arg_objects(f):
+            if action.is_concrete(ff):
+                from_descriptors = [(action.crack_concrete(ff),None)]
+            else:
+                from_descriptors = action.crack_composite(ff,action.crack_descriptor)
+
+            r = plumber.plumber(self.database,to_descriptor,from_descriptors,u)
+            yield r
+            if not r.status():
+                yield async.Coroutine.failure(*r.args(),**r.kwds())
+
+            created.extend(r.args()[0])
+
+        yield async.Coroutine.success(action.initialise_return(*created))
+        
 
 agent.main(Agent)
