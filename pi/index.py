@@ -57,6 +57,7 @@ class Index(piw.index):
         self.__fast=fast
         self.__callbacks=[]
         self.__outstanding=set()
+        self.__user = None
 
     def sync(self, *names):
         for n in names:
@@ -114,11 +115,11 @@ class Index(piw.index):
             self.synced(client)
             del self.__members[sname]
 
-    def unqualify(self,a):
-        return paths.unqualify(a,self.__user)
+    def unqualify(self,a,scope=None):
+        return paths.unqualify(a,scope or self.__user)
 
-    def qualify(self,a):
-        return paths.qualify(a,self.__user)
+    def qualify(self,a,scope=None):
+        return paths.qualify(a,scope or self.__user)
 
     def user(self):
         return self.__user

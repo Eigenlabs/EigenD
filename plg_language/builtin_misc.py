@@ -67,18 +67,6 @@ class Builtins:
 
         return async.success()
 
-    def verb2_99_ruleset(self,subject):
-        """
-        ruleset([],None)
-        """
-        print "== ruleset =="
-        if r:
-            r=resource.open_logfile('ruleset')
-            for t in enumerate(self.database.iterrules()):
-                print >>r,"%i: %s" % t
-            r.flush()
-        return async.success()
-
     def primitive_context(self,interp,word):
         if interp.get_context().stack_empty():
             print '== context empty =='
@@ -102,7 +90,7 @@ class Builtins:
         """
 
         words = action.abstract_wordlist(value)
-        thing = action.concrete_object(thing)
+        thing = self.database.to_database_id(action.concrete_object(thing))
         ordinal = None
 
         try:
@@ -132,7 +120,7 @@ class Builtins:
         """
 
         value = action.abstract_string(value)
-        thing = action.concrete_object(thing)
+        thing = self.database.to_database_id(action.concrete_object(thing))
 
         try:
             value=int(value)
@@ -155,7 +143,7 @@ class Builtins:
         renumber([],global_renumber,role(None,[concrete]),role(with,[abstract]))
         """
 
-        things = tuple(action.concrete_objects(things))
+        things = tuple(self.database.to_database_term(action.concrete_objects(things)))
         names = action.abstract_wordlist(names)
 
         name_cache = self.database.get_propcache('name')
@@ -183,7 +171,7 @@ class Builtins:
         associate([],global_associate,role(None,[or([concrete],[virtual]),singular]),role(to,[concrete,singular]))
         """
         part = action.arg_objects(part)[0]
-        whole = action.concrete_object(whole)
+        whole = self.database.to_database_id(action.concrete_object(whole))
         rel = 'join(%s,role(to,[instance(~self)]))' % part
 
         proxy = self.database.find_item(whole)
@@ -200,7 +188,7 @@ class Builtins:
         associate([un],global_unassociate,role(None,[concrete]),role(from,[concrete,singular]))
         """
         part = action.arg_objects(part)[0]
-        whole = action.concrete_object(whole)
+        whole = self.database.to_database_id(action.concrete_object(whole))
         rel = 'join(%s,role(to,[instance(~self)]))' % part
 
         proxy = self.database.find_item(whole)
@@ -223,7 +211,7 @@ class Builtins:
         """
         use([],None,role(None,[concrete,proto(setupmanager),singular]))
         """
-        sm = action.concrete_object(sm)
+        sm = self.database.to_database_id(action.concrete_object(sm))
         self.agent.set_statemgr(sm)
         print 'using',sm,'for checkpointing'
 

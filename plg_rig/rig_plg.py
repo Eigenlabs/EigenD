@@ -438,7 +438,7 @@ class OuterAgent(agent.Agent):
 
     def close_server(self):
         agent.Agent.close_server(self)
-        __inner_agent.close_server();
+        self.__inner_agent.close_server();
 
 
 agent.main(OuterAgent,gui=True)

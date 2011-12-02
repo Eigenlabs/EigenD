@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import const, node, domain,errors, utils, policy, vocab, async, logic, files, action, rpc
+from pi import const, node, domain,errors, utils, policy, vocab, async, logic, files, action, rpc, paths
 from pi import domain as pidomain
 
 import piw
@@ -706,10 +706,10 @@ class Atom(node.Server):
         self.__update_listeners(old)
 
     def rpc_connected(self,arg):
-        self.add_property_termlist('slave',arg)
+        self.add_property_termlist('slave',logic.render_term(arg))
 
     def rpc_disconnected(self,arg):
-        self.del_property_termlist('slave',arg)
+        self.del_property_termlist('slave',logic.render_term(arg))
 
     def __update_listeners(self,old):
         masterids = set([x.args[2] for x in self.get_property_termlist('master')])
@@ -718,10 +718,14 @@ class Atom(node.Server):
         new_listeners = masterids.difference(previous)
         print 'adding new listeners',new_listeners
         print 'removing old listeners',dead_listeners
+
         for id in dead_listeners:
-            rpc.invoke_async_rpc(id,'disconnected',self.id())
+            myrid = paths.unqualify(self.id(),scope=paths.id2scope(id))
+            rpc.invoke_async_rpc(id,'disconnected',myrid)
+
         for id in new_listeners:
-            rpc.invoke_async_rpc(id,'connected',self.id())
+            myrid = paths.unqualify(self.id(),scope=paths.id2scope(id))
+            rpc.invoke_async_rpc(id,'connected',myrid)
 
     def is_connected(self):
         return not not self.get_property_termlist('master')

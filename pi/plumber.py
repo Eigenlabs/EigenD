@@ -1,12 +1,12 @@
 
-from pi import logic,async,rpc,domain
+from pi import logic,async,rpc,domain,paths
 
 class Endpoint:
     def __init__(self,db,id,channel=None):
         proxy = db.find_item(id)
 
         self.id=id
-        self.qid=db.qualify(id)
+        self.qid=db.to_usable_id(id)
         self.words = {}
         self.ordinal=proxy.ordinal()
         self.domain=proxy.domain() or domain.Null()
@@ -22,7 +22,8 @@ class Endpoint:
             self.words[w] = self.words.get(w,0) + s
 
     def connect(self,ostuff,u):
-        d=logic.render_term(logic.make_term('conn',u,self.channel,ostuff.id,ostuff.channel,ostuff.connect_static and 'ctl' or None))
+        oid = paths.unqualify(ostuff.id,scope=paths.id2scope(self.qid))
+        d=logic.render_term(logic.make_term('conn',u,self.channel,oid,ostuff.channel,ostuff.connect_static and 'ctl' or None))
         print 'connecting',d,'->',self.id,'using',u
         rpc.invoke_rpc(self.qid,'connect',d)
 
@@ -95,29 +96,12 @@ class Endpoint:
 
 @async.coroutine('internal error')
 def plumber(db,to_descriptor,from_descriptors,using=None):
-    created = []
-
     assoc_cache = db.get_assoccache()
     partof_cache = db.get_partcache()
     proto_cache = db.get_propcache('protocol')
     name_cache = db.get_propcache('name')
 
     (ti,tp) = to_descriptor
-
-    if tp is None and 'inputlist' in proto_cache.get_valueset(ti):
-        if using is not None:
-            yield async.Coroutine.failure('using and inputlist incompatible')
-
-        ar = rpc.invoke_rpc(db.qualify(ti),'addinput','')
-        yield ar
-        if not ar.status():
-            yield async.Coroutine.failure('addinput failed')
-
-        (ti,n) = action.unmarshal(ar.args()[0])
-        print 'input list connect: new input is',ti,n,'resyncing'
-        yield db.sync()
-        print 'resync complete'
-        if n: created.append(ti)
 
     if using is None:
         if 'using' in proto_cache.get_valueset(ti):
@@ -144,7 +128,7 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
         if using == 0:
             using = None
         te.connect(fe,using)
-        yield async.Coroutine.success(created)
+        yield async.Coroutine.success([])
 
     normoutputs = []
     revoutputs = []
@@ -210,7 +194,7 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
     if len(allinputs)==1 and len(alloutputs)==1:
         print 'direct connect'
         allinputs[0].connect(alloutputs[0],using)
-        yield async.Coroutine.success(created)
+        yield async.Coroutine.success([])
 
     connections = []
 
@@ -252,13 +236,4 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
     for (ostuff,istuff) in connections:
         istuff.connect(ostuff,using)
 
-    yield async.Coroutine.success(created)
-
-def find_conn(aproxy,id):
-    cnxs = logic.parse_clauselist(aproxy.get_master())
-    r = []
-    for cnx in cnxs:
-        if logic.is_pred_arity(cnx,'conn',5) and cnx.args[2]==id:
-            r.append(logic.render_term(cnx))
-
-    return r
+    yield async.Coroutine.success([])

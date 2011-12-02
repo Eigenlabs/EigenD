@@ -18,15 +18,15 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import atom,policy,utils,proxy,const,domain,logic,rpc
+from pi import atom,policy,utils,proxy,const,domain,logic,rpc,paths
 import language_native
 import piw
 import xmlrpclib
 
 server_port = "55551"
 
-monitor_debug = False
-widget_debug = False
+monitor_debug = True
+widget_debug = True
 widget_manager_debug = False
 
 class Monitor(proxy.AtomProxy):
@@ -214,16 +214,18 @@ class Widget(atom.Atom):
             
     def destroy(self):
         # remove this widget from the targets controllers
-        cs = logic.render_term(logic.make_term('conn',None,None,self.id(),None,'ctl'))
+        myrid = paths.unqualify(self.id(),scope=paths.id2scope(address))
+        cs = logic.render_term(logic.make_term('conn',None,None,myrid,None,'ctl'))
         address = self.get_property_string('target-id')
         if address!='':
             rpc.invoke_rpc(address,'disconnect',cs)
     
     def setup(self,address,name):
+        myrid = paths.unqualify(self.id(),scope=paths.id2scope(address))
         self.set_property_long('ref-count',1)
         self.set_property_string('target-name',name)
         self.set_property_string('target-id',address)
-        cs = logic.render_term(logic.make_term('conn',None,None,self.id(),None,'ctl'))
+        cs = logic.render_term(logic.make_term('conn',None,None,myrid,None,'ctl'))
         if address!='':
             return rpc.invoke_rpc(address,'connect',cs)
         else:

@@ -85,10 +85,28 @@ def popset(s):
             return i
     return None
 
+def filter_term(filt,term):
+    if isinstance(term,str) and term.startswith('<'):
+        return filt(term)
+
+    if isinstance(term,tuple):
+        return tuple([filter_term(filt,t) for t in term])
+
+    if isinstance(term,list):
+        return [filter_term(filt,t) for t in term]
+
+    if not logic.is_term(term):
+        return term
+
+    return logic.make_term(term.pred,*filter_term(filt,term.args))
+
 class VerbProxy:
-    def __init__(self,id,schema):
-        self.__id = id
+    def __init__(self,db,namespace,database_id,schema):
+        self.__database = db
+        self.__database_id = database_id
+        self.__usable_id = db.to_usable_id(database_id)
         self.__index = schema.args[0]
+        self.__namespace = namespace
 
         schema = schema.args[1]
 
@@ -101,12 +119,16 @@ class VerbProxy:
         self.__verbname = schema.pred
         self.__constraints = dict()
         self.__order = []
-        self.__dis = schema.args[1] or id
+
+        if schema.args[1]:
+            self.__dis = self.qualify(schema.args[1])
+        else:
+            self.__dis = database_id
 
         if self.__dis.startswith('global_'):
             self.__subject = None
         else:
-            self.__subject = paths.id2server(id)
+            self.__subject = paths.id2server(database_id)
 
         for r in schema.args[2:]:
             if logic.is_pred(r,'role'):
@@ -114,18 +136,27 @@ class VerbProxy:
                 if self.__fixed is None:
                     self.__fixed = set()
                 self.__fixed.add(role)
-                self.__constraints[role] = r.args[1]
+                self.__constraints[role] = constraints.map_constraints(self.qualify,r.args[1])
                 self.__order.append(role)
             if logic.is_pred(r,'option'):
                 role = r.args[0]
                 if self.__options is None:
                     self.__options = set()
                 self.__options.add(role)
-                self.__constraints[role] = r.args[1]
+                self.__constraints[role] = constraints.map_constraints(self.qualify,r.args[1])
                 self.__order.append(role)
+
+    def qualify(self,cid):
+        return self.__database.to_database_id(cid,scope=self.__namespace)
+
+    def unqualify(self,did):
+        return paths.unqualify(did,scope=self.__namespace)
 
     def name(self):
         return self.__verbname
+
+    def namespace(self):
+        return self.__namespace
 
     def fullname(self):
         if self.__mods:
@@ -155,34 +186,94 @@ class VerbProxy:
         return self.__subject
 
     def __hash__(self):
-        return hash((self.__id,self.__index))
+        return hash((self.__database_id,self.__index))
 
     def __cmp__(self,other):
         if self is other: return 0
         if not isinstance(other,VerbProxy): return 1
-        return cmp((self.__id,self.__index),(other.__id,other.__index))
+        return cmp((self.__database_id,self.__index),(other.__database_id,other.__index))
 
+    def convert_args(self,term):
+        t2 = filter_term(self.unqualify,term)
+        print 'unqualified verb arguments',term,'->',t2
+        return t2
+
+    def convert_result(self,term):
+        t2 = filter_term(self.qualify,term)
+        print 'qualified verb return',term,'->',t2
+        return t2
+
+    @async.coroutine('internal error')
     def invoke(self, interp, *args):
         interpid = str(id(interp))
-        return action.adapt_callbackn(rpc.invoke_rpc(self.__id,'vinvoke',action.marshal((interpid,self.__index)+args)))
 
+        verb_args = action.marshal((interpid,self.__index)+self.convert_args(args))
+        r = rpc.invoke_rpc(self.__usable_id,'vinvoke',verb_args)
+
+        yield r
+        rv = r.args()[0]
+
+        if not r.status():
+            yield async.Coroutine.failure(rv or 'rpc error')
+
+        rv = self.convert_result(action.unmarshal(rv))
+        print 'verb returns',rv
+        yield async.Coroutine.success(*rv)
+
+    @async.coroutine('internal error')
     def defer(self, interp, *args):
-        return action.adapt_callback1(rpc.invoke_rpc(self.__id,'vdefer',action.marshal((self.__index,)+args)))
+        verb_args = action.marshal((self.__index,)+self.convert_args(args))
+        r = rpc.invoke_rpc(self.__usable_id,'vdefer',verb_args)
 
+        yield r
+        rv = r.args()[0]
+
+        if not r.status():
+            yield async.Coroutine.failure(rv or 'rpc error')
+
+        rv = self.convert_result(action.unmarshal(rv))
+        print 'verb defer returns',rv
+        yield async.Coroutine.success(rv)
+
+
+    @async.coroutine('internal error')
     def find(self, interp, *args):
-        return action.adapt_callback1(rpc.invoke_rpc(self.__id,'vfind',action.marshal((self.__index,)+args)))
+        verb_args = action.marshal((self.__index,)+self.convert_args(args))
+        r = rpc.invoke_rpc(self.__usable_id,'vfind',verb_args)
 
+        yield r
+        rv = r.args()[0]
+
+        if not r.status():
+            yield async.Coroutine.failure(rv or 'rpc error')
+
+        rv = self.convert_result(action.unmarshal(rv))
+        print 'verb defer returns',rv
+        yield async.Coroutine.success(rv)
+
+    @async.coroutine('internal error')
     def cancel(self,interp,*args):
-        return action.adapt_callback1(rpc.invoke_rpc(self.__id,'vcancel',action.marshal((self.__index,)+args)))
+        verb_args = action.marshal((self.__index,)+self.convert_args(args))
+        r = rpc.invoke_rpc(self.__usable_id,'vcancel',verb_args)
+
+        yield r
+        rv = r.args()[0]
+
+        if not r.status():
+            yield async.Coroutine.failure(rv or 'rpc error')
+
+        rv = self.convert_result(action.unmarshal(rv))
+        print 'verb defer returns',rv
+        yield async.Coroutine.success(rv)
 
     def __str__(self):
-        return "<verb %s:%s>" % (self.__id,self.__index)
+        return "<verb %s:%s>" % (self.__database_id,self.__index)
 
     def __repr__(self):
-        return "<verb %s:%s>" % (self.__id,self.__index)
+        return "<verb %s:%s>" % (self.__database_id,self.__index)
 
     def id(self):
-        return self.__id
+        return self.__database_id
 
 class Relation:
     def __init__(self,r,o,c):
@@ -829,8 +920,8 @@ class DatabaseProxy(proxy.AtomProxy):
         self.__changed = False
         self.__timestamp = 0
 
-    def relative_id(self):
-        return self.database.unqualify(self.id())
+    def database_id(self):
+        return self.database.to_database_id(self.id())
         
     def set_timestamp(self,ts):
         self.__timestamp = ts
@@ -839,7 +930,7 @@ class DatabaseProxy(proxy.AtomProxy):
         return self.__timestamp
 
     def parent_id(self):
-        return self.parent.relative_id() if self.parent else None
+        return self.parent.database_id() if self.parent else None
 
     def root(self):
         return self.parent.root() if self.parent else self
@@ -860,7 +951,7 @@ class DatabaseProxy(proxy.AtomProxy):
         if 0 == len(self.__rules):
             self.__rules = None
 
-        myid = self.relative_id()
+        myid = self.database_id()
 
         if verbs is not None:
             self.database.get_verbcache().set_verbs(myid,verbs)
@@ -875,7 +966,7 @@ class DatabaseProxy(proxy.AtomProxy):
         utils.safe(self.database.object_added,self)
 
         #print 'node_ready',self.id(),'protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
-        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.relative_id()):
+        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.database_id()):
             self.root().__timestamp = piw.tsd_time()
             self.database.set_timestamp(self.root().__timestamp)
 
@@ -884,14 +975,14 @@ class DatabaseProxy(proxy.AtomProxy):
     def node_changed(self,parts):
         self.root().__changed = True
         
-        #print 'node_changed protocols=',self.database.get_propcache('protocol').get_valueset(self.relative_id())
-        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.relative_id()):
+        #print 'node_changed protocols=',self.database.get_propcache('protocol').get_valueset(self.database_id())
+        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.database_id()):
             self.root().__timestamp = piw.tsd_time()
             self.database.set_timestamp(self.root().__timestamp)
         
         newrules,newprops,newverbs = self.database.make_rules(self,False,parts)
 
-        myid = self.relative_id()
+        myid = self.database_id()
         
         if newverbs is not None:
             self.database.get_verbcache().set_verbs(myid,newverbs)
@@ -925,14 +1016,14 @@ class DatabaseProxy(proxy.AtomProxy):
         self.root().__changed = True
 
         #print 'node_removed protocols=',self.database.get_propcache('protocol').get_valueset(self.id())
-        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.relative_id()):
+        if 'nostage' not in self.database.get_propcache('protocol').get_valueset(self.database_id()):
             self.root().__timestamp = piw.tsd_time()
             self.database.set_timestamp(self.root().__timestamp)
         
         #if self.root()==self:
         #    print 'node_removed ',self.id()
 
-        myid = self.relative_id()
+        myid = self.database_id()
 
         self.database.get_verbcache().retract_verbs(myid)
 
@@ -994,7 +1085,6 @@ class Database(logic.Engine):
         self.__partof = RelationCache('partof')
         self.__assocwith = RelationCache('assocwith')
         self.__jointo = RelationCache('jointo')
-        self.__index = None
         self.__jointo_testc = logic.parse_clause('join(cnc(A),role(to,[instance(B)]))')
         self.__jointo_testv = logic.parse_clause('join(virtual(A),role(to,[instance(B)]))')
         self.__ccache = ConnectionCache(self.__assocwith)
@@ -1037,29 +1127,21 @@ class Database(logic.Engine):
     def get_timestamp(self):
         return self.__timestamp
 
-    def qualify(self,id):
-        qid = self.__index.qualify(id)
-        return qid
-
-    def unqualify(self,id):
-        uid = self.__index.unqualify(id)
-        return uid
-
     def update_all_agents(self):
         new_timstamp = piw.tsd_time()
         self.__timestamp = new_timstamp
-        for ap in self.__index.members():
+        for ap in self.get_all_agents():
             ap.set_timestamp(new_timstamp)
         
     def changed_agents(self,since_time):
         if since_time<self.__timestamp and self.__index is not None:
             agents = []
-            for ap in self.__index.members():
+            for ap in self.get_all_agents():
                 ats = ap.get_timestamp()
                 if ats > since_time:
-                    agents += [ap.relative_id()]
+                    agents += [ap.database_id()]
                 else:
-                    agent_slaves = self.find_joined_slaves(ap.relative_id())
+                    agent_slaves = self.find_joined_slaves(ap.database_id())
                     # if any subsystem has updated then add the agent to the change list
                     for slave in agent_slaves:
                         item = self.find_item(slave)
@@ -1067,18 +1149,13 @@ class Database(logic.Engine):
                             sts = item.get_timestamp()
                             #print slave,sts,since_time
                             if sts > since_time:
-                                agents += [ap.relative_id()]
+                                agents += [ap.database_id()]
                                 break
             return agents
         else:
             return []
                 
                     
-    def num_agents(self):
-        if self.__index is not None:
-            agents = [id for id in self.__index.members()]
-            print 'num agents=',len(agents)
-        
     def get_propcaches(self):
         return self.__properties.iterkeys()
 
@@ -1234,16 +1311,17 @@ class Database(logic.Engine):
 
         return rules
 
-    def make_verb_proxy(self,id,schema):
+    def make_verb_proxy(self,dbid,schema):
         try:
-            return VerbProxy(id,schema)
+            (n,a,p) = paths.splitid(self.to_qualified_id(dbid))
+            return VerbProxy(self,n,dbid,schema)
         except:
+            utils.log_exception()
             print 'malformed verb',id,schema
             return None
 
     @staticmethod
-    def __master2id(master):
-        terms = logic.parse_termlist(master or '')
+    def __master2id(terms):
         ids = []
 
         for t in terms:
@@ -1256,8 +1334,9 @@ class Database(logic.Engine):
         rules = {}
         props = {}
 
-        id = ap.relative_id()
+        id = ap.database_id()
         pid = ap.parent_id()
+        ns = paths.id2scope(id)
         desc = False
         cdesc = False
         ss = paths.id2server(id)
@@ -1285,7 +1364,7 @@ class Database(logic.Engine):
 
         if 'master' in parts:
             r=[]
-            master = ap.get_master()
+            master = self.to_database_term(logic.parse_termlist(ap.get_master() or ''),scope=ns)
             if master:
                 mids = self.__master2id(master)
                 midmap = []
@@ -1368,14 +1447,14 @@ class Database(logic.Engine):
 
         if 'frelation' in parts:
             r=[]
-            frelations = ap.frelations()
+            frelations = self.to_database_term(ap.frelations(),scope=ns)
             if frelations:
                 r.extend(self.make_relation_rule(id,frelations))
             rules['frelation'] = r
 
         if 'relation' in parts:
             r=[]
-            relations = ap.relations()
+            relations = self.to_database_term(ap.relations(),scope=ns)
             if relations:
                 r.extend(self.make_relation_rule(id,relations))
             rules['relation'] = r
@@ -1411,21 +1490,6 @@ class Database(logic.Engine):
         props['props'] = (prop_add,prop_del)
 
         return rules,props,verb_return
-
-    def start(self,name):
-        if not self.__index:
-            self.__index = index.Index(lambda name: self.proxy(self),False)
-            piw.tsd_index(name,self.__index)
-
-    def stop(self):
-        if self.__index:
-            self.__index.close_index()
-            self.__index=None
-
-    def sync(self, *args,**kwds):
-        if self.__index:
-            return self.__index.sync(*args,**kwds)
-        return async.success()
 
     def classify(self,word):
         result = self.search_any(T('classify',word,V('C'),V('X')))
@@ -1590,10 +1654,10 @@ class Database(logic.Engine):
         obsflag = 'obs' in p
         osflag = 'os' in p
         if obsflag or osflag:
-            self.__ccache.add_master(proxy.relative_id(),osflag,obsflag)
+            self.__ccache.add_master(proxy.database_id(),osflag,obsflag)
 
     def object_removed(self,proxy):
-        id=proxy.relative_id()
+        id=proxy.database_id()
         self.__ccache.remove_master(id)
         self.__ccache.connect(id,paths.id2server(id),[])
 
@@ -1619,4 +1683,55 @@ class Database(logic.Engine):
                 rv.append(d)
 
         return rv
+
+
+    def to_usable_term(self,term):
+        return filter_term(self.to_usable_id,term)
+
+    def to_qualified_term(self,term):
+        return filter_term(self.to_qualified_id,term)
+
+    def to_database_term(self,term,scope=None):
+        return filter_term(lambda i: self.to_database_id(i,scope),term)
+
+    def filter_term(self,filt,term):
+        return filter_term(filt,term)
+
+
+class SimpleDatabase(Database):
+    def __init__(self):
+        self.__index = None
+        Database.__init__(self)
+
+    def start(self,name):
+        if not self.__index:
+            self.__index = index.Index(lambda name: self.proxy(self),False)
+            piw.tsd_index(name,self.__index)
+
+    def stop(self):
+        if self.__index:
+            self.__index.close_index()
+            self.__index=None
+
+    def sync(self, *args,**kwds):
+        if self.__index:
+            return self.__index.sync(*args,**kwds)
+        return async.success()
+
+    def to_qualified_id(self,dbid):
+        qid = self.__index.qualify(id)
+        return qid
+
+    def to_usable_id(self,id):
+        qid = self.__index.qualify(id)
+        return qid
+
+    def to_database_id(self,id,scope=None):
+        uid = self.__index.unqualify(id,scope)
+        return uid
+
+    def get_all_agents(self):
+        if self.__index:
+            return [ap for ap in self.__index.members()]
+        return []
 

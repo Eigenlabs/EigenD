@@ -162,7 +162,8 @@ def run(interp,verb,mods,roles,args):
         if not vr.status():
             continue
 
-        checked[d] = (v,vr.args()[0])
+        args = vr.args()[0]
+        checked[d] = (v,args)
 
     if not checked:
         yield async.Coroutine.failure('inappropriate arguments',user_errors=((errors.inappropriate_arguments(verb),''),))

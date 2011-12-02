@@ -120,18 +120,48 @@ def unqualify(id,scope=None):
 
     a2 = a[1:-1]
     cp = a2.find(':')
-    if cp < 0:
-        return id
 
-    u = a2[:cp]
-    n = a2[cp+1:]
+    if cp < 0:
+        u = piw.tsd_user()
+        n = a2
+    else:
+        u = a2[:cp]
+        n = a2[cp+1:]
 
     s = scope or piw.tsd_user()
+
+    print 'unqualify',id,u,n,s
 
     if u == s:
         if p:
             return '<%s>#%s' % (n,p)
         else:
             return '<%s>' % n
+    else:
+        if p:
+            return '<%s:%s>#%s' % (u,n,p)
+        else:
+            return '<%s:%s>' % (u,n)
 
-    return id
+
+def id2scope(id,scope=None):
+    return splitid(id,scope)[0]
+
+def splitid(id,scope=None):
+    if '#' not in id:
+        (a,p) = (id,'')
+    else:
+        (a,p) = id.split('#')
+
+    a2 = a[1:-1]
+    cp = a2.find(':')
+
+    s = scope or piw.tsd_user()
+
+    if cp < 0:
+        return (s,a2,p)
+
+    u = a2[:cp]
+    n = a2[cp+1:]
+
+    return (u,n,p)
