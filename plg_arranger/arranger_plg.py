@@ -18,51 +18,98 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,bundles,domain,errors,policy,utils,action,const,node,upgrade,logic
+from pi import agent,atom,bundles,domain,errors,policy,utils,action,const,node,upgrade,logic,async,collection,talker
 from plg_arranger import arranger_version as version
 
 import piw
 import arranger_native
 
-class RowTarget(atom.Atom):
-    def __init__(self,agent,row=None):
-        self.__agent = agent
+class RowTargetEvent(talker.Talker):
+    def __init__(self,target,fast,index):
+        self.__target = target
+        self.__index = index
+
+        talker.Talker.__init__(self,self.__target.agent.finder,fast,None,names='event',ordinal=index,connection_index=None,protocols='remove')
+
+    def property_change(self,key,value):
+        if key=='help' and value and value.is_string():
+            self.__target.agent.update()
+
+    def describe(self):
+        return self.get_property_string('help')
+
+class RowTarget(collection.Collection):
+    def __init__(self,agent,index):
+        self.agent = agent
         self.__fastdata = bundles.FastSender()
-        atom.Atom.__init__(self,domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy())
+        collection.Collection.__init__(self,domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),creator=self.__create,wrecker=self.__wreck,ordinal=index,names='row',protocols='hidden-connection remove')
         self.get_policy().set_source(self.__fastdata)
-        self.get_policy().set_clock(self.__agent.model.get_clock())
+        self.get_policy().set_clock(self.agent.model.get_clock())
 
-        self.set_private(node.static(_1=node.Server(change=self.__changetarget),_2=node.Server(value=piw.makelong(1,0),change=self.__changerefs)))
+        self.set_private(node.static(_1=node.Server(change=self.__changetarget)))
         self.target = self.get_private()[1]
-        self.refs = self.get_private()[2]
 
-        if row is not None:
-            self.__changetarget(piw.makelong(row,0))
+        if index is not None:
+            self.__changetarget(piw.makelong(index-1,0))
 
     def __changetarget(self,d):
         if d.is_long():
             self.target.set_data(d)
-            self.__agent.model.set_target(d.as_long(),self.__fastdata.sender())
-
-    def __changerefs(self,d):
-        if d.is_long():
-            self.refs.set_data(d)
-
-    def addref(self):
-        r = self.refs.get_data().as_long()
-        self.refs.set_data(piw.makelong(r+1,0))
-
-    def delref(self):
-        r = self.refs.get_data().as_long()
-        if r==1:
-            return True
-        self.refs.set_data(piw.makelong(r-1,0))
-        return False
+            self.agent.model.set_target(d.as_long(),self.__fastdata.sender())
 
     def clear(self):
+        self.cancel_event()
         d = self.target.get_data()
         if d.is_long():
-            self.__agent.model.clear_target(d.as_long())
+            self.agent.model.clear_target(d.as_long())
+
+    def __create(self,i):
+        self.agent.update()
+        return RowTargetEvent(self,self.__fastdata,i)
+
+    def __wreck(self,k,v):
+        self.agent.update()
+
+    @async.coroutine('internal error')
+    def instance_create(self,name):
+        e = RowTargetEvent(self,self.__fastdata,name)
+        self[name] = e
+        e.attached()
+        yield async.Coroutine.success(e)
+
+    @async.coroutine('internal error')
+    def instance_wreck(self,k,e,name):
+        print 'killing event',k
+        del self[k]
+        r = e.clear_phrase()
+        yield r
+        print 'killed event',k
+        yield async.Coroutine.success()
+
+    @async.coroutine('internal error')
+    def create_event(self,text,called=None):
+        if called:
+            if called in self:
+                yield async.Coroutine.failure('phrase exists')
+            index = called
+        else:
+            index = self.find_hole()
+
+        print 'create event on row',self.id()
+
+        e = RowTargetEvent(self,self.__fastdata,index)
+        self[index] = e
+        e.attached()
+        r = e.set_phrase(text)
+        yield r
+
+    @async.coroutine('internal error')
+    def cancel_event(self,called=None):
+        for c,e in self.items():
+            if not called or called==c:
+                del self[c]
+                r = e.clear_phrase()
+                yield r
 
 
 class Event(node.Server):
@@ -253,6 +300,8 @@ class Agent(agent.Agent):
         self.domain = piw.clockdomain_ctl()
         vc = atom.VerbContainer(clock_domain=self.domain)
 
+        self.finder = talker.TalkerFinder()
+
         agent.Agent.__init__(self,signature=version,names='arranger', protocols='bind', container=(9,'agent',vc), ordinal=ordinal)
 
         self[1] = self.verb_container()
@@ -283,8 +332,7 @@ class Agent(agent.Agent):
         self[4][1] = atom.Atom(domain=domain.Aniso(), policy=self.cinput.nodefault_policy(1,False),names='song beat input')
         self[4][2] = atom.Atom(domain=domain.Aniso(), policy=self.cinput.nodefault_policy(2,False),names='running input')
 
-        self[5] = atom.Atom(creator=self.__createtarget,wrecker=self.__wrecktarget)
-        self.add_mode2(1,'mode([],role(when,[numeric,singular]),option(using,[instance(~server)]))', self.__mode, self.__query, self.__cancel_mode)
+        self[5] = collection.Collection(creator=self.__createtarget,wrecker=self.__wrecktarget,names="row",inst_creator=self.__createtarget_inst,inst_wrecker=self.__wrecktarget_inst,protocols='hidden-connection')
 
         self[7] = Parameters(self)
 
@@ -296,8 +344,9 @@ class Agent(agent.Agent):
 
         self.add_verb2(1,'play([],~self)',create_action=self.__play,clock=True)
         self.add_verb2(2,'play([un],~self)',create_action=self.__unplay,clock=True)
-        self.add_verb2(3,'cancel([],~self,role(None,[numeric,singular]))',self.__cancel_verb)
+        self.add_verb2(3,'cancel([],~self,role(None,[numeric,singular]),option(called,[singular,numeric]))',self.__cancel_verb)
         self.add_verb2(4,'clear([],~self)',self.__clear_verb)
+        self.add_verb2(5,'do([],~self,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
         self.model.playstop_set(piw.make_change_nb(utils.slowchange(self.__play_set)))
 
     def __play(self,*args):
@@ -314,62 +363,73 @@ class Agent(agent.Agent):
     def __play_set(self,d):
         self.get_private().set_data(d)
 
-    def __createtarget(self,k):
-        return RowTarget(self)
+    def __createtarget(self,r):
+        return RowTarget(self,r)
 
-    def __wrecktarget(self,k,v):
+    def __wrecktarget(self,r,v):
         v.clear()
 
-    def __mode(self,text,k,u):
-        row = int(action.abstract_string(k))-1
+    @async.coroutine('internal error')
+    def __createtarget_inst(self,r):
+        e = RowTarget(self,r)
+        self[5][r] = e
+        yield async.Coroutine.success(e)
 
-        for v in self[5].itervalues():
-            d = v.target.get_data()
-            if d.is_long() and d.as_long()==row:
-                v.addref()
-                return logic.render_term((v.id(),('transient',)))
+    @async.coroutine('internal error')
+    def __wrecktarget_inst(self,k,e,name):
+        r = e.clear()
+        yield r
+        yield async.Coroutine.success()
 
-        i = self[5].find_hole()
-        if i:
-            self[5][i] = RowTarget(self,row)
-            return logic.render_term((self[5][i].id(),('transient',)))
+    @async.coroutine('internal error')
+    def __do_verb(self,subject,phrase,row,c):
+        phrase = action.abstract_string(phrase)
+        row = int(action.abstract_string(row))
+        c = int(action.abstract_string(c)) if c else None
+       
+        target = None
 
-        return None
+        if self[5].has_key(row):
+            target = self[5][row]
 
-    def __query(self,k,u):
-        print '__query',k,u
-        row = int(action.abstract_string(k))-1
+        if target is None:
+            target = RowTarget(self,row)
+            self[5][row] = target
 
-        for v in self[5].values():
-            d = v.target.get_data()
-            if d.is_long() and d.as_long()==row:
-                return [ v.id() ]
+        if c and c in self[5][row]:
+            yield async.Coroutine.success(action.error_return('name in use','','do'))
 
-        return []
+        e = target.create_event(phrase,c)
+        yield e
+        yield async.Coroutine.success()
 
-    def __cancel_verb(self,subj,row):
-        row = int(action.abstract_string(row))-1
-        print 'cancelling row',row
+    @async.coroutine('internal error')
+    def __cancel_verb(self,subj,row,c):
+        row = int(action.abstract_string(row))
+        c = int(action.abstract_string(c)) if c else None
 
-        for k,v in self[5].iteritems():
-            d = v.target.get_data()
-            if d.is_long() and d.as_long()==row:
-                id = v.id()
-                v.clear()
-                del self[5][k]
-                return action.cancel_return(self.id(),1,id)
+        if row not in self[5]:
+            yield async.Coroutine.success()
+
+        if c:
+            if c not in self[5][row]:
+                yield async.Coroutine.success()
+
+            r = self[5][row].cancel_event(c)
+            yield r
+            yield async.Coroutine.success()
+        else:
+            v = self[5][row]
+            id = v.id()
+            v.clear()
+            del self[5][row]
+            yield async.Coroutine.success()
 
     def __clear_verb(self,subj):
         self.view.clear_events()
-        
-    def __cancel_mode(self,id):
-        print '__cancel',id
-        for k,v in self[5].iteritems():
-            if id==v.id():
-                if v.delref():
-                    v.clear()
-                    del self[5][k]
-                return
+
+    def update(self):
+        pass
 
 agent.main(Agent)
 

@@ -75,9 +75,9 @@ class Talker(atom.Atom):
         self.__domain.set_source(piw.makestring('*',0))
         self.__loading = False
 
-        self.status_input = bundles.VectorInput(status_cookie,self.__domain,signals=(1,))
-
-        self[1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.status_input.vector_policy(1,False,clocked=False),names='status input',protocols='nostage hidden-connection')
+        if status_cookie:
+            self.status_input = bundles.VectorInput(status_cookie,self.__domain,signals=(1,))
+            self[1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.status_input.vector_policy(1,False,clocked=False),names='status input',protocols='nostage hidden-connection')
         self[2] = atom.Atom(domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),names='trigger output', protocols='hidden-connection')
         self[2].get_policy().set_source(trigger)
 
@@ -122,7 +122,8 @@ class Talker(atom.Atom):
         self.del_property('actions')
         self.del_property('help')
         self.set_value('')
-        self[1].clear_connections()
+        if self.has_key(1):
+            self[1].clear_connections()
 
     def make_connection(self,index,dsc):
         return logic.make_term('conn',index,self.__conn_index,dsc.args[0],dsc.args[1],None)
@@ -161,7 +162,8 @@ class Talker(atom.Atom):
                 if a.args[1]:
                     c.append(self.make_connection(i,a.args[1]))
 
-        self[1].set_connections(logic.render_termlist(c))
+        if self.has_key(1):
+            self[1].set_connections(logic.render_termlist(c))
 
         yield async.Coroutine.success()
 

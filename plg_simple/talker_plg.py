@@ -119,8 +119,6 @@ class Event(talker.Talker):
     def describe(self):
         return self.get_property_string('help')
 
-
-
 class Key(collection.Collection):
     def __init__(self,agent,controller,index):
         collection.Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,ordinal=index,names='k',protocols='hidden-connection remove')
@@ -231,10 +229,10 @@ class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         agent.Agent.__init__(self,signature=version,names='talker',container=5,ordinal=ordinal)
 
-        self.add_verb2(2,'do([],None,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
-        self.add_verb2(8,'cancel([],None,role(None,[singular,numeric]),option(called,[singular,numeric]))', self.__cancel_verb)
-        self.add_verb2(5,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]))', self.__color_verb)
-        self.add_verb2(6,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]),role(from,[singular,numeric]))', self.__all_color_verb)
+        self.add_verb2(2,'do([],~self,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
+        self.add_verb2(8,'cancel([],~self,role(None,[singular,numeric]),option(called,[singular,numeric]))', self.__cancel_verb)
+        self.add_verb2(5,'colour([],~self,role(None,[singular,numeric]),role(to,[singular,numeric]))', self.__color_verb)
+        self.add_verb2(6,'colour([],~self,role(None,[singular,numeric]),role(to,[singular,numeric]),role(from,[singular,numeric]))', self.__all_color_verb)
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
@@ -334,7 +332,6 @@ class Agent(agent.Agent):
         k = int(action.abstract_string(k))
         c = int(action.abstract_string(c)) if c else None
 
-        rv=[]
         if k not in self[3]:
             yield async.Coroutine.success()
 
@@ -342,6 +339,10 @@ class Agent(agent.Agent):
             yield async.Coroutine.success()
 
         r = self[3][k].cancel_event(c)
+
+        if c is None:
+            del self[3][k]
+
         yield r
         yield async.Coroutine.success()
 
