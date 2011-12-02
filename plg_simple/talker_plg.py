@@ -110,7 +110,7 @@ class Event(talker.Talker):
         talker.Talker.__init__(self,self.__key.agent.finder,fast,cookie,names='event',ordinal=index,connection_index=key.index,protocols='remove')
 
     def detach_event(self):
-        self.__key.key_aggregator.clear_output(self.__index+1)
+        self.__key.key_aggregator.clear_output(self.__index)
 
     def property_change(self,key,value):
         if key=='help' and value and value.is_string():
@@ -292,6 +292,7 @@ class Agent(agent.Agent):
 
     @async.coroutine('internal error')
     def __wreck_inst(self,k,e,name):
+        e.detach_key()
         r = e.cancel_event()
         yield r
         yield async.Coroutine.success()
@@ -341,6 +342,7 @@ class Agent(agent.Agent):
         r = self[3][k].cancel_event(c)
 
         if c is None:
+            self[3][k].detach_key()
             del self[3][k]
 
         yield r
