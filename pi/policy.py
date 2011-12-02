@@ -529,7 +529,7 @@ class TriggerPolicyImpl(ConnectablePolicyImpl):
     def create_plumber(self,init,address,filter,slot,clocked):
         if init:
             self.__backend = piw.functor_backend(1,True)
-            self.__backend.set_functor(piw.pathnull_lck(0),self.__handler)
+            self.__backend.set_functor(piw.pathnull(0),self.__handler)
             self.__backend.send_duplicates(True)
             self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.root_filter(),self.__backend.cookie(),0,0)
 
