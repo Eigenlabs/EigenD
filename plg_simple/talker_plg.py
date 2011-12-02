@@ -110,7 +110,7 @@ class Event(talker.Talker):
         talker.Talker.__init__(self,self.__key.agent.finder,fast,cookie,names='event',ordinal=index,connection_index=key.index,protocols='remove')
 
     def detach_event(self):
-        self.__key.key_aggregator.clear_output(self.__index)
+        self.__key.key_aggregator.clear_output(self.__index+1)
 
     def property_change(self,key,value):
         if key=='help' and value and value.is_string():
@@ -229,10 +229,10 @@ class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         agent.Agent.__init__(self,signature=version,names='talker',container=5,ordinal=ordinal)
 
-        self.add_verb2(2,'do([],~self,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
-        self.add_verb2(8,'cancel([],~self,role(None,[singular,numeric]),option(called,[singular,numeric]))', self.__cancel_verb)
-        self.add_verb2(5,'colour([],~self,role(None,[singular,numeric]),role(to,[singular,numeric]))', self.__color_verb)
-        self.add_verb2(6,'colour([],~self,role(None,[singular,numeric]),role(to,[singular,numeric]),role(from,[singular,numeric]))', self.__all_color_verb)
+        self.add_verb2(2,'do([],None,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
+        self.add_verb2(8,'cancel([],None,role(None,[singular,numeric]),option(called,[singular,numeric]))', self.__cancel_verb)
+        self.add_verb2(5,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]))', self.__color_verb)
+        self.add_verb2(6,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]),role(from,[singular,numeric]))', self.__all_color_verb)
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))

@@ -29,7 +29,7 @@ class RowTargetEvent(talker.Talker):
         self.__target = target
         self.__index = index
 
-        talker.Talker.__init__(self,self.__target.agent.finder,fast,None,names='event',ordinal=index,connection_index=None,protocols='remove')
+        talker.Talker.__init__(self,self.__target.agent.finder,fast,None,ordinal=index,connection_index=None,protocols='remove')
 
     def property_change(self,key,value):
         if key=='help' and value and value.is_string():
@@ -342,11 +342,11 @@ class Agent(agent.Agent):
         
         self.set_private(self.__playstop)
 
-        self.add_verb2(1,'play([],~self)',create_action=self.__play,clock=True)
-        self.add_verb2(2,'play([un],~self)',create_action=self.__unplay,clock=True)
-        self.add_verb2(3,'cancel([],~self,role(None,[numeric,singular]),option(called,[singular,numeric]))',self.__cancel_verb)
-        self.add_verb2(4,'clear([],~self)',self.__clear_verb)
-        self.add_verb2(5,'do([],~self,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
+        self.add_verb2(1,'play([],None)',create_action=self.__play,clock=True)
+        self.add_verb2(2,'play([un],None)',create_action=self.__unplay,clock=True)
+        self.add_verb2(3,'cancel([],None,role(None,[numeric,singular]),option(called,[singular,numeric]))',self.__cancel_verb)
+        self.add_verb2(4,'clear([],None)',self.__clear_verb)
+        self.add_verb2(5,'do([],None,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
         self.model.playstop_set(piw.make_change_nb(utils.slowchange(self.__play_set)))
 
     def __play(self,*args):
