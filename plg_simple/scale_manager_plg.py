@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,action,logic,bundles,domain,policy,node,resource
+from pi import agent,atom,action,logic,bundles,domain,policy,node,resource,async,talker,collection
 from plg_simple import scale_manager_version as version
 import piw
 import os
@@ -33,16 +33,12 @@ def scales_equal(s1,s2):
         if abs(e1-e2)>0.001: return False
     return True
 
-class Event(atom.Atom):
-    def __init__(self,fast,text,index):
+class Event(talker.Talker):
+    def __init__(self,eventlist,fast,index):
         self.__index = index
+        self.__eventlist = eventlist
 
-        self.__fastdata = piw.fastdata(0)
-        piw.tsd_fastdata(self.__fastdata)
-        self.__fastdata.set_upstream(fast)
-        atom.Atom.__init__(self,domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy())
-        self.get_policy().set_source(self.__fastdata)
-        self.set_private(node.Server(value=piw.makestring(text,0),change=self.__change))
+        talker.Talker.__init__(self,self.__eventlist.agent.finder,fast,None,ordinal=index,connection_index=None,protocols='remove')
 
     def __change(self,v):
         if v.is_string():
@@ -51,21 +47,40 @@ class Event(atom.Atom):
     def describe(self):
         return self.get_private().get_data().as_string()
 
-class EventList(atom.Atom):
-    def __init__(self):
-        atom.Atom.__init__(self,creator=self.__create,wrecker=self.__wreck)
+class EventList(collection.Collection):
+    def __init__(self,agent):
+        collection.Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,names='event',protocols='hidden-connection')
+        self.agent = agent
         self.__event = bundles.FastSender(2)
 
     def __create(self,i):
-        return Event(self,self.__event,"",i)
+        return Event(self,self.__event,i)
 
     def __wreck(self,k,v):
         pass
 
+    @async.coroutine('internal error')
+    def instance_create(self,name):
+        e = Event(self,self.__event,name)
+        self[name] = e
+        e.attached()
+        yield async.Coroutine.success(e)
+
+    @async.coroutine('internal error')
+    def instance_wreck(self,k,e,name):
+        print 'killing event',k
+        del self[k]
+        r = e.clear_phrase()
+        yield r
+        print 'killed event',k
+        yield async.Coroutine.success()
+
     def event(self,text):
         i = self.find_hole()
-        e = Event(self.__event,text,i)
+        e = Event(self,self.__event,i)
         self[i] = e
+        e.attached()
+        r = e.set_phrase(text)
         return e.id()
 
     def activate(self):
@@ -76,11 +91,13 @@ class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         agent.Agent.__init__(self, signature=version, names='scale manager',ideals='note scale',ordinal=ordinal)
 
+        self.finder = talker.TalkerFinder()
+
         self[1]=VirtualNote()
-        self[3]=EventList()
+        self[3]=EventList(self)
         self[2]=VirtualScale(self[3].activate)
 
-        self.add_mode2(4,'mode([],role(when,[abstract,matches(["activation"])]),option(using,[instance(~server)]))', self.__mode, self.__query, self.__cancel_mode, self.__attach_mode)
+        self.add_verb2(4,'do([],None,role(None,[abstract]),role(when,[abstract,matches(["activation"])]),option(using,[instance(~server)]))', self.__do_verb)
         self.add_verb2(1,'cancel([],None)', self.__cancel_verb)
         self.add_verb2(5,'choose([],None,role(None,[ideal([None,scale]),singular]))',self.__choose_verb)
 
@@ -99,9 +116,11 @@ class Agent(agent.Agent):
     def __query(self,k,u):
         return [ v.id() for v in self[3].itervalues() ]
 
-    def __mode(self,text,k,u):
-        id = self[3].event(text)
-        return logic.render_term((id,()))
+    @async.coroutine('internal error')
+    def __do_verb(self,subject,t,k,c):
+        r = self[3].event(t)
+        yield r
+        yield async.Coroutine.success()
 
     def __cancel_mode(self,id):
         for k,e in self[3].iteritems():
