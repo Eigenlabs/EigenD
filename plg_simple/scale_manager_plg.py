@@ -83,6 +83,12 @@ class EventList(collection.Collection):
         r = e.set_phrase(text)
         return r
 
+    def cancel_event(self,index=None):
+        for i,e in self.items():
+            if not index or index==i:
+                del self[i]
+                e.clear_phrase()
+
     def activate(self):
         self.__event.trigger()
 
@@ -98,7 +104,7 @@ class Agent(agent.Agent):
         self[2]=VirtualScale(self[3].activate)
 
         self.add_verb2(4,'do([],None,role(None,[abstract]),role(when,[abstract,matches(["activation"])]),option(using,[instance(~server)]))', self.__do_verb)
-        self.add_verb2(1,'cancel([],None)', self.__cancel_verb)
+        self.add_verb2(1,'cancel([],None,option(None,[singular,numeric]))', self.__cancel_verb)
         self.add_verb2(5,'choose([],None,role(None,[ideal([None,scale]),singular]))',self.__choose_verb)
 
     def __choose_verb(self,subject,scale):
@@ -106,12 +112,12 @@ class Agent(agent.Agent):
         print 'choose',scale,thing
         self[2].reset_to(thing)
 
-    def __cancel_verb(self,subject):
+    @async.coroutine('internal error')
+    def __cancel_verb(self,subject,i):
+        i = int(action.abstract_string(i)) if i else None
         self[2].reset()
-        rv=[]
-        for k,e in self[3].iteritems():
-            rv.append(action.cancel_return(self.id(),4,e.id()))
-        return rv
+        self[3].cancel_event(i)
+        yield async.Coroutine.success()
 
     def __query(self,k,u):
         return [ v.id() for v in self[3].itervalues() ]
@@ -122,15 +128,6 @@ class Agent(agent.Agent):
         r = self[3].create_event(t)
         yield r
         yield async.Coroutine.success()
-
-    def __cancel_mode(self,id):
-        for k,e in self[3].iteritems():
-            if e.id()==id:
-                del self[3][k]
-                return
-   
-    def __attach_mode(self,id,*args):
-        pass
 
     def rpc_resolve_ideal(self,arg):
         (type,name) = action.unmarshal(arg)
