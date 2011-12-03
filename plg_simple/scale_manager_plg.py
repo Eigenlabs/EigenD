@@ -75,13 +75,13 @@ class EventList(collection.Collection):
         print 'killed event',k
         yield async.Coroutine.success()
 
-    def event(self,text):
+    def create_event(self,text):
         i = self.find_hole()
         e = Event(self,self.__event,i)
         self[i] = e
         e.attached()
         r = e.set_phrase(text)
-        return e.id()
+        return r
 
     def activate(self):
         self.__event.trigger()
@@ -118,7 +118,8 @@ class Agent(agent.Agent):
 
     @async.coroutine('internal error')
     def __do_verb(self,subject,t,k,c):
-        r = self[3].event(t)
+        t = action.abstract_string(t)
+        r = self[3].create_event(t)
         yield r
         yield async.Coroutine.success()
 
