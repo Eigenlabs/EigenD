@@ -147,9 +147,11 @@ class VerbProxy:
                 self.__order.append(role)
 
     def qualify(self,cid):
+        if not isinstance(cid,str): return cid
         return self.__database.to_database_id(cid,scope=self.__namespace)
 
     def unqualify(self,did):
+        if not isinstance(did,str): return did
         return paths.unqualify(did,scope=self.__namespace)
 
     def name(self):
