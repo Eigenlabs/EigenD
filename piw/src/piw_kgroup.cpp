@@ -52,7 +52,7 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
         unsigned key_number = 0;
         for(unsigned i=1; i<row; ++i)
         {
-            key_number += geo.as_tuple_value(i).as_long();
+            key_number += geo.as_tuple_value(i-1).as_long();
         }
 
         key_number += col;
@@ -65,17 +65,30 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
         unsigned row = (unsigned)key.as_tuple_value(0).as_float();
         unsigned col = (unsigned)key.as_tuple_value(1).as_float();
 
-        unsigned offset = 0;
-        if(row<=rowoffset_.get().as_tuplelen())
+        const piw::data_nb_t rowoffset = rowoffset_.get();
+
+        unsigned col_offset = 0;
+        if(row<=rowoffset.as_tuplelen())
         {
-            piw::data_nb_t offset_val = rowoffset_.get().as_tuple_value(row-1);
+            piw::data_nb_t offset_val = rowoffset.as_tuple_value(row-1);
             if (!offset_val.is_null())
             {
-                offset = offset_val.as_long();
+                col_offset = offset_val.as_long();
             }
         }
 
-        col = col - offset;
+        col = col - col_offset;
+
+        unsigned row_offset = 0;
+        for(unsigned i=1; i<=rowoffset.as_tuplelen() && i <= row; ++i)
+        {
+            if(rowoffset.as_tuple_value(i-1).is_null())
+            {
+                row_offset++;
+            }
+        }
+
+        row = row - row_offset;
 
         piw::data_nb_t d = piw::tuplenull_nb(t);
         d = piw::tupleadd_nb(d, piw::makefloat_nb(row,t));
