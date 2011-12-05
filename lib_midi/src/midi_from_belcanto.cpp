@@ -924,8 +924,7 @@ namespace midi
                         global = false;
                         belcanto_note_wire_t *w = active_input_wires_.head();
                         if(i->mcc_ == MIDI_CC_MAX + POLY_AFTERTOUCH ||
-                           !i->key_ ||
-                           (w && w->key_ == i->key_))
+                           (w && 0 == w->id_.compare_path_beginning(i->id_)))
                         {
                             channel = channel_;
                         }
@@ -959,7 +958,7 @@ namespace midi
             }
 
 #if MIDI_FROM_BELCANTO_DEBUG>0
-            pic::logmsg() << "midi msg global: " << global << ", channel: " << channel << ", continuous: " << i->continuous_ << ", mcc: " << (unsigned)i->mcc_ << ", lcc: " << (unsigned)i->lcc_ << ", value: " << i->value_ << ", time: " << time_ << ", id:" << i->id_ << ", key:" << i->key_;
+            pic::logmsg() << "midi msg global: " << global << ", channel: " << channel << ", continuous: " << i->continuous_ << ", mcc: " << (unsigned)i->mcc_ << ", lcc: " << (unsigned)i->lcc_ << ", value: " << i->value_ << ", time: " << time_ << ", id:" << i->id_;
 #endif // MIDI_FROM_BELCANTO_DEBUG>0
 
             if(channel > 0)
@@ -982,7 +981,7 @@ namespace midi
                                 {
                                     if(global || w->channel_==channel)
                                     {
-                                        if(w->key_ == i->key_)
+                                        if(0 == w->id_.compare_path_beginning(i->id_))
                                         {
                                             if(w->note_id_!=0)
                                             {

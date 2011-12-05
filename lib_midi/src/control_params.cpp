@@ -216,7 +216,7 @@ namespace midi
             if(io!=eo && io->first==ip->first &&
                ip->second.origin_return_)
             {
-                params.push_back(param_data_t(io->first, io->second, ip->second.scope_, w->id_.get(), extract_keynum(w->id_.get())));
+                params.push_back(param_data_t(io->first, io->second, ip->second.scope_, w->id_.get()));
             }
         }
 
@@ -406,7 +406,7 @@ namespace midi
             }
             ip->second.last_processed_ = current_time;
 
-            params.push_back(param_data_t(ip->first, value, ip->second.scope_, id, extract_keynum(id)));
+            params.push_back(param_data_t(ip->first, value, ip->second.scope_, id));
         }
     }
 
@@ -468,7 +468,7 @@ namespace midi
             ic->second.last_processed_ = current_time;
 
             // make sure that the value in the ending state is not send as continuous
-            midi.push_back(midi_data_t(d.time(), mid, lid, value, ic->second.scope_, ic->second.channel_, id, extract_keynum(id), !ending && continuous));
+            midi.push_back(midi_data_t(d.time(), mid, lid, value, ic->second.scope_, ic->second.channel_, id, !ending && continuous));
         }
     }
 
