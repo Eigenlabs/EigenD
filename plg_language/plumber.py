@@ -38,7 +38,7 @@ class Plumber:
     @async.coroutine('internal error')
     def verb2_18_unconnect(self,subject,t):
         """
-        connect([un],None,role(None,[concrete]))
+        connect([un],global_unconnect,role(None,[concrete]))
         """
         print 'un connect',t
         t = self.database.to_database_id(action.concrete_object(t))
@@ -56,7 +56,7 @@ class Plumber:
     @async.coroutine('internal error')
     def verb2_19_unconnect_from(self,subject,t,f):
         """
-        connect([un],None,role(None,[concrete]),role(from,[concrete,singular]))
+        connect([un],global_unconnect_from,role(None,[concrete]),role(from,[concrete,singular]))
         """
         f = self.database.to_database_id(action.concrete_object(f))
         t = self.database.to_database_id(action.concrete_object(t))
@@ -78,7 +78,7 @@ class Plumber:
     @async.coroutine('internal error')
     def verb2_20_connect(self,subject,f,t,u):
         """
-        connect([],None,role(None,[or([concrete],[composite([descriptor])])]),role(to,[concrete,singular]),option(using,[numeric,singular]))
+        connect([],global_connect,role(None,[or([concrete],[composite([descriptor])])]),role(to,[concrete,singular]),option(using,[numeric,singular]))
         """
         if u is not None:
             u=int(action.abstract_string(u))
