@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy
+from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,talker,collection
 from plg_simple import scheduler_version as version
 import piw
 from pi.logic.shortcuts import *
@@ -140,29 +140,28 @@ class EventBrowser(atom.Atom):
         map = tuple([(e.ordinal(),e.describe(),None) for (i,e) in enumerate(self.__eventlist()[cnum:])])
         return logic.render_term(map)
 
-class Event(atom.Atom):
-    def __init__(self,scheduler, index):
-        atom.Atom.__init__(self,domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),protocols='timeline')
-        self.event = piw.event(scheduler.scheduler,False,utils.changify(self.__enable_changed))
-        self.__private = node.Server()
-        self.__private[1] = node.Server(value=piw.makestring('',0), change=self.__change_schema)
-        self.__private[2] = node.Server(value=piw.makebool(False,0), change=self.__change_enabled)
+class Event(talker.Talker):
+    def __init__(self,scheduler,index):
         self.scheduler = scheduler
-        self.set_private(self.__private)
-        self.get_policy().set_source(self.event.fastdata())
         self.index = index
+        self.event = piw.event(scheduler.scheduler,False,utils.changify(self.__enable_changed))
+
+        talker.Talker.__init__(self,scheduler.finder,self.event.fastdata(),None,names='event',ordinal=index,connection_index=None,protocols='remove')
+
+        self[3] = atom.Atom(domain=domain.String(), policy=atom.default_policy(self.__change_schema), names='schema')
+        self[4] = atom.Atom(domain=domain.Bool(), init=False, policy=atom.default_policy(self.__change_enabled), names='enabled')
 
     def ordinal(self):
         return self.event.ordinal()
 
     def describe(self):
         o = self.ordinal()+1
-        d = describe_schema(self.__private[1].get_data().as_string())
+        d = describe_schema(self[3].get_value())
         return '%s' %  d
 
     def get_schema(self):
         try:
-            return self.__private[1].get_data().as_string()
+            return self[3].get_value()
         except:
             return None
 
@@ -172,24 +171,24 @@ class Event(atom.Atom):
         return schema.args[1]==qschema.args[1]
 
     def __change_schema(self,schema):
-        print 'disabling event',id(self.event)
+        print 'disabling event',id(self.event),schema
         self.event.detach()
         self.event.disable()
-        if schema.is_string() and schema.as_string():
-            s = action.unmarshal(schema.as_string())
+        if schema:
+            s = action.unmarshal(schema)
             apply_schema(self.event,s)
-            if self.__private[2].get_data().as_bool():
+            if self[4].get_value():
                 self.event.enable()
                 self.event.event_enable()
             self.event.attach(self.scheduler.controller)
-            self.__private[1].set_data(schema)
+            self[3].set_value(schema)
             print 'enabling event',id(self.event),'for',s
 
     def setup(self,schema):
         print 'disabling event',id(self.event)
         self.event.detach()
         self.event.disable()
-        self.__private[1].set_data(piw.makestring('',0))
+        self[3].set_value('')
 
         if schema.is_string() and schema.as_string():
             s = action.unmarshal(schema.as_string())
@@ -197,29 +196,28 @@ class Event(atom.Atom):
             self.event.enable()
             self.event.event_enable()
             self.event.attach(self.scheduler.controller)
-            self.__private[1].set_data(schema)
+            self[3].set_value(schema)
             print 'enabling event',id(self.event),'for',s
 
     def cancel(self):
         print 'canceling event',id(self.event)
         self.event.detach()
         self.event.disable()
+        return self.clear_phrase()
 
     def __enable_changed(self,d):
         if not d.is_bool():
             return
         print 'setting enabled state to',d
-        self.__private[2].set_data(d)
+        self[4].set_value(d.as_bool())
 
     def __change_enabled(self,d):
-        if not d.is_bool():
-            return
-        if d.as_bool():
+        if d:
             self.event.enable()
         else:
             self.event.disable()
         print 'setting enabled state to',d
-        self.__private[2].set_data(d)
+        self[4].set_value(d)
 
 
 class Agent(agent.Agent):
@@ -229,16 +227,16 @@ class Agent(agent.Agent):
 
         c = dict(c=schedproxy.get_constraints())
 
-        self.add_mode2(1,'mode([],role(at,%(c)s),option(until,%(c)s),option(every,%(c)s))'%c, lambda t,a,u,e: self.__mode(t,tsm(a),tsm(u),tsm(e)), lambda a,u,e: self.__query(tsm(a),tsm(u),tsm(e)), self.__mode_cancel)
-        self.add_mode2(2,'mode([],role(until,%(c)s), option(every,%(c)s))'%c, lambda t,u,e: self.__mode(t,{},tsm(u),tsm(e)), lambda u,e: self.__query({},tsm(u),tsm(e)), self.__mode_cancel)
-        self.add_mode2(3,'mode([],role(every,%(c)s))'%c, lambda t,e: self.__mode(t,{},{},tsm(e)), lambda e: self.__query({},{},tsm(e)), self.__mode_cancel)
-
-        self.add_verb2(4,'cancel([],None,role(None,[ideal([~server,event])]))', self.__verb_cancel)
+        self.add_verb2(1,'do([],None,role(None,[abstract]),role(at,%(c)s),option(until,%(c)s),option(every,%(c)s),option(called,[singular,numeric]))'%c, lambda s,t,a,u,e,c: self.__do_verb(s,t,tsm(a),tsm(u),tsm(e),c))
+        self.add_verb2(2,'do([],None,role(None,[abstract]),role(until,%(c)s),option(every,%(c)s),option(called,[singular,numeric]))'%c, lambda s,t,u,e,c: self.__do_verb(s,t,{},tsm(u),tsm(e),c))
+        self.add_verb2(3,'do([],None,role(None,[abstract]),role(every,%(c)s),option(called,[singular,numeric]))'%c, lambda s,t,e,c: self.__do_verb(s,t,{},{},tsm(e),c))
+        self.add_verb2(4,'cancel([],None,role(None,[singular,numeric]))', self.__verb_cancel)
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
         self.scheduler = piw.scheduler(4)
         self.input = bundles.ScalarInput(self.scheduler.cookie(), self.domain,signals=(1,2,3,4,5))
+        self.finder = talker.TalkerFinder()
 
         self[2] = atom.Atom(names='inputs')
         self[2][1] = atom.Atom(domain=domain.Aniso(), policy=self.input.policy(1,False), names='running input')
@@ -247,7 +245,7 @@ class Agent(agent.Agent):
         self[2][4] = atom.Atom(domain=domain.Aniso(), policy=self.input.policy(4,False), names='song beat input')
         self[2][5] = atom.Atom(domain=domain.Aniso(), policy=self.input.policy(5,False), names='bar input')
 
-        self[3] = atom.Null(creator = self.__create, wrecker = self.__wreck)
+        self[3] = collection.Collection(creator=self.__create,wrecker=self.__wreck,names='event',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst,protocols='hidden-connection')
 
         self[4] = atom.Atom(names='controller')
         self[4][1] = bundles.Output(1,False, names='light output',protocols='revconnect')
@@ -265,58 +263,81 @@ class Agent(agent.Agent):
 
     def rpc_delete_trigger(self,args):
         trigger = action.unmarshal(args)
-        self.__mode_cancel(trigger)
-
-    def rpc_create_trigger(self,schema):
-        print 'event schema is:',schema
-        i = self[3].find_hole()
-        e = Event(self,i)
-        e.setup(piw.makestring(schema,0))
-        self[3][i] = e
-        self[5].update()
-        return async.success(e.id())
-
-    def __mode(self, text, at, until, every):
-        schema = schedproxy.make_schema(at,until,every,desc=text)
-        print 'mode schema is:',schema
-
-        i = self[3].find_hole()
-        e = Event(self,i)
-        e.setup(piw.makestring(schema,0))
-        self[3][i] = e
-        self[5].update()
-        return logic.render_term((e.id(),('transient',)))
-
-    def __query(self, at, until, every):
-        schema = action.unmarshal(schedproxy.make_schema(at,until,every))
-        r = [ e.id() for e in self[3].itervalues() if e.compare(schema) ]
-        return r
-
-    def __mode_cancel(self,id):
         for (i,e) in self[3].iteritems():
             if e.id()==id:
                 print 'deleting event',id
                 e.cancel()
                 del self[3][i]
                 self[5].update()
-                return True
-        return False
 
-    def __verb_cancel(self,subject,phrase):
-        rv=[]
-        for o in action.arg_objects(phrase):
-            type,thing = action.crack_ideal(o)
-            event_id = thing[1]
-            rv.append(action.cancel_return(self.id(),1,event_id))
-        return rv
+    def __create_event(self,schema,called=None):
+        if called:
+            if called in self[3]:
+                return self[3][called]
+            i = called
+        else:
+            i = self[3].find_hole()
+        e = Event(self,i)
+        e.setup(piw.makestring(schema,0))
+        self[3][i] = e
+        e.attached()
+        self[5].update()
+        return e
+
+    def rpc_create_trigger(self,schema):
+        print 'event schema is:',schema
+        e = self.__create_event(schema)
+        return async.success(e.id())
+
+    @async.coroutine('internal error')
+    def __do_verb(self,subject,text,at,until,every,called):
+        text = action.abstract_string(text)
+        schema = schedproxy.make_schema(at,until,every)
+        called = int(action.abstract_string(called)) if called else None
+        print 'mode schema is:',schema
+
+        if called and called in self[3]:
+            yield async.Coroutine.success(action.error_return('name in use','','do'))
+
+        e = self.__create_event(schema,called)
+        r = e.set_phrase(text)
+        yield r 
+        yield async.Coroutine.success()
+
+    @async.coroutine('internal error')
+    def __verb_cancel(self,subject,called):
+        called = int(action.abstract_string(called))
+
+        if called not in self[3]:
+            yield async.Coroutine.success()
+
+        r = self[3][called].cancel()
+        del self[3][called]
+        self[5].update()
+
+        yield r
+        yield async.Coroutine.success()
 
     def __wreck(self,i,e):
         e.cancel()
         self[5].update()
 
     def __create(self,i):
+        e = Event(self,i)
         self[5].update()
-        return Event(self,i)
+        return e
+
+    @async.coroutine('internal error')
+    def __create_inst(self,k):
+        e = Event(self,k)
+        self[3][k] = e
+        yield async.Coroutine.success(e)
+
+    @async.coroutine('internal error')
+    def __wreck_inst(self,k,e,name):
+        r = e.cancel()
+        yield r
+        yield async.Coroutine.success()
 
     def rpc_resolve_ideal(self,arg):
         (typ,name) = action.unmarshal(arg)
