@@ -132,8 +132,6 @@ class Agent(agent.Agent):
         self.add_builtins(self.__ctxmgr)
         self.add_builtins(self.__plumber)
 
-        self.database.add_module(context)
-
         self.__messages_on = True
         self[4] = atom.Atom(names='messages',policy=atom.default_policy(self.__messages),domain=domain.Bool(),init=True)
         self[3] = variable.VariableManager(self)
@@ -408,12 +406,8 @@ class Agent(agent.Agent):
         self.database.add_module(provider)
 
         def verb(label,func): self.add_verb2(label,func.__doc__.strip(),callback=func)
-        def iverb(label,func): self.add_verb2(label,func.__doc__.strip(),callback=func,need_interp=True)
-        def mode(label,func): self.add_mode2(label,func.__doc__.strip(),*func())
 
-        self.__find_builtins(provider,'iverb2',iverb)
         self.__find_builtins(provider,'verb2',verb)
-        self.__find_builtins(provider,'mode2',mode)
 
     def message(self,words,desc='message',speaker=''):
         print 'language_plg:message words=',words,'desc=',desc,'speaker=',speaker

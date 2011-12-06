@@ -71,6 +71,7 @@ def get_parts(db,ids):
     part_cache = db.get_partcache()
     assoc_cache = db.get_assoccache()
     bind_cache = db.get_propcache('bind')
+    host_cache = db.get_propcache('host')
 
     for o in ids:
         val.update(part_cache.lefts(o))
@@ -79,6 +80,7 @@ def get_parts(db,ids):
         assoc = assoc_cache.lefts(o)
         for a in assoc:
             val.update(bind_cache.get_idset(a))
+        val.update(host_cache.get_idset(o))
 
     return val
 
@@ -182,14 +184,16 @@ class State_Initial:
         return async.success([State_Initial(db,self.__outer,self.__inner,True)],[])
 
     def refine(self,db,w):
-        wids = db.get_propcache('name').get_idset(w)
         vids = db.get_propcache('protocol').get_idset('virtual')
         world = db.get_propcache('props').get_idset('agent')
+        raids = db.get_propcache('props').get_idset('inrig')
+        wids = db.get_propcache('name').get_idset(w)
+
         states = []
         cstates = []
 
-        o_world_agent = world.intersection(wids)
-        o_outer_agent = self.__outer.intersection(wids)
+        o_world_agent = world.intersection(wids).difference(raids)
+        o_outer_agent = self.__outer.intersection(wids).difference(raids)
 
         inner_parts = get_parts(db,self.__inner)
         outer_parts = get_parts(db,self.__outer)
@@ -849,7 +853,7 @@ def primitive_noun(interp,word):
     prefix = [word]
 
     while not interp.empty():
-        m = interp.pop(interpreter.ModMarker)
+        m = interp.pop(referent.ModMarker)
         if m is None:
             break
         prefix.append(m.word)

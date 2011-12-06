@@ -944,7 +944,7 @@ class DatabaseProxy(proxy.AtomProxy):
             utils.safe(self.database.subsys_sync,self)
 
     def node_added(self,index):
-        return self.__class__(self.database,self)
+        return self.__class__(self.database,parent=self)
 
     def node_ready(self):
         self.root().__changed = True
@@ -1079,9 +1079,6 @@ class VerbCache:
 
 
 class Database(logic.Engine):
-
-    proxy = DatabaseProxy
-
     def __init__(self):
         logic.Engine.__init__(self)
         self.__partof = RelationCache('partof')
@@ -1161,6 +1158,9 @@ class Database(logic.Engine):
     def get_propcaches(self):
         return self.__properties.iterkeys()
 
+    def get_propcache(self,name):
+        return self.__properties[name]
+
     def get_partcache(self):
         return self.__partof
 
@@ -1169,9 +1169,6 @@ class Database(logic.Engine):
 
     def get_assoccache(self):
         return self.__assocwith
-
-    def get_propcache(self,name):
-        return self.__properties[name]
 
     def get_verbcache(self):
         return self.__verbcache
@@ -1198,7 +1195,8 @@ class Database(logic.Engine):
         for r in self.__assocwith.iterrules(filter):
             yield r
 
-        for (n,c) in self.__properties.iteritems():
+        for n in self.get_propcaches():
+            c = self.get_propcache(n)
             for r in c.iterrules('@'+n):
                 yield r
 
@@ -1319,7 +1317,7 @@ class Database(logic.Engine):
             return VerbProxy(self,n,dbid,schema)
         except:
             utils.log_exception()
-            print 'malformed verb',id,schema
+            print 'malformed verb',dbid,schema
             return None
 
     @staticmethod
@@ -1336,12 +1334,12 @@ class Database(logic.Engine):
         rules = {}
         props = {}
 
-        id = ap.database_id()
+        did = ap.database_id()
         pid = ap.parent_id()
-        ns = paths.id2scope(id)
+        ns = paths.id2scope(did)
         desc = False
         cdesc = False
-        ss = paths.id2server(id)
+        ss = paths.id2server(did)
 
         prop_add = []
         prop_del = []
@@ -1349,10 +1347,10 @@ class Database(logic.Engine):
         if init:
             r=[]
 
-            r.append(R(T('db_item',id,ap)))
+            r.append(R(T('db_item',did,ap)))
 
             if pid:
-                r.append(Relation(self.__partof,id,pid))
+                r.append(Relation(self.__partof,did,pid))
 
             rules['init']=r
 
@@ -1360,7 +1358,7 @@ class Database(logic.Engine):
         if 'verbs' in parts:
             verb_return = []
             for s in ap.verbs():
-                p = self.make_verb_proxy(id,s)
+                p = self.make_verb_proxy(did,s)
                 if p is not None:
                     verb_return.append(p)
 
@@ -1378,9 +1376,9 @@ class Database(logic.Engine):
                         r.append(Relation(self.__assocwith,ss,mss))
                     if 'om' in p:
                         r.append(Relation(self.__assocwith,mss,ss))
-                self.__ccache.connect(id,ss,midmap)
+                self.__ccache.connect(did,ss,midmap)
             else:
-                self.__ccache.connect(id,ss,[])
+                self.__ccache.connect(did,ss,[])
 
             rules['master'] = r
 
@@ -1428,7 +1426,7 @@ class Database(logic.Engine):
             r=[]
             control = ap.domain().hint('control')
             if control is not None:
-                r.append(R(T('db_control',control[0],id)))
+                r.append(R(T('db_control',control[0],did)))
             rules['domain'] = r
 
         if 'ordinal' in parts:
@@ -1451,14 +1449,14 @@ class Database(logic.Engine):
             r=[]
             frelations = self.to_database_term(ap.frelations(),scope=ns)
             if frelations:
-                r.extend(self.make_relation_rule(id,frelations))
+                r.extend(self.make_relation_rule(did,frelations))
             rules['frelation'] = r
 
         if 'relation' in parts:
             r=[]
             relations = self.to_database_term(ap.relations(),scope=ns)
             if relations:
-                r.extend(self.make_relation_rule(id,relations))
+                r.extend(self.make_relation_rule(did,relations))
             rules['relation'] = r
 
         if cdesc:
@@ -1701,6 +1699,8 @@ class Database(logic.Engine):
 
 
 class SimpleDatabase(Database):
+    proxy = DatabaseProxy
+
     def __init__(self):
         self.__index = None
         Database.__init__(self)
@@ -1721,15 +1721,15 @@ class SimpleDatabase(Database):
         return async.success()
 
     def to_qualified_id(self,dbid):
-        qid = self.__index.qualify(id)
+        qid = self.__index.qualify(dbid)
         return qid
 
-    def to_usable_id(self,id):
-        qid = self.__index.qualify(id)
+    def to_usable_id(self,dbid):
+        qid = self.__index.qualify(dbid)
         return qid
 
-    def to_database_id(self,id,scope=None):
-        uid = self.__index.unqualify(id,scope)
+    def to_database_id(self,dbid,scope=None):
+        uid = self.__index.unqualify(dbid,scope)
         return uid
 
     def get_all_agents(self):

@@ -123,6 +123,10 @@ class Context:
         return self.__stack[:]
 
 
+def throwaway_context():
+    return Context(None)
+
+
 class ContextManager(node.Server):
     def __init__(self,agent):
         node.Server.__init__(self,extension=255)
@@ -209,291 +213,219 @@ class ContextManager(node.Server):
         n.set_data(v)
         self[1].set_data(v)
 
-    def iverb2_59_remember(self,interp,subject,conv):
-        """
-        remember([],global_remember,role(None,[matches([conversation])]))
-        """
+    def primitive_remember(self,interp,word):
+        n = interp.pop(referent.Referent)
+        w = n.words() if n else ()
 
-        ctx = self.get_context(interp)
-        
-        if ctx.name=='all' or ctx.name=='empty':
-            return async.failure("can't remember special conversations")
-
-        self.__save(ctx,ctx.name)
-
-
-    def iverb2_50_remember(self,interp,subject,conv):
-        """
-        remember([],global_remember,role(None,[tagged([conversation])]))
-        """
-        
-        name = action.abstract_string(conv)
-        ctx = self.get_context(interp)
-
-        if name=='all' or name=='empty':
-            return async.failure("can't remember special conversations")
-
-        self.__save(ctx,name)
-        ctx.name = name
-
-
-    def iverb2_49_join(self,interp,subject,name):
-        """
-        join([],global_join,option(None,[abstract]))
-        """
-
-        ctx = self.get_context(interp)
-
-        if name is None:
-            name = 'default'
-        else:
-            name = action.abstract_string(name)
-
-        if name == 'empty' or name == 'all':
-            ctx.name = name
-            ctx.setup_empty()
-            print 'joining all'
-            return
-
-        t = self.__find_value(name)
-
-        if not t:
+        if not w or w[0] != 'conversation':
             return async.failure("no such conversation")
 
-        (auto,li,lu) = logic.parse_clause(t)
-        ctx.name = name
-        ctx.setup(auto,set(li),set(lu))
+        w = ' '.join(w[1:])
 
-
-    @async.coroutine('internal error')
-    def iverb2_51_listen(self,interpid,subject,agent):
-        """
-        listen([],global_listen,role(None,[abstract]))
-        """
-
-        interp = self.__agent.get_interpreter(interpid)
-        words = action.abstract_wordlist(agent)
-        r = self.__agent.interpret(interp,[],words)
-
-        yield r
-
-        if not r.status():
-            yield async.Coroutine.failure('no agents')
-
-        (ref,) = r.args()
-        agents = set(ref.concrete_ids())
-
-        if len(agents)==0:
-            yield async.Coroutine.failure('no agents')
+        if w=='all' or w=='empty':
+            return async.failure("can't remember special conversations")
 
         ctx = interp.get_context()
 
-        li = ctx.get_listener_scope().union(agents)
-        lu = ctx.get_lurker_scope().difference(agents)
+        if not w:
+            w = ctx.name
 
-        ctx.clear_stack()
-        ctx.set_lurker_scope(lu)
-        ctx.set_listener_scope(li)
-        ctx.set_inner_scope(set())
+        self.__save(ctx,w)
+        ctx.name = w
 
-        print 'scope:',ctx.get_listener_scope(),ctx.get_lurker_scope()
-
-    def iverb2_52_unlisten(self,interp,subject,agent):
-        """
-        listen([un],global_listen,role(None,[concrete]))
-        """
-
-        agent = action.concrete_objects(agent)
-        ctx = self.get_context(interp)
-
-        ctx.clear_stack()
-        ctx.set_listener_scope(ctx.get_listener_scope().difference(set(agent)))
-        ctx.set_inner_scope(set())
-
-        print 'scope:',ctx.get_listener_scope(),ctx.get_lurker_scope()
-
-    def iverb2_53_lurk(self,interp,subject,agent):
-        """
-        lurk([],global_lurk,role(None,[concrete]))
-        """
-
-        ctx = self.get_context(interp)
-        agents = set(action.concrete_objects(agent))
-
-        lu = ctx.get_lurker_scope().union(agents)
-        li = ctx.get_listener_scope().difference(agents)
-
-        ctx.clear_stack()
-        ctx.set_lurker_scope(lu)
-        ctx.set_listener_scope(li)
-        ctx.set_inner_scope(set())
-
-        print 'scope:',ctx.get_listener_scope(),ctx.get_lurker_scope()
-
-    def iverb2_54_unlurk(self,interp,subject,agent):
-        """
-        lurk([un],global_listen,role(None,[concrete]))
-        """
-
-        agent = action.concrete_objects(agent)
-        ctx = self.get_context(interp)
-
-        ctx.clear_stack()
-        ctx.set_lurker_scope(ctx.get_lurker_scope().difference(set(agent)))
-        ctx.set_inner_scope(set())
-
-        print 'scope:',ctx.get_listener_scope(),ctx.get_lurker_scope()
-
-    def iverb2_55_ctxlisten(self,interp,subject,name):
-        """
-        listen([],global_listen,role(None,[tagged([conversation])]))
-        """
-
-        name = action.abstract_string(name)
-
-        t = self.__find_value(name)
-
-        if not t:
-            return async.failure("no such conversation")
-
-        (auto,li,lu) = logic.parse_clause(t)
-
-        ctx = self.get_context(interp)
-
-        ctx.clear_stack()
-        ctx.set_listener_scope(ctx.get_listener_scope().union(set(li)))
-        ctx.set_lurker_scope(ctx.get_lurker_scope().union(set(lu)))
-        ctx.set_inner_scope(set())
-
-        print 'scope:',ctx.get_listener_scope(),ctx.get_lurker_scope()
-
-    def iverb2_56_ctxunlisten(self,interp,subject,name):
-        """
-        listen([un],global_listen,role(None,[tagged([conversation])]))
-        """
-
-        name = action.abstract_string(name)
-
-        t = self.__find_value(name)
-
-        if not t:
-            return async.failure("no such conversation")
-
-        (auto,li,lu) = logic.parse_clause(t)
-
-        ctx = self.get_context(interp)
-
-        ctx.clear_stack()
-        ctx.set_listener_scope(ctx.get_listener_scope().difference(set(li)))
-        ctx.set_lurker_scope(ctx.get_lurker_scope().difference(set(lu)))
-        ctx.set_inner_scope(set())
-
-        print 'scope:',ctx.get_listener_scope(),ctx.get_lurker_scope()
-
-    def iverb2_57_ctxlurk(self,interp,subject,name):
-        """
-        lurk([],global_lurk,role(None,[tagged([conversation])]))
-        """
-
-        name = action.abstract_string(name)
-
-        t = self.__find_value(name)
-
-        if not t:
-            return async.failure("no such conversation")
-
-        (auto,li,lu) = logic.parse_clause(t)
-
-        ctx = self.get_context(interp)
-
-        ctx.clear_stack()
-        ctx.set_lurker_scope(ctx.get_lurker_scope().union(set(lu)).union(set(li)))
-        ctx.set_inner_scope(set())
-
-        print 'scope:',ctx.get_listener_scope(),ctx.get_lurker_scope()
-
-    def iverb2_58_ctxunlurk(self,interp,subject,name):
-        """
-        lurk([un],global_lurk,role(None,[tagged([conversation])]))
-        """
-
-        name = action.abstract_string(name)
-
-        t = self.__find_value(name)
-
-        if not t:
-            return async.failure("no such conversation")
-
-        (auto,li,lu) = logic.parse_clause(t)
-
-        ctx = self.get_context(interp)
-
-        ctx.clear_stack()
-        ctx.set_lurker_scope(ctx.get_lurker_scope().difference(set(lu)))
-        ctx.set_inner_scope(set())
-
-        print 'scope:',ctx.get_listener_scope(),ctx.get_lurker_scope()
-
-def throwaway_context():
-    return Context(None)
-
-@async.coroutine('internal error')
-def primitive_hey(interp,word):
-    scope = set()
-
-    while not interp.empty():
+        return async.success()
+        
+    def primitive_join(self,interp,word):
         n = interp.pop(referent.Referent)
+        w = n.words() if n else ()
 
-        if n is None:
-            yield async.Coroutine.failure('bad noun')
+        w = ' '.join(w[1:])
+        if not w:
+            w = 'default'
 
-        n = (yield ResolvHandler(n.reinterpret(interp,[])))
+        ctx = interp.get_context()
 
-        o = n.concrete_ids()
-        if not o:
-            yield async.Coroutine.failure('empty noun')
+        if w == 'empty' or w == 'all':
+            ctx.name = w
+            ctx.setup_empty()
+            print 'joining all'
+            return async.success()
 
-        scope.update(set(o))
+        t = self.__find_value(w)
 
-    interp.get_context().set_inner_scope(scope)
-    print 'inner scope:',interp.get_context().get_inner_scope()
+        if not t:
+            return async.failure("no such conversation")
 
-@async.coroutine('internal error')
-def primitive_ahem(interp,word):
-    scope = set()
+        (auto,li,lu) = logic.parse_clause(t)
+        ctx.name = w
+        ctx.setup(auto,set(li),set(lu))
 
-    while not interp.empty():
+        return async.success()
+
+
+    def primitive_lurk(self,interp,word):
+        un = False
+
+        m = interp.top(referent.ModMarker)
+        if m and m.word == 'un':
+            un = True
+            interp.popany()
+
         n = interp.pop(referent.Referent)
+        if not n:
+            return async.failure("invalid lurk command")
 
-        if n is None:
-            yield async.Coroutine.failure('bad noun')
+        w = n.words() if n else ()
+        ctx = interp.get_context()
 
-        o = n.concrete_ids()
-        if not o:
-            yield async.Coroutine.failure('empty noun')
+        if w and w[0] == 'conversation':
+            name = ' '.join(w[1:])
+            t = self.__find_value(name)
 
-        scope.update(set(o))
+            if not t:
+                return async.failure("no such conversation")
 
-    interp.get_context().set_inner_scope(scope)
-    print 'inner scope:',interp.get_context().get_inner_scope()
+            (auto,li,lu) = logic.parse_clause(t)
+            ctx.clear_stack()
+            ctx.set_inner_scope(set())
 
-def primitive_scope(interp,word):
-    ctx = interp.get_context()
+            if un:
+                ctx.set_lurker_scope(ctx.get_lurker_scope().difference(set(lu)))
+            else:
+                ctx.set_lurker_scope(ctx.get_lurker_scope().union(set(lu)).union(set(li)))
+        else:
+            agents = set(n.concrete_ids())
 
-    print "== noun scope =="
-    for t in enumerate(ctx.get_noun_scope()):
-        print "%i: %s" % t
+            if un:
+                lu = ctx.get_lurker_scope().difference(agents)
+                ctx.set_lurker_scope(lu)
+            else:
+                lu = ctx.get_lurker_scope().union(agents)
+                li = ctx.get_listener_scope().difference(agents)
+                ctx.set_lurker_scope(lu)
+                ctx.set_listener_scope(li)
 
-    print "== verb scope =="
-    for t in enumerate(ctx.get_verb_scope()):
-        print "%i: %s" % t
+            ctx.set_inner_scope(set())
 
-    print "== inner scope =="
-    for t in enumerate(ctx.get_inner_scope()):
-        print "%i: %s" % t
+        print 'scope:',ctx.get_listener_scope(),ctx.get_lurker_scope()
+        return async.success()
+        
+    @async.coroutine('internal error')
+    def primitive_listen(self,interp,word):
+        un = False
 
-    print "== argument stack =="
-    for t in enumerate(interp.iterstack()):
-        print "%i: %s" % t
+        m = interp.top(referent.ModMarker)
+        if m and m.word == 'un':
+            un = True
+            interp.popany()
 
-    return async.success()
+        n = interp.pop(referent.Referent)
+        if not n:
+            yield async.Coroutine.failure("invalid listen command")
+
+        w = n.words() if n else ()
+        ctx = interp.get_context()
+
+        if w and w[0] == 'conversation':
+            name = ' '.join(w[1:])
+            t = self.__find_value(name)
+
+            if not t:
+                yield async.Coroutine.failure("no such conversation")
+
+            (auto,li,lu) = logic.parse_clause(t)
+            ctx.clear_stack()
+            ctx.set_inner_scope(set())
+
+            if un:
+                ctx.set_listener_scope(ctx.get_listener_scope().difference(set(li)))
+                ctx.set_lurker_scope(ctx.get_lurker_scope().difference(set(lu)))
+            else:
+                ctx.set_listener_scope(ctx.get_listener_scope().union(set(li)))
+                ctx.set_lurker_scope(ctx.get_lurker_scope().union(set(lu)))
+        else:
+            if un:
+                agents = set(n.concrete_ids())
+                lu = ctx.get_listener_scope().difference(agents)
+                ctx.set_listener_scope(lu)
+            else:
+                n = (yield ResolvHandler(n.reinterpret(interp,[])))
+                if n is None:
+                    yield async.Coroutine.failure('bad noun')
+
+                agents = set(n.concrete_ids())
+
+                if len(agents)==0:
+                    yield async.Coroutine.failure('no agents')
+
+                li = ctx.get_listener_scope().union(agents)
+                lu = ctx.get_lurker_scope().difference(agents)
+                ctx.set_listener_scope(li)
+                ctx.set_lurker_scope(lu)
+
+            ctx.set_inner_scope(set())
+
+        print 'scope:',ctx.get_listener_scope(),ctx.get_lurker_scope()
+        yield async.Coroutine.success()
+        
+        
+    @async.coroutine('internal error')
+    def primitive_hey(self,interp,word):
+        scope = set()
+
+        while not interp.empty():
+            n = interp.pop(referent.Referent)
+
+            if n is None:
+                yield async.Coroutine.failure('bad noun')
+
+            n = (yield ResolvHandler(n.reinterpret(interp,[])))
+
+            o = n.concrete_ids()
+            if not o:
+                yield async.Coroutine.failure('empty noun')
+
+            scope.update(set(o))
+
+        interp.get_context().set_inner_scope(scope)
+        print 'inner scope:',interp.get_context().get_inner_scope()
+
+    @async.coroutine('internal error')
+    def primitive_ahem(self,interp,word):
+        scope = set()
+
+        while not interp.empty():
+            n = interp.pop(referent.Referent)
+
+            if n is None:
+                yield async.Coroutine.failure('bad noun')
+
+            o = n.concrete_ids()
+            if not o:
+                yield async.Coroutine.failure('empty noun')
+
+            scope.update(set(o))
+
+        interp.get_context().set_inner_scope(scope)
+        print 'inner scope:',interp.get_context().get_inner_scope()
+
+    def primitive_scope(self,interp,word):
+        ctx = interp.get_context()
+
+        print "== noun scope =="
+        for t in enumerate(ctx.get_noun_scope()):
+            print "%i: %s" % t
+
+        print "== verb scope =="
+        for t in enumerate(ctx.get_verb_scope()):
+            print "%i: %s" % t
+
+        print "== inner scope =="
+        for t in enumerate(ctx.get_inner_scope()):
+            print "%i: %s" % t
+
+        print "== argument stack =="
+        for t in enumerate(interp.iterstack()):
+            print "%i: %s" % t
+
+        return async.success()

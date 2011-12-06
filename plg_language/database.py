@@ -23,11 +23,18 @@ from pibelcanto import lexicon
 from plg_language import noun,verb,macro,imperative
 import piw
 
+class DatabaseProxy(database.DatabaseProxy):
+    def __init__(self,db,parent=None,rig=None):
+        database.DatabaseProxy.__init__(self,db,parent)
+        self.rig = rig
+
 class Database(database.Database):
+    proxy = DatabaseProxy
 
     def __init__(self):
         self.__primitives = {}
         self.__index = {}
+        self.__hostcache = database.PropertyCache()
 
         database.Database.__init__(self)
 
@@ -40,9 +47,9 @@ class Database(database.Database):
         # widget manager for updating widget names if they change
         self.__widget_manager = None
 
-    def start(self,name):
+    def start(self,name,rig=None):
         if name not in self.__index:
-            self.__index[name] = index.Index(lambda irid: self.proxy(self),False)
+            self.__index[name] = index.Index(lambda irid: self.proxy(self,rig=rig),False)
             piw.tsd_index(paths.qualify('<main>',scope=name),self.__index[name])
 
     def stop(self,name):
@@ -50,12 +57,43 @@ class Database(database.Database):
             self.__index[name].close_index()
             del self.__index[name]
 
+    def get_propcaches(self):
+        for c in database.Database.get_propcaches(self):
+            yield c
+        yield 'host'
+
+    def get_propcache(self,name):
+        if name == 'host':
+            return self.__hostcache
+        return database.Database.get_propcache(self,name)
+
+    def make_rules(self,ap,init,parts):
+        (rules,props,verbs) = database.Database.make_rules(self,ap,init,parts)
+
+        pa,pd = props['props']
+
+        rig = ap.get_property('rig',None)
+
+        if rig:
+            pa.append('rig')
+        else:
+            pd.append('rig')
+
+        if ap.rig:
+            props['host'] = ((ap.rig,),None)
+            pa.append('inrig')
+        else:
+            pd.append('inrig')
+
+        return rules,props,verbs
+
     @async.coroutine('internal error')
     def sync(self, *args):
         for dbid in args:
             (s,id,p) = paths.splitid(dbid)
+            print 'sync force',s,id
             if s in self.__index:
-                self.__index[s].force(id)
+                self.__index[s].force('<%s>' % id)
 
         for i in self.__index.values():
             yield i.sync()
@@ -67,7 +105,7 @@ class Database(database.Database):
         rig = proxy.get_property('rig',None)
         if rig:
             rigns = paths.id2scope(paths.qualify(proxy.id()))+'.'+rig.as_string()
-            self.start(rigns)
+            self.start(rigns,rig=proxy.database_id())
 
     def object_removed(self,proxy):
         database.Database.object_removed(self,proxy)

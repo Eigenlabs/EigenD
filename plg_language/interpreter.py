@@ -395,14 +395,6 @@ class Interpreter:
     def iterstack(self):
         return reversed(self.__stack)
 
-class ModMarker(referent.StackObj):
-    def __init__(self,word):
-        self.word = word
-    def __str__(self):
-        return 'mod: %s' % self.word
-    def words(self):
-        return (self.word,)
-
 class VerbAction(referent.StackObj):
     def __str__(self):
         return '<<verbaction>>'

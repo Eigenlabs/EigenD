@@ -117,7 +117,7 @@ def primitive_background(interp,word):
     return async.success()
 
 def primitive_modifier(interp,word):
-    interp.push(interpreter.ModMarker(word))
+    interp.push(referent.ModMarker(word))
     return async.success()
 
 def primitive_role(interp,word):
@@ -163,7 +163,7 @@ def primitive_verb(interp,verb):
     print 'verb:',verb,map(str,interp.stack())
 
     while not interp.empty():
-        m = interp.pop(interpreter.ModMarker)
+        m = interp.pop(referent.ModMarker)
         if m is not None:
             mods.append(m.word)
             text = m.words()+text
@@ -309,7 +309,7 @@ def run_imperative_co(interp,verb,mods,roles,args,flags,fg,text):
         interp.get_context().extend_scope(context)
 
     if dosync or created:
-        print 'starting sync after',verb,':',sync
+        print 'starting sync after',verb,':',sync,[piw.address2server(o) for o in sync]
         yield interp.sync(*[piw.address2server(o) for o in sync])
         print 'sync done'
 

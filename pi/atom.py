@@ -326,7 +326,7 @@ class Atom(node.Server):
         self.__modelist[label]=s
         self.set_property_string('modes',','.join([s.schema for s in self.__modelist.itervalues()]))
 
-    def add_verb2(self,label,schema,callback=None,create_action=None,destroy_action=None,clock=False,status_action=None,need_interp=False):
+    def add_verb2(self,label,schema,callback=None,create_action=None,destroy_action=None,clock=False,status_action=None):
         #action.check_verb_schema(schema)
 
         assert label not in self.__verblist
@@ -335,7 +335,6 @@ class Atom(node.Server):
         s.schema = 'v(%d,%s)' % (label,schema)
         s.callback = utils.weaken(callback)
         s.clock = clock
-        s.need_interp = need_interp
         s.create_action = utils.weaken(create_action)
         s.destroy_action = utils.weaken(destroy_action)
         s.status_action = utils.weaken(status_action)
@@ -402,10 +401,7 @@ class Atom(node.Server):
         return async.success(action.marshal(ret))
 
     def __slowinvoke(self,server,interp,args):
-        if server.need_interp:
-            result = server.callback(interp,*args)
-        else:
-            result = server.callback(*args)
+        result = server.callback(*args)
 
         if not isinstance(result,async.Deferred):
             v = result if result else ()
