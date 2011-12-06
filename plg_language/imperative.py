@@ -32,10 +32,12 @@ def __extend_scope(db,scope):
 
     join_cache = db.get_joincache()
     assoc_cache = db.get_assoccache()
+    host_cache = db.get_propcache('host')
 
     for o in scope:
         working_scope.update(join_cache.extended_lefts(o))
         working_scope.update(assoc_cache.extended_lefts(o))
+        working_scope.update(host_cache.get_idset(o))
 
     return working_scope
 
