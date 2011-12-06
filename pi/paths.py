@@ -89,7 +89,7 @@ def id2child(id,*c):
     p.extend(c)
     return makeid_list(s,*p)
 
-def qualify(id,scope=None):
+def to_absolute(id,scope=None):
     if '#' not in id:
         (a,p) = (id,'')
     else:
@@ -112,7 +112,7 @@ def qualify(id,scope=None):
 
     return aq
 
-def unqualify(id,scope=None):
+def to_relative(id,scope=None):
     if '#' not in id:
         (a,p) = (id,'')
     else:
@@ -130,7 +130,7 @@ def unqualify(id,scope=None):
 
     s = scope or piw.tsd_user()
 
-    print 'unqualify',id,u,n,s
+    print 'to_relative',id,u,n,s
 
     if u == s:
         if p:

@@ -392,7 +392,7 @@ class Workspace(atom.Atom):
             ma = m.address
             m.enable_save(False)
             if ma in agents:
-                qa = self.index.qualify(ma)
+                qa = self.index.to_absolute(ma)
                 r = rpc.invoke_rpc(qa,'preload',path)
                 yield r
 
@@ -404,7 +404,7 @@ class Workspace(atom.Atom):
         for m in self.index.members():
             ma = m.address
             if ma in agents:
-                qa = self.index.qualify(ma)
+                qa = self.index.to_absolute(ma)
                 yield rpc.invoke_rpc(qa,'postload',path)
 
         if upgrade_flag and r.status():
@@ -586,7 +586,7 @@ class Workspace(atom.Atom):
         for m in self.index.members():
             ma = m.address
             if ma in agents:
-                qa = self.index.qualify(ma)
+                qa = self.index.to_absolute(ma)
                 r = rpc.invoke_rpc(qa,'presave',filename)
                 yield r
 

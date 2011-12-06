@@ -50,7 +50,7 @@ class Database(database.Database):
     def start(self,name,rig=None):
         if name not in self.__index:
             self.__index[name] = index.Index(lambda irid: self.proxy(self,rig=rig),False)
-            piw.tsd_index(paths.qualify('<main>',scope=name),self.__index[name])
+            piw.tsd_index(paths.to_absolute('<main>',scope=name),self.__index[name])
 
     def stop(self,name):
         if name in self.__index:
@@ -104,24 +104,24 @@ class Database(database.Database):
         database.Database.object_added(self,proxy)
         rig = proxy.get_property('rig',None)
         if rig:
-            rigns = paths.id2scope(paths.qualify(proxy.id()))+'.'+rig.as_string()
+            rigns = paths.id2scope(paths.to_absolute(proxy.id()))+'.'+rig.as_string()
             self.start(rigns,rig=proxy.database_id())
 
     def object_removed(self,proxy):
         database.Database.object_removed(self,proxy)
         rig = proxy.get_property('rig',None)
         if rig:
-            rigns = paths.id2scope(paths.qualify(proxy.id()))+'.'+rig.as_string()
+            rigns = paths.id2scope(paths.to_absolute(proxy.id()))+'.'+rig.as_string()
             self.stop(rigns)
 
-    def to_qualified_id(self,dbid):
+    def to_absolute_id(self,dbid):
         return dbid
 
     def to_usable_id(self,id):
-        return paths.qualify(id)
+        return paths.to_absolute(id)
 
     def to_database_id(self,id,scope=None):
-        return paths.qualify(id,scope=scope)
+        return paths.to_absolute(id,scope=scope)
 
     def get_all_agents(self):
         aa = []

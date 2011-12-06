@@ -121,7 +121,7 @@ class VerbProxy:
         self.__order = []
 
         if schema.args[1]:
-            self.__dis = self.qualify(schema.args[1])
+            self.__dis = self.to_database(schema.args[1])
         else:
             self.__dis = database_id
 
@@ -136,23 +136,23 @@ class VerbProxy:
                 if self.__fixed is None:
                     self.__fixed = set()
                 self.__fixed.add(role)
-                self.__constraints[role] = constraints.map_constraints(self.qualify,r.args[1])
+                self.__constraints[role] = constraints.map_constraints(self.to_database,r.args[1])
                 self.__order.append(role)
             if logic.is_pred(r,'option'):
                 role = r.args[0]
                 if self.__options is None:
                     self.__options = set()
                 self.__options.add(role)
-                self.__constraints[role] = constraints.map_constraints(self.qualify,r.args[1])
+                self.__constraints[role] = constraints.map_constraints(self.to_database,r.args[1])
                 self.__order.append(role)
 
-    def qualify(self,cid):
+    def to_database(self,cid):
         if not isinstance(cid,str): return cid
         return self.__database.to_database_id(cid,scope=self.__namespace)
 
-    def unqualify(self,did):
+    def to_relative(self,did):
         if not isinstance(did,str): return did
-        return paths.unqualify(did,scope=self.__namespace)
+        return paths.to_relative(did,scope=self.__namespace)
 
     def name(self):
         return self.__verbname
@@ -196,12 +196,12 @@ class VerbProxy:
         return cmp((self.__database_id,self.__index),(other.__database_id,other.__index))
 
     def convert_args(self,term):
-        t2 = filter_term(self.unqualify,term)
+        t2 = filter_term(self.to_relative,term)
         print 'unqualified verb arguments',term,'->',t2
         return t2
 
     def convert_result(self,term):
-        t2 = filter_term(self.qualify,term)
+        t2 = filter_term(self.to_database,term)
         print 'qualified verb return',term,'->',t2
         return t2
 
@@ -1313,7 +1313,7 @@ class Database(logic.Engine):
 
     def make_verb_proxy(self,dbid,schema):
         try:
-            (n,a,p) = paths.splitid(self.to_qualified_id(dbid))
+            (n,a,p) = paths.splitid(self.to_absolute_id(dbid))
             return VerbProxy(self,n,dbid,schema)
         except:
             utils.log_exception()
@@ -1688,8 +1688,8 @@ class Database(logic.Engine):
     def to_usable_term(self,term):
         return filter_term(self.to_usable_id,term)
 
-    def to_qualified_term(self,term):
-        return filter_term(self.to_qualified_id,term)
+    def to_absolute_term(self,term):
+        return filter_term(self.to_absolute_id,term)
 
     def to_database_term(self,term,scope=None):
         return filter_term(lambda i: self.to_database_id(i,scope),term)
@@ -1720,16 +1720,16 @@ class SimpleDatabase(Database):
             return self.__index.sync(*args,**kwds)
         return async.success()
 
-    def to_qualified_id(self,dbid):
-        qid = self.__index.qualify(dbid)
+    def to_absolute_id(self,dbid):
+        qid = self.__index.to_absolute(dbid)
         return qid
 
     def to_usable_id(self,dbid):
-        qid = self.__index.qualify(dbid)
+        qid = self.__index.to_absolute(dbid)
         return qid
 
     def to_database_id(self,dbid,scope=None):
-        uid = self.__index.unqualify(dbid,scope)
+        uid = self.__index.to_relative(dbid,scope)
         return uid
 
     def get_all_agents(self):

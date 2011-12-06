@@ -214,14 +214,14 @@ class Widget(atom.Atom):
             
     def destroy(self):
         # remove this widget from the targets controllers
-        myrid = paths.unqualify(self.id(),scope=paths.id2scope(address))
+        myrid = paths.to_relative(self.id(),scope=paths.id2scope(address))
         cs = logic.render_term(logic.make_term('conn',None,None,myrid,None,'ctl'))
         address = self.get_property_string('target-id')
         if address!='':
             rpc.invoke_rpc(address,'disconnect',cs)
     
     def setup(self,address,name):
-        myrid = paths.unqualify(self.id(),scope=paths.id2scope(address))
+        myrid = paths.to_relative(self.id(),scope=paths.id2scope(address))
         self.set_property_long('ref-count',1)
         self.set_property_string('target-name',name)
         self.set_property_string('target-id',address)

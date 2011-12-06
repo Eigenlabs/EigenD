@@ -22,7 +22,7 @@ class Endpoint:
             self.words[w] = self.words.get(w,0) + s
 
     def connect(self,ostuff,u):
-        oid = paths.unqualify(ostuff.qid,scope=paths.id2scope(self.qid))
+        oid = paths.to_relative(ostuff.qid,scope=paths.id2scope(self.qid))
         d=logic.render_term(logic.make_term('conn',u,self.channel,oid,ostuff.channel,ostuff.connect_static and 'ctl' or None))
         print 'connecting',d,'->',self.id,'using',u
         rpc.invoke_rpc(self.qid,'connect',d)

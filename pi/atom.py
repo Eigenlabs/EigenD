@@ -716,11 +716,11 @@ class Atom(node.Server):
         print 'removing old listeners',dead_listeners
 
         for id in dead_listeners:
-            myrid = paths.unqualify(self.id(),scope=paths.id2scope(id))
+            myrid = paths.to_relative(self.id(),scope=paths.id2scope(id))
             rpc.invoke_async_rpc(id,'disconnected',myrid)
 
         for id in new_listeners:
-            myrid = paths.unqualify(self.id(),scope=paths.id2scope(id))
+            myrid = paths.to_relative(self.id(),scope=paths.id2scope(id))
             rpc.invoke_async_rpc(id,'connected',myrid)
 
     def is_connected(self):
