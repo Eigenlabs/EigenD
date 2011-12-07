@@ -303,6 +303,7 @@ int cnode_t::api_set_downstream(bct_client_host_ops_t **co, bct_clocksink_t *dn)
         {
             c->entity_->glue()->cleardownstreamclock(c->local_->clock_,c->clock_);
             c->entity_->glue()->cancelclocknotify(c->clock_);
+            c->clock_ = 0;
         }
 
         if(!dn)
@@ -1173,6 +1174,7 @@ void pia_server_t::setclock(bct_clocksink_t *c)
             }
         }
         local_->global_->entity_->glue()->cancelclocknotify(local_->clock_);
+        local_->clock_ = 0;
     }
 
     if(c)
