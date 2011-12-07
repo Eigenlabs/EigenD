@@ -45,7 +45,7 @@ class PersistentFactory(node.Server):
 
     def __change(self,index,node,value):
         if hasattr(node,'state'):
-            self.__retracted(index,node.get_data().as_string(), node.state)
+            self.__retracted(index,node.get_data().as_string(), node.state, False)
             delattr(node,'state')
 
         if value.is_string():
@@ -84,12 +84,12 @@ class PersistentFactory(node.Server):
                 return v.state
         return None
 
-    def retract_state(self, test):
+    def retract_state(self, test, destroy=False):
         for (k,v) in self.iteritems():
             val = v.get_data().as_string()
             if hasattr(v,'state') and test(val,v.state):
                 del self[k]
-                self.__retracted(k,val,v.state)
+                self.__retracted(k,val,v.state,destroy)
                 return True
         return False
 
@@ -103,7 +103,7 @@ class PersistentFactory(node.Server):
                 return True
         return False
 
-    def state_retracted(self, k, value, state):
+    def state_retracted(self, k, value, state, destroy=False):
         pass
 
     def state_moved(self,k,oval,nval,state):
@@ -114,7 +114,7 @@ class PersistentFactory(node.Server):
 
     def dynamic_destroy(self,index,node):
         if hasattr(node,'state'):
-            self.__retracted(index,node.get_data().as_string(), node.state)
+            self.__retracted(index,node.get_data().as_string(), node.state, False)
             delattr(node,'state')
 
 class PersistentMetaData:
@@ -138,7 +138,7 @@ class PersistentMetaData:
     def clear(self):
         while self.__nodes:
             (v,s) = self.__nodes.popitem()
-            self.__retracted(v,s)
+            self.__retracted(v,s,False)
 
         self.__set_termlist()
         
@@ -168,7 +168,7 @@ class PersistentMetaData:
 
         while discards:
             (v,s) = discards.popitem()
-            self.__retracted(v,s)
+            self.__retracted(v,s,False)
             v = None
             s = None
 
@@ -206,14 +206,14 @@ class PersistentMetaData:
 
         return None
 
-    def retract_state(self, test):
+    def retract_state(self, test, destroy=False):
         for (v,s) in self.__nodes.iteritems():
             if test(v,s):
                 del self.__nodes[v]
                 self.__set_termlist()
-                return self.__retracted(v,s)
+                return self.__retracted(v,s,destroy)
 
         return None
 
-    def state_retracted(self, value, state):
+    def state_retracted(self, value, state, destroy=False):
         pass

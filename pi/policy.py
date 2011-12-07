@@ -412,7 +412,7 @@ class ConnectablePolicyImpl:
 
         return s
 
-    def __del_connection(self,src,slot):
+    def __del_connection(self,src,slot,destroy):
         self.__connection_iids.discard(slot.iid)
 
         if slot.hint == 'ctl':

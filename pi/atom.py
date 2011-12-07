@@ -171,7 +171,6 @@ class Atom(node.Server):
                 if old_value.as_dict_lookup(k) != v:
                     self.set_property(k,v,allow_veto=True)
 
-
     def set_property_long(self,key,value,allow_veto=False,notify=True):
         self.set_property(key,piw.makelong(value,0),allow_veto,notify)
 
@@ -547,6 +546,13 @@ class Atom(node.Server):
         self.__policy.close()
         node.Server.close_server(self)
 
+    def notify_destroy(self):
+        for slave in self.get_property_termlist('slave'):
+            rpc.invoke_rpc(slave,'source_gone',self.id())
+
+        for (k,v) in self.iteritems():
+            v.notify_destroy()
+
     def rpc_download(self,arg):
         (cookie,start,length) = logic.parse_clause(arg)
 
@@ -734,6 +740,15 @@ class Atom(node.Server):
 
     def rpc_disconnect(self,value):
         self.remove_connection(value)
+
+    def rpc_source_gone(self,master):
+        old = self.get_property_termlist('master')
+        l = self.get_property_termlist('master')
+        for x in l:
+            if x.args[2] == master:
+                l.remove(x)
+        self.set_property_termlist('master',l)
+        self.__update_listeners(old)
 
     def get_rpc(self,name):
         return getattr(self,'rpc_'+name,None)

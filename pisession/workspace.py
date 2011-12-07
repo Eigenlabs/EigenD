@@ -193,9 +193,9 @@ class AgentLoader:
         if self.agent:
             self.module.on_quit(self.agent)
 
-    def __unload(self):
+    def __unload(self,destroy):
         if self.agent:
-            ss = self.module.unload(self.context.getenv(),self.agent)
+            ss = self.module.unload(self.context.getenv(),self.agent,destroy)
             self.context.kill()
             self.context.clear()
             self.context = None
@@ -204,14 +204,14 @@ class AgentLoader:
 
     def load(self,scope,name,ordinal):
         if self.context is not None and self.agent is not None:
-            self.unload()
+            self.unload(False)
 
         self.context = piw.tsd_subcontext(self.is_gui(),scope,name)
         self.__run(self.__load,name,ordinal)
 
-    def unload(self):
+    def unload(self,destroy):
         if self.context is not None and self.agent is not None:
-            return self.__run(self.__unload)
+            return self.__run(self.__unload,destroy)
 
     def on_quit(self):
         if self.context is not None and self.agent is not None:
@@ -719,13 +719,13 @@ class Workspace(atom.Atom):
         agent.load(self.__name,address,ordinal)
         return agent
 
-    def __retracted(self,signature,plugin):
+    def __retracted(self,signature,plugin,destroy):
         self.del_frelation(self.__relation(signature.args[0]))
-        return plugin.unload()
+        return plugin.unload(destroy)
 
-    def unload(self,address):
+    def unload(self,address,destroy=False):
         # unload address and return ss or None
-        ss = self.__meta.retract_state(lambda v,s: v.args[0]==address)
+        ss = self.__meta.retract_state(lambda v,s: v.args[0]==address,destroy)
         return ss
 
     def on_quit(self):

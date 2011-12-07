@@ -80,6 +80,7 @@ class Collection(atom.Atom):
                 oid = v.id()
                 oresult = self.__wrecker(k,v,o)
                 yield oresult
+                v.notify_destroy()
                 if k in self: del self[k]
                 yield async.Coroutine.success(oid)
 

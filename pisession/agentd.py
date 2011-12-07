@@ -430,10 +430,9 @@ class Agent(agent.Agent):
         try: return list(logic.parse_clause(rv))
         except: return []
 
-
     def rpc_destroy(self,arg):
         a=logic.parse_clause(arg)
-        ss = self.__workspace.unload(a)
+        ss = self.__workspace.unload(a,True)
         if ss is None:
             return async.failure('no such agent')
         rvt = self.__parse_return(ss)
@@ -444,7 +443,7 @@ class Agent(agent.Agent):
     def __destroy(self,subject,agents):
         r = []
         for a in action.concrete_objects(agents):
-            ss = self.__workspace.unload(a)
+            ss = self.__workspace.unload(a,True)
             if ss is None:
                 r.append(errors.doesnt_exist('agent','un create'))
                 continue

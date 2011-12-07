@@ -228,7 +228,7 @@ class RigInputPolicyImpl:
         self.__connection_iids.add(iid)
         return policy.PlumberSlot(iid,src,None,RigInputPlumber(self.__output,iid,a,f))
 
-    def __del_connection(self,src,slot):
+    def __del_connection(self,src,slot,destroy):
         self.__connection_iids.discard(slot.iid)
         slot.plumber.disconnect()
 

@@ -70,11 +70,11 @@ def main(klass,upgrader=None,gui=False):
         root.advertise('<main>')
         return root
 
-    def __unload(env,obj):
+    def __unload(env,obj,destroy):
 
         ss=''
         if hasattr(obj,'unload'):
-            ss = obj.unload()
+            ss = obj.unload(destroy)
 
         return ss
 
@@ -471,11 +471,13 @@ class Agent(atom.Atom):
         self.__rpc.rpc_close()
         atom.Atom.close_server(self)
 
-    def unload(self):
+    def unload(self,destroy=False):
         ss = ''
         if self.open():
             ss = logic.render_term(tuple([ss.id() for ss in self.__subsystems.values()]))
+        self.notify_destroy()
         self.close_server()
+
         return ss
 
     def quit(self):
