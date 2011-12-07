@@ -403,12 +403,13 @@ class ConnectablePolicyImpl:
         if logic.is_pred_arity(src,'conn',5,5):
             hint = src.args[4]
 
+        s = PlumberSlot(iid,src,hint,self.create_plumber(PlumberConfig(a,f,iid,hint,self.__clock)))
+
         if hint == 'ctl':
             self.__cconnections = self.__cconnections+1
         else:
             self.__dconnections = self.__dconnections+1
 
-        s = PlumberSlot(iid,src,hint,self.create_plumber(PlumberConfig(a,f,iid,hint,self.__clock)))
         return s
 
     def __del_connection(self,src,slot):
