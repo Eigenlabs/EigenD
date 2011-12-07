@@ -47,6 +47,12 @@ def log_error(func):
         return __f
 
 
+def popset(s):
+    if s:
+        for i in s:
+            return i
+    return None
+
 
 #---------------------------------------------------------------------------
 # XMLRPC server functions
@@ -246,13 +252,14 @@ class StageXMLRPCFuncs:
             
             for agent in agents:
                 agentName = self.__getStringFromNameOrdinalPair(agent[1])
+                oscName = self.build_osc_name(agent[0])
 
                 # if agent has a name it exists
                 if agentName != '':
                     # child atoms, union of child atoms and subsystems
                     childAtomIDs = list(self.__database.find_children(agent[0]).union(self.__database.find_joined_slaves(agent[0])))
 
-                    atomXml = self.__buildAtomsXml(childAtomIDs, ('/'+agentName.replace(' ','_')))
+                    atomXml = self.__buildAtomsXml(childAtomIDs, oscName)
                     if atomXml != '':
                         # store the agent subtree xml strings
                         self.agents[agent[0]] = ('<agent name="%s" '%agentName + 'address="%s">\n'%agent[0] + 
@@ -271,17 +278,16 @@ class StageXMLRPCFuncs:
         # make xml for an agent in the database 
 
         try:
-        
             xml = ''
-
             agentName = self.__database.find_desc(agentID)
+            oscName = self.build_osc_name(agentID)
 
             # if agent has a name it exists
             if agentName != '':
                 # child atoms, union of child atoms and subsystems
                 childAtomIDs = list(self.__database.find_children(agentID).union(self.__database.find_joined_slaves(agentID)))
 
-                atomXml = self.__buildAtomsXml(childAtomIDs, ('/'+agentName.replace(' ','_'))) 
+                atomXml = self.__buildAtomsXml(childAtomIDs, oscName)
                 if atomXml != '':
                     # store the agent subtree xml strings
                     self.agents[agentID] = ('<agent name="%s" '%agentName + 'address="%s">\n'%agentID + 
@@ -716,13 +722,26 @@ class StageXMLRPCFuncs:
 
     def build_osc_name(self,id):
         aid,path = paths.breakid_list(id)
-        adesc = ['']
+        adesc = []
+
+        inrig = self.__database.get_propcache('props').get_idset('inrig')
+        righost = self.__database.get_propcache('host')
+
         for p in range(0,len(path)+1):
             pid = paths.makeid_list(aid,*path[:p])
             pdesc = self.__getStringFromNameOrdinalPair(self.__getNameOrdinalPair(self.__database.find_desc(pid)))
             if pdesc:
                 adesc.append(pdesc)
 
+        while aid in inrig:
+            xid = popset(righost.get_valueset(aid))
+            if xid:
+                xdesc = self.__getStringFromNameOrdinalPair(self.__getNameOrdinalPair(self.__database.find_desc(xid)))
+                if xdesc:
+                    adesc.insert(0,xdesc)
+                aid = xid
+
+        adesc.insert(0,'')
         return '/'.join(adesc).replace(' ','_')
 
     def updateAllWidgetPaths(self, changedNodes):

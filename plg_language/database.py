@@ -155,17 +155,12 @@ class Database(database.Database):
         id=proxy.database_id()
         
         if 'name' in parts or 'ordinal' in parts:
-            # build osc name
-            name_str = '_'.join(proxy.names())
-            ordinal = proxy.ordinal()
-            if ordinal!=0:
-                name_str += '_'+str(ordinal)
-            
             # id change set is this object, plus any children
 
             # add subsystems that are not agents to prevent changes to rigs
             # from including the agents they contain
             agents = self.__propcache.get_idset('agent')
+
             changed_nodes = set(self.find_joined_slaves(id)).difference(agents)
             changed_nodes.add(id)
             changed_nodes_frozenset = self.find_all_descendants(frozenset(changed_nodes))
