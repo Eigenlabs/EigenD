@@ -226,7 +226,7 @@ class RigInputPolicyImpl:
             return None
 
         self.__connection_iids.add(iid)
-        return policy.PlumberSlot(iid,src,RigInputPlumber(self.__output,iid,a,f))
+        return policy.PlumberSlot(iid,src,None,RigInputPlumber(self.__output,iid,a,f))
 
     def __del_connection(self,src,slot):
         self.__connection_iids.discard(slot.iid)

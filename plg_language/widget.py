@@ -25,8 +25,8 @@ import xmlrpclib
 
 server_port = "55551"
 
-monitor_debug = True
-widget_debug = True
+monitor_debug = False
+widget_debug = False
 widget_manager_debug = False
 
 class Monitor(proxy.AtomProxy):
