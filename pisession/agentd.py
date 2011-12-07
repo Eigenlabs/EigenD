@@ -406,7 +406,7 @@ class Agent(agent.Agent):
         self.ordinal = ordinal
         self.uid = '<eigend%d>' % ordinal
 
-        self.__workspace = workspace.Workspace(piw.tsd_user(),self.__backend,self.__registry)
+        self.__workspace = workspace.Workspace(piw.tsd_scope(),self.__backend,self.__registry)
 
         self[2] = self.__workspace
 

@@ -694,7 +694,7 @@ iserver_t::iserver_t(pia_indexlist_t::impl_t *l, const pia_data_t &n): name_(n),
 {
     entity_ = pia_ctx_t(list_->glue_,"",0,pic::status_t(),pic::f_string_t(), "index server");
 
-    socket_.open(entity_->glue()->network(), BCTLINK_NAMESPACE_INDEX, name_);
+    socket_.open(entity_->glue()->network(), BCTLINK_NAMESPACE_INDEX, entity_->glue()->qualify_address(name_));
     socket_.callback(entity_->glue()->mainq(),job_network,this);
     job_timer_.timer(entity_->glue()->mainq(),iserver_job_timer,this,ISERVER_TICK_INTERVAL);
 

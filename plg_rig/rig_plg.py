@@ -389,7 +389,7 @@ class OuterAgent(agent.Agent):
         agent.Agent.__init__(self,signature=version,names='rig',ordinal=ordinal)
 
         self.file_name = 'rig%d' % ordinal
-        self.inner_name = '%s.%s' % (piw.tsd_user(),self.file_name)
+        self.inner_name = '%s.%s' % (piw.tsd_scope(),self.file_name)
         self.__inner_agent = InnerAgent(self)
         self.__domain = piw.clockdomain_ctl()
 

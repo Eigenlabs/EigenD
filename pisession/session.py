@@ -46,12 +46,7 @@ class Logger:
     def flush(self):
         pass
 
-def get_username():
-    return resource.user_name()
-
 def run_session(session,user=None,mt=1,name='ctx',logger=None,clock=True,rt=True):
-    u = user or get_username()
-
     def logfunc(msg):
         if logger:
             logger(msg)
@@ -64,7 +59,7 @@ def run_session(session,user=None,mt=1,name='ctx',logger=None,clock=True,rt=True
         context.release()
 
     scaffold = piagent.scaffold_mt(mt,utils.stringify(logfunc),utils.stringify(None),clock,rt)
-    context = scaffold.context(u,utils.statusify(ctxdun),utils.stringify(logfunc),name)
+    context = scaffold.context('main',utils.statusify(ctxdun),utils.stringify(logfunc),name)
     stdio = (sys.stdout,sys.stderr)
     x = None
 

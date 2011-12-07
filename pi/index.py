@@ -131,7 +131,7 @@ class Index(piw.index):
         cp = a.find(':')
 
         if cp < 0:
-            self.__user = piw.tsd_user()
+            self.__user = piw.tsd_scope()
         else:
             self.__user = a[1:cp]
 

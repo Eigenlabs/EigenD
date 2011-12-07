@@ -348,3 +348,12 @@ std::string pic::release()
 {
     return PI_RELEASE;
 }
+
+std::string pic::username()
+{
+#ifdef PI_WINDOWS
+    return getenv("USERNAME");
+#else
+    return getenv("USER");
+#endif
+}

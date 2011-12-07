@@ -210,10 +210,10 @@ void piw::tsd_thing(bct_thing_t *s)
     }
 }
 
-std::string piw::tsd_user()
+std::string piw::tsd_scope()
 {
     bct_entity_t e = tsd_getcontext();
-    piw::data_nb_t d = piw::data_nb_t::from_given(bct_entity_user(e));
+    piw::data_nb_t d = piw::data_nb_t::from_given(bct_entity_scope(e));
     return d.as_string();
 }
 
@@ -384,9 +384,9 @@ void piw::tsd_snapshot_t::log(const char *msg)
     writelog(entity_,msg);
 }
 
-piw::tsd_subcontext_t::tsd_subcontext_t(bool gui, const char *user, const char *tag)
+piw::tsd_subcontext_t::tsd_subcontext_t(bool gui, const char *scope, const char *tag)
 {
-    entity_ = bct_entity_new(tsd_getcontext(),gui,user,tag);
+    entity_ = bct_entity_new(tsd_getcontext(),gui,scope,tag);
 }
 
 void piw::tsd_subcontext_t::install()

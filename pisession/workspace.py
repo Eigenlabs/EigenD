@@ -202,11 +202,11 @@ class AgentLoader:
             self.agent = None
             return ss
 
-    def load(self,user,name,ordinal):
+    def load(self,scope,name,ordinal):
         if self.context is not None and self.agent is not None:
             self.unload()
 
-        self.context = piw.tsd_subcontext(self.is_gui(),user,name)
+        self.context = piw.tsd_subcontext(self.is_gui(),scope,name)
         self.__run(self.__load,name,ordinal)
 
     def unload(self):

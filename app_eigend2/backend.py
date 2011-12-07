@@ -279,7 +279,7 @@ class Backend(eigend_native.c2p):
 
     def __create_context(self,name):
         logger = self.frontend.make_logger(name)
-        return self.scaffold.bgcontext(piw.tsd_user(),utils.statusify(None),logger,name)
+        return self.scaffold.bgcontext(piw.tsd_scope(),utils.statusify(None),logger,name)
 
     @utils.nothrow
     def initialise(self,frontend,scaffold,cookie,info):

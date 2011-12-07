@@ -35,8 +35,10 @@ pia_buffer_t::pia_buffer_t(pia::manager_t::impl_t *glue, const pia_data_t &addr,
 {
     PIC_ASSERT(header_<BCTLINK_MAXPAYLOAD);
 
-    slowsocket_.open(glue->network(),BCTLINK_NAMESPACE_SLOW,addr);
-    fastsocket_.open(glue->network(),BCTLINK_NAMESPACE_FAST,addr);
+    pia_data_t fqa = glue->qualify_address(addr);
+
+    slowsocket_.open(glue->network(),BCTLINK_NAMESPACE_SLOW,fqa);
+    fastsocket_.open(glue->network(),BCTLINK_NAMESPACE_FAST,fqa);
 }
 
 pia_buffer_t::~pia_buffer_t()

@@ -273,7 +273,6 @@ class EigenD : public ejuce::Application, virtual public pic::tracked_t
     public:
         EigenD();
         ~EigenD();
-        const char *get_user();
         void initialise (const String& commandLine);
         void shutdown();
         const String getApplicationName();
@@ -1781,15 +1780,6 @@ EigenD::~EigenD()
 {
 }
 
-const char *EigenD::get_user()
-{
-#ifdef JUCE_WINDOWS
-    return getenv("USERNAME");
-#else
-    return getenv("USER");
-#endif
-}
-
 void EigenD::initialise (const String& commandLine)
 {
     pic_set_interrupt();
@@ -1806,7 +1796,7 @@ void EigenD::initialise (const String& commandLine)
     ApplicationCommandManager *manager = new ApplicationCommandManager();
 
     python_ = new epython::PythonInterface();
-    context_ = scaffold()->context(get_user(),pic::status_t(),eigend_logger,"eigend");
+    context_ = scaffold()->context("main",pic::status_t(),eigend_logger,"eigend");
 
     piw::tsd_setcontext(context_.entity());
     python_->py_startup();

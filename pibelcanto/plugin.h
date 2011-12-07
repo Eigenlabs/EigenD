@@ -253,7 +253,7 @@ struct bct_entity_ops_s
     int (*entity_clocksource)(bct_entity_t, bct_data_t, unsigned, unsigned long, bct_clocksource_t *);
     int (*entity_clockdomain)(bct_entity_t, bct_clockdomain_t *);
     int (*entity_killed)(bct_entity_t);
-    bct_data_t (*entity_user)(bct_entity_t);
+    bct_data_t (*entity_scope)(bct_entity_t);
     bct_data_t (*entity_unique)(bct_entity_t);
     int (*entity_rpcserver)(bct_entity_t, bct_rpcserver_t *rs, const char *id);
     int (*entity_rpcclient)(bct_entity_t, bct_rpcclient_t *rs, const char *id, bct_data_t path, bct_data_t name, bct_data_t val, unsigned long timeout);
@@ -292,7 +292,7 @@ struct bct_entity_ops_s
 #define bct_entity_clockdomain(bc,d)            ((*(bc))->entity_clockdomain((bc),(d)))
 #define bct_entity_dataqueue(bc,n)              ((*(bc))->entity_dataqueue((bc),(n)))
 #define bct_entity_killed(bc)                   ((*(bc))->entity_killed((bc)))
-#define bct_entity_user(bc)                     ((*(bc))->entity_user((bc)))
+#define bct_entity_scope(bc)                    ((*(bc))->entity_scope((bc)))
 #define bct_entity_unique(bc)                   ((*(bc))->entity_unique((bc)))
 #define bct_entity_exit(bc)                     ((*(bc))->entity_exit((bc)))
 #define bct_entity_dump(bc)                     ((*(bc))->entity_dump((bc)))

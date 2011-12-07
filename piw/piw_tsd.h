@@ -72,7 +72,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(void) *tsd_winctx();
     PIW_DECLSPEC_FUNC(void) tsd_alert(const char *,const char *,const char *);
 
-    PIW_DECLSPEC_FUNC(std::string) tsd_user();
+    PIW_DECLSPEC_FUNC(std::string) tsd_scope();
 
     class PIW_DECLSPEC_CLASS tsd_subcontext_t: public pic::nocopy_t
     {

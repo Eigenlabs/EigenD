@@ -70,13 +70,6 @@ def __mkdir(name):
     if not os.path.isdir(name):
         raise RuntimeError('%s is not a directory' % name)
 
-def user_name():
-    if is_windows():
-        return os.environ.get('USERNAME')
-    else:
-        return os.environ.get('USER')
-
-
 def lock_file(name):
     userdir_g = picross.global_library_dir()
     __mkdir(userdir_g)

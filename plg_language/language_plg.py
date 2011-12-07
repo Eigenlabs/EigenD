@@ -532,7 +532,7 @@ class Agent(agent.Agent):
     def server_opened(self):
         agent.Agent.server_opened(self)
         self.advertise('<language>')
-        self.database.start(piw.tsd_user())
+        self.database.start(piw.tsd_scope())
 
         # startup stage server
         print "starting up stage server"

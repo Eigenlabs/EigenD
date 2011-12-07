@@ -988,7 +988,7 @@ void pia_proxylist_t::client(const pia_data_t &name, const pia_ctx_t &e, bct_cli
         }
     }
 
-    pia_ctx_t e2(e->glue(),e->user().asstring(),0,pic::status_t(),pic::f_string_t(), "proxy");
+    pia_ctx_t e2(e->glue(),e->scope().asstring(),0,pic::status_t(),pic::f_string_t(), "proxy");
     pia_pnode_t *n = new pia_proot_t(impl_,name,e2,fast);
     n->add(e,c);
 }

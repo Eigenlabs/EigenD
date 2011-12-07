@@ -59,6 +59,7 @@ class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual publi
         void dump_killed();
         unsigned random() { return (unsigned)rand(); }
 
+        pia_data_t qualify_address(const pia_data_t &addr);
         void create_clocksource(const pia_ctx_t &e, const pia_data_t &n, unsigned bs, unsigned sr, bct_clocksource_t *s);
         void create_clockdomain(const pia_ctx_t &e, bct_clockdomain_t *d);
         void create_client(const pia_ctx_t &e, const pia_data_t &addr, bct_client_t *c, bool fast);
@@ -179,6 +180,7 @@ class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual publi
 
         pic::mutex_t fast_lock_;
         pic_atomic_t fastactive_;
+        pia_data_t user_;
 };
 
 class pia_logguard_t: pic::nocopy_t
@@ -237,13 +239,13 @@ class pia_mainguard_t: pia_logguard_t
 class pia::context_t::impl_t: pic::nocopy_t, public pic::element_t<>, virtual public pic::lckobject_t
 {
     public:
-        impl_t(pia::manager_t::impl_t *, const char *user, int, const pic::status_t &, const pic::f_string_t &, const char *, bool);
+        impl_t(pia::manager_t::impl_t *, const char *scope, int, const pic::status_t &, const pic::f_string_t &, const char *, bool);
         ~impl_t();
 
         void kill();
         const char *tag() const { return (const char *)(tag_.hostdata()); }
         pia::manager_t::impl_t *glue() { return glue_; }
-        pia_data_t user() { return user_; }
+        pia_data_t scope() { return scope_; }
 
         pia_data_t expand_address(const char *addr);
         pia_data_t expand_address_relative(const char *addr, const pia_data_t &user);
@@ -296,7 +298,7 @@ class pia::context_t::impl_t: pic::nocopy_t, public pic::element_t<>, virtual pu
         bool exited_;
         int group_;
         pia_cref_t cpoint_;
-        pia_data_t user_;
+        pia_data_t scope_;
 };
 
 class pia_ctx_t

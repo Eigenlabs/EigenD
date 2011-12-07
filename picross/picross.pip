@@ -225,6 +225,7 @@ stdstr python_prefix_dir[pic::python_prefix_dir]()
 stdstr public_tools_dir[pic::public_tools_dir]()
 stdstr private_tools_dir[pic::private_tools_dir]()
 stdstr release[pic::release]()
+stdstr username[pic::username]()
 
 class bulk_out_pipe[pic::usbdevice_t::bulk_out_pipe_t]
 {

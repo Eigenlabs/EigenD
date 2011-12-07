@@ -21,6 +21,7 @@
 #include <picross/pic_error.h>
 #include <picross/pic_strbase.h>
 #include <picross/pic_time.h>
+#include <picross/pic_resources.h>
 
 #include "pia_data.h"
 #include "pia_glue.h"
@@ -429,13 +430,13 @@ void pia::context_t::impl_t::log_callback(void *e_, const pia_data_t & d)
     }
 }
 
-static bct_data_t api_user(bct_entity_t e_)
+static bct_data_t api_scope(bct_entity_t e_)
 {
     pia::context_t::impl_t *e = pia::context_t::impl_t::from_entity(e_);
     try
     {
         pia_logguard_t guard(e->glue());
-        return e->user().give();
+        return e->scope().give();
     }
     PIA_CATCHLOG_EREF(e)
     return 0;
@@ -685,7 +686,7 @@ bct_entity_ops_t pia::context_t::impl_t::dispatch__ =
     api_clocksource,
     api_clockdomain,
     api_killed,
-    api_user,
+    api_scope,
     api_unique,
     api_rpcserver,
     api_rpcclient,
@@ -888,6 +889,36 @@ pia_data_t pia::manager_t::impl_t::unique() const
     return allocate_cstring_nb(s.str().c_str());
 }
 
+pia_data_t pia::manager_t::impl_t::qualify_address(const pia_data_t &addr)
+{
+    PIC_ASSERT(addr.type()==BCTVTYPE_STRING);
+
+    const char *a = addr.asstring();
+    unsigned al = addr.asstringlen();
+
+    if(al<3 || strchr(a,'@'))
+    {
+        return addr;
+    }
+
+    const char *u = user_.asstring();
+    unsigned ul = std::min(BCTLINK_GROUP_SIZE-(al+1),user_.asstringlen());
+
+    float *v;
+    unsigned char *dp;
+
+    pia_data_t d = allocate_host(PIC_ALLOC_LCK,0,1,-1,0,BCTVTYPE_STRING,al-2+ul+1+2,&dp,1,&v);
+    *v=0;
+
+    dp[0]='<';
+    memcpy(dp+1,u,ul);
+    dp[ul+1]='@';
+    memcpy(dp+ul+1+1,a+1,al-2);
+    dp[1+ul+1+al-2]='>';
+
+    return d;
+}
+
 pia_data_t pia::context_t::impl_t::collapse_address_relative(const pia_data_t &addr, const pia_data_t &user)
 {
     PIC_ASSERT(addr.type()==BCTVTYPE_STRING);
@@ -933,6 +964,7 @@ pia_data_t pia::context_t::impl_t::collapse_address_relative(const pia_data_t &a
     return d;
 
 }
+
 pia_data_t pia::context_t::impl_t::collapse_address(const pia_data_t &addr)
 {
     PIC_ASSERT(addr.type()==BCTVTYPE_STRING);
@@ -949,8 +981,8 @@ pia_data_t pia::context_t::impl_t::collapse_address(const pia_data_t &addr)
     unsigned aul = (cp-a)-1;
     unsigned aal = al-aul-3;
 
-    const char *u = user().asstring();
-    unsigned ul = std::min(BCTLINK_GROUP_SIZE-(al+1),user().asstringlen());
+    const char *u = scope().asstring();
+    unsigned ul = std::min(BCTLINK_GROUP_SIZE-(al+1),scope().asstringlen());
 
     if(aul!=ul || strncmp(u,a+1,ul))
     {
@@ -1016,8 +1048,8 @@ pia_data_t pia::context_t::impl_t::expand_address(const char *a)
         return glue()->allocate_cstring_nb(a);
     }
 
-    const char *u = user().asstring();
-    unsigned ul = std::min(BCTLINK_GROUP_SIZE-(al+1),user().asstringlen());
+    const char *u = scope().asstring();
+    unsigned ul = std::min(BCTLINK_GROUP_SIZE-(al+1),scope().asstringlen());
 
     float *v;
     unsigned char *dp;
@@ -1191,14 +1223,14 @@ static void fast_pinger(void *g_) { ((pia::manager_t::impl_t *)g_)->service_fast
 static void aux_pinger(void *g_) { ((pia::manager_t::impl_t *)g_)->service_aux(); }
 static void ctx_pinger(void *c_) { ((pia::context_t::impl_t *)c_)->service_ctx(); }
 
-pia::context_t::impl_t::impl_t(pia::manager_t::impl_t *g, const char *u, int grp, const pic::status_t &gone, const pic::f_string_t &log, const char *t, bool strong): gone_(gone), log_(log), glue_(g), appq_(g->allocator(),ctx_pinger,this), queued_(0), killed_(false), exited_(false), group_(grp)
+pia::context_t::impl_t::impl_t(pia::manager_t::impl_t *g, const char *s, int grp, const pic::status_t &gone, const pic::f_string_t &log, const char *t, bool strong): gone_(gone), log_(log), glue_(g), appq_(g->allocator(),ctx_pinger,this), queued_(0), killed_(false), exited_(false), group_(grp)
 {
     ops_=&dispatch__;
     strong_=strong?1:0;
     weak_=1;
     cpoint_=pia_make_cpoint();
     tag_ = glue_->allocate_cstring(t?t:"");
-    user_ = glue_->allocate_cstring(u?u:"");
+    scope_ = glue_->allocate_cstring(s?s:"");
     g->context_add(this);
 }
 
@@ -1213,6 +1245,9 @@ pia::manager_t::impl_t::impl_t(pia::controller_t *h, pic::nballocator_t *a, netw
     unsigned char *p = (unsigned char *)&chuff_;
     cpoint_=pia_make_cpoint();
     timer_cpoint_=pia_make_cpoint();
+
+    std::string u = pic::username();
+    user_ = allocate_cstring(u.c_str());
 
     srand(pic_microtime());
 

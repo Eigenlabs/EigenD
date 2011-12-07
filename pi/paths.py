@@ -103,7 +103,7 @@ def to_absolute(id,scope=None):
     if a2.find(':') >= 0:
         return id
 
-    s = scope or piw.tsd_user()
+    s = scope or piw.tsd_scope()
 
     if p:
         aq = '<%s:%s>#%s' % (s,a2,p)
@@ -122,13 +122,13 @@ def to_relative(id,scope=None):
     cp = a2.find(':')
 
     if cp < 0:
-        u = piw.tsd_user()
+        u = piw.tsd_scope()
         n = a2
     else:
         u = a2[:cp]
         n = a2[cp+1:]
 
-    s = scope or piw.tsd_user()
+    s = scope or piw.tsd_scope()
 
     print 'to_relative',id,u,n,s
 
@@ -156,7 +156,7 @@ def splitid(id,scope=None):
     a2 = a[1:-1]
     cp = a2.find(':')
 
-    s = scope or piw.tsd_user()
+    s = scope or piw.tsd_scope()
 
     if cp < 0:
         return (s,a2,p)
