@@ -106,7 +106,7 @@ class Index(piw.index):
         return c.real if c else None
 
     def member_died(self,name,cookie,client):
-        sname = self.unqualify(name.as_string())
+        sname = self.to_relative(name.as_string())
 
         piw.index.member_died(self,name,cookie)
 
@@ -115,11 +115,11 @@ class Index(piw.index):
             self.synced(client)
             del self.__members[sname]
 
-    def unqualify(self,a,scope=None):
-        return paths.unqualify(a,scope or self.__user)
+    def to_relative(self,a,scope=None):
+        return paths.to_relative(a,scope or self.__user)
 
-    def qualify(self,a,scope=None):
-        return paths.qualify(a,scope or self.__user)
+    def to_absolute(self,a,scope=None):
+        return paths.to_absolute(a,scope or self.__user)
 
     def user(self):
         return self.__user
@@ -152,5 +152,5 @@ class Index(piw.index):
             c=self.__members.get(n)
             if c is None:
                 c=Monitor(self,n,self.__factory(n))
-                piw.tsd_client(self.qualify(n),c,self.__fast)
+                piw.tsd_client(self.to_absolute(n),c,self.__fast)
                 self.__members[n]=c

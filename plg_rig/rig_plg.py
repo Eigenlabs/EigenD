@@ -202,7 +202,7 @@ class RigInputPolicyImpl:
             else:
                 tgt = 0
 
-            id=paths.qualify(stream.args[2],self.__scope)
+            id=paths.to_absolute(stream.args[2],self.__scope)
             path=stream.args[3]
 
             if path is not None:
@@ -434,7 +434,7 @@ class OuterAgent(agent.Agent):
 
     def server_opened(self):
         agent.Agent.server_opened(self)
-        piw.tsd_server(paths.qualify('<eigend1>',self.inner_name),self.__inner_agent)
+        piw.tsd_server(paths.to_absolute('<eigend1>',self.inner_name),self.__inner_agent)
 
     def close_server(self):
         agent.Agent.close_server(self)
