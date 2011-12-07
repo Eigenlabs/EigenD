@@ -151,9 +151,6 @@ def constraint_timespec_1(db,c,objects):
 
     return matches
 
-def map_timespec_1(filt,c):
-    return c
-
 def constraint_mass_1(db,c,objects):
     wordlist = set(c.args[0])
     matches = []
@@ -172,9 +169,6 @@ def constraint_mass_1(db,c,objects):
 
     return matches
 
-def map_mass_1(filt,c):
-    return c
-
 def constraint_tagged_1(db,c,objects):
     wordlist = set(c.args[0])
     wlen = len(wordlist)+1
@@ -187,9 +181,6 @@ def constraint_tagged_1(db,c,objects):
 
     return matches
 
-def map_tagged_1(filt,c):
-    return c
-
 def constraint_matches_1(db,c,objects):
     wordlist = set(c.args[0])
     matches = []
@@ -200,9 +191,6 @@ def constraint_matches_1(db,c,objects):
                 matches.append(r)
 
     return matches
-
-def map_matches_1(filt,c):
-    return c
 
 def constraint_matches_2(db,c,objects):
     wordlist = set(c.args[0])
@@ -216,9 +204,6 @@ def constraint_matches_2(db,c,objects):
 
     return matches
 
-def map_matches_2(filt,c):
-    return c
-
 def constraint_descriptor(db,c,objects):
     matches = []
 
@@ -231,9 +216,6 @@ def constraint_descriptor(db,c,objects):
             continue
 
     return matches
-
-def map_descriptor(filt,c):
-    return c
 
 @async.coroutine('internal error')
 def constraint_composite_1(db,c,objects):
@@ -257,9 +239,6 @@ def constraint_composite_1(db,c,objects):
 
     yield async.Coroutine.success(matches)
 
-def map_composite_1(filt,c):
-    return logic.make_term(c.pred,map_constraints(filt,c.args[0]))
-
 @async.coroutine('internal error')
 def constraint_or_2(db,c,objects):
     alternatives1 = c.args[0]
@@ -281,9 +260,6 @@ def constraint_or_2(db,c,objects):
 
     yield async.Coroutine.failure(())
 
-def map_or_2(filt,c):
-    return logic.make_term(c.pred,map_constraints(filt,c.args[0]),map_constraints(filt,c.args[1]))
-
 @async.coroutine('internal error')
 def constraint_or_1(db,c,objects):
     alternatives = c.args[0]
@@ -298,9 +274,6 @@ def constraint_or_1(db,c,objects):
 
     yield async.Coroutine.failure(())
 
-def map_or_1(filt,c):
-    return logic.make_term(c.pred, tuple([ map_constraints(filt,x) for x in c.args[0]]))
-
 def constraint_numeric(db,c,objects):
     matches = []
 
@@ -313,16 +286,10 @@ def constraint_numeric(db,c,objects):
 
     return matches
 
-def map_numeric(filt,c):
-    return c
-
 def constraint_singular(db,c,objects):
     if len(objects) == 1:
         return objects
     return []
-
-def map_singular(filt,c):
-    return c
 
 def constraint_virtual(db,c,objects):
     matches = []
@@ -333,9 +300,6 @@ def constraint_virtual(db,c,objects):
 
     return matches
 
-def map_virtual(filt,c):
-    return c
-
 def constraint_concrete(db,c,objects):
     matches = []
 
@@ -345,9 +309,6 @@ def constraint_concrete(db,c,objects):
 
     return matches
 
-def map_concrete(filt,c):
-    return c
-
 def constraint_abstract(db,c,objects):
     matches = []
 
@@ -356,9 +317,6 @@ def constraint_abstract(db,c,objects):
             matches.append(r)
 
     return matches
-
-def map_abstract(filt,c):
-    return c
 
 def constraint_instance_1(db,c,objects):
     matches = []
@@ -370,9 +328,6 @@ def constraint_instance_1(db,c,objects):
 
     return matches
 
-def map_instance_1(filt,c):
-    return logic.make_term(c.pred,filt(c.args[0]))
-
 def constraint_partof_1(db,c,objects):
     matches = []
     id = c.args[0]
@@ -383,9 +338,6 @@ def constraint_partof_1(db,c,objects):
             matches.append(r)
 
     return matches
-
-def map_partof_1(filt,c):
-    return logic.make_term(c.pred,filt(c.args[0]))
 
 def constraint_proto_1(db,c,objects):
     matches = []
@@ -400,9 +352,6 @@ def constraint_proto_1(db,c,objects):
 
     return matches
 
-def map_proto_1(filt,c):
-    return c
-
 def constraint_notproto_1(db,c,objects):
     matches = []
     proto = db.get_propcache('protocol').get_idset(c.args[0])
@@ -412,9 +361,6 @@ def constraint_notproto_1(db,c,objects):
             matches.append(r)
 
     return matches
-
-def map_notproto_1(filt,c):
-    return c
 
 def remove_word(tup,word):
     if word in tup:
@@ -475,9 +421,6 @@ def constraint_tagged_ideal_2(db,c,objects):
     yield async.Coroutine.success(matches)
 
 
-def map_tagged_ideal_2(filt,c):
-    return logic.make_term(c.pred,(filt(c.args[0][0]),c.args[0][1]),c.args[1])
-
 @async.coroutine('internal error')
 def constraint_ideal_1(db,c,objects):
     matches = []
@@ -523,10 +466,6 @@ def constraint_ideal_1(db,c,objects):
 
     yield async.Coroutine.success(matches)
             
-def map_ideal_1(filt,c):
-    return logic.make_term(c.pred,(filt(c.args[0][0]),c.args[0][1]))
-
-
 @async.coroutine('internal error')
 def constraint_issubject_2(db,c,objects):
     verb = c.args[0]   # ie 'create'
@@ -546,25 +485,11 @@ def constraint_issubject_2(db,c,objects):
 
     yield async.Coroutine.success(matches)
 
-def map_issubject_2(filt,c):
-    args = []
-    for a in c.args[1]:
-        args.append(logic.make_term(a.pred,a.args[0],map_constraints(filt,a.args[1])))
-    return logic.make_term(c.pred,c.args[0],tuple(args))
-
 def __get_constraint(c):
     if isinstance(c,str):
         return globals().get('constraint_'+c)
     if logic.is_term(c):
         return globals().get('constraint_%s_%d' % (c.pred,c.arity))
-    print 'invalid constraint',c
-    return None
-
-def __get_map(c):
-    if isinstance(c,str):
-        return globals().get('map_'+c)
-    if logic.is_term(c):
-        return globals().get('map_%s_%d' % (c.pred,c.arity))
     print 'invalid constraint',c
     return None
 
@@ -592,15 +517,6 @@ def resolve_constraints(db,constraints, objects):
         yield async.Coroutine.success(True,tuple(objects))
 
     yield async.Coroutine.success(False,())
-
-def map_constraints(filt,constraints):
-    c2 = []
-    for c in constraints:
-        cfunc = __get_map(c)
-        if cfunc is None:
-            return None
-        c2.append(cfunc(filt,c))
-    return tuple(c2)
 
 @async.coroutine('internal error')
 def resolve_constraints_dict(db,constraints,objects):

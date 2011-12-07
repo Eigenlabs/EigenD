@@ -136,14 +136,14 @@ class VerbProxy:
                 if self.__fixed is None:
                     self.__fixed = set()
                 self.__fixed.add(role)
-                self.__constraints[role] = constraints.map_constraints(self.to_database,r.args[1])
+                self.__constraints[role] = self.convert_result(r.args[1])
                 self.__order.append(role)
             if logic.is_pred(r,'option'):
                 role = r.args[0]
                 if self.__options is None:
                     self.__options = set()
                 self.__options.add(role)
-                self.__constraints[role] = constraints.map_constraints(self.to_database,r.args[1])
+                self.__constraints[role] = self.convert_result(r.args[1])
                 self.__order.append(role)
 
     def to_database(self,cid):
