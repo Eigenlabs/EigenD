@@ -44,15 +44,18 @@ def calc_keynum(geo,row,col):
         return None
 
     # the key was entered in a sequential column-only format
-    if 0 == row and col > 0:
-        return col
+    if 0 == row:
+        if col > 0:
+            return col
+        else:
+            return 0
     
     # resolve relative rows
     if row < 0:
         row = geolen + row + 1
 
     # only calculate the key number when the row exists
-    if row > geolen:
+    if row < 1 or row > geolen:
         return None
     
     rowlen = geo.as_tuple_value(row-1).as_long()

@@ -146,7 +146,7 @@ class Key(collection.Collection):
         return False
 
     def __update_event_key(self):
-       self.__event.set_key(utils.maketuple((piw.makelong(self.get_internal(248).get_value(),0),piw.makelong(self.get_internal(249).get_value(),0)), 0)) 
+        self.__event.set_key(utils.maketuple((piw.makelong(self.get_internal(248).get_value(),0),piw.makelong(self.get_internal(249).get_value(),0)), 0)) 
 
     def rpc_instancename(self,a):
         return 'action'
