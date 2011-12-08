@@ -109,6 +109,7 @@ class Controller(state.Manager):
         state.Manager.client_opened(self)
 
     def close_client(self):
+        print 'controller closing',self.address
         if not self.__first_sync:
             self.__workspace.agent_disconnected(self)
 
@@ -261,17 +262,23 @@ class Workspace(atom.Atom):
         self.__plugin_count = 0
         self.__load_errors = None
 
-        dbfile = resource.user_resource_file('global',"%s-%s" % (resource.current_setup,name))
+        self.__dbfile = resource.user_resource_file('global',"%s-%s" % (resource.current_setup,name))
 
-        if os.path.exists(dbfile):
-            os.remove(dbfile)
+        if os.path.exists(self.__dbfile):
+            os.remove(self.__dbfile)
 
-        self.database = state.open_database(dbfile,True)
+        self.database = state.open_database(self.__dbfile,True)
         self.trunk = self.database.get_trunk()
         upgrade.set_version(self.trunk,version.version)
         self.flush()
 
         self.index = index.Index(lambda a: Controller(self,a),False)
+
+    def shutdown(self):
+        self.close_server()
+        self.database.close()
+        if os.path.exists(self.__dbfile):
+            os.remove(self.__dbfile)
 
     def listmodules_rpc(self,arg):
         modules = []
@@ -735,6 +742,9 @@ class Workspace(atom.Atom):
         # unload address and return ss or None
         ss = self.__meta.retract_state(lambda v,s: v.args[0]==address,destroy)
         return ss
+
+    def unload_all(self,destroy=False):
+        self.__meta.clear(destroy)
 
     def on_quit(self):
         # call on_quit for all plugins
