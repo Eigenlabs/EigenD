@@ -160,8 +160,13 @@ class Database(database.Database):
             # add subsystems that are not agents to prevent changes to rigs
             # from including the agents they contain
             agents = self.__propcache.get_idset('agent')
+            rigs = self.__propcache.get_idset('rig')
 
             changed_nodes = set(self.find_joined_slaves(id)).difference(agents)
+
+            if id in rigs:
+                changed_nodes.update(self.get_propcache('host').get_idset(id))
+
             changed_nodes.add(id)
             changed_nodes_frozenset = self.find_all_descendants(frozenset(changed_nodes))
             

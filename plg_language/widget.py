@@ -27,7 +27,7 @@ server_port = "55551"
 
 monitor_debug = False
 widget_debug = False
-widget_manager_debug = False
+widget_manager_debug = True
 
 class Monitor(proxy.AtomProxy):
     def __init__(self,recv_channel,osc,widget):
@@ -317,7 +317,7 @@ class WidgetManager(atom.Atom):
 
     def check_widget_name_updates(self, changed_nodes):
         if widget_manager_debug:
-            print 'WidgetManager: check_widget_name_updates'
+            print 'WidgetManager: check_widget_name_updates',changed_nodes
         #print 'changed_nodes:',changed_nodes
         if self.__stage_server_instance is not None:
             new_names = {}
