@@ -197,12 +197,10 @@ class VerbProxy:
 
     def convert_args(self,term):
         t2 = filter_term(self.to_relative,term)
-        print 'unqualified verb arguments',term,'->',t2
         return t2
 
     def convert_result(self,term):
         t2 = filter_term(self.to_database,term)
-        print 'qualified verb return',term,'->',t2
         return t2
 
     @async.coroutine('internal error')

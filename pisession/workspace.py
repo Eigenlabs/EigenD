@@ -73,12 +73,12 @@ class Controller(state.Manager):
     def __init__(self, workspace, address):
         self.address = address
         self.__workspace = workspace
-        self.__agent = workspace.create_sink(address)
         self.__volatile = 1
         self.__syncers = []
         self.__first_sync = True
         self.__saving = False
 
+        (self.__agent,self.__created) = workspace.create_sink(address)
 
         sink = self.__agent.get_root()
         state.Manager.__init__(self,sink)
@@ -122,6 +122,10 @@ class Controller(state.Manager):
             checkpoint = self.__agent.checkpoint()
             checkpoint.set_type(self.__volatile)
             self.__workspace.set_agent(checkpoint)
+
+        if not self.__volatile or (self.__created and not self.__first_sync):
+            print 'erasing agent',self.address
+            self.__workspace.erase_agent(self.__agent)
 
         state.Manager.close_client(self)
 
@@ -651,14 +655,18 @@ class Workspace(atom.Atom):
             a = self.trunk.get_agent_index(i)
 
             if a.get_address() == address:
-                return a
+                return (a,False)
 
-        return self.trunk.get_agent_address(0,address,True)
+        return (self.trunk.get_agent_address(0,address,True),True)
 
 
     @staticmethod
     def __relation(address):
         return 'create(cnc("%s"),role(by,[instance(~a)]))' % address
+
+    def erase_agent(self,a):
+        self.trunk.erase_agent(a)
+        self.flush()
 
     def set_agent(self,a):
         self.trunk.set_agent(a)

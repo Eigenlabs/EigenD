@@ -130,8 +130,6 @@ def to_relative(id,scope=None):
 
     s = scope or piw.tsd_scope()
 
-    print 'to_relative',id,u,n,s
-
     if u == s:
         if p:
             return '<%s>#%s' % (n,p)
