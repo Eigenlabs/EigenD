@@ -831,7 +831,7 @@ class Agent(agent.Agent):
         for c in coursekeys:
             keys.extend(c)
 
-        mapping = [(k,str(i+1)) for (i,k) in enumerate(keys)]
+        mapping = [(k,i+1) for (i,k) in enumerate(keys)]
         self.__set_mapping(tuple(mapping))
 
     def __kclear(self,subject,course):
@@ -857,7 +857,7 @@ class Agent(agent.Agent):
 
         f = int(action.mass_quantity(f))
         t = int(action.mass_quantity(t))
-        r = map(str,range(f,t+1))
+        r = range(f,t+1)
 
         self.controller.ensure(course+1)
         coursekeys = self.__getkeys()
@@ -875,7 +875,7 @@ class Agent(agent.Agent):
 
 
     def __kadd(self,subject,k,course):
-        k = str(int(action.mass_quantity(k)))
+        k = int(action.mass_quantity(k))
 
         if course:
             course = int(action.mass_quantity(course))-1
@@ -905,7 +905,7 @@ class Agent(agent.Agent):
         self.mapper.activate_mapping()
 
         curmap = self.__cur_mapping() # [[from,to 1..N]]
-        active = [str(f) for (f,t) in curmap] # all active keys
+        active = [f for (f,t) in curmap] # all active keys
 
         courses = [i.as_long() for i in self.controller.getlist('courselen')]
         coursekeys=[]
@@ -929,8 +929,8 @@ class Agent(agent.Agent):
             self.__coursekeys=active[cstart:cstart+clen] 
 
         for k in range(1,self.__upstream_size+1):
-            if str(k) in active:
-                if str(k) in self.__coursekeys:
+            if k in active:
+                if k in self.__coursekeys:
                     self.status_buffer.set_status(k,const.status_choose_active)
                 else:
                     self.status_buffer.set_status(k,const.status_choose_used)
@@ -956,7 +956,7 @@ class Agent(agent.Agent):
             if not keynum in self.__choices:
                 self.__choices.append(keynum)
                 for k in self.__coursekeys:
-                    self.status_buffer.set_status(int(k),const.status_choose_used)
+                    self.status_buffer.set_status(k,const.status_choose_used)
                 self.__coursekeys=[]
                 self.status_buffer.set_status(keynum,const.status_choose_active)
                 self.status_buffer.send()
@@ -970,7 +970,7 @@ class Agent(agent.Agent):
         self.controller.ensure(self.__course)
         cl = [i.as_long() for i in self.controller.getlist('courselen')]
 
-        ckeys = [str(k) for k in self.__choices]
+        ckeys = self.__choices
         okeys = [m[0] for m in self.__cur_mapping()]
 
         s=0
@@ -997,7 +997,7 @@ class Agent(agent.Agent):
         for k,v in oldcourses.iteritems():
             for nk in v:
                 count=count+1
-                mapping.append((nk,str(count)))
+                mapping.append((nk,count))
         
         cl=[]
         for v in oldcourses.itervalues():
@@ -1019,7 +1019,7 @@ class Agent(agent.Agent):
         if rowbounds:
             for (src,dst) in mapping:
                 row = 0 
-                col = int(src)
+                col = src
                 for upstream_rowlen in self.__upstream_rowlen:
                     keysinrow = upstream_rowlen.as_long()
                     if col > keysinrow:
@@ -1053,7 +1053,7 @@ class Agent(agent.Agent):
 
         # set the physical to musical mapping
         for (src,dst) in mapping:
-            self.mapper.set_mapping(int(src),int(dst))
+            self.mapper.set_mapping(src,dst)
 
         # determine the physical geometry
         self.__set_physical_geo(mapping)
