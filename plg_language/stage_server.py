@@ -66,6 +66,8 @@ class StageXMLRPCFuncs:
         self.__tabs = languageAgent.tabs
         self.__database = languageAgent.database
         self.__widgetManager = languageAgent.widgets
+        self.__propcache = self.__database.get_propcache('props')
+        self.__hostcache = self.__database.get_propcache('host')
 
         self.setupName = 'setup'
         # dict for agent xml
@@ -233,6 +235,20 @@ class StageXMLRPCFuncs:
         
         return xml
 
+    def __fullName(self,aid):
+        name = [self.__database.find_desc(aid)]
+        inrig = self.__propcache.get_idset('inrig')
+
+        while aid in inrig:
+            xid = popset(self.__hostcache.get_valueset(aid))
+            if xid:
+                xdesc = self.__database.find_desc(xid)
+                if xdesc:
+                    name.insert(0,xdesc)
+                aid = xid
+
+        return ' '.join(name)
+
     def __buildAgentsXml(self, agentIDs):
         #print 'build agents xml'
         # make xml for a set of agents in the database 
@@ -246,7 +262,7 @@ class StageXMLRPCFuncs:
             xml = ''
 
             # list of (agent ID, (name, ordinal))
-            agents = [(agentID, self.__getNameOrdinalPair(self.__database.find_desc(agentID))) for agentID in agentIDs]
+            agents = [(agentID, self.__getNameOrdinalPair(self.__fullName(agentID))) for agentID in agentIDs]
             # sort by name-ordinal pair to make sure numbers sorted in right order
             agents.sort(key=lambda x:x[1])
             
@@ -279,7 +295,7 @@ class StageXMLRPCFuncs:
 
         try:
             xml = ''
-            agentName = self.__database.find_desc(agentID)
+            agentName = self.__fullName(agentID)
             oscName = self.build_osc_name(agentID)
 
             # if agent has a name it exists
@@ -428,7 +444,8 @@ class StageXMLRPCFuncs:
                 # remove any agents that have been removed from the database
                 removed_agentIDs = self.__last_agentIDs - agentIDs
                 for id in removed_agentIDs:
-                    del self.agents[id]
+                    try: del self.agents[id]
+                    except: pass
 
                 # add removed agents to the change list so Stage will attempt to
                 # get deleted agents, and can determine that they have been
