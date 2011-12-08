@@ -136,6 +136,26 @@ class Controller:
         l[idx-1] = float(val+10000 if val else 0)
         self.setlist('courseoffset',[piw.makefloat(i,0) for i in l])
 
+    def get_courses(self):
+        o = [i.as_float() for i in self.getlist('courseoffset')]
+        l = [i.as_long() for i in self.getlist('courselen')]
+        s = min(len(o),len(l))
+        c = []
+        i = 0
+        while i < s:
+           c.append((l[i],o[i])) 
+           i = i +1
+        return tuple(c)
+
+    def set_courses(self,courses):
+        lengths = []
+        offsets = []
+        for l,o in courses:
+            lengths.append(piw.makelong(l,0))
+            offsets.append(piw.makefloat(o,0))
+        self.setlist('courselen',lengths)
+        self.setlist('courseoffset',offsets)
+
     def num_courses(self):
         l = self.getlist('courseoffset')
         return len(l) if l else 0
@@ -542,8 +562,10 @@ class Agent(agent.Agent):
         self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key row', init=None, policy=atom.default_policy(self.__change_mode_key_row))
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key column', init=None, policy=atom.default_policy(self.__change_mode_key_column))
         self[26] = atom.Atom(domain=domain.String(), init='[]', names='key map', policy=atom.default_policy(self.__set_members))
+        self[28] = atom.Atom(domain=domain.String(), init='[]', names='course size', policy=atom.default_policy(self.__set_course_size))
 
         self[27] = atom.Atom(domain=domain.Aniso(), names='selection input', policy=policy.FastPolicy(self.mode_selector.gate_selection_input(),policy.AnisoStreamPolicy()))
+
 
         self.add_verb2(3,'set([un],None)',callback=self.__untune)
 
@@ -721,6 +743,10 @@ class Agent(agent.Agent):
         ints = action.mass_quantity(interval)
         self.controller.set_course_steps(int(course),ints)
         return action.nosync_return()
+
+    def __set_course_size(self,value):
+        self.controller.set_courses(logic.parse_clause(value))
+        self[28].set_value(value)
 
     def __tune_tonic_fast(self,ctx,subj,dummy,arg):
         type,thing = action.crack_ideal(action.arg_objects(arg)[0])
@@ -1045,6 +1071,7 @@ class Agent(agent.Agent):
         self.key_mapper.enable(1,True)
 
     def controller_changed(self):
+        self[28].set_value(logic.render_term(self.controller.get_courses()))
         self.mapper.set_courselen(self.controller.gettuple('courselen'))
 
     def __set_members(self,value):

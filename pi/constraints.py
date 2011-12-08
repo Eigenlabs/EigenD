@@ -382,7 +382,7 @@ def constraint_tagged_ideal_2(db,c,objects):
 
     for r in objects:
         if logic.is_pred(r,'tagged_ideal'):
-            if r.args[0][0]==src and r.args[0][1]==typ and set(r.args[2])==wrds:
+            if r.args[0][0]==srv and r.args[0][1]==typ and set(r.args[2])==wrds:
                 matches.append(T('ideal',(srv,typ),r.args[1]))
             continue
 
