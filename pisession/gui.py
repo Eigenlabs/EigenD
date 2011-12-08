@@ -36,12 +36,10 @@ class App(wx.App):
         self.Bind(EVT_PIA_SERVICE, self.__service_ctx)
         self.Bind(EVT_PIA_ASYNC, self.__service_async)
 
-        u = user or session.get_username()
-
         self.mgr = piagent.scaffold_gui(utils.notify(self.__service), utils.notify(self.__service_shutdown), utils.stringify(logfunc), utils.stringify(None), False, False)
 
-        self.__env_bg = self.mgr.bgcontext(u,utils.statusify(None), utils.stringify(logfunc), name or 'App')
-        self.__env_fg = self.mgr.context(u,utils.statusify(None), utils.stringify(logfunc), name or 'App')
+        self.__env_bg = self.mgr.bgcontext('main',utils.statusify(None), utils.stringify(logfunc), name or 'App')
+        self.__env_fg = self.mgr.context('main',utils.statusify(None), utils.stringify(logfunc), name or 'App')
 
         piw.setenv(self.__env_fg.getenv())
 
