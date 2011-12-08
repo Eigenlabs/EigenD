@@ -135,10 +135,10 @@ class PersistentMetaData:
     def __set_termlist(self):
         self.__container.set_property_string(self.__tag,logic.render_termlist(self.__nodes.keys()))
 
-    def clear(self):
+    def clear(self,destroy=False):
         while self.__nodes:
             (v,s) = self.__nodes.popitem()
-            self.__retracted(v,s,False)
+            self.__retracted(v,s,destroy)
 
         self.__set_termlist()
         

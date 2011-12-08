@@ -385,6 +385,13 @@ class InnerAgent(agent.Agent):
     def run_foreground_sync(self,func,*args,**kwds):
         return func(*args,**kwds)
 
+    def unload(self,destroy):
+        self.__workspace.unload_all(destroy)
+        if destroy:
+            self.__workspace.shutdown()
+        self.notify_destroy()
+
+
 class OuterAgent(agent.Agent):
     def __init__(self,address,ordinal):
         agent.Agent.__init__(self,signature=version,names='rig',ordinal=ordinal)
@@ -412,6 +419,9 @@ class OuterAgent(agent.Agent):
         if agent.Agent.property_veto(self,key,value):
             return True
         return key == 'rig'
+
+    def unload(self,destroy):
+        self.__inner_agent.unload(destroy)
 
     def __create_input(self,subject,dummy,name):
         name = action.abstract_string(name)
