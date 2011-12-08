@@ -617,11 +617,11 @@ class Agent(agent.Agent):
 
             geo = self.__upstream_rowlen
             if row < 0:
-                rowcount = geo.as_tuplelen()
+                rowcount = len(geo)
                 row = rowcount + row + 1
 
             if col < 0:
-                rowlen = geo.as_tuple_value(row-1).as_long()
+                rowlen = geo[row-1].as_long()
                 col = rowlen + col + 1
 
             if int(key.as_tuple_value(0).as_float()) == row and int(key.as_tuple_value(1).as_float()) == col:
