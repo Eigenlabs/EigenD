@@ -364,7 +364,8 @@ class InnerAgent(agent.Agent):
         return self.__workspace.addmodule_rpc(arg)
 
     def rpc_destroy(self,arg):
-        self.__workspace.unload(arg)
+        print 'destroy',arg
+        self.__workspace.unload(arg,True)
 
     def load_started(self,label):
         pass
