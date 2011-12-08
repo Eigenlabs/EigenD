@@ -123,7 +123,7 @@ class Controller(state.Manager):
             checkpoint.set_type(self.__volatile)
             self.__workspace.set_agent(checkpoint)
 
-        if not self.__volatile or (self.__created and not self.__first_sync):
+        if not self.__volatile or (self.__created and self.__first_sync):
             print 'erasing agent',self.address
             self.__workspace.erase_agent(self.__agent)
 

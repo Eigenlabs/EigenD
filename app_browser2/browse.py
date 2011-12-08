@@ -48,6 +48,7 @@ class BrowseAgent(atom.Null):
         self.parent=parent
         self.model=BrowseModel(self)
         self.virtual = BrowseSelection(self.model.resolve)
+        self.set_property_long('volatile',1)
 
         self[1]=(self.virtual)
         self.add_verb2(1,'show([],None,role(None,[abstract]))',callback=self.changeDir)
