@@ -21,17 +21,27 @@
 #include "rig_connector.h"
 #include <memory>
 
-struct rig::connector_t::impl_t: piw::client_t
+struct rig::connector_t::impl_t: piw::client_t, piw::fastdata_t, pic::lckobject_t
 {
-    impl_t(rig::connector_t *r, piw::server_t *parent, unsigned index, const piw::d2d_nb_t &filter): connector_(r), parent_(parent), index_(index), filter_(filter), output_(PLG_SERVER_TRANSIENT|PLG_SERVER_RO), bridge_(0)
+    impl_t(rig::connector_t *r, piw::server_t *parent, unsigned index, const piw::d2d_nb_t &filter): connector_(r), parent_(parent), index_(index), filter_(filter), output_(PLG_SERVER_TRANSIENT|PLG_SERVER_RO), bridge_(PLG_FASTDATA_SENDER)
     {
         parent_->child_add(index_,&output_);
+        piw::tsd_fastdata(this);
+        piw::tsd_fastdata(&bridge_);
     }
 
     ~impl_t()
     {
         output_.close_server();
         close_client();
+        close_fastdata();
+        bridge_.close_fastdata();
+    }
+
+    bool fastdata_receive_event(const piw::data_nb_t &id, const piw::dataqueue_t &q)
+    {
+        bridge_.send_fast(filter_(id),q);
+        return false;
     }
 
     void client_opened()
@@ -44,10 +54,9 @@ struct rig::connector_t::impl_t: piw::client_t
 
         if((get_host_flags()&PLG_SERVER_FAST)!=0)
         {
-            bridge_ = new piw::fastdata_t();
-            piw::tsd_fastdata(bridge_);
-            output_.set_source(bridge_);
-            set_sink(bridge_);
+            output_.set_source(&bridge_);
+            set_sink(this);
+            enable(true,true,false);
         }
     }
 
@@ -57,15 +66,9 @@ struct rig::connector_t::impl_t: piw::client_t
 
         output_.set_flags(PLG_SERVER_TRANSIENT|PLG_SERVER_RO);
         output_.set_data(piw::data_t());
-
-        if(bridge_)
-        {
-            clear_sink();
-            output_.clear_source();
-            bridge_->close_fastdata();
-            delete bridge_;
-            bridge_ = 0;
-        }
+        output_.clear_source();
+        clear_sink();
+        enable(false,false,false);
 
         std::map<unsigned char, impl_t *>::iterator ci;
 
@@ -131,7 +134,7 @@ struct rig::connector_t::impl_t: piw::client_t
     piw::d2d_nb_t filter_;
     std::map<unsigned char, impl_t *> children_;
     piw::server_t output_;
-    piw::fastdata_t *bridge_;
+    piw::fastdata_t bridge_;
 };
 
 rig::connector_t::connector_t(rig::output_t *parent,unsigned index, const piw::d2d_nb_t &filter): piw::client_t(PLG_CLIENT_CLOCK)
