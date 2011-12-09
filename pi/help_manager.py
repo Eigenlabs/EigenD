@@ -76,7 +76,7 @@ def get_node(node_list,node_name):
 
     node_type,ordinal = split_ord(node_name)
 
-    if ordinal is not None:
+    if ordinal:
         doc_node = node_list.get(node_type)
 
     return doc_node

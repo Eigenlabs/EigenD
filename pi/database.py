@@ -1429,7 +1429,7 @@ class Database(logic.Engine):
 
         if 'ordinal' in parts:
             ordinal = ap.ordinal()
-            if ordinal is not None:
+            if ordinal:
                 props['ordinal'] = ((str(ordinal),),None)
             else:
                 props['ordinal'] = ((),None)

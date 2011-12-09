@@ -98,14 +98,17 @@ class StageXMLRPCFuncs:
             # strip off ordinal
             name = ' '.join(wordsList[:len(wordsList)-1])
             ordinal = int(last)
-            return (name, ordinal)
+            if ordinal:
+                return (name, ordinal)
+            else:
+                return (words, None)
         else:
             return (words, None)
 
     def __getStringFromNameOrdinalPair(self, pair):
         # add the ordinal to the name string
         (name, ordinal) = pair
-        if ordinal!=None:
+        if ordinal:
             return name+' '+str(ordinal)
         else:
             return name

@@ -27,7 +27,7 @@ server_port = "55551"
 
 monitor_debug = False
 widget_debug = False
-widget_manager_debug = True
+widget_manager_debug = False
 
 class Monitor(proxy.AtomProxy):
     def __init__(self,recv_channel,osc,widget):

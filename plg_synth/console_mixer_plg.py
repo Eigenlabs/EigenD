@@ -82,6 +82,8 @@ class FxSendControls(atom.Atom):
 
         if ordinal_str!='':
             ordinal = int(ordinal_str)
+            if not ordinal:
+                ordinal = None
         else:
             ordinal = None
 
@@ -242,7 +244,8 @@ class FxChannel(atom.Atom):
 
         if ordinal_str!='':
             ordinal = int(ordinal_str)
-            self.set_ordinal(ordinal)
+            if ordinal:
+                self.set_ordinal(ordinal)
 
     def get_id_data(self):
         return (self.key, self.name, self.ordinal_str, self.fx_chan_num)

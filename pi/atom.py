@@ -648,7 +648,7 @@ class Atom(node.Server):
         self.set_property_string('name',value,allow_veto=True)
 
     def clear_ordinal(self):
-        self.del_property('ordinal')
+        self.set_ordinal(0)
 
     def set_ordinal(self,ordinal):
         self.set_property_long('ordinal',ordinal,allow_veto=True)

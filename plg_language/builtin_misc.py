@@ -107,7 +107,7 @@ class Builtins:
 
         def co():
             yield interpreter.RpcAdapter(proxy.invoke_rpc('set_names',' '.join(words)))
-            if ordinal is not None:
+            if ordinal:
                 yield interpreter.RpcAdapter(proxy.invoke_rpc('set_ordinal',str(ordinal)))
             else:
                 yield interpreter.RpcAdapter(proxy.invoke_rpc('clear_ordinal',''))
