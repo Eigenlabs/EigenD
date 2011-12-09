@@ -195,6 +195,11 @@ struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_r
         update_layout();
     }
 
+    unsigned get_keynumber()
+    {
+        return keynumber_.current();
+    }
+
     bool update_keynumber()
     {
         if(!client_ || !client_->controller_ || !client_->controller_->control_)
@@ -396,6 +401,23 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
         }
     }
 
+    unsigned get_keynumber(unsigned index)
+    {
+        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t gc(controllist_);
+
+        if(index<gc.value().size())
+        {
+            ctlsignal_t *c = gc.value()[index];
+
+            if(c)
+            {
+                return c->get_keynumber();
+            }
+        }
+
+        return 0;
+    }
+
     void set_key(unsigned index, const piw::data_t &key)
     {
         if(!key.is_tuple() || key.as_tuplelen() != 2) return;
@@ -522,6 +544,7 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
     pic::flipflop_t<keyctlmap_t> controlseqmap_;
     unsigned long sigmask_;
     piw::controller_t *host_;
+    pic::notify_t callback_;
 };
 
 void ctlfilter_t::ufilterfunc_end(piw::ufilterenv_t *env, unsigned long long t)
@@ -617,6 +640,28 @@ void piw::controller_t::control_t::update_layout()
             c->update_layout();
         }
     }
+
+    host_->impl_->callback_();
+}
+
+void piw::controller_t::set_layout_callback(const pic::notify_t &f)
+{
+    impl_->callback_ = f;
+}
+
+void piw::controller_t::clear_layout_callback()
+{
+    impl_->callback_.clear();
+}
+
+int piw::controller_t::gc_traverse(void *a, void *b) const
+{
+    return impl_->callback_.gc_traverse(a,b);
+}
+
+int piw::controller_t::gc_clear()
+{
+    return impl_->callback_.gc_clear();
 }
 
 void piw::controller_t::control_t::change_layout(piw::data_nb_t rowlen)
@@ -725,6 +770,13 @@ piw::fastdata_t *piw::xxcontrolled_t::fastdata()
 piw::change_nb_t piw::xxcontrolled_t::sender()
 {
     return xximpl_->sender();
+}
+
+unsigned piw::xxcontrolled_t::get_keynumber()
+{
+    if(controller_)
+        return controller_->impl_->get_keynumber(index_);
+    return 0;
 }
 
 void piw::xxcontrolled_t::set_key(const piw::data_t &key)

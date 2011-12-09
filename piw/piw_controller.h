@@ -24,6 +24,7 @@
 #include <piw/piw_bundle.h>
 #include <piw/piw_fastdata.h>
 #include <picross/pic_weak.h>
+#include <picross/pic_functor.h>
 
 namespace piw
 {
@@ -42,11 +43,17 @@ namespace piw
             virtual void controller_clock(bct_clocksink_t *) {}
             virtual void controller_latency(unsigned) {}
 
+            void set_layout_callback(const pic::notify_t &);
+            void clear_layout_callback();
+
             cookie_t event_cookie();
             cookie_t control_cookie();
 
             impl_t *impl_;
             control_t *control_;
+
+            int gc_traverse(void *, void *) const;
+            int gc_clear();
     };
 
     class PIW_DECLSPEC_CLASS xxcontrolled_t: public pic::nocopy_t
@@ -68,6 +75,7 @@ namespace piw
             void save_lights();
             void restore_lights();
             void set_key(const piw::data_t &key);
+            unsigned get_keynumber();
             fastdata_t *fastdata();
 
             virtual void control_init() {}

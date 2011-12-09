@@ -66,11 +66,10 @@ class TalkerFinder(Finder):
         Finder.__init__(self,'<language>')
 
 class Talker(atom.Atom):
-    def __init__(self,finder,trigger,status_cookie,names='action',connection_index=None,ordinal=None,protocols=None):
+    def __init__(self,finder,trigger,status_cookie,names='action',ordinal=None,protocols=None):
         p = protocols+' nostage hidden-connection' if protocols else 'nostage hidden-connection'
         atom.Atom.__init__(self,domain=domain.String(),policy=atom.default_policy(self.__change),names='action',protocols=p,ordinal=ordinal)
         self.__finder = finder
-        self.__conn_index = connection_index
         self.__domain = piw.clockdomain_ctl()
         self.__domain.set_source(piw.makestring('*',0))
         self.__loading = False
@@ -126,7 +125,7 @@ class Talker(atom.Atom):
             self[1].clear_connections()
 
     def make_connection(self,index,dsc):
-        return logic.make_term('conn',index,self.__conn_index,dsc.args[0],dsc.args[1],None)
+        return logic.make_term('conn',index,1,dsc.args[0],dsc.args[1],None)
 
     @async.coroutine('internal error')
     def set_phrase(self,v):

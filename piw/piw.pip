@@ -41,6 +41,7 @@
 #include <piw/piw_rpc.h>
 #include <piw/piw_scaler.h>
 #include <piw/piw_kgroup.h>
+#include <piw/piw_talker.h>
 #include <piw/piw_correlator.h>
 #include <piw/piw_connector.h>
 #include <piw/piw_ranger.h>
@@ -292,13 +293,15 @@ class functor_backend[piw::functor_backend_t] /gc/
     void send_duplicates(bool)
 }
 
-class controller[piw::controller_t]
+class controller[piw::controller_t] /gc/
 {
     controller(const cookie &,const stdstr &)
     cookie event_cookie()
     cookie control_cookie()
     virtual void controller_clock(clockref *)
     virtual void controller_latency(unsigned)
+    void set_layout_callback(const notify &)
+    void clear_layout_callback()
 }
 
 class xxcontrolled[piw::xxcontrolled_t]
@@ -310,6 +313,7 @@ class xxcontrolled[piw::xxcontrolled_t]
     int ordinal()
     fastdata *fastdata()
     void set_key(const data &)
+    unsigned get_keynumber()
 }
 
 class controlled[piw::controlled_t]: xxcontrolled
@@ -519,6 +523,13 @@ class controllerdict[piw::controllerdict_t]
     void put(const stdstr &,const data &)
     change changetonic(unsigned)
     change changescale(const stdstr &)
+}
+
+class talker_mapper[piw::talker_mapper_t]
+{
+    talker_mapper()
+    d2d_nb key_filter()
+    void set_mapping(unsigned, unsigned)
 }
 
 class kgroup_mapper[piw::kgroup_mapper_t]

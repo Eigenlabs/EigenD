@@ -107,7 +107,7 @@ class Event(talker.Talker):
         self.__index = index
         cookie = self.__key.key_aggregator.get_output(self.__index)
 
-        talker.Talker.__init__(self,self.__key.agent.finder,fast,cookie,names='event',ordinal=index,connection_index=key.index,protocols='remove')
+        talker.Talker.__init__(self,self.__key.agent.finder,fast,cookie,names='event',ordinal=index,protocols='remove')
 
     def detach_event(self):
         self.__key.key_aggregator.clear_output(self.__index)
@@ -125,7 +125,16 @@ class Key(collection.Collection):
         self.__event = piw.fasttrigger(const.light_unknown)
         self.__event.attach_to(controller,index)
         self.__handler = piw.change2_nb(self.__event.trigger(),utils.changify(self.event_triggered))
-        self.key_aggregator = piw.aggregator(agent.light_aggregator.get_output(index+1),agent.domain)
+
+        self.key_mapper = piw.talker_mapper()
+        self.key_mapper.set_mapping(1,1)
+
+        self.key_clone = piw.clone(True)
+        self.key_clone.set_policy(True)
+        self.key_clone.set_filtered_output(1,agent.light_aggregator.get_output(index+1),self.key_mapper.key_filter())
+
+        self.key_aggregator = piw.aggregator(self.key_clone.cookie(),agent.domain)
+
         self.agent = agent
         self.index = index
         self.set_private(node.Server(value=piw.makelong(3,0),change=self.__change_color))
@@ -145,8 +154,16 @@ class Key(collection.Collection):
         self.__update_event_key()
         return False
 
+    def layout_changed(self):
+        kn = self.__event.get_keynumber()
+        self.key_mapper.set_mapping(1,kn)
+        # this will make clone restart events with new mapping
+        self.key_clone.enable(1,False)
+        self.key_clone.enable(1,True)
+
     def __update_event_key(self):
         self.__event.set_key(utils.maketuple((piw.makelong(self.get_internal(248).get_value(),0),piw.makelong(self.get_internal(249).get_value(),0)), 0)) 
+        self.layout_changed()
 
     def rpc_instancename(self,a):
         return 'action'
@@ -245,6 +262,7 @@ class Agent(agent.Agent):
         self.light_convertor = piw.lightconvertor(self.light_output.cookie())
         self.light_aggregator = piw.aggregator(self.light_convertor.cookie(),self.domain)
         self.controller = piw.controller(self.light_aggregator.get_output(1),utils.pack_str(1))
+        self.controller.set_layout_callback(utils.notify(self.__layout))
 
         self.activation_input = bundles.VectorInput(self.controller.event_cookie(), self.domain,signals=(1,))
 
@@ -255,6 +273,10 @@ class Agent(agent.Agent):
         self[5] = atom.Atom(domain=domain.Aniso(),policy=self.ctl_input.vector_policy(1,False),names='controller input')
 
         self[6] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.local_policy(1,False), names='key input')
+
+    def __layout(self):
+        for k in self[3].values():
+            k.layout_changed()
 
     def __eventlist(self,k):
         el=[]

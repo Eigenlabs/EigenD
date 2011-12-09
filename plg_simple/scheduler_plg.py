@@ -146,7 +146,7 @@ class Event(talker.Talker):
         self.index = index
         self.event = piw.event(scheduler.scheduler,False,utils.changify(self.__enable_changed))
 
-        talker.Talker.__init__(self,scheduler.finder,self.event.fastdata(),None,names='event',ordinal=index,connection_index=None,protocols='remove')
+        talker.Talker.__init__(self,scheduler.finder,self.event.fastdata(),None,names='event',ordinal=index,protocols='remove')
 
         self[3] = atom.Atom(domain=domain.String(), policy=atom.default_policy(self.__change_schema), names='schema')
         self[4] = atom.Atom(domain=domain.Bool(), init=False, policy=atom.default_policy(self.__change_enabled), names='enabled')

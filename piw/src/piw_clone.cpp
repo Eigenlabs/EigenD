@@ -236,7 +236,7 @@ void clone_wire_ctl_t::activate(bool b, unsigned long long t)
                     active_ = true;
                     id_.set_nb(nid);
                     //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " activating event " << nid << "<-" << current_id();
-                    source_start(seq_,current_id().restamp(t),current_data());
+                    source_start(seq_,nid.restamp(t),current_data());
                 }
             }
         }

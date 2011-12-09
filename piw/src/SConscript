@@ -36,7 +36,7 @@ piw_files=Split("""
     piw_ufilter.cpp piw_stereomixer.cpp piw_evtdump.cpp piw_cycler.cpp piw_window.cpp
     piw_polyctl.cpp piw_correlator.cpp piw_cfilter.cpp piw_phase.cpp piw_fastmark.cpp
     piw_dataqueue.cpp piw_wavrecorder.cpp piw_consolemixer.cpp piw_ranger.cpp
-    piw_termparse.cpp piw_state.cpp piw_strummer.cpp
+    piw_termparse.cpp piw_state.cpp piw_strummer.cpp piw_talker.cpp
     piw_lightconvertor.cpp piw_statusbuffer.cpp piw_statusmixer.cpp piw_statusledconvertor.cpp
 	piw_controllerdict.cpp piw_filter.cpp piw_keys.cpp
     """)

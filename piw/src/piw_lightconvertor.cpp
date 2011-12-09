@@ -296,6 +296,7 @@ void receiver_t::ufilterfunc_start(piw::ufilterenv_t *e,const piw::data_nb_t &id
     if(l>0)
     {
         light_ = id.as_pathgrist()[0];
+        //pic::logmsg() << "converter start " << id << " light=" << light_;
         piw::data_nb_t d;
 
         if(e->ufilterenv_latest(1,d,id.time()))

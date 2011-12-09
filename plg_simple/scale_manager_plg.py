@@ -38,7 +38,7 @@ class Event(talker.Talker):
         self.__index = index
         self.__eventlist = eventlist
 
-        talker.Talker.__init__(self,self.__eventlist.agent.finder,fast,None,ordinal=index,connection_index=None,protocols='remove')
+        talker.Talker.__init__(self,self.__eventlist.agent.finder,fast,None,ordinal=index,protocols='remove')
 
     def __change(self,v):
         if v.is_string():

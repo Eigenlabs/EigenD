@@ -29,7 +29,7 @@ class RowTargetEvent(talker.Talker):
         self.__target = target
         self.__index = index
 
-        talker.Talker.__init__(self,self.__target.agent.finder,fast,None,ordinal=index,connection_index=None,protocols='remove')
+        talker.Talker.__init__(self,self.__target.agent.finder,fast,None,ordinal=index,protocols='remove')
 
     def property_change(self,key,value):
         if key=='help' and value and value.is_string():
