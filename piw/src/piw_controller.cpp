@@ -108,7 +108,7 @@ namespace
 
 struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_real_t
 {
-    ctlsignal_t(piw::xxcontrolled_t *c, unsigned id): piw::event_data_source_real_t(piw::pathone(id,0)), id_(id), client_(c), state_(0), savestate_(0), buffer_(piw::xevent_data_buffer_t(1,PIW_DATAQUEUE_SIZE_TINY))
+    ctlsignal_t(piw::xxcontrolled_t *c, unsigned id): piw::event_data_source_real_t(piw::pathone(id,0)), id_(id), client_(c), state_(0), savestate_(0), keynumber_(0), buffer_(piw::xevent_data_buffer_t(1,PIW_DATAQUEUE_SIZE_TINY))
     {
     }
 
