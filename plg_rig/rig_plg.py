@@ -38,7 +38,7 @@ def RigOutputPolicy(*args,**kwds):
 
 class RigOutput(atom.Atom):
     def __init__(self,master,ordinal):
-        atom.Atom.__init__(self,ordinal=ordinal,policy=RigOutputPolicy())
+        atom.Atom.__init__(self,ordinal=ordinal,policy=RigOutputPolicy(),protocols='remove')
 
         self.__inputs = {}
         self.__master = master
@@ -243,7 +243,7 @@ class RigInput(atom.Atom):
         self.__index = index
         self.__scope = scope
         self.__output = RigOutput(self,ordinal=index)
-        atom.Atom.__init__(self,ordinal=index,domain=domain.Aniso(),policy=RigInputPolicy(self.__scope,self.__output))
+        atom.Atom.__init__(self,ordinal=index,domain=domain.Aniso(),policy=RigInputPolicy(self.__scope,self.__output),protocols='remove')
         self.__peer[self.__index] = self.__output
 
     def destroy_input(self):
