@@ -23,7 +23,7 @@
 
 struct rig::connector_t::impl_t: piw::client_t, piw::fastdata_t, pic::lckobject_t
 {
-    impl_t(rig::connector_t *r, piw::server_t *parent, unsigned index, const piw::d2d_nb_t &filter): connector_(r), parent_(parent), index_(index), filter_(filter), output_(PLG_SERVER_TRANSIENT|PLG_SERVER_RO), bridge_(PLG_FASTDATA_SENDER)
+    impl_t(rig::connector_t *r, piw::server_t *parent, unsigned index, const piw::d2d_nb_t &filter): connector_(r), parent_(parent), index_(index), filter_(filter), output_(PLG_SERVER_TRANSIENT|PLG_SERVER_RO), bridge_(PLG_FASTDATA_SENDER),connected_(false)
     {
         parent_->child_add(index_,&output_);
         piw::tsd_fastdata(this);
@@ -57,6 +57,7 @@ struct rig::connector_t::impl_t: piw::client_t, piw::fastdata_t, pic::lckobject_
             output_.set_source(&bridge_);
             set_sink(this);
             enable(true,true,false);
+            connected_ = true;
         }
     }
 
@@ -66,9 +67,14 @@ struct rig::connector_t::impl_t: piw::client_t, piw::fastdata_t, pic::lckobject_
 
         output_.set_flags(PLG_SERVER_TRANSIENT|PLG_SERVER_RO);
         output_.set_data(piw::data_t());
-        output_.clear_source();
-        clear_sink();
-        enable(false,false,false);
+
+        if(connected_)
+        {
+            connected_ = false;
+            output_.clear_source();
+            clear_sink();
+            enable(false,false,false);
+        }
 
         std::map<unsigned char, impl_t *>::iterator ci;
 
@@ -135,6 +141,7 @@ struct rig::connector_t::impl_t: piw::client_t, piw::fastdata_t, pic::lckobject_
     std::map<unsigned char, impl_t *> children_;
     piw::server_t output_;
     piw::fastdata_t bridge_;
+    bool connected_;
 };
 
 rig::connector_t::connector_t(rig::output_t *parent,unsigned index, const piw::d2d_nb_t &filter): piw::client_t(PLG_CLIENT_CLOCK)
