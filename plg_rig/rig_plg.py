@@ -247,6 +247,7 @@ class RigInput(atom.Atom):
         self.__peer[self.__index] = self.__output
 
     def destroy_input(self):
+        self.__peer[self.__index].notify_destroy()
         del self.__peer[self.__index]
 
     def property_change(self,key,value):
