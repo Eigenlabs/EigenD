@@ -96,17 +96,18 @@ def get_default_setup():
         if os.path.exists(setup):
             return setup
 
-    rd = resource.get_release_dir('state')
-    rs = [os.path.basename(x) for x in glob.glob(os.path.join(rd,'*'))]
-    fs = filter(filter_valid_setup,rs)
-    fs.sort(natcmp,reverse=False)
-
     pico_setup = ''
     alpha_setup = ''
 
-    for s in fs:
-        if s.startswith('pico') and not pico_setup: pico_setup=os.path.join(rd,s)
-        if s.startswith('alpha') and not alpha_setup: alpha_setup=os.path.join(rd,s)
+    rd = resource.get_release_dir('state')
+    if rd is not None:
+        rs = [os.path.basename(x) for x in glob.glob(os.path.join(rd,'*'))]
+        fs = filter(filter_valid_setup,rs)
+        fs.sort(natcmp,reverse=False)
+
+        for s in fs:
+            if s.startswith('pico') and not pico_setup: pico_setup=os.path.join(rd,s)
+            if s.startswith('alpha') and not alpha_setup: alpha_setup=os.path.join(rd,s)
 
     if probe_alpha():
         return alpha_setup
