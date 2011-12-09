@@ -264,7 +264,7 @@ class Agent(agent.Agent):
     def rpc_delete_trigger(self,args):
         trigger = action.unmarshal(args)
         for (i,e) in self[3].iteritems():
-            if e.id()==id:
+            if e.trigger_id()==id:
                 print 'deleting event',id
                 e.cancel()
                 del self[3][i]
@@ -287,7 +287,7 @@ class Agent(agent.Agent):
     def rpc_create_trigger(self,schema):
         print 'event schema is:',schema
         e = self.__create_event(schema)
-        return async.success(e.id())
+        return async.success(e.trigger_id())
 
     @async.coroutine('internal error')
     def __do_verb(self,subject,text,at,until,every,called):

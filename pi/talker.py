@@ -127,6 +127,9 @@ class Talker(atom.Atom):
     def make_connection(self,index,dsc):
         return logic.make_term('conn',index,1,dsc.args[0],dsc.args[1],None)
 
+    def trigger_id(self):
+        return self[2].id()
+
     @async.coroutine('internal error')
     def set_phrase(self,v):
         interp = self.__finder.fetch()

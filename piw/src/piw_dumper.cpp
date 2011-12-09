@@ -78,6 +78,11 @@ void piw::dump_client(piw::client_t *client, unsigned flags, bool log)
         {
             msg << "/tx";
         }
+
+        if(client->host_flags & PLG_SERVER_FAST)
+        {
+            msg << "/fast";
+        }
     }
 
     if(flags & (PIW_DUMP_SDATA|PIW_DUMP_SSCALAR|PIW_DUMP_SVECTOR|PIW_DUMP_STIME|PIW_DUMP_STYPE))
