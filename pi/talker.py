@@ -19,7 +19,7 @@
 #
 
 
-from pi import index,proxy,atom,domain,policy,bundles,async,logic,rpc
+from pi import index,proxy,atom,domain,policy,bundles,async,logic,rpc,paths
 import piw
 
 class FinderProxy(proxy.AtomProxy):
@@ -128,7 +128,7 @@ class Talker(atom.Atom):
         return logic.make_term('conn',index,1,dsc.args[0],dsc.args[1],None)
 
     def trigger_id(self):
-        return self[2].id()
+        return paths.to_absolute(self[2].id())
 
     @async.coroutine('internal error')
     def set_phrase(self,v):
