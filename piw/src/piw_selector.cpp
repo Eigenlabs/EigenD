@@ -494,13 +494,13 @@ struct piw::selector_t::impl_t: piw::event_data_source_real_t, virtual pic::lcko
         pic::flipflop_t<pic::lckmap_t<unsigned,slot_t *>::lcktype>::guard_t g(slots_);
         pic::lckmap_t<unsigned,slot_t *>::lcktype::const_iterator ci;
 
-        unsigned lightswitch = 0;
+        long lightswitch = -1;
         for(ci=g.value().begin(); ci!=g.value().end(); ++ci)
         {
             if (active_slots.find(ci->first) != active_slots.end())
             {
                 ci->second->state_ = true;
-                if(!lightswitch)
+                if(-1 == lightswitch)
                 {
                     lightswitch = ci->first;
                 }
@@ -512,10 +512,7 @@ struct piw::selector_t::impl_t: piw::event_data_source_real_t, virtual pic::lcko
             ci->second->gate(selecting_);
             ci->second->change_status(&statusbuffer_,selecting_);
         }
-        if(lightswitch)
-        {
-            lightswitch_(piw::makelong_nb(lightswitch,piw::tsd_time()));
-        }
+        lightswitch_(piw::makelong_nb(lightswitch,piw::tsd_time()));
         statusbuffer_.send();
         gates_changed(piw::tsd_time());
     }
