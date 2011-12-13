@@ -874,6 +874,7 @@ EigenMainWindow::~EigenMainWindow()
     scanner_.quit();
     stage_.quit();
     workbench_.quit();
+    setApplicationCommandManagerToWatch(0);
     backend_->quit();
 
     cancel_timer_slow();
