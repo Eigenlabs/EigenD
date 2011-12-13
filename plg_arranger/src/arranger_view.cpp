@@ -772,9 +772,10 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
         arranger::colrow_t vcr = grid2view(std::make_pair(position_,0));
 
         vcr.second = 0;
-        pic::lckmap_t<arranger::colrow_t,unsigned>::nbtype::const_iterator i=rect2k_.lower_bound(vcr);
-
-        while(i->first.first==vcr.first)
+        pic::lckmap_t<arranger::colrow_t,unsigned>::nbtype::const_iterator i,e;
+        i=rect2k_.lower_bound(vcr);
+        e=rect2k_.end();
+        while(i!=e && i->first.first==vcr.first)
         {
             light1(i->second,d?CLR_GREEN:modes_[active_mode_]->grid_.get(view2grid(i->first)));
             ++i;
