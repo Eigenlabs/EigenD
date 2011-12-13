@@ -134,7 +134,7 @@ class Monitor(proxy.AtomProxy):
 
 class Widget(atom.Atom):
     def __init__(self,osc):
-        atom.Atom.__init__(self,policy=policy.FastReadOnlyPolicy(),domain=domain.Aniso(),protocols='connect-static output nostage')
+        atom.Atom.__init__(self,policy=policy.FastReadOnlyPolicy(),domain=domain.Aniso(),protocols='connect-static output nostage hidden-connection')
         self.__send_queue = piw.fastdata(0)
         self.__recv_queue = piw.fastdata(0)
         piw.tsd_fastdata(self.__send_queue)
