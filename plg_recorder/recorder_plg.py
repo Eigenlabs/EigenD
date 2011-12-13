@@ -132,7 +132,7 @@ class TakeLibrary:
         self.__observer.library_added(cookie)
 
     def filename(self,cookie,name):
-        return '%s-%s-current-%s' % (cookie,name,self.__id.replace('/','_'))
+        return '%s-%s-current-%s' % (cookie,name,self.__id)
 
     def temp_path(self,cookie,name):
         return os.path.join(self.tempdir,self.filename(cookie,name))
@@ -141,8 +141,7 @@ class TakeLibrary:
         return os.path.join(self.permdir,self.filename(cookie,name))
 
     def setup(self,id):
-        if picross.is_windows():
-            id = id.replace('<','').replace('>','')
+        id = id.replace('<','').replace('>','').replace(':','_').replace('/','_')
         print 'setup',id
         self.__id = id
         for path in glob.glob(self.temp_path('*','*')):
@@ -528,7 +527,7 @@ class Agent(agent.Agent):
 
     def server_opened(self):
         agent.Agent.server_opened(self)
-        self.library.setup(self.id())
+        self.library.setup(paths.to_absolute(self.id()))
 
     def library_changed(self,c):
         self[4].update()
