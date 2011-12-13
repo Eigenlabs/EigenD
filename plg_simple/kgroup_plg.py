@@ -383,6 +383,7 @@ class OutputList(atom.Atom):
         for k,v in self.items():
             if n == k:
                 oid = v.id()
+                v.notify_destroy()
                 del self[k]
                 self.__check_single()
                 return oid
@@ -414,7 +415,8 @@ class OutputList(atom.Atom):
             if output:
                 return output
 
-        slot = self.find_hole()
+        if slot is None:
+            slot = self.find_hole()
 
         output = Output(self,slot)
         output.plumb()
@@ -451,6 +453,7 @@ class OutputList(atom.Atom):
     def uncreate(self,oid):
         for k,v in self.items():
             if v.id()==oid:
+                v.notify_destroy()
                 del self[k]
                 self.__check_single()
                 return True
