@@ -27,7 +27,7 @@ class Agent(agent.Agent):
     def __init__(self,address, ordinal):
         agent.Agent.__init__(self,signature=version,names='shaper',ordinal=ordinal)
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='outputs')
         self[2][1] = bundles.Output(1,False,names='activation output')
         self[2][2] = bundles.Output(2,False,names='pressure output')
 
@@ -44,7 +44,7 @@ class Agent(agent.Agent):
 
         self.input = bundles.VectorInput(self.sharpen.cookie(), self.domain,signals=(1,2))
 
-        self[1] = atom.Atom()
+        self[1] = atom.Atom(names='inputs')
         self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.input.vector_policy(1,False), names='activation input')
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input.vector_policy(2,False), names='pressure input')
 
