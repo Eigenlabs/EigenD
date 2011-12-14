@@ -108,9 +108,9 @@ namespace midi
         public:
             param_input_t(params_delegate_t *, unsigned);
 
-            virtual float calculate_param_value(const piw::data_nb_t &, const float, const mapping_data_t&, const float);
-            virtual long calculate_midi_value(const piw::data_nb_t &, const float, const mapping_data_t&);
-            virtual bool wiredata_processed(param_wire_t *, const piw::data_nb_t &) { return true; };
+            virtual float calculate_param_value(const piw::data_nb_t &, const piw::data_nb_t &, const mapping_data_t&, const float);
+            virtual long calculate_midi_value(const piw::data_nb_t &, const piw::data_nb_t &, const mapping_data_t&);
+            virtual bool wiredata_processed(param_wire_t *, const piw::data_nb_t &);
 
             void started(param_wire_t *);
             void ending(param_wire_t *, unsigned long long);
@@ -127,21 +127,13 @@ namespace midi
             void process_params(pic::lckvector_t<param_data_t>::nbtype &, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool);
             void process_midi(pic::lckvector_t<midi_data_t>::nbtype &, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool, bool);
             void end_with_origins(param_wire_t *w, bool);
+            bool is_key_data(const piw::data_nb_t &);
             params_delegate_t *params_delegate_;
             control_mapping_t control_mapping_;
             piw::dataholder_nb_t current_id_;
             piw::dataholder_nb_t current_data_;
     };
     
-    class MIDILIB_DECLSPEC_CLASS keynum_input_t: public param_input_t
-    {
-        public:
-            keynum_input_t(params_delegate_t *, unsigned);
-            float calculate_param_value(const piw::data_nb_t &, const float, const mapping_data_t&, const float);
-            long calculate_midi_value(const piw::data_nb_t &, const float, const mapping_data_t&);
-            bool wiredata_processed(param_wire_t *, const piw::data_nb_t &);
-    };
-
     class MIDILIB_DECLSPEC_CLASS param_wire_t: public piw::wire_t, public piw::event_data_sink_t, public pic::element_t<0>, public pic::element_t<1>
     {
         public:
@@ -158,7 +150,6 @@ namespace midi
 
             piw::xevent_data_buffer_t::iter_t iterator_;
         private:
-            friend class keynum_input_t;
             friend class param_input_t;
 
             input_root_t *root_;

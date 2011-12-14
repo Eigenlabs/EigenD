@@ -506,12 +506,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
         midi_output_.scalar_connect(midi_out);
 
-        for(unsigned i=0; i<15; i++)
-        {
-            param_input_[i] = std::auto_ptr<midi::param_input_t>(new midi::param_input_t(this,i+1));
-        }
-        param_input_[15] = std::auto_ptr<midi::param_input_t>(new midi::keynum_input_t(this,16));
-        for(unsigned i=16; i<32; i++)
+        for(unsigned i=0; i<32; i++)
         {
             param_input_[i] = std::auto_ptr<midi::param_input_t>(new midi::param_input_t(this,i+1));
         }
@@ -782,13 +777,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     void input_parameters(unsigned long long from,unsigned long long to)
     {
-        // schedule the key input parameter before anything else
-        param_input_[15]->schedule(from,to);
-        for(unsigned i=0; i<15; ++i)
-        {
-            param_input_[i]->schedule(from,to);
-        }
-        for(unsigned i=16; i<32; ++i)
+        for(unsigned i=0; i<32; ++i)
         {
             param_input_[i]->schedule(from,to);
         }

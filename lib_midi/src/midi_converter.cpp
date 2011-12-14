@@ -249,12 +249,7 @@ namespace midi
         piw::tsd_thing(this);
         piw::tsd_window(&params_window_);
 
-        for(unsigned i=0; i<15; i++)
-        {
-            param_input_[i] = std::auto_ptr<param_input_t>(new param_input_t(this,i+1));
-        }
-        param_input_[15] = std::auto_ptr<param_input_t>(new keynum_input_t(this,16));
-        for(unsigned i=16; i<32; i++)
+        for(unsigned i=0; i<32; i++)
         {
             param_input_[i] = std::auto_ptr<param_input_t>(new param_input_t(this,i+1));
         }
@@ -325,13 +320,7 @@ namespace midi
     
     void midi_converter_t::impl_t::clocksink_ticked(unsigned long long from, unsigned long long to)
     {
-        // schedule the key input parameter before anything else
-        param_input_[15]->schedule(from,to);
-        for(unsigned i=0; i<15; ++i)
-        {
-            param_input_[i]->schedule(from,to);
-        }
-        for(unsigned i=16; i<32; ++i)
+        for(unsigned i=0; i<32; ++i)
         {
             param_input_[i]->schedule(from,to);
         }

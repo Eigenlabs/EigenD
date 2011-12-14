@@ -226,14 +226,45 @@ namespace midi
         }
     }
 
-    float param_input_t::calculate_param_value(const piw::data_nb_t &id, const float d, const mapping_data_t &mapping, const float origin)
+    bool param_input_t::is_key_data(const piw::data_nb_t &d)
     {
-        return origin + mapping.calculate(d);
+        return d.is_tuple() && 4 == d.as_tuplelen() && d.as_tuple_value(0).is_long();
     }
 
-    long param_input_t::calculate_midi_value(const piw::data_nb_t &id, const float d, const mapping_data_t &mapping)
+    bool param_input_t::wiredata_processed(param_wire_t *w, const piw::data_nb_t &d)
     {
-        return mapping.calculate(d) * 16383.f;
+        if(is_key_data(d))
+        {
+            w->ended_ = true;
+            return false;
+        }
+
+        return true;
+    }
+
+    float param_input_t::calculate_param_value(const piw::data_nb_t &id, const piw::data_nb_t &d, const mapping_data_t &mapping, const float origin)
+    {
+        if(is_key_data(d))
+        {
+            return origin + mapping.calculate(d.as_tuple_value(0).as_long());
+        }
+
+        return origin + mapping.calculate(d.as_norm());
+    }
+
+    long param_input_t::calculate_midi_value(const piw::data_nb_t &id, const piw::data_nb_t &d, const mapping_data_t &mapping)
+    {
+        if(is_key_data(d))
+        {
+            long value = d.as_tuple_value(0).as_long() - 1;
+            if(BITS_7 == mapping.resolution_)
+            {
+                value <<= 7;
+            }
+            return mapping.calculate(value);
+        }
+
+        return mapping.calculate(d.as_norm()) * 16383.f;
     }
 
     unsigned char param_input_t::extract_keynum(const piw::data_nb_t &id)
@@ -391,7 +422,7 @@ namespace midi
                 {
                     continue;
                 }
-                value = calculate_param_value(id, d.as_norm(), ip->second, origin);
+                value = calculate_param_value(id, d, ip->second, origin);
             }
 
             if(value<0) value = 0;
@@ -437,7 +468,7 @@ namespace midi
                 {
                     continue;
                 }
-                value = calculate_midi_value(id, d.as_norm(), ic->second);
+                value = calculate_midi_value(id, d, ic->second);
             }
 
             if(value<0)
@@ -472,35 +503,4 @@ namespace midi
         }
     }
 
-
-
-    /*
-     * keynum_input_t
-     */
-
-    keynum_input_t::keynum_input_t(params_delegate_t *d, unsigned name): param_input_t(d, name)
-    {
-    }
-
-    float keynum_input_t::calculate_param_value(const piw::data_nb_t &id, const float d, const mapping_data_t &mapping, const float origin)
-    {
-        return origin + mapping.calculate(extract_keynum(id));
-    }
-
-    long keynum_input_t::calculate_midi_value(const piw::data_nb_t &id, const float d, const mapping_data_t &mapping)
-    {
-        long value = extract_keynum(id) - 1;
-        if(BITS_7 == mapping.resolution_)
-        {
-            value <<= 7;
-        }
-        return mapping.calculate(value);
-    }
-
-    bool keynum_input_t::wiredata_processed(param_wire_t *w, const piw::data_nb_t &d)
-    {
-        w->ended_ = true;
-        return false;
-    }
-    
 } // namespace midi
