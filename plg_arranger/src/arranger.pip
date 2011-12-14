@@ -30,6 +30,7 @@ class model[arranger::model_t] /gc/
 
     change_nb set_event()
     void event_set(const change_nb &)
+    void events_cleared(const change_nb &)
 
     change_nb set_loopstart()
     void loopstart_set(const change_nb &)

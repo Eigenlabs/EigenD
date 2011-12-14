@@ -126,6 +126,7 @@ class EventList(node.Server):
         node.Server.__init__(self,creator=self.__create)
         self.__setter = piw.fastchange(self.__agent.model.set_event())
         self.__agent.model.event_set(piw.make_change_nb(utils.slowchange(self.model_changed)))
+        self.__agent.model.events_cleared(piw.make_change_nb(utils.slowchange(self.model_cleared)))
 
     def __create(self,k):
         return Event(self)
@@ -135,8 +136,13 @@ class EventList(node.Server):
             e = self.__encode(d.as_string())
             self.__setter(e)
 
+    def model_cleared(self,d):
+        for k,v in self.items():
+            del self[k]
+
     def model_changed(self,d):
         r,c,e = self.__decode(d)
+        print 'model changed',d,r,c,e
         if e is not None:
             self.__setup(r,c,e)
         else:
