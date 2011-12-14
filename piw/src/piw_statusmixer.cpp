@@ -27,6 +27,18 @@
 
 namespace
 {
+    static inline int c2int(unsigned char *c)
+    {
+        unsigned long cx = (c[0]<<8) | (c[1]);
+
+        if(cx>0x7fff)
+        {
+            return ((long)cx)-0x10000;
+        }
+
+        return cx;
+    }
+
     struct receiver_t: piw::ufilterfunc_t, virtual pic::lckobject_t, pic::element_t<0>
     {
         receiver_t(piw::statusmixer_t::impl_t *root): root_(root), status_data_(), active_(false)
@@ -69,49 +81,46 @@ struct piw::statusmixer_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_t, 
         output_.clear();
 
         receiver_t *r;
-        
-        unsigned char mixed = BCTSTATUS_MIXED;
-        unsigned char* status = 0;
-        unsigned pos = 0;
 
-        do
+        for(r=receivers_.head(); r; r=receivers_.next(r))
         {
-            status = 0;
-
-            for(r=receivers_.head(); r; r=receivers_.next(r))
+            if(!r->active_)
             {
-                if(r->active_)
-                {
-                    piw::data_nb_t d = r->status_data_;
-                    if(pos < d.host_length())
-                    {
-                        unsigned char* rs = ((unsigned char*)d.as_blob())+pos;
-
-                        if(0 == status || BCTSTATUS_OFF == *status)
-                        {
-                            status = rs;
-                        }
-                        else if (BCTSTATUS_OFF == *rs)
-                        {
-                            continue;
-                        }
-                        else if(*rs != *status)
-                        {
-                            status = &mixed;
-                            break;
-                        }
-                    }
-                }
+                continue;
             }
 
-            if(status)
+            piw::data_nb_t rd = r->status_data_;
+            unsigned char* rs = ((unsigned char*)rd.as_blob());
+            unsigned rl = rd.as_bloblen();
+
+            while(rl>=5)
             {
-                output_.set_status(pos+1, *status);
-                pos++;
+                int kr = c2int(&rs[0]);
+                int kc = c2int(&rs[2]);
+                unsigned kv = rs[4];
+
+                if(kv==BCTSTATUS_OFF)
+                {
+                    continue;
+                }
+
+                unsigned os = output_.get_status(kr,kc);
+
+                if(os!=kv)
+                {
+                    if(os && os!=BCTSTATUS_OFF)
+                    {
+                        kv = BCTSTATUS_MIXED;
+                    }
+
+                    output_.set_status(kr,kc,kv);
+                }
+
+                rs+=5;
+                rl-=5;
             }
         }
-        while(status);
-
+        
         output_.send();
     }
 

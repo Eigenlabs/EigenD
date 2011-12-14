@@ -34,44 +34,28 @@
 #include <map>
 #include <set>
 
-typedef std::set<piw::xxcontrolled_t *> ctlset_t;
-typedef std::map<unsigned, ctlset_t> keyctlmap_t;
-
-struct piw::controller_t::control_t: piw::ufilterctl_t, piw::ufilter_t, piw::thing_t
-{
-    control_t(piw::controller_t *h): ufilter_t(this,0), host_(h)
-    {
-        tsd_thing(this);
-    }
-
-    ~control_t()
-    {
-    }
-
-    ufilterfunc_t *ufilterctl_create(const piw::data_t &);
-    unsigned long long ufilterctl_inputs() { return SIG1(1); }
-    unsigned long long ufilterctl_outputs() { return 0; }
-    unsigned long long ufilterctl_thru() { return 0; }
-    void change_layout(piw::data_nb_t rowlen);
-    void update_layout();
-    void thing_dequeue_slow(const piw::data_t &);
-
-    piw::controller_t *host_;
-    pic::flipflop_t<piw::data_t> rowlen_;
-};
 
 namespace
 {
+    typedef std::set<piw::xxcontrolled_t *> ctlset_t;
+
     struct ctlfilter_t: piw::ufilterfunc_t
     {
         ctlfilter_t(piw::controller_t::impl_t *controller): controller_(controller) {}
+
         void ufilterfunc_start(piw::ufilterenv_t *env,const piw::data_nb_t &id);
         void ufilterfunc_data(piw::ufilterenv_t *env,unsigned s,const piw::data_nb_t &d);
         void ufilterfunc_end(piw::ufilterenv_t *env, unsigned long long);
+        void ufilterfunc_changed(piw::ufilterenv_t *env, void *c) { erase_controlled((piw::xxcontrolled_t *)c); }
+
+        void start__(unsigned long long);
+        void end__(unsigned long long);
+        void erase_controlled(piw::xxcontrolled_t *);
 
         piw::controller_t::impl_t *controller_;
-        piw::dataholder_nb_t k_;
-        piw::dataholder_nb_t last_;
+        piw::dataholder_nb_t id_;
+        ctlset_t controlled_;
+        piw::dataholder_nb_t current_key_,current_ctl_;
     };
 
     static int __init(void *xctl_, void *)
@@ -80,35 +64,11 @@ namespace
         xctl->control_init();
         return 0;
     }
-
-    struct ctlfunc_t: piw::ufilterfunc_t
-    {
-        ctlfunc_t(piw::controller_t::control_t *c): control_(c), last_rowlen_(piw::makenull_nb(0)) {}
-        void ufilterfunc_start(piw::ufilterenv_t *e,const piw::data_nb_t &id) {}
-        void ufilterfunc_end(piw::ufilterenv_t *, unsigned long long) {}
-
-        void ufilterfunc_data(piw::ufilterenv_t *e,unsigned sig,const piw::data_nb_t &d)
-        {
-            if(sig!=1) return;
-            if(!d.is_dict()) return;
-
-            piw::data_nb_t rowlen = d.as_dict_lookup("rowlen");
-            if (rowlen.is_null()) return;
-
-            if(0 == rowlen.compare(last_rowlen_)) return;
-            last_rowlen_ = rowlen;
-
-            control_->change_layout(rowlen);
-        }
-
-        piw::controller_t::control_t *control_;
-        piw::data_nb_t last_rowlen_;
-    };
 }
 
 struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_real_t
 {
-    ctlsignal_t(piw::xxcontrolled_t *c, unsigned id): piw::event_data_source_real_t(piw::pathone(id,0)), id_(id), client_(c), state_(0), savestate_(0), keynumber_(0), buffer_(piw::xevent_data_buffer_t(1,PIW_DATAQUEUE_SIZE_TINY))
+    ctlsignal_t(piw::xxcontrolled_t *c, unsigned id): piw::event_data_source_real_t(piw::pathone(id,0)), id_(id), client_(c), state_(0), savestate_(0), buffer_(piw::xevent_data_buffer_t(3,PIW_DATAQUEUE_SIZE_TINY))
     {
     }
 
@@ -120,12 +80,7 @@ struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_r
     void save()
     {
         savestate_=state_;
-        state_=0;
-
-        if(savestate_ != state_)
-        {
-            source_end(piw::tsd_time());
-        }
+        set(0);
     }
 
     void restore()
@@ -137,7 +92,7 @@ struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_r
     {
     }
 
-    void set(unsigned v)
+    void set__(unsigned v)
     {
         if(v==state_)
         {
@@ -146,114 +101,62 @@ struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_r
 
         if(v)
         {
+            unsigned t = piw::tsd_time();
+            buffer_.add_value(1,piw::makefloat_bounded_nb(5.0,0.0,0.0,v,t));
 
-            if(state_)
+            if(!state_)
             {
-                light(v,piw::tsd_time());
-            }
-            else
-            {
-                start(v);
+                {
+                    pic::flipflop_t<piw::data_t>::guard_t gk(key_);
+                    if(gk.value().is_tuple())
+                    {
+                        buffer_.add_value(2,gk.value().make_nb().restamp(t));
+                    }
+                }
+                source_start(0,piw::pathone_nb(id_,t),buffer_);
             }
         }
         else
         {
-            piw::tsd_fastcall(__end,this,0);
+            source_end(piw::tsd_time());
         }
 
         state_=v;
     }
 
-    void start(unsigned v)
-    {
-        pic::flipflop_t<unsigned>::guard_t gk(keynumber_);
-        unsigned long long t = piw::tsd_time();
-        light(v,t);
-        source_start(0,piw::pathone_nb(gk.value(),t+1),buffer_);
-    }
-
-    void light(unsigned v, unsigned long long t)
-    {
-        buffer_.add_value(1,piw::makefloat_bounded_nb(5.0,0.0,0.0,v,t));
-    }
-
-    static int __end(void *self_, void *)
+    static int reset0__(void *self_, void *)
     {
         ctlsignal_t *self = (ctlsignal_t *)self_;
-
-        if(self->state_)
-        {
-            self->source_end(piw::tsd_time());
-        }
-
+        unsigned os = self->state_;
+        self->set__(0);
+        self->set__(os);
         return 1;
     }
+
+    static int set0__(void *self_, void *v_)
+    {
+        ctlsignal_t *self = (ctlsignal_t *)self_;
+        unsigned v = *(unsigned *)v_;
+        self->set__(v);
+        return 1;
+    }
+
+    void set(unsigned v)
+    {
+        piw::tsd_fastcall(set0__,this,&v);
+    }
+
 
     void set_key(const piw::data_t &key)
     {
         key_.set(key);
-        update_layout();
-    }
-
-    unsigned get_keynumber()
-    {
-        return keynumber_.current();
-    }
-
-    bool update_keynumber()
-    {
-        if(!client_ || !client_->controller_ || !client_->controller_->control_)
-        {
-            return false;
-        }
-
-        pic::flipflop_t<piw::data_t>::guard_t gr(client_->controller_->control_->rowlen_);
-        pic::flipflop_t<piw::data_t>::guard_t gk(key_);
-        piw::data_t rowlen = gr.value();
-        piw::data_t key = gk.value();
-
-        if(!key.is_tuple() || !rowlen.is_tuple())
-        {
-            return false;
-        }
-
-        int row = key.as_tuple_value(0).as_long();
-        int col = key.as_tuple_value(1).as_long();
-
-        unsigned keynumber = 0;
-        if(0 == row && col > 0)
-        {
-            keynumber = col;
-        }
-        else
-        {
-            keynumber = piw::calc_keynum(rowlen, row, col);
-        }
-
-        keynumber_.set(keynumber);
-        
-        return true;
-    }
-
-    void update_layout()
-    {
-        if(!update_keynumber())
-        {
-            return;
-        }
-
-        if(state_)
-        {
-            piw::tsd_fastcall(__end,this,0);
-            start(state_);
-        }
+        piw::tsd_fastcall(reset0__,this,0);
     }
 
     unsigned id_;
     piw::xxcontrolled_t *client_;
     unsigned state_,savestate_;
     pic::flipflop_t<piw::data_t> key_;
-    pic::flipflop_t<unsigned> keynumber_;
     piw::xevent_data_buffer_t buffer_;
 };
 
@@ -299,75 +202,92 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
     unsigned long long ufilterctl_outputs() { return 0; }
     unsigned long long ufilterctl_inputs() { return sigmask_; }
 
-    const ctlset_t *get_controlled(const piw::data_nb_t &key)
+    void get_controlled(ctlset_t &ctlset, const piw::data_nb_t &key, const piw::data_nb_t &ctl)
     {
-        if(!key.is_tuple() || key.as_tuplelen() != 4) return 0;
+        ctlset.clear();
 
-        pic::flipflop_t<keyctlmap_t>::guard_t ma(controlabsmap_);
-        unsigned abskey = key.as_tuple_value(0).as_long();
-        keyctlmap_t::const_iterator absit = ma.value().find(abskey);
-        if(absit != ma.value().end())
+        if(!key.is_tuple() || key.as_tuplelen() != 4) return;
+
+        unsigned kn = key.as_tuple_value(0).as_long();
+        piw::data_nb_t coord = key.as_tuple_value(1);
+
+        if(!coord.is_tuple() || coord.as_tuplelen() !=2 || !coord.as_tuple_value(0).is_float() || !coord.as_tuple_value(1).is_float()) return;
+
+        unsigned kr = coord.as_tuple_value(0).as_float();
+        unsigned kc = coord.as_tuple_value(1).as_float();
+
+        if(kr==0 && kc==0)
         {
-            return &(absit->second);
+            return;
         }
 
-        pic::flipflop_t<keyctlmap_t>::guard_t ms(controlseqmap_);
-        unsigned seqkey = key.as_tuple_value(2).as_long();
-        keyctlmap_t::const_iterator seqit = ms.value().find(seqkey);
-        if(seqit != ms.value().end())
+        piw::data_nb_t rowlen;
+        int nr = 0;
+
+        if(ctl.is_dict())
         {
-            return &(seqit->second);
-        }
+            piw::data_nb_t t=ctl.as_dict_lookup("rowlen");
 
-        return 0;
-    }
-
-    void start(piw::ufilterenv_t *env, unsigned long long time, const piw::data_nb_t &key)
-    {
-        // safety guard to ensure that the list of controls doesn't change in the meantime
-        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t g(controllist_);
-
-        const ctlset_t *c = get_controlled(key);
-        if(c)
-        {
-            ctlset_t::const_iterator it;
-            for(it=c->begin(); it!=c->end(); ++it)
+            if(t.is_tuple() && t.as_tuplelen()>0)
             {
-                (*it)->control_start(time);
+                rowlen=t;
+                nr = t.as_tuplelen();
             }
         }
-    }
 
-    void filter(piw::ufilterenv_t *env, unsigned s, const piw::data_nb_t &d, const piw::data_nb_t &key)
-    {
-        // safety guard to ensure that the list of controls doesn't change in the meantime
-        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t g(controllist_);
+        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t lg(controllist_);
+        const std::vector<ctlsignal_t *> &l(lg.value());
+        std::vector<ctlsignal_t *>::const_iterator li;
 
-        const ctlset_t *c = get_controlled(key);
-        if(c)
+        for(li=l.begin();li!=l.end();li++)
         {
-            ctlset_t::const_iterator it;
-            for(it=c->begin(); it!=c->end(); ++it)
+            if((*li)==0)
             {
-                (*it)->control_receive(s,d);
+                continue;
             }
-        }
-    }
 
-    void term(piw::ufilterenv_t *env, unsigned long long t, const piw::data_nb_t &key)
-    {
-        // safety guard to ensure that the list of controls doesn't change in the meantime
-        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t g(controllist_);
+            pic::flipflop_t<piw::data_t>::guard_t g((*li)->key_);
 
-        const ctlset_t *c = get_controlled(key);
-        if(c)
-        {
-            ctlset_t::const_iterator it;
-            for(it=c->begin(); it!=c->end(); ++it)
+            if(!g.value().is_tuple())
             {
-                (*it)->control_term(t);
+                continue;
             }
+
+            int r = g.value().as_tuple_value(0).as_long();
+            int c = g.value().as_tuple_value(1).as_long();
+
+            if(r==0)
+            {
+                if(c==kn)
+                {
+                    ctlset.insert((*li)->client_);
+                    continue;
+                }
+            }
+
+            if(r<0)
+            {
+                if(!nr) continue;
+                r = r+nr+1;
+                if(r<=0 || r>nr) continue;
+            }
+
+            if(r!=kr) continue;
+
+            if(c<0)
+            {
+                if(!nr) continue;
+                if(r<=0 || r>nr) continue;
+                int nc = rowlen.as_tuple_value(r-1).as_long();
+                c = c+nc+1;
+                if(c<=0 || c>nc) continue;
+            }
+
+            if(c!=kc) continue;
+
+            ctlset.insert((*li)->client_);
         }
+
     }
 
     piw::ufilterfunc_t *ufilterctl_create(const piw::data_t &)
@@ -401,28 +321,12 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
         }
     }
 
-    unsigned get_keynumber(unsigned index)
-    {
-        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t gc(controllist_);
-
-        if(index<gc.value().size())
-        {
-            ctlsignal_t *c = gc.value()[index];
-
-            if(c)
-            {
-                return c->get_keynumber();
-            }
-        }
-
-        return 0;
-    }
-
     void set_key(unsigned index, const piw::data_t &key)
     {
         if(!key.is_tuple() || key.as_tuplelen() != 2) return;
 
         pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t gc(controllist_);
+
         if(index<gc.value().size())
         {
             ctlsignal_t *c = gc.value()[index];
@@ -430,7 +334,6 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
             if(c)
             {
                 c->set_key(key);
-                host_->control_->update_layout();
             }
         }
     }
@@ -481,8 +384,6 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
         l[n]=cs;
         controllist_.exchange();
 
-        host_->control_->update_layout();
-
         return true;
     }
 
@@ -516,8 +417,6 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
         l[i]=cs;
         controllist_.exchange();
 
-        host_->control_->update_layout();
-
         return i;
     }
 
@@ -526,161 +425,121 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
         ctlsignal_t *s = controllist_.alternate()[index];
         controllist_.alternate()[index]=0;
         controllist_.exchange();
-        piw::tsd_fastcall(__delete_signal,s,0);
-
-        host_->control_->update_layout();
-    }
-
-    static int __delete_signal(void *s_, void *)
-    {
-        ctlsignal_t *s = (ctlsignal_t *)s_;
+        filter_.changed(s->client_);
         delete s;
-        return 1;
     }
 
     piw::ufilter_t filter_;
     pic::flipflop_t<std::vector<ctlsignal_t *> > controllist_;
-    pic::flipflop_t<keyctlmap_t> controlabsmap_;
-    pic::flipflop_t<keyctlmap_t> controlseqmap_;
     unsigned long sigmask_;
     piw::controller_t *host_;
-    pic::notify_t callback_;
 };
+
+void ctlfilter_t::erase_controlled(piw::xxcontrolled_t *c)
+{
+    controlled_.erase(c);
+}
+
+void ctlfilter_t::end__(unsigned long long t)
+{
+    ctlset_t::const_iterator it;
+
+    for(it=controlled_.begin(); it!=controlled_.end(); ++it)
+    {
+        (*it)->control_term(t);
+    }
+}
 
 void ctlfilter_t::ufilterfunc_end(piw::ufilterenv_t *env, unsigned long long t)
 {
-    if(!k_.is_empty())
+    if(!id_.is_empty())
     {
-        controller_->term(env,t,k_);
+        end__(t);
+        id_.clear();
+    }
+}
+
+void ctlfilter_t::start__(unsigned long long t)
+{
+    controller_->get_controlled(controlled_,current_key_.get(),current_ctl_.get());
+
+    ctlset_t::const_iterator it;
+    for(it=controlled_.begin(); it!=controlled_.end(); ++it)
+    {
+        (*it)->control_start(t);
     }
 }
 
 void ctlfilter_t::ufilterfunc_start(piw::ufilterenv_t *env,const piw::data_nb_t &id)
 {
-    piw::data_nb_t d;
-    if(env->ufilterenv_latest(1,d,id.time()) && d.is_tuple() && 4 == d.as_tuplelen())
-    {
-        k_.set_nb(d);
-        env->ufilterenv_start(id.time());
-        last_.clear();
-        controller_->start(env,id.time(),d);
-    }
-    else
-    {
-        k_.clear();
-    }
+    piw::data_nb_t k,c;
+
+    id_.set_nb(id);
+
+    env->ufilterenv_latest(1,k,id.time());
+    env->ufilterenv_latest(2,c,id.time());
+
+    current_key_.set_nb(k);
+    current_ctl_.set_nb(c);
+
+    env->ufilterenv_start(id.time());
+
+    start__(id.time());
 }
 
 void ctlfilter_t::ufilterfunc_data(piw::ufilterenv_t *env,unsigned s,const piw::data_nb_t &d)
 {
-    if(!k_.is_empty())
+    if(!id_.is_empty())
     {
-        if(d.compare(last_.get(),false)!=0)
+        bool changed = false;
+
+        if(s==1)
         {
-            last_.set_nb(d);
-            controller_->filter(env,s,d,k_.get());
-        }
-    }
-}
-
-piw::ufilterfunc_t *piw::controller_t::control_t::ufilterctl_create(const piw::data_t &)
-{
-    return new ctlfunc_t(this);
-}
-
-void piw::controller_t::control_t::update_layout()
-{
-    keyctlmap_t &ma(host_->impl_->controlabsmap_.alternate());
-    ma.clear();
-
-    keyctlmap_t &ms(host_->impl_->controlseqmap_.alternate());
-    ms.clear();
-
-    pic::flipflop_t<piw::data_t>::guard_t gr(rowlen_);
-    piw::data_t rowlen = gr.value();
-    if(rowlen.is_tuple())
-    {
-        pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t gl(host_->impl_->controllist_);
-        for(unsigned i=0; i<gl.value().size(); ++i)
-        {
-            ctlsignal_t *c = gl.value()[i];
-            if(c)
+            if(d.compare(current_key_.get(),false)!=0)
             {
-                pic::flipflop_t<piw::data_t>::guard_t gk(c->key_);
-                piw::data_t key = gk.value();
-
-                if(key.is_tuple() && 2 == key.as_tuplelen())
-                {
-                    int row = key.as_tuple_value(0).as_long();
-                    int col = key.as_tuple_value(1).as_long();
-
-                    if(0 == row && col > 0)
-                    {
-                        ms[col].insert(c->client_);
-                    }
-                    else
-                    {
-                        unsigned keynumber = piw::calc_keynum(rowlen, row, col);
-                        ma[keynumber].insert(c->client_);
-                    }
-                }
+                current_key_.set_nb(d);
+                changed=true;
             }
         }
-    }
 
-    host_->impl_->controlabsmap_.exchange();
-    host_->impl_->controlseqmap_.exchange();
-
-    pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t g(host_->impl_->controllist_);
-    for(unsigned i=0; i<g.value().size(); ++i)
-    {
-        ctlsignal_t *c = g.value()[i];
-        if(c)
+        if(s==2)
         {
-            c->update_layout();
+            if(d.compare(current_ctl_.get(),false)!=0)
+            {
+                current_ctl_.set_nb(d);
+                changed=true;
+            }
+        }
+
+        if(changed)
+        {
+            end__(d.time());
+            start__(d.time());
+            return;
+        }
+
+        ctlset_t::const_iterator it;
+
+        for(it=controlled_.begin(); it!=controlled_.end(); ++it)
+        {
+            (*it)->control_receive(s,d);
         }
     }
-
-    host_->impl_->callback_();
 }
 
-void piw::controller_t::set_layout_callback(const pic::notify_t &f)
+piw::controller_t::controller_t(const piw::cookie_t &c,const std::string &sigmap): impl_(new impl_t(this,c,sigmap))
 {
-    impl_->callback_ = f;
 }
 
-void piw::controller_t::clear_layout_callback()
+piw::controller_t::~controller_t()
 {
-    impl_->callback_.clear();
+    delete impl_;
 }
 
-int piw::controller_t::gc_traverse(void *a, void *b) const
+piw::xxcontrolled_t::xxcontrolled_t() : controller_(0), xximpl_(new impl_t())
 {
-    return impl_->callback_.gc_traverse(a,b);
 }
 
-int piw::controller_t::gc_clear()
-{
-    return impl_->callback_.gc_clear();
-}
-
-void piw::controller_t::control_t::change_layout(piw::data_nb_t rowlen)
-{
-    if(rowlen.is_null() || !rowlen.is_tuple() || 0 == rowlen.as_tuplelen()) return;
-
-    enqueue_slow(rowlen.make_normal());
-}
-
-void piw::controller_t::control_t::thing_dequeue_slow(const piw::data_t &d)
-{
-    rowlen_.set(d);
-    update_layout();
-}
-
-piw::controller_t::controller_t(const piw::cookie_t &c,const std::string &sigmap): impl_(new impl_t(this,c,sigmap)), control_(new control_t(this)) { } 
-piw::controller_t::~controller_t() { delete impl_; delete control_; } 
-
-piw::xxcontrolled_t::xxcontrolled_t() : controller_(0), xximpl_(new impl_t()) { }
 piw::xxcontrolled_t::~xxcontrolled_t()
 {
     piw::tsd_fastcall(__destruct,this,0);
@@ -772,13 +631,6 @@ piw::change_nb_t piw::xxcontrolled_t::sender()
     return xximpl_->sender();
 }
 
-unsigned piw::xxcontrolled_t::get_keynumber()
-{
-    if(controller_)
-        return controller_->impl_->get_keynumber(index_);
-    return 0;
-}
-
 void piw::xxcontrolled_t::set_key(const piw::data_t &key)
 {
     if(controller_)
@@ -804,11 +656,6 @@ void piw::xxcontrolled_t::end_event(unsigned long long t)
 piw::cookie_t piw::controller_t::event_cookie()
 {
     return impl_->filter_.cookie();
-}
-
-piw::cookie_t piw::controller_t::control_cookie()
-{
-    return control_->cookie();
 }
 
 static int __start(void *c_, void *)

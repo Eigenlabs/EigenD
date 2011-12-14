@@ -619,7 +619,18 @@ namespace
 
             if(active)
             {
-                output_ = piw::xevent_data_buffer_t(1,PIW_DATAQUEUE_SIZE_NORM);
+                output_ = piw::xevent_data_buffer_t(17,PIW_DATAQUEUE_SIZE_NORM);
+
+                piw::data_nb_t position = piw::tuplenull_nb(t);
+                position = piw::tupleadd_nb(position, piw::makefloat_nb(row_,t));
+                position = piw::tupleadd_nb(position, piw::makefloat_nb(column_,t));
+                piw::data_nb_t key = piw::tuplenull_nb(t);
+                key = piw::tupleadd_nb(key, piw::makelong_nb(index_,t));
+                key = piw::tupleadd_nb(key, position);
+                key = piw::tupleadd_nb(key, piw::makelong_nb(index_,t));
+                key = piw::tupleadd_nb(key, position);
+                output_.add_value(5, key);
+
                 source_start(0,id_.restamp(t),output_);
             }
             else
@@ -747,7 +758,7 @@ namespace
 
 struct pkbd::bundle_t::impl_t : virtual pic::tracked_t, piw::thing_t, piw::clockdomain_ctl_t, piw::clocksink_t, pic::safe_worker_t
 {
-    impl_t(const char *n, const piw::cookie_t &c, const pic::notify_t &d, const piw::change_t &a): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), loop_(n,&keyboard_), keyboard_(c,d,a), leds_(KEYS)
+    impl_t(const char *n, const piw::cookie_t &c, const pic::notify_t &d, const piw::change_t &a): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), loop_(n,&keyboard_), keyboard_(c,d,a), leds_(PICO_COURSECOUNT,PICO_COURSES)
     {
         set_source(piw::makestring("*",0));
 

@@ -41,6 +41,8 @@ namespace piw
         private:
             impl_t *impl_;
     };
+
+    PIW_DECLSPEC_FUNC(d2d_nb_t) d2d_const(const data_t &value);
 };
 
 #endif

@@ -116,8 +116,8 @@ class Connector(atom.Atom):
         self.index = index
         self.control = None
 
-        self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key row',init=None,policy=atom.default_policy(self.__change_key_row),protocols="input explicit")
-        self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key column',init=None,policy=atom.default_policy(self.__change_key_column),protocols="input explicit")
+        self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key row',init=0,policy=atom.default_policy(self.__change_key_row),protocols="input explicit")
+        self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key column',init=0,policy=atom.default_policy(self.__change_key_column),protocols="input explicit")
         self[3] = atom.Atom(domain=domain.Aniso(),names='feedback',policy=policy.SlowPolicy(self.__reset,callback=self.__feedback_connected),protocols="input explicit")
         self[4] = atom.Atom(domain=domain.Aniso(),names='output',policy=policy.FastReadOnlyPolicy(),protocols="connect-static output nostage")
 
@@ -234,20 +234,18 @@ class Agent(agent.Agent):
         self[3] = bundles.Output(1,False,names='light output',protocols='revconnect')
         self.lights = bundles.Splitter(self.domain,self[3])
         self.lightconvertor = piw.lightconvertor(self.lights.cookie())
-        self.controller = Controller0(self,self.lightconvertor.cookie(),utils.pack_str(1,2,3,4,5))
+        self.controller = Controller0(self,self.lightconvertor.cookie(),utils.pack_str(1,2,3,4,5,6))
         self.clone = piw.clone(True)
         self.clone.set_output(1,self.controller.event_cookie())
-        self.input = bundles.VectorInput(self.clone.cookie(),self.domain,signals=(1,2,3,4,5))
+        self.input = bundles.VectorInput(self.clone.cookie(),self.domain,signals=(1,2,3,4,5,6))
 
         self[1] = atom.Atom(names='inputs')
-        self[1][2] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input')
-        self[1][3] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(3,False),names='roll input')
-        self[1][4] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(4,False),names='yaw input')
-        self[1][5] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(5,False),names='strip position input')
+        self[1][2] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(3,False),names='pressure input')
+        self[1][3] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(4,False),names='roll input')
+        self[1][4] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(5,False),names='yaw input')
+        self[1][5] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(6,False),names='strip position input')
         self[1][6] = atom.Atom(domain=domain.Aniso(),policy=self.input.vector_policy(1,False), names='key input')
-
-        self.ctl_input = bundles.VectorInput(self.controller.control_cookie(),self.domain,signals=(1,))
-        self[5] = atom.Atom(domain=domain.Aniso(),policy=self.ctl_input.vector_policy(1,False),names='controller input')
+        self[5] = atom.Atom(domain=domain.Aniso(),policy=self.input.merge_nodefault_policy(2,False),names='controller input')
 
         self.add_verb2(1,'create([],None,role(None,[mass([connector])]))', self.__create_connector)
         self.add_verb2(2,'create([un],None,role(None,[mass([connector])]))', self.__uncreate_connector)

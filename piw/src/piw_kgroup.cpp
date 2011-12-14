@@ -30,6 +30,34 @@ namespace
         pic::lckmap_t<unsigned,unsigned>::lcktype reverse;
         unsigned max_in;
     };
+
+    static inline void int2c(int r, unsigned char *o)
+    {
+        long k = r;
+
+        if(r<0) 
+        {
+            k = (int)0x10000+r;
+        }
+
+        unsigned long l = (unsigned long)k;
+
+        o[0] = ((k>>8)&0xff);
+        o[1] = (k&0xff);
+    }
+
+    static inline int c2int(unsigned char *c)
+    {
+        unsigned long cx = (c[0]<<8) | (c[1]);
+
+        if(cx>0x7fff)
+        {
+            return ((long)cx)-0x10000;
+        }
+
+        return cx;
+    }
+
 };
 
 struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobject_t
@@ -145,6 +173,32 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
         return piw::makenull_nb(0);
     }
 
+    bool reverse(int dr, int dc, int *ur, int *uc)
+    {
+        *ur = 0;
+        *uc = 0;
+
+        piw::data_nb_t rowoffset_reverse = rowoffset_reverse_.get();
+        piw::data_nb_t rowlen = rowlen_.get();
+        piw::data_nb_t rowoffset = rowoffset_.get();
+
+        unsigned rrl = rowoffset_reverse.as_tuplelen();
+        unsigned rl = rowlen.as_tuplelen();
+
+        if(dr<0) dr = dr+rl+1;
+        if(dr<1 || dr>rl || dr>rrl) return false;
+
+        unsigned mrl = rowlen.as_tuple_value(dr-1).as_long();
+
+        if(dc<0) dc = dc+mrl+1;
+        if(dc<1 || dc>mrl) return false;
+
+        *ur = rowoffset_reverse.as_tuple_value(dr-1).as_long();
+        *uc = dc+rowoffset.as_tuple_value(*ur-1).as_long();
+
+        return true;
+    }
+
     piw::data_nb_t reverse_mapping(const piw::data_nb_t &in)
     {
         pic::flipflop_t<mapping_t>::guard_t g(mapping_);
@@ -154,24 +208,47 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
             return in;
         }
 
-        unsigned char *dp;
-        unsigned result_size=std::max(g.value().max_in,in.host_length());
-        piw::data_nb_t result = makeblob_nb(in.time(),result_size,&dp);
+        unsigned char* in_buffer=(unsigned char*)in.as_blob();
+        unsigned in_size=in.host_length();
 
-        unsigned char* status=(unsigned char*)in.as_blob();
-        unsigned status_size=in.host_length();
-        memset(dp,BCTSTATUS_OFF,result_size);
+        unsigned char *out_buffer;
+        piw::data_nb_t out = makeblob_nb(in.time(),in_size,&out_buffer);
 
         pic::lckmap_t<unsigned,unsigned>::lcktype::const_iterator i;
-        for(i = g.value().forward.begin();i!=g.value().forward.end();++i)
+
+        while(in_size>=5)
         {
-            if(i->second<=status_size)
+            int ir = c2int(&in_buffer[0]);
+            int ic = c2int(&in_buffer[2]);
+            int xr=0;
+            int xc=0;
+
+            if(ir==0)
             {
-                dp[i->first-1]=status[i->second-1];
+                if(ic>0)
+                {
+
+                    if((i=g.value().reverse.find(ic)) != g.value().reverse.end())
+                    {
+                        xc = i->second;
+                    }
+                }
             }
+            else
+            {
+                reverse(ir,ic,&xr,&xc);
+            }
+
+            int2c(xr,&out_buffer[0]);
+            int2c(xc,&out_buffer[2]);
+            out_buffer[4] = in_buffer[4];
+
+            out_buffer+=5;
+            in_buffer+=5;
+            in_size-=5;
         }
 
-        return result;
+        return out;
     }
 
     void set_upstream_rowlen(data_t rowlen)
@@ -187,6 +264,19 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
     void set_rowoffset(data_t rowoffset)
     {
         rowoffset_.set_normal(rowoffset);
+
+        unsigned l = rowoffset.as_tuplelen();
+        piw::data_t r = piw::tuplenull(0);
+
+        for(unsigned i=0; i<l; i++)
+        {
+            if(!rowoffset.as_tuple_value(i).is_null())
+            {
+                r = piw::tupleadd(r,piw::makelong(i+1,0));
+            }
+        }
+
+        rowoffset_reverse_.set_normal(r);
     }
 
     void set_courselen(data_t courselen)
@@ -198,6 +288,7 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
     piw::dataholder_nb_t upstream_rowlen_;
     piw::dataholder_nb_t rowlen_;
     piw::dataholder_nb_t rowoffset_;
+    piw::dataholder_nb_t rowoffset_reverse_;
     piw::dataholder_nb_t courselen_;
 };
 

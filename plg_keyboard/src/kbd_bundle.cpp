@@ -484,7 +484,7 @@ namespace
 
 struct kbd::bundle_t::impl_t: piw::clockdomain_ctl_t, piw::clocksink_t, piw::thing_t, virtual pic::tracked_t, virtual public pic::lckobject_t
 {
-    impl_t(const char *n, const piw::cookie_t &c, const pic::notify_t &d): loop_(n,&keyboard_), keyboard_(c,d,loop_.get_name()), queue_(0,PIC_THREAD_PRIORITY_NORMAL), skipped_(false), leds_(KBD_KEYS)
+    impl_t(const char *n, const piw::cookie_t &c, const pic::notify_t &d): loop_(n,&keyboard_), keyboard_(c,d,loop_.get_name()), queue_(0,PIC_THREAD_PRIORITY_NORMAL), skipped_(false), leds_(0,0)
     {
         piw::tsd_thing(this);
         set_source(piw::makestring("*",0));

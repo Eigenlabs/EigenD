@@ -146,24 +146,13 @@ class Event(talker.Talker):
         self.index = index
         self.event = piw.event(scheduler.scheduler,False,utils.changify(self.__enable_changed))
 
-        self.key_mapper = piw.talker_mapper()
-        self.key_mapper.set_mapping(1,1)
+        self.key_mapper = piw.function1(True,2,2,piw.data(),agent.light_aggregator.get_output(index+1))
+        self.key_mapper.set_functor(piw.d2d_const(utils.maketuple_longs((0,self.index),0)))
 
-        self.key_clone = piw.clone(True)
-        self.key_clone.set_policy(True)
-        self.key_clone.set_filtered_output(1,scheduler.light_aggregator.get_output(index+1),self.key_mapper.key_filter())
-
-        talker.Talker.__init__(self,scheduler.finder,self.event.fastdata(),self.key_clone.cookie(),names='event',ordinal=index,protocols='remove')
+        talker.Talker.__init__(self,scheduler.finder,self.event.fastdata(),self.key_mapper.cookie(),names='event',ordinal=index,protocols='remove')
 
         self[3] = atom.Atom(domain=domain.String(), policy=atom.default_policy(self.__change_schema), names='schema')
         self[4] = atom.Atom(domain=domain.Bool(), init=False, policy=atom.default_policy(self.__change_enabled), names='enabled')
-
-    def layout_changed(self):
-        kn = self.event.get_keynumber()
-        self.key_mapper.set_mapping(1,kn)
-        # this will make clone restart events with new mapping
-        self.key_clone.enable(1,False)
-        self.key_clone.enable(1,True)
 
     def ordinal(self):
         return self.event.ordinal()
@@ -196,7 +185,6 @@ class Event(talker.Talker):
                 self.event.event_enable()
             self.event.attach(self.scheduler.controller)
             self.event.set_key(utils.maketuple((piw.makelong(0,0),piw.makelong(self.index,0)), 0))
-            self.layout_changed()
             self[3].set_value(schema)
             print 'enabling event',id(self.event),'for',s
 
@@ -213,7 +201,6 @@ class Event(talker.Talker):
             self.event.event_enable()
             self.event.attach(self.scheduler.controller)
             self.event.set_key(utils.maketuple((piw.makelong(0,0),piw.makelong(self.index,0)), 0))
-            self.layout_changed()
             self[3].set_value(schema)
             print 'enabling event',id(self.event),'for',s
 
@@ -271,21 +258,15 @@ class Agent(agent.Agent):
         self.light_output = bundles.Splitter(self.domain,self[4][1])
         self.light_convertor = piw.lightconvertor(self.light_output.cookie())
         self.light_aggregator = piw.aggregator(self.light_convertor.cookie(),self.domain)
-        self.controller = piw.controller(self.light_aggregator.get_output(1),utils.pack_str(1))
-        self.controller.set_layout_callback(utils.notify(self.__layout))
-        self.activation_input = bundles.VectorInput(self.controller.event_cookie(), self.domain,signals=(1,))
-        self.ctl_input = bundles.VectorInput(self.controller.control_cookie(),self.domain,signals=(1,))
-        self[4][2] = atom.Atom(domain=domain.Aniso(),policy=self.ctl_input.vector_policy(1,False),names='controller input',protocols='nostage')
+        self.controller = piw.controller(self.light_aggregator.get_output(1),utils.pack_str(1,2))
+        self.activation_input = bundles.VectorInput(self.controller.event_cookie(), self.domain,signals=(1,2))
+        self[4][2] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.merge_nodefault_policy(2,False),names='controller input',protocols='nostage')
         self[4][3] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.local_policy(1,False), names='key input',protocols='nostage')
 
         self[5] = EventBrowser(self.__eventlist)
 
     def __eventlist(self):
         return self[3].values()
-
-    def __layout(self):
-        for e in self.__eventlist():
-            e.layout_changed()
 
     def rpc_delete_trigger(self,args):
         trigger = action.unmarshal(args)

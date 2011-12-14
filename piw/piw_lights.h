@@ -52,11 +52,11 @@ namespace piw
         public:
             lightconvertor_t(const cookie_t &);
             ~lightconvertor_t();
-            void set_status_handler(unsigned, change_t);
+            void set_status_handler(unsigned, int, int, change_t);
             void remove_status_handler(unsigned);
-            unsigned char get_status(unsigned);
+            unsigned char get_status(int, int);
             cookie_t cookie();
-            void set_default_color(unsigned light, unsigned color);
+            void set_default_color(unsigned index, unsigned color);
         private:
             impl_t *impl_;
 	};

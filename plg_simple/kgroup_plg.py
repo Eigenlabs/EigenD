@@ -735,6 +735,7 @@ class Agent(agent.Agent):
         size = self.__decode(k)
         self.__upstream_size = size
         self.status_buffer.set_blink_size(size)
+        self.status_mapper.set_functor(self.mapper.light_filter())
 
     def __set_course_semi(self,subject,course,interval):
         (typ,id) = action.crack_ideal(action.arg_objects(course)[0])
@@ -937,11 +938,11 @@ class Agent(agent.Agent):
         for k in range(1,self.__upstream_size+1):
             if k in active:
                 if k in self.__coursekeys:
-                    self.status_buffer.set_status(k,const.status_choose_active)
+                    self.status_buffer.set_status(0,k,const.status_choose_active)
                 else:
-                    self.status_buffer.set_status(k,const.status_choose_used)
+                    self.status_buffer.set_status(0,k,const.status_choose_used)
             else:
-                self.status_buffer.set_status(k,const.status_choose_available)
+                self.status_buffer.set_status(0,k,const.status_choose_available)
 
         self.status_buffer.send()
 
@@ -962,9 +963,9 @@ class Agent(agent.Agent):
             if not keynum in self.__choices:
                 self.__choices.append(keynum)
                 for k in self.__coursekeys:
-                    self.status_buffer.set_status(k,const.status_choose_used)
+                    self.status_buffer.set_status(0,k,const.status_choose_used)
                 self.__coursekeys=[]
-                self.status_buffer.set_status(keynum,const.status_choose_active)
+                self.status_buffer.set_status(0,keynum,const.status_choose_active)
                 self.status_buffer.send()
         
     def __unchoose(self,subject):

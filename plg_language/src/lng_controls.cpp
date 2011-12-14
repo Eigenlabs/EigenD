@@ -275,7 +275,7 @@ void language::updown_t::uimpl_t::control_receive(unsigned s, const piw::data_nb
             activate(d.is_tuple() && 4 == d.as_tuplelen(), d.time());
             break;
 
-        case 3:
+        case 4:
             if(d.as_arraylen()==0) return;
             if(!on_) return;
             adjust(d);

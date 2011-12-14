@@ -24,53 +24,39 @@
 #include <picross/pic_fastalloc.h>
 #include <picross/pic_ref.h>
 
-struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t
+#define MAX_COURSES 10
+
+namespace
 {
-    impl_t(const unsigned num_keys): num_keys_(num_keys), initialized_(false), current_colors_(new unsigned[num_keys])
+    static inline int c2int(unsigned char *c)
     {
-        memset(current_colors_, CLR_OFF, num_keys);
+        unsigned long cx = (c[0]<<8) | (c[1]);
+
+        if(cx>0x7fff)
+        {
+            return ((long)cx)-0x10000;
+        }
+
+        return cx;
     }
 
-    ~impl_t()
+    static inline int rc2k(int r, int c, unsigned nc, const unsigned *co, const unsigned *cl)
     {
-        if(current_colors_)
-        {
-            delete current_colors_;
-            current_colors_=0;
-        }
-        tracked_invalidate();
+        unsigned tc = co[nc-1]+cl[nc-1];
+
+        if(r==0 && c==0) return -1;
+        if(r==0 && c<=tc) return c-1;
+        if(r<0) r=nc+r+1;
+        if(r<1 || r>nc) return -1;
+        if(c<0) c=cl[r-1]+c+1;
+        if(c<1 || c>cl[r-1]) return -1;
+        return co[r-1]+c-1;
     }
 
-    void update_leds(piw::data_nb_t &data, void *kbd, void (*func_set_led)(void*, unsigned, unsigned))
-    {
-        if(!initialized_)
-        {
-            unsigned color=CLR_OFF;
-            for(unsigned i=0;i<num_keys_;i++)
-            {
-                func_set_led(kbd, i, color);
-            }
-            initialized_=true;
-        }
-
-        unsigned char* status=(unsigned char*)data.as_blob();
-        unsigned k=0;
-        while(k<data.host_length() && k<num_keys_)
-        {
-            set_status(k,status[k],kbd,func_set_led);
-            k++;
-        }
-
-        while(k<num_keys_)
-        {
-            set_status(k,BCTSTATUS_OFF,kbd,func_set_led);
-            k++;
-        }
-    }
-
-    void set_status(unsigned key, unsigned char status, void *kbd, void (*func_set_led)(void*, unsigned, unsigned))
+    static inline int status2color(unsigned status)
     {
         unsigned color=0;
+
         switch(status)
         {
             case BCTSTATUS_OFF:
@@ -110,22 +96,106 @@ struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t
                 color=CLR_OFF;
                 break;
         }
-        if(current_colors_[key]==color)
-        {
-            return;
-        }
 
-        func_set_led(kbd, key, color);
-
-        current_colors_[key]=color;
+        return color;
     }
 
-    const unsigned num_keys_;
-    bool initialized_;
-    unsigned *current_colors_;
 };
 
-piw::statusledconvertor_t::statusledconvertor_t(unsigned num_keys): root_(new impl_t(num_keys))
+struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::lckobject_t
+{
+    impl_t(unsigned num_courses, const unsigned *course_len): num_courses_(num_courses), course_len_(course_len)
+    {
+        num_keys_ = 0;
+
+        for(unsigned i=0;i<num_courses_;i++)
+        {
+            course_offset_[i] = num_keys_;
+            num_keys_ += course_len_[i];
+        }
+
+        current_colors_ = (unsigned char *)pic::nb_malloc(PIC_ALLOC_LCK,num_keys_);
+        next_status_ = (unsigned char *)pic::nb_malloc(PIC_ALLOC_LCK,num_keys_);
+
+        memset(current_colors_, 0xff, num_keys_);
+    }
+
+    ~impl_t()
+    {
+        tracked_invalidate();
+
+        if(current_colors_)
+        {
+            pic::nb_free(current_colors_);
+            current_colors_=0;
+        }
+
+        if(next_status_)
+        {
+            pic::nb_free(next_status_);
+            next_status_=0;
+        }
+    }
+
+    void update_leds(piw::data_nb_t &data, void *kbd, void (*func_set_led)(void*, unsigned, unsigned))
+    {
+        memset(next_status_,0,num_keys_);
+
+        unsigned char* rs = ((unsigned char*)data.as_blob());
+        unsigned rl = data.as_bloblen();
+
+        while(rl>=5)
+        {
+            int kr = c2int(&rs[0]);
+            int kc = c2int(&rs[2]);
+            unsigned kv = rs[4];
+
+            if(kv!=BCTSTATUS_OFF)
+            {
+                int kn = rc2k(kr,kc,num_courses_,course_offset_,course_len_);
+
+                if(kn>=0)
+                {
+                    unsigned os = next_status_[kn];
+
+                    if(os!=kv)
+                    {
+                        if(os && os!=BCTSTATUS_OFF)
+                        {
+                            kv = BCTSTATUS_MIXED;
+                        }
+
+                        next_status_[kn] = kv;
+                    }
+                }
+            }
+
+            rs+=5;
+            rl-=5;
+        }
+
+        for(unsigned i=0;i<num_keys_;i++)
+        {
+            unsigned c = status2color(next_status_[i]);
+
+            if(c != current_colors_[i])
+            {
+                current_colors_[i] = c;
+                func_set_led(kbd,i,c);
+            }
+        }
+    }
+
+    unsigned num_keys_;
+    unsigned num_courses_;
+    unsigned course_offset_[MAX_COURSES];
+    const unsigned *course_len_;
+    bool initialized_;
+    unsigned char *current_colors_;
+    unsigned char *next_status_;
+};
+
+piw::statusledconvertor_t::statusledconvertor_t(unsigned num_courses, const unsigned *course_len): root_(new impl_t(num_courses,course_len))
 {
 }
 

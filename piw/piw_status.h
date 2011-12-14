@@ -35,8 +35,8 @@ namespace piw
             void override(bool);
             void autosend(bool);
             void clear();
-            void set_status(unsigned,unsigned char);
-            unsigned char get_status(unsigned);
+            void set_status(int,int,unsigned char);
+            unsigned char get_status(int,int);
             void set_blink_time(float);
             void set_blink_size(unsigned);
             piw::change_nb_t enabler();
@@ -44,7 +44,6 @@ namespace piw
             piw::change_nb_t blinker();
             int gc_traverse(void *, void *) const;
             int gc_clear();
-            void dump(std::ostream &);
        private:
             impl_t *root_;
     };
@@ -68,14 +67,12 @@ namespace piw
         public:
             class impl_t;
         public:
-            statusledconvertor_t(const unsigned num_keys);
+            statusledconvertor_t(unsigned nc, const unsigned *cs);
             ~statusledconvertor_t();
             void update_leds(piw::data_nb_t &status_data, void *kbd, void (*func_set_led)(void *self, unsigned key, unsigned color));
         private:
             impl_t *root_;
     };
 };
-
-PIW_DECLSPEC_FUNC(std::ostream) &operator<<(std::ostream &o, const piw::statusbuffer_t &s);
 
 #endif

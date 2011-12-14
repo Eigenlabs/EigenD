@@ -498,7 +498,7 @@ namespace
 
 struct ukbd::bundle_t::impl_t : virtual pic::tracked_t, piw::thing_t, piw::clockdomain_ctl_t, piw::clocksink_t
 {
-    impl_t(const char *n, const piw::cookie_t &c, const pic::notify_t &d, const piw::change_t &a): loop_(n,&keyboard_), keyboard_(c,d,a), leds_(KEYS)
+    impl_t(const char *n, const piw::cookie_t &c, const pic::notify_t &d, const piw::change_t &a): loop_(n,&keyboard_), keyboard_(c,d,a), leds_(MICRO_COURSECOUNT,MICRO_COURSES)
     {
         set_source(piw::makestring("*",0));
 

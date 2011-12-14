@@ -369,9 +369,13 @@ namespace
                 }
                 else
                 {
-                    output_ = piw::xevent_data_buffer_t(1,PIW_DATAQUEUE_SIZE_TINY);
+                    output_ = piw::xevent_data_buffer_t(3,PIW_DATAQUEUE_SIZE_TINY);
                     unsigned long long t = piw::tsd_time();
+                    piw::data_nb_t l = piw::tuplenull_nb(t);
+                    l = piw::tupleadd_nb(l,piw::makelong_nb(0,0));
+                    l = piw::tupleadd_nb(l,piw::makelong_nb(id_,0));
                     output_.add_value(1,piw::makefloat_bounded_nb(5,0,0,c,t));
+                    output_.add_value(2,l);
                     source_start(0,piw::pathone_nb(id_,t),output_);
                 }
             }

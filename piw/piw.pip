@@ -293,15 +293,12 @@ class functor_backend[piw::functor_backend_t] /gc/
     void send_duplicates(bool)
 }
 
-class controller[piw::controller_t] /gc/
+class controller[piw::controller_t]
 {
     controller(const cookie &,const stdstr &)
     cookie event_cookie()
-    cookie control_cookie()
     virtual void controller_clock(clockref *)
     virtual void controller_latency(unsigned)
-    void set_layout_callback(const notify &)
-    void clear_layout_callback()
 }
 
 class xxcontrolled[piw::xxcontrolled_t]
@@ -313,7 +310,6 @@ class xxcontrolled[piw::xxcontrolled_t]
     int ordinal()
     fastdata *fastdata()
     void set_key(const data &)
-    unsigned get_keynumber()
 }
 
 class controlled[piw::controlled_t]: xxcontrolled
@@ -471,9 +467,9 @@ class lightconvertor[piw::lightconvertor_t]
 {
     lightconvertor(const cookie &)
     cookie cookie()
-    void set_status_handler(unsigned, change)
+    void set_status_handler(unsigned, int, int, change)
     void remove_status_handler(unsigned)
-    unsigned char get_status(unsigned)
+    unsigned char get_status(int,int)
     void set_default_color(unsigned,unsigned);
 }
 
@@ -484,8 +480,8 @@ class statusbuffer[piw::statusbuffer_t] /gc/
     void override(bool)
     void autosend(bool)
     void clear()
-    void set_status(unsigned,unsigned char)
-    unsigned char get_status(unsigned)
+    void set_status(int,int,unsigned char)
+    unsigned char get_status(int,int)
     void set_blink_time(float)
     void set_blink_size(unsigned)
     change_nb enabler()
@@ -524,6 +520,8 @@ class controllerdict[piw::controllerdict_t]
     change changetonic(unsigned)
     change changescale(const stdstr &)
 }
+
+d2d_nb d2d_const[piw::d2d_const](const data &)
 
 class talker_mapper[piw::talker_mapper_t]
 {

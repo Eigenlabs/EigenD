@@ -22,6 +22,43 @@
 #include <piw/piw_keys.h>
 #include <picross/pic_ref.h>
 
+namespace
+{
+    struct d2d_const_functor
+    {
+        d2d_const_functor(const piw::data_t &d)
+        {
+            data_.set_normal(d);
+        }
+
+        d2d_const_functor()
+        {
+        }
+
+        d2d_const_functor(const d2d_const_functor &o): data_(o.data_)
+        {
+        }
+
+        d2d_const_functor &operator=(const d2d_const_functor &o)
+        {
+            data_ = o.data_;
+            return *this;
+        }
+
+        bool operator==(const d2d_const_functor &o) const
+        {
+            return data_.get()==o.data_.get();
+        }
+
+        piw::data_nb_t operator()(const piw::data_nb_t &) const
+        {
+            return data_.get();
+        }
+
+        piw::dataholder_nb_t data_;
+    };
+};
+
 struct piw::talker_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobject_t
 {
     ~impl_t()
@@ -70,4 +107,9 @@ void piw::talker_mapper_t::set_mapping(unsigned in, unsigned out)
 {
     impl_->in_ = in;
     impl_->out_ = out;
+}
+
+piw::d2d_nb_t piw::d2d_const(const piw::data_t &value)
+{
+    return d2d_nb_t::callable(d2d_const_functor(value));
 }

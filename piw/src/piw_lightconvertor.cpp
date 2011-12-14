@@ -30,7 +30,7 @@ namespace
 {
     struct receiver_t: piw::ufilterfunc_t, virtual pic::lckobject_t, pic::element_t<0>
     {
-        receiver_t(piw::lightconvertor_t::impl_t *root): impl_(root), color_(0), active_(false)
+        receiver_t(piw::lightconvertor_t::impl_t *root): impl_(root), color_(0), light_row_(-1), light_col_(-1)
         {
         }
 
@@ -45,17 +45,22 @@ namespace
 
         piw::lightconvertor_t::impl_t *impl_;
         unsigned color_;
-        unsigned light_;
-        bool active_;
+        int light_row_,light_col_;
     };
 
     struct list_t: virtual pic::lckobject_t, virtual pic::atomic_counted_t, pic::nocopy_t
     {
-        list_t(): default_(3)
+        pic::ilist_t<receiver_t> list_;
+    };
+
+    struct handler_t
+    {
+        handler_t(int r, int c, const piw::change_t &h): row_(r), col_(c), handler_(h), default_(3)
         {
         }
 
-        pic::ilist_t<receiver_t> list_;
+        int row_,col_;
+        piw::change_t handler_;
         unsigned default_;
     };
 
@@ -77,45 +82,72 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
         return new receiver_t(this);
     }
 
-    void update_input(const unsigned i)
+    void update_input(int r, int c)
     {
-        if(i==0)
+        pic::lckmap_t<std::pair<int,int>,listref_t>::lcktype::iterator i;
+        pic::flipflop_t<std::map<unsigned,handler_t> >::guard_t g(status_handlers_);
+        std::map<unsigned,handler_t>::const_iterator it;
+
+        bool ds = false;
+        unsigned d = 3;
+
+        for(it=g.value().begin(); it!=g.value().end(); it++)
         {
+            if(it->second.row_==r && it->second.col_==c)
+            {
+                if(!ds)
+                {
+                    d = it->second.default_;
+                    ds = true;
+                }
+                else
+                {
+                    if(d!=it->second.default_)
+                    {
+                        d=3;
+                    }
+                }
+            }
+        }
+
+        i = inputs_.find(std::make_pair(r,c));
+
+        if(i==inputs_.end())
+        {
+            output_.set_status(r,c,0);
             return;
         }
 
-        ensure_size(i);
-
-        receiver_t *r;
-        list_t *l = inputs_[i-1].ptr();
+        receiver_t *receiver;
+        list_t *l = i->second.ptr();
 
         unsigned m = CLR_ORANGE;
-        unsigned c;
+        unsigned color;
         bool f = false;
 
-        for(r=l->list_.head(); r!=0; r=l->list_.next(r))
+        for(receiver=l->list_.head(); receiver!=0; receiver=l->list_.next(receiver))
         {
-            c = r->color_;
+            color = receiver->color_;
             f = true;
 
-            if(c==CLR_ORANGE)
+            if(color==CLR_ORANGE)
             {
                 continue;
             }
 
             if(m==CLR_ORANGE)
             {
-                m=c;
+                m=color;
                 continue;
             }
 
-            if(c==CLR_MIXED)
+            if(color==CLR_MIXED)
             {
-                m=c;
+                m=color;
                 continue;
             }
 
-            if(m!=c)
+            if(m!=color)
             {
                 m=CLR_MIXED;
             }
@@ -128,16 +160,16 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
 
         switch(m)
         {
-            case CLR_MIXED: c=3; break;
-            case CLR_OFF: c=0; break;
-            case CLR_RED: c=2; break;
-            case CLR_GREEN: c=1; break;
-            default: c=l->default_; break;
+            case CLR_MIXED: color=3; break;
+            case CLR_OFF: color=0; break;
+            case CLR_RED: color=2; break;
+            case CLR_GREEN: color=1; break;
+            default: color=d; break;
         }
 
 
         unsigned status=BCTSTATUS_UNKNOWN;
-        switch(c)
+        switch(color)
         {
             case 0: status=BCTSTATUS_OFF; break;
             case 1: status=BCTSTATUS_ACTIVE; break;
@@ -145,88 +177,68 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
             case 3: status=BCTSTATUS_UNKNOWN; break;
         }
 
-        output_.set_status(i,status);
+        output_.set_status(r,c,status);
 
-        pic::flipflop_t<std::map<unsigned,change_t> >::guard_t g(status_handlers_);
-        std::map<unsigned,change_t>::const_iterator it = g.value().find(i);
-        if (it != g.value().end())
+        for(it=g.value().begin(); it!=g.value().end(); it++)
         {
-            it->second(makelong(status,piw::tsd_time()));
-        }
-    }
-
-    void add_input(receiver_t *r, unsigned i)
-    {
-        if(i>0)
-        {
-            ensure_size(i);
-            inputs_[i-1]->list_.append(r);
-            update_input(i);
-        }
-    }
-
-    void del_input(receiver_t *r, unsigned i)
-    {
-        if(i>0)
-        {
-            ensure_size(i);
-            inputs_[i-1]->list_.remove(r);
-            update_input(i);
-        }
-    }
-
-    void ensure_size(unsigned new_size)
-    {
-        if(size_ >= new_size)
-        {
-            return;
-        }
-
-        inputs_.resize(new_size);
-
-        if(new_size > size_)
-        {
-            for(unsigned i = size_; i < new_size; i++)
+            if(it->second.row_ == r && it->second.col_ == c)
             {
-                inputs_[i] = pic::ref(new list_t);
+                it->second.handler_(makelong(status,piw::tsd_time()));
             }
         }
-
-        size_ = new_size;
     }
 
-    static int default_color__(void *s_, void *i_, void *c_)
+    void add_input(receiver_t *receiver, int r, int c)
+    {
+        std::pair<pic::lckmap_t<std::pair<int,int>,listref_t>::lcktype::iterator,bool> i;
+        i=inputs_.insert(std::make_pair(std::make_pair(r,c),listref_t()));
+
+        if(i.second)
+        {
+            i.first->second = pic::ref(new list_t);
+        }
+
+        i.first->second->list_.append(receiver);
+        update_input(r,c);
+    }
+
+    void del_input(receiver_t *receiver, int r, int c)
+    {
+        pic::lckmap_t<std::pair<int,int>,listref_t>::lcktype::iterator i;
+        i = inputs_.find(std::make_pair(r,c));
+
+        if(i!=inputs_.end())
+        {
+            i->second->list_.remove(receiver);
+            update_input(i->first.first,i->first.second);
+        }
+
+    }
+
+    static int update_input__(void *s_, void *r_, void *c_)
     {
         impl_t *self = (impl_t *)s_;
-        unsigned c = *(unsigned *)c_;
-        unsigned i = *(unsigned *)i_;
-
-        if(i==0)
-        {
-            return 0;
-        }
-
-        self->ensure_size(i);
-
-        list_t *l = self->inputs_[i-1].ptr();
-
-        if(l->default_ != c)
-        {
-            l->default_=c;
-            self->update_input(i);
-        }
-
+        int c = *(int *)c_;
+        int r = *(int *)r_;
+        self->update_input(r,c);
         return 0;
     }
 
     void set_default_color(unsigned i, unsigned c)
     {
-        piw::tsd_fastcall3(default_color__,this,&i,&c);
+        std::map<unsigned,handler_t>::iterator it;
+
+        if((it=status_handlers_.alternate().find(i)) != status_handlers_.alternate().end())
+        {
+            it->second.default_ = c;
+            piw::tsd_fastcall3(update_input__,this,&(it->second.row_),&(it->second.col_));
+        }
+
     }
 
-    void set_status_handler(unsigned index, change_t f)
+    void set_status_handler(unsigned index, int r, int c, change_t f)
     {
-        status_handlers_.alternate().insert(std::pair<unsigned,change_t>(index,f));
+        status_handlers_.alternate().insert(std::make_pair(index,handler_t(r,c,f)));
         status_handlers_.exchange();
     }
 
@@ -236,19 +248,19 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
         status_handlers_.exchange();
     }
 
-    unsigned char get_status(unsigned index)
+    unsigned char get_status(int r, int c)
     {
-        return output_.get_status(index);
+        return output_.get_status(r,c);
     }
 
     unsigned long long ufilterctl_thru() { return 0; }
-    unsigned long long ufilterctl_inputs() { return SIG1(1); }
+    unsigned long long ufilterctl_inputs() { return SIG2(1,2); }
     unsigned long long ufilterctl_outputs() { return 0; }
 
     piw::statusbuffer_t output_;
-    pic::lckvector_t<listref_t>::lcktype inputs_;
+    pic::lckmap_t<std::pair<int,int>,listref_t>::lcktype inputs_;
     unsigned size_;
-    pic::flipflop_t<std::map<unsigned,change_t> > status_handlers_;
+    pic::flipflop_t<std::map<unsigned,handler_t> > status_handlers_;
 };
 
 piw::lightconvertor_t::lightconvertor_t(const piw::cookie_t &output): impl_(new impl_t(output))
@@ -260,9 +272,9 @@ piw::lightconvertor_t::~lightconvertor_t()
     delete impl_;
 }
 
-void piw::lightconvertor_t::set_status_handler(unsigned index, change_t f)
+void piw::lightconvertor_t::set_status_handler(unsigned index, int r, int c, change_t f)
 {
-    impl_->set_status_handler(index, f);
+    impl_->set_status_handler(index,r,c,f);
 }
 
 void piw::lightconvertor_t::remove_status_handler(unsigned index)
@@ -270,9 +282,9 @@ void piw::lightconvertor_t::remove_status_handler(unsigned index)
     impl_->remove_status_handler(index);
 }
 
-unsigned char piw::lightconvertor_t::get_status(unsigned index)
+unsigned char piw::lightconvertor_t::get_status(int r, int c)
 {
-    return impl_->get_status(index);
+    return impl_->get_status(r,c);
 }
 
 piw::cookie_t piw::lightconvertor_t::cookie()
@@ -291,38 +303,56 @@ void piw::lightconvertor_t::set_default_color(unsigned l,unsigned c)
 
 void receiver_t::ufilterfunc_start(piw::ufilterenv_t *e,const piw::data_nb_t &id)
 {
-    unsigned l = id.as_pathgristlen();
+    //pic::logmsg() << "converter start " << id << " light=" << light_;
+    piw::data_nb_t d;
 
-    if(l>0)
+    if(e->ufilterenv_latest(1,d,id.time()))
     {
-        light_ = id.as_pathgrist()[0];
-        //pic::logmsg() << "converter start " << id << " light=" << light_;
-        piw::data_nb_t d;
-
-        if(e->ufilterenv_latest(1,d,id.time()))
-        {
-            color_ = (unsigned)d.as_renorm(0.0,5.0,0.0);
-        }
-
-        active_ = true;
-        impl_->add_input(this,light_);
+        color_ = (unsigned)d.as_renorm(0.0,5.0,0.0);
     }
+
+    light_row_ = light_col_ = 0;
+
+    if(e->ufilterenv_latest(2,d,id.time()) && d.is_tuple() && d.as_tuplelen()==2 && d.as_tuple_value(0).is_long() && d.as_tuple_value(1).is_long())
+    {
+        light_row_ = d.as_tuple_value(0).as_long();
+        light_col_ = d.as_tuple_value(1).as_long();
+    }
+
+    impl_->add_input(this,light_row_,light_col_);
 }
 
 void receiver_t::ufilterfunc_data(piw::ufilterenv_t *,unsigned s,const piw::data_nb_t &d)
 {
-    if(active_ && s==1)
+    if(s==1)
     {
         color_ = (unsigned)d.as_renorm(0.0,5.0,0.0);
-        impl_->update_input(light_);
+        impl_->update_input(light_row_,light_col_);
+    }
+
+    if(s==2)
+    {
+        int r=0,c=0;
+
+        if(d.is_tuple() && d.as_tuplelen()==2 && d.as_tuple_value(0).is_long() && d.as_tuple_value(1).is_long())
+        {
+            r = d.as_tuple_value(0).as_long();
+            c = d.as_tuple_value(1).as_long();
+        }
+
+        if(r != light_row_ || c != light_col_)
+        {
+            impl_->del_input(this,light_row_,light_col_);
+
+            light_row_ = r;
+            light_col_ = c;
+
+            impl_->add_input(this,light_row_,light_col_);
+        }
     }
 }
 
 void receiver_t::ufilterfunc_end(piw::ufilterenv_t *, unsigned long long)
 {
-    if(active_)
-    {
-        impl_->del_input(this,light_);
-        active_=false;
-    }
+    impl_->del_input(this,light_row_,light_col_);
 }

@@ -267,9 +267,12 @@ void filter_wire_t::invalidate()
 
 void filter_wire_t::ufilterenv_start(unsigned long long time)
 {
-    output_.merge(input_,holder_.thru_);
-    source_start(seq_,id_.get().restamp(time),output_);
-    started_ = true;
+    if(!started_)
+    {
+        output_.merge(input_,holder_.thru_);
+        source_start(seq_,id_.get().restamp(time),output_);
+        started_ = true;
+    }
 }
 
 bool filter_wire_t::ufilterenv_latest(unsigned sig,piw::data_nb_t &d,unsigned long long time)

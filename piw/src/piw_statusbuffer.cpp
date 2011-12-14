@@ -26,9 +26,27 @@
 
 #define DEFAULT_BLINK_TIME 500
 
+namespace
+{
+    static inline void int2c(int r, unsigned char *o)
+    {
+        long k = r;
+
+        if(r<0) 
+        {
+            k = (int)0x10000+r;
+        }
+
+        unsigned long l = (unsigned long)k;
+
+        o[0] = ((k>>8)&0xff);
+        o[1] = (k&0xff);
+    }
+};
+
 struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t, virtual pic::tracked_t, virtual pic::lckobject_t
 {
-    impl_t(const piw::change_nb_t &s, unsigned ch, const piw::cookie_t &c): piw::event_data_source_real_t(piw::pathnull(0)), switch_(s), blinking_(false), override_(false), channel_(ch), size_(0), blink_time_(DEFAULT_BLINK_TIME), blink_size_(0), statusbuffer_(0), autosend_(true)
+    impl_t(const piw::change_nb_t &s, unsigned ch, const piw::cookie_t &c): piw::event_data_source_real_t(piw::pathnull(0)), switch_(s), blinking_(false), override_(false), channel_(ch), blink_time_(DEFAULT_BLINK_TIME), blink_size_(0), autosend_(true)
     {
         piw::tsd_thing(this);
         root_.connect(c);
@@ -39,10 +57,6 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
 
     ~impl_t()
     {
-        if(statusbuffer_)
-        {
-            pic::nb_free(statusbuffer_);
-        }
         tracked_invalidate();
     }
 
@@ -57,53 +71,42 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
         return 1;
     }
 
-    void ensure_size(unsigned size)
-    {
-        if(size_ >= size)
-        {
-            return;
-        }
-        
-        if(0 == size)
-        {
-            if(statusbuffer_)
-            {
-                pic::nb_free(statusbuffer_);
-                statusbuffer_ = 0;
-            } 
-            size_ = 0;
-            return;
-        }
-
-        unsigned char* new_statusbuffer_ = (unsigned char *)pic::nb_malloc(PIC_ALLOC_NB, size);
-        memset(new_statusbuffer_, BCTSTATUS_OFF, size);
-        if(statusbuffer_)
-        {
-            memcpy(new_statusbuffer_, statusbuffer_, std::min(size_, size));
-            pic::nb_free(statusbuffer_);
-        }
-
-        size_ = size;
-        statusbuffer_ = new_statusbuffer_;
-        blink_size_ = std::max(size_,blink_size_);
-    }
-
-    void send_statusbuffer_values(unsigned size, unsigned char *statusbuffer)
+    void send_statusbuffer_values()
     {
         unsigned char *dp;
         unsigned long long t = piw::tsd_time();
-        piw::data_nb_t result = makeblob_nb(t,size,&dp);
-        memcpy(dp,statusbuffer,size);
+        unsigned s = statusbuffer_.size()*5;
+
+        piw::data_nb_t result = makeblob_nb(t,s,&dp);
+
+        pic::lckmap_t<std::pair<int,int>,unsigned char>::nbtype::iterator i;
+
+        for(i=statusbuffer_.begin(); i!=statusbuffer_.end(); i++)
+        {
+            int2c(i->first.first,dp+0);
+            int2c(i->first.second,dp+2);
+            dp[4] = i->second;
+            dp += 5;
+        }
 
         buffer_.add_value(1,result);
     }
 
-    void send_blink_values(unsigned size)
+    void send_blink_values()
     {
         unsigned char *dp;
         unsigned long long t = piw::tsd_time();
-        piw::data_nb_t result = makeblob_nb(t,size,&dp);
-        memset(dp,BCTSTATUS_BLINK,size);
+        unsigned s = 5*blink_size_;
+
+        piw::data_nb_t result = makeblob_nb(t,s,&dp);
+
+        for(unsigned n=1;n<=blink_size_;n++)
+        {
+            int2c(0,dp+0);
+            int2c(n,dp+2);
+            dp[4] = BCTSTATUS_BLINK;
+            dp += 5;
+        }
 
         buffer_.add_value(1,result);
     }
@@ -144,41 +147,73 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
         return 1;
     }
 
-    static int set_status__(void *self_, void *index_, void *status_)
+    static int set_status__(void *self_, void *row_, void *col_, void *status_)
     {
         impl_t *self = (impl_t *)self_;
-        unsigned index = *(unsigned *)index_;
+        int row = *(int *)row_;
+        int col = *(int *)col_;
         unsigned char status = *(unsigned char *)status_;
 
-        if(0 == index)
+        pic::lckmap_t<std::pair<int,int>,unsigned char>::nbtype::iterator i;
+
+        i = self->statusbuffer_.find(std::make_pair(row,col));
+
+        if(i==self->statusbuffer_.end())
         {
-            return 0;
+            if(status)
+            {
+                self->statusbuffer_.insert(std::make_pair(std::make_pair(row,col),status));
+
+                if(self->autosend_)
+                {
+                    self->send_statusbuffer_values();
+                }
+            }
+
+            return 1;
         }
 
-        self->ensure_size(index);
-        if(self->statusbuffer_[index-1] != status)
+        if(status==0)
         {
-            self->statusbuffer_[index-1] = status;
+            self->statusbuffer_.erase(i);
+
+            if(self->autosend_)
+            {
+                self->send_statusbuffer_values();
+            }
+
+            return 1;
+        }
+
+        if(i->second != status)
+        {
+            i->second = status;
+
             if(self->autosend_)
             {
                 self->send_statusbuffer_values();
             }
         }
-        
+
         return 1;
     }
 
-    static int get_status__(void *self_, void *index_)
+    static int get_status__(void *self_, void *row_, void *col_)
     {
         impl_t *self = (impl_t *)self_;
-        unsigned index = *(unsigned *)index_;
+        int row = *(int *)row_;
+        int col = *(int *)col_;
 
-        if(0 == index || index > self->size_)
+        pic::lckmap_t<std::pair<int,int>,unsigned char>::nbtype::iterator i;
+
+        i = self->statusbuffer_.find(std::make_pair(row,col));
+
+        if(i==self->statusbuffer_.end())
         {
             return 0;
         }
 
-        return self->statusbuffer_[index-1];
+        return i->second;
     }
 
     static int set_blink_time__(void *self_, void *time_)
@@ -212,10 +247,7 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
     {
         impl_t *self = (impl_t *)self_;
 
-        for(unsigned i=0; i<self->size_;i++)
-        {
-            self->statusbuffer_[i]=BCTSTATUS_OFF;
-        }
+        self->statusbuffer_.clear();
 
         if(self->autosend_)
         {
@@ -247,7 +279,7 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
 
             self->blinking_=true;
 
-            self->send_blink_values(self->blink_size_);
+            self->send_blink_values();
 
             if(!self->override_)
             {
@@ -256,14 +288,10 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
 
             self->timer_fast(self->blink_time_);
         }
+
         return 1;
     }
     
-    void send_statusbuffer_values()
-    {
-        send_statusbuffer_values(size_,statusbuffer_);
-    }
-
     void send()
     {
         piw::tsd_fastcall(send__,this,0);
@@ -284,14 +312,14 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
         piw::tsd_fastcall(clear__,this,0);
     }
 
-    void set_status(unsigned index, unsigned char status)
+    void set_status(int row, int col, unsigned char status)
     {
-        piw::tsd_fastcall3(set_status__,this,&index,&status);
+        piw::tsd_fastcall4(set_status__,this,&row,&col,&status);
     }
 
-    unsigned char get_status(unsigned index)
+    unsigned char get_status(int row, int col)
     {
-        return (unsigned char)piw::tsd_fastcall(get_status__,this,&index);
+        return (unsigned char)piw::tsd_fastcall3(get_status__,this,&row,&col);
     }
 
     void set_blink_time(float time)
@@ -356,7 +384,7 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
     unsigned size_;
     unsigned blink_time_;
     unsigned blink_size_;
-    unsigned char *statusbuffer_;
+    pic::lckmap_t<std::pair<int,int>,unsigned char>::nbtype statusbuffer_;
     bool autosend_;
 };
 
@@ -399,14 +427,14 @@ void piw::statusbuffer_t::clear()
     root_->clear();
 }
 
-void piw::statusbuffer_t::set_status(unsigned index, unsigned char status)
+void piw::statusbuffer_t::set_status(int row, int col, unsigned char status)
 {
-    root_->set_status(index,status);
+    root_->set_status(row,col,status);
 }
 
-unsigned char piw::statusbuffer_t::get_status(unsigned index)
+unsigned char piw::statusbuffer_t::get_status(int row, int col)
 {
-    return root_->get_status(index);
+    return root_->get_status(row,col);
 }
 
 void piw::statusbuffer_t::set_blink_time(float time)
@@ -436,21 +464,3 @@ void piw::statusbuffer_t::enable(unsigned input)
 
 static const char *__SbHexDigits = "0123456789abcdef";
 
-void piw::statusbuffer_t::dump(std::ostream &o)
-{
-    unsigned size=root_->size_;
-    unsigned char *buf=root_->statusbuffer_;
-    while(size>0)
-    {
-        unsigned char b=*buf;
-        o << __SbHexDigits[b/16];
-        o << __SbHexDigits[b%16];
-        buf++; size--;
-    }
-}
-
-std::ostream &operator<<(std::ostream &o, const piw::statusbuffer_t &s)
-{
-    const_cast<piw::statusbuffer_t &>(s).dump(o);
-    return o;
-}
