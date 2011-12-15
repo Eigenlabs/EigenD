@@ -924,7 +924,7 @@ namespace midi
                         global = false;
                         belcanto_note_wire_t *w = active_input_wires_.head();
                         if(i->mcc_ == MIDI_CC_MAX + POLY_AFTERTOUCH ||
-                           (w && 0 == w->id_.compare_path_beginning(i->id_)))
+                           !w || (w && 0 == w->id_.compare_path_beginning(i->id_)))
                         {
                             channel = channel_;
                         }
