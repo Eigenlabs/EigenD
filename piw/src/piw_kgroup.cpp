@@ -201,7 +201,7 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
     {
         pic::flipflop_t<mapping_t>::guard_t g(mapping_);
 
-        if(g.value().forward.empty())
+        if(g.value().reverse.empty() || !in.is_blob())
         {
             return in;
         }

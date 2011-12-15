@@ -90,6 +90,11 @@ struct piw::statusmixer_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_t, 
             }
 
             piw::data_nb_t rd = r->status_data_;
+            if(rd.is_null())
+            {
+                continue;
+            }
+
             unsigned char* rs = ((unsigned char*)rd.as_blob());
             unsigned rl = rd.as_bloblen();
 

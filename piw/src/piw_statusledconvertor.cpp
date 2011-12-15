@@ -139,6 +139,8 @@ struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::l
 
     void update_leds(piw::data_nb_t &data, void *kbd, void (*func_set_led)(void*, unsigned, unsigned))
     {
+        if(!data.is_blob()) return;
+
         memset(next_status_,0,num_keys_);
 
         unsigned char* rs = ((unsigned char*)data.as_blob());
