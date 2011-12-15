@@ -135,8 +135,8 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
     norminputs = []
     revinputs = []
 
-    all_output = proto_cache.get_idset('output').union(name_cache.get_idset('output'))
-    all_input = proto_cache.get_idset('input').union(name_cache.get_idset('input'))
+    all_output = proto_cache.get_idset('output')
+    all_input = proto_cache.get_idset('input')
     all_reverse = proto_cache.get_idset('revconnect')
     all_explicit = proto_cache.get_idset('explicit')
 
