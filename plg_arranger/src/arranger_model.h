@@ -47,6 +47,7 @@ namespace arranger
             void event_set(const piw::change_nb_t &);
             bool get_event(const colrow_t &,float *f);
             void clear_events();
+            void events_cleared(const piw::change_nb_t &);
 
             piw::change_nb_t set_loopstart();
             void loopstart_set(const piw::change_nb_t &);

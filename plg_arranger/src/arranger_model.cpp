@@ -148,7 +148,7 @@ namespace
 
 struct arranger::model_t::impl_t: piw::decode_ctl_t, piw::wire_t, piw::event_data_sink_t, piw::clocksink_t, virtual pic::tracked_t
 {
-    impl_t(piw::clockdomain_ctl_t *d) : decoder_(this), interp_(1), upstream_(0), event_set_(piw::changelist_nb()), loopstart_set_(piw::changelist_nb()), loopend_set_(piw::changelist_nb()), position_set_(piw::changelist_nb()), stepnumerator_set_(piw::changelist_nb()), stepdenominator_set_(piw::changelist_nb()), playstop_set_(piw::changelist_nb()), loopstart_(0), loopend_(15), stepnumerator_(1.f), stepdenominator_(2.f), transport_(false), clock_(0), step_(0), cindex_(0), last_time_(0), count_(0), playing_(true)
+    impl_t(piw::clockdomain_ctl_t *d) : decoder_(this), interp_(1), upstream_(0), event_set_(piw::changelist_nb()), events_cleared_(piw::changelist_nb()), loopstart_set_(piw::changelist_nb()), loopend_set_(piw::changelist_nb()), position_set_(piw::changelist_nb()), stepnumerator_set_(piw::changelist_nb()), stepdenominator_set_(piw::changelist_nb()), playstop_set_(piw::changelist_nb()), loopstart_(0), loopend_(15), stepnumerator_(1.f), stepdenominator_(2.f), transport_(false), clock_(0), step_(0), cindex_(0), last_time_(0), count_(0), playing_(true)
     {
         setup_loop();
         d->sink(this,"arranger");
@@ -435,6 +435,7 @@ struct arranger::model_t::impl_t: piw::decode_ctl_t, piw::wire_t, piw::event_dat
     {
         pic::logmsg() << "model clear_events";
         grid_.clear_events();
+        events_cleared_(piw::makenull_nb(0));
     }
 
     void set_loopstart(const piw::data_nb_t &d)
@@ -542,6 +543,7 @@ struct arranger::model_t::impl_t: piw::decode_ctl_t, piw::wire_t, piw::event_dat
         int r;
 
         if((r=event_set_.gc_traverse(v,a))!=0) return r;
+        if((r=events_cleared_.gc_traverse(v,a))!=0) return r;
         if((r=loopstart_set_.gc_traverse(v,a))!=0) return r;
         if((r=loopend_set_.gc_traverse(v,a))!=0) return r;
         if((r=position_set_.gc_traverse(v,a))!=0) return r;
@@ -565,6 +567,7 @@ struct arranger::model_t::impl_t: piw::decode_ctl_t, piw::wire_t, piw::event_dat
     int gc_clear()
     {
         event_set_.gc_clear();
+        events_cleared_.gc_clear();
         loopstart_set_.gc_clear();
         loopend_set_.gc_clear();
         position_set_.gc_clear();
@@ -585,6 +588,7 @@ struct arranger::model_t::impl_t: piw::decode_ctl_t, piw::wire_t, piw::event_dat
     pic::flipflop_t<pic::lckvector_t<piw::change_t>::lcktype> targets_;
 
     piw::change_nb_t event_set_;
+    piw::change_nb_t events_cleared_;
     piw::change_nb_t loopstart_set_;
     piw::change_nb_t loopend_set_;
     piw::change_nb_t position_set_;
@@ -641,6 +645,7 @@ void arranger::model_t::event_set(const piw::change_nb_t &c) { piw::changelist_c
 bool arranger::model_t::get_event(const colrow_t &cr,float *f) { return impl_->get_event(cr,f); }
 
 void arranger::model_t::clear_events() { impl_->clear_events(); }
+void arranger::model_t::events_cleared(const piw::change_nb_t &c) { piw::changelist_connect_nb(impl_->events_cleared_,c); }
 
 piw::change_nb_t arranger::model_t::set_loopstart() { return piw::change_nb_t::method(impl_,&impl_t::set_loopstart); }
 void arranger::model_t::loopstart_set(const piw::change_nb_t &c) { piw::changelist_connect_nb(impl_->loopstart_set_,c); }
