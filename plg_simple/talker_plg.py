@@ -215,6 +215,7 @@ class Key(collection.Collection):
     def detach_key(self):
         self.agent.light_convertor.remove_status_handler(self.index)
         self.agent.light_aggregator.clear_output(self.index+1)
+        self.__event.detach()
 
     @async.coroutine('internal error')
     def create_event(self,text,called=None):
