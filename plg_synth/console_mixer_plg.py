@@ -75,8 +75,8 @@ def render_list(list,offset,renderer):
 
 class FxSendControls(atom.Atom):
     
-    def __init__(self, chan_agent, cookie, name, ordinal_str, fx_chan_num, is_fx_chan):
-        self.chan_agent = chan_agent
+    def __init__(self, channel, cookie, name, ordinal_str, fx_chan_num, is_fx_chan):
+        self.channel = channel
         self.fx_chan_num = fx_chan_num
         self.__is_fx_chan = is_fx_chan
 
@@ -97,19 +97,32 @@ class FxSendControls(atom.Atom):
         # enable
         self[1] = atom.Atom(domain=domain.Bool(), init=False, names='enable', policy=atom.default_policy(self.__set_fx_send_enable))
         # send
-        self.send_input = bundles.ScalarInput(cookie,chan_agent.main_agent.clk,signals=(1,))
-        self[2] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))), init=120, names='send', policy=self.send_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=self.chan_agent.main_agent.changes_pending), protocols='bind input')
+        self.send_input = bundles.ScalarInput(cookie,channel.main_agent.clk,signals=(1,))
+        self[2] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('inc',1),T('biginc',10),T('control','updown'))), init=120, names='send', policy=self.send_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=self.channel.main_agent.changes_pending), protocols='bind input')
         self[3] = atom.Atom(domain=domain.Bool(), init=False, names='prefader', policy=atom.default_policy(self.__set_fx_send_prefader))
 
     def __set_fx_send_enable(self, value):
-        self.chan_agent.main_agent.mixer.set_fx_send_enable(value, self.chan_agent.get_chan_num()-1, self.fx_chan_num-1, self.__is_fx_chan)
-        self.chan_agent.main_agent.changes_pending()
+        self.channel.main_agent.mixer.set_fx_send_enable(value, self.channel.get_chan_num()-1, self.fx_chan_num-1, self.__is_fx_chan)
+        self.channel.main_agent.changes_pending()
         
     def __set_fx_send_prefader(self, value):
-        self.chan_agent.main_agent.mixer.set_fx_send_prefader(value, self.chan_agent.get_chan_num()-1, self.fx_chan_num-1, self.__is_fx_chan)
-        self.chan_agent.main_agent.changes_pending()
+        self.channel.main_agent.mixer.set_fx_send_prefader(value, self.channel.get_chan_num()-1, self.fx_chan_num-1, self.__is_fx_chan)
+        self.channel.main_agent.changes_pending()
+            
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# Effect send controls list atom
+# -------------------------------------------------------------------------------------------------------------------------------------------
 
-        
+class FxSendControlsList(atom.Atom):
+    def __init__(self):
+        atom.Atom.__init__(self,names='effect send')
+
+    def load_state(self,state,delegate,phase):
+        if phase == 1:
+            delegate.set_deferred(self,state)
+            return
+
+        atom.Atom.load_state(self,state,delegate,phase-1)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # Effects send channel 
@@ -148,7 +161,7 @@ class FxChannel(atom.Atom):
         self[2] = atom.Atom(domain=domain.BoundedFloat(-1,1), init=0, names='right audio input',policy=self.return_input.vector_policy(2,True), protocols='obm')
 
         # fx send controls
-        self[5] = atom.Atom(names='effect send')
+        self[5] = FxSendControlsList()
 
         self.set_id_data(None, None, str(fx_chan_num))
 
@@ -268,7 +281,9 @@ class FxChannelList(collection.Collection):
         self.set_property_string('timestamp',str(self.__timestamp))
 
     def __create_fxchannel(self, index):
-        return FxChannel(self.__agent,index)
+        channel = FxChannel(self.__agent,index)
+        self.__connect_fxchannel(channel)
+        return channel
     
     def __wreck_fxchannel(self, index, node):
         node.disconnect()
@@ -320,7 +335,7 @@ class FxChannelList(collection.Collection):
                 # get data of other channels
                 (key2, name2, ordinal2, index2) = self[k].get_id_data()
                 # add to this channel
-                self[index].add_fx_send_ctrls(key2, name2, ordinal2, index2)
+                channel.add_fx_send_ctrls(key2, name2, ordinal2, index2)
 
         self.__agent.changes_pending()
 
@@ -365,7 +380,7 @@ class Channel(atom.Atom):
         self[3][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
 
         # fx send controls
-        self[4] = atom.Atom(names='effect send')
+        self[4] = FxSendControlsList()
 
     def __setlabel(self,label):
         if label.is_string():
