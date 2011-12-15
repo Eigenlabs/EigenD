@@ -439,6 +439,8 @@ class FunctorController:
         plumber.prepare(self.__correlator,self.__policy,1,Plumber.input_input,-1)
 
 class FastPolicyImpl(ConnectablePolicyImpl):
+    protocols = 'input output explicit'
+
     def __init__(self,atom,data_domain,init,transient,handler,stream_policy=None,clock=True):
         self.__stream_policy = stream_policy or ThrottleStreamPolicy(500)
         self.__handler = handler
@@ -523,6 +525,8 @@ class TriggerFunctorController:
         plumber.prepare(self.__correlator,self.__policy,1,Plumber.input_input,-1)
 
 class TriggerPolicyImpl(ConnectablePolicyImpl):
+    protocols = 'input explicit'
+
     def __init__(self,atom,data_domain,init,transient,handler,stream_policy=None,clock=True):
         self.__stream_policy = stream_policy or ThrottleStreamPolicy(500)
         self.__handler = handler
@@ -608,6 +612,8 @@ class LoadPolicyDelegate:
     def add_error(self,msg): pass
 
 class LoadPolicyImpl(ConnectablePolicyImpl):
+    protocols = 'input output explicit'
+
     def __init__(self,atom,data_domain,init,transient,handler,stream_policy=None,clock=False):
         self.__stream_policy = stream_policy or ThrottleStreamPolicy(500)
         self.__handler = utils.weaken(handler)
@@ -653,6 +659,8 @@ class LoadPolicyImpl(ConnectablePolicyImpl):
 
 
 class SlowPolicyImpl(ConnectablePolicyImpl):
+    protocols = 'input output explicit'
+
     def __init__(self,atom,data_domain,init,transient,handler,stream_policy=None,clock=False,callback=None):
         self.__stream_policy = stream_policy or ThrottleStreamPolicy(500)
         self.__handler = utils.weaken(handler)
