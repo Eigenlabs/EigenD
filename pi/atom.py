@@ -108,24 +108,11 @@ class Atom(node.Server):
 
         user_p = protocols or ''
         policy_p = self.__policy.protocols
-
-        if policy_p:
-            if user_p:
-                if fullname:
-                    fullname = fullname+' '+user_p
-                else:
-                    fullname = user_p
-
-            if 'input' not in fullname and 'output' not in fullname:
-                user_p = user_p+' '+policy_p
-                if 'explicit' not in fullname:
-                    user_p = user_p+' explicit'
-                    
-            if 'nostage' in policy_p and 'nostage' not in user_p:
-                user_p = user_p+' nostage'
-
-        if user_p:
-            self.set_property_string('protocols',user_p,notify=False)
+        user_p = set(user_p.split())
+        policy_p = set(policy_p.split())
+        combined_p = user_p.union(policy_p)
+        protocols = " ".join(combined_p)
+        self.set_property_string('protocols',protocols,notify=False)
 
         self.set_internal(const.data_node,self.__policy.data_node())
 

@@ -48,7 +48,7 @@ class Agent(agent.Agent):
         # the inputs from the metronome
         self.input = bundles.ScalarInput(self.midi_clock.cookie(), self.domain, signals=(1,2,3))
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names='metronome inputs')
         self[2][1] = atom.Atom(domain=domain.Aniso(),policy=self.input.policy(1,False),names='running input')
         self[2][2] = atom.Atom(domain=domain.Aniso(),policy=self.input.policy(2,False),names='song beat input')
         self[2][3] = atom.Atom(domain=domain.BoundedFloat(0,100000),init=120,policy=self.input.policy(3,False),names="tempo input")
