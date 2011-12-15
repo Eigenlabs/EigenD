@@ -40,8 +40,6 @@ namespace
             k = (int)0x10000+r;
         }
 
-        unsigned long l = (unsigned long)k;
-
         o[0] = ((k>>8)&0xff);
         o[1] = (k&0xff);
     }
@@ -182,13 +180,13 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
         piw::data_nb_t rowlen = rowlen_.get();
         piw::data_nb_t rowoffset = rowoffset_.get();
 
-        unsigned rrl = rowoffset_reverse.as_tuplelen();
-        unsigned rl = rowlen.as_tuplelen();
+        int rrl = rowoffset_reverse.as_tuplelen();
+        int rl = rowlen.as_tuplelen();
 
         if(dr<0) dr = dr+rl+1;
         if(dr<1 || dr>rl || dr>rrl) return false;
 
-        unsigned mrl = rowlen.as_tuple_value(dr-1).as_long();
+        int mrl = rowlen.as_tuple_value(dr-1).as_long();
 
         if(dc<0) dc = dc+mrl+1;
         if(dc<1 || dc>mrl) return false;

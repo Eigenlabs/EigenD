@@ -37,8 +37,6 @@ namespace
             k = (int)0x10000+r;
         }
 
-        unsigned long l = (unsigned long)k;
-
         o[0] = ((k>>8)&0xff);
         o[1] = (k&0xff);
     }
@@ -461,6 +459,3 @@ void piw::statusbuffer_t::enable(unsigned input)
 {
     root_->enable(input);
 }
-
-static const char *__SbHexDigits = "0123456789abcdef";
-

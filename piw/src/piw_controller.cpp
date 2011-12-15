@@ -208,13 +208,13 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
 
         if(!key.is_tuple() || key.as_tuplelen() != 4) return;
 
-        unsigned kn = key.as_tuple_value(0).as_long();
+        int kn = key.as_tuple_value(0).as_long();
         piw::data_nb_t coord = key.as_tuple_value(1);
 
         if(!coord.is_tuple() || coord.as_tuplelen() !=2 || !coord.as_tuple_value(0).is_float() || !coord.as_tuple_value(1).is_float()) return;
 
-        unsigned kr = coord.as_tuple_value(0).as_float();
-        unsigned kc = coord.as_tuple_value(1).as_float();
+        int kr = coord.as_tuple_value(0).as_float();
+        int kc = coord.as_tuple_value(1).as_float();
 
         if(kr==0 && kc==0)
         {

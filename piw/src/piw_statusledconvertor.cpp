@@ -40,16 +40,16 @@ namespace
         return cx;
     }
 
-    static inline int rc2k(int r, int c, unsigned nc, const unsigned *co, const unsigned *cl)
+    static inline int rc2k(int r, int c, int nc, const unsigned *co, const unsigned *cl)
     {
-        unsigned tc = co[nc-1]+cl[nc-1];
+        int tc = co[nc-1]+cl[nc-1];
 
         if(r==0 && c==0) return -1;
         if(r==0 && c<=tc) return c-1;
         if(r<0) r=nc+r+1;
         if(r<1 || r>nc) return -1;
         if(c<0) c=cl[r-1]+c+1;
-        if(c<1 || c>cl[r-1]) return -1;
+        if(c<1 || c>(int)cl[r-1]) return -1;
         return co[r-1]+c-1;
     }
 
