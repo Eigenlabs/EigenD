@@ -359,10 +359,71 @@ class Recorder(recorder_native.recorder):
             self.__done = None
             r.failed('recording aborted')
 
+def name_subst(name,find,repl):
+    oname = []
+    for w in name.split():
+        if w == find: w = repl
+        oname.append(w)
+    return ' '.join(oname)
+
+class AuxOutput(bundles.Output):
+    def __init__(self,callback,*args,**kwds):
+        self.__callback = callback
+        bundles.Output.__init__(self,*args,**kwds)
+
+    def cordinal(self):
+        return self.get_property_long('cordinal')
+
+    def property_change(self,key,value):
+        if key == 'name':
+            value = piw.makestring(name_subst(value.as_string(),'output','input'),0)
+            self.__callback(self.cordinal(),True,value)
+
+        if key == 'ordinal':
+            self.__callback(self.cordinal(),False,value)
+
+    def callback(self,isname,value):
+        if isname:
+            self.set_names(value)
+        else:
+            self.set_ordinal(value)
+
+
+class AuxInput(atom.Atom):
+    def __init__(self,callback,*args,**kwds):
+        self.__callback = callback
+        atom.Atom.__init__(self,*args,**kwds)
+
+    def cordinal(self):
+        return self.get_property_long('cordinal')
+
+    def callback(self,isname,value):
+        self.set_property('name' if isname else 'ordinal',value,notify=False,allow_veto=False)
+
+    def set_ordinal(self,value):
+        self.__callback(self.cordinal(),False,value)
+
+    def set_names(self,value):
+        value = name_subst(value,'input','output')
+        self.__callback(self.cordinal(),True,value)
+
+    def property_veto(self,key,value):
+        if atom.Atom.property_veto(self,key,value):
+            return True
+
+        return key in ['name','ordinal']
+
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         self.domain = piw.clockdomain_ctl()
         agent.Agent.__init__(self, signature=version, names='recorder', protocols='bind',container=(3,'agent',atom.VerbContainer(clock_domain=self.domain)),ordinal=ordinal)
+
+        def output_link(ordinal,*args,**kwds):
+            self[2][ordinal+4].callback(*args,**kwds)
+
+        def input_link(ordinal,*args,**kwds):
+            self[1][ordinal+4].callback(*args,**kwds)
+
 
         self[2] = atom.Atom(names='outputs')
         self[2][1] = bundles.Output(1,False,names='activation output', protocols='')
@@ -370,16 +431,16 @@ class Agent(agent.Agent):
         self[2][3] = bundles.Output(3,False,names='roll output', protocols='')
         self[2][4] = bundles.Output(4,False,names='yaw output', protocols='')
         self[2][15] = bundles.Output(5,False,names='key output', protocols='')
-        self[2][5] = bundles.Output(1,False,names='auxilliary output', ordinal=1, protocols='')
-        self[2][6] = bundles.Output(1,False,names='auxilliary output', ordinal=2, protocols='')
-        self[2][7] = bundles.Output(1,False,names='auxilliary output', ordinal=3, protocols='')
-        self[2][8] = bundles.Output(1,False,names='auxilliary output', ordinal=4, protocols='')
-        self[2][9] = bundles.Output(1,False,names='auxilliary output', ordinal=5, protocols='')
-        self[2][10] = bundles.Output(1,False,names='auxilliary output', ordinal=6, protocols='')
-        self[2][11] = bundles.Output(1,False,names='auxilliary output', ordinal=7, protocols='')
-        self[2][12] = bundles.Output(1,False,names='auxilliary output', ordinal=8, protocols='')
-        self[2][13] = bundles.Output(1,False,names='auxilliary output', ordinal=9, protocols='')
-        self[2][14] = bundles.Output(1,False,names='auxilliary output', ordinal=10, protocols='')
+        self[2][5] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=1, protocols='')
+        self[2][6] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=2, protocols='')
+        self[2][7] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=3, protocols='')
+        self[2][8] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=4, protocols='')
+        self[2][9] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=5, protocols='')
+        self[2][10] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=6, protocols='')
+        self[2][11] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=7, protocols='')
+        self[2][12] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=8, protocols='')
+        self[2][13] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=9, protocols='')
+        self[2][14] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=10, protocols='')
 
         self.output_data = bundles.Splitter(self.domain,self[2][1],self[2][2],self[2][3],self[2][4],self[2][15])
         self.output_aux1 = bundles.Splitter(self.domain,self[2][5])
@@ -463,16 +524,16 @@ class Agent(agent.Agent):
         self[1][19]=atom.Atom(domain=domain.Aniso(), policy=self.input_data.vector_policy(5,False),names='key input')
         self[1][20]=atom.Atom(domain=domain.Aniso(), policy=self.ctl_input.policy(1,False),names='controller input')
 
-        self[1][5]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux1.vector_policy(1,False),names='auxilliary input', ordinal=1)
-        self[1][6]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux2.vector_policy(1,False),names='auxilliary input', ordinal=2)
-        self[1][7]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux3.vector_policy(1,False),names='auxilliary input', ordinal=3)
-        self[1][8]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux4.vector_policy(1,False),names='auxilliary input', ordinal=4)
-        self[1][9]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux5.vector_policy(1,False),names='auxilliary input', ordinal=5)
-        self[1][10]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux6.vector_policy(1,False),names='auxilliary input', ordinal=6)
-        self[1][11]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux7.vector_policy(1,False),names='auxilliary input', ordinal=7)
-        self[1][12]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux8.vector_policy(1,False),names='auxilliary input', ordinal=8)
-        self[1][13]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux9.vector_policy(1,False),names='auxilliary input', ordinal=9)
-        self[1][14]=atom.Atom(domain=domain.Aniso(), policy=self.input_aux10.vector_policy(1,False),names='auxilliary input', ordinal=10)
+        self[1][5]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux1.vector_policy(1,False),names='auxilliary input', ordinal=1)
+        self[1][6]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux2.vector_policy(1,False),names='auxilliary input', ordinal=2)
+        self[1][7]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux3.vector_policy(1,False),names='auxilliary input', ordinal=3)
+        self[1][8]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux4.vector_policy(1,False),names='auxilliary input', ordinal=4)
+        self[1][9]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux5.vector_policy(1,False),names='auxilliary input', ordinal=5)
+        self[1][10]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux6.vector_policy(1,False),names='auxilliary input', ordinal=6)
+        self[1][11]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux7.vector_policy(1,False),names='auxilliary input', ordinal=7)
+        self[1][12]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux8.vector_policy(1,False),names='auxilliary input', ordinal=8)
+        self[1][13]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux9.vector_policy(1,False),names='auxilliary input', ordinal=9)
+        self[1][14]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux10.vector_policy(1,False),names='auxilliary input', ordinal=10)
 
         self[1][16]=atom.Atom(domain=domain.BoundedFloat(0,10000000), policy=self.input_clock.nodefault_policy(1,False),names='song beat input')
         self[1][17]=atom.Atom(domain=domain.BoundedFloat(0,100), policy=self.input_clock.nodefault_policy(2,False),names='bar beat input')
