@@ -155,11 +155,11 @@ class Event(talker.Talker):
         self[4] = atom.Atom(domain=domain.Bool(), init=False, policy=atom.default_policy(self.__change_enabled), names='enabled')
 
     def ordinal(self):
-        return self.event.ordinal()
+        return self.index
 
     def describe(self):
         o = self.ordinal()+1
-        d = describe_schema(self[3].get_value())
+        d = describe_schema(self.get_schema())
         return '%s' %  d
 
     def get_schema(self):
@@ -201,7 +201,7 @@ class Event(talker.Talker):
             self.event.event_enable()
             self.event.attach(self.scheduler.controller)
             self.event.set_key(utils.maketuple((piw.makelong(0,0),piw.makelong(self.index,0)), 0))
-            self[3].set_value(schema)
+            self[3].set_value(schema.as_string())
             print 'enabling event',id(self.event),'for',s
 
     def cancel(self):
