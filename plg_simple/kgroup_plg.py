@@ -239,7 +239,7 @@ class Output(atom.Atom):
         self.__slot = slot
         self.__tee = None
 
-        atom.Atom.__init__(self,domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='kgroup output',protocols='remove',ordinal=slot,container=const.verb_node)
+        atom.Atom.__init__(self,names='kgroup output',protocols='remove',ordinal=slot,container=const.verb_node)
 
         self.light_output = piw.clone(True)
         self.light_input = bundles.VectorInput(self.light_output.cookie(),self.__agent.domain,signals=(1,))
@@ -263,6 +263,7 @@ class Output(atom.Atom):
 
         self[20] = VirtualKey(self.__agent.kgroup_size,self.__agent.key_choice)
 
+        self[23] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='enable')
         self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key row', init=None, policy=atom.default_policy(self.__change_key_row))
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key column', init=None, policy=atom.default_policy(self.__change_key_column))
 
@@ -289,7 +290,7 @@ class Output(atom.Atom):
         return False
 
     def __setstate(self,data):
-        self.set_value(data.as_norm()!=0.0)
+        self[23].set_value(data.as_norm()!=0.0)
 
     def enable(self,val):
         self.__agent.mode_selector.select(self.__slot,val)
@@ -325,7 +326,7 @@ class Output(atom.Atom):
         self.light_output.set_output(1,self.__agent.light_switch.get_input(n))
 
         self.__agent.mode_selector.gate_output(n,tee,utils.make_change_nb(piw.slowchange(utils.changify(self.__setstate))))
-        self.__agent.mode_selector.select(n,self.get_value())
+        self.__agent.mode_selector.select(n,self[23].get_value())
 
     def unplumb(self):
         if self.__tee is not None:
@@ -401,7 +402,7 @@ class OutputList(atom.Atom):
         for v in self.values():
             v.enable(False)
             v.plumb()
-            v.enable(v.get_value())
+            v.enable(v[23].get_value())
 
         self.__plumbing = True
         self.__check_single()
@@ -500,9 +501,6 @@ class Agent(agent.Agent):
         self.status_mapper.set_functor(self.mapper.light_filter())
         self.light_switch = piw.multiplexer(self.status_mapper.cookie(),self.domain)
 
-        self[34] = bundles.Output(1,False,names='selection output')
-        self.outputselection = bundles.Splitter(self.domain,self[34])
-
         self.kclone = piw.clone(False) # keys
         self.s1clone = piw.clone(False) # strip 1
         self.s2clone = piw.clone(False) # strip 2
@@ -558,7 +556,7 @@ class Agent(agent.Agent):
         self.status_buffer.autosend(False)
         lightselection = self.status_buffer.enabler()
         modeselection = utils.make_change_nb(piw.slowchange(utils.changify(self.__mode_selection)))
-        self.mode_selector = piw.selector(self.light_switch.get_input(250),self.outputselection.cookie(),lightselection,modeselection,250,False)
+        self.mode_selector = piw.selector(self.light_switch.get_input(250),lightselection,modeselection,250,False)
 
         self.modepulse = piw.changelist_nb()
         piw.changelist_connect_nb(self.modepulse,self.status_buffer.blinker())
@@ -569,9 +567,6 @@ class Agent(agent.Agent):
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key column', init=None, policy=atom.default_policy(self.__change_mode_key_column))
         self[26] = atom.Atom(domain=domain.String(), init='[]', names='key map', policy=atom.default_policy(self.__set_members))
         self[28] = atom.Atom(domain=domain.String(), init='[]', names='course size', policy=atom.default_policy(self.__set_course_size))
-
-        self[27] = atom.Atom(domain=domain.Aniso(), names='selection input', policy=policy.FastPolicy(self.mode_selector.gate_selection_input(),policy.AnisoStreamPolicy()))
-
 
         self.add_verb2(3,'set([un],None)',callback=self.__untune)
 

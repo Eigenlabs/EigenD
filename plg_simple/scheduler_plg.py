@@ -146,7 +146,7 @@ class Event(talker.Talker):
         self.index = index
         self.event = piw.event(scheduler.scheduler,False,utils.changify(self.__enable_changed))
 
-        self.key_mapper = piw.function1(True,2,2,piw.data(),agent.light_aggregator.get_output(index+1))
+        self.key_mapper = piw.function1(True,2,2,piw.data(),scheduler.light_aggregator.get_output(index+1))
         self.key_mapper.set_functor(piw.d2d_const(utils.maketuple_longs((0,self.index),0)))
 
         talker.Talker.__init__(self,scheduler.finder,self.event.fastdata(),self.key_mapper.cookie(),names='event',ordinal=index,protocols='remove')
