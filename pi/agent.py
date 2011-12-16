@@ -306,7 +306,7 @@ class Agent(atom.Atom):
         while path:
             p = path[0]
             path = path[1:]
-            c = c.get(p)
+            c = c.get_internal(p)
             if c is None:
                 return None
         return c
