@@ -133,10 +133,11 @@ class Key(collection.Collection):
         self.agent = agent
         self.index = index
 
-        self.set_private(node.Server(value=piw.makelong(3,0),change=self.__change_color))
+        self.set_private(node.Server(rtransient=True)) # kept in there for backwards compatibility
         self.set_internal(250,atom.Atom(domain=domain.Trigger(),init=False,names='activate',policy=policy.TriggerPolicy(self.__handler),transient=True))
         self.agent.light_convertor.set_status_handler(self.index,0,0,piw.slowchange(utils.changify(self.set_status)))
 
+        self.set_internal(247, atom.Atom(domain=domain.BoundedInt(0,3),names='default colour',init=3,policy=atom.default_policy(self.set_color)))
         self.set_internal(248, atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key row',init=0,policy=atom.default_policy(self.__change_key_row)))
         self.set_internal(249, atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key column',init=0,policy=atom.default_policy(self.__change_key_column)))
 
@@ -147,7 +148,7 @@ class Key(collection.Collection):
         self.__event.set_key(t) 
         self.key_mapper.set_functor(piw.d2d_const(t))
         self.agent.light_convertor.set_status_handler(self.index,self.get_internal(248).get_value(),self.get_internal(249).get_value(),piw.slowchange(utils.changify(self.set_status)))
-        self.agent.light_convertor.set_default_color(self.index,self.get_private().get_data().as_long())
+        self.agent.light_convertor.set_default_color(self.index,self.get_internal(247).get_value())
         return False
 
     def __change_key_column(self,val):
@@ -157,7 +158,7 @@ class Key(collection.Collection):
         self.__event.set_key(t) 
         self.key_mapper.set_functor(piw.d2d_const(t))
         self.agent.light_convertor.set_status_handler(self.index,self.get_internal(248).get_value(),self.get_internal(249).get_value(),piw.slowchange(utils.changify(self.set_status)))
-        self.agent.light_convertor.set_default_color(self.index,self.get_private().get_data().as_long())
+        self.agent.light_convertor.set_default_color(self.index,self.get_internal(247).get_value())
         return False
 
     def rpc_instancename(self,a):
@@ -188,16 +189,12 @@ class Key(collection.Collection):
         self.get_internal(250).get_policy().set_status(v)
 
     def isinternal(self,k):
-        if k == 248 or k == 249 or k == 250: return True
+        if k == 247 or k == 248 or k == 249 or k == 250: return True
         return atom.Atom.isinternal(self,k)
-
-    def __change_color(self,d):
-        if d.is_long():
-            self.set_color(d.as_long())
 
     def set_color(self,c):
         self.agent.light_convertor.set_default_color(self.index,c)
-        self.get_private().set_data(piw.makelong(c,0))
+        self.get_internal(247).set_value(c)
 
     def __create(self,i):
         self.agent.update()

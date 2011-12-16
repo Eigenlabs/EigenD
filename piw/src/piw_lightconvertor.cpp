@@ -218,8 +218,8 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
     static int update_input__(void *s_, void *r_, void *c_)
     {
         impl_t *self = (impl_t *)s_;
-        int c = *(int *)c_;
-        int r = *(int *)r_;
+        int r = (int)r_;
+        int c = (int)c_;
         self->update_input(r,c);
         return 0;
     }
@@ -231,9 +231,11 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
         if((it=status_handlers_.alternate().find(i)) != status_handlers_.alternate().end())
         {
             it->second.default_ = c;
-            piw::tsd_fastcall3(update_input__,this,&(it->second.row_),&(it->second.col_));
+            int r = it->second.row_;
+            int c = it->second.col_;
+            status_handlers_.exchange();
+            piw::tsd_fastcall3(update_input__,this,(void *)r,(void *)c);
         }
-
     }
 
     void set_status_handler(unsigned index, int r, int c, change_t f)
