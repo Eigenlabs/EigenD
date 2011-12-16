@@ -615,6 +615,8 @@ class Agent(agent.Agent):
         self[1] = OutputList(self)
         self.outputchoice = utils.make_change_nb(piw.slowchange(utils.changify(self[1].output_selector)))
 
+        self[29] = atom.Atom(domain=domain.String(),init='',policy=atom.default_policy(self.__choose_flag),names='chooser')
+
     def __is_mode_key(self,d):
         row = self[24].get_value()
         col = self[25].get_value()
@@ -904,6 +906,10 @@ class Agent(agent.Agent):
         self.__setkeys(coursekeys)
 
     def __choose(self,subject,dummy,course):
+        c = int(action.abstract_string(course)) if course else None
+        self.__choose_base(c)
+
+    def __choose_base(self,course):
         print 'start choosing..',self.__upstream_size
         self.__choices = []
         self.__course=1
@@ -918,7 +924,7 @@ class Agent(agent.Agent):
         coursekeys=[]
 
         if course:
-            self.__course = int(action.abstract_string(course))
+            self.__course = course
         else:
             # collapse current courses into 1 course
             self.__course=1
@@ -950,6 +956,20 @@ class Agent(agent.Agent):
         self.mode_selector.choose(True)
         piw.changelist_connect_nb(self.keypulse,self.keychoice)
 
+        self[29].set_value(self.__course)
+
+    def __choose_flag(self,v):
+        if v:
+            try:
+                v=int(v)
+                if v:
+                    self.__choose_base(v)
+                    return
+            except:
+                pass
+
+        self.__unchoose(None)
+
     def __choice(self,v):
         if not v.is_tuple() or v.as_tuplelen() != 4: return
         keynum = v.as_tuple_value(0).as_long()
@@ -959,19 +979,22 @@ class Agent(agent.Agent):
             piw.changelist_disconnect_nb(self.keypulse,self.keychoice)
             self.status_buffer.override(False)
             self.__do_mapping()
-        else:
-            if not keynum in self.__choices:
-                self.__choices.append(keynum)
-                for k in self.__coursekeys:
-                    self.status_buffer.set_status(0,k,const.status_choose_used)
-                self.__coursekeys=[]
-                self.status_buffer.set_status(0,keynum,const.status_choose_active)
-                self.status_buffer.send()
+            self[29].set_value(None)
+            return
+
+        if not keynum in self.__choices:
+            self.__choices.append(keynum)
+            for k in self.__coursekeys:
+                self.status_buffer.set_status(0,k,const.status_choose_used)
+            self.__coursekeys=[]
+            self.status_buffer.set_status(0,keynum,const.status_choose_active)
+            self.status_buffer.send()
         
     def __unchoose(self,subject):
         self.mode_selector.choose(False)
         piw.changelist_disconnect_nb(self.keypulse,self.keychoice)
         self.status_buffer.override(False)
+        self[29].set_value(None)
         
     def __do_mapping(self):
         self.controller.ensure(self.__course)

@@ -21,7 +21,7 @@ Not properly assigned, in use:
 8   6   1   1  : Connector     : Noun              : None
 8   6   1   2  : Row           : Noun              : None
 8   6   1   3  : Detector      : Noun              : None
-8   6   1   4  : Unused        : Unused            : None
+8   6   1   4  : Chooser       : Noun              : None
 8   6   1   5  : Unused        : Unused            : None
 8   6   1   6  : Unused        : Unused            : None
 8   6   1   7  : Unused        : Unused            : None
