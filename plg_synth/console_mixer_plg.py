@@ -111,11 +111,21 @@ class FxSendControls(atom.Atom):
             
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # Effect send controls list atom
+#
+# Since effects sends are created as a side effect of creating fx channels,
+# they might not exist when the setup for a given channel is loaded.  This
+# defers the loading of the send setup until after the rest of the agent is
+# configured.
+#
+# The dynlist flag signals the setup manager that this node will change as
+# a side effect, causing it to send the whole setup for this sub tree rather
+# than just setup for existing nodes.
+#
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
 class FxSendControlsList(atom.Atom):
     def __init__(self):
-        atom.Atom.__init__(self,names='effect send')
+        atom.Atom.__init__(self,names='effect send',dynlist=True)
 
     def load_state(self,state,delegate,phase):
         if phase == 1:
