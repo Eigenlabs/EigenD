@@ -535,7 +535,7 @@ class Atom(node.Server):
 
     def notify_destroy(self):
         for slave in self.get_property_termlist('slave'):
-            rpc.invoke_rpc(slave,'source_gone',self.id())
+            rpc.invoke_async_rpc(slave,'source_gone',self.id())
 
         for (k,v) in self.iteritems():
             v.notify_destroy()
@@ -729,13 +729,11 @@ class Atom(node.Server):
         self.remove_connection(value)
 
     def rpc_source_gone(self,master):
-        old = self.get_property_termlist('master')
         l = self.get_property_termlist('master')
         for x in l:
             if x.args[2] == master:
                 l.remove(x)
         self.set_property_termlist('master',l)
-        self.__update_listeners(old)
 
     def get_rpc(self,name):
         return getattr(self,'rpc_'+name,None)
@@ -892,9 +890,9 @@ class VerbContainer(Atom):
     def load_state(self,state,delegate,phase):
         if phase == 1:
             delegate.set_deferred(self,state)
-            return
+            return async.success()
 
-        Atom.load_state(self,state,delegate,phase-1)
+        return Atom.load_state(self,state,delegate,phase-1)
 
     def add_atom(self,label,c,d,k,s):
         self.__atomlist[label] = (utils.weaken(c),utils.weaken(d),utils.weaken(k),utils.weaken(s))

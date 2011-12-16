@@ -57,10 +57,6 @@ def all_agents(snap):
 
     return agents
 
-def merge_snapshot(trunk,snapshot):
-    mapping = state.Mapping()
-    trunk.copy(snapshot,mapping,True)
-
 class Controller(state.Manager):
 
     def add_sync(self):
@@ -138,7 +134,7 @@ class Controller(state.Manager):
                 self.__workspace.set_agent(self.__agent)
 
     @async.coroutine('internal error')
-    def reload(self,snap):
+    def reload(self,snap,filename):
         t = time.time()
         yield self.add_sync()
 
@@ -166,6 +162,12 @@ class Controller(state.Manager):
             if r.status() and len(r.args())>0:
                 v = logic.parse_clause(r.args()[0])
                 rve.extend(v)
+
+        r = rpc.invoke_rpc(myid,'loadstate','%d:%d:%s' % (len(spl),len(spl),filename))
+        yield r
+        if r.status() and len(r.args())>0:
+            v = logic.parse_clause(r.args()[0])
+            rve.extend(v)
 
         yield async.Coroutine.success(rve)
 
@@ -261,6 +263,7 @@ class Workspace(atom.Atom):
         self.__load_result = None
         self.__plugin_count = 0
         self.__load_errors = None
+        self.__load_path = None
 
         self.__dbfile = resource.user_resource_file('global',"%s-%s" % (resource.current_setup,name))
 
@@ -356,7 +359,7 @@ class Workspace(atom.Atom):
                 self.__doload()
 
             n = s.get_name()
-            r = f.reload(s)
+            r = f.reload(s,self.__load_path)
             r.setCallback(ok).setErrback(not_ok)
 
             if self.__load_result:
@@ -407,7 +410,7 @@ class Workspace(atom.Atom):
                 r = rpc.invoke_rpc(qa,'preload',path)
                 yield r
 
-        r = self.__load1(snapshot,label)
+        r = self.__load1(snapshot,label,path)
         yield r
         yield self.index.sync()
         e = r.args()[0]
@@ -512,8 +515,10 @@ class Workspace(atom.Atom):
 
         yield async.Coroutine.completion(r.status(),e)
 
-    def __load1(self,snapshot,label):
-        merge_snapshot(self.trunk,snapshot)
+    def __load1(self,snapshot,label,path):
+        mapping = state.Mapping()
+        self.trunk.copy(snapshot,mapping,True)
+        self.__load_path = path
 
         self.flush(label)
 

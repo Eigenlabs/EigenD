@@ -391,13 +391,14 @@ class OutputList(atom.Atom):
 
         return async.failure('output not in use')
 
+    @async.coroutine('internal error')
     def load_state(self,state,delegate,phase):
         self.__plumbing = False
 
         for v in self.values():
             v.unplumb()
 
-        atom.Atom.load_state(self,state,delegate,phase)
+        yield atom.Atom.load_state(self,state,delegate,phase)
 
         for v in self.values():
             v.enable(False)

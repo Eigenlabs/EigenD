@@ -23,6 +23,7 @@ import const
 import picross
 import utils
 import traceback
+import async
 
 """
 This module contains utility classes for creating hierarchies
@@ -65,6 +66,7 @@ class server(piw.server):
         self.set_change_handler(change)
         self.set_data(value or piw.data())
 
+    @async.coroutine('internal error')
     def load_state(self,state,delegate,phase):
         if state.arity()==0 or phase!=1:
             return
@@ -93,7 +95,7 @@ class server(piw.server):
             n = self.get_internal(i)
             if n is not None:
                 if hasattr(n,'load_state'):
-                    n.load_state(c,delegate,phase)
+                    yield n.load_state(c,delegate,phase)
                 continue
             else:
                 if r is None:

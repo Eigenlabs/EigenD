@@ -130,9 +130,9 @@ class FxSendControlsList(atom.Atom):
     def load_state(self,state,delegate,phase):
         if phase == 1:
             delegate.set_deferred(self,state)
-            return
+            return async.success()
 
-        atom.Atom.load_state(self,state,delegate,phase-1)
+        return atom.Atom.load_state(self,state,delegate,phase-1)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # Effects send channel 

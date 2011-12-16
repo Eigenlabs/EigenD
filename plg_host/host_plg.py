@@ -233,8 +233,9 @@ class PluginState(node.server):
         self[6] = PluginStateBlob()
         self.__state_loaded = False
 
+    @async.coroutine('internal error')
     def load_state(self,state,delegate,phase):
-        node.server.load_state(self,state,delegate,phase)
+        yield node.server.load_state(self,state,delegate,phase)
         self.__state_loaded = True
 
     def apply_state(self):

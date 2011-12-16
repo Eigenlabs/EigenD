@@ -24,7 +24,7 @@
 # Agent to convert Belcanto note data into a MIDI stream
 # ------------------------------------------------------------------------------------------------------------------
 
-from pi import agent,atom,logic,node,utils,bundles,audio,domain,const,resource,guid,upgrade,policy,errors,action,inputparameter,paths
+from pi import agent,atom,logic,node,utils,bundles,audio,domain,const,resource,guid,upgrade,policy,errors,action,inputparameter,paths,async
 from pibelcanto import lexicon
 import piw,urllib,sys,os,operator,glob,shutil,string
 from plg_midi import midi_converter_version as version
@@ -43,8 +43,9 @@ class AgentState(node.server):
         self.__load_callback = callback
         self[1] = AgentStateNode()
 
+    @async.coroutine('internal error')
     def load_state(self,state,delegate,phase):
-        node.server.load_state(self,state,delegate,phase)
+        yield node.server.load_state(self,state,delegate,phase)
         mapping = self[1].get_data().as_string() if self[1].get_data().is_string() else '[]'
         self.__load_callback(delegate,mapping)
 

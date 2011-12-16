@@ -95,9 +95,10 @@ class Talker(atom.Atom):
         self.__running.append(r)
         r.setCallback(self.__done,r).setErrback(self.__done,r)
 
+    @async.coroutine('internal error')
     def load_state(self,state,delegate,phase):
         self.__loading = True
-        atom.Atom.load_state(self,state,delegate,phase)
+        yield atom.Atom.load_state(self,state,delegate,phase)
         self.__loading = False
 
     @async.coroutine('internal error')

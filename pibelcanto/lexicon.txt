@@ -438,7 +438,7 @@ Notes            Word           Classification     Synonyms
 3   1   8      : Bass          : Noun              : None
 3   2   1      : Treble        : Noun              : None
 3   2   2      : Unused        : Unused            : None
-3   2   3      : Control       : Verb              : None
+3   2   3      : Control       : Noun              : None
 3   2   4      : Octave        : Noun              : None
 3   2   5      : Unused        : Unused            : None
 3   2   6      : Unused        : Unused            : None

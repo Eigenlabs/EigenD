@@ -349,7 +349,7 @@ namespace
                 std::ostringstream s;
 
                 if(n.is_string()) s<<n.as_string();
-                if(o.is_long()) s<<' '<<o.as_long();
+                if(o.is_long() && o.as_long()) s<<' '<<o.as_long();
 
                 return s.str();
             }

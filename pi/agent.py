@@ -210,8 +210,9 @@ class Agent(atom.Atom):
         self.__state_buffer = []
 
     def load_agent_state(self,delegate):
-        pass
+        return async.success()
 
+    @async.coroutine('internal error')
     def rpc_loadstate(self,arg):
         (i,c,a) = arg.split(':',2)
 
@@ -221,11 +222,11 @@ class Agent(atom.Atom):
         while len(self.__state_buffer)<c:
             self.__state_buffer.append('')
 
-        self.__state_buffer[i] = a
+        if i!=c:
+            self.__state_buffer[i] = a
+            yield async.Coroutine.success('[]')
 
-        if i!=c-1:
-            return '[]'
-
+        path = a
         arg = ''.join(self.__state_buffer)
         self.__state_buffer = []
         state = piw.parse_state_term(arg)
@@ -235,6 +236,7 @@ class Agent(atom.Atom):
                 self.residual = {}
                 self.deferred = {}
                 self.errors = []
+                self.path = path
             def retval(self):
                 return logic.render_term(tuple(self.errors))
             def set_residual(self,n,r):
@@ -247,7 +249,7 @@ class Agent(atom.Atom):
         delegate = LoadResults()
         delegate.set_residual(self,state)
 
-        self.load_agent_state(delegate)
+        yield self.load_agent_state(delegate)
 
         while delegate.residual:
             r = delegate.residual
@@ -256,7 +258,7 @@ class Agent(atom.Atom):
 
             while r:
                 (k,v) = r.popitem()
-                k.load_state(v,delegate,1)
+                yield k.load_state(v,delegate,1)
 
             if delegate.residual.keys() == r2.keys():
                 break
@@ -273,15 +275,15 @@ class Agent(atom.Atom):
 
             while r:
                 (k,v) = r.popitem()
-                k.load_state(v,delegate,2)
+                yield k.load_state(v,delegate,2)
 
             if delegate.residual.keys() == r2.keys():
                 break
 
         if delegate.residual:
-            print 'didnt load after phase 2:',delegate.residual
+            print 'didnt load after phase 2:',[(k,v.render()) for (k,v) in delegate.residual.items()]
 
-        return delegate.retval()
+        yield async.Coroutine.success(delegate.retval())
 
     def rpc_preload(self,arg):
         return self.agent_preload(arg)
