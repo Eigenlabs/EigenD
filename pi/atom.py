@@ -111,8 +111,8 @@ class Atom(node.Server):
         user_p = set(user_p.split())
         policy_p = set(policy_p.split())
         combined_p = user_p.union(policy_p)
-        protocols = " ".join(combined_p)
-        self.set_property_string('protocols',protocols,notify=False)
+        effective_p = " ".join(combined_p)
+        self.set_property_string('protocols',effective_p,notify=False)
 
         self.set_internal(const.data_node,self.__policy.data_node())
 

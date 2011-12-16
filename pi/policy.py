@@ -439,7 +439,7 @@ class FunctorController:
         plumber.prepare(self.__correlator,self.__policy,1,Plumber.input_input,-1)
 
 class FastPolicyImpl(ConnectablePolicyImpl):
-    protocols = 'input output explicit'
+    protocols = 'input explicit'
 
     def __init__(self,atom,data_domain,init,transient,handler,stream_policy=None,clock=True):
         self.__stream_policy = stream_policy or ThrottleStreamPolicy(500)
