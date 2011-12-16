@@ -118,7 +118,7 @@ class Controller:
 
     def __change_controller(self,d):
         if d.is_dict():
-            for x in ('courseoffset','courselen'):
+            for x in ('courseoffset','courselen','rowoffset','rowlen'):
                 v = d.as_dict_lookup(x)
                 self.__dict.put_ctl(x,v)
             self.__state.set_data(self.__dict.get_ctl_dict().make_normal())
@@ -146,8 +146,8 @@ class Controller:
         c = []
         i = 0
         while i < s:
-           c.append((l[i],o[i])) 
-           i = i +1
+            c.append((l[i],o[i])) 
+            i = i +1
         return tuple(c)
 
     def set_courses(self,courses):
@@ -158,6 +158,33 @@ class Controller:
             offsets.append(piw.makefloat(o,0))
         self.setlist('courselen',lengths)
         self.setlist('courseoffset',offsets)
+
+    def get_rows(self):
+        o = [i.as_long() if i.is_long() else None for i in self.getlist('rowoffset')]
+        l = [i.as_long() for i in self.getlist('rowlen')]
+        c = []
+        i = 0
+        j = 0
+        while i < len(o):
+            if o[i] is None:
+                c.append(None)
+            else:
+                c.append((l[j],o[i])) 
+                j = j + 1
+            i = i + 1
+        return tuple(c)
+
+    def set_rows(self,rows):
+        lengths = []
+        offsets = []
+        for r in rows:
+            if r is None:
+                offsets.append(piw.makenull(0))
+            else:
+                lengths.append(piw.makelong(r[0],0))
+                offsets.append(piw.makelong(r[1],0))
+        self.setlist('rowlen',lengths)
+        self.setlist('rowoffset',offsets)
 
     def num_courses(self):
         l = self.getlist('courseoffset')
@@ -352,7 +379,9 @@ class Output(atom.Atom):
         keynum = self.calc_keynum()
         if keynum:
             self.__agent.mode_selector.gate_status_index(self.__slot,keynum)
-        
+        self.light_output.enable(1,False)
+        self.light_output.enable(1,True)
+        self.__agent.status_buffer.send()
 
 class OutputList(atom.Atom):
     def __init__(self,agent):
@@ -569,6 +598,7 @@ class Agent(agent.Agent):
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key column', init=None, policy=atom.default_policy(self.__change_mode_key_column))
         self[26] = atom.Atom(domain=domain.String(), init='[]', names='key map', policy=atom.default_policy(self.__set_members))
         self[28] = atom.Atom(domain=domain.String(), init='[]', names='course size', policy=atom.default_policy(self.__set_course_size))
+        self[29] = atom.Atom(domain=domain.String(), init='[]', names='row size', policy=atom.default_policy(self.__set_row_size))
 
         self[27] = atom.Atom(domain=domain.Aniso(), names='selection input', policy=policy.FastPolicy(self.mode_selector.gate_selection_input(),policy.AnisoStreamPolicy()))
 
@@ -689,9 +719,6 @@ class Agent(agent.Agent):
                 self.__upstream_rowlen = None
                 self.mapper.set_upstream_rowlen(piw.makenull(0))
 
-            # recalculate all key geometries based on the upstream geometry
-            self.__set_physical_geo(self.__cur_mapping())
-
             # transform the mode key row and column in case it was set from an
             # upgraded setup that only set the key in a sequential position
             if self.__upstream_rowlen:
@@ -754,6 +781,10 @@ class Agent(agent.Agent):
     def __set_course_size(self,value):
         self.controller.set_courses(logic.parse_clause(value))
         self[28].set_value(value)
+
+    def __set_row_size(self,value):
+        self.controller.set_rows(logic.parse_clause(value))
+        self[29].set_value(value)
 
     def __tune_tonic_fast(self,ctx,subj,dummy,arg):
         type,thing = action.crack_ideal(action.arg_objects(arg)[0])
@@ -1011,9 +1042,12 @@ class Agent(agent.Agent):
             cl.append(len(v))
         self.controller.setlist('courselen',[piw.makelong(i,0) for i in cl])
 
+        # determine the physical geometry
+        self.___detect_physical_geo(mapping)
+
         self.__set_mapping(tuple(mapping))
     
-    def __set_physical_geo(self,mapping):
+    def ___detect_physical_geo(self,mapping):
         rowbounds = None
         if self.__upstream_rowlen:
             rowbounds = []
@@ -1049,10 +1083,6 @@ class Agent(agent.Agent):
 
         self.controller.settuple('rowlen',rowlen)
         self.controller.settuple('rowoffset',rowoffset)
-        self.mapper.set_rowlen(rowlen)
-        self.mapper.set_rowoffset(rowoffset)
-
-        self[1].update_status_indexes()
 
     def __set_mapping(self,mapping):
         mapper = self.mapper
@@ -1061,9 +1091,6 @@ class Agent(agent.Agent):
         # set the physical to musical mapping
         for (src,dst) in mapping:
             self.mapper.set_mapping(src,dst)
-
-        # determine the physical geometry
-        self.__set_physical_geo(mapping)
 
         # activate the mappings
         mapper.activate_mapping()
@@ -1079,7 +1106,15 @@ class Agent(agent.Agent):
 
     def controller_changed(self):
         self[28].set_value(logic.render_term(self.controller.get_courses()))
+        self[29].set_value(logic.render_term(self.controller.get_rows()))
         self.mapper.set_courselen(self.controller.gettuple('courselen'))
+        self.mapper.set_rowlen(self.controller.gettuple('rowlen'))
+        self.mapper.set_rowoffset(self.controller.gettuple('rowoffset'))
+
+        self[1].update_status_indexes()
+        self.key_mapper.enable(1,False)
+        self.key_mapper.enable(1,True)
+        self.status_buffer.send()
 
     def __set_members(self,value):
         mapping = logic.parse_clause(value)
