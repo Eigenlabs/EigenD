@@ -153,7 +153,7 @@ class Event(atom.Atom):
         self.index = index
 
     def ordinal(self):
-        return self.event.ordinal()
+        return self.index
 
     def describe(self):
         o = self.ordinal()+1
