@@ -429,7 +429,7 @@ class OutputList(atom.Atom):
 
     def output_selector(self,v):
         if v.is_tuple():
-            keynum = v.as_tuple_value(2).as_long()
+            keynum = v.as_tuple_value(0).as_long()
             row = int(v.as_tuple_value(1).as_tuple_value(0).as_float())
             col = int(v.as_tuple_value(1).as_tuple_value(1).as_float())
             for k,o in self.items():
