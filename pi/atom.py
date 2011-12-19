@@ -796,10 +796,9 @@ class FastEvent(Bool):
     def rpc_cancel(self,arg):
         self.clear()
 
-        for (i,e) in self.container.iteritems():
+        for (i,e) in self.container.items():
             if e is self:
-                def call(): del self.container[i]
-                self.__deleter = async.deferred_call(call)
+                del self.container[i]
                 break
 
         return async.success(action.marshal(None))

@@ -109,6 +109,11 @@ class Event(talker.Talker):
 
         talker.Talker.__init__(self,self.__key.agent.finder,fast,cookie,names='event',ordinal=index,protocols='remove')
 
+    @async.coroutine('internal error')
+    def redo(self):
+        old_phrase = self.get_value()
+        yield self.set_phrase(old_phrase)
+
     def detach_event(self):
         self.__key.key_aggregator.clear_output(self.__index)
 
@@ -227,6 +232,11 @@ class Key(collection.Collection):
         yield r
 
     @async.coroutine('internal error')
+    def redo(self):
+        for c,e in self.items():
+            yield e.redo()
+
+    @async.coroutine('internal error')
     def cancel_event(self,called=None):
         for c,e in self.items():
             if not called or called==c:
@@ -243,6 +253,8 @@ class Agent(agent.Agent):
         self.add_verb2(8,'cancel([],None,role(None,[singular,numeric]),option(called,[singular,numeric]))', self.__cancel_verb)
         self.add_verb2(5,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]))', self.__color_verb)
         self.add_verb2(6,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]),role(from,[singular,numeric]))', self.__all_color_verb)
+        self.add_verb2(9,'do([re],None,role(None,[singular,numeric]))', self.__redo_k_verb)
+        self.add_verb2(10,'do([re],None)', self.__redo_all_verb)
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
@@ -318,6 +330,22 @@ class Agent(agent.Agent):
         c = int(action.abstract_string(c))
         if k in self[3]:
             self[3][k].set_color(c)
+
+    @async.coroutine('internal error')
+    def __redo_all_verb(self,subject):
+        for k,e in self[3].items():
+            yield e.redo()
+
+        yield async.Coroutine.success()
+
+    @async.coroutine('internal error')
+    def __redo_k_verb(self,subject,k):
+        k = int(action.abstract_string(k))
+        
+        if k in self[3]:
+            yield self[3][k].redo()
+
+        yield async.Coroutine.success()
 
     @async.coroutine('internal error')
     def __do_verb(self,subject,t,k,c):

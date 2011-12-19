@@ -52,6 +52,7 @@ namespace
             {
                 unsigned long long t=id.time();
                 input_=initial_;
+                output_.set_nb(piw::data_nb_t());
 
                 piw::data_nb_t d;
 

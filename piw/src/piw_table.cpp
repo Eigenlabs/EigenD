@@ -35,7 +35,7 @@ class d2d_const_sink_t: public piw::d2d_nb_t::sinktype_t
 
         piw::data_nb_t invoke(const piw::data_nb_t &v) const
         {
-            return value_;
+            return value_.restamp(v.time());
         }
 
     private:
