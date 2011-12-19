@@ -233,7 +233,7 @@ class Agent(agent.Agent):
 
         self[3] = bundles.Output(1,False,names='light output',protocols='revconnect')
         self.lights = bundles.Splitter(self.domain,self[3])
-        self.lightconvertor = piw.lightconvertor(self.lights.cookie())
+        self.lightconvertor = piw.lightconvertor(False,self.lights.cookie())
         self.controller = Controller0(self,self.lightconvertor.cookie(),utils.pack_str(1,2,3,4,5,6))
         self.clone = piw.clone(True)
         self.clone.set_output(1,self.controller.event_cookie())

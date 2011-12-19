@@ -69,7 +69,7 @@ namespace
 
 struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_t, piw::ufilter_t, virtual pic::tracked_t
 {
-    impl_t(const piw::cookie_t &output): piw::ufilter_t(this,piw::cookie_t(0)), output_(piw::change_nb_t(),0,output), size_(0)
+    impl_t(bool musical, const piw::cookie_t &output): piw::ufilter_t(this,piw::cookie_t(0)), musical_(musical), output_(piw::change_nb_t(),0,output), size_(0)
     {
     }
 
@@ -114,7 +114,7 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
 
         if(i==inputs_.end())
         {
-            output_.set_status(r,c,0);
+            output_.set_status(musical_,r,c,0);
             return;
         }
 
@@ -177,7 +177,7 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
             case 3: status=BCTSTATUS_UNKNOWN; break;
         }
 
-        output_.set_status(r,c,status);
+        output_.set_status(musical_,r,c,status);
 
         for(it=g.value().begin(); it!=g.value().end(); it++)
         {
@@ -252,20 +252,21 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
 
     unsigned char get_status(int r, int c)
     {
-        return output_.get_status(r,c);
+        return output_.get_status(musical_,r,c);
     }
 
     unsigned long long ufilterctl_thru() { return 0; }
     unsigned long long ufilterctl_inputs() { return SIG2(1,2); }
     unsigned long long ufilterctl_outputs() { return 0; }
 
+    const bool musical_;
     piw::statusbuffer_t output_;
     pic::lckmap_t<std::pair<int,int>,listref_t>::lcktype inputs_;
     unsigned size_;
     pic::flipflop_t<std::map<unsigned,handler_t> > status_handlers_;
 };
 
-piw::lightconvertor_t::lightconvertor_t(const piw::cookie_t &output): impl_(new impl_t(output))
+piw::lightconvertor_t::lightconvertor_t(bool musical, const piw::cookie_t &output): impl_(new impl_t(musical, output))
 {
 }
 

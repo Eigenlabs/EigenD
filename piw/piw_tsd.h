@@ -64,6 +64,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(int) tsd_fastcall(int (*cb)(void *arg1, void *arg2), void *arg1, void *arg2);
     PIW_DECLSPEC_FUNC(int) tsd_fastcall3(int (*cb)(void *arg1, void *arg2, void *arg3), void *arg1, void *arg2, void *arg3);
     PIW_DECLSPEC_FUNC(int) tsd_fastcall4(int (*cb)(void *arg1, void *arg2, void *arg3, void *arg4), void *arg1, void *arg2, void *arg3, void *arg4);
+    PIW_DECLSPEC_FUNC(int) tsd_fastcall5(int (*cb)(void *arg1, void *arg2, void *arg3, void *arg4, void *arg5), void *arg1, void *arg2, void *arg3, void *arg4, void *arg5);
     PIW_DECLSPEC_FUNC(void) tsd_log(const char *);
     PIW_DECLSPEC_FUNC(bool) tsd_killed();
     PIW_DECLSPEC_FUNC(void) tsd_exit();
@@ -97,6 +98,7 @@ namespace piw
             int fastcall(int (*cb)(void *arg1, void *arg2), void *arg1, void *arg2);
             int fastcall3(int (*cb)(void *arg1, void *arg2, void *arg3), void *arg1, void *arg2, void *arg3);
             int fastcall4(int (*cb)(void *arg1, void *arg2, void *arg3, void *arg4), void *arg1, void *arg2, void *arg3, void *arg4);
+            int fastcall5(int (*cb)(void *arg1, void *arg2, void *arg3, void *arg4, void *arg5), void *arg1, void *arg2, void *arg3, void *arg4, void *arg5);
             unsigned long long time() { return bct_entity_time(entity_); }
             piw::data_nb_t allocate_host(unsigned long long ts,float u,float l,float r,unsigned t,unsigned dl, unsigned char **dp,unsigned vl, float **vp);
             piw::data_nb_t allocate_wire(unsigned dl, const unsigned char *dp);

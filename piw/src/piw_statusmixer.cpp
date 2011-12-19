@@ -102,23 +102,22 @@ struct piw::statusmixer_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_t, 
             {
                 int kr = c2int(&rs[0]);
                 int kc = c2int(&rs[2]);
-                unsigned kv = rs[4];
+                bool kmus = rs[4]>>7;
+                unsigned kv = rs[4]&0x7f;
 
-                if(kv==BCTSTATUS_OFF)
+                if(kv!=BCTSTATUS_OFF)
                 {
-                    continue;
-                }
+                    unsigned os = output_.get_status(kmus,kr,kc);
 
-                unsigned os = output_.get_status(kr,kc);
-
-                if(os!=kv)
-                {
-                    if(os && os!=BCTSTATUS_OFF)
+                    if(os!=kv)
                     {
-                        kv = BCTSTATUS_MIXED;
-                    }
+                        if(os && os!=BCTSTATUS_OFF)
+                        {
+                            kv = BCTSTATUS_MIXED;
+                        }
 
-                    output_.set_status(kr,kc,kv);
+                        output_.set_status(kmus,kr,kc,kv);
+                    }
                 }
 
                 rs+=5;

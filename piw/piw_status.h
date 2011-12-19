@@ -35,8 +35,8 @@ namespace piw
             void override(bool);
             void autosend(bool);
             void clear();
-            void set_status(int,int,unsigned char);
-            unsigned char get_status(int,int);
+            void set_status(bool,int,int,unsigned char);
+            unsigned char get_status(bool,int,int);
             void set_blink_time(float);
             void set_blink_size(unsigned);
             piw::change_nb_t enabler();

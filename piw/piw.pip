@@ -465,7 +465,7 @@ class ranger[piw::ranger_t]
 
 class lightconvertor[piw::lightconvertor_t]
 {
-    lightconvertor(const cookie &)
+    lightconvertor(bool, const cookie &)
     cookie cookie()
     void set_status_handler(unsigned, int, int, change)
     void remove_status_handler(unsigned)
@@ -480,8 +480,8 @@ class statusbuffer[piw::statusbuffer_t] /gc/
     void override(bool)
     void autosend(bool)
     void clear()
-    void set_status(int,int,unsigned char)
-    unsigned char get_status(int,int)
+    void set_status(bool,int,int,unsigned char)
+    unsigned char get_status(bool,int,int)
     void set_blink_time(float)
     void set_blink_size(unsigned)
     change_nb enabler()

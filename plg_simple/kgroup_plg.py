@@ -910,8 +910,11 @@ class Agent(agent.Agent):
         self.__choices = []
         self.__course=1
 
+        # we're clearing the mapping before starting choosing so that the upstream geometry is used
         self.mapper.clear_mapping()
         self.mapper.activate_mapping()
+        self.key_mapper.enable(1,False)
+        self.key_mapper.enable(1,True)
 
         curmap = self.__cur_mapping() # [[from,to 1..N]]
         active = [f for (f,t) in curmap] # all active keys
@@ -940,11 +943,11 @@ class Agent(agent.Agent):
         for k in range(1,self.__upstream_size+1):
             if k in active:
                 if k in self.__coursekeys:
-                    self.status_buffer.set_status(0,k,const.status_choose_active)
+                    self.status_buffer.set_status(False,0,k,const.status_choose_active)
                 else:
-                    self.status_buffer.set_status(0,k,const.status_choose_used)
+                    self.status_buffer.set_status(False,0,k,const.status_choose_used)
             else:
-                self.status_buffer.set_status(0,k,const.status_choose_available)
+                self.status_buffer.set_status(False,0,k,const.status_choose_available)
 
         self.status_buffer.send()
 
@@ -981,15 +984,16 @@ class Agent(agent.Agent):
         if not keynum in self.__choices:
             self.__choices.append(keynum)
             for k in self.__coursekeys:
-                self.status_buffer.set_status(0,k,const.status_choose_used)
+                self.status_buffer.set_status(False,0,k,const.status_choose_used)
             self.__coursekeys=[]
-            self.status_buffer.set_status(0,keynum,const.status_choose_active)
+            self.status_buffer.set_status(False,0,keynum,const.status_choose_active)
             self.status_buffer.send()
         
     def __unchoose(self,subject):
         self.mode_selector.choose(False)
         piw.changelist_disconnect_nb(self.keypulse,self.keychoice)
         self.status_buffer.override(False)
+        self.__set_mapping(self.__cur_mapping())
         self[29].set_value(None)
         
     def __do_mapping(self):

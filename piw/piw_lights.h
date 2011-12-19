@@ -50,7 +50,7 @@ namespace piw
         public:
             class impl_t;
         public:
-            lightconvertor_t(const cookie_t &);
+            lightconvertor_t(bool, const cookie_t &);
             ~lightconvertor_t();
             void set_status_handler(unsigned, int, int, change_t);
             void remove_status_handler(unsigned);

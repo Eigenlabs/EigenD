@@ -75,32 +75,9 @@ unsigned piw::calc_keynum(piw::data_t geo, int row, int col)
 
 PIW_DECLSPEC_FUNC(piw::data_nb_t) piw::key_position(unsigned key, const piw::data_nb_t &lengths, unsigned long long t)
 {
-    if(key <= 0 || !lengths.is_tuple())
-    {
-        return piw::makenull_nb(0);
-    }
+    int row,col;
 
-    unsigned row = 0;
-    unsigned col = 0;
-
-    for(unsigned i=0; i<lengths.as_tuplelen(); ++i)
-    {
-        if(0==col)
-        {
-            col = key;
-        }
-        else
-        {
-            unsigned prev_course = lengths.as_tuple_value(i-1).as_long();
-            if(col<=prev_course)
-            {
-                break;
-            }
-            col -= prev_course;
-        }
-
-        row++;
-    }
+    key_position(key, lengths, &row, &col);
 
     if(0==row || 0==col)
     {
@@ -111,4 +88,34 @@ PIW_DECLSPEC_FUNC(piw::data_nb_t) piw::key_position(unsigned key, const piw::dat
     d = piw::tupleadd_nb(d, piw::makefloat_nb(row,t));
     d = piw::tupleadd_nb(d, piw::makefloat_nb(col,t));
     return d;
+}
+
+PIW_DECLSPEC_FUNC(void) piw::key_position(unsigned key, const piw::data_nb_t &lengths, int *row, int *col)
+{
+    *row = 0;
+    *col = 0;
+
+    if(key <= 0 || !lengths.is_tuple())
+    {
+        return;
+    }
+
+    for(unsigned i=0; i<lengths.as_tuplelen(); ++i)
+    {
+        if(0==*col)
+        {
+            *col = key;
+        }
+        else
+        {
+            int prev_course = lengths.as_tuple_value(i-1).as_long();
+            if(*col<=prev_course)
+            {
+                break;
+            }
+            (*col) -= prev_course;
+        }
+
+        (*row)++;
+    }
 }

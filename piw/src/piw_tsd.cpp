@@ -274,9 +274,26 @@ bool piw::tsd_killed()
     return bct_entity_killed(e)==1;
 }
 
-struct fastcall_t
+struct fastcall2_t
 {
-    fastcall_t(void *a1, void *a2, void *a3, void *a4): arg1_(a1), arg2_(a2), arg3_(a3), arg4_(a4) {}
+    fastcall2_t(void *a1, void *a2): arg1_(a1), arg2_(a2) {}
+
+    void *arg1_;
+    void *arg2_;
+};
+
+struct fastcall3_t
+{
+    fastcall3_t(void *a1, void *a2, void *a3): arg1_(a1), arg2_(a2), arg3_(a3) {}
+
+    void *arg1_;
+    void *arg2_;
+    void *arg3_;
+};
+
+struct fastcall4_t
+{
+    fastcall4_t(void *a1, void *a2, void *a3, void *a4): arg1_(a1), arg2_(a2), arg3_(a3), arg4_(a4) {}
 
     void *arg1_;
     void *arg2_;
@@ -284,10 +301,21 @@ struct fastcall_t
     void *arg4_;
 };
 
+struct fastcall5_t
+{
+    fastcall5_t(void *a1, void *a2, void *a3, void *a4, void *a5): arg1_(a1), arg2_(a2), arg3_(a3), arg4_(a4), arg5_(a5) {}
+
+    void *arg1_;
+    void *arg2_;
+    void *arg3_;
+    void *arg4_;
+    void *arg5_;
+};
+
 static int fastcaller2__(bct_entity_t e, void *call_, void *args_)
 {
     piw::tsd_setcontext(e);
-    fastcall_t *args = (fastcall_t *)args_;
+    fastcall2_t *args = (fastcall2_t *)args_;
     int (*call)(void *,void *) = (int (*)(void *,void *))call_;
 
     try
@@ -302,7 +330,7 @@ static int fastcaller2__(bct_entity_t e, void *call_, void *args_)
 static int fastcaller3__(bct_entity_t e, void *call_, void *args_)
 {
     piw::tsd_setcontext(e);
-    fastcall_t *args = (fastcall_t *)args_;
+    fastcall3_t *args = (fastcall3_t *)args_;
     int (*call)(void *,void *, void *) = (int (*)(void *,void *,void *))call_;
 
     try
@@ -317,12 +345,27 @@ static int fastcaller3__(bct_entity_t e, void *call_, void *args_)
 static int fastcaller4__(bct_entity_t e, void *call_, void *args_)
 {
     piw::tsd_setcontext(e);
-    fastcall_t *args = (fastcall_t *)args_;
+    fastcall4_t *args = (fastcall4_t *)args_;
     int (*call)(void *,void *,void *,void *) = (int (*)(void *,void *,void *,void *))call_;
 
     try
     {
         return (call)(args->arg1_,args->arg2_,args->arg3_,args->arg4_);
+    }
+    CATCHLOG()
+
+    return -1;
+}
+
+static int fastcaller5__(bct_entity_t e, void *call_, void *args_)
+{
+    piw::tsd_setcontext(e);
+    fastcall5_t *args = (fastcall5_t *)args_;
+    int (*call)(void *,void *,void *,void *,void *) = (int (*)(void *,void *,void *,void *,void *))call_;
+
+    try
+    {
+        return (call)(args->arg1_,args->arg2_,args->arg3_,args->arg4_,args->arg5_);
     }
     CATCHLOG()
 
@@ -348,7 +391,7 @@ int piw::tsd_fastcall(int (*cb)(void *arg1, void *arg2), void *arg1, void *arg2)
     bct_entity_t e = tsd_getcontext();
     PIC_ASSERT(e);
 
-    fastcall_t call(arg1,arg2,0,0);
+    fastcall2_t call(arg1,arg2);
     return bct_entity_fastcall(e,fastcaller2__,(void *)cb,&call);
 }
 
@@ -357,7 +400,7 @@ int piw::tsd_fastcall3(int (*cb)(void *arg1, void *arg2, void *arg3), void *arg1
     bct_entity_t e = tsd_getcontext();
     PIC_ASSERT(e);
 
-    fastcall_t call(arg1,arg2,arg3,0);
+    fastcall3_t call(arg1,arg2,arg3);
     return bct_entity_fastcall(e,fastcaller3__,(void *)cb,&call);
 }
 
@@ -366,8 +409,17 @@ int piw::tsd_fastcall4(int (*cb)(void *arg1, void *arg2, void *arg3, void *arg4)
     bct_entity_t e = tsd_getcontext();
     PIC_ASSERT(e);
 
-    fastcall_t call(arg1,arg2,arg3,arg4);
+    fastcall4_t call(arg1,arg2,arg3,arg4);
     return bct_entity_fastcall(e,fastcaller4__,(void *)cb,&call);
+}
+
+int piw::tsd_fastcall5(int (*cb)(void *arg1, void *arg2, void *arg3, void *arg4, void *arg5), void *arg1, void *arg2, void *arg3, void *arg4, void *arg5)
+{
+    bct_entity_t e = tsd_getcontext();
+    PIC_ASSERT(e);
+
+    fastcall5_t call(arg1,arg2,arg3,arg4,arg5);
+    return bct_entity_fastcall(e,fastcaller5__,(void *)cb,&call);
 }
 
 void piw::tsd_alert(const char *k, const char *l, const char *m)
@@ -425,19 +477,25 @@ piw::tsd_subcontext_t::~tsd_subcontext_t()
 
 int piw::tsd_snapshot_t::fastcall(int (*cb)(void *arg1, void *arg2), void *arg1, void *arg2)
 {
-    fastcall_t call(arg1,arg2,0,0);
+    fastcall2_t call(arg1,arg2);
     return bct_entity_fastcall(entity_,fastcaller2__,(void *)cb,&call);
 }
 
 int piw::tsd_snapshot_t::fastcall3(int (*cb)(void *arg1, void *arg2, void *arg3), void *arg1, void *arg2, void *arg3)
 {
-    fastcall_t call(arg1,arg2,arg3,0);
+    fastcall3_t call(arg1,arg2,arg3);
     return bct_entity_fastcall(entity_,fastcaller3__,(void *)cb,&call);
 }
 
 int piw::tsd_snapshot_t::fastcall4(int (*cb)(void *arg1, void *arg2, void *arg3, void *arg4), void *arg1, void *arg2, void *arg3, void *arg4)
 {
-    fastcall_t call(arg1,arg2,arg3,arg4);
+    fastcall4_t call(arg1,arg2,arg3,arg4);
     return bct_entity_fastcall(entity_,fastcaller4__,(void *)cb,&call);
+}
+
+int piw::tsd_snapshot_t::fastcall5(int (*cb)(void *arg1, void *arg2, void *arg3, void *arg4, void *arg5), void *arg1, void *arg2, void *arg3, void *arg4, void *arg5)
+{
+    fastcall5_t call(arg1,arg2,arg3,arg4,arg5);
+    return bct_entity_fastcall(entity_,fastcaller5__,(void *)cb,&call);
 }
 

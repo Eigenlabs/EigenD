@@ -314,9 +314,9 @@ class Agent(agent.Agent):
 
         self.model = arranger_native.model(self.domain)
 
-        self.light_output = bundles.Output(1,False, names='light output',protocols='revconnect')
+        self.light_output = bundles.Output(1,False,names='light output',protocols='revconnect')
         self.light_splitter = bundles.Splitter(self.domain, self.light_output)
-        self.light_convertor = piw.lightconvertor(self.light_splitter.cookie())
+        self.light_convertor = piw.lightconvertor(True,self.light_splitter.cookie())
         self.view = arranger_native.view(self.model,self.light_convertor.cookie())
 
         self.ctlr_fb = piw.functor_backend(1,True)

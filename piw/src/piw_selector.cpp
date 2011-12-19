@@ -117,7 +117,7 @@ namespace
                 st = state_ ? BCTSTATUS_SELECTOR_ON : BCTSTATUS_SELECTOR_OFF;
             }
 
-            buffer->set_status(0,index_,st);
+            buffer->set_status(false,0,index_,st);
         }
 
         int gc_traverse(void *v, void *a) const

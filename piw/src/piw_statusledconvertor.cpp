@@ -150,7 +150,7 @@ struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::l
         {
             int kr = c2int(&rs[0]);
             int kc = c2int(&rs[2]);
-            unsigned kv = rs[4];
+            unsigned kv = rs[4]&0x7f;
 
             if(kv!=BCTSTATUS_OFF)
             {
