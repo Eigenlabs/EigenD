@@ -69,6 +69,8 @@ class VirtualKey(atom.Atom):
 
 
 class Keyboard(agent.Agent):
+    subsys_relation = ('create','by')
+
     def __init__(self,names,ordinal,dom,remove,keys):
         self.kbd_keys = keys
         agent.Agent.__init__(self,names=names,ordinal=ordinal,signature=version,subsystem='kbd',volatile=True,container=102,protocols='browse is_subsys')
