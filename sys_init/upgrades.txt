@@ -52,6 +52,7 @@ tau 1               | 1.1.20-testing          | 320c7cf33f1589f34c3966a961d9dc9c
 tau 1				| 1.2.6-testing           | c2bca08cbefedbec7bdfce3de3494aad
 tau 1               | 1.3.20-testing          | 2fe40e15e7bf82378ffc1358e92bea9a
 tau 1               | 1.3.27-testing          | 3a7299377d203400425e312b7b73be24
+tau 1               | 1.4.8-testing           | 24ee9c1ad97a36fc099114e272055404
                     |                         |
 ---------------------------------------------------------------------------------
 
