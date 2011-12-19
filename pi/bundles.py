@@ -215,6 +215,8 @@ class LatchPolicyImpl(policy.ConnectablePolicyImpl):
             self.__ctrl = None
 
 class LocalPolicyImpl(policy.ConnectablePolicyImpl):
+    protocols = 'input output'
+
     def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,clocked,callback):
         self.__stream_policy = stream_policy
         self.__input = input
@@ -319,7 +321,7 @@ class LingerPolicyImpl(policy.ConnectablePolicyImpl):
         return policy.Plumber(self,config)
 
 class MergePolicyImpl(policy.ConnectablePolicyImpl):
-    protocols = 'input'
+    protocols = 'input output'
 
     def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,clocked,callback):
         self.__stream_policy = stream_policy
@@ -461,6 +463,8 @@ class ScalarNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
         return policy.Plumber(self,config)
 
 class ScalarPolicyImpl(policy.ConnectablePolicyImpl):
+    protocols = 'input output'
+
     def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,merge=False):
         self.__stream_policy = stream_policy
         self.__merge = merge
@@ -529,6 +533,8 @@ class ScalarPolicyImpl(policy.ConnectablePolicyImpl):
         return policy.Plumber(self,config)
 
 class NotifyScalarPolicyImpl(ScalarPolicyImpl):
+    protocols = 'input output'
+
     def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,merge=False,notify=None):
         self.__notify = notify
         ScalarPolicyImpl.__init__(self,atom,data_domain,init,transient,input,signal,stream_policy,merge)

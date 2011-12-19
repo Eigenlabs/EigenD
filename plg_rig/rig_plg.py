@@ -66,7 +66,7 @@ class RigMonitorPlumber(proxy.AtomProxy):
             return
 
 class RigMonitorPolicyImpl:
-    protocols = 'output'
+    protocols = 'input'
 
     def __init__(self,atom,data_domain,init,transient,scope,input):
         self.__closed = False
