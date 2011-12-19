@@ -368,7 +368,15 @@ class Workspace(atom.Atom):
             break
 
     @async.coroutine('internal error')
-    def load_file(self,path,upgrade_flag = False):
+    def post_load(self,path):
+        for m in self.index.members():
+            ma = m.address
+            qa = self.index.to_absolute(ma)
+            yield rpc.invoke_rpc(qa,'postload',path)
+
+
+    @async.coroutine('internal error')
+    def load_file(self,path,upgrade_flag = False,post_load = True):
 
         """
         cherrypy.config.update({'server.socket_port': 8088})
@@ -415,11 +423,8 @@ class Workspace(atom.Atom):
         yield self.index.sync()
         e = r.args()[0]
 
-        for m in self.index.members():
-            ma = m.address
-            if ma in agents:
-                qa = self.index.to_absolute(ma)
-                yield rpc.invoke_rpc(qa,'postload',path)
+        if post_load:
+            yield self.post_load(path)
 
         if upgrade_flag and r.status():
             self.__backend.load_status('Upgrading',100)

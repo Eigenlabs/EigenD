@@ -556,7 +556,7 @@ class Agent(agent.Agent):
             raise RuntimeError('Cannot locate state file %s' % filename)
 
         self.__backend.setups_changed(path)
-        return self.__workspace.load_file(path,upgrade_flag)
+        return self.__workspace.load_file(path,upgrade_flag=upgrade_flag)
 
 
     def __set_startup(self,subject,dummy,tag):

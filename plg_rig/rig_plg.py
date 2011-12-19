@@ -690,7 +690,10 @@ class InnerAgent(agent.Agent):
         return self.__workspace.save_file(filename)
 
     def load(self,filename):
-        return self.__workspace.load_file(filename)
+        return self.__workspace.load_file(filename,post_load=False)
+
+    def post_load(self,filename):
+        return self.__workspace.post_load(filename)
 
     def server_opened(self):
         agent.Agent.server_opened(self)
@@ -787,6 +790,11 @@ class OuterAgent(agent.Agent):
     def agent_presave(self,filename):
         print 'starting presave',filename
         return self.__inner_agent.save(self.rig_file(filename))
+
+    def agent_postload(self,filename):
+        rig_file = self.rig_file(filename)
+        agent.Agent.agent_postload(self,filename)
+        return self.__inner_agent.post_load(rig_file)
 
     def agent_preload(self,filename):
         agent.Agent.agent_preload(self,filename)

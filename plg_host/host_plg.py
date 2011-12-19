@@ -575,6 +575,7 @@ class Agent(agent.Agent):
 
     def agent_postload(self,filename):
         self.__state.apply_state()
+        agent.Agent.agent_postload(self,filename)
 
     def agent_presave(self,filename):
         state = self.__host.get_state()
