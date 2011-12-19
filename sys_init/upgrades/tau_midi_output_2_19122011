@@ -1,0 +1,5 @@
+# Set talker phrase to browse MIDI port 2
+empty join midi talker 2 listen interpreter listen
+16 cancel
+" eigenbrowser , midi output 2 hey midi port browse " when 16 do
+
