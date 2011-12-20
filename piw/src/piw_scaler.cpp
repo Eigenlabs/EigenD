@@ -23,6 +23,7 @@
 #include <piw/piw_scaler.h>
 #include <piw/piw_tsd.h>
 #include <piw/piw_ufilter.h>
+#include <piw/piw_status.h>
 #include <picross/pic_float.h>
 
 #include <vector>
@@ -212,6 +213,8 @@ namespace
 
             piw::data_nb_t t,b,o,s,co,cl;
 
+            bool control_changed = false;
+
             ti = impl_->tonic_.find(id_);
             if(ti!=impl_->tonic_.end()) impl_->tonic_.erase(ti);
             t = d.as_dict_lookup("tonic");
@@ -220,7 +223,11 @@ namespace
             bi = impl_->base_.find(id_);
             if(bi!=impl_->base_.end()) impl_->base_.erase(bi);
             b = d.as_dict_lookup("base");
-            if(!b.is_null()) impl_->base_.insert(std::make_pair(id_,b.as_renorm_float(-20,20,0)));
+            if(!b.is_null())
+            {
+                impl_->base_.insert(std::make_pair(id_,b.as_renorm_float(-20,20,0)));
+                control_changed = true;
+            }
 
             oi = impl_->oct_.find(id_);
             if(oi!=impl_->oct_.end()) impl_->oct_.erase(oi);
@@ -230,16 +237,26 @@ namespace
             si = impl_->scale_.find(id_);
             if(si!=impl_->scale_.end()) impl_->scale_.erase(si);
             s = d.as_dict_lookup("scale");
-            if(s.is_string()) impl_->scale_.insert(std::make_pair(id_,pic::ref(new piw::scaler_controller_t::scale_t(s.as_string()))));
+            if(s.is_string())
+            {
+                impl_->scale_.insert(std::make_pair(id_,pic::ref(new piw::scaler_controller_t::scale_t(s.as_string()))));
+                control_changed = true;
+            }
 
             li = impl_->layout_.find(id_);
             if(li!=impl_->layout_.end()) impl_->layout_.erase(li);
             co = d.as_dict_lookup("courseoffset");
             cl = d.as_dict_lookup("courselen");
-            if(co.is_tuple() && cl.is_tuple()) impl_->layout_.insert(std::make_pair(id_,pic::ref(new piw::scaler_controller_t::layout_t(co,cl))));
+            if(co.is_tuple() && cl.is_tuple())
+            {
+                impl_->layout_.insert(std::make_pair(id_,pic::ref(new piw::scaler_controller_t::layout_t(co,cl))));
+                control_changed = true;
+            }
 
-            impl_->control_changed(id_);
-
+            if(control_changed)
+            {
+                impl_->control_changed(id_);
+            }
         }
 
         void ufilterfunc_end(piw::ufilterenv_t *, unsigned long long)
@@ -292,11 +309,12 @@ piw::cookie_t piw::scaler_controller_t::cookie()
     return impl_->cookie();
 }
 
-struct piw::scaler_t::impl_t: piw::ufilterctl_t, piw::ufilter_t, pic::lckobject_t
+struct piw::scaler_t::impl_t: piw::scaler_subscriber_t, piw::ufilterctl_t, piw::ufilter_t, pic::lckobject_t
 {
-    impl_t(piw::scaler_controller_t *sc,const piw::cookie_t &c, const pic::f2f_t &b);
+    impl_t(piw::scaler_controller_t *sc,const piw::cookie_t &c,const cookie_t &l,const pic::f2f_t &b);
 
     ufilterfunc_t *ufilterctl_create(const piw::data_t &);
+    virtual void ufilterctl_delete(ufilterfunc_t *f);
 
     unsigned long long ufilterctl_inputs()
     {
@@ -315,13 +333,23 @@ struct piw::scaler_t::impl_t: piw::ufilterctl_t, piw::ufilter_t, pic::lckobject_
 
     piw::scaler_controller_t *controller_;
     pic::flipflop_functor_t<pic::f2f_t> bend_;
+    piw::statusbuffer_t statusbuffer_;
 };
 
 namespace
 {
-    struct sfunc_t : piw::ufilterfunc_t
+    struct sfunc_t : piw::scaler_subscriber_t, piw::ufilterfunc_t
     {
-        sfunc_t(piw::scaler_t::impl_t *p) : parent_(p), time_(0) {}
+        sfunc_t(piw::scaler_t::impl_t *p) : parent_(p), time_(0)
+        {
+            krange_=1;
+            grange_=12;
+            tonic_=0;
+            octave_=3;
+            roctave_=0;
+            mode_=0;
+            scale_=parent_->controller_->common_scale_at(0);
+        }
 
         void setkbend(const piw::data_nb_t &v)
         {
@@ -382,13 +410,6 @@ namespace
 #if SCALER_DEBUG>0
             pic::logmsg() << "------- scaler start" << time_;
 #endif // SCALER_DEBUG>0
-            krange_=1;
-            grange_=12;
-            tonic_=0;
-            octave_=3;
-            roctave_=0;
-            mode_=0;
-            scale_=parent_->controller_->common_scale_at(0);
 
             piw::data_nb_t d;
 
@@ -453,8 +474,13 @@ namespace
 
         void setmode(const piw::data_nb_t &d)
         {
+            float old_mode = mode_;
             mode_ = d.as_renorm_float(-20,20,0);
             time_ = std::max(time_,d.time());
+            if(old_mode != mode_)
+            {
+                update_lights(id_);
+            }
         }
 
         void setscale(const piw::data_nb_t &d)
@@ -468,7 +494,9 @@ namespace
                 unsigned n = (unsigned)(fabsf(d.as_norm())*parent_->controller_->common_scale_count());
                 scale_ = parent_->controller_->common_scale_at(n);
             }
+
             time_ = std::max(time_,d.time());
+            update_lights(id_);
         }
 
         void setroctave(const piw::data_nb_t &d)
@@ -485,8 +513,13 @@ namespace
 
         void setoverride(const piw::data_nb_t &d)
         {
+            bool old_override = override_;
             override_=(d.as_norm()!=0);
             time_ = std::max(time_,d.time());
+            if(old_override != override_)
+            {
+                update_lights(id_);
+            }
         }
 
         void ufilterfunc_data(piw::ufilterenv_t *env,unsigned sig,const piw::data_nb_t &d)
@@ -524,6 +557,55 @@ namespace
             }
 
             send_output(env);
+        }
+
+        void control_changed(const piw::data_nb_t &id)
+        {
+            update_lights(id);
+        }
+
+        void update_lights(const piw::data_nb_t &id)
+        {
+            piw::scaler_controller_t::bits_t b(parent_->controller_->bits(id));
+            if(b.bits&BLAYOUT)
+            {
+                piw::scaler_controller_t::lref_t l=b.layout;
+                piw::scaler_controller_t::sref_t s=scale_;
+                float m=mode_;
+
+                if(!override_)
+                {
+                    if(b.bits&BSCALE) s=b.scale;
+                    if(b.bits&BBASE)  m=b.base;
+                }
+
+                if(l.isvalid() && s.isvalid())
+                {
+                    unsigned scale_size = s->size()-1;
+
+                    parent_->statusbuffer_.clear();
+
+                    if(scale_size > 0)
+                    {
+                        float key_offset = 0.0;
+                        float note_offset = 0.0;
+
+                        for(unsigned c=0; c<b.layout->courses(); c++)
+                        {
+                            for(unsigned k=0; k<b.layout->length(c); k++)
+                            {
+                                l->offsets(c,key_offset,note_offset);
+                                if(0 == (k+int(key_offset+m))%scale_size)
+                                {
+                                    parent_->statusbuffer_.set_status(true,c+1,k+1,1);
+                                }
+                            }
+                        }
+                    }
+
+                    parent_->statusbuffer_.send();
+                }
+            }
         }
 
         void recalculate_note()
@@ -654,11 +736,23 @@ namespace
 
 piw::ufilterfunc_t *piw::scaler_t::impl_t::ufilterctl_create(const piw::data_t &)
 {
-    return new sfunc_t(this);
+    sfunc_t *s = new sfunc_t(this);
+    controller_->add_subscriber(s);
+    return s;
 }
 
-piw::scaler_t::impl_t::impl_t(piw::scaler_controller_t *sc,const piw::cookie_t &c, const pic::f2f_t &b): ufilter_t(this,c), controller_(sc), bend_(b)
+void piw::scaler_t::impl_t::ufilterctl_delete(ufilterfunc_t *f)
 {
+    if(f)
+    {
+        controller_->del_subscriber((scaler_subscriber_t *)f);
+        delete f;
+    }
+}
+
+piw::scaler_t::impl_t::impl_t(piw::scaler_controller_t *sc,const piw::cookie_t &c,const cookie_t &l,const pic::f2f_t &b): ufilter_t(this,c), controller_(sc), bend_(b), statusbuffer_(piw::change_nb_t(),0,l)
+{
+    statusbuffer_.autosend(false);
 }
 
 void piw::scaler_t::set_bend_curve(const pic::f2f_t &b)
@@ -679,17 +773,15 @@ pic::f2f_t piw::step_bucket() { return pic::f2f_t::callable(__step); }
 
 void piw::scaler_controller_t::impl_t::control_changed(const piw::data_nb_t &id)
 {
-    unsigned cl = id.as_pathlen();
-    const unsigned char *cp = id.as_path();
     pic::lcklist_t<scaler_subscriber_t *>::nbtype::iterator i;
 
     for(i=subscribers_.begin(); i!=subscribers_.end(); i++)
     {
-        (*i)->control_changed(cl,cp);
+        (*i)->control_changed(id);
     }
 }
 
-piw::scaler_t::scaler_t(piw::scaler_controller_t *sc,const piw::cookie_t &c, const pic::f2f_t &b): ctl_(new impl_t(sc,c,b))
+piw::scaler_t::scaler_t(piw::scaler_controller_t *sc,const piw::cookie_t &c,const cookie_t &l,const pic::f2f_t &b): ctl_(new impl_t(sc,c,l,b))
 {
 }
 

@@ -55,7 +55,7 @@ namespace piw
     struct PIW_DECLSPEC_CLASS scaler_subscriber_t
     {
         virtual ~scaler_subscriber_t() {}
-        virtual void control_changed(unsigned,const unsigned char *) {}
+        virtual void control_changed(const piw::data_nb_t &) {}
     };
 
     class PIW_DECLSPEC_CLASS scaler_controller_t
@@ -182,6 +182,17 @@ namespace piw
                     return notes_.size();
                 }
 
+                unsigned courses()
+                {
+                    return ncourses_;
+                }
+
+                unsigned length(unsigned c)
+                {
+                    if(c>=lengths_.size()) return 0;
+                    return lengths_[c];
+                }
+
                 int knum(unsigned i)
                 {
                     return notes_.at(i).first;
@@ -249,7 +260,7 @@ namespace piw
             class impl_t;
 
         public:
-            scaler_t(scaler_controller_t *,const cookie_t &c, const pic::f2f_t &b);
+            scaler_t(scaler_controller_t *,const cookie_t &c,const cookie_t &c,const pic::f2f_t &b);
             ~scaler_t();
 
             void set_bend_curve(const pic::f2f_t &b);
