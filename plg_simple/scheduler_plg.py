@@ -271,11 +271,12 @@ class Agent(agent.Agent):
     def rpc_delete_trigger(self,args):
         trigger = action.unmarshal(args)
         for (i,e) in self[3].iteritems():
-            if e.trigger_id()==id:
-                print 'deleting event',id
+            if e.trigger_id()==trigger:
+                print 'deleting event',e.trigger_id()
                 e.cancel()
                 del self[3][i]
                 self[5].update()
+                return
 
     def __create_event(self,schema,called=None):
         if called:
