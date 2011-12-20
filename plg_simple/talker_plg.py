@@ -274,7 +274,7 @@ class Agent(agent.Agent):
         self[4] = PhraseBrowser(self.__eventlist,self.__keylist)
 
         self[5] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.merge_nodefault_policy(2,False),names='controller input')
-        self[6] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.local_policy(1,False), names='key input')
+        self[6] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.vector_policy(1,False), names='key input')
 
     def __eventlist(self,k):
         el=[]

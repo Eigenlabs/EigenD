@@ -69,6 +69,7 @@ extern "C" {
 #define BCTVTYPE_TUPLE      0x09 /**< tuple; ordered list of data */
 
 #define BCTVTYPE_RTRANSIENT 0x04 /**< state variable children are not state managed */
+#define BCTVTYPE_CTL        0x08 /**< state variable carries control plumbing */
 #define BCTVTYPE_LIST       0x10 /**< state variable is list */
 #define BCTVTYPE_TRANSIENT  0x20 /**< state variable is not state managed */
 #define BCTVTYPE_READONLY   0x40 /**< state variable is readonly */

@@ -64,6 +64,11 @@ void piw::dump_client(piw::client_t *client, unsigned flags, bool log)
             msg << "/rw";
         }
 
+        if(client->host_flags & PLG_SERVER_CTL)
+        {
+            msg << "/ctl";
+        }
+
         if(client->host_flags & PLG_SERVER_LIST)
         {
             msg << "/list";

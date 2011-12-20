@@ -173,13 +173,13 @@ class FastReadOnlyPolicyImpl:
         raise RuntimeError("unimplemented in FastReadOnlyPolicy")
 
 
-class PlumberConnector(piw.connector):
-    def __init__(self,correlator,factory,signal,sigtype,priority,iid,filt,clocked):
-        self.__factory = factory
-        piw.connector.__init__(self,correlator,iid,signal,priority,sigtype,filt,clocked)
+class PlumberBackend(piw.backend):
+    def __init__(self,correlator,stream_policy,signal,sigtype,priority,iid,clocked):
+        self.__stream_policy = stream_policy
+        piw.backend.__init__(self,correlator,iid,signal,priority,sigtype,clocked)
 
-    def create_converter(self):
-        return self.__factory()
+    def create_converter(self,iso):
+        return self.__stream_policy.create_converter(iso)
 
 class Plumber(proxy.AtomProxy):
 
@@ -207,43 +207,35 @@ class Plumber(proxy.AtomProxy):
     def connect_static(self):
         return self.__config.connect_static()
 
-    def prepare(self,correlator,stream_policy,signal,sigtype,priority):
-        self.__correlator = correlator
-        self.__stream_policy = stream_policy
-        self.__signal = signal
-        self.__sigtype = sigtype
-        self.__priority = priority
-
     def disconnect(self):
         self.set_data_clone(None)
         self.__mainanchor.set_address_str('')
         self.__connector = None
+        self.__cbackend = None
+        self.__dbackend = None
 
     def node_ready(self):
-        self.__policy.prepare_plumber(self)
+        self.__dbackend,self.__cbackend = self.__policy.get_backend(self.__config)
+        self.__cbackend.set_latency(self.latency())
+        self.__dbackend.set_latency(self.latency())
+        self.__connector = piw.connector(self.__config.connect_static(),self.__dbackend,self.__cbackend,self.__config.filter,self.domain().iso())
 
-        iso = self.domain().iso()
-        pol = self.__stream_policy
-
-        def __factory():
-            return pol.create_converter(iso)
-
-        self.__connector = PlumberConnector(self.__correlator,__factory,self.__signal,self.__sigtype,self.__priority,self.__config.iid,self.__config.filter,self.__config.clocked)
-        self.__correlator.set_latency(self.__signal,self.__config.iid,self.latency())
         self.set_data_clone(self.__connector)
 
         if self.__config.callback:
             self.__config.callback(self)
 
     def set_clocked(self,c):
-        self.__clock = c
         if self.__connector:
             self.__connector.set_clocked(c)
 
     def node_removed(self):
         self.set_data_clone(None)
         self.__connector = None
-        self.__correlator.remove_latency(self.__signal,self.__config.iid)
+        self.__cbackend.remove_latency()
+        self.__dbackend.remove_latency()
+        self.__cbackend = None
+        self.__dbackend = None
 
         if self.__config.callback:
             self.__config.callback(None)
@@ -255,7 +247,8 @@ class Plumber(proxy.AtomProxy):
             return
 
         if 'latency' in parts:
-            self.__correlator.set_latency(self.__signal,self.__config.iid,self.latency())
+            self.__cbackend.set_latency(self.latency())
+            self.__dbackend.set_latency(self.latency())
 
 class PlumberConfig:
 
@@ -343,7 +336,7 @@ class ConnectablePolicyImpl:
     def create_plumber(self,config):
         return None
 
-    def prepare_plumber(self,plumber):
+    def get_backend(self,config):
         pass
 
     def make_filter(self,stream,slot):
@@ -388,6 +381,9 @@ class ConnectablePolicyImpl:
 
     def count_data_connections(self):
         return self.__dconnections
+
+    def count_connections(self):
+        return self.__dconnections+self.__cconnections
 
     def __add_connection(self,src):
         iid = (max(self.__connection_iids)+1 if self.__connection_iids else 1)
@@ -435,8 +431,8 @@ class FunctorController:
     def __dump(self,d):
         print 'default control',d
 
-    def prepare(self,plumber):
-        plumber.prepare(self.__correlator,self.__policy,1,Plumber.input_input,-1)
+    def get_backend(self,config):
+        return PlumberBackend(self.__correlator,self.__policy,1,Plumber.input_input,-1,config.iid,config.clocked)
 
 class FastPolicyImpl(ConnectablePolicyImpl):
     protocols = 'input explicit'
@@ -472,19 +468,19 @@ class FastPolicyImpl(ConnectablePolicyImpl):
     def get_clock(self):
         return self.__clock
 
-    def prepare_plumber(self,plumber):
-        if plumber.connect_static():
-            if self.__ctrl is None:
-                self.__ctrl = FunctorController(self.__clock_domain,self.__stream_policy,self.__ctl_handler)
-            self.__ctrl.prepare(plumber)
-        else:
-            if self.__backend is None:
-                self.__backend = piw.functor_backend(1,True)
-                self.__backend.set_functor(piw.pathnull(0),utils.make_change_nb(self.__handler))
-                self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.root_filter(),self.__backend.cookie(),0,0)
-            if plumber.clocked():
-                self.__set_clock(self.__backend.get_clock())
-            plumber.prepare(self.__correlator,self.__stream_policy,1,Plumber.input_input,-1)
+    def get_backend(self,config):
+        if self.__ctrl is None:
+            self.__ctrl = FunctorController(self.__clock_domain,self.__stream_policy,self.__ctl_handler)
+
+        if self.__backend is None:
+            self.__backend = piw.functor_backend(1,True)
+            self.__backend.set_functor(piw.pathnull(0),utils.make_change_nb(self.__handler))
+            self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.root_filter(),self.__backend.cookie(),0,0)
+
+        if config.clocked:
+            self.__set_clock(self.__backend.get_clock())
+
+        return PlumberBackend(self.__correlator,self.__stream_policy,1,Plumber.input_input,-1,config.iid,config.clocked),self.__ctrl.get_backend(config)
 
     def create_plumber(self,config):
         return Plumber(self,config)
@@ -499,14 +495,10 @@ class FastPolicyImpl(ConnectablePolicyImpl):
             self.__clock.add_upstream(self.__upstream)
 
     def destroy_plumber(self,plumber):
-        if plumber.connect_static():
-            if self.count_control_connections()==0:
-                self.__ctrl = None
-            return
-
-        if self.count_data_connections()==0:
+        if self.count_connections()==0:
             self.__correlator = None
             self.__backend = None
+            self.__ctrl = None
 
 
 class TriggerFunctorController:
@@ -521,8 +513,8 @@ class TriggerFunctorController:
     def __dump(self,d):
         print 'default control',d
 
-    def prepare(self,plumber):
-        plumber.prepare(self.__correlator,self.__policy,1,Plumber.input_input,-1)
+    def get_backend(self,config):
+        return PlumberBackend(self.__correlator,self.__policy,1,Plumber.input_input,-1,config.iid,config.clocked)
 
 class TriggerPolicyImpl(ConnectablePolicyImpl):
     protocols = 'input explicit'
@@ -558,20 +550,18 @@ class TriggerPolicyImpl(ConnectablePolicyImpl):
     def get_clock(self):
         return self.__clock
 
-    def prepare_plumber(self,plumber):
-        if plumber.connect_static():
-            if self.__ctrl is None:
-                self.__ctrl = TriggerFunctorController(self.__clock_domain,self.__stream_policy,self.__handler)
-            self.__ctrl.prepare(plumber)
-        else:
-            if self.__correlator is None:
-                self.__backend = piw.functor_backend(1,True)
-                self.__backend.set_functor(piw.pathnull(0),self.__handler)
-                self.__backend.send_duplicates(True)
-                self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.root_filter(),self.__backend.cookie(),0,0)
-            if plumber.clocked():
-                self.__set_clock(self.__backend.get_clock())
-            plumber.prepare(self.__correlator,self.__stream_policy,1,Plumber.input_input,-1)
+    def get_backend(self,config):
+        if self.__ctrl is None:
+            self.__ctrl = TriggerFunctorController(self.__clock_domain,self.__stream_policy,self.__handler)
+        if self.__correlator is None:
+            self.__backend = piw.functor_backend(1,True)
+            self.__backend.set_functor(piw.pathnull(0),self.__handler)
+            self.__backend.send_duplicates(True)
+            self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.root_filter(),self.__backend.cookie(),0,0)
+        if config.clocked:
+            self.__set_clock(self.__backend.get_clock())
+
+        return PlumberBackend(self.__correlator,self.__stream_policy,1,Plumber.input_input,-1,config.iid,config.clocked),self.__ctrl.get_backend(config)
 
     def create_plumber(self,config):
         return Plumber(self,config)
@@ -586,14 +576,10 @@ class TriggerPolicyImpl(ConnectablePolicyImpl):
             self.__clock.add_upstream(self.__upstream)
 
     def destroy_plumber(self,plumber):
-        if plumber.connect_static():
-            if self.count_control_connections()==0:
-                self.__ctrl = None
-            return
-
-        if self.count_data_connections()==0:
+        if self.count_connections()==0:
             self.__backend = None
             self.__correlator = None
+            self.__ctrl = None
 
 
 class LoadPolicyNode(node.Server):
@@ -632,30 +618,25 @@ class LoadPolicyImpl(ConnectablePolicyImpl):
         d = self.get_domain().value2data(v,t)
         self.__slow_handler(d)
 
-    def prepare_plumber(self,plumber):
-        if plumber.connect_static():
-            if self.__ctrl is None:
-                self.__ctrl = FunctorController(self.__clock_domain,functor=piw.slowchange(utils.changify(self.__slow_handler)))
-            self.__ctrl.prepare(plumber)
-        else:
-            if self.__correlator is None:
-                self.__backend = piw.functor_backend(1,True)
-                self.__backend.set_functor(piw.pathnull(0),utils.make_change_nb(piw.slowchange(utils.changify(self.__slow_handler))))
-                self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.root_filter(),self.__backend.cookie(),0,0)
-            plumber.prepare(self.__correlator,self.__stream_policy,1,Plumber.input_input,-1)
+    def get_backend(self,config):
+        if self.__ctrl is None:
+            self.__ctrl = FunctorController(self.__clock_domain,functor=piw.slowchange(utils.changify(self.__slow_handler)))
+
+        if self.__correlator is None:
+            self.__backend = piw.functor_backend(1,True)
+            self.__backend.set_functor(piw.pathnull(0),utils.make_change_nb(piw.slowchange(utils.changify(self.__slow_handler))))
+            self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.root_filter(),self.__backend.cookie(),0,0)
+
+        return PlumberBackend(self.__correlator,self.__stream_policy,1,Plumber.input_input,-1,config.iid,config.clocked),self.__ctrl.get_backend(config)
 
     def create_plumber(self,config):
         return Plumber(self,config)
 
     def destroy_plumber(self,plumber):
-        if plumber.connect_static():
-            if self.count_control_connections()==0:
-                self.__ctrl = None
-            return
-
-        if self.count_data_connections()==0:
+        if self.count_connections()==0:
             self.__backend = None
             self.__correlator = None
+            self.__ctrl = None
 
 
 class SlowPolicyImpl(ConnectablePolicyImpl):
@@ -683,31 +664,26 @@ class SlowPolicyImpl(ConnectablePolicyImpl):
         if self.__handler(v) is not False:
             self.set_value(v,t)
 
-    def prepare_plumber(self,plumber):
-        if plumber.connect_static():
-            if self.__ctrl is None:
-                self.__ctrl = FunctorController(self.__clock_domain,functor=piw.slowchange(utils.changify(self.__slow_handler)))
-            self.__ctrl.prepare(plumber)
-        else:
-            if self.__correlator is None:
-                self.__backend = piw.functor_backend(1,True)
-                self.__backend.set_functor(piw.pathnull(0),utils.make_change_nb(piw.slowchange(utils.changify(self.__slow_handler))))
-                self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.root_filter(),self.__backend.cookie(),0,0)
-            plumber.prepare(self.__correlator,self.__stream_policy,1,Plumber.input_input,-1)
+    def get_backend(self,config):
+        if self.__ctrl is None:
+            self.__ctrl = FunctorController(self.__clock_domain,functor=piw.slowchange(utils.changify(self.__slow_handler)))
+
+        if self.__correlator is None:
+            self.__backend = piw.functor_backend(1,True)
+            self.__backend.set_functor(piw.pathnull(0),utils.make_change_nb(piw.slowchange(utils.changify(self.__slow_handler))))
+            self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.root_filter(),self.__backend.cookie(),0,0)
+
+        return PlumberBackend(self.__correlator,self.__stream_policy,1,Plumber.input_input,-1,config.iid,config.clocked),self.__ctrl.get_backend(config)
 
     def create_plumber(self,config):
         config.callback=self.__callback
         return Plumber(self,config)
 
     def destroy_plumber(self,plumber):
-        if plumber.connect_static():
-            if self.count_control_connections()==0:
-                self.__ctrl = None
-            return
-
-        if self.count_data_connections()==0:
+        if self.count_connections()==0:
             self.__backend = None
             self.__correlator = None
+            self.__ctrl = None
 
 
 class PolicyFactory:

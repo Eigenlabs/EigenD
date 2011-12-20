@@ -37,7 +37,7 @@ namespace rig
     class connector_t: public piw::client_t
     {
         public:
-            connector_t(output_t *output,unsigned index, const piw::d2d_nb_t &filter);
+            connector_t(bool ctl, output_t *output,unsigned index, const piw::d2d_nb_t &filter);
             virtual ~connector_t();
             void set_clocked(bool c);
 
