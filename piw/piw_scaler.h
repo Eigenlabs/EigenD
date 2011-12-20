@@ -260,7 +260,7 @@ namespace piw
             class impl_t;
 
         public:
-            scaler_t(scaler_controller_t *,const cookie_t &c,const cookie_t &c,const pic::f2f_t &b);
+            scaler_t(scaler_controller_t *,const cookie_t &c,const cookie_t &l,const pic::f2f_t &b);
             ~scaler_t();
 
             void set_bend_curve(const pic::f2f_t &b);
