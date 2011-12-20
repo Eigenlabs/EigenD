@@ -130,13 +130,13 @@ class Controller:
     def set_course_semis(self,idx,val):
         self.ensure(idx)
         l = [i.as_float() for i in self.getlist('courseoffset')]
-        l[idx-1] = float(val)
+        l[idx-1] = float(val+10000 if val else 0)
         self.setlist('courseoffset',[piw.makefloat(i,0) for i in l])
 
     def set_course_steps(self,idx,val):
         self.ensure(idx)
         l = [i.as_float() for i in self.getlist('courseoffset')]
-        l[idx-1] = float(val+10000 if val else 0)
+        l[idx-1] = float(val)
         self.setlist('courseoffset',[piw.makefloat(i,0) for i in l])
 
     def get_courses(self):
@@ -693,6 +693,11 @@ class Agent(agent.Agent):
             self.controller.settuple('rowlen',rowlen)
             self.controller.settuple('rowoffset',rowoffset)
 
+            self.mapper.set_rowlen(rowlen)
+            self.mapper.set_rowoffset(rowoffset)
+
+            self[1].update_status_indexes()
+
             # transform the mode key row and column in case it was set from an
             # upgraded setup that only set the key in a sequential position
             if self.__upstream_rowlen:
@@ -1073,11 +1078,6 @@ class Agent(agent.Agent):
                 else:
                     rowoffset = piw.tupleadd(rowoffset, piw.makenull(0))
 
-        self.mapper.set_rowlen(rowlen)
-        self.mapper.set_rowoffset(rowoffset)
-
-        self[1].update_status_indexes()
-
         return (rowlen,rowoffset)
 
     def __set_mapping(self,mapping):
@@ -1090,6 +1090,11 @@ class Agent(agent.Agent):
 
         # determine the physical geometry
         (rowlen, rowoffset) = self.__set_physical_geo(mapping)
+
+        self.mapper.set_rowlen(rowlen)
+        self.mapper.set_rowoffset(rowoffset)
+
+        self[1].update_status_indexes()
 
         # activate the mappings
         mapper.activate_mapping()

@@ -124,14 +124,14 @@ namespace piw
                     for(unsigned c=0; c<ncourses_; ++c)
                     {
                         float adj = co.at(c);
-                        if(adj>500.f)
+                        if(adj>5000.f)
                         {
                             adj -= 10000.f;
-                            number += (int)adj;
+                            note += adj;
                         }
                         else
                         {
-                            note += adj;
+                            number += (int)adj;
                         }
 
                         unsigned nk = (unsigned)lengths_.at(c);
