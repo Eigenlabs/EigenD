@@ -688,7 +688,10 @@ class Agent(agent.Agent):
                 self.mapper.set_upstream_rowlen(piw.makenull(0))
 
             # recalculate all key geometries based on the upstream geometry
-            self.__set_physical_geo(self.__cur_mapping())
+            (rowlen, rowoffset) = self.__set_physical_geo(self.__cur_mapping())
+
+            self.controller.settuple('rowlen',rowlen)
+            self.controller.settuple('rowoffset',rowoffset)
 
             # transform the mode key row and column in case it was set from an
             # upgraded setup that only set the key in a sequential position
@@ -1070,12 +1073,12 @@ class Agent(agent.Agent):
                 else:
                     rowoffset = piw.tupleadd(rowoffset, piw.makenull(0))
 
-        self.controller.settuple('rowlen',rowlen)
-        self.controller.settuple('rowoffset',rowoffset)
         self.mapper.set_rowlen(rowlen)
         self.mapper.set_rowoffset(rowoffset)
 
         self[1].update_status_indexes()
+
+        return (rowlen,rowoffset)
 
     def __set_mapping(self,mapping):
         mapper = self.mapper
@@ -1086,10 +1089,13 @@ class Agent(agent.Agent):
             self.mapper.set_mapping(src,dst)
 
         # determine the physical geometry
-        self.__set_physical_geo(mapping)
+        (rowlen, rowoffset) = self.__set_physical_geo(mapping)
 
         # activate the mappings
         mapper.activate_mapping()
+
+        self.controller.settuple('rowlen',rowlen)
+        self.controller.settuple('rowoffset',rowoffset)
 
         # store the mapping description in the state of the agent
         mapstr = logic.render_term(mapping)
