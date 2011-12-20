@@ -39,7 +39,6 @@ class RigMonitor(proxy.AtomProxy):
         self.__mainanchor = piw.canchor()
         self.__mainanchor.set_client(self)
         self.__mainanchor.set_address_str(address)
-        print 'monitor plumber',address
 
     def disconnect(self):
         self.__connector = None
@@ -47,13 +46,11 @@ class RigMonitor(proxy.AtomProxy):
         self.__mainanchor.set_address_str('')
 
     def node_ready(self):
-        print 'add monitor input',self.domain()
         self.__input.add_monitor(self)
         self.__connector = DataProxy(self.__input.handler)
         self.set_data_clone(self.__connector)
 
     def node_removed(self):
-        print 'del monitor input',self.domain()
         self.__input.del_monitor(self)
         self.set_data_clone(None)
         self.__connector = None
@@ -128,9 +125,6 @@ class RigOutput(atom.Atom):
 
         dead_slaves = old_slaves.difference(cur_slaves)
         new_slaves = cur_slaves.difference(old_slaves)
-
-        print 'destroying monitors',dead_slaves
-        print 'creating monitors',new_slaves
 
         for s in dead_slaves:
             m = self.__monitors[s]
@@ -359,11 +353,9 @@ class RigInput(atom.Atom):
         self.data_node().set_data(v)
 
     def set_domain(self,dom):
-        print 'setup feedback dom',dom
         self.set_property_string('domain',str(dom))
 
     def __setup(self):
-        print 'setup monitors',self.__monitors
         first_aniso = None
 
         for (k,v) in self.__monitors.items():
