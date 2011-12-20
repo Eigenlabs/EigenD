@@ -312,7 +312,7 @@ class LingerPolicyImpl(policy.ConnectablePolicyImpl):
                 self.__ctrl = policy.FunctorController(self.__input.clock_domain,functor=f)
             self.__ctrl.prepare(plumber)
         else:
-            plumber.prepare(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_linger,1)
+            plumber.prepare(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_linger,10)
 
     def create_plumber(self,config):
         assert config.clocked
