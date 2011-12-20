@@ -26,13 +26,13 @@
 
 namespace piw
 {
+    class backend_t;
+
     class PIW_DECLSPEC_CLASS connector_t: public client_t
     {
         public:
-            connector_t(correlator_t *correlator, unsigned id, unsigned signal, int pri, unsigned type, const d2d_nb_t &filter, bool clock);
+            connector_t(bool ctl, backend_t *dbackend,backend_t *cbackend, const d2d_nb_t &filter,bool iso);
             virtual ~connector_t();
-            virtual converter_ref_t create_converter() = 0;
-            void set_clocked(bool c);
 
             int gc_traverse(void *, void *) const;
             int gc_clear();
@@ -48,6 +48,30 @@ namespace piw
         private:
             impl_t *impl_;
     };
+
+    class PIW_DECLSPEC_CLASS backend_t: virtual public pic::tracked_t
+    {
+        public:
+            backend_t(correlator_t *correlator, unsigned id, unsigned signal, int pri, unsigned type, bool clock);
+
+            virtual converter_ref_t create_converter(bool iso) = 0;
+            virtual ~backend_t();
+            void set_clocked(bool c);
+            void set_latency(unsigned l);
+            void remove_latency();
+
+        private:
+            friend class piw::connector_t::impl_t;
+
+        private:
+            correlator_t *correlator_;
+            unsigned iid_;
+            unsigned signal_;
+            int pri_;
+            unsigned type_;
+            bool clock_;
+    };
+
 }
 
 #endif

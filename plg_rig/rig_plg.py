@@ -172,33 +172,6 @@ class RigMonitorPolicyImpl:
     def close(self):
         pass
 
-class RigControlPolicyImpl:
-    protocols = 'output connect-static'
-
-    def __init__(self,atom,data_domain,init,transient):
-        self.__datanode = node.Server(transient=transient)
- 
-    def data_node(self):
-        return self.__datanode
-
-    def get_data(self):
-        raise RuntimeError("unimplemented in RigOutputPolicy")
-
-    def set_data(self,d):
-        raise RuntimeError("unimplemented in RigOutputPolicy")
-
-    def change_value(self,v,t=0,p=True):
-        raise RuntimeError("unimplemented in RigOutputPolicy")
-
-    def set_value(self,v,t=0):
-        raise RuntimeError("unimplemented in RigOutputPolicy")
-
-    def get_value(self):
-        raise RuntimeError("unimplemented in RigOutputPolicy")
-
-    def close(self):
-        pass
-
 class RigOutputPolicyImpl:
     protocols = 'output'
 
@@ -229,15 +202,12 @@ class RigOutputPolicyImpl:
 def RigMonitorPolicy(*args,**kwds):
     return policy.PolicyFactory(RigMonitorPolicyImpl,*args,**kwds)
 
-def RigControlPolicy(*args,**kwds):
-    return policy.PolicyFactory(RigControlPolicyImpl,*args,**kwds)
-
 def RigOutputPolicy(*args,**kwds):
     return policy.PolicyFactory(RigOutputPolicyImpl,*args,**kwds)
 
-class RigGenericOutput(atom.Atom):
-    def __init__(self,policy,master,ordinal):
-        atom.Atom.__init__(self,ordinal=ordinal,policy=policy,protocols='remove')
+class RigOutput(atom.Atom):
+    def __init__(self,master,ordinal):
+        atom.Atom.__init__(self,ordinal=ordinal,policy=RigOutputPolicy(),protocols='remove')
 
         self.__inputs = {}
         self.__master = master
@@ -337,30 +307,17 @@ class RigMonitor(atom.Atom):
         return key in ['name','ordinal']
 
 
-class RigControl(RigGenericOutput):
-    def __init__(self,master,ordinal):
-        RigGenericOutput.__init__(self,RigControlPolicy(),master,ordinal)
-
-    def __change(self,d):
-        self.data_node().set_data(d)
-
-    def change(self):
-        return piw.slowchange(utils.changify(self.__change))
-
-class RigOutput(RigGenericOutput):
-    def __init__(self,master,ordinal):
-        RigGenericOutput.__init__(self,RigOutputPolicy(),master,ordinal)
-
 class RigInputPlumber(proxy.AtomProxy):
 
     monitor = set(['latency','domain'])
 
-    def __init__(self,output,iid,address,filt):
+    def __init__(self,output,iid,address,filt,ctl):
         proxy.AtomProxy.__init__(self)
         self.__output = output
         self.__iid = iid
         self.__filt = filt
         self.__connector = None
+        self.__ctl = ctl
         self.__mainanchor = piw.canchor()
         self.__mainanchor.set_client(self)
         self.__mainanchor.set_address_str(address)
@@ -372,7 +329,7 @@ class RigInputPlumber(proxy.AtomProxy):
 
     def node_ready(self):
         self.__output.add_input(self.__iid,self)
-        self.__connector = rig_native.connector(self.__output.get_policy().data_node(),self.__iid,self.__filt)
+        self.__connector = rig_native.connector(self.__ctl,self.__output.get_policy().data_node(),self.__iid,self.__filt)
         self.set_data_clone(self.__connector)
 
     def node_removed(self):
@@ -389,14 +346,13 @@ class RigInputPlumber(proxy.AtomProxy):
 class RigInputPolicyImpl:
     protocols = 'input'
 
-    def __init__(self,atom,data_domain,init,transient,scope,output,control):
+    def __init__(self,atom,data_domain,init,transient,scope,output):
         self.__closed = False
         self.__scope = scope
         self.__datanode = node.Server(transient=transient)
         self.__data_domain = data_domain
         self.__connection_iids = set()
         self.__output = output
-        self.__control = control
         self.__clockdom = piw.clockdomain_ctl()
         self.__clockdom.set_source(piw.makestring('*',0))
         self.__ctrl = None
@@ -455,8 +411,9 @@ class RigInputPolicyImpl:
         self.__closed = True
         self.__connections.clear()
 
-    def prepare_plumber(self,plumber):
-        self.__ctrl.prepare(plumber)
+    def get_backend(self,config):
+        backend=self.__ctrl.get_backend(config)
+        return backend,backend
 
     def __add_connection(self,src):
         iid = (max(self.__connection_iids)+1 if self.__connection_iids else 1)
@@ -468,13 +425,7 @@ class RigInputPolicyImpl:
 
         self.__connection_iids.add(iid)
 
-        if not c:
-            plumber = RigInputPlumber(self.__output,iid,a,f)
-        else:
-            if not self.__ctrl:
-                self.__ctrl = policy.FunctorController(self.__clockdom,functor=self.__control.change())
-            plumber = policy.Plumber(self,policy.PlumberConfig(a,f,iid,'ctl',True))
-
+        plumber = RigInputPlumber(self.__output,iid,a,f,c)
         return policy.PlumberSlot(iid,src,None,plumber)
 
     def __del_connection(self,src,slot,destroy):
@@ -487,9 +438,8 @@ def RigInputPolicy(*args,**kwds):
 
 
 class RigInput(atom.Atom):
-    def __init__(self,scope,index,output_peer,control_peer,monitor_peer):
+    def __init__(self,scope,index,output_peer,monitor_peer):
         self.__output_peer = output_peer
-        self.__control_peer = control_peer
         self.__monitor_peer = monitor_peer
         self.__index = index
         self.__scope = scope
@@ -498,17 +448,12 @@ class RigInput(atom.Atom):
         self.__output_peer[self.__index] = RigOutput(self,ordinal=index)
 
         m = None
-        c = None
-
-        if self.__control_peer:
-            c = RigControl(self,ordinal=index)
-            self.__control_peer[self.__index] = c
 
         if self.__monitor_peer:
             m = RigMonitor(self,ordinal=index,scope=self.__monitor_peer.scope())
             self.__monitor_peer[self.__index] = m
 
-        policy=RigInputPolicy(self.__scope,self.__output_peer[self.__index],c)
+        policy=RigInputPolicy(self.__scope,self.__output_peer[self.__index])
 
         atom.Atom.__init__(self,ordinal=index,domain=domain.Aniso(),policy=policy,protocols='remove')
 
@@ -517,10 +462,6 @@ class RigInput(atom.Atom):
         self.__output_peer[self.__index].notify_destroy()
         del self.__output_peer[self.__index]
 
-        if self.__control_peer:
-            self.__control_peer[self.__index].notify_destroy()
-            del self.__control_peer[self.__index]
-
         if self.__monitor_peer:
             self.__monitor_peer[self.__index].notify_destroy()
             del self.__monitor_peer[self.__index]
@@ -528,8 +469,6 @@ class RigInput(atom.Atom):
     def property_change(self,key,value):
         if key in ['name','ordinal']:
             self.__output_peer[self.__index].set_property(key,value,notify=False,allow_veto=False)
-            if self.__control_peer:
-                self.__control_peer[self.__index].set_property(key,value,notify=False,allow_veto=False)
             if self.__monitor_peer:
                 self.__monitor_peer[self.__index].set_property(key,value,notify=False,allow_veto=False)
 
@@ -569,7 +508,6 @@ class RigInput(atom.Atom):
 class InputList(collection.Collection):
     def __init__(self,scope):
         self.__output_peer = None
-        self.__control_peer = None
         self.__monitor_peer = None
         self.__scope = scope
         collection.Collection.__init__(self,names='input')
@@ -577,10 +515,6 @@ class InputList(collection.Collection):
     def set_output_peer(self,output_peer):
         self.__output_peer = output_peer
         self.__output_peer.set_peer(self)
-
-    def set_control_peer(self,control_peer):
-        self.__control_peer = control_peer
-        self.__control_peer.set_peer(self)
 
     def set_monitor_peer(self,monitor_peer):
         self.__monitor_peer = monitor_peer
@@ -603,7 +537,7 @@ class InputList(collection.Collection):
             names = ''
 
         k = self.find_hole()
-        j = RigInput(self.__scope,k,self.__output_peer,self.__control_peer,self.__monitor_peer)
+        j = RigInput(self.__scope,k,self.__output_peer,self.__monitor_peer)
         j.set_names(' '.join(names))
         j.set_ordinal(ordinal)
         self[k] = j
@@ -612,7 +546,7 @@ class InputList(collection.Collection):
     @async.coroutine('internal error')
     def instance_create(self,name):
         k = self.find_hole()
-        j = RigInput(self.__scope,k,self.__output_peer,self.__control_peer,self.__monitor_peer)
+        j = RigInput(self.__scope,k,self.__output_peer,self.__monitor_peer)
         j.set_ordinal(name)
         self[k] = j
         yield async.Coroutine.success(j)
@@ -623,7 +557,7 @@ class InputList(collection.Collection):
         e.destroy_input()
 
     def dynamic_create(self,i):
-        return RigInput(self.__scope,i,self.__output_peer,self.__control_peer,self.__monitor_peer)
+        return RigInput(self.__scope,i,self.__output_peer,self.__monitor_peer)
 
     def dynamic_destroy(self,i,v):
         v.destroy_input()
@@ -671,7 +605,6 @@ class InnerAgent(agent.Agent):
         self[1] = self.__workspace
         self[2] = OutputList('output')
         self[3] = InputList(self.__name)
-        self[4] = OutputList('control')
         self[5] = OutputList('monitor',scope=self.__name)
 
         self.add_verb2(1,'create([],None,role(None,[abstract,matches([input])]),option(called,[abstract]))',self.__create_input)
@@ -749,7 +682,6 @@ class OuterAgent(agent.Agent):
         self[3] = InputList(None)
 
         self[3].set_output_peer(self.__inner_agent[2])
-        self[3].set_control_peer(self.__inner_agent[4])
         self[3].set_monitor_peer(self.__inner_agent[5])
 
         self.__inner_agent[3].set_output_peer(self[2])

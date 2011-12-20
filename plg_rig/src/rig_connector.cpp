@@ -23,7 +23,7 @@
 
 struct rig::connector_t::impl_t: piw::client_t, piw::fastdata_t, pic::lckobject_t
 {
-    impl_t(rig::connector_t *r, piw::server_t *parent, unsigned index, const piw::d2d_nb_t &filter): connector_(r), parent_(parent), index_(index), filter_(filter), output_(PLG_SERVER_TRANSIENT|PLG_SERVER_RO), bridge_(PLG_FASTDATA_SENDER),connected_(false)
+    impl_t(rig::connector_t *r, piw::server_t *parent, unsigned index, const piw::d2d_nb_t &filter, bool ctl): connector_(r), parent_(parent), index_(index), filter_(filter), output_(PLG_SERVER_TRANSIENT|PLG_SERVER_RO), bridge_(PLG_FASTDATA_SENDER),connected_(false), ctl_(ctl)
     {
         parent_->child_add(index_,&output_);
         piw::tsd_fastdata(this);
@@ -44,12 +44,19 @@ struct rig::connector_t::impl_t: piw::client_t, piw::fastdata_t, pic::lckobject_
         return false;
     }
 
+    unsigned get_effective_flags()
+    {
+        unsigned f = get_host_flags();
+        if(ctl_) f |= PLG_SERVER_CTL;
+        return f;
+    }
+
     void client_opened()
     {
         piw::client_t::client_opened();
         populate();
 
-        output_.set_flags(get_host_flags());
+        output_.set_flags(get_effective_flags());
         output_.set_data(get_data());
 
         if((get_host_flags()&PLG_SERVER_FAST)!=0)
@@ -105,7 +112,7 @@ struct rig::connector_t::impl_t: piw::client_t, piw::fastdata_t, pic::lckobject_
         {
             if(!child_get(&i,1))
             {
-                std::auto_ptr<impl_t> p(new impl_t(connector_,&output_,i,filter_));
+                std::auto_ptr<impl_t> p(new impl_t(connector_,&output_,i,filter_,ctl_));
                 child_add(i, p.get());
                 children_[i] = p.release();
             }
@@ -142,11 +149,12 @@ struct rig::connector_t::impl_t: piw::client_t, piw::fastdata_t, pic::lckobject_
     piw::server_t output_;
     piw::fastdata_t bridge_;
     bool connected_;
+    bool ctl_;
 };
 
-rig::connector_t::connector_t(rig::output_t *parent,unsigned index, const piw::d2d_nb_t &filter): piw::client_t(PLG_CLIENT_CLOCK)
+rig::connector_t::connector_t(bool ctl,rig::output_t *parent,unsigned index, const piw::d2d_nb_t &filter): piw::client_t(PLG_CLIENT_CLOCK)
 {
-    impl_ = new impl_t(this,parent,index,filter);
+    impl_ = new impl_t(this,parent,index,filter,ctl);
 }
 
 rig::connector_t::~connector_t()

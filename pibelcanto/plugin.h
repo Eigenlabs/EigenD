@@ -53,6 +53,7 @@ extern "C" {
 #define PLG_SERVER_RTRANSIENT      BCTVTYPE_RTRANSIENT  /**< server and subtree should be ignored by state */
 #define PLG_SERVER_TRANSIENT       BCTVTYPE_TRANSIENT   /**< server should be ignored by state */
 #define PLG_SERVER_LIST            BCTVTYPE_LIST        /**< server is dynamic list */
+#define PLG_SERVER_CTL             BCTVTYPE_CTL         /**< server carries control plumbing */
 
 /**
  * @}

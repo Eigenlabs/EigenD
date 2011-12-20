@@ -11,7 +11,7 @@ class output[rig::output_t]: server
 
 class connector[rig::connector_t]: client /gc/
 {
-    connector(output *,unsigned,const d2d_nb &)
+    connector(bool,output *,unsigned,const d2d_nb &)
     void client_opened()
     void client_clock()
     void close_client()

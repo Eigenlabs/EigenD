@@ -251,14 +251,21 @@ class correlator[piw::correlator_t] /gc/
     void kill()
 }
 
+class backend[piw::backend_t]
+{
+    backend(correlator *, unsigned, unsigned, int, unsigned,bool)
+    virtual converter_ref create_converter(bool) = 0
+    void set_clocked(bool)
+    void set_latency(unsigned)
+    void remove_latency()
+}
+
 class connector[piw::connector_t]: client /gc/
 {
-    connector(correlator *, unsigned, unsigned, int, unsigned,const d2d_nb &,bool)
-    virtual converter_ref create_converter() = 0
+    connector(bool, backend *,backend *, const d2d_nb &, bool);
     void client_opened()
     void client_clock()
     void close_client()
-    void set_clocked(bool)
 }
 
 class converter_ref[piw::converter_ref_t]
