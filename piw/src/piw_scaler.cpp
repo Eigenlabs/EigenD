@@ -213,8 +213,6 @@ namespace
 
             piw::data_nb_t t,b,o,s,co,cl;
 
-            bool control_changed = false;
-
             ti = impl_->tonic_.find(id_);
             if(ti!=impl_->tonic_.end()) impl_->tonic_.erase(ti);
             t = d.as_dict_lookup("tonic");
@@ -223,11 +221,7 @@ namespace
             bi = impl_->base_.find(id_);
             if(bi!=impl_->base_.end()) impl_->base_.erase(bi);
             b = d.as_dict_lookup("base");
-            if(!b.is_null())
-            {
-                impl_->base_.insert(std::make_pair(id_,b.as_renorm_float(-20,20,0)));
-                control_changed = true;
-            }
+            if(!b.is_null()) impl_->base_.insert(std::make_pair(id_,b.as_renorm_float(-20,20,0)));
 
             oi = impl_->oct_.find(id_);
             if(oi!=impl_->oct_.end()) impl_->oct_.erase(oi);
@@ -237,26 +231,15 @@ namespace
             si = impl_->scale_.find(id_);
             if(si!=impl_->scale_.end()) impl_->scale_.erase(si);
             s = d.as_dict_lookup("scale");
-            if(s.is_string())
-            {
-                impl_->scale_.insert(std::make_pair(id_,pic::ref(new piw::scaler_controller_t::scale_t(s.as_string()))));
-                control_changed = true;
-            }
+            if(s.is_string()) impl_->scale_.insert(std::make_pair(id_,pic::ref(new piw::scaler_controller_t::scale_t(s.as_string()))));
 
             li = impl_->layout_.find(id_);
             if(li!=impl_->layout_.end()) impl_->layout_.erase(li);
             co = d.as_dict_lookup("courseoffset");
             cl = d.as_dict_lookup("courselen");
-            if(co.is_tuple() && cl.is_tuple())
-            {
-                impl_->layout_.insert(std::make_pair(id_,pic::ref(new piw::scaler_controller_t::layout_t(co,cl))));
-                control_changed = true;
-            }
+            if(co.is_tuple() && cl.is_tuple()) impl_->layout_.insert(std::make_pair(id_,pic::ref(new piw::scaler_controller_t::layout_t(co,cl))));
 
-            if(control_changed)
-            {
-                impl_->control_changed(id_);
-            }
+            impl_->control_changed(id_);
         }
 
         void ufilterfunc_end(piw::ufilterenv_t *, unsigned long long)
