@@ -223,7 +223,6 @@ struct piw::connector_t::impl_t: piw::client_t
     bool ctl_;
     piw::backend_t *dbackend_;
     piw::backend_t *cbackend_;
-    piw::backend_t *xbackend_;
     piw::data_t path_;
     std::map<unsigned char, impl_t *> children_;
     piw::fastdata_t *data2_;
@@ -231,6 +230,7 @@ struct piw::connector_t::impl_t: piw::client_t
     piw::dataqueue_t queue_;
     piw::d2d_nb_t filter_;
     bool iso_;
+    piw::backend_t *xbackend_;
 };
 
 piw::connector_t::connector_t(bool ctl, piw::backend_t *dbackend,piw::backend_t *cbackend, const piw::d2d_nb_t &filter,bool iso): piw::client_t(PLG_CLIENT_CLOCK)
