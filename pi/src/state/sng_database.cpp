@@ -345,11 +345,38 @@ namespace
 
                 piw::data_t n = meta_data.as_dict_lookup("name");
                 piw::data_t o = meta_data.as_dict_lookup("ordinal");
+                piw::data_t cn = meta_data.as_dict_lookup("cname");
+                piw::data_t co = meta_data.as_dict_lookup("cordinal");
 
                 std::ostringstream s;
 
-                if(n.is_string()) s<<n.as_string();
-                if(o.is_long() && o.as_long()) s<<' '<<o.as_long();
+                if(n.is_string() && n.as_string())
+                {  
+                    s<<n.as_string();
+                }
+                else
+                {
+                    if(cn.is_string() && cn.as_string())
+                    {
+                        s<<cn.as_string();
+                    }
+                }
+
+                if(o.is_long())
+                {
+                    if(o.as_long())
+                    {
+                        s<<' '<<o.as_long();
+                    }
+                }
+                else
+                {
+                    if(co.is_long() && co.as_long())
+                    {
+                        s<<' '<<co.as_long();
+                    }
+                }
+                
 
                 return s.str();
             }
