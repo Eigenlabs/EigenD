@@ -59,7 +59,13 @@ namespace
 
         bool operator<(const statusdata_t &o) const
         {
-            return musical < o.musical || row < o.row || col < o.col;
+            if(musical < o.musical) return true;
+            if(musical > o.musical) return false;
+            if(row < o.row) return true;
+            if(row > o.row) return false;
+            if(col < o.col) return true;
+            if(col > o.col) return false;
+            return false;
         }
 
         const bool musical;
