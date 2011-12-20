@@ -43,7 +43,7 @@ void piw::backend_t::remove_latency()
 
 struct piw::connector_t::impl_t: piw::client_t
 {
-    impl_t(bool ctl,piw::backend_t *dbackend,piw::backend_t *cbackend,const piw::data_t &p, const piw::d2d_nb_t &filter,bool iso): ctl_(ctl), dbackend_(dbackend), cbackend_(cbackend), path_(p), data2_(0), filter_(filter), iso_(iso), xbackend_(0)
+    impl_t(bool ctl,piw::backend_t *dbackend,piw::backend_t *cbackend,const piw::data_t &p, const piw::d2d_nb_t &filter,bool iso): ctl_(ctl), dbackend_(dbackend), cbackend_(cbackend), xbackend_(0), path_(p), data2_(0), filter_(filter), iso_(iso)
     {
     }
 
