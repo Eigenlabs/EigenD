@@ -20,7 +20,102 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <picross/pic_tool.h>
+#include <picross/pic_log.h>
 #include <string>
+
+struct pic::bgprocess_t::impl_t
+{
+    impl_t(const std::string &dir,const char *name): started_(false), name_(name)
+    {
+        path_ = dir;
+        path_ = path_+"/"+name;
+    }
+
+    ~impl_t()
+    {
+        quit();
+    }
+
+    void quit()
+    {
+        if(started_)
+        {
+            started_=false;
+            kill(pid_,9);
+
+            while(kill(pid_,0)>=0)
+            {
+                waitpid(pid_,0,WNOHANG);
+                sleep(1);
+            }
+            
+            waitpid(pid_,0,WNOHANG);
+        }
+    }
+
+    bool is_running()
+    {
+        if(started_)
+        {
+            if(kill(pid_,0)>=0)
+            {
+                return true;
+            }
+
+            started_=false;
+        }
+
+        return false;
+    }
+
+    void start()
+    {
+        pid_ = fork();
+
+        if(!pid_) // child
+        {
+            execl(path_.c_str(),name_.c_str(),(char *)0);
+            exit(-1);
+        }
+
+        started_=true;
+    }
+
+    bool started_;
+    std::string name_;
+    std::string path_;
+    pid_t pid_;
+};
+
+pic::bgprocess_t::bgprocess_t(const char *dir,const char *name)
+{
+    impl_ = new impl_t(dir,name);
+}
+
+pic::bgprocess_t::bgprocess_t(const std::string &dir,const char *name)
+{
+    impl_ = new impl_t(dir,name);
+}
+
+pic::bgprocess_t::~bgprocess_t()
+{
+    delete impl_;
+}
+
+bool pic::bgprocess_t::isrunning()
+{
+    return impl_->is_running();
+}
+
+void pic::bgprocess_t::start()
+{
+    impl_->start();
+}
+
+void pic::bgprocess_t::quit()
+{
+    impl_->quit();
+}
 
 struct pic::tool_t::impl_t
 {
@@ -44,8 +139,11 @@ struct pic::tool_t::impl_t
 
             while(kill(pid_,0)>=0)
             {
+                waitpid(pid_,0,WNOHANG);
                 sleep(1);
             }
+
+            waitpid(pid_,0,WNOHANG);
         }
     }
 

@@ -117,6 +117,12 @@ namespace
         dirname(buffer);
     }
 
+    static void get_priexe(char *buffer)
+    {
+        get_exe(buffer);
+        dirname(buffer);
+    }
+
 #endif
 
 #ifdef PI_MACOSX
@@ -190,6 +196,12 @@ namespace
         }
     }
 
+    static void get_priexe(char *buffer)
+    {
+        get_exe(buffer);
+        dirname(buffer);
+    }
+
 
 #endif
 
@@ -234,6 +246,12 @@ namespace
     }
 
     static void get_pritool(char *buffer)
+    {
+        get_exe(buffer);
+        dirname(buffer);
+    }
+
+    static void get_priexe(char *buffer)
     {
         get_exe(buffer);
         dirname(buffer);
@@ -341,6 +359,13 @@ std::string pic::private_tools_dir()
 {
     char buffer[RES_PATH_MAX+1];
     get_pritool(buffer);
+    return buffer;
+}
+
+std::string pic::private_exe_dir()
+{
+    char buffer[RES_PATH_MAX+1];
+    get_priexe(buffer);
     return buffer;
 }
 

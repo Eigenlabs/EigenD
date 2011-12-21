@@ -22,6 +22,7 @@ Import('env')
 
 widget_files = Split("""
     eigend.cpp
+    nettest.cpp
     jucer/StatusComponent.cpp
     jucer/LoadDialogComponent.cpp
     jucer/LoadProgressComponent.cpp
@@ -37,9 +38,13 @@ widget_files = Split("""
 
 widget_libs = Split('pic pia piw pie ejuce epython juce')
 
+echo_files = Split('echo.cpp')
+echo_libs = Split('pic pia piw pie')
+
 env.Append(CCFLAGS='-DPI_RELEASE=\\"$PI_RELEASE\\"')
 env.Append(CCFLAGS='-DPI_COLLECTION=\\"$PI_COLLECTION\\"')
 env.PiGuiProgram('eigend',widget_files,libraries=widget_libs,appname='EigenD',package='eigend')
+env.PiProgram('echod',echo_files,libraries=echo_libs,package='eigend')
 env.PiPipBinding('eigend_native','eigend.pip',libraries=widget_libs,package='eigend')
 env.PiPythonPackage('0.0',package='eigend')
 
