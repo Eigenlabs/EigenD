@@ -624,7 +624,7 @@ class Agent(agent.Agent):
                 rowcount = len(geo)
                 row = rowcount + row + 1
 
-            if col < 0:
+            if col < 0 and row < len(geo):
                 rowlen = geo[row-1].as_long()
                 col = rowlen + col + 1
 
