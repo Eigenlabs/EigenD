@@ -1904,13 +1904,13 @@ class velocitydetect[piw::velocitydetect_t]
 
 class scaler_controller[piw::scaler_controller_t]
 {
-    scaler_controller()
+    scaler_controller(const cookie &)
     cookie cookie()
 }
 
 class scaler[piw::scaler_t] /gc/
 {
-    scaler(scaler_controller *,const cookie &,const cookie &,const f2f &)
+    scaler(scaler_controller *,const cookie &,const f2f &)
     cookie cookie()
     void set_bend_curve(const f2f &);
 }

@@ -52,11 +52,11 @@ class Agent(agent.Agent):
         self[2] = bundles.Output(1,False,names='light output',protocols='revconnect')
         self.lights = bundles.Splitter(self.domain,self[2])
 
-        self.ctl = piw.scaler_controller()
+        self.ctl = piw.scaler_controller(self.lights.cookie())
         self.ctl_input = bundles.VectorInput(self.ctl.cookie(),self.domain,signals=(1,5))
 
         self.output = bundles.Splitter(self.domain,*self[1].values())
-        self.filter = piw.scaler(self.ctl,self.output.cookie(),self.lights.cookie(),cubic())
+        self.filter = piw.scaler(self.ctl,self.output.cookie(),cubic())
         self.input = bundles.VectorInput(self.filter.cookie(), self.domain,signals=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17))
         self.input.correlator.clocksink().add_upstream(self.ctl_input.correlator.clocksink())
 
@@ -73,8 +73,6 @@ class Agent(agent.Agent):
         sh=(T('choices','[0,2,4,5,7,9,11,12]','[0,1,2,3,4,5,6,7,8,9,10,11,12]','[0,2,4,6,8,10,12]','[0,2,3,5,7,8,10,12]','[0,3,5,6,7,10,12]', '[0,2,3,6,7,8,11,12]','[0,3,5,7,10,12]','[0,2,4,7,9,12]'), T('control','selector'))
         self[4][5]=atom.Atom(domain=domain.BoundedFloat(0,12,hints=th),policy=self.input.merge_policy(6,False),names='tonic input',protocols='bind set',container=(None,'tonic',self.verb_container()))
         self[4][6]=atom.Atom(domain=domain.BoundedFloat(-20,20,hints=bh),policy=self.input.merge_policy(7,False),names='base note input',protocols='bind')
-
-
         self[4][7]=atom.Atom(domain=domain.String(hints=sh),init='[0,2,4,5,7,9,11,12]',policy=self.input.merge_policy(8,False),names='scale input',protocols='bind set',container=(None,'scale',self.verb_container()))
         self[4][8]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(9,policy.LopassStreamPolicy(200,0.6)),names='k pitch bend input')
         self[4][9]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(10,False),names='global pitch bend input')

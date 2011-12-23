@@ -24,6 +24,63 @@
 
 namespace piw
 {
+    struct PIW_DECLSPEC_CLASS statusdata_t
+    {
+        static inline void int2c(int r, unsigned char *o)
+        {
+            long k = r;
+
+            if(r<0) 
+            {
+                k = (int)0x10000+r;
+            }
+
+            o[0] = ((k>>8)&0xff);
+            o[1] = (k&0xff);
+        }
+
+        static inline int c2int(unsigned char *c)
+        {
+            unsigned long cx = (c[0]<<8) | (c[1]);
+
+            if(cx>0x7fff)
+            {
+                return ((long)cx)-0x10000;
+            }
+
+            return cx;
+        }
+
+        static inline void status2c(bool m, unsigned char s, unsigned char *o)
+        {
+            unsigned char r = s&0x7f;
+            if(m) r+=(1<<7);
+            *o = r;
+        }
+
+        statusdata_t(const bool m, const int r, const int c): musical(m), row(r), col(c) {}
+
+        bool operator==(const statusdata_t &o) const
+        {
+            return musical == o.musical && row == o.row && col == o.col;
+        }
+
+        bool operator<(const statusdata_t &o) const
+        {
+            if(musical < o.musical) return true;
+            if(musical > o.musical) return false;
+            if(row < o.row) return true;
+            if(row > o.row) return false;
+            if(col < o.col) return true;
+            if(col > o.col) return false;
+            return false;
+        }
+
+        const bool musical;
+        const int row;
+        const int col;
+    };
+
     class PIW_DECLSPEC_CLASS statusbuffer_t
     {
         public:
@@ -44,6 +101,8 @@ namespace piw
             piw::change_nb_t blinker();
             int gc_traverse(void *, void *) const;
             int gc_clear();
+       public:
+            static piw::data_nb_t make_statusbuffer(pic::lckmap_t<piw::statusdata_t,unsigned char>::nbtype &);
        private:
             impl_t *root_;
     };

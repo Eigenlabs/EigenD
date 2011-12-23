@@ -20,6 +20,7 @@
 
 #include <piw/piw_kgroup.h>
 #include <piw/piw_keys.h>
+#include <piw/piw_status.h>
 #include <picross/pic_ref.h>
 
 namespace
@@ -30,32 +31,6 @@ namespace
         pic::lckmap_t<unsigned,unsigned>::lcktype reverse;
         unsigned max_in;
     };
-
-    static inline void int2c(int r, unsigned char *o)
-    {
-        long k = r;
-
-        if(r<0) 
-        {
-            k = (int)0x10000+r;
-        }
-
-        o[0] = ((k>>8)&0xff);
-        o[1] = (k&0xff);
-    }
-
-    static inline int c2int(unsigned char *c)
-    {
-        unsigned long cx = (c[0]<<8) | (c[1]);
-
-        if(cx>0x7fff)
-        {
-            return ((long)cx)-0x10000;
-        }
-
-        return cx;
-    }
-
 };
 
 struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobject_t
@@ -277,8 +252,8 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
 
         while(in_size>=5)
         {
-            int ir = c2int(&in_buffer[0]);
-            int ic = c2int(&in_buffer[2]);
+            int ir = piw::statusdata_t::c2int(&in_buffer[0]);
+            int ic = piw::statusdata_t::c2int(&in_buffer[2]);
             bool im = in_buffer[4]>>7;
             int xr = ir;
             int xc = ic;
@@ -292,8 +267,8 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
                 reverse_phys2phys(ir,ic,&xr,&xc);
             }
 
-            int2c(xr,&out_buffer[0]);
-            int2c(xc,&out_buffer[2]);
+            piw::statusdata_t::int2c(xr,&out_buffer[0]);
+            piw::statusdata_t::int2c(xc,&out_buffer[2]);
             out_buffer[4] = in_buffer[4]&0x7f; // kgroup converts everything to geometrical
 
             out_buffer+=5;

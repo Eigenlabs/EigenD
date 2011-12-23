@@ -240,7 +240,7 @@ namespace piw
             };
 
         public:
-            scaler_controller_t();
+            scaler_controller_t(const cookie_t &l);
             ~scaler_controller_t();
             cookie_t cookie();
 
@@ -249,6 +249,7 @@ namespace piw
             unsigned common_scale_count();
             sref_t common_scale_at(unsigned);
             bits_t bits(const piw::data_nb_t &id);
+            void update_lights(const piw::data_nb_t &id, piw::scaler_controller_t::sref_t scale, float mode, bool override);
 
         private:
             impl_t *impl_;
@@ -260,7 +261,7 @@ namespace piw
             class impl_t;
 
         public:
-            scaler_t(scaler_controller_t *,const cookie_t &c,const cookie_t &l,const pic::f2f_t &b);
+            scaler_t(scaler_controller_t *,const cookie_t &c,const pic::f2f_t &b);
             ~scaler_t();
 
             void set_bend_curve(const pic::f2f_t &b);

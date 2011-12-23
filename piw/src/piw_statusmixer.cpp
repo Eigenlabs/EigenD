@@ -27,18 +27,6 @@
 
 namespace
 {
-    static inline int c2int(unsigned char *c)
-    {
-        unsigned long cx = (c[0]<<8) | (c[1]);
-
-        if(cx>0x7fff)
-        {
-            return ((long)cx)-0x10000;
-        }
-
-        return cx;
-    }
-
     struct receiver_t: piw::ufilterfunc_t, virtual pic::lckobject_t, pic::element_t<0>
     {
         receiver_t(piw::statusmixer_t::impl_t *root): root_(root), status_data_(), active_(false)
@@ -100,8 +88,8 @@ struct piw::statusmixer_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_t, 
 
             while(rl>=5)
             {
-                int kr = c2int(&rs[0]);
-                int kc = c2int(&rs[2]);
+                int kr = piw::statusdata_t::c2int(&rs[0]);
+                int kc = piw::statusdata_t::c2int(&rs[2]);
                 bool kmus = rs[4]>>7;
                 unsigned kv = rs[4]&0x7f;
 

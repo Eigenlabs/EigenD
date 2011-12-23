@@ -28,18 +28,6 @@
 
 namespace
 {
-    static inline int c2int(unsigned char *c)
-    {
-        unsigned long cx = (c[0]<<8) | (c[1]);
-
-        if(cx>0x7fff)
-        {
-            return ((long)cx)-0x10000;
-        }
-
-        return cx;
-    }
-
     static inline int rc2k(int r, int c, int nc, const unsigned *co, const unsigned *cl)
     {
         int tc = co[nc-1]+cl[nc-1];
@@ -148,8 +136,8 @@ struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::l
 
         while(rl>=5)
         {
-            int kr = c2int(&rs[0]);
-            int kc = c2int(&rs[2]);
+            int kr = piw::statusdata_t::c2int(&rs[0]);
+            int kc = piw::statusdata_t::c2int(&rs[2]);
             unsigned kv = rs[4]&0x7f;
 
             if(kv!=BCTSTATUS_OFF)
