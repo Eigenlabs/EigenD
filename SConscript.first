@@ -22,10 +22,10 @@ Import('master_env')
 
 import os.path
 
-release = '1.4.10'
+release = '1.4.11'
 
 status = {
-    'windows': 'testing',
+    'windows': 'stable',
     'linux': 'experimental',
     'macosx': 'testing'
 }
