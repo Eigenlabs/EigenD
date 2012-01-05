@@ -37,6 +37,7 @@ namespace pic
             void start();
             bool isrunning();
             void quit();
+            bool isavailable();
         private:
             impl_t *impl_;
     };

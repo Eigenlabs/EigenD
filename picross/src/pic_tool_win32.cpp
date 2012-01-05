@@ -86,6 +86,16 @@ struct pic::tool_t::impl_t
         }
     }
 
+    bool is_available()
+    {
+        if(GetFileAttributesA(path_.c_str()) != INVALID_FILE_ATTRIBUTES)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     std::string path_;
     bool started_;
     PROCESS_INFORMATION info_;
@@ -120,6 +130,11 @@ void pic::tool_t::quit()
 bool pic::tool_t::isrunning()
 {
     return impl_->is_running();
+}
+
+bool pic::tool_t::isavailable()
+{
+    return impl_->is_available();
 }
 
 struct pic::bgprocess_t::impl_t

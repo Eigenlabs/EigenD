@@ -223,3 +223,9 @@ void pic::tool_t::quit()
 {
     impl_->quit();
 }
+
+bool pic::tool_t::isavailable()
+{
+    return true;
+}
+

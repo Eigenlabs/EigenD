@@ -990,6 +990,7 @@ void EigenMainWindow::getCommandInfo (const CommandID commandID, ApplicationComm
         case commandStartWorkbench:
             result.setInfo (T("Workbench"), T("Workbench"), generalCategory, 0);
             result.addDefaultKeypress (T('k'), ModifierKeys::commandModifier);
+            result.setActive(workbench_.isavailable());
             break;
 
         case commandStartScanner:
