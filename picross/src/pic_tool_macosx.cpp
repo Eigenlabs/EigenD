@@ -22,6 +22,7 @@
 #include <picross/pic_tool.h>
 #include <picross/pic_log.h>
 #include <string>
+#include <sys/stat.h>
 
 struct pic::bgprocess_t::impl_t
 {
@@ -188,6 +189,18 @@ struct pic::tool_t::impl_t
         GetProcessPID(&psn_,&pid_);
     }
 
+    bool is_available()
+    {
+        struct stat buf;
+
+        if(stat(path_.c_str(),&buf)<0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     std::string path_;
     bool started_;
     ProcessSerialNumber psn_;
@@ -226,6 +239,6 @@ void pic::tool_t::quit()
 
 bool pic::tool_t::isavailable()
 {
-    return true;
+    return impl_->is_available();
 }
 
