@@ -27,7 +27,7 @@ release = '1.4.11'
 status = {
     'windows': 'stable',
     'linux': 'experimental',
-    'macosx': 'testing'
+    'macosx': 'stable'
 }
 
 tag = '%s-%s' % (release,status[master_env['PI_PLATFORMTYPE']])
