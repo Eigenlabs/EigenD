@@ -121,3 +121,103 @@ bool pic::tool_t::isrunning()
 {
     return impl_->is_running();
 }
+
+struct pic::bgprocess_t::impl_t
+{
+    impl_t(const std::string &dir,const char *name): started_(false)
+    {
+        path_ = dir;
+        path_ = path_+'\\'+name+".exe";
+    }
+
+    ~impl_t()
+    {
+        quit();
+    }
+
+    void quit()
+    {
+        if(started_)
+        {
+            started_=false;
+            TerminateProcess(info_.hProcess,0);
+            CloseHandle(info_.hProcess);
+            CloseHandle(info_.hThread);
+        }
+    }
+
+    bool is_running()
+    {
+        if(started_)
+        {
+            DWORD code;
+
+            if(GetExitCodeProcess(info_.hProcess,&code))
+            {
+                if(code==STILL_ACTIVE)
+                {
+                    return true;
+                }
+            }
+
+            started_=false;
+            CloseHandle(info_.hProcess);
+            CloseHandle(info_.hThread);
+        }
+
+        return false;
+    }
+
+    void start()
+    {
+        printf("opening %s\n",path_.c_str());
+
+        STARTUPINFO startup_info;
+        memset(&startup_info,0,sizeof(startup_info));
+        startup_info.cb = sizeof(startup_info);
+
+        if(CreateProcessA(path_.c_str(), NULL, NULL, NULL, FALSE, 0, NULL, NULL, &startup_info, &info_))
+        {
+            started_=true;
+        }
+        else
+        {
+            printf("create process failed\n");
+        }
+    }
+
+    std::string path_;
+    bool started_;
+    PROCESS_INFORMATION info_;
+
+};
+
+pic::bgprocess_t::bgprocess_t(const std::string &dir_env,const char *name)
+{
+    impl_ = new impl_t(dir_env,name);
+}
+
+pic::bgprocess_t::bgprocess_t(const char *dir_env,const char *name)
+{
+    impl_ = new impl_t(dir_env,name);
+}
+
+pic::bgprocess_t::~bgprocess_t()
+{
+    delete impl_;
+}
+
+void pic::bgprocess_t::start()
+{
+    impl_->start();
+}
+
+void pic::bgprocess_t::quit()
+{
+    impl_->quit();
+}
+
+bool pic::bgprocess_t::isrunning()
+{
+    return impl_->is_running();
+}

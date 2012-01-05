@@ -34,6 +34,7 @@ namespace pic
     PIC_DECLSPEC_FUNC(std::string) python_prefix_dir();
     PIC_DECLSPEC_FUNC(std::string) public_tools_dir();
     PIC_DECLSPEC_FUNC(std::string) private_tools_dir();
+    PIC_DECLSPEC_FUNC(std::string) private_exe_dir();
     PIC_DECLSPEC_FUNC(char) platform_seperator();
     PIC_DECLSPEC_FUNC(std::string) release();
     PIC_DECLSPEC_FUNC(std::string) username();

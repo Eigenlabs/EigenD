@@ -23,6 +23,7 @@
 #include <picross/pic_ilist.h>
 #include <picross/pic_time.h>
 #include <picross/pic_thread.h>
+#include <picross/pic_resources.h>
 #include <picross/pic_stl.h>
 #include <piagent/pia_udpnet.h>
 
@@ -55,9 +56,10 @@
 
 #include <errno.h>
 
-#define PORTBASE_LOCAL 55555
-#define PORTBASE_ETHER 56555
-#define PORTBASE(loop) ((loop)?PORTBASE_LOCAL:PORTBASE_ETHER)
+#define PORTBASE_LOCAL  55555
+#define PORTBASE_OFFSET 1000
+#define PORTBASE(p,loop) (p+((loop)?0:PORTBASE_OFFSET))
+
 #define BUFFER_SIZE    ((BCTLINK_MAXPACKET+48)*2)
 
 
@@ -86,6 +88,43 @@ namespace
 
         int fd;
     };
+
+    static unsigned get_portbase__()
+    {
+        std::string pf = pic::global_library_dir()+"/ports.txt";
+        FILE *fp = fopen(pf.c_str(),"r");
+
+        if(!fp)
+        {
+            FILE *fp = fopen(pf.c_str(),"w");
+            fprintf(fp,"%u\n",PORTBASE_LOCAL);
+            fclose(fp);
+            return PORTBASE_LOCAL;
+        }
+
+        unsigned p;
+
+        if(fscanf(fp,"%u",&p)==1)
+        {
+            fclose(fp);
+            return p;
+        }
+
+        fclose(fp);
+        return PORTBASE_LOCAL;
+    }
+
+    static int portbase__ = 0;
+
+    static unsigned get_portbase()
+    {
+        if(portbase__ < 1024)
+        {
+            portbase__ = get_portbase__();
+            pic::logmsg() << "using portbase " << portbase__;
+        }
+        return portbase__;
+    }
 
     struct send_socket_t
     {
@@ -165,7 +204,7 @@ namespace
              memset(&group,0,sizeof(group));
              group.sin_family = AF_INET;
              group.sin_addr.s_addr = addr;
-             group.sin_port = htons(PORTBASE(loop_)+spc_);
+             group.sin_port = htons(PORTBASE(get_portbase(),loop_)+spc_);
 
              ssize_t s = sendto(socket_.fd, (char *)data, len, 0, (struct sockaddr*)&group, sizeof(group));
              if(s != (int)len)
@@ -231,7 +270,7 @@ namespace
 
             memset((char *) &addr, 0, sizeof(addr));
             addr.sin_family = AF_INET;
-            addr.sin_port = htons(PORTBASE(loop)+spc_);
+            addr.sin_port = htons(PORTBASE(get_portbase(),loop)+spc_);
             addr.sin_addr.s_addr = INADDR_ANY;
  
             if(bind(socket_.fd, (struct sockaddr*)&addr, sizeof(addr)))
