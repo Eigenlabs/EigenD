@@ -34,5 +34,5 @@ import os
 #	env.Append(LIBS=Split('dnssd'))
 #	env.Append(LIBS=Split('Ws2_32'))
 
-env.PiSharedLibrary('pilanguage',Split('lng_bonjour.cpp lng_osc.cpp lng_wordrec.cpp lng_controls.cpp lng_fastmark.cpp'),libraries=Split('piw pie pia pic pilo'),package='eigend')
-env.PiPipBinding('language_native','language.pip',libraries=Split('pilanguage pilo piw pie pia pic'),package='eigend')
+env.PiSharedLibrary('pilanguage',Split('lng_bonjour.cpp lng_osc.cpp lng_wordrec.cpp lng_controls.cpp lng_fastmark.cpp'),libraries=Split('piw pie pia pic pilo'),package='eigend',per_agent='plg_language')
+env.PiPipBinding('language_native','language.pip',libraries=Split('pilanguage pilo piw pie pia pic'),package='eigend',per_agent='plg_language')

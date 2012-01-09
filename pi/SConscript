@@ -20,4 +20,4 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',subdirs=Split('logic'), natives=Split('pi_state_native'), pibelcanto='0.0',piw='0.0',picross='0.0',package='eigend')
+env.PiPythonPackage(subdirs=Split('logic'), package='eigend')

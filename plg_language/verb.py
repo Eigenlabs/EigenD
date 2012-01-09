@@ -23,7 +23,7 @@ import traceback
 
 from pi import logic,action,async,errors
 from pi.logic.shortcuts import *
-from plg_language import interpreter,imperative,noun,referent
+from . import interpreter,imperative,noun,referent
 
 rules_verb = """
     # subject qualification

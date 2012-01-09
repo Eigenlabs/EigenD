@@ -20,6 +20,6 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',resources=Split('*.png'),pi='0.0',package='eigend')
+env.PiPythonPackage(resources=Split('*.png'),package='eigend',per_agent=True)
 
-env.PiAgent('rig','plg_rig.rig_plg','plg_rig:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('rig','plg_rig','rig_plg',cversion='1.0.0')

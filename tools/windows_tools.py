@@ -127,14 +127,12 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         self.Replace(PI_MODLINKFLAGS='$SHLINKFLAGS')
         self.Replace(RELEASESTAGEROOTDIR=join('$STAGEDIR'))
         self.Replace(RELEASESTAGEDIR=join('$STAGEDIR','$PI_COLLECTION-$PI_RELEASE'))
-        self.Replace(PYDSTAGEDIR=join('$RELEASESTAGEDIR','bin'))
-        self.Replace(PYDINSTALLDIR=join('$INSTALLDIR','bin'))
-        self.Replace(PYDRUNDIR=join('#tmp','bin'))
         self.Append(CCFLAGS='/EHsc /w34355 /MD /O2 /fp:fast /arch:SSE2 /DWIN32')
         self.Replace(PI_PLATFORMTYPE='windows')
         self.Append(LINKFLAGS=Split('/MANIFEST /INCREMENTAL:NO'))
         self.Append(SHLINK=' $LIBMAPPER')
         self.Append(LINK=' $LIBMAPPER')
+        self.Append(LIBS=Split('shell32'))
 
         if os.environ.get('PI_DEBUGBUILD'):
             self.Append(CCFLAGS=Split('/Zi'))
@@ -590,7 +588,7 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
 
         if package:
             env.set_package(package)
-            inst_file = env.Install(env['BINSTAGEDIR'],f2)
+            inst_file = env.Install(env.subst('$BINSTAGEDIR'),f2)
 
     def PiBinaryDLL(self,target,package=None):
         env = self.Clone()
@@ -605,19 +603,20 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
 
         if package:
             env.set_package(package)
-            inst_library_1 = env.Install(env['BINSTAGEDIR'],f2)
+            inst_library_1 = env.Install(env.subst('$BINSTAGEDIR'),f2)
 
         return env.addlibname(run_library1[0],target)
 
 
-    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True,deffile=None):
-        fulltarget = '%s_%s' % (target,self.shared.release.replace('.','_').replace('-','_'))
+    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True,deffile=None,per_agent=None,public=False):
         env = self.Clone()
 
         env.Append(PILIBS=libraries)
         env.Append(CCFLAGS='-DBUILDING_%s' % target.upper())
-        env.Replace(SHLIBNAME=fulltarget)
-        env.Replace(PDB='%s.pdb' % fulltarget)
+        env.Replace(SHLIBNAME=target)
+        env.Replace(PDB='%s.pdb' % target)
+
+        env.set_agent_group(per_agent)
 
         objects = env.SharedObject(sources)
 
@@ -626,27 +625,27 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         if deffile:
             objects.append(deffile)
 
-        bin_dll,bin_pdb,bin_lib,bin_exp = env.SharedLibrary(fulltarget,objects)
+        bin_dll,bin_pdb,bin_lib,bin_exp = env.SharedLibrary(target,objects)
 
         env.add_manifest(bin_dll)
 
-        run_dll = env.Install(self['BINRUNDIR'],bin_dll)
-        run_lib = env.Install(self['BINRUNDIR'],bin_lib)
-        run_pdb = env.Install(self['BINRUNDIR'],bin_pdb)
+        run_dll = env.Install(env.subst('$BINRUNDIR'),bin_dll)
+        run_lib = env.Install(env.subst('$BINRUNDIR'),bin_lib)
+        run_pdb = env.Install(env.subst('$BINRUNDIR'),bin_pdb)
 
         env.Depends(run_lib,run_dll)
 
-        inst_library = []
+        inst_dll = []
 
         env.addlibuser(bin_dll,libraries)
         env.addlibname(run_lib[0],target,dependencies=libraries)
 
         if package:
             env.set_package(package)
-            inst_library = env.Install(self['BINSTAGEDIR'],run_dll)
-            env.sign(inst_library)
+            inst_dll = env.Install(env.subst('$BINSTAGEDIR'),run_dll)
+            env.sign(inst_dll)
 
-        return inst_library+run_lib
+        return inst_dll+run_lib
 
     def PiPackageInit(self,package,program,as_user=False,order=1):
         self.shared.package_init.append((package,program,as_user,order))

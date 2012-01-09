@@ -28,8 +28,7 @@ from lib_alpha2 import ezload
 
 from pi import atom, toggle, utils, bundles, domain, agent, paths, action, logic, policy, upgrade, resource, guid, audio, const, node
 from pi.logic.shortcuts import *
-from plg_keyboard import alpha_manager_version as version
-from plg_keyboard import test
+from . import alpha_manager_version as version, test, keyboard_native
 
 R = lambda a,b: range(a,b+1)
 

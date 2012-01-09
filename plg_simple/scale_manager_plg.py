@@ -19,7 +19,7 @@
 #
 
 from pi import agent,atom,action,logic,bundles,domain,policy,node,resource,async,talker,collection
-from plg_simple import scale_manager_version as version
+from . import scale_manager_version as version
 import piw
 import os
 import ConfigParser

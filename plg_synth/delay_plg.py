@@ -21,9 +21,8 @@
 import sys
 import piw
 import picross
-import synth_native
 from pi import agent,atom,bundles,domain,paths,upgrade,policy,utils,action,async,collection
-from plg_synth import delay_version as version
+from . import delay_version as version,synth_native
 
 class Channel(atom.Atom):
     

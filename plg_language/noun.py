@@ -20,7 +20,7 @@
 
 from pi.logic.shortcuts import *
 from pi import paths, logic, async, action, rpc
-from plg_language import interpreter,referent
+from . import interpreter,referent
 
 import piw
 

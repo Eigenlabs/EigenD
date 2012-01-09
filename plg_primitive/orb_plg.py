@@ -19,9 +19,8 @@
 
 import piw
 from pi import agent, domain, bundles, atom
-from plg_primitive import orb_version as version
-
-from primitive_plg_native import orb
+from . import orb_version as version
+from .primitive_plg_native import orb
 
 #
 # The Orb agent.

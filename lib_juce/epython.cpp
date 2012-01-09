@@ -37,12 +37,15 @@
 
 #include "epython.h"
 #include <picross/pic_resources.h>
+#include <picross/pic_thread.h>
 #include <iostream>
 
 void epython::PythonInterface::py_startup()
 {
     char *pyhome = strdup(pic::python_prefix_dir().c_str());
     Py_SetPythonHome(pyhome);
+
+    pic_init_dll_path();
 
     Py_Initialize();
 

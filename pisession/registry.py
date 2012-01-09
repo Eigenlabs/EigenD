@@ -20,6 +20,7 @@
 
 import glob,zipfile,os
 import sys
+import picross
 
 def iscompatible(mod_version, state_version):
     mod_version = mod_version.split('.')
@@ -46,9 +47,20 @@ def iscompatible(mod_version, state_version):
     return True
 
 class Registry:
-    def __init__(self):
+    def __init__(self,klass):
         self.__registry={}
         self.__alias={}
+        self.__path = []
+
+        self.add_path(os.path.join(picross.release_root_dir(),'plugins'))
+
+        for p in self.__path:
+            self.scan_path(p,klass)
+
+    def add_path(self,path):
+        if path not in self.__path:
+            self.__path.append(path)
+            sys.path.append(path)
 
     def dump(self,dumper):
         for (mname,vlist) in self.__registry.iteritems():
@@ -126,15 +138,16 @@ class Registry:
         a[name][version] = original
 
     def scan_path(self,directory,klass):
-        for p in glob.glob(os.path.join(directory,'*')):
+        for pkg in os.listdir(directory):
             try:
-                m = open(p,'r').read()
+                manifest = open(os.path.join(directory,pkg,'Manifest'),'r').read()
             except:
                 continue
 
-            for a in m.splitlines():
+            for a in manifest.splitlines():
                 a = a.split(':')
                 (name,module,cversion,version) = a[0:4]
-                self.add_module(name,version,cversion,klass(name,version,cversion,module))
+                fullmodule = '%s.%s' % (pkg,module)
+                self.add_module(name,version,cversion,klass(name,version,cversion,fullmodule))
                 for e in a[4:]:
                     self.add_alias(e,version,name)

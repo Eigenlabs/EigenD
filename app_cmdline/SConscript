@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',resources=Split('agentd.png'),pi='0.0',pisession='0.0',package='eigend')
+env.PiPythonPackage(resources=Split('agentd.png'),package='eigend')
 env.PiPythonWrapper('cheatsheet','app_cmdline','cheat','main',package='eigend')
 env.PiPythonWrapper('brexec','app_cmdline','rexec','main',package='eigend')
 env.PiPythonWrapper('bscript','app_cmdline','script','main',package='eigend')

@@ -112,17 +112,17 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         os_major=uname()[2].split('.')[0]
         self.Append(LIBS=Split('dl m pthread'))
 
-        self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED'))
-        self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate'))
+        self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\"'))
+        self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate -Wl,-rpath,@executable_path/'))
         self.Replace(CXX='g++-4.2')
         self.Replace(CC='gcc-4.2')
 
         self.Append(CCFLAGS=Split('-ggdb -Werror -Wall -O3 -fmessage-length=0 -falign-loops=16 -msse3'))
 
-        self.Replace(IS_MACOSX=os_major)
-        self.Replace(PI_MODLINKFLAGS='$LINKFLAGS -bundle')
         self.Replace(PI_DLLENVNAME='DYLD_LIBRARY_PATH')
-        self.Append(SHLINKFLAGS='-Wl,-install_name,@executable_path/${SHLIBPREFIX}${SHLIBNAME}${SHLIBSUFFIX}')
+        self.Replace(IS_MACOSX=os_major)
+        self.Replace(PI_MODLINKFLAGS=['$LINKFLAGS','-bundle','-Wl,-rpath,@loader_path/'])
+        self.Append(SHLINKFLAGS=['-Wl,-install_name,@rpath/${SHLIBPREFIX}${SHLIBNAME}${SHLIBSUFFIX}','-Wl,-rpath,@loader_path/'])
         self.Replace(PI_PLATFORMTYPE='macosx')
 
         self.Replace(APPRUNDIR=join('#tmp','app'))

@@ -19,4 +19,4 @@
 #
 
 Import('env')
-env.PiPythonPackage('0.0',natives=Split('piw_native'),picross='0.0',package='eigend')
+env.PiPythonPackage(package='eigend')

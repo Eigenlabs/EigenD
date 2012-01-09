@@ -20,7 +20,7 @@
 
 import piw
 from pi import const,agent,atom,bundles,domain,upgrade,paths,utils,node
-from plg_simple import cycler_version as version
+from . import cycler_version as version
 
 class Agent(agent.Agent):
 

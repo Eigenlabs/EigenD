@@ -20,7 +20,7 @@
 
 import piw
 from pi import const,agent,atom,bundles,domain,upgrade,paths
-from plg_simple import ranger_version as version
+from . import ranger_version as version
 
 class Agent(agent.Agent):
 

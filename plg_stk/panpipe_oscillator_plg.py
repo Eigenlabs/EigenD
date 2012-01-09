@@ -19,10 +19,9 @@
 #
 
 import piw
-import stk_native
 from pi.logic.shortcuts import T
 from pi import agent,atom,domain,bundles,action,async,utils,upgrade,policy
-from plg_stk import clarinet_oscillator_version as version
+from . import clarinet_oscillator_version as version,stk_native
 
 def filtered_policy():
     return policy.LopassStreamPolicy(1000,0.98)

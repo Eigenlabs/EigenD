@@ -20,7 +20,7 @@
 
 from pi import atom,database,utils,logic,container,node,action,const,async,rpc,paths,index
 from pibelcanto import lexicon
-from plg_language import noun,verb,macro,imperative
+from . import noun,verb,macro,imperative
 import piw
 
 class DatabaseProxy(database.DatabaseProxy):

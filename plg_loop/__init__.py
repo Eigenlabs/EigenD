@@ -18,4 +18,3 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from loop_native import *

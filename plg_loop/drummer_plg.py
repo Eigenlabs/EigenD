@@ -19,10 +19,8 @@
 #
 
 import piw
-import loop_native
 from pi import agent,atom,domain,errors,action,bundles,async,utils,resource,logic,node,upgrade,const,paths,collection
-from plg_loop import drummer_version as version
-from plg_loop import loopdb
+from . import drummer_version as version,loopdb,loop_native
 
 from pi.logic.shortcuts import T
 import sys

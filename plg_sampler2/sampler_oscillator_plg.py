@@ -20,16 +20,15 @@
 
 import piw
 import picross
-import sampler2_native
 
 from pi import agent,atom,domain,bundles,resource,action,logic,utils,async,node,upgrade,const
-from plg_sampler2 import sf2
-from plg_sampler2 import sampler_oscillator_version as version
+from . import sampler_oscillator_version as version,sf2,sampler2_native
 
 from pi.logic.shortcuts import T
 import os
 import glob
 import sys
+
 response_size = 1200
 
 def render_list(list,offset,renderer):

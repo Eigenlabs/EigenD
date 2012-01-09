@@ -18,6 +18,10 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import sys
+
+print 'path is',sys.path
+
 from pisession import session
 from pi import async,paths,const
 

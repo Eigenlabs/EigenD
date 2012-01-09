@@ -20,10 +20,8 @@
 
 from pi import agent,atom,action,domain,bundles,async,container,paths,const,node,policy,logic,utils,proxy,collection
 from pi.logic.shortcuts import *
-from plg_language import controller_version as version
-
 import piw
-import language_native
+from . import controller_version as version,language_native
 
 class Trigger:
     def __init__(self,t,index,controller):

@@ -20,4 +20,4 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',natives=Split('picross_native'),package='eigend')
+env.PiPythonPackage(package='eigend')

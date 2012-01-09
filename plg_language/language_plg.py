@@ -20,8 +20,8 @@
 
 from pi import agent,atom,domain,errors,action,logic,async,index,utils,bundles,resource,paths,node,container,upgrade,timeout,help_manager,resource
 from pi.logic.shortcuts import *
-from plg_language import interpreter,database,feedback,noun,builtin_misc,context,variable,script,stage_server,widget,deferred,plumber
-from plg_language import interpreter_version as version
+from . import interpreter,database,feedback,noun,builtin_misc,context,variable,script,stage_server,widget,deferred,plumber
+from . import interpreter_version as version
 
 import piw
 import time

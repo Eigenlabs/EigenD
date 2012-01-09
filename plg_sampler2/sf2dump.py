@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from plg_sampler2 import sf2
+from . import sf2
 
 def main():
     import sys

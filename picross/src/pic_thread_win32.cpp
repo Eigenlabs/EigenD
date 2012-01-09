@@ -23,7 +23,7 @@
 #include <picross/pic_log.h>
 #include <picross/pic_time.h>
 #include <picross/pic_fastalloc.h>
-
+#include <picross/pic_resources.h>
 #include <picross/pic_config.h>
 
 #include <math.h>
@@ -38,14 +38,19 @@
 
 #define _VALUE_MAX ((int) ((~0u) >> 1))
 
-void pic_thread_yield()
+void pic_thread_yield(void)
 {
     Sleep(0);
 }
 
-void pic_set_fpu()
+void pic_set_fpu(void)
 {
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+}
+
+void pic_init_dll_path(void)
+{
+   SetDllDirectoryA(pic::private_exe_dir().c_str());
 }
 
 void pic_set_foreground(bool rt)
@@ -59,7 +64,7 @@ void pic_set_foreground(bool rt)
     }
 }
 
-pic_threadid_t pic_current_threadid()
+pic_threadid_t pic_current_threadid(void)
 {
     return GetCurrentThreadId();
 }

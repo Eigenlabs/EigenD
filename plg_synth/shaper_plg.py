@@ -19,9 +19,8 @@
 #
 
 import piw
-import synth_native
 from pi import agent,atom,domain,upgrade,bundles
-from plg_synth import shaper_version as version
+from . import shaper_version as version,synth_native
 
 class Agent(agent.Agent):
     def __init__(self,address, ordinal):

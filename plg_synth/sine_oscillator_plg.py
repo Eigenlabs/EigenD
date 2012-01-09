@@ -20,8 +20,7 @@
 
 from pi import agent,atom,domain,bundles,policy,upgrade
 import piw
-import synth_native
-from plg_synth import sine_oscillator_version as version
+from . import sine_oscillator_version as version,synth_native
 
 class Agent(agent.Agent):
 

@@ -20,8 +20,7 @@
 import piw
 from pi import agent, domain, bundles, atom
 from plg_primitive import latch_version as version
-
-from primitive_plg_native import latch
+from .primitive_plg_native import latch
 
 #
 # The Latch agent that uses the controller signal and a minimum

@@ -20,7 +20,7 @@
 
 from pi.logic.shortcuts import *
 from pi import action,logic,async,domain,utils,resource,rpc,timeout
-from plg_language import interpreter,noun,imperative,referent
+from . import interpreter,noun,imperative,referent
 import traceback
 
 class SubDelegate(interpreter.Delegate):

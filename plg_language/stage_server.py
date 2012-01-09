@@ -32,9 +32,9 @@ import xml.dom.minidom
 import threading
 import piw
 from pi import agent,atom,domain,errors,action,bundles,async,utils,resource,logic,node,upgrade,const,paths
+from . import language_native
 import traceback
 import widget
-import language_native
 import socket
 
 def log_error(func):

@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import recorder_native
+from . import recorder_native
 from pisession import session
 from pi import paths
 import sys

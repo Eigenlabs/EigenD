@@ -20,17 +20,17 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',resources=Split('*.png'),pi='0.0',package='eigend')
+env.PiPythonPackage(resources=Split('*.png'),package='eigend',per_agent=True)
 
 env.PiResources('eigend','upgrade_manager','script_*')
 env.PiResources('eigend','scale_manager','User Scales.txt')
 
-env.PiAgent('cycler','plg_simple.cycler_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('scaler','plg_simple.scaler_plg','plg_simple:0.0',cversion='1.0.1',package='eigend')
-env.PiAgent('stringer','plg_simple.stringer_plg','plg_simple:0.0',cversion='1.0.1',package='eigend')
-env.PiAgent('scheduler','plg_simple.scheduler_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('keygroup','plg_simple.keygroup_plg','plg_simple:0.0',cversion='1.0.3',package='eigend',extra=['kgroup'])
-env.PiAgent('scale_manager','plg_simple.scale_manager_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('talker','plg_simple.talker_plg','plg_simple:0.0',cversion='1.0.2',package='eigend')
-env.PiAgent('ranger','plg_simple.ranger_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('strummer','plg_simple.strummer_plg','plg_strummer:0.0',cversion='1.0.0',package='eigend')
+env.PiAgent('cycler','plg_simple','cycler_plg',cversion='1.0.0')
+env.PiAgent('scaler','plg_simple','scaler_plg',cversion='1.0.1')
+env.PiAgent('stringer','plg_simple','stringer_plg',cversion='1.0.1')
+env.PiAgent('scheduler','plg_simple','scheduler_plg',cversion='1.0.0')
+env.PiAgent('keygroup','plg_simple','keygroup_plg',cversion='1.0.3',extra=['kgroup'])
+env.PiAgent('scale_manager','plg_simple','scale_manager_plg',cversion='1.0.0')
+env.PiAgent('talker','plg_simple','talker_plg',cversion='1.0.2')
+env.PiAgent('ranger','plg_simple','ranger_plg',cversion='1.0.0')
+env.PiAgent('strummer','plg_simple','strummer_plg',cversion='1.0.0')

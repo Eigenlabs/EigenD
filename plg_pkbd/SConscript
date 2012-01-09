@@ -20,5 +20,5 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',natives=Split('pkbd_native'),pi='0.0',lib_pico='0.0',package='eigend')
-env.PiAgent('pico_manager','plg_pkbd.pico_manager_plg','plg_pkbd:0.0',cversion='1.0.1',package='eigend')
+env.PiPythonPackage(package='eigend',per_agent=True)
+env.PiAgent('pico_manager','plg_pkbd','pico_manager_plg',cversion='1.0.1')

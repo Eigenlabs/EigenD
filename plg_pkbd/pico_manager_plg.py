@@ -21,10 +21,9 @@
 import os
 import picross
 import piw
-import pkbd_native
 from pi import atom, utils, bundles, domain, agent, paths, policy, action, logic, upgrade
 from lib_pico import ezload
-from plg_pkbd import pico_manager_version as version
+from . import pico_manager_version as version,pkbd_native
 
 class VirtualKey(atom.Atom):
     def __init__(self):

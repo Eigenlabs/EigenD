@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',natives=Split('alpha1_native'),picross='0.0',package='eigend')
+env.PiPythonPackage(package='eigend')
 env.PiPythonWrapper('keynoise','lib_alpha1','keynoise','cli')
 env.PiPythonWrapper('kbdrate','lib_alpha1','kbdrate','cli')
 env.PiPythonWrapper('keymap','lib_alpha1','keymap','cli')

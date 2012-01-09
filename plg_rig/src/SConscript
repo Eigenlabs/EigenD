@@ -24,4 +24,4 @@ rig_files=Split("""
 	rig_connector.cpp
     """)
 
-env.PiPipBinding('rig_native','rig.pip',sources=rig_files,libraries=Split('pic piw pia pie'),package='eigend')
+env.PiPipBinding('rig_native','rig.pip',sources=rig_files,libraries=Split('pic piw pia pie'),package='eigend',per_agent='plg_rig')

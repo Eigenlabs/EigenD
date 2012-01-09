@@ -19,8 +19,7 @@
 #
 
 import piw
-import synth_native
-from plg_synth import triangle_oscillator_version as version
+from . import triangle_oscillator_version as version,synth_native
 from pi import const,agent,atom,domain,utils,policy,upgrade,bundles
 
 class Agent(agent.Agent):

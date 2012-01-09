@@ -47,7 +47,7 @@ env.PiGuiProgram('eigend',widget_files,libraries=widget_libs,appname='EigenD',pa
 env.PiProgram('echod',echo_files,libraries=echo_libs,package='eigend')
 env.PiPythonwWrapper('eigenbugreporter','app_eigend2','bugs_cli','cli',appname='EigenBugReporter',usegil=True,private=True,di=False,package='eigend')
 env.PiPipBinding('eigend_native','eigend.pip',libraries=widget_libs,package='eigend')
-env.PiPythonPackage('0.0',package='eigend')
+env.PiPythonPackage(package='eigend')
 
 if env['IS_MACOSX']:
     env.PiEtc('eigend',Split('postflight-eigend'))

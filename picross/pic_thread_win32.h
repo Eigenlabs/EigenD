@@ -35,17 +35,18 @@
 
 typedef DWORD pic_threadid_t;
 
-PIC_DECLSPEC_FUNC(void) pic_set_fpu();
+PIC_DECLSPEC_FUNC(void) pic_set_fpu(void);
 PIC_DECLSPEC_FUNC(void) pic_set_foreground(bool rt);
 PIC_DECLSPEC_FUNC(void) pic_set_interrupt(void);
 PIC_DECLSPEC_FUNC(void) pic_mlock_code(void);
 PIC_DECLSPEC_FUNC(void) pic_set_core_unlimited();
+PIC_DECLSPEC_FUNC(void) pic_init_dll_path(void);
 
 PIC_DECLSPEC_FUNC(void) pic_thread_lck_free(void *ptr, unsigned size);
 PIC_DECLSPEC_FUNC(void) *pic_thread_lck_malloc(unsigned size);
-PIC_DECLSPEC_FUNC(void) pic_thread_yield();
+PIC_DECLSPEC_FUNC(void) pic_thread_yield(void);
 
-PIC_DECLSPEC_FUNC(pic_threadid_t) pic_current_threadid();
+PIC_DECLSPEC_FUNC(pic_threadid_t) pic_current_threadid(void);
 PIC_DECLSPEC_FUNC(bool) pic_threadid_equal(pic_threadid_t, pic_threadid_t);
 
 namespace pic

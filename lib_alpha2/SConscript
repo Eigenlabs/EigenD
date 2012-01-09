@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',natives=Split('alpha2_native'),picross='0.0',package='eigend')
+env.PiPythonPackage(package='eigend')
 env.PiPythonWrapper('aezq','lib_alpha2','ezq','main')
 env.PiPythonWrapper('alpha_loader','lib_alpha2','alpha_loader','main',package='eigend')
 env.PiPythonWrapper('base_loader','lib_alpha2','base_loader','main',package='eigend')

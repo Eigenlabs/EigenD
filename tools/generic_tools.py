@@ -109,22 +109,21 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         return self.Command(join(self['EXPDIR'],target),self.Value(text),action)
 
-    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True,deffile=None):
-        fulltarget = '%s_%s' % (target,self.shared.release.replace('.','_').replace('-','_'))
+    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True,deffile=None,per_agent=None,public=False):
         env = self.Clone()
-
         env.Append(PILIBS=libraries)
         env.Append(CCFLAGS='-DBUILDING_%s' % target.upper())
-        env.Replace(SHLIBNAME=fulltarget)
+        env.Replace(SHLIBNAME=target)
         env.set_hidden(hidden)
+
+        env.set_agent_group(per_agent)
 
         objects = env.SharedObject(sources)
 
         self.Depends(objects,self.PiExports(target))
 
-        bin_library=env.SharedLibrary(fulltarget,objects)
+        bin_library=env.SharedLibrary(target,objects)
         run_library=env.Install(env.subst('$BINRUNDIR'),bin_library)
-
 
         inst_library = []
 
@@ -133,7 +132,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         if package:
             env.set_package(package)
-            inst_library = env.Install(self['BINSTAGEDIR'],run_library)
+            inst_library = env.Install(env.subst('$BINSTAGEDIR'),run_library)
 
         return inst_library+run_library
 
@@ -181,6 +180,10 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         print "building release",self.subst('$PI_RELEASE')
 
+        for (k,v) in self.shared.agent_groups.items():
+            self.__build_manifest(k,v[0],v[1])
+
+
     def __getpython(self):
         status=os.popen('"%s" %s' % (self['PI_PYTHON'],join(os.path.dirname(__file__),'detect.py')),'r').read(1024)
         (exe,incpath,libpath,libs,linkextra,prefix) = [s.strip() for s in status.split(';')]
@@ -203,6 +206,36 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         return ' '.join(map)
 
+    def get_pyd_run_dir(self,target,source,env,for_signature):
+        if 'PI_AGENTGROUP' in env:
+            return env.subst('$PYDRUNDIR_PLUGIN')
+        return env.subst('$PYDRUNDIR_GLOBAL')
+
+    def get_pyd_stage_dir(self,target,source,env,for_signature):
+        if 'PI_AGENTGROUP' in env:
+            return env.subst('$PYDSTAGEDIR_PLUGIN')
+        return env.subst('$PYDSTAGEDIR_GLOBAL')
+
+    def get_mod_run_dir(self,target,source,env,for_signature):
+        if 'PI_AGENTGROUP' in env:
+            return env.subst('$MODRUNDIR_PLUGIN')
+        return env.subst('$MODRUNDIR_GLOBAL')
+
+    def get_mod_stage_dir(self,target,source,env,for_signature):
+        if 'PI_AGENTGROUP' in env:
+            return env.subst('$MODSTAGEDIR_PLUGIN')
+        return env.subst('$MODSTAGEDIR_GLOBAL')
+
+    def get_bin_run_dir(self,target,source,env,for_signature):
+        if 'PI_AGENTGROUP' in env:
+            return env.subst('$BINRUNDIR_PLUGIN')
+        return env.subst('$BINRUNDIR_GLOBAL')
+
+    def get_bin_stage_dir(self,target,source,env,for_signature):
+        if 'PI_AGENTGROUP' in env:
+            return env.subst('$BINSTAGEDIR_PLUGIN')
+        return env.subst('$BINSTAGEDIR_GLOBAL')
+
     def __init__(self,platform,install_prefix,userdir_suffix,python = None,**kwds):
         SCons.Environment.Environment.__init__(self,ENV = os.environ,**kwds)
 
@@ -212,6 +245,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.shared.buildtools = {}
         self.shared.package_descriptions = {}
         self.shared.packages = []
+        self.shared.agent_groups = {}
         self.shared.shlibmap = {}
         self.shared.release = None
         self.shared.collections = {}
@@ -239,12 +273,34 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.Replace(STAGEDIR=join('#tmp','stage','$PI_PACKAGENAME'))
         self.Replace(RELEASESTAGEROOTDIR=join('$STAGEDIR',install_prefix))
         self.Replace(RELEASESTAGEDIR=join('$RELEASESTAGEROOTDIR','$PI_COLLECTION-$PI_RELEASE'))
-        self.Replace(BINSTAGEDIR=join('$RELEASESTAGEDIR','bin'))
+
+        self.Replace(MODSTAGEDIR=self.get_mod_stage_dir)
+        self.Replace(MODRUNDIR=self.get_mod_run_dir)
+        self.Replace(PYDSTAGEDIR=self.get_pyd_stage_dir)
+        self.Replace(PYDRUNDIR=self.get_pyd_run_dir)
+        self.Replace(BINSTAGEDIR=self.get_bin_stage_dir)
+        self.Replace(BINRUNDIR=self.get_bin_run_dir)
+
+        self.Replace(MODSTAGEDIR_GLOBAL=join('$RELEASESTAGEDIR','modules','$PI_PYTHONPKG'))
+        self.Replace(MODRUNDIR_GLOBAL=join('#tmp','modules','$PI_PYTHONPKG'))
+        self.Replace(MODSTAGEDIR_PLUGIN=join('$RELEASESTAGEDIR','plugins','$PI_AGENTGROUP'))
+        self.Replace(MODRUNDIR_PLUGIN=join('#tmp','plugins','$PI_AGENTGROUP'))
+
+        self.Replace(BINSTAGEDIR_GLOBAL=join('$RELEASESTAGEDIR','bin'))
+        self.Replace(BINRUNDIR_GLOBAL=join('#tmp','bin'))
+        self.Replace(BINSTAGEDIR_PLUGIN=join('$RELEASESTAGEDIR','plugins','$PI_AGENTGROUP'))
+        self.Replace(BINRUNDIR_PLUGIN=join('#tmp','plugins','$PI_AGENTGROUP'))
+
         self.Replace(HDRSTAGEDIR=join('$RELEASESTAGEDIR','include'))
-        self.Replace(MODSTAGEDIR=join('$RELEASESTAGEDIR','modules'))
-        self.Replace(PYDSTAGEDIR=join('$RELEASESTAGEDIR','modules'))
+
+        self.Replace(PYDSTAGEDIR_GLOBAL=join('$RELEASESTAGEDIR','modules'))
+        self.Replace(PYDRUNDIR_GLOBAL=join('#tmp','modules'))
+        self.Replace(PYDSTAGEDIR_PLUGIN=join('$RELEASESTAGEDIR','plugins','$PI_AGENTGROUP'))
+        self.Replace(PYDRUNDIR_PLUGIN=join('#tmp','plugins','$PI_AGENTGROUP'))
+
         self.Replace(RESSTAGEDIR=join('$RELEASESTAGEDIR','resources'))
-        self.Replace(PLGSTAGEDIR=join('$RELEASESTAGEDIR','plugins'))
+        self.Replace(RESRUNDIR=join('#tmp','resources'))
+
         self.Replace(ETCSTAGEDIR=join('$RELEASESTAGEDIR','etc','$PI_PACKAGENAME'))
 
         self.Append(CPPPATH='$EXPDIR')
@@ -259,7 +315,6 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.Replace(PYDINSTALLDIR=join('$INSTALLDIR','modules'))
         self.Replace(BININSTALLDIR=join('$INSTALLDIR','bin'))
         self.Replace(RESINSTALLDIR=join('$INSTALLDIR','resources'))
-        self.Replace(PLGINSTALLDIR=join('$INSTALLDIR','plugins'))
         self.Replace(ETCINSTALLDIR=join('$INSTALLDIR','etc','$PI_PACKAGENAME'))
         self.Replace(ETCROOTINSTALLDIR=join('$INSTALLDIR','etc'))
 
@@ -267,11 +322,6 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.Replace(PI_MODSUFFIX='.so')
         self.Replace(PI_MODLINKFLAGS='$SHLINKFLAGS')
 
-        self.Replace(BINRUNDIR=join('#tmp','bin'))
-        self.Replace(MODRUNDIR=join('#tmp','modules'))
-        self.Replace(PYDRUNDIR=join('#tmp','modules'))
-        self.Replace(RESRUNDIR=join('#tmp','resources'))
-        self.Replace(PLGRUNDIR=join('#tmp','plugins'))
         self.Replace(PILIBS=[])
 
         self.Replace(IS_LINUX_PPC32=False)
@@ -290,6 +340,8 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.Replace(PI_RELEASE=lambda target,source,env,for_signature: self.shared.release)
         self.Replace(PI_COLLECTION=lambda target,source,env,for_signature: self.shared.collection)
 
+        self.Alias('target-exports',join('#tmp','exp'))
+        self.Alias('target-default',join('#tmp','plugins'))
         self.Alias('target-default',join('#tmp','bin'))
         self.Alias('target-default',join('#tmp','modules'))
         self.Alias('target-default',join('#tmp','plugins'))
@@ -315,7 +367,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
                 return True
         return False
 
-    def __installpy(self,root1,root2,src,dest,subdirs):
+    def __installpy(self,root1,root2,src,subdirs,dest=None):
         for f in os.listdir(src):
             if f=='.svn': continue
             if f=='.': continue
@@ -325,11 +377,11 @@ class PiGenericEnvironment(SCons.Environment.Environment):
             if f.endswith('.pyo'): continue
 
             fqs=join(src,f)
-            fqd=join(dest,f)
+            fqd=join(dest,f) if dest else f
 
             if os.path.isdir(fqs):
                 if subdirs==None or self.__isinlist(fqs,subdirs):
-                    self.__installpy(root1,root2,fqs,fqd,None)
+                    self.__installpy(root1,root2,fqs,None,fqd)
                 continue
 
             if f.endswith('_test.py') or not f.endswith('.py'):
@@ -339,25 +391,44 @@ class PiGenericEnvironment(SCons.Environment.Environment):
             if root2:
                 self.InstallAs(self.File(join(root2,fqd+'c')),pyc_node)
 
-    def PiDynamicPython(self,target,source,builder,package=None):
+    def PiDynamicPython(self,target,source,builder,package=None,per_agent=False):
         env = self.Clone()
+
         tgt=env.File(target).srcnode().abspath
         src=[env.File(s) for s in env.Flatten((source,))]
-        pkg=os.path.basename(env.Dir('.').abspath)
+        pypackage=os.path.basename(env.Dir('.').abspath)
 
-        prod1=env.Command(join(env['MODRUNDIR'],pkg,target),src,builder)
+        if per_agent:
+            env.set_agent_group(pypackage)
+
+        env.set_python_pkg(pypackage)
+
+        prod1=env.Command(join(env.subst('$MODRUNDIR'),target),src,builder)
         prod2 = []
 
         if package:
             env.set_package(package)
-            prod2 = env.Install(join(env['MODSTAGEDIR'],pkg),prod1)
+            prod2 = env.Install(env.subst('$MODSTAGEDIR'),prod1)
 
         return prod1+prod2
 
     def PiDocumentation(self,file):
         pass
 
-    def PiPythonPackage(self,cversion,package=None,subdirs=(),resources=(),natives=(),**deps):
+    def PiIncludeFiles(self,package=None):
+        if not package:
+            return
+
+        env = self.Clone()
+        env.set_package(package)
+        me=env.Dir('.').srcnode().abspath
+        incname=os.path.basename(me)
+        root1 = os.path.join(env.subst('$HDRSTAGEDIR'),incname)
+
+        for hdr in glob.glob(join(me,'*.h')):
+            env.Install(root1,env.File(hdr))
+
+    def PiPythonPackage(self,package=None,per_agent=False,subdirs=(),resources=()):
         env = self.Clone()
 
         def build_version(target,source,env):
@@ -366,24 +437,34 @@ class PiGenericEnvironment(SCons.Environment.Environment):
             output.write("\n")
             output.close()
 
-        node=env.PiDynamicPython('version.py',[],build_version,package=package)
+        node=env.PiDynamicPython('version.py',[],build_version,package=package,per_agent=per_agent)
+
         env.Depends(node,env.Value(self.shared.release))
         me=env.Dir('.').srcnode().abspath
         pypackage=os.path.basename(me)
-        root1 = self['MODRUNDIR']
+
+        if per_agent:
+            env.set_agent_group(pypackage)
+
+        env.set_python_pkg(pypackage)
+
+        root1 = env.subst('$MODRUNDIR')
         root2 = None
+
         if package:
             env.set_package(package)
-            root2 = self['MODSTAGEDIR']
+            root2 = env.subst('$MODSTAGEDIR')
+            if per_agent:
+                self.shared.agent_groups[pypackage][0] = package
 
-        env.__installpy(root1,root2,me,pypackage,subdirs)
+        env.__installpy(root1,root2,me,subdirs)
 
         res=[]
         for f in resources:
             for x in glob.glob(join(me,f)):
-                env.Install(join(root1,pypackage),env.File(x))
+                env.Install(root1,env.File(x))
                 if root2:
-                    env.Install(join(root2,pypackage),env.File(x))
+                    env.Install(root2,env.File(x))
         
     def PiResources(self,package,section,files):
         env = self.Clone()
@@ -407,6 +488,15 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         c = collection or 'release'
         self.shared.release=release
         self.shared.collection=c
+
+    def set_agent_group(self,ag):
+        if ag:
+            self.Replace(PI_AGENTGROUP=ag)
+            if not ag in self.shared.agent_groups:
+                self.shared.agent_groups[ag] = [None,[]]
+
+    def set_python_pkg(self,pkg):
+        self.Replace(PI_PYTHONPKG=pkg)
 
     def set_package(self,pkg):
         self.Replace(PI_PACKAGENAME=pkg)
@@ -476,24 +566,20 @@ class PiGenericEnvironment(SCons.Environment.Environment):
                binrundir = escape(self.Dir(self['BINRUNDIR']).abspath),
                modrundir=escape(self.Dir(self['MODRUNDIR']).abspath),
                pydrundir=escape(self.Dir(self['PYDRUNDIR']).abspath),
-               plgrundir=escape(self.Dir(self['PLGRUNDIR']).abspath),
                modinstalldir=escape(self.Dir(self['MODINSTALLDIR']).abspath),
                pydinstalldir=escape(self.Dir(self['PYDINSTALLDIR']).abspath),
                resinstalldir=escape(self.Dir(self['RESINSTALLDIR']).abspath),
                bininstalldir=escape(self.Dir(self['BININSTALLDIR']).abspath),
-               plginstalldir=escape(self.Dir(self['PLGINSTALLDIR']).abspath),
                instrootdir=escape(self.Dir(self['ROOTINSTALLDIR']).abspath),
                python = escape(self['PI_PYTHON']),
                resrundir2 = escape2(self.Dir(self['RESRUNDIR']).abspath),
                binrundir2 = escape2(self.Dir(self['BINRUNDIR']).abspath),
                modrundir2=escape2(self.Dir(self['MODRUNDIR']).abspath),
                pydrundir2=escape2(self.Dir(self['PYDRUNDIR']).abspath),
-               plgrundir2=escape2(self.Dir(self['PLGRUNDIR']).abspath),
                modinstalldir2=escape2(self.Dir(self['MODINSTALLDIR']).abspath),
                pydinstalldir2=escape2(self.Dir(self['PYDINSTALLDIR']).abspath),
                resinstalldir2=escape2(self.Dir(self['RESINSTALLDIR']).abspath),
                bininstalldir2=escape2(self.Dir(self['BININSTALLDIR']).abspath),
-               plginstalldir2=escape2(self.Dir(self['PLGINSTALLDIR']).abspath),
                instrootdir2=escape2(self.Dir(self['ROOTINSTALLDIR']).abspath),
                python2 = escape2(self['PI_PYTHON']),
                prefix = escape(self['PI_PREFIX']),
@@ -516,7 +602,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         return self.Command(target,self.Value(text),action)
 
-    def PiPipBinding(self,module,spec,sources=[],libraries={},package=None,hidden=True):
+    def PiPipBinding(self,module,spec,sources=[],libraries={},package=None,hidden=True,per_agent=None):
         me=self.Dir('.').abspath
 
         inc=' '.join(map(lambda x: self.Dir(x).abspath,self['CPPPATH']))
@@ -532,15 +618,17 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         bind_env.Append(PILIBS=libraries)
         bind_env.set_hidden(hidden)
 
+        bind_env.set_agent_group(per_agent)
+
         binding=bind_env.SharedLibrary(module,allsources,SHLIBPREFIX=bind_env['PI_MODPREFIX'],SHLIBSUFFIX=bind_env['PI_MODSUFFIX'],SHLINKFLAGS=bind_env['PI_MODLINKFLAGS'])
         bind_env.addlibuser(binding,libraries)
 
-        binding_tgt1=bind_env.Install(bind_env['PYDRUNDIR'],binding[0])
+        binding_tgt1=bind_env.Install(bind_env.subst('$PYDRUNDIR'),binding[0])
         binding_tgt2=[]
 
         if package:
             bind_env.set_package(package)
-            binding_tgt2=bind_env.Install(bind_env['PYDSTAGEDIR'],binding_tgt1)
+            binding_tgt2=bind_env.Install(bind_env.subst('$PYDSTAGEDIR'),binding_tgt1)
 
         return binding_tgt1+binding_tgt2
 
@@ -550,50 +638,52 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         stagesource = etc_env.Install(etc_env['ETCSTAGEDIR'],source)
         return stagesource
 
-    def PiAgent(self,name,module,pypackage,cversion,subversion=None,package=None,extra=[]):
-        (pypackage,pcversion) = pypackage.split(':')
-
-        if subversion:
-            subv = str(subversion).split('.')
-        else:
-            subv = []
-
-        version = '.'.join(self.subst('$PI_RELEASE').split('.')+subv)
-
+    def PiAgent(self,name,pypackage,pymodule,cversion,extra=[]):
+        version = '.'.join(self.subst('$PI_RELEASE').split('.'))
         env = self.Clone()
+        meta = (name,pymodule,cversion,version,extra)
+        env.set_agent_group(pypackage)
+        env.shared.agent_groups[pypackage][1].append(meta)
+
+    def __build_manifest(self,module,package,agent_list):
+        env = self.Clone()
+
+        env.set_agent_group(module)
+
+        if package:
+            env.set_package(package)
+
         def build_version(target,source,env):
             output=file(target[0].abspath,'w')
             output.write(env.subst('version = "$PI_RELEASE"'))
             output.write("\n")
-            output.write(env.subst('cversion = "%s"' % cversion))
+            output.write(env.subst('cversion = "%s"' % source[1].value))
             output.write("\n")
-            output.write(env.subst('plugin = "%s"' % name))
+            output.write(env.subst('plugin = "%s"' % source[0].value))
             output.write("\n")
             output.close()
 
-        vnode=env.PiDynamicPython('%s_version.py'%name,[],build_version,package=package)
 
-        text = "%s:%s:%s:%s" % (name,module,cversion,version)
+        textnodes = []
+        for a in agent_list:
+            extra = ':'.join(a[4])
+            if extra: extra=':'+extra
+            textnodes.append(env.Value('%s:%s:%s:%s%s' % (a[0],a[1],a[2],a[3],extra)))
+            vnode = env.Command(join(env.subst("$MODRUNDIR_PLUGIN"),'%s_version.py' % a[0]),[env.Value(a[0]),env.Value(a[2])],build_version)
+            if package:
+                env.Install(env.subst("$MODSTAGEDIR_PLUGIN"),vnode)
 
-        if extra:
-            text = text + ':' + ':'.join(extra)
-
-        def build_registry(target,source,env):
+        def build_manifest(target,source,env):
             t = target[0].abspath
             outp = file(t,"w")
-            outp.write(source[0].value)
+            for a in source:
+                outp.write("%s\n" % a.value)
             outp.close()
 
-        rnode = env.Command(join(self.subst("$PLGRUNDIR"),name),self.Value(text),build_registry)
-
-        env.Depends(vnode,env.Value(cversion))
-        env.Depends(vnode,env.Value(self.shared.release))
-        env.Depends(rnode,env.Value(cversion))
-        env.Depends(rnode,env.Value(self.shared.release))
+        mnode = env.Command(join(env.subst("$MODRUNDIR_PLUGIN"),'Manifest'),textnodes,build_manifest)
 
         if package:
-            env.set_package(package)
-            env.Install(env.subst('$PLGSTAGEDIR'),rnode)
+            env.Install(env.subst("$MODSTAGEDIR_PLUGIN"),mnode)
 
     def PiPythonBuildWrapper(self,name,package,module,main):
         return self.PiPythonWrapper(name,package,module,main)
@@ -605,7 +695,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         run_source = self.File('pystub_%s.cpp' % name);
         run_source_node = self.baker(run_source,self.py_template,main=main,package=pypackage,module=module)
-        run_exe = self.PiProgram(name,run_source_node,package=package,libraries=['pic'],gui=gui)
+        run_exe = self.PiProgram(name,run_source_node,package=package,gui=gui)
         self.Depends(run_exe,self.Dir(pypackage,self.subst('$MODRUNDIR')))
         return run_exe
 
@@ -684,22 +774,181 @@ generic_py_template = """
 #undef __REDEF_DEBUG__
 #endif
 
-#include <picross/pic_resources.h>
+#include <string.h>
+
+#ifdef _WIN32
+#define UNICODE 1
+#define _UNICODE 1
+#include <windows.h>
+#include <shlobj.h>
+#endif
+
+#ifdef _WIN32
+#define UNICODE 1
+#define _UNICODE 1
+#include <windows.h>
+#include <shlobj.h>
+
+static void get_exe(char *buffer)
+{
+    WCHAR dest [MAX_PATH+1];
+    HINSTANCE moduleHandle = GetModuleHandle(0);
+    GetModuleFileName (moduleHandle, dest, MAX_PATH+1);
+    WideCharToMultiByte(CP_UTF8,0,dest,-1,buffer,MAX_PATH+1,0,0);
+}
+
+static void dirname(char *buffer)
+{
+    char *p = strrchr(buffer,'\\\\');
+
+    if(p)
+    {
+        *p = 0;
+    }
+    else
+    {
+        buffer[0] = '\\\\';
+        buffer[1] = 0;
+    }
+}
+
+static void init_pyhome(char *buffer)
+{
+  WCHAR dest [MAX_PATH+1];
+  SHGetSpecialFolderPath (0, dest, CSIDL_PROGRAM_FILES, 0);
+  WideCharToMultiByte(CP_UTF8,0,dest,-1,buffer,MAX_PATH+1,0,0);
+  strcat(buffer,"\\\\Eigenlabs\\\\runtime-1.0.0\\\\Python26");
+}
+
+static void init_release_root(char *buffer)
+{
+    get_exe(buffer);
+    dirname(buffer);
+    dirname(buffer);
+}
+
+static void init_path()
+{
+   char buffer[4096];
+   get_exe(buffer);
+   dirname(buffer);
+   SetDllDirectoryA(buffer);
+}
+
+#endif
+
+#ifdef __APPLE__
+
+#include <dlfcn.h>
+#include <limits.h>
+#include <stdlib.h>
+
+static void get_exe(char *buffer)
+{
+    Dl_info exeInfo;
+    dladdr ((const void*) get_exe, &exeInfo);
+    realpath(exeInfo.dli_fname,buffer);
+}
+
+static void dirname(char *buffer)
+{
+    char *p = strrchr(buffer,'/');
+
+    if(p)
+    {
+        *p = 0;
+    }
+    else
+    {
+        buffer[0] = '/';
+        buffer[1] = 0;
+    }
+}
+static void init_pyhome(char *buffer)
+{
+    strcpy(buffer,PI_PREFIX);
+}
+
+static void init_release_root(char *buffer)
+{
+    get_exe(buffer);
+    dirname(buffer);
+    dirname(buffer);
+}
+
+static void init_path()
+{
+}
+
+#endif
+
+#ifdef __linux__
+
+#include <dlfcn.h>
+#include <limits.h>
+#include <stdlib.h>
+
+static void dirname(char *buffer)
+{
+    char *p = strrchr(buffer,'/');
+
+    if(p)
+    {
+        *p = 0;
+    }
+    else
+    {
+        buffer[0] = '/';
+        buffer[1] = 0;
+    }
+}
+
+static void get_exe(char *buffer)
+{
+    Dl_info exeInfo;
+    dladdr ((const void*) get_exe, &exeInfo);
+    realpath(exeInfo.dli_fname,buffer);
+}
+
+static void init_pyhome(char *buffer)
+{
+    strcpy(buffer,"/usr");
+}
+
+static void init_release_root(char *buffer)
+{
+    get_exe(buffer);
+    dirname(buffer);
+    dirname(buffer);
+}
+
+static void init_path()
+{
+}
+
+#endif
 
 extern int main(int argc, char **argv)
 {
-  char *pyhome = strdup(pic::python_prefix_dir().c_str());
+  char pyhome[4096];
+
+  init_pyhome(pyhome);
+  init_path();
+
+  printf("pyhome=%%s\\n",pyhome);
+
   Py_SetPythonHome(pyhome);
   Py_Initialize();
   PySys_SetArgv(argc, argv);
 
   {
-      std::string root = pic::release_root_dir();
       char cmdbuffer[4096];
       char escbuffer[4096];
 
+      init_release_root(cmdbuffer);
+
       char *q = escbuffer;
-      const char *p = root.c_str();
+      const char *p = cmdbuffer;
 
       while(*p)
       {

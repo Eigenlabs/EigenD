@@ -20,5 +20,5 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',natives=Split('convolver_native'),resources=Split('viola_mono.wav'),pi='0.0',package='eigend')
-env.PiAgent('convolver','plg_convolver.convolver_plg','plg_convolver:0.0',cversion='1.0.0',package='eigend')
+env.PiPythonPackage(resources=Split('viola_mono.wav'),package='eigend',per_agent=True)
+env.PiAgent('convolver','plg_convolver','convolver_plg',cversion='1.0.0')

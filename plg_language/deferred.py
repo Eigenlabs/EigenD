@@ -19,7 +19,7 @@
 #
 
 from pi import async,logic,rpc,paths
-from plg_language import interpreter,imperative
+from . import interpreter,imperative
 
 
 class SubDelegate(interpreter.Delegate):

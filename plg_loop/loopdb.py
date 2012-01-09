@@ -20,10 +20,10 @@
 
 import sqlite3
 import os
-import loop_native
 import picross
 
 from pi import resource
+from . import loop_native
 
 user_cat = '#User Loops (by file)'
 factory_cat = '#Factory Loops (by file)'

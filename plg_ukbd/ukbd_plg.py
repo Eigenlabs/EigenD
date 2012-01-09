@@ -21,10 +21,9 @@
 import os
 import picross
 import piw
-import ukbd_native
 from pi import atom, utils, bundles, domain, agent, paths, policy, action, logic, upgrade
 from lib_micro import ezload
-from plg_ukbd import micro_manager_version as version
+from . import micro_manager_version as version,ukbd_native
 
 class VirtualKey(atom.Atom):
     def __init__(self):

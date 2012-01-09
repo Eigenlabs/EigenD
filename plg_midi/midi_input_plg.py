@@ -21,10 +21,9 @@
 import os
 import picross
 import piw
-import midi_native
 
 from pi import atom,bundles,domain,agent,logic,utils,node,action,async,upgrade
-from plg_midi import midi_input_version as version
+from . import midi_input_version as version,midi_native
 
 class VirtualKey(atom.Atom):
     def __init__(self):

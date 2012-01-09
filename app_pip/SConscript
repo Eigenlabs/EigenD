@@ -19,6 +19,6 @@
 #
 
 Import('env')
-env.PiPythonPackage('0.0',resources=Split('template'))
+env.PiPythonPackage(resources=Split('template'))
 pip = env.PiPythonBuildWrapper('pip','app_pip','pip','cli')
 env.PiBuildTool('pip',pip)

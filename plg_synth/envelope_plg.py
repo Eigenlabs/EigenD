@@ -19,10 +19,9 @@
 #
 
 import piw
-import synth_native
 from pi import agent,atom,domain,bundles,upgrade,policy
 from pi.logic.shortcuts import T
-from plg_synth import envelope_version as version
+from . import envelope_version as version,synth_native
 
 class Agent(agent.Agent):
 

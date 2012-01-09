@@ -22,7 +22,7 @@ Import('env')
 
 import SCons
 
-env.PiPythonPackage('0.0',package='eigend')
+env.PiPythonPackage(package='eigend')
 
 def build_lex(target,source,env):
     e2m=dict()

@@ -21,8 +21,8 @@
 Import('env')
 
 native_files = Split("""host.cpp""")
-env.PiSharedLibrary('pihost',native_files,libraries=Split('juce pia piw pic pie midilib'),package='eigend')
-env.PiPipBinding('host_native','host.pip',libraries=Split('pihost juce pia piw pic pie midilib'),package='eigend')
+env.PiSharedLibrary('pihost',native_files,libraries=Split('juce pia piw pic pie midilib'),package='eigend',per_agent='plg_host')
+env.PiPipBinding('host_native','host.pip',libraries=Split('pihost juce pia piw pic pie midilib'),package='eigend',per_agent='plg_host')
 
 scanner_files = Split("scan.cpp")
 env.PiGuiProgram('scanner0',scanner_files,appname='EigenScanner0',package='eigend',libraries=Split('juce ejuce pic pia pie'),private=True,di=True)

@@ -19,7 +19,7 @@
 
 from pi.logic.shortcuts import *
 from pi import action,logic,async,domain,utils,resource,rpc,timeout,plumber
-from plg_language import interpreter,noun,imperative,referent
+from . import interpreter,noun,imperative,referent
 import traceback
 
 def find_conn(aproxy,id):

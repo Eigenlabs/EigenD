@@ -19,8 +19,7 @@
 #
 
 import piw
-import synth_native
-from plg_synth import ladder_filter_version as version
+from . import ladder_filter_version as version,synth_native
 from pi.logic.shortcuts import T
 from pi import agent,atom,domain,upgrade,bundles
 

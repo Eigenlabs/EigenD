@@ -19,7 +19,7 @@
 #
 
 from pi import agent,bundles,atom,action,domain,paths,upgrade,const,policy,node
-from plg_simple import strummer_version as version
+from . import strummer_version as version
 import piw
 
 class Agent(agent.Agent):

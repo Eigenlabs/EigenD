@@ -32,5 +32,5 @@ synthfiles = Split("""
 if env['IS_MACOSX']:
     env.Append(LINKFLAGS='-framework vecLib')
 
-env.PiSharedLibrary('pisynth',synthfiles, libraries=Split('pic piw pie pia'),package='eigend')
-env.PiPipBinding('synth_native','synth.pip',libraries=Split('pisynth pic piw pie pia'),package='eigend')
+env.PiSharedLibrary('pisynth',synthfiles, libraries=Split('pic piw pie pia'),package='eigend',per_agent='plg_synth')
+env.PiPipBinding('synth_native','synth.pip',libraries=Split('pisynth pic piw pie pia'),package='eigend',per_agent='plg_synth')

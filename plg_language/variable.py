@@ -19,8 +19,8 @@
 #
 
 from pi import atom,bundles,node,action,logic,utils,errors,async
-from plg_language import interpreter
 import piw
+from . import interpreter
 
 class Variable(bundles.Output):
     def __init__(self,manager,index,name="",value=""):

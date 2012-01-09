@@ -19,7 +19,7 @@
 #
 
 from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,paths,talker,collection
-from plg_simple import talker_version as version
+from . import talker_version as version
 import piw
 import operator
 

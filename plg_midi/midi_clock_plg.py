@@ -28,8 +28,7 @@ from pi import agent,atom,logic,node,utils,bundles,audio,domain,const,resource,g
 from pi.logic.shortcuts import T
 from pibelcanto import lexicon
 import piw,urllib,sys,os,operator,glob,shutil
-from plg_midi import midi_clock_version as version
-import midi_native
+from . import midi_clock_version as version,midi_native
 
 
 class Agent(agent.Agent):

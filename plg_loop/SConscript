@@ -20,11 +20,10 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',natives=Split('loop_native'),resources=Split('accent.wav beat.wav *.png'),pi='0.0',package='eigend')
-env.PiAgent('metronome','plg_loop.metronome_plg','plg_loop:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('drummer','plg_loop.drummer_plg','plg_loop:0.0',cversion='1.0.1',package='eigend')
-env.PiAgent('clicker','plg_loop.clicker_plg','plg_loop:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('audio_player','plg_loop.audio_player_plg','plg_loop:0.0',cversion='1.0.0',package='eigend')
+env.PiPythonPackage(resources=Split('accent.wav beat.wav *.png'),package='eigend',per_agent=True)
+env.PiAgent('metronome','plg_loop','metronome_plg',cversion='1.0.0')
+env.PiAgent('drummer','plg_loop','drummer_plg',cversion='1.0.1')
+env.PiAgent('clicker','plg_loop','clicker_plg',cversion='1.0.0')
 env.PiPythonWrapper('loopdb_create','plg_loop','loopdb','create',package='eigend')
 
 if env['IS_MACOSX']:

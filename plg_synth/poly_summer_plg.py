@@ -19,10 +19,9 @@
 #
 
 from pi import agent,atom,domain,errors,action,policy,utils,bundles,async,paths,collection
-from plg_synth import poly_summer_version as version
+from . import poly_summer_version as version,synth_native
 
 import piw
-import synth_native
 
 MAX_CHANNEL = 12 
 

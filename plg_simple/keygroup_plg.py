@@ -19,7 +19,7 @@
 #
 
 from pi import agent,atom,action,bundles,domain,errors,paths,policy,async,logic,const,node,upgrade,utils,container,timeout,paths,guid
-from plg_simple import keygroup_version as version
+from . import keygroup_version as version
 from pi.logic.shortcuts import *
 import piw
 import picross

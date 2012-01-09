@@ -20,10 +20,9 @@
 
 import piw
 import picross
-import synth_native
 
 from pi import agent,atom,bundles,domain,paths,upgrade,policy,utils,audio
-from plg_synth import gain_version as version
+from . import gain_version as version,synth_native
 
 class Agent(agent.Agent):
 

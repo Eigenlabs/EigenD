@@ -19,8 +19,8 @@
 #
 
 Import('env')
-env.PiPythonPackage('0.0',package='eigend',natives=Split('stk_native'),pi='0.0')
-env.PiAgent('panpipe_oscillator','plg_stk.panpipe_oscillator_plg','plg_stk:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('clarinet_oscillator','plg_stk.clarinet_oscillator_plg','plg_stk:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('sax_oscillator','plg_stk.blownstring_oscillator_plg','plg_stk:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('cello_oscillator','plg_stk.cello_oscillator_plg','plg_stk:0.0',cversion='1.0.0',package='eigend')
+env.PiPythonPackage(package='eigend',per_agent=True)
+env.PiAgent('panpipe_oscillator','plg_stk','panpipe_oscillator_plg',cversion='1.0.0')
+env.PiAgent('clarinet_oscillator','plg_stk','clarinet_oscillator_plg',cversion='1.0.0')
+env.PiAgent('sax_oscillator','plg_stk','blownstring_oscillator_plg',cversion='1.0.0')
+env.PiAgent('cello_oscillator','plg_stk','cello_oscillator_plg',cversion='1.0.0')

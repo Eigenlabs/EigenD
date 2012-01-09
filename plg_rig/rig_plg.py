@@ -2,8 +2,7 @@
 from pi import agent,atom,domain,utils,bundles,upgrade,paths,audio,async,collection,policy,proxy,node,container,logic,action
 from pisession import workspace
 import piw
-from plg_rig import rig_version as version
-import rig_native
+from . import rig_version as version,rig_native
 import os
 
 def name_subst(name,find,repl):

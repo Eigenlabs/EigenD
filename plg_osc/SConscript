@@ -24,7 +24,7 @@ Import('env')
 # and arrange for installation.  Python modules go into tmp/modules
 # in compiled form.  
 #
-env.PiPythonPackage('0.0', natives=Split('osc_plg_native'), package='eigend')
+env.PiPythonPackage( package='eigend', per_agent=True)
 
 #
 # Install the agent contained in the plg_osc module, where the main is
@@ -32,4 +32,4 @@ env.PiPythonPackage('0.0', natives=Split('osc_plg_native'), package='eigend')
 # osc_output_version containing version information. This version information
 # can be used later to upgrade setups when agents change.
 #
-env.PiAgent('osc_output', 'plg_osc.osc_output_plg', 'plg_osc:0.0', cversion='0.0.1', package='eigend')
+env.PiAgent('osc_output', 'plg_osc','osc_output_plg', cversion='0.0.1')

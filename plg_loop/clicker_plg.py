@@ -20,9 +20,8 @@
 
 import picross
 import piw
-import loop_native
 from pi import agent,atom,const,domain,bundles,resource,action,riff,files,node,upgrade
-from plg_loop import clicker_version as version
+from . import clicker_version as version,loop_native
 import os
 
 class WavSample:

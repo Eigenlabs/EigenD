@@ -48,12 +48,16 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 
-void pic_thread_yield()
+void pic_thread_yield(void)
 {
     sched_yield();
 }
 
-void pic_set_fpu()
+void pic_init_dll_path(void)
+{
+}
+
+void pic_set_fpu(void)
 {
 }
 
@@ -61,7 +65,7 @@ void pic_set_foreground(bool rt)
 {
 }
 
-pic_threadid_t pic_current_threadid()
+pic_threadid_t pic_current_threadid(void)
 {
     return pthread_self();
 }
@@ -108,6 +112,10 @@ static int __realtime(unsigned pri)
 #include <mach/vm_map.h>
 #include <mach/thread_act.h>
 #include <CoreAudio/HostTime.h>
+
+void pic_init_dll_path(void)
+{
+}
 
 static void __realtime(pthread_t thread, unsigned pri)
 {

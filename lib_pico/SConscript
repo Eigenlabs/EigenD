@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',natives=Split('pico_native'),package='eigend',picross='0.0')
+env.PiPythonPackage(package='eigend')
 env.PiPythonWrapper('pezload','lib_pico','ezload','main')
 env.PiPythonWrapper('pled','lib_pico','pled','main')
 env.PiPythonWrapper('pwritecal','lib_pico','pwritecal','cli')

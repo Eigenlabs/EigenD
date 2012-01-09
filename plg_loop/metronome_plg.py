@@ -19,10 +19,9 @@
 #
 
 import piw
-import loop_native
 from pi import agent,atom,toggle,domain,bundles,action,upgrade,policy,utils,timeout,const,node,logic
 from pi.logic.shortcuts import T
-from plg_loop import metronome_version as version
+from . import metronome_version as version,loop_native
 
 def sc(f):
     return piw.slowchange(utils.changify(f))

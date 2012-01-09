@@ -39,4 +39,4 @@ pistk_files=Split("""
     pistk.cpp stk_fastmark.cpp
     """)
 
-env.PiPipBinding('stk_native','stk.pip',sources=pistk_files,libraries=Split('pic piw pie pia'),package='eigend')
+env.PiPipBinding('stk_native','stk.pip',sources=pistk_files,libraries=Split('pic piw pie pia'),package='eigend',per_agent='plg_stk')

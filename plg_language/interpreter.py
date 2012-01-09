@@ -20,7 +20,7 @@
 
 from pi import async,logic,rpc
 from pi.logic.shortcuts import *
-from plg_language import context,referent
+from . import context,referent
 
 import copy
 import traceback

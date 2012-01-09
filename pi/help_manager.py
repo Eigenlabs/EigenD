@@ -18,9 +18,8 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import resource,utils
+from pi import resource,utils,version
 from xml.etree import cElementTree
-from plg_language import interpreter_version as version
 import picross
 import os
 import urllib

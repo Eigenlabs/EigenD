@@ -19,7 +19,7 @@
 #
 
 from pi import atom,policy,utils,proxy,const,domain,logic,rpc,paths
-import language_native
+from . import language_native
 import piw
 import xmlrpclib
 

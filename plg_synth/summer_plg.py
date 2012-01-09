@@ -19,10 +19,9 @@
 #
 
 from pi import agent,atom,domain,utils,bundles,upgrade,paths,audio
-from plg_synth import summer_version as version
+from . import summer_version as version,synth_native
 
 import piw
-import synth_native
 
 class Agent(agent.Agent):
     def __init__(self,address, ordinal):

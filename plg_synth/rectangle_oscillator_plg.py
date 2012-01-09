@@ -19,9 +19,8 @@
 #
 
 import piw
-import synth_native
 from pi import const,agent,atom,domain,bundles,upgrade,policy
-from plg_synth import rectangle_oscillator_version as version
+from . import rectangle_oscillator_version as version,synth_native
 
 class Agent(agent.Agent):
 

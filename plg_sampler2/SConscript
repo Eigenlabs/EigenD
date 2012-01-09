@@ -19,7 +19,7 @@
 #
 
 Import('env')
-env.PiPythonPackage('0.0',natives=Split('sampler2_native'),pi='0.0',package='eigend')
-env.PiAgent('sampler_oscillator','plg_sampler2.sampler_oscillator_plg','plg_sampler2:0.0',cversion='1.0.0',package='eigend')
+env.PiPythonPackage(package='eigend',per_agent=True)
+env.PiAgent('sampler_oscillator','plg_sampler2','sampler_oscillator_plg',cversion='1.0.0')
 env.PiPythonWrapper('sf2dump','plg_sampler2','sf2dump','main',package='eigend')
 

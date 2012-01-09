@@ -19,7 +19,7 @@
 #
 
 from pi import agent,bundles,atom,action,domain,paths,upgrade,const,policy,node
-from plg_simple import scaler_version as version
+from . import scaler_version as version
 import piw
 import picross
 from pi.logic.shortcuts import T

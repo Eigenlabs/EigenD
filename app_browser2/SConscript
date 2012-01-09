@@ -20,5 +20,5 @@
 
 Import('env')
 env.PiResources('eigend','app_browser2','*.png')
-env.PiPythonPackage('0.0',package='eigend',pi='0.0',pisession='0.0',app_workbench='0.0',pigui='0.0')
+env.PiPythonPackage(package='eigend')
 env.PiPythonwWrapper('eigenbrowser','app_browser2','browser_cli','cli',appname='EigenBrowser',usegil=True,private=True,di=False,package='eigend')

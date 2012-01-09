@@ -20,6 +20,6 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',natives=Split('language_native'),pi='0.0',package='eigend')
-env.PiAgent('interpreter','plg_language.language_plg','plg_language:0.0',cversion='1.0.2',package='eigend')
-env.PiAgent('controller','plg_language.controller_plg','plg_language:0.0',cversion='1.0.0',package='eigend')
+env.PiPythonPackage(package='eigend',per_agent=True)
+env.PiAgent('interpreter','plg_language','language_plg',cversion='1.0.2')
+env.PiAgent('controller','plg_language','controller_plg',cversion='1.0.0')

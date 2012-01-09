@@ -19,10 +19,8 @@
 #
 
 from pi import agent,atom,bundles,domain,errors,policy,utils,action,const,node,upgrade,logic,async,collection,talker
-from plg_arranger import arranger_version as version
-
+from . import arranger_version as version,arranger_native
 import piw
-import arranger_native
 
 class RowTargetEvent(talker.Talker):
     def __init__(self,target,fast,index):

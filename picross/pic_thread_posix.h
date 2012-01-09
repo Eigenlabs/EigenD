@@ -47,6 +47,7 @@ PIC_DECLSPEC_FUNC(void) pic_set_foreground(bool rt);
 PIC_DECLSPEC_FUNC(void) pic_set_interrupt(void);
 PIC_DECLSPEC_FUNC(void) pic_mlock_code(void);
 PIC_DECLSPEC_FUNC(void) pic_set_core_unlimited();
+PIC_DECLSPEC_FUNC(void) pic_init_dll_path(void);
 
 PIC_DECLSPEC_FUNC(void) pic_thread_lck_free(void *ptr, unsigned size);
 PIC_DECLSPEC_FUNC(void) *pic_thread_lck_malloc(unsigned size);

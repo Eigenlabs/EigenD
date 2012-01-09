@@ -27,8 +27,7 @@
 from pi import agent,atom,logic,node,utils,bundles,audio,domain,const,resource,guid,upgrade,policy,errors,action,inputparameter,paths,async
 from pibelcanto import lexicon
 import piw,urllib,sys,os,operator,glob,shutil,string
-from plg_midi import midi_converter_version as version
-
+from . import midi_converter_version as version
 import piw_native
 import midilib_native
 

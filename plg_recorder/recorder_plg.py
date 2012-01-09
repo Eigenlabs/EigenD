@@ -19,10 +19,9 @@
 #
 
 from pi import agent,atom,action,bundles,const,domain,errors,async,resource,utils,schedproxy,node,logic,files,upgrade,paths,toggle
-from plg_recorder import recorder_version as version
+from . import recorder_version as version,recorder_native
 import piw
 import picross
-import recorder_native
 import os
 import glob
 import re

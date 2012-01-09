@@ -30,8 +30,7 @@ import piw
 import picross
 from pi import agent,atom,bundles,domain,async,action,upgrade,policy,node,container,utils,logic,const,errors,collection
 from pi.logic.shortcuts import T
-from plg_synth import console_mixer_version as version
-import synth_native
+from . import console_mixer_version as version,synth_native
 
 num_inputs = 24
 db_range = 70

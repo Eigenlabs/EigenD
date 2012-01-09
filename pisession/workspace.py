@@ -780,7 +780,6 @@ class Workspace(atom.Atom):
 
 
 def create_registry():
-    r=registry.Registry()
-    r.scan_path(os.path.join(picross.release_root_dir(),'plugins'),AgentFactory)
+    r=registry.Registry(AgentFactory)
     r.dump(lambda m: m.dump())
     return r

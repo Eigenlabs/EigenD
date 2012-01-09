@@ -20,8 +20,8 @@
 
 from pi import atom,domain,node,utils
 from pibelcanto import lexicon
+from . import language_native
 import piw
-import language_native
 
 class History(node.Server):
     history = 10

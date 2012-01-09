@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',natives=Split('micro_native'),package='eigend',picross='0.0')
+env.PiPythonPackage(package='eigend')
 env.PiPythonWrapper('uezq','lib_micro','ezq','main')
 env.PiPythonWrapper('uezload','lib_micro','ezload','main')
 env.PiPythonWrapper('uled','lib_micro','uled','main')

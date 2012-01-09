@@ -20,7 +20,8 @@
 
 from pi import agent,atom,logic,node,utils,bundles,audio,domain,const,upgrade,errors,action,async,resource,inputparameter,paths
 from pibelcanto import lexicon
-from plg_host import audio_unit_version as version
+from . import audio_unit_version as version, host_native
+
 import piw
 import urllib
 import sys
@@ -29,7 +30,6 @@ import operator
 import glob
 import shutil
 import zlib
-import host_native
 import piw_native
 import midilib_native
 import string

@@ -20,4 +20,4 @@
 
 Import('env')
 
-env.PiPythonPackage('0.0',natives=Split('pisession_native'),pi='0.0',piagent='0.0',package='eigend')
+env.PiPythonPackage(package='eigend')

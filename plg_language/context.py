@@ -19,7 +19,7 @@
 #
 
 from pi import async,node,action,logic
-from plg_language import referent
+from . import referent
 import piw
 
 class ResolutionError(Exception):

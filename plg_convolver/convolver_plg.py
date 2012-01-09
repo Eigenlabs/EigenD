@@ -32,9 +32,8 @@ import glob
 import sys
 import piw
 import picross
-import convolver_native
 from pi import  action,agent,atom,bundles,domain,files,paths,policy,resource,riff,upgrade,utils,node,logic,index,guid,rpc,async,state,container
-from plg_convolver import convolver_version as version
+from . import convolver_version as version, convolver_native
 
 # ------------------------------------------------------------------------------------------------------------------
 # WavSample class: reads a wav (riff) file (for impulse response)

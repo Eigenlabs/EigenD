@@ -20,10 +20,9 @@
 
 import piw
 import picross
-import synth_native
 
 from pi import agent,atom,bundles,domain,paths,upgrade,policy,utils,audio
-from plg_synth import panner_version as version
+from . import panner_version as version,synth_native
 
 def pan_function(f):
     return (f+1.0)/2.0

@@ -19,7 +19,7 @@
 #
 
 from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,talker,collection
-from plg_simple import scheduler_version as version
+from . import scheduler_version as version
 import piw
 from pi.logic.shortcuts import *
 
