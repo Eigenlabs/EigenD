@@ -543,7 +543,7 @@ class Agent(agent.Agent):
         self.stageServer.start()
 
     def close_server(self):
-        self.database.stop()
+        self.database.stop(piw.tsd_scope())
         agent.Agent.close_server(self)
 
         # shutdown stage server
