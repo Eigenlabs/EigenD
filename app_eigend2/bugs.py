@@ -33,6 +33,7 @@ import mimetypes
 import os
 import threading
 import xmlrpclib
+import datetime
 
 class HttpError(RuntimeError):
     pass
@@ -56,13 +57,26 @@ def file_bug(user,email,subj,desc):
     zf = resource.get_bugfile()
     zip = zipfile.ZipFile(zf, 'w')
 
-    def_state_file = resource.user_resource_file('global',resource.current_setup)
-
     zip.writestr('description',desc)
     zip.writestr('user',user)
     zip.writestr('email',email)
     zip.writestr('subject',subj)
-    zip.write(def_state_file,resource.current_setup,compress_type=zipfile.ZIP_DEFLATED)
+
+    zip.writestr('bugreport.txt', "From: %s <%s>\n\nSubject: %s\n\n%s\n" % (user,email,subj,desc))
+
+    def_state_file = resource.user_resource_file('global',resource.current_setup)
+    for statefile in glob.glob(def_state_file+'*'):
+        zip.write(statefile,'setup/'+os.path.basename(statefile),compress_type=zipfile.ZIP_DEFLATED)
+
+    # add the crash reports of today to the bug report
+    if resource.is_macosx():
+        diag = os.path.expanduser("~/Library/Logs/DiagnosticReports")
+        today = datetime.date.today().strftime("_%Y-%m-%d-")
+        if os.path.isdir(diag):
+            for crashfile in glob.glob( "%s/eigen*%s*.crash" % (diag, today) ):
+                zip.write(crashfile,"crash/"+os.path.basename(crashfile),compress_type=zipfile.ZIP_DEFLATED)
+            for crashfile in glob.glob( "%s/Workbench*%s*.crash" % (diag, today) ):
+                zip.write(crashfile,"crash/"+os.path.basename(crashfile),compress_type=zipfile.ZIP_DEFLATED)
     
     #core_files = glob.glob('/cores/*')
     #if core_files:

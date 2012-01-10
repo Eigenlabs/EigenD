@@ -1333,7 +1333,7 @@ EigenBugComponent::EigenBugComponent(EigenMainWindow *mediator): mediator_(media
     bug_report << "Explain what happened:\n"
         << "\n\n"
         << "System information:\n"
-        << "OS: " << SystemStats::getOperatingSystemName().toUTF16() << " "
+        << "OS: " << SystemStats::getOperatingSystemName() << " "
 
 #if JUCE_MAC
         << "10." << SystemStats::getOSXMinorVersionNumber() << ", "
