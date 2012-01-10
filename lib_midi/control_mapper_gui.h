@@ -256,6 +256,15 @@ namespace midi
             mapper_table_t &mapper_;
     };
 
+    class MIDILIB_DECLSPEC_CLASS mapper_tablelistbox_t: public juce::TableListBox
+    {
+        public:
+            mapper_tablelistbox_t(const juce::String &, juce::TableListBoxModel *);
+            
+            void mouseWheelMove(const juce::MouseEvent &, float, float);
+            void delegatedMouseWheelMove(const juce::MouseEvent &, float, float);
+    };
+
     class MIDILIB_DECLSPEC_CLASS mapper_table_t: public juce::Component, public juce::Button::Listener, public virtual pic::tracked_t
     {
         public:
@@ -293,8 +302,8 @@ namespace midi
             mapping_functors_t mapping_functors_;
             header_table_model_t header_table_model_;
             mapping_table_model_t mapping_table_model_;
-            juce::TableListBox *table_header_;
-            juce::TableListBox *table_mapping_;
+            mapper_tablelistbox_t *table_header_;
+            mapper_tablelistbox_t *table_mapping_;
             juce::TextButton *help_button_;
             ClearTabButton *clear_tab_;
             juce::Font font_;

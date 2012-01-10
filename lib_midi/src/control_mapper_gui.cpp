@@ -879,12 +879,32 @@ namespace midi
 
 
     /*
+     * mapper_tablelistbox_t
+     */
+
+    mapper_tablelistbox_t::mapper_tablelistbox_t(const juce::String &componentName, juce::TableListBoxModel *model) : juce::TableListBox(componentName, model) { }
+
+    void mapper_tablelistbox_t::mouseWheelMove(const juce::MouseEvent &, float, float)
+    {
+        // always receive the mouseWheelMove event from the containing mapper_table_t component, which will call delegatedMouseWheelMove
+    }
+
+    void mapper_tablelistbox_t::delegatedMouseWheelMove(const MouseEvent& e, float wheelIncrementX, float wheelIncrementY)
+    {
+        if(wheelIncrementX != 0 || wheelIncrementY != 0)
+        {
+            juce::TableListBox::mouseWheelMove(e, wheelIncrementX, wheelIncrementY);
+        }
+    }
+
+
+    /*
      * mapper_table_t
      */
 
     mapper_table_t::mapper_table_t(settings_functors_t settings, mapping_functors_t mapping): settings_functors_(settings), mapping_functors_(mapping), header_table_model_(*this), mapping_table_model_(*this), font_(12.f), last_modal_dismissal_(0), initialized_(false)
     {
-        addAndMakeVisible(table_header_ = new juce::TableListBox(juce::String::empty,&header_table_model_));
+        addAndMakeVisible(table_header_ = new mapper_tablelistbox_t(juce::String::empty,&header_table_model_));
         table_header_->getViewport()->setScrollBarsShown(false, false);
         table_header_->setColour(juce::ListBox::backgroundColourId,juce::Colours::black);
         table_header_->setColour(juce::ListBox::outlineColourId,juce::Colours::grey);
@@ -893,7 +913,7 @@ namespace midi
         table_header_->setHeaderHeight(0);
         table_header_->addMouseListener(this, true);
 
-        addAndMakeVisible(table_mapping_ = new juce::TableListBox(juce::String::empty,&mapping_table_model_));
+        addAndMakeVisible(table_mapping_ = new mapper_tablelistbox_t(juce::String::empty,&mapping_table_model_));
         table_mapping_->setColour(juce::ListBox::backgroundColourId,juce::Colours::black);
         table_mapping_->setColour(juce::ListBox::outlineColourId,juce::Colours::grey);
         table_mapping_->setColour(juce::ListBox::textColourId,juce::Colours::white);
@@ -1001,7 +1021,10 @@ namespace midi
 
     void mapper_table_t::mouseWheelMove(const juce::MouseEvent &e, float wheelIncrementX, float wheelIncrementY)
     {
-        table_mapping_->mouseWheelMove(e, wheelIncrementX, wheelIncrementY);
+        if(wheelIncrementX != 0 || wheelIncrementY != 0)
+        {
+            table_mapping_->delegatedMouseWheelMove(e, wheelIncrementX, wheelIncrementY);
+        }
     }
 
 
