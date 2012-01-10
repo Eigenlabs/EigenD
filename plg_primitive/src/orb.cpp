@@ -18,7 +18,7 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "angle_radius.h"
+#include "orb.h"
 
 #define _USE_MATH_DEFINES
 
@@ -37,10 +37,10 @@
 
 namespace
 {
-    struct angle_radius_wire_t: piw::wire_t, piw::wire_ctl_t, piw::event_data_sink_t, piw::event_data_source_real_t, virtual public pic::lckobject_t, pic::element_t<>
+    struct orb_wire_t: piw::wire_t, piw::wire_ctl_t, piw::event_data_sink_t, piw::event_data_source_real_t, virtual public pic::lckobject_t, pic::element_t<>
     {
-        angle_radius_wire_t(prim::angle_radius_t::impl_t *p, const piw::event_data_source_t &);
-        ~angle_radius_wire_t() { invalidate(); }
+        orb_wire_t(prim::orb_t::impl_t *p, const piw::event_data_source_t &);
+        ~orb_wire_t() { invalidate(); }
 
         void wire_closed() { delete this; }
         void invalidate();
@@ -51,7 +51,7 @@ namespace
         void ticked(unsigned long long f, unsigned long long t);
         void source_ended(unsigned);
 
-        prim::angle_radius_t::impl_t *root_;
+        prim::orb_t::impl_t *root_;
         piw::xevent_data_buffer_t::iter_t input_;
         piw::xevent_data_buffer_t output_;
         unsigned long long last_from_;
@@ -62,12 +62,12 @@ namespace
     };
 };
 
-struct prim::angle_radius_t::impl_t: piw::root_t, piw::root_ctl_t, virtual pic::lckobject_t, virtual pic::tracked_t, piw::clocksink_t
+struct prim::orb_t::impl_t: piw::root_t, piw::root_ctl_t, virtual pic::lckobject_t, virtual pic::tracked_t, piw::clocksink_t
 {
     impl_t(piw::clockdomain_ctl_t *cd, const piw::cookie_t &c): root_t(0), up_(0)
     {
         connect(c);
-        cd->sink(this,"angle_radius");
+        cd->sink(this,"orb");
         tick_enable(true);
         set_clock(this);
     }
@@ -76,7 +76,7 @@ struct prim::angle_radius_t::impl_t: piw::root_t, piw::root_ctl_t, virtual pic::
 
     void clocksink_ticked(unsigned long long f, unsigned long long t)
     {
-        angle_radius_wire_t *w;
+        orb_wire_t *w;
 
         for(w=tickers_.head(); w!=0; w=tickers_.next(w))
         {
@@ -84,7 +84,7 @@ struct prim::angle_radius_t::impl_t: piw::root_t, piw::root_ctl_t, virtual pic::
         }
     }
 
-    void add_ticker(angle_radius_wire_t *w)
+    void add_ticker(orb_wire_t *w)
     {
         if(!tickers_.head())
         {
@@ -94,7 +94,7 @@ struct prim::angle_radius_t::impl_t: piw::root_t, piw::root_ctl_t, virtual pic::
         tickers_.append(w);
     }
 
-    void del_ticker(angle_radius_wire_t *w)
+    void del_ticker(orb_wire_t *w)
     {
         tickers_.remove(w);
 
@@ -109,7 +109,7 @@ struct prim::angle_radius_t::impl_t: piw::root_t, piw::root_ctl_t, virtual pic::
     {
         tick_disable();
 
-        pic::lckmap_t<piw::data_t,angle_radius_wire_t *>::lcktype::iterator ci;
+        pic::lckmap_t<piw::data_t,orb_wire_t *>::lcktype::iterator ci;
         while((ci=children_.begin())!=children_.end())
         {
             delete ci->second;
@@ -118,14 +118,14 @@ struct prim::angle_radius_t::impl_t: piw::root_t, piw::root_ctl_t, virtual pic::
 
     piw::wire_t *root_wire(const piw::event_data_source_t &es)
     {
-       pic::lckmap_t<piw::data_t,angle_radius_wire_t *>::lcktype::iterator ci;
+       pic::lckmap_t<piw::data_t,orb_wire_t *>::lcktype::iterator ci;
 
         if((ci=children_.find(es.path()))!=children_.end())
         {
             delete ci->second;
         }
 
-        return new angle_radius_wire_t(this, es);
+        return new orb_wire_t(this, es);
     }
 
     void root_closed() { invalidate(); }
@@ -152,12 +152,12 @@ struct prim::angle_radius_t::impl_t: piw::root_t, piw::root_ctl_t, virtual pic::
         set_latency(get_latency());
     }
 
-    pic::lckmap_t<piw::data_t, angle_radius_wire_t *>::lcktype children_;
-    pic::ilist_t<angle_radius_wire_t> tickers_;
+    pic::lckmap_t<piw::data_t, orb_wire_t *>::lcktype children_;
+    pic::ilist_t<orb_wire_t> tickers_;
     bct_clocksink_t *up_;
 };
 
-angle_radius_wire_t::angle_radius_wire_t(prim::angle_radius_t::impl_t *p, const piw::event_data_source_t &es): piw::event_data_source_real_t(es.path()), root_(p), last_from_(0), roll_set_(false), yaw_set_(false), roll_(0.f), yaw_(0.f)
+orb_wire_t::orb_wire_t(prim::orb_t::impl_t *p, const piw::event_data_source_t &es): piw::event_data_source_real_t(es.path()), root_(p), last_from_(0), roll_set_(false), yaw_set_(false), roll_(0.f), yaw_(0.f)
 {
     root_->children_.insert(std::make_pair(path(),this));
     root_->connect_wire(this,source());
@@ -166,7 +166,7 @@ angle_radius_wire_t::angle_radius_wire_t(prim::angle_radius_t::impl_t *p, const 
 
 static int __wire_invalidator(void *w_, void *_)
 {
-    angle_radius_wire_t *w = (angle_radius_wire_t *)w_;
+    orb_wire_t *w = (orb_wire_t *)w_;
     if(w->root_)
     {
         w->root_->del_ticker(w);
@@ -174,7 +174,7 @@ static int __wire_invalidator(void *w_, void *_)
     return 0;
 }
 
-void angle_radius_wire_t::invalidate()
+void orb_wire_t::invalidate()
 {
     source_shutdown();
     unsubscribe();
@@ -187,7 +187,7 @@ void angle_radius_wire_t::invalidate()
     }
 }
 
-void angle_radius_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::xevent_data_buffer_t &b)
+void orb_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::xevent_data_buffer_t &b)
 {
     output_ = piw::xevent_data_buffer_t(SIG2(ANGLE,RADIUS),PIW_DATAQUEUE_SIZE_NORM);
     input_ = b.iterator();
@@ -200,14 +200,14 @@ void angle_radius_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, co
     root_->add_ticker(this);
 }
 
-void angle_radius_wire_t::event_buffer_reset(unsigned s,unsigned long long t, const piw::dataqueue_t &o, const piw::dataqueue_t &n)
+void orb_wire_t::event_buffer_reset(unsigned s,unsigned long long t, const piw::dataqueue_t &o, const piw::dataqueue_t &n)
 {
     input_->set_signal(s,n);
     input_->reset(s,t);
     ticked(last_from_,t);
 }
 
-void angle_radius_wire_t::process(unsigned s, const piw::data_nb_t &d, unsigned long long t)
+void orb_wire_t::process(unsigned s, const piw::data_nb_t &d, unsigned long long t)
 {
     switch(s)
     {
@@ -236,7 +236,7 @@ void angle_radius_wire_t::process(unsigned s, const piw::data_nb_t &d, unsigned 
     }
 }
 
-void angle_radius_wire_t::ticked(unsigned long long f, unsigned long long t)
+void orb_wire_t::ticked(unsigned long long f, unsigned long long t)
 {
     last_from_ = t;
 
@@ -249,28 +249,28 @@ void angle_radius_wire_t::ticked(unsigned long long f, unsigned long long t)
     }
 }
 
-bool angle_radius_wire_t::event_end(unsigned long long t)
+bool orb_wire_t::event_end(unsigned long long t)
 {
     ticked(last_from_,t);
     root_->del_ticker(this);
     return source_end(t);
 }
 
-void angle_radius_wire_t::source_ended(unsigned seq)
+void orb_wire_t::source_ended(unsigned seq)
 {
     event_ended(seq);
 }
 
-piw::cookie_t prim::angle_radius_t::cookie()
+piw::cookie_t prim::orb_t::cookie()
 {
     return piw::cookie_t(impl_);
 }
 
-prim::angle_radius_t::angle_radius_t(piw::clockdomain_ctl_t *cd, const piw::cookie_t &cookie): impl_(new impl_t(cd, cookie))
+prim::orb_t::orb_t(piw::clockdomain_ctl_t *cd, const piw::cookie_t &cookie): impl_(new impl_t(cd, cookie))
 {
 }
 
-prim::angle_radius_t::~angle_radius_t()
+prim::orb_t::~orb_t()
 {
     delete impl_;
 }

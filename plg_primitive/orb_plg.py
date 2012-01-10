@@ -19,28 +19,28 @@
 
 import piw
 from pi import agent, domain, bundles, atom
-from plg_primitive import angle_radius_version as version
+from plg_primitive import orb_version as version
 
-from primitive_plg_native import angle_radius
+from primitive_plg_native import orb
 
 #
-# The Angle Radius agent.
+# The Orb agent.
 #
 # Refer to the latch_plg.py agent for documentation, nothing new is covered here.
 #
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
-        agent.Agent.__init__(self, signature=version, names='angle radius', ordinal=ordinal)
+        agent.Agent.__init__(self, signature=version, names='orb', ordinal=ordinal)
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
 
-        self[2] = atom.Atom()
+        self[2] = atom.Atom(names="outputs")
         self[2][1] = bundles.Output(1, False, names='angle output')
         self[2][2] = bundles.Output(2, False, names='radius output')
 
         self.output = bundles.Splitter(self.domain,*self[2].values())
-        self.native = angle_radius(self.domain, self.output.cookie())
+        self.native = orb(self.domain, self.output.cookie())
 
         self.key_input = bundles.VectorInput(self.native.cookie(), self.domain, signals=(1,2))
 

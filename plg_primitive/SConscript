@@ -22,4 +22,4 @@ Import('env')
 env.PiPythonPackage('0.0', natives=Split('primitive_native'), package='eigend')
 
 env.PiAgent('latch', 'plg_primitive.latch_plg', 'plg_latch:0.0', cversion='0.0.1', package='eigend')
-env.PiAgent('angle_radius', 'plg_primitive.angle_radius_plg', 'plg_angle_radius:0.0', cversion='0.0.1', package='eigend')
+env.PiAgent('orb', 'plg_primitive.orb_plg', 'plg_orb:0.0', cversion='0.0.1', package='eigend')

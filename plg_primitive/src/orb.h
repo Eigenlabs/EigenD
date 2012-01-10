@@ -18,8 +18,8 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ANGLE_RADIUS__
-#define __ANGLE_RADIUS__
+#ifndef __ORB__
+#define __ORB__
 
 #include "primitive_plg_exports.h"
 
@@ -29,11 +29,11 @@
 
 namespace prim
 {
-    class PRIMITIVE_PLG_DECLSPEC_CLASS angle_radius_t : public pic::nocopy_t
+    class PRIMITIVE_PLG_DECLSPEC_CLASS orb_t : public pic::nocopy_t
     {
         public:
-            angle_radius_t(piw::clockdomain_ctl_t *, const piw::cookie_t &);
-            ~angle_radius_t();
+            orb_t(piw::clockdomain_ctl_t *, const piw::cookie_t &);
+            ~orb_t();
 
             piw::cookie_t cookie();
 

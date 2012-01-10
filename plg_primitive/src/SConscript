@@ -19,6 +19,6 @@
 
 Import('env')
 
-env.PiSharedLibrary('primitive_plg', Split('latch.cpp angle_radius.cpp'), libraries=Split('pic piw pie pia pilo'), package='eigend')
+env.PiSharedLibrary('primitive_plg', Split('latch.cpp orb.cpp'), libraries=Split('pic piw pie pia pilo'), package='eigend')
 
 env.PiPipBinding('primitive_plg_native', 'primitive_plg.pip', libraries=Split('primitive_plg pic piw pie'), package='eigend')

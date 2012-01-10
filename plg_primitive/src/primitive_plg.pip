@@ -1,7 +1,7 @@
 
 <<<
 #include "latch.h"
-#include "angle_radius.h"
+#include "orb.h"
 >>>
 
 
@@ -15,8 +15,8 @@ class latch[prim::latch_t]
     void set_controller(unsigned)
 }
 
-class angle_radius[prim::angle_radius_t]
+class orb[prim::orb_t]
 {
-    angle_radius(clockdomain_ctl *, const cookie &)
+    orb(clockdomain_ctl *, const cookie &)
     cookie cookie()
 }
