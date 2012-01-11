@@ -199,6 +199,11 @@ def user_resource_file(category,name,version=None):
     filename = os.path.join(userdir,name)
     return filename
 
+def clean_current_setup():
+    def_state_file = user_resource_file('global',current_setup)
+    for statefile in glob.glob(def_state_file+'*'):
+        os.unlink(statefile)
+
 class LockFile:
     def __init__(self,name):
         print 'init lock file'      

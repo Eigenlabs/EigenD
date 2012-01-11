@@ -301,6 +301,8 @@ class Backend(eigend_native.c2p):
 
             self.backend_context = self.__create_context('eigend-backend')
 
+            resource.clean_current_setup()
+
             def bginit():
                 self.agent = agentd.Agent(self,1)
                 piw.tsd_thing(self.bgthing)
