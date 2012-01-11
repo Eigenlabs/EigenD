@@ -25,7 +25,8 @@ from pibelcanto import translate
 from app_eigend2 import version
 from pisession import agentd,session,upgrade
 
-import bugs
+import bugs_cli
+import latest_release
 
 import piw
 import picross
@@ -96,7 +97,7 @@ class GarbageCollector(threading.Thread):
 class Backend(eigend_native.c2p):
     def __init__(self):
         eigend_native.c2p.__init__(self)
-        self.bugfiler = bugs.BugFiler(self)
+        self.latest_release = latest_release.LatestReleasePoller(self)
         self.collector = None
         self.__progress = None
         self.__progress_lock = threading.Lock()
@@ -306,7 +307,7 @@ class Backend(eigend_native.c2p):
 
             self.collector = GarbageCollector(self.scaffold,self.garbage_context)
             self.collector.start()
-            self.bugfiler.start(cookie,info)
+            self.latest_release.start(cookie,info)
             self.run_background(bginit)
         except:
             print >>sys.__stdout__,'Initialisation failure'
@@ -498,7 +499,7 @@ class Backend(eigend_native.c2p):
     def file_bug(self,user,email,subj,desc):
         filename = resource.user_resource_file('global',resource.user_details,version='')
         open(filename,'w').write("%s\n%s\n" % (user.strip(),email.strip()))
-        self.bugfiler.file(user,email,subj,desc)
+        bugs_cli.file_bug(user,email,subj,desc)
 
     def get_setup_slot(self,slot):
         return agentd.get_setup_slot(slot)

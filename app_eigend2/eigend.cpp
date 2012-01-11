@@ -302,6 +302,7 @@ class EigenD : public ejuce::Application, virtual public pic::tracked_t
         void handleWinch(const std::string &msg);
 
     private:
+        pic::bgprocess_t bugreporter_;
         EigenMainWindow *main_window_;
         epython::PythonInterface *python_;
         pia::context_t context_;
@@ -1793,7 +1794,7 @@ EigenDialog::~EigenDialog()
     main_->dialog_dead(this);
 }
 
-EigenD::EigenD(): main_window_ (0), python_(0), logfile_(0)
+EigenD::EigenD(): bugreporter_(pic::private_exe_dir(),"eigenbugreporter"), main_window_ (0), python_(0), logfile_(0)
 {
 }
 
@@ -1810,6 +1811,8 @@ void EigenD::initialise (const String& commandLine)
     printf("release root: %s\n",pic::release_root_dir().c_str());
 
     bool net_test = eigend::test_network();
+
+    bugreporter_.start();
 
     pic::f_string_t primary_logger = pic::f_string_t::method(this,&EigenD::log);
     pic::f_string_t eigend_logger = EigenLogger::create("eigend",primary_logger);
@@ -1863,6 +1866,8 @@ void EigenD::initialise (const String& commandLine)
 void EigenD::shutdown()
 {
     if (main_window_ != 0) delete main_window_;
+
+    bugreporter_.quit();
 
     ejuce::Application::shutdown();
 }
