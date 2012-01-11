@@ -24,7 +24,7 @@ Not properly assigned, in use:
 8   6   1   4  : Chooser       : Noun              : None
 8   6   1   5  : Re            : Modifier          : None
 8   6   1   6  : Example       : Noun              : None
-8   6   1   7  : Unused        : Unused            : None
+8   6   1   7  : Gateway       : Noun              : None
 8   6   1   8  : Unused        : Unused            : None
 8   6   2   1  : Unused        : Unused            : None
 8   6   2   2  : Unused        : Unused            : None
