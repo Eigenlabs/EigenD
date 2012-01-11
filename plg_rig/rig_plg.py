@@ -472,7 +472,7 @@ class OutputList(atom.Atom):
 
 class InnerAgent(agent.Agent):
     def __init__(self,outer_agent):
-        agent.Agent.__init__(self,signature=version,names='eigend',ordinal=1)
+        agent.Agent.__init__(self,signature=version,names='rig gateway',ordinal=1)
 
         self.__registry = workspace.create_registry()
         self.__outer_agent = outer_agent
