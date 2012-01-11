@@ -1,5 +1,0 @@
-description
-    Turns the kgroup blink (when the mode key is pressed) off
-
-script
-    empty join all kgroup hey all blink to 0 set

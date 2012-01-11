@@ -19,7 +19,7 @@
 #
 
 from pi import agent,atom,action,bundles,domain,errors,paths,policy,async,logic,const,node,upgrade,utils,container,timeout,paths,guid
-from plg_simple import kgroup_version as version
+from plg_simple import keygroup_version as version
 from pi.logic.shortcuts import *
 import piw
 import picross
@@ -239,7 +239,7 @@ class Output(atom.Atom):
         self.__slot = slot
         self.__tee = None
 
-        atom.Atom.__init__(self,names='kgroup output',protocols='remove',ordinal=slot,container=const.verb_node)
+        atom.Atom.__init__(self,names='keygroup output',protocols='remove',ordinal=slot,container=const.verb_node)
 
         self.light_output = piw.clone(True)
         self.light_input = bundles.VectorInput(self.light_output.cookie(),self.__agent.domain,signals=(1,))
@@ -261,7 +261,7 @@ class Output(atom.Atom):
         self[32] = bundles.Output(1,False,names='pedal output', ordinal=3, protocols='')
         self[33] = bundles.Output(1,False,names='pedal output', ordinal=4, protocols='')
 
-        self[20] = VirtualKey(self.__agent.kgroup_size,self.__agent.key_choice)
+        self[20] = VirtualKey(self.__agent.keygroup_size,self.__agent.key_choice)
 
         self[23] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='enable')
         self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key row', init=None, policy=atom.default_policy(self.__change_key_row))
@@ -369,7 +369,7 @@ class OutputList(atom.Atom):
         return logic.render_termlist(self.keys())
 
     def rpc_instancename(self,a):
-        return 'kgroup output'
+        return 'keygroup output'
 
     def rpc_createinstance(self,arg):
         slot = int(arg)
@@ -480,7 +480,7 @@ class OutputList(atom.Atom):
 
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
-        agent.Agent.__init__(self, signature=version, names='kgroup', container=8,ordinal=ordinal)
+        agent.Agent.__init__(self, signature=version, names='keygroup', container=8,ordinal=ordinal)
 
         self.__active_blinker = None
         self.__choices = []
@@ -494,7 +494,7 @@ class Agent(agent.Agent):
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
 
-        self.mapper = piw.kgroup_mapper()
+        self.mapper = piw.keygroup_mapper()
 
         self[15] = bundles.Output(1,False,names='light output',protocols='revconnect')
         self.lights = bundles.Splitter(self.domain,self[15])
@@ -796,7 +796,7 @@ class Agent(agent.Agent):
         self.controller.thing_changed(self[20].get_data(),'scale') 
         return action.nosync_return()
 
-    def kgroup_size(self):
+    def keygroup_size(self):
         return self.__cur_size
 
     def key_choice(self):

@@ -1,6 +1,0 @@
-description
-    Turns the kgroup blink (when the mode key is pressed) to
-    it's normal duration of 0.5 seconds
-
-script
-    empty join all kgroup hey all blink to 0.5 set

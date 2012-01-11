@@ -29,7 +29,7 @@ env.PiAgent('cycler','plg_simple.cycler_plg','plg_simple:0.0',cversion='1.0.0',p
 env.PiAgent('scaler','plg_simple.scaler_plg','plg_simple:0.0',cversion='1.0.1',package='eigend')
 env.PiAgent('stringer','plg_simple.stringer_plg','plg_simple:0.0',cversion='1.0.1',package='eigend')
 env.PiAgent('scheduler','plg_simple.scheduler_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
-env.PiAgent('kgroup','plg_simple.kgroup_plg','plg_simple:0.0',cversion='1.0.3',package='eigend')
+env.PiAgent('keygroup','plg_simple.keygroup_plg','plg_simple:0.0',cversion='1.0.3',package='eigend',extra=['kgroup'])
 env.PiAgent('scale_manager','plg_simple.scale_manager_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')
 env.PiAgent('talker','plg_simple.talker_plg','plg_simple:0.0',cversion='1.0.2',package='eigend')
 env.PiAgent('ranger','plg_simple.ranger_plg','plg_simple:0.0',cversion='1.0.0',package='eigend')

@@ -18,7 +18,7 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <piw/piw_kgroup.h>
+#include <piw/piw_keygroup.h>
 #include <piw/piw_keys.h>
 #include <piw/piw_status.h>
 #include <picross/pic_ref.h>
@@ -33,7 +33,7 @@ namespace
     };
 };
 
-struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobject_t
+struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobject_t
 {
     ~impl_t()
     {
@@ -269,7 +269,7 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
 
             piw::statusdata_t::int2c(xr,&out_buffer[0]);
             piw::statusdata_t::int2c(xc,&out_buffer[2]);
-            out_buffer[4] = in_buffer[4]&0x7f; // kgroup converts everything to geometrical
+            out_buffer[4] = in_buffer[4]&0x7f; // keygroup converts everything to geometrical
 
             out_buffer+=5;
             in_buffer+=5;
@@ -320,60 +320,60 @@ struct piw::kgroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobj
     piw::dataholder_nb_t courselen_;
 };
 
-piw::kgroup_mapper_t::kgroup_mapper_t(): impl_(new impl_t)
+piw::keygroup_mapper_t::keygroup_mapper_t(): impl_(new impl_t)
 {
 }
 
-piw::kgroup_mapper_t::~kgroup_mapper_t()
+piw::keygroup_mapper_t::~keygroup_mapper_t()
 {
     delete impl_;
 }
 
-piw::d2d_nb_t piw::kgroup_mapper_t::key_filter()
+piw::d2d_nb_t piw::keygroup_mapper_t::key_filter()
 {
     return piw::d2d_nb_t::method(impl_,&impl_t::forward_mapping);
 }
 
-piw::d2d_nb_t piw::kgroup_mapper_t::light_filter()
+piw::d2d_nb_t piw::keygroup_mapper_t::light_filter()
 {
     return piw::d2d_nb_t::method(impl_,&impl_t::reverse_mapping);
 }
 
-void piw::kgroup_mapper_t::clear_mapping()
+void piw::keygroup_mapper_t::clear_mapping()
 {
     impl_->mapping_.alternate().forward.clear();
     impl_->mapping_.alternate().reverse.clear();
     impl_->mapping_.alternate().max_in = 0;
 }
 
-void piw::kgroup_mapper_t::set_mapping(unsigned in, unsigned out)
+void piw::keygroup_mapper_t::set_mapping(unsigned in, unsigned out)
 {
     impl_->mapping_.alternate().forward.insert(std::make_pair(in,out));
     impl_->mapping_.alternate().reverse.insert(std::make_pair(out,in));
     impl_->mapping_.alternate().max_in = std::max(impl_->mapping_.alternate().max_in,in);
 }
 
-void piw::kgroup_mapper_t::activate_mapping()
+void piw::keygroup_mapper_t::activate_mapping()
 {
     impl_->mapping_.exchange();
 }
 
-void piw::kgroup_mapper_t::set_upstream_rowlen(data_t rowlen)
+void piw::keygroup_mapper_t::set_upstream_rowlen(data_t rowlen)
 {
     impl_->set_upstream_rowlen(rowlen);
 }
 
-void piw::kgroup_mapper_t::set_rowlen(data_t rowlen)
+void piw::keygroup_mapper_t::set_rowlen(data_t rowlen)
 {
     impl_->set_rowlen(rowlen);
 }
 
-void piw::kgroup_mapper_t::set_rowoffset(data_t rowoffset)
+void piw::keygroup_mapper_t::set_rowoffset(data_t rowoffset)
 {
     impl_->set_rowoffset(rowoffset);
 }
 
-void piw::kgroup_mapper_t::set_courselen(data_t courselen)
+void piw::keygroup_mapper_t::set_courselen(data_t courselen)
 {
     impl_->set_courselen(courselen);
 }

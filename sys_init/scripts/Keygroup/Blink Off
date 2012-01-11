@@ -1,0 +1,5 @@
+description
+    Turns the keygroup blink (when the mode key is pressed) off
+
+script
+    empty join all keygroup hey all blink to 0 set

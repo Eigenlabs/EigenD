@@ -84,7 +84,7 @@ The control modes available are:
     * This mode contains a talker which defines a variable bar length
 
  4. Scale & Key Control
-    * This mode changes the kgroup tonic & scale to one of the eight defined scales:
+    * This mode changes the keygroup tonic & scale to one of the eight defined scales:
         * Major
         * Harmonic Minor
         * Melodic Minor

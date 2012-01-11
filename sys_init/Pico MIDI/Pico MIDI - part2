@@ -7,19 +7,19 @@ script
 	empty join
 	
 	# create the required agents
-	kgroup create
-	kgroup create
+	keygroup create
+	keygroup create
 	scaler create
 	scale manager create
 	midi converter create
 	midi output create
 	
 	# now that the Pico keyboard should be detected in the meantime
-	# connect it up to the kgroup
-	pico keyboard 1 to kgroup 1 connect
+	# connect it up to the keygroup
+	pico keyboard 1 to keygroup 1 connect
 	
 	# set up the playing keygroup
-	kgroup 1 listen
+	keygroup 1 listen
 	
 	output 1 create
 	output 1 choose
@@ -56,18 +56,18 @@ script
 	scaler 1 hey k bend range to 2 set
 
 	# connect the agents together
-	kgroup 1 output 1 to scaler 1 connect
+	keygroup 1 output 1 to scaler 1 connect
 	scaler 1 to midi converter 1 connect
 	midi converter 1 to midi output 1 connect
-	kgroup 1 output 1 roll output to scaler 1 k pitch bend input connect
+	keygroup 1 output 1 roll output to scaler 1 k pitch bend input connect
 	
 	# connect other data streams to parameters for expression
 	scaler 1 pressure output to midi converter 1 parameter 1 connect
 	scaler 1 roll output to midi converter 1 parameter 2 connect
 	scaler 1 yaw output to midi converter 1 parameter 3 connect
-	kgroup 1 output 1 breath output to midi converter 1 parameter 4 connect
-	kgroup 1 output 1 strip position output 1 to midi converter 1 parameter 5 connect
-	kgroup 1 output 1 absolute strip output 1 to midi converter 1 parameter 6 connect
+	keygroup 1 output 1 breath output to midi converter 1 parameter 4 connect
+	keygroup 1 output 1 strip position output 1 to midi converter 1 parameter 5 connect
+	keygroup 1 output 1 absolute strip output 1 to midi converter 1 parameter 6 connect
 	scaler 1 pressure output to midi converter 1 parameter 16 connect
 	midi converter 1 parameter 1 to pressure name ify
 	midi converter 1 parameter 2 to roll name ify
@@ -116,10 +116,10 @@ script
 	# create a talker to change tonics
 	talker create
 	it to tonic talker 1 name ify
-	kgroup 1 output 1 to tonic talker 1 connect
+	keygroup 1 output 1 to tonic talker 1 connect
 	
 	scaler 1 listen
-	kgroup 1 listen
+	keygroup 1 listen
 	tonic talker 1 listen
 	
 	scaler 1 tonic when 17 down
@@ -133,10 +133,10 @@ script
 	# create a talker to change octaves
 	talker create
 	it to octave talker 1 name ify
-	kgroup 1 output 1 to octave talker 1 connect
+	keygroup 1 output 1 to octave talker 1 connect
 	
 	scaler 1 listen
-	kgroup 1 listen
+	keygroup 1 listen
 	octave talker 1 listen
 	
 	scaler 1 octave when 19 down
@@ -186,10 +186,10 @@ script
 	empty join
 	
 	# setup a keygroup to colour the MIDI controller keys	
-	pico keyboard 1 to kgroup 2 connect
+	pico keyboard 1 to keygroup 2 connect
 	
 	# set up the controller keygroup
-	kgroup 2 listen	
+	keygroup 2 listen	
 	output 1 create
 	output 1 choose
 	k 9 add
@@ -200,9 +200,9 @@ script
 	talker create
 	it to controller talker 1 name ify
 	
-	kgroup 2 output 1 to controller talker 1 connect
+	keygroup 2 output 1 to controller talker 1 connect
 	
-	kgroup 2 listen
+	keygroup 2 listen
 	controller talker 1 listen
 	interpreter listen
 	

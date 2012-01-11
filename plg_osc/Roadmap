@@ -81,7 +81,7 @@ Using liblo, subscribe the listener to the fast data flow.
 
 Press some keys!
 
-This could be connected to a raw keyboard as shown, or to a kgroup
+This could be connected to a raw keyboard as shown, or to a keygroup
 output. (They look the same)
 
 If you want to look at the event output of the keyboard, try this:

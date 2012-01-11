@@ -106,13 +106,13 @@ class Agent(agent.Agent):
 
         self[2] = atom.Atom(init='',names='word output',domain=domain.String())
 
-        self[5] = atom.Atom(names='main kgroup')
+        self[5] = atom.Atom(names='main keygroup')
         self[5][1] = bundles.Output(1,False, names='activation output')
         self[5][2] = bundles.Output(2,False, names='roll output')
         self[5][3] = bundles.Output(3,False, names='yaw output')
         self[5][4] = bundles.Output(4,False, names='pressure output')
 
-        self[9] = atom.Atom(names='auxilliary kgroup')
+        self[9] = atom.Atom(names='auxilliary keygroup')
         self[9][1] = bundles.Output(1,False, names='activation output')
         self[9][2] = bundles.Output(2,False, names='roll output')
         self[9][3] = bundles.Output(3,False, names='yaw output')

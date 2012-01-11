@@ -40,7 +40,7 @@
 #include <piw/piw_sampler.h>
 #include <piw/piw_rpc.h>
 #include <piw/piw_scaler.h>
-#include <piw/piw_kgroup.h>
+#include <piw/piw_keygroup.h>
 #include <piw/piw_talker.h>
 #include <piw/piw_correlator.h>
 #include <piw/piw_connector.h>
@@ -537,9 +537,9 @@ class talker_mapper[piw::talker_mapper_t]
     void set_mapping(unsigned, unsigned)
 }
 
-class kgroup_mapper[piw::kgroup_mapper_t]
+class keygroup_mapper[piw::keygroup_mapper_t]
 {
-    kgroup_mapper()
+    keygroup_mapper()
     d2d_nb key_filter()
     d2d_nb light_filter()
     void clear_mapping()

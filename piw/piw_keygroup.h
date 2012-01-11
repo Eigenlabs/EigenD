@@ -17,22 +17,22 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __PIW_KGROUP__
-#define __PIW_KGROUP__
+#ifndef __PIW_KEYGROUP__
+#define __PIW_KEYGROUP__
 
 #include "piw_exports.h"
 #include "piw_data.h"
 
 namespace piw
 {
-    class PIW_DECLSPEC_CLASS kgroup_mapper_t
+    class PIW_DECLSPEC_CLASS keygroup_mapper_t
     {
         public:
             class impl_t;
 
         public:
-            kgroup_mapper_t();
-            ~kgroup_mapper_t();
+            keygroup_mapper_t();
+            ~keygroup_mapper_t();
 
             piw::d2d_nb_t key_filter();
             piw::d2d_nb_t light_filter();

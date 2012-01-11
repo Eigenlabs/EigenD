@@ -8,7 +8,7 @@ description
     only
 
 script
-    empty join kgroup 1 listen talker 6 listen
+    empty join keygroup 1 listen talker 6 listen
     all phrase cancel
     octave to 3 set
     octave by 1 when 1 up

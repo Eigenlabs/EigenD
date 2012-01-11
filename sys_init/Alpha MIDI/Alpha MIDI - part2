@@ -11,27 +11,27 @@ script
 	# create the required agents
 	scale manager create
 	
-	kgroup create
+	keygroup create
 	scaler create
 	midi converter create
 	midi output create
 	
-	kgroup create
+	keygroup create
 	scaler create
 	midi converter create
 	midi output create
 
-	kgroup create
+	keygroup create
 	
 	# now that the Alpha keyboard should be detected in the meantime
-	# connect it up to the kgroups
-	alpha keyboard 1 to kgroup 1 connect		
-	alpha keyboard 1 to kgroup 2 connect		
-	alpha keyboard 1 to kgroup 3 connect		
+	# connect it up to the keygroups
+	alpha keyboard 1 to keygroup 1 connect		
+	alpha keyboard 1 to keygroup 2 connect		
+	alpha keyboard 1 to keygroup 3 connect		
 	
 	# set up the main keyboard keygroup
 	###################################
-	kgroup 1 listen
+	keygroup 1 listen
 	
 	output 1 create
 	output 1 choose
@@ -57,24 +57,24 @@ script
 	scaler 1 hey k bend range to 2 set
 
 	# connect the agents together
-	kgroup 1 output 1 to scaler 1 connect
+	keygroup 1 output 1 to scaler 1 connect
 	scaler 1 to midi converter 1 connect
 	midi converter 1 to midi output 1 connect
-	kgroup 1 output 1 roll output to scaler 1 k pitch bend input connect
+	keygroup 1 output 1 roll output to scaler 1 k pitch bend input connect
 	
 	# connect other data streams to parameters for expression
 	scaler 1 pressure output to midi converter 1 parameter 1 connect
 	scaler 1 roll output to midi converter 1 parameter 2 connect
 	scaler 1 yaw output to midi converter 1 parameter 3 connect
-	kgroup 1 output 1 breath output to midi converter 1 parameter 4 connect
-	kgroup 1 output 1 strip position output 1 to midi converter 1 parameter 5 connect
-	kgroup 1 output 1 absolute strip output 1 to midi converter 1 parameter 6 connect
-	kgroup 1 output 1 strip position output 2 to midi converter 1 parameter 7 connect
-	kgroup 1 output 1 absolute strip output 2 to midi converter 1 parameter 8 connect
-	kgroup 1 output 1 pedal output 1 to midi converter 1 parameter 9 connect
-	kgroup 1 output 1 pedal output 2 to midi converter 1 parameter 10 connect
-	kgroup 1 output 1 pedal output 3 to midi converter 1 parameter 11 connect
-	kgroup 1 output 1 pedal output 4 to midi converter 1 parameter 12 connect
+	keygroup 1 output 1 breath output to midi converter 1 parameter 4 connect
+	keygroup 1 output 1 strip position output 1 to midi converter 1 parameter 5 connect
+	keygroup 1 output 1 absolute strip output 1 to midi converter 1 parameter 6 connect
+	keygroup 1 output 1 strip position output 2 to midi converter 1 parameter 7 connect
+	keygroup 1 output 1 absolute strip output 2 to midi converter 1 parameter 8 connect
+	keygroup 1 output 1 pedal output 1 to midi converter 1 parameter 9 connect
+	keygroup 1 output 1 pedal output 2 to midi converter 1 parameter 10 connect
+	keygroup 1 output 1 pedal output 3 to midi converter 1 parameter 11 connect
+	keygroup 1 output 1 pedal output 4 to midi converter 1 parameter 12 connect
 	scaler 1 pressure output to midi converter 1 parameter 16 connect	
 	midi converter 1 parameter 1 to pressure name ify
 	midi converter 1 parameter 2 to roll name ify
@@ -196,7 +196,7 @@ script
 	
 	# set up the percussion keygroup
 	################################
-	kgroup 2 listen
+	keygroup 2 listen
 	
 	output 1 create
 	output 1 choose
@@ -214,24 +214,24 @@ script
 	scaler 2 hey k bend range to 2 set
 
 	# connect the agents together
-	kgroup 2 output 1 to scaler 2 connect
+	keygroup 2 output 1 to scaler 2 connect
 	scaler 2 to midi converter 2 connect
 	midi converter 2 to midi output 2 connect
-	kgroup 2 output 1 roll output to scaler 2 k pitch bend input connect
+	keygroup 2 output 1 roll output to scaler 2 k pitch bend input connect
 	
 	# connect other data streams to parameters for expression
 	scaler 2 pressure output to midi converter 2 parameter 1 connect
 	scaler 2 roll output to midi converter 2 parameter 2 connect
 	scaler 2 yaw output to midi converter 2 parameter 3 connect
-	kgroup 2 output 1 breath output to midi converter 2 parameter 4 connect
-	kgroup 2 output 1 strip position output 1 to midi converter 2 parameter 5 connect
-	kgroup 2 output 1 absolute strip output 1 to midi converter 2 parameter 6 connect
-	kgroup 2 output 1 strip position output 2 to midi converter 2 parameter 7 connect
-	kgroup 2 output 1 absolute strip output 2 to midi converter 2 parameter 8 connect
-	kgroup 2 output 1 pedal output 1 to midi converter 2 parameter 9 connect
-	kgroup 2 output 1 pedal output 2 to midi converter 2 parameter 10 connect
-	kgroup 2 output 1 pedal output 3 to midi converter 2 parameter 11 connect
-	kgroup 2 output 1 pedal output 4 to midi converter 2 parameter 12 connect
+	keygroup 2 output 1 breath output to midi converter 2 parameter 4 connect
+	keygroup 2 output 1 strip position output 1 to midi converter 2 parameter 5 connect
+	keygroup 2 output 1 absolute strip output 1 to midi converter 2 parameter 6 connect
+	keygroup 2 output 1 strip position output 2 to midi converter 2 parameter 7 connect
+	keygroup 2 output 1 absolute strip output 2 to midi converter 2 parameter 8 connect
+	keygroup 2 output 1 pedal output 1 to midi converter 2 parameter 9 connect
+	keygroup 2 output 1 pedal output 2 to midi converter 2 parameter 10 connect
+	keygroup 2 output 1 pedal output 3 to midi converter 2 parameter 11 connect
+	keygroup 2 output 1 pedal output 4 to midi converter 2 parameter 12 connect
 	scaler 2 pressure output to midi converter 2 parameter 16 connect
 	midi converter 2 parameter 1 to pressure name ify
 	midi converter 2 parameter 2 to roll name ify
@@ -329,7 +329,7 @@ script
 	#####################################################
 	
 	# set up the controller keygroup
-	kgroup 3 listen	
+	keygroup 3 listen	
 	output 1 create
 	output 1 choose
 	k 24 add
@@ -343,9 +343,9 @@ script
 	talker create
 	it to controller talker 1 name ify
 	
-	kgroup 3 output 1 to controller talker 1 connect
+	keygroup 3 output 1 to controller talker 1 connect
 	
-	kgroup 3 listen
+	keygroup 3 listen
 	controller talker 1 listen
 	interpreter listen
 	

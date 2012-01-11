@@ -68,7 +68,7 @@ The control modes available are:
     * Tap tempo bar/beat key
 
  2. Scale Control
-    * This mode changes the kgroup scale to one of the eight defined scales:
+    * This mode changes the keygroup scale to one of the eight defined scales:
         * Major
         * Harmonic Minor
         * Melodic Minor
@@ -79,7 +79,7 @@ The control modes available are:
         * Whole Tone
 
  3. Key Control
-    * This mode sets the kgroup key.
+    * This mode sets the keygroup key.
 
  4. Instrument/FX Control
     * This mode contains all the controls for individual instruments/FX.

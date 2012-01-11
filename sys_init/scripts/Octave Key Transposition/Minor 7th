@@ -6,7 +6,7 @@ description
     This script should be run with pico setups only
 
 script
-    empty join kgroup 1 listen talker 6 listen
+    empty join keygroup 1 listen talker 6 listen
     all phrase cancel
     octave by 0.83333333333333337 when 1 up
     octave by 0.83333333333333337 when 2 down
