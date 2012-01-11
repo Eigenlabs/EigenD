@@ -29,8 +29,6 @@
 #include <picross/pic_flipflop.h>
 #include <picross/pic_atomic.h>
 #include <picross/pic_log.h>
-#include <piembedded/pie_iostream.h>
-#include <piembedded/pie_print.h>
 
 #include <string>
 #include <cstring>
@@ -40,23 +38,11 @@
 
 namespace piw
 {
-    inline void data_atomicity_assertion(bct_data_t d)
-    {
 #ifdef DEBUG_DATA_ATOMICITY
-        if(d && d->tid && !pic_threadid_equal(d->tid, pic_current_threadid()))
-        {
-            std::stringstream oss;
-            oss << "piw_data thread mismatch ";
-            oss << d->tid;
-            oss << "(data thread) != ";
-            oss << pic_current_threadid();
-            oss << "(current thread) [";
-            pie_print(bct_data_wirelen(d), bct_data_wiredata(d), pie::ostreamwriter, &oss);
-            oss << "]";
-            PIC_THROW(oss.str().c_str());
-        }
+    void data_atomicity_assertion(bct_data_t d)
+#else
+    inline void data_atomicity_assertion(bct_data_t d) {}
 #endif
-    }
 
     inline void piw_data_incref_fast(bct_data_t d)
     {
@@ -65,7 +51,6 @@ namespace piw
 #ifdef DEBUG_DATA_ATOMICITY
             data_atomicity_assertion(d);
 #endif
-
             ++d->count;
         }
     }

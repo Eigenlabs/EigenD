@@ -26,6 +26,6 @@ if env['IS_WINDOWS']:
     env.PiRuntime('eigend')
 
 env.PiBinaryDLL('pico_decoder_1_0_0',package='eigend')
-env.PiResources('eigend','firmware','*.ihx')
-env.PiResources('eigend','firmware','*.mcs')
-env.PiResources('eigend','firmware','*.bin')
+env.PiResources('firmware','*.ihx',package='eigend')
+env.PiResources('firmware','*.mcs',package='eigend')
+env.PiResources('firmware','*.bin',package='eigend')

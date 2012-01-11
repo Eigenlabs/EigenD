@@ -19,4 +19,4 @@
 #
 
 Import('env')
-env.PiResources('eigend','plg_stk','*.raw')
+env.PiResources('plg_stk','*.raw',package='eigend')

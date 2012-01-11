@@ -26,7 +26,9 @@ import types
 import copy
 import os.path
 
-from app_pip import process,expand
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from pip_cmd import process,expand,error
 
 from error import PipError
 

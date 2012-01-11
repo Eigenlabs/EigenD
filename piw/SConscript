@@ -20,3 +20,4 @@
 
 Import('env')
 env.PiPythonPackage(package='eigend')
+env.PiIncludeFiles(package='eigend')

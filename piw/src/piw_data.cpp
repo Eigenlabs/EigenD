@@ -24,9 +24,29 @@
 #include <piw/piw_tsd.h>
 #include <piembedded/pie_wire.h>
 #include <piembedded/pie_string.h>
+#include <piembedded/pie_iostream.h>
+#include <piembedded/pie_print.h>
 #include <picross/pic_log.h>
 #include <sstream>
 #include <limits>
+
+#ifdef DEBUG_DATA_ATOMICITY
+void piw::data_atomicity_assertion(bct_data_t d)
+{
+    if(d && d->tid && !pic_threadid_equal(d->tid, pic_current_threadid()))
+    {
+        std::stringstream oss;
+        oss << "piw_data thread mismatch ";
+        oss << d->tid;
+        oss << "(data thread) != ";
+        oss << pic_current_threadid();
+        oss << "(current thread) [";
+        pie_print(bct_data_wirelen(d), bct_data_wiredata(d), pie::ostreamwriter, &oss);
+        oss << "]";
+        PIC_THROW(oss.str().c_str());
+    }
+}
+#endif
 
 static bct_data_t __allocate_host(unsigned nb,unsigned long long ts,float u, float l, float r,unsigned t, unsigned dl, unsigned char **dp, unsigned vl, float **vp)
 {

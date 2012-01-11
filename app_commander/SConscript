@@ -19,6 +19,6 @@
 #
 
 Import('env')
-env.PiResources('eigend','app_commander','*.png')
+env.PiResources('app_commander','*.png',package='eigend')
 env.PiPythonPackage(package='eigend')
 env.PiPythonwWrapper('eigencommander','app_commander','commander_cli','cli',appname='EigenCommander',usegil=True,private=True,di=False,package='eigend')

@@ -22,8 +22,8 @@ Import('env')
 
 env.PiPythonPackage(resources=Split('*.png'),package='eigend',per_agent=True)
 
-env.PiResources('eigend','upgrade_manager','script_*')
-env.PiResources('eigend','scale_manager','User Scales.txt')
+env.PiResources('upgrade_manager','script_*',package='eigend')
+env.PiResources('scale_manager','User Scales.txt',package='eigend')
 
 env.PiAgent('cycler','plg_simple','cycler_plg',cversion='1.0.0')
 env.PiAgent('scaler','plg_simple','scaler_plg',cversion='1.0.1')

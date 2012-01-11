@@ -235,6 +235,9 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         self.shared.package_init.sort(key=lambda e:e[3])
 
         for i,(p,v,u,o) in enumerate(self.shared.package_init):
+            if p != package:
+                continue
+
             action = doc.createElement('CustomAction')
             action.attributes['Id'] = 'action%d' % i
             action.attributes['Execute'] = 'deferred'
@@ -509,8 +512,9 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         for l in libs:
             ll=env.get_shlib(l)
             if not ll.libnode:
-                raise RuntimeError('library %s not defined' % l)
-            map.append(ll.libnode.abspath)
+                map.append('%s.lib' % l)
+            else:
+                map.append(ll.libnode.abspath)
 
         return ' '.join(map)
 
@@ -620,7 +624,7 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
 
         objects = env.SharedObject(sources)
 
-        self.Depends(objects,self.PiExports(target))
+        self.Depends(objects,self.PiExports(target,package,public))
 
         if deffile:
             objects.append(deffile)
@@ -644,6 +648,8 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
             env.set_package(package)
             inst_dll = env.Install(env.subst('$BINSTAGEDIR'),run_dll)
             env.sign(inst_dll)
+            if public:
+                inst_lib = env.Install(env.subst('$BINSTAGEDIR'),run_lib)
 
         return inst_dll+run_lib
 

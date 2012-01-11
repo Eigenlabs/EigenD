@@ -22,4 +22,4 @@ Import('env')
 
 env.PiPythonPackage(package='eigend',per_agent=True)
 env.PiAgent('alpha_manager','plg_keyboard','keyboard_plg',cversion='1.0.1')
-env.PiResources('eigend','keyboard','testlib*')
+env.PiResources('keyboard','testlib*',package='eigend')

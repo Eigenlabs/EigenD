@@ -46,6 +46,6 @@ piw_env=env.Clone()
 if piw_env['IS_MACOSX']:
     piw_env.Append(LINKFLAGS='-framework vecLib')
 
-piw_env.PiSharedLibrary('piw',piw_files,libraries=Split('pia pic pie pisamplerate'),package='eigend')
+piw_env.PiSharedLibrary('piw',piw_files,libraries=Split('pia pic pie pisamplerate'),package='eigend',public=True)
 
 env.PiPipBinding('piw_native',env.Pipfile('piw.pip'),libraries=Split('pic piw pia pie'),package='eigend')

@@ -40,7 +40,7 @@ if env['IS_WINDOWS']:
     pia_files=pia_files+Split('pia_udpnet_windows.cpp')
     pia_env.Append(LINKFLAGS=' WS2_32.Lib ')
 
-pia_env.PiSharedLibrary('pia',pia_files,libraries=Split('pic pie'),package='eigend')
+pia_env.PiSharedLibrary('pia',pia_files,libraries=Split('pic pie'),package='eigend',public=True)
 
 binding_env=env.Clone()
 binding_env.PiPipBinding('piagent_native',env.Pipfile('piagent.pip'),libraries=Split('pic pia pie'),package='eigend')

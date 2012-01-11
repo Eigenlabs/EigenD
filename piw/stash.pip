@@ -1,8 +1,0 @@
-
-class b2m2[piw::b2m2_t]: decode_ctl
-{
-    b2m2(const change &)
-    wire *wire_create(const stdstr &)
-    void set_clock(clockref *)
-    void set_latency(unsigned)
-}

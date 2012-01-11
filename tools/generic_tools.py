@@ -96,7 +96,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
     def set_hidden(self,hidden):
         pass
 
-    def PiExports(self,token):
+    def PiExports(self,token,package,public):
         text = exports_template % dict(libtoken=token.upper())
         target = '%s_exports.h' % token
 
@@ -107,7 +107,13 @@ class PiGenericEnvironment(SCons.Environment.Environment):
             outp.close()
             os.chmod(t,0755)
 
-        return self.Command(join(self['EXPDIR'],target),self.Value(text),action)
+        run_exp = self.Command(join(self['EXPDIR'],target),self.Value(text),action)
+
+        if package and public:
+            e2 = self.Clone()
+            e2.set_package(package)
+            root1 = e2.subst('$HDRSTAGEDIR')
+            e2.Install(root1,run_exp)
 
     def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True,deffile=None,per_agent=None,public=False):
         env = self.Clone()
@@ -120,7 +126,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         objects = env.SharedObject(sources)
 
-        self.Depends(objects,self.PiExports(target))
+        self.Depends(objects,self.PiExports(target,package,public))
 
         bin_library=env.SharedLibrary(target,objects)
         run_library=env.Install(env.subst('$BINRUNDIR'),bin_library)
@@ -149,15 +155,6 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         c.shared = g
         return c
 
-    def set_tool(self,tool,exe):
-        self.shared.buildtools[tool] = exe
-
-    def find_tool(self,tool):
-        exe = self.shared.buildtools.get(tool)
-        if not exe:
-            raise RuntimeError('No '+tool+' found')
-        return exe
-
     def clear_dir(self,var):
         path = self.Dir(self[var]).abspath
         print 'clearing',path
@@ -171,9 +168,6 @@ class PiGenericEnvironment(SCons.Environment.Environment):
     def Finalise(self):
         self.__libs_fixup()
         self.__runtime_fixup()
-
-        for (k,v) in self.shared.buildtools.iteritems():
-            print '%s: %s' % (k,v)
 
         if not self.shared.release:
             raise RuntimeError('PiRelease not called')
@@ -201,8 +195,9 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         for l in libs:
             ll=env.get_shlib(l)
             if not ll.libnode:
-                raise RuntimeError('library %s not defined' % l)
-            map.append(ll.libnode.abspath)
+                map.append('-l%s' % l)
+            else:
+                map.append(ll.libnode.abspath)
 
         return ' '.join(map)
 
@@ -242,7 +237,6 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.py_template = generic_py_template
 
         self.shared = self.__Shared()
-        self.shared.buildtools = {}
         self.shared.package_descriptions = {}
         self.shared.packages = []
         self.shared.agent_groups = {}
@@ -336,7 +330,6 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.Replace(IS_WINDOWS=False)
         self.Replace(IS_BIGENDIAN=False)
 
-        self.Replace(PIPCMD=lambda target,source,env,for_signature: self.find_tool('pip'))
         self.Replace(PI_RELEASE=lambda target,source,env,for_signature: self.shared.release)
         self.Replace(PI_COLLECTION=lambda target,source,env,for_signature: self.shared.collection)
 
@@ -349,6 +342,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.Alias('target-stage',join('#tmp','stage'))
 
         self.Replace(PI_COMPILER=os.path.join(os.path.dirname(__file__),'compile.py'))
+        self.Replace(PI_PIPCMD=os.path.join(os.path.dirname(__file__),'pip_cmd','pip.py'))
 
     @staticmethod
     def print_cmd(line,targets,source,env):
@@ -428,6 +422,9 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         for hdr in glob.glob(join(me,'*.h')):
             env.Install(root1,env.File(hdr))
 
+        for hdr in glob.glob(join(me,'*.pip')):
+            env.Install(root1,env.File(hdr))
+
     def PiPythonPackage(self,package=None,per_agent=False,subdirs=(),resources=()):
         env = self.Clone()
 
@@ -466,7 +463,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
                 if root2:
                     env.Install(root2,env.File(x))
         
-    def PiResources(self,package,section,files):
+    def PiResources(self,section,files,package=None):
         env = self.Clone()
 
         me=env.Dir('.').srcnode().abspath
@@ -605,9 +602,11 @@ class PiGenericEnvironment(SCons.Environment.Environment):
     def PiPipBinding(self,module,spec,sources=[],libraries={},package=None,hidden=True,per_agent=None):
         me=self.Dir('.').abspath
 
-        inc=' '.join(map(lambda x: self.Dir(x).abspath,self['CPPPATH']))
+        inc=' '.join(map(lambda x: '"%s"'% self.Dir(x).abspath,self['CPPPATH']))
         cppfile=self.File(module+'_python.cpp')
-        cppnode=self.Command(cppfile,spec,'$PIPCMD '+module+' $SOURCES $TARGET '+inc)
+
+        cppnode=self.Command(cppfile,spec,'"$PI_PYTHON" "$PI_PIPCMD" '+module+' $SOURCES $TARGET '+inc)
+
         self.Depends(cppnode,self.Alias('build-tools'))
 
         allsources=[cppnode]
@@ -702,10 +701,6 @@ class PiGenericEnvironment(SCons.Environment.Environment):
     def PiPythonwWrapper(self,name,pypackage,module,main,appname=None,bg=False,di=False,private=False,usegil=False,package=None):
         return self.PiPythonWrapper(name,pypackage,module,main,package=package,gui=True)
         
-    def PiBuildTool(self,tool,exe):
-        self.set_tool(tool,exe[0]);
-        self.Alias('build-tools',exe[0])
-
     def Pi3rdParty(self,s,package,release):
         assert package in self.shared.package_descriptions
 
@@ -934,8 +929,6 @@ extern int main(int argc, char **argv)
 
   init_pyhome(pyhome);
   init_path();
-
-  printf("pyhome=%%s\\n",pyhome);
 
   Py_SetPythonHome(pyhome);
   Py_Initialize();
