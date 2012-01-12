@@ -698,7 +698,7 @@ class Agent(agent.Agent):
                     rowoffset = piw.tupleadd(rowoffset, piw.makelong(0,0))
             else:
                 # recalculate all key geometries based on the upstream geometry
-                (rowlen, rowoffset) = self.__set_physical_geo()
+                (rowlen, rowoffset) = self.__set_physical_geo(mapping)
 
             self.controller.settuple('rowlen',rowlen)
             self.controller.settuple('rowoffset',rowoffset)
