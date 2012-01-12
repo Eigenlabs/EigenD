@@ -91,7 +91,7 @@ class Keyboard(agent.Agent):
         self[249] = atom.Atom(domain=domain.BoundedFloat(0,1), init=self.keyboard.get_threshold2(), protocols='input output', names='hard threshold', policy=atom.default_policy(self.keyboard.set_threshold2))
         self[240] = atom.Atom(domain=domain.BoundedFloat(0,1), init=self.keyboard.get_roll_axis_window(), protocols='input output', names='roll axis window', policy=atom.default_policy(self.keyboard.set_roll_axis_window))
         self[241] = atom.Atom(domain=domain.BoundedFloat(0,1), init=self.keyboard.get_yaw_axis_window(), protocols='input output', names='yaw axis window', policy=atom.default_policy(self.keyboard.set_yaw_axis_window))
-        self[242] = atom.Atom(domain=domain.Bool(), init=False, protocols='input output nostage', names='key logging', policy=atom.default_policy(self.keyboard.enable_key_logging))
+        self[242] = atom.Atom(domain=domain.Bool(), init=False, protocols='input output nostage explicit', names='key logging', policy=atom.default_policy(self.keyboard.enable_key_logging))
 
         f=self.keyboard.led_functor()
         self.led_backend.set_functor(piw.pathnull(0),f)

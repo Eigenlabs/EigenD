@@ -687,8 +687,18 @@ class Agent(agent.Agent):
                 self.__upstream_rowlen = None
                 self.mapper.set_upstream_rowlen(piw.makenull(0))
 
-            # recalculate all key geometries based on the upstream geometry
-            (rowlen, rowoffset) = self.__set_physical_geo(self.__cur_mapping())
+            mapping = self.__cur_mapping()
+
+            if rl.is_tuple() and 0 == len(mapping):
+                # if no mapping was set up and there's an upstream geometrical layout
+                # use that instead of calculating a layout
+                rowlen = rl
+                rowoffset = piw.tuplenull(0)
+                for i in range(rl.as_tuplelen()):
+                    rowoffset = piw.tupleadd(rowoffset, piw.makelong(0,0))
+            else:
+                # recalculate all key geometries based on the upstream geometry
+                (rowlen, rowoffset) = self.__set_physical_geo()
 
             self.controller.settuple('rowlen',rowlen)
             self.controller.settuple('rowoffset',rowoffset)
