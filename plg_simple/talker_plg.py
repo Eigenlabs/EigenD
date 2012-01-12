@@ -126,7 +126,7 @@ class Event(talker.Talker):
 
 class Key(collection.Collection):
     def __init__(self,agent,controller,index):
-        collection.Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,ordinal=index,names='k',protocols='hidden-connection remove')
+        collection.Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,ordinal=index,names='key',protocols='hidden-connection remove')
         self.__event = piw.fasttrigger(const.light_unknown)
         self.__event.attach_to(controller,index)
         self.__handler = piw.change2_nb(self.__event.trigger(),utils.changify(self.event_triggered))
@@ -270,7 +270,7 @@ class Agent(agent.Agent):
 
         self.activation_input = bundles.VectorInput(self.controller.event_cookie(), self.domain,signals=(1,2))
 
-        self[3] = collection.Collection(creator=self.__create,wrecker=self.__wreck,names='k',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst,protocols='hidden-connection')
+        self[3] = collection.Collection(creator=self.__create,wrecker=self.__wreck,names='key',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst,protocols='hidden-connection')
         self[4] = PhraseBrowser(self.__eventlist,self.__keylist)
 
         self[5] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.merge_nodefault_policy(2,False),names='controller input')

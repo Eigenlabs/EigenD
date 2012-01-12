@@ -201,7 +201,7 @@ class Controller:
 
 class VirtualKey(atom.Atom):
     def __init__(self,size,chosen):
-        atom.Atom.__init__(self,names='k',protocols='virtual')
+        atom.Atom.__init__(self,names='key',protocols='virtual')
         self.__size=size
         self.__chosen=chosen
 
@@ -1094,13 +1094,13 @@ class Agent(agent.Agent):
         self.mapper.set_rowlen(rowlen)
         self.mapper.set_rowoffset(rowoffset)
 
-        self[1].update_status_indexes()
-
         # activate the mappings
         mapper.activate_mapping()
 
         self.controller.settuple('rowlen',rowlen)
         self.controller.settuple('rowoffset',rowoffset)
+
+        self[1].update_status_indexes()
 
         # store the mapping description in the state of the agent
         mapstr = logic.render_term(mapping)

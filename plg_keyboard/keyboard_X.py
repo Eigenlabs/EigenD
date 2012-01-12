@@ -49,7 +49,7 @@ def pedal_file(id):
 
 class VirtualKey(atom.Atom):
     def __init__(self,keys):
-        atom.Atom.__init__(self,names='k',protocols='virtual')
+        atom.Atom.__init__(self,names='key',protocols='virtual')
         self.choices=[]
         self.kbd_keys = keys
 

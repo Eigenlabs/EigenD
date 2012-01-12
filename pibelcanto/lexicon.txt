@@ -305,7 +305,7 @@ Notes            Word           Classification     Synonyms
 1   1   2      : Define        : Verb              : None
 1   1   3      : From          : Role              : None
 1   1   4      : Key           : Noun              : MusicalKey
-1   1   5      : K             : Noun              : InstrumentKey 
+1   1   5      : Unused        : Unused            : None
 1   1   6      : Input         : Noun              : None
 1   1   7      : Keyboard      : Noun              : None
 1   1   8      : Left          : Noun              : None

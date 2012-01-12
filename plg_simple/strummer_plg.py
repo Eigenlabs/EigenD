@@ -45,7 +45,7 @@ class Agent(agent.Agent):
         self[2][1] = atom.Atom(domain=domain.Bool(),init=False,names='enable',policy=atom.default_policy(self.strummer.enable))
         self[2][2] = atom.Atom(domain=domain.BoundedFloat(0,1),init=0.01,names='on threshold',policy=atom.default_policy(self.strummer.set_on_threshold))
         self[2][3] = atom.Atom(domain=domain.BoundedFloat(0,1),init=0.08,names='off threshold',policy=atom.default_policy(self.strummer.set_off_threshold))
-        self[2][4] = atom.Atom(domain=domain.BoundedFloat(0,1),init=0.0,names='k mix',policy=atom.default_policy(self.strummer.set_key_mix))
+        self[2][4] = atom.Atom(domain=domain.BoundedFloat(0,1),init=0.0,names='key mix',policy=atom.default_policy(self.strummer.set_key_mix))
         self[2][5] = atom.Atom(domain=domain.BoundedInt(0,2000),init=400,names='trigger window',policy=atom.default_policy(self.strummer.set_trigger_window))
 
         self.strummer.enable(False)

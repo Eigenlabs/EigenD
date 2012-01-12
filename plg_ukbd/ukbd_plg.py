@@ -28,7 +28,7 @@ from plg_ukbd import micro_manager_version as version
 
 class VirtualKey(atom.Atom):
     def __init__(self):
-        atom.Atom.__init__(self,names='k',protocols='virtual')
+        atom.Atom.__init__(self,names='key',protocols='virtual')
         self.choices=[]
 
     def __key(self,*keys):

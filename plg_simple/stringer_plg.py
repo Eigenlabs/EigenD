@@ -34,7 +34,7 @@ class Agent(agent.Agent):
         self[1][2] = bundles.Output(2,False,names='pressure output', protocols='')
         self[1][3] = bundles.Output(3,False,names='roll output', protocols='')
         self[1][4] = bundles.Output(4,False,names='yaw output', protocols='')
-        self[1][5] = bundles.Output(5,False,names='k number output', protocols='')
+        self[1][5] = bundles.Output(5,False,names='key number output', protocols='')
         self[1][6] = bundles.Output(6,False,names='key output', protocols='')
 
         self[2] = bundles.Output(1,False, names='controller output', continuous=True)
