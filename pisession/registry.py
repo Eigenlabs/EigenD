@@ -48,6 +48,7 @@ def iscompatible(mod_version, state_version):
 class Registry:
     def __init__(self):
         self.__registry={}
+        self.__alias={}
 
     def dump(self,dumper):
         for (mname,vlist) in self.__registry.iteritems():
@@ -57,11 +58,23 @@ class Registry:
     def modules(self):
         return self.__registry.keys()
 
+    def get_alias(self,name):
+        versions = self.__alias.get(name)
+        if not versions:
+            return None
+        else:
+            vkeys = versions.keys()
+            vkeys.sort(reverse=True)
+            return versions[vkeys[0]]
+
     def get_module(self,name):
         versions = self.__registry.get(name)
 
         if not versions:
-            return None
+            orig = self.get_alias(name)
+            versions = self.__registry.get(orig)
+            if not versions:
+                return None
 
         vkeys = versions.keys()
         vkeys.sort(reverse=True)
@@ -82,6 +95,10 @@ class Registry:
 
     def iter_versions(self,name):
         mlist = self.__registry.get(name)
+        if not mlist:
+            orig = self.get_alias(name)
+            mlist = self.__registry.get(orig)
+
         if mlist:
             for (version,(cversion,module)) in mlist.iteritems():
                     yield (version,cversion,module)
@@ -97,6 +114,17 @@ class Registry:
 
         r[name][version] = (cversion,module)
 
+    def add_alias(self,name,version,original):
+        a = self.__alias
+
+        if name not in a:
+            a[name] = {}
+
+        if version in a[name]:
+            raise RuntimeError('alias %s:%s already defined' % (name,version))
+
+        a[name][version] = original
+
     def scan_path(self,directory,klass):
         for p in glob.glob(os.path.join(directory,'*')):
             try:
@@ -109,4 +137,4 @@ class Registry:
                 (name,module,cversion,version) = a[0:4]
                 self.add_module(name,version,cversion,klass(name,version,cversion,module))
                 for e in a[4:]:
-                    self.add_module(e,version,cversion,klass(name,version,cversion,module))
+                    self.add_alias(e,version,name)
