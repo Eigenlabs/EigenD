@@ -29,6 +29,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 #include <map>
 
@@ -55,7 +56,6 @@
 #include "pia_glue.h"
 
 #include <errno.h>
-#include <sys/stat.h>
 
 #define PORTBASE_LOCAL  55555
 #define PORTBASE_OFFSET 1000
