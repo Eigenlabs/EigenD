@@ -28,7 +28,9 @@
 #include <picross/pic_resources.h>
 
 #include <string.h>
+#include <direct.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <map>
 
@@ -101,14 +103,26 @@ namespace
 
     static unsigned get_portbase__()
     {
-        std::string pf = pic::global_library_dir()+"\\ports.txt";
+        int status;
+        status = _mkdir(pic::global_library_dir().c_str());
+        if(status != 0 && errno != EEXIST)
+        {
+            return PORTBASE_LOCAL;
+        }
+
+        std::string pd = pic::global_library_dir()+"\\Global";
+        std::string pf = pd+"\\ports.txt";
         FILE *fp = fopen(pf.c_str(),"r");
 
         if(!fp)
         {
-            FILE *fp = fopen(pf.c_str(),"w");
-            fprintf(fp,"%u\n",PORTBASE_LOCAL);
-            fclose(fp);
+            status = _mkdir(pd.c_str());
+            if(!status || errno == EEXIST)
+            {
+                FILE *fp = fopen(pf.c_str(),"w");
+                fprintf(fp,"%u\n",PORTBASE_LOCAL);
+                fclose(fp);
+            }
             return PORTBASE_LOCAL;
         }
 
