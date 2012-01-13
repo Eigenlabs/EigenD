@@ -47,8 +47,8 @@ namespace pic
         public:
             class impl_t;
         public:
-            bgprocess_t(const char *dir,const char *name);
-            bgprocess_t(const std::string &dir,const char *name);
+            bgprocess_t(const char *dir,const char *name,bool keeprunning = false);
+            bgprocess_t(const std::string &dir,const char *name,bool keeprunning = false);
             ~bgprocess_t();
             void start();
             bool isrunning();

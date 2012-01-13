@@ -99,7 +99,6 @@ struct pic::tool_t::impl_t
     std::string path_;
     bool started_;
     PROCESS_INFORMATION info_;
-
 };
 
 pic::tool_t::tool_t(const std::string &dir_env,const char *name)
@@ -139,7 +138,7 @@ bool pic::tool_t::isavailable()
 
 struct pic::bgprocess_t::impl_t
 {
-    impl_t(const std::string &dir,const char *name): started_(false)
+    impl_t(const std::string &dir,const char *name,bool keeprunning): started_(false), keeprunning_(keeprunning)
     {
         path_ = dir;
         path_ = path_+'\\'+name+".exe";
@@ -147,7 +146,10 @@ struct pic::bgprocess_t::impl_t
 
     ~impl_t()
     {
-        quit();
+        if(!keeprunning_)
+        {
+            quit();
+        }
     }
 
     void quit()
@@ -204,17 +206,17 @@ struct pic::bgprocess_t::impl_t
     std::string path_;
     bool started_;
     PROCESS_INFORMATION info_;
-
+    bool keeprunning_;
 };
 
-pic::bgprocess_t::bgprocess_t(const std::string &dir_env,const char *name)
+pic::bgprocess_t::bgprocess_t(const std::string &dir_env,const char *name,bool keeprunning)
 {
-    impl_ = new impl_t(dir_env,name);
+    impl_ = new impl_t(dir_env,name,keeprunning);
 }
 
-pic::bgprocess_t::bgprocess_t(const char *dir_env,const char *name)
+pic::bgprocess_t::bgprocess_t(const char *dir_env,const char *name,bool keeprunning)
 {
-    impl_ = new impl_t(dir_env,name);
+    impl_ = new impl_t(dir_env,name,keeprunning);
 }
 
 pic::bgprocess_t::~bgprocess_t()

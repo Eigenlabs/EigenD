@@ -340,13 +340,9 @@ def cli():
     x = [ a for a in sys.argv if not a.startswith('-psn') ]
     (opts,args) = parser.parse_args(x)
 
-    name = '<eigenbrowser1>'
+    name = 'eigenbrowser1'
 
-    if sys.platform == 'win32':
-        lock = resource.LockFile('eigenbrowser')
-    else:
-        lock = resource.LockFile( name )
-        
+    lock = resource.LockFile( name )
     if not lock.lock():
         print 'cannot get lock: aborting'
         sys.exit(-1)

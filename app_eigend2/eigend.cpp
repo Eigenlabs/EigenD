@@ -302,7 +302,6 @@ class EigenD : public ejuce::Application, virtual public pic::tracked_t
         void handleWinch(const std::string &msg);
 
     private:
-        pic::bgprocess_t bugreporter_;
         EigenMainWindow *main_window_;
         epython::PythonInterface *python_;
         pia::context_t context_;
@@ -1385,6 +1384,8 @@ void EigenBugComponent::buttonClicked (Button* buttonThatWasClicked)
             std::string(description_editor()->getText().trim().getCharPointer())
             );
 
+    pic::bgprocess_t(pic::private_exe_dir(),"eigenbugreporter",true).start();
+
     delete getTopLevelComponent();
 }
 
@@ -1794,7 +1795,7 @@ EigenDialog::~EigenDialog()
     main_->dialog_dead(this);
 }
 
-EigenD::EigenD(): bugreporter_(pic::private_exe_dir(),"eigenbugreporter"), main_window_ (0), python_(0), logfile_(0)
+EigenD::EigenD(): main_window_ (0), python_(0), logfile_(0)
 {
 }
 
@@ -1812,7 +1813,7 @@ void EigenD::initialise (const String& commandLine)
 
     bool net_test = eigend::test_network();
 
-    bugreporter_.start();
+    pic::bgprocess_t(pic::private_exe_dir(),"eigenbugreporter",true).start();
 
     pic::f_string_t primary_logger = pic::f_string_t::method(this,&EigenD::log);
     pic::f_string_t eigend_logger = EigenLogger::create("eigend",primary_logger);
@@ -1866,8 +1867,6 @@ void EigenD::initialise (const String& commandLine)
 void EigenD::shutdown()
 {
     if (main_window_ != 0) delete main_window_;
-
-    bugreporter_.quit();
 
     ejuce::Application::shutdown();
 }

@@ -26,7 +26,7 @@
 
 struct pic::bgprocess_t::impl_t
 {
-    impl_t(const std::string &dir,const char *name): started_(false), name_(name)
+    impl_t(const std::string &dir,const char *name,bool keeprunning): started_(false), name_(name), keeprunning_(keeprunning)
     {
         path_ = dir;
         path_ = path_+"/"+name;
@@ -34,7 +34,10 @@ struct pic::bgprocess_t::impl_t
 
     ~impl_t()
     {
-        quit();
+        if(!keeprunning_)
+        {
+            quit();
+        }
     }
 
     void quit()
@@ -85,16 +88,17 @@ struct pic::bgprocess_t::impl_t
     std::string name_;
     std::string path_;
     pid_t pid_;
+    bool keeprunning_;
 };
 
-pic::bgprocess_t::bgprocess_t(const char *dir,const char *name)
+pic::bgprocess_t::bgprocess_t(const char *dir,const char *name,bool keeprunning)
 {
-    impl_ = new impl_t(dir,name);
+    impl_ = new impl_t(dir,name,keeprunning);
 }
 
-pic::bgprocess_t::bgprocess_t(const std::string &dir,const char *name)
+pic::bgprocess_t::bgprocess_t(const std::string &dir,const char *name,bool keeprunning)
 {
-    impl_ = new impl_t(dir,name);
+    impl_ = new impl_t(dir,name,keeprunning);
 }
 
 pic::bgprocess_t::~bgprocess_t()

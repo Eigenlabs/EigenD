@@ -29,7 +29,8 @@ import httplib
 import mimetypes
 import os
 import datetime
-import threading
+import optparse
+import sys
 
 class HttpError(RuntimeError):
     pass
@@ -147,24 +148,57 @@ def send_one_bug():
         return 0
 
     try:
-        print 'sending',bug
+        print 'sending '+bug
         send_bug(bug)
         os.unlink(bug)
-        print 'sent',bug
+        print 'sent '+bug
         return 1
     except:
-        print 'failed to send',bug
+        print 'failed to send '+bug
         return -1
 
+class BugsLogger(object):
+    def __init__(self,name):
+        self.name = name
+        self.logfile = resource.open_logfile(name)
+
+    def write(self,msg):
+        if self.logfile:
+            self.logfile.write(msg)
+            self.logfile.flush()
+        else:
+            print >>sys.__stdout__,self.name,msg,
+
 def cli():
-    print 'Starting BugFiler'
-    e = threading.Event()
-    while True:
+    parser = optparse.OptionParser()
+    parser.add_option('--stdout',action='store_true',dest='stdout',default=False,help='log to stdout')
+
+    x = [ a for a in sys.argv if not a.startswith('-psn') ]
+    (opts,args) = parser.parse_args(x)
+
+    name = 'eigenbugreporter1'
+
+    lock = resource.LockFile(name)
+    if not lock.lock():
+        print 'cannot get lock: aborting'
+        sys.exit(-1)
+
+    if not opts.stdout:
+        sys.stdout = BugsLogger(name)
+
+    print 'starting bugfiler'
+    try:
         print 'bugfiler running'
         while send_one_bug()>0:
+            print 'more bugs to send'
             continue
-        print 'bugfiler sleeping'
-        e.wait(60)
-        e.clear()
+        print 'bugfiler done'
+    except:
+        import traceback
+        print 'exception raised' 
+        print 'start traceback:'
+        exeinfo = traceback.format_exc(limit=None)
+        print exeinfo
+        picross.exit(0)
 
     print 'bugfiler exiting'

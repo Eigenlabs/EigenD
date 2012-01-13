@@ -215,7 +215,6 @@ class LockFile:
         self.__file.close()
 
     def unlock(self):
-        pass
         try:
             if is_windows():
                 hfile = win32file._get_osfhandle(self.__file.fileno())
@@ -227,7 +226,6 @@ class LockFile:
             pass
 
     def lock(self):
-        return True
         try:
             if is_windows():
                 hfile = win32file._get_osfhandle(self.__file.fileno())
