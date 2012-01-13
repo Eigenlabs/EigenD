@@ -49,7 +49,7 @@ def file_bug(user,email,subj,desc):
 
         def_state_file = resource.user_resource_file('global',resource.current_setup)
         for statefile in glob.glob(def_state_file+'*'):
-            zip.write(statefile,'setup/'+os.path.basename(statefile),compress_type=zipfile.ZIP_DEFLATED)
+            zip.write(statefile,'Setup/'+os.path.basename(statefile),compress_type=zipfile.ZIP_DEFLATED)
 
         # add the crash reports of today to the bug report
         if resource.is_macosx():
@@ -57,18 +57,18 @@ def file_bug(user,email,subj,desc):
             today = datetime.date.today().strftime("_%Y-%m-%d-")
             if os.path.isdir(diag):
                 for crashfile in glob.glob( "%s/eigen*%s*.crash" % (diag, today) ):
-                    zip.write(crashfile,"crash/"+os.path.basename(crashfile),compress_type=zipfile.ZIP_DEFLATED)
+                    zip.write(crashfile,"Crash/"+os.path.basename(crashfile),compress_type=zipfile.ZIP_DEFLATED)
                 for crashfile in glob.glob( "%s/Workbench*%s*.crash" % (diag, today) ):
-                    zip.write(crashfile,"crash/"+os.path.basename(crashfile),compress_type=zipfile.ZIP_DEFLATED)
+                    zip.write(crashfile,"Crash/"+os.path.basename(crashfile),compress_type=zipfile.ZIP_DEFLATED)
         
         #core_files = glob.glob('/cores/*')
         #if core_files:
         #    zip.write( core_files[0],compress_type=zipfile.ZIP_DEFLATED)
 
-        log_folder = resource.user_resource_dir( 'log' )
+        log_folder = resource.user_resource_dir('Log')
         for file in glob.glob( log_folder + "/*" ):
             path,filename = os.path.split( file )
-            full_path = os.path.join( 'log',filename)
+            full_path = os.path.join( 'Log',filename)
             zip.write( file, full_path,compress_type=zipfile.ZIP_DEFLATED )    
         
         zip.close()
@@ -125,7 +125,7 @@ def get_content_type(filename):
     return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
 def get_bug():
-    dir = resource.user_resource_dir('bugs',version='')
+    dir = resource.user_resource_dir('Bugs',version='')
     bugs = glob.glob(os.path.join(dir,'*.zip'))
     return bugs[0] if bugs else None
 

@@ -55,6 +55,7 @@
 #include "pia_glue.h"
 
 #include <errno.h>
+#include <sys/stat.h>
 
 #define PORTBASE_LOCAL  55555
 #define PORTBASE_OFFSET 1000
@@ -91,14 +92,26 @@ namespace
 
     static unsigned get_portbase__()
     {
-        std::string pf = pic::global_library_dir()+"/ports.txt";
+        int status;
+        status = mkdir(pic::global_library_dir().c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        if(status != 0 && errno != EEXIST)
+        {
+            return PORTBASE_LOCAL;
+        }
+
+        std::string pd = pic::global_library_dir()+"/Global";
+        std::string pf = pd+"/ports.txt";
         FILE *fp = fopen(pf.c_str(),"r");
 
         if(!fp)
         {
-            FILE *fp = fopen(pf.c_str(),"w");
-            fprintf(fp,"%u\n",PORTBASE_LOCAL);
-            fclose(fp);
+            status = mkdir(pd.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+            if(!status || errno == EEXIST)
+            {
+                FILE *fp = fopen(pf.c_str(),"w");
+                fprintf(fp,"%u\n",PORTBASE_LOCAL);
+                fclose(fp);
+            }
             return PORTBASE_LOCAL;
         }
 

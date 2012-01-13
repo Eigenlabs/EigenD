@@ -262,7 +262,7 @@ def get_logfile(target,logfile_max=7):
     return log
 
 def get_bugfile():
-    dir = user_resource_dir('bugs',version='')
+    dir = user_resource_dir('Bugs',version='')
     rotate_logfile(dir,'bug-report',logfile_max=30,suffix='zip')
     log = os.path.join(dir,'%s.0.zip' % 'bug-report')
     return log
