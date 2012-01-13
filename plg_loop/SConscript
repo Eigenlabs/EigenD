@@ -24,10 +24,10 @@ env.PiPythonPackage(resources=Split('accent.wav beat.wav *.png'),package='eigend
 env.PiAgent('metronome','plg_loop','metronome_plg',cversion='1.0.0')
 env.PiAgent('drummer','plg_loop','drummer_plg',cversion='1.0.1')
 env.PiAgent('clicker','plg_loop','clicker_plg',cversion='1.0.0')
-env.PiPythonWrapper('loopdb_create','plg_loop','loopdb','create',package='eigend')
+#env.PiPythonWrapper('loopdb_create','plg_loop','loopdb','create',package='eigend')
 
-if env['IS_MACOSX']:
-    env.PiEtc('eigend',Split('postflight-loop'))
+#if env['IS_MACOSX']:
+#    env.PiEtc('eigend',Split('postflight-loop'))
 
-if env['IS_WINDOWS']:
-    env.PiPackageInit('eigend','loopdb_create',as_user=True)
+#if env['IS_WINDOWS']:
+#    env.PiPackageInit('eigend','loopdb_create',as_user=True)

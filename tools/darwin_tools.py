@@ -147,25 +147,22 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         pkgs = dict([ (pkg,self.make_package(pkg)) for pkg in self.shared.packages ])
 
         for c in self.shared.collections:
-            meta = self.shared.collections[c]
-            cpkgs = [ pkgs[p] for p in self.get_packages(c) ] + [ self.Dir(e) for e in meta['external'].values() ]
-            mpkg = self.make_mpkg(c,cpkgs,meta)
-            dmg = self.make_dmg(c,mpkg)
+            mpkg = self.make_mpkg(c,pkgs)
 
     def PiPythonwWrapper(self,name,pypackage,module,main,appname=None,bg=False,private=False,usegil=False,di=False,package=None):
         env = self.Clone()
         program = env.PiPythonWrapper(name,pypackage,module,main,package=package)
         bigname = appname or name[0:1].upper()+name[1:].lower()
-        runapp = env.make_app_bundle4(env['APPRUNDIR'],bigname,program[0].abspath,di=di,bg=bg)
+        runapp = env.make_app_bundle4(env.subst('$APPRUNDIR'),bigname,program[0].abspath,di=di,bg=bg)
 
         if package:
             env.set_package(package)
             progname = join(env.subst('$BININSTALLDIR'),name)
 
             if not private:
-                instapp = env.make_app_bundle4(env['APPSTAGEDIR'],bigname,progname,di=di,bg=bg)
+                instapp = env.make_app_bundle4(env.subst('$APPSTAGEDIR'),bigname,progname,di=di,bg=bg)
             else:
-                instapp = env.make_app_bundle4(env['APPSTAGEDIR_PRIV'],bigname,progname,di=di,bg=bg)
+                instapp = env.make_app_bundle4(env.subst('$APPSTAGEDIR_PRIV'),bigname,progname,di=di,bg=bg)
 
         return runapp
 
@@ -176,16 +173,16 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         env = self.Clone()
         program = env.PiProgram(target,sources,package=package,libraries=libraries,hidden=hidden)
         bigname = appname or target[0:1].upper()+target[1:].lower()
-        runapp = env.make_app_bundle4(env['APPRUNDIR'],bigname,program[0].abspath,di=di,bg=bg,resources=resources)
+        runapp = env.make_app_bundle4(env.subst('$APPRUNDIR'),bigname,program[0].abspath,di=di,bg=bg,resources=resources)
 
         if package:
             env.set_package(package)
             progname = join(env.subst('$BININSTALLDIR'),target)
 
             if not private:
-                instapp = env.make_app_bundle4(env['APPSTAGEDIR'],bigname,progname,di=di,bg=bg,resources=resources)
+                instapp = env.make_app_bundle4(env.subst('$APPSTAGEDIR'),bigname,progname,di=di,bg=bg,resources=resources)
             else:
-                instapp = env.make_app_bundle4(env['APPSTAGEDIR_PRIV'],bigname,progname,di=di,bg=bg,resources=resources)
+                instapp = env.make_app_bundle4(env.subst('$APPSTAGEDIR_PRIV'),bigname,progname,di=di,bg=bg,resources=resources)
         return runapp
 
     def PiBinaryDLL(self,target,package=None):
@@ -198,7 +195,7 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
 
         if package:
             env.set_package(package)
-            inst_library_1 = env.Install(env['BINSTAGEDIR'],f1)
+            inst_library_1 = env.Install(env.subst('$BINSTAGEDIR'),f1)
 
         return env.addlibname(run_library1[0],target)
 
@@ -280,241 +277,146 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         env = self.Clone()
         env.Replace(PI_PACKAGENAME=name)
 
-        meta = env.shared.package_descriptions[name]
-        v = meta['version'] or env.subst('$PI_RELEASE')
-        pkg='Eigenlabs-%s-%s.pkg' % (name.capitalize(),v)
-        required = meta['required']
-
-        def make_pkg(target,source,env):
+        def make_info(target,source,env):
 
             s = source[0].abspath
             d = target[0].abspath
 
-            env.safe_mkdir(join(d,'Contents','Resources'))
-
-            f=open(join(d,'Contents','PkgInfo'),'w')
-            f.write("sjmdsjmd")
-            f.close()
-            
-            f=open(join(d,'Contents','Info.plist'),'w')
+            etc = env.subst('$ETCINSTALLDIR')
+            f=open(d,'w')
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-            f.write('<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
+            f.write('<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
             f.write('<plist version="1.0">\n')
-            f.write('<dict>\n')
-            f.write('	<key>CFBundleGetInfoString</key>\n')
-            f.write('	<string>Copyright (C) Eigenlabs Ltd</string>\n')
-            f.write('	<key>CFBundleIdentifier</key>\n')
-            f.write('	<string>%s</string>\n' % pkg)
-            f.write('	<key>CFBundleShortVersionString</key>\n')
-            f.write('	<string>%s</string>' % v)
-            f.write('	<key>IFPkgFlagAllowBackRev</key>\n')
-            f.write('	<false/>\n')
-            f.write('	<key>IFPkgFlagAuthorizationAction</key>\n')
-            f.write('	<string>AdminAuthorization</string>\n')
-            f.write('	<key>IFPkgFlagBackgroundAlignment</key>\n')
-            f.write('	<string>center</string>\n')
-            f.write('	<key>IFPkgFlagBackgroundScaling</key>\n')
-            f.write('	<string>tofit</string>\n')
-            f.write('	<key>IFPkgFlagDefaultLocation</key>\n')
-            f.write('	<string>/</string>\n')
-            f.write('	<key>IFPkgFlagFollowLinks</key>\n')
-            f.write('	<true/>\n')
-            f.write('	<key>IFPkgFlagInstallFat</key>\n')
-            f.write('	<false/>\n')
-            f.write('	<key>IFPkgFlagIsRequired</key>\n')
-            f.write('	<true/>\n' if required else '	<false/>\n')
-            f.write('	<key>IFPkgFlagOverwritePermissions</key>\n')
-            f.write('	<false/>\n')
-            f.write('	<key>IFPkgFlagRelocatable</key>\n')
-            f.write('	<false/>\n')
-            f.write('	<key>IFPkgFlagRestartAction</key>\n')
-            f.write('	<string>NoRestart</string>\n')
-            f.write('	<key>IFPkgFlagRootVolumeOnly</key>\n')
-            f.write('	<true/>\n')
-            f.write('	<key>IFPkgFlagUpdateInstalledLanguages</key>\n')
-            f.write('	<false/>\n')
-            f.write('	<key>IFPkgFormatVersion</key>\n')
-            f.write('	<real>0.10000000149011612</real>\n')
-            f.write('</dict>\n')
+            f.write('<array>\n')
+            f.write('</array>\n')
             f.write('</plist>\n')
             f.close()
 
-            f=open(join(d,'Contents','Resources','BundleVersions.plist'),'w')
-            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-            f.write('<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
-            f.write('<plist version="1.0">\n')
-            f.write('<dict/>\n')
-            f.write('</plist>\n')
-            f.close()
+        infofile = env.File(name+'.pinfo',env.Dir('cinfo',env.Dir('$PKGDIR')))
+        infonode = env.Command(infofile,env.Dir('$STAGEDIR'),make_info)
 
-            f=open(join(d,'Contents','Resources','Description.plist'),'w')
-            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-            f.write('<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
-            f.write('<plist version="1.0">\n')
-            f.write('<dict>\n')
-            f.write('	<key>IFPkgDescriptionDescription</key>\n')
-            f.write('	<string>%(longdesc)s</string>\n' % meta)
-            f.write('	<key>IFPkgDescriptionTitle</key>\n')
-            f.write('	<string>%(desc)s</string>\n' % meta)
-            f.write('</dict>\n')
-            f.write('</plist>\n')
-            f.close()
+        def make_script(target,source,env):
 
-            os.system('mkbom %s %s' % (s,join(d,'Contents','Archive.bom')))
-            #os.system('pax -x ustar -w -f %s -s ,%s/,, %s/*' % (join(d,'Contents','Archive.pax'),s,s))
-            #print 'pax -x ustar -w -f %s -s ,%s/,, %s/*' % (join(d,'Contents','Archive.pax'),s,s)
-            os.system('ditto -c -z %s %s' % (s,join(d,'Contents','Archive.pax.gz')))
-            print 'ditto -c -z %s %s' % (s,join(d,'Contents','Archive.pax.gz'))
+            s = source[0].abspath
+            d = target[0].abspath
 
             etc = env.subst('$ETCINSTALLDIR')
-            for script in ['preflight','postflight','preremove','postremove']:
-                path=join(d,'Contents','Resources',script)
-                f=open(path,'w')
-                f.write('#!/bin/sh\n')
-                f.write('export PI_PREFIX=%s\n' % env.subst('$INSTALLDIR'))
-                f.write('export PI_ROOT=%s\n' % env.subst('$INSTALLROOTDIR'))
-                f.write('export PI_RELEASE=%s\n' % env.subst('$PI_RELEASE'))
-                f.write('export USER=`basename $HOME`\n')
-                f.write('for script in %s/%s-*\n' % (etc,script))
-                f.write('do\n')
-                f.write('  if test -x "$script"; then sh -c "$script"; fi\n')
-                f.write('done\n')
-                f.write('exit 0\n')
-                f.close()
-                os.chmod(path,0755)
-
-            f=open(join(d,'Contents','Resources','Welcome.txt'),'w')
-            f.write('%(longdesc)s\n' % meta)
+            f=open(d,'w')
+            f.write('#!/bin/sh\n')
+            f.write('export PI_PREFIX=%s\n' % env.subst('$INSTALLDIR'))
+            f.write('export PI_ROOT=%s\n' % env.subst('$INSTALLROOTDIR'))
+            f.write('export PI_RELEASE=%s\n' % env.subst('$PI_RELEASE'))
+            f.write('export USER=`basename $HOME`\n')
+            f.write('for script in %s/postflight-*\n' % (etc))
+            f.write('do\n')
+            f.write('  if test -x "$script"; then sh -c "$script"; fi\n')
+            f.write('done\n')
+            f.write('exit 0\n')
             f.close()
+            os.chmod(d,0755)
 
-            # Not sure how to do the sizes.  It seems
-            # to work OK without them anyway (??)
+        scriptdir = env.Dir(name,env.Dir('script',env.Dir('$PKGDIR')))
+        scriptfile = env.File('postinstall',scriptdir)
+        scriptnode = env.Command(scriptfile,env.Dir('$STAGEDIR'),make_script)
+        env.Depends(env.Alias('target-stage'),scriptnode)
 
-        return env.Command(env.Dir(pkg,env.Dir(env['PKGDIR'])),env.Dir('$STAGEDIR'),make_pkg)
+        meta = env.shared.package_descriptions[name]
+        v = meta['version'] or env.subst('$PI_RELEASE')
+        pkgname='%s-%s.pkg' % (name.capitalize(),v)
+        required = meta['required']
 
-    def make_mpkg(env,name,pkgs,meta):
+        pkgfile = env.File(pkgname,env.Dir('pkg',env.Dir('$PKGDIR')))
 
-        def mpkg(env,target,source):
+        def make_pkg(target,source,env):
+            cmd = 'pkgbuild --identifier %s --component-plist %s --scripts %s --version %s --root %s %s' % (name.capitalize(),infonode[0].abspath,scriptdir.abspath,v,source[0].abspath,target[0].abspath)
+            print cmd
+            os.system(cmd)
+
+        pkgnode = env.Command(pkgfile,env.Dir(env.subst('$STAGEDIR')),make_pkg)
+        env.Depends(pkgnode,scriptnode)
+        env.Depends(pkgnode,infonode)
+        env.Alias('target-pkg',pkgnode)
+        return pkgnode[0]
+
+    def make_mpkg(self,name,pkgs):
+        included_pkgnames = self.get_packages(name)
+        included_pkgfiles = {}
+        included_pkgnodes = {}
+        included_pkgvers = {}
+        pkg_path = []
+
+        v = self.subst('$PI_RELEASE')
+
+        for p in included_pkgnames:
+            included_pkgvers[p] = v
+            included_pkgnodes[p] = pkgs[p]
+            included_pkgfiles[p] = os.path.basename(pkgs[p].abspath)
+            d = os.path.dirname(pkgs[p].abspath)
+            if d not in pkg_path:
+                pkg_path.append(d)
+
+        resdir = self.Dir(name,self.Dir('resources',self.Dir('$PKGDIR')))
+        self.safe_mkdir(resdir.abspath)
+
+        background = self.subst('$PI_BACKGROUND')
+        if background and os.path.exists(background):
+            shutil.copy(background,resdir.abspath)
+        else:
+            background = None
+
+        license = self.subst('$PI_LICENSE')
+        if license and os.path.exists(license):
+            shutil.copy(license,resdir.abspath)
+        else:
+            license = None
+
+        def pkg_info(env,target,source):
             d = target[0].abspath
-            env.safe_mkdir(join(d,'Contents','Packages'))
-            f=open(join(d,'Contents','PkgInfo'),'w')
-            f.write("sjmdsjmd")
-            f.close()
+            f=open(d+'','w')
+            f.write('<?xml version="1.0" encoding="utf-8"?>\n')
+            f.write('<installer-gui-script minSpecVersion="1">\n')
 
-            env.safe_mkdir(join(d,'Contents','Resources'))
-
-            f=open(join(d,'Contents','Resources','package_version'),'w')
-            f.write('major: 1\nminor: 0\n')
-            f.close()
-
-            bg = env.subst('$PI_BACKGROUND')
-            if bg and os.path.exists(bg):
-                shutil.copy(bg,join(d,'Contents','Resources','background.tiff'))
-
-            env.safe_mkdir(join(d,'Contents','Resources','English.lproj'))
-
-            license = env.subst('$PI_LICENSE')
             if license:
-                shutil.copy(license,join(d,'Contents','Resources','English.lproj','License.rtf'))
-            
-            f=open(join(d,'Contents','Resources','English.lproj','%s.info'%name),'w')
-            f.write('Title %s\n' % name)
-            f.write('Version %s\n' % env.subst('$PI_RELEASE'))
-            f.write('Description The world of PI.\n')
-            f.write('DefaultLocation \n')
-            f.write('DeleteWarning \n')
-            f.write('### Package Flags\n')
-            f.write('NeedsAuthorization NO\n')
-            f.write('Required NO\n')
-            f.write('Relocatable NO\n')
-            f.write('RequiresReboot NO\n')
-            f.write('UseUserMask NO\n')
-            f.write('OverwritePermissions NO\n')
-            f.write('InstallFat NO\n')
-            f.write('RootVolumeOnly YES\n')
-            f.write('OnlyUpdateInstalledLanguages NO\n')
+                f.write('<license file="%s"\n></license>\n' % os.path.basename(license))
+
+            if background:
+                f.write('<background file="%s"\n></background>\n' % os.path.basename(background))
+
+            for pkg in included_pkgnames:
+                f.write('  <pkg-ref id="%s"/>\n' % pkg.capitalize())
+
+            f.write('  <options customize="never" require-scripts="false" rootVolumeOnly="true"/>\n')
+            f.write('  <choices-outline>\n')
+            f.write('    <line choice="default">\n')
+
+            for pkg in included_pkgnames:
+                f.write('      <line choice="%s"/>\n' % pkg.capitalize())
+
+            f.write('    </line>\n')
+            f.write('  </choices-outline>\n')
+            f.write('  <choice id="default"/>')
+
+            for pkg in included_pkgnames:
+                f.write('  <choice id="%s" visible="false">\n' % pkg.capitalize())
+                f.write('    <pkg-ref id="%s"/>\n' % pkg.capitalize())
+                f.write('  </choice>\n')
+                f.write('  <pkg-ref id="%s" version="%s" onConclusion="none">%s</pkg-ref>\n' % (pkg.capitalize(),included_pkgvers[pkg],included_pkgfiles[pkg]))
+
+            f.write('</installer-gui-script>\n')
             f.close()
 
-            f=open(join(d,'Contents','Resources','English.lproj','Description.plist'),'w')
-            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-            f.write('<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
-            f.write('<plist version="1.0">\n')
-            f.write('<dict>\n')
-            f.write('	<key>IFPkgDescriptionDescription</key>\n')
-            f.write('	<string>The world of PI.</string>\n')
-            f.write('	<key>IFPkgDescriptionTitle</key>\n')
-            f.write('	<string>%s</string>\n' % name)
-            f.write('</dict>\n')
-            f.write('</plist>\n')
-            f.close()
+        infoname = '%s-%s.pkgd' % (name,v)
+        infonode = self.Command(self.File(infoname,self.Dir('info',self.subst('$PKGDIR'))),included_pkgnodes.values(),pkg_info)
 
-            f=open(join(d,'Contents','Info.plist'),'w')
-            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-            f.write('<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
-            f.write('<plist version="1.0">\n')
-            f.write('<dict>\n')
-            f.write('	<key>IFPkgFlagBackgroundAlignment</key>\n')
-            f.write('	<string>topleft</string>\n')
-            f.write('	<key>IFPkgFlagBackgroundScaling</key>\n')
-            f.write('	<string>none</string>\n')
-            f.write('	<key>IFPkgFlagComponentDirectory</key>\n')
-            f.write('	<string>Contents/Packages</string>\n')
-            f.write('	<key>IFPkgFlagPackageList</key>\n')
-            f.write('	<array>\n')
+        def pkg_file(env,target,source):
+            d = target[0].abspath
+            s = source[0].abspath
+            pp = ''.join([' --package-path %s' % p for p in pkg_path])
+            cmd = 'productbuild --resources %s --distribution %s %s %s' % (resdir.abspath,infonode[0].abspath,pp,d)
+            print cmd
+            os.system(cmd)
 
-            for pkg in source:
-                pn=os.path.basename(pkg.abspath)
-                mycopytree(pkg.abspath,join(d,'Contents','Packages',pn),ignore=svn_filter)
-                f.write('		<dict>\n')
-                f.write('            <key>IFPkgFlagPackageLocation</key>\n')
-                f.write('            <string>%s</string>\n' % pn)
-                f.write('            <key>IFPkgFlagPackageSelection</key>\n')
-                f.write('            <string>selected</string>\n')
-                f.write('		</dict>\n')
-
-            f.write('	</array>\n')
-            f.write('	<key>IFPkgFormatVersion</key>\n')
-            f.write('	<real>0.10000000149011612</real>\n')
-            f.write('</dict>\n')
-            f.write('</plist>\n')
-            f.close()
-
-            etc = env.subst('$ETCROOTINSTALLDIR')
-            for script in ['preflight','postflight','preremove','postremove']:
-                path=join(d,'Contents','Resources',script)
-                f=open(path,'w')
-                f.write('#!/bin/sh\n')
-                f.write('export PI_PREFIX=/%s\n' % env.subst('$INSTALLDIR'))
-                f.write('export PI_RELEASE=%s\n' % env.subst('$PI_RELEASE'))
-                f.write('export USER=`basename $HOME`\n')
-                f.write('if [ `echo %s/*/global-%s` != "%s/*/global-%s" ]; then\n' % (etc,script,etc,script))
-                f.write('  for script in %s/*/global-%s\n' % (etc,script))
-                f.write('  do\n')
-                f.write('    sh -c "$script"\n')
-                f.write('  done\n')
-                f.write('fi\n')
-                f.write('exit 0\n')
-                f.close()
-                os.chmod(path,0755)
-
-        mpkgname = '%s-%s.mpkg' % (name,env.subst('$PI_RELEASE'))
-        mpkgdname = 'mpkg-%s-%s' % (name,env.subst('$PI_RELEASE'))
-        tgt = env.Command(env.Dir(mpkgname,env.Dir(mpkgdname,env.Dir('mpkg',env['PKGDIR']))),pkgs,mpkg)
-        env.Alias('target-pkg',tgt)
-        env.Alias('target-mpkg',tgt)
-        return tgt
-
-    def make_dmg(env,name,mpkg):
-        
-        def dmg(env,target,source):
-            img = target[0].abspath
-            src = source[0].abspath
-            print 'dmg src is',src
-            os.system('hdiutil create -format UDBZ -volname %s-%s -srcfolder "%s" %s' % (name,env.subst('$PI_RELEASE'),src,img))
-
-        dmgfile = env.File('%s-%s.dmg' % (name,env.subst('$PI_RELEASE')), env['PKGDIR'])
-        tgt = env.Command(dmgfile,mpkg,dmg)
-        env.Alias('target-pkg',tgt)
-        env.Alias('target-mpkg',tgt)
-        return tgt
-
+        mpkgname = '%s-%s.pkg' % (name,v)
+        mpkgnode = self.Command(self.File(mpkgname,self.subst('$PKGDIR')),infonode+included_pkgnodes.values(),pkg_file)
+        self.Alias('target-mpkg',mpkgnode)
+        return mpkgnode

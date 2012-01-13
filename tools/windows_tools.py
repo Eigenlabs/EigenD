@@ -506,7 +506,7 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
             setup = self.make_setup_nsis(c,cpkgs,meta)
 
     def libmapper(self,target,source,env,for_signature):
-        libs = env['PILIBS']
+        libs = env.subst('$PILIBS')
         map = []
 
         for l in libs:
@@ -662,5 +662,5 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
     def PiReleaseFile(self,package,name,bigname):
         etc_env=self.Clone()
         etc_env.set_package(package)
-        stagesource = etc_env.Install(etc_env['ETCSTAGEDIR'],name)
+        stagesource = etc_env.Install(etc_env.subst('$ETCSTAGEDIR'),name)
         self.shared.shortcuts.setdefault(package,[]).append((bigname,'etc\\%s\\%s' % (package,name)))
