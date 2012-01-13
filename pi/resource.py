@@ -228,6 +228,7 @@ class LockFile:
     def unlock(self):
         try:
             if is_windows():
+                pass
                 hfile = win32file._get_osfhandle(self.__file.fileno())
                 overlapped = pywintypes.OVERLAPPED()
                 win32file.UnlockFileEx(hfile, 0, -0x10000, overlapped)
@@ -239,6 +240,7 @@ class LockFile:
     def lock(self):
         try:
             if is_windows():
+                return True
                 hfile = win32file._get_osfhandle(self.__file.fileno())
                 overlapped = pywintypes.OVERLAPPED()
                 flags = win32con.LOCKFILE_EXCLUSIVE_LOCK|win32con.LOCKFILE_FAIL_IMMEDIATELY
