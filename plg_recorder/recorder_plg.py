@@ -54,8 +54,8 @@ def render_list(list,offset,renderer):
     return txt+']'
 
 class TakeLibrary:
-    tempdir = resource.user_resource_dir('Recordings-tmp',version='')
-    permdir = resource.user_resource_dir('Recordings',version='')
+    tempdir = resource.user_resource_dir(resource.recordingstmp_dir,version='')
+    permdir = resource.user_resource_dir(resource.recordings_dir,version='')
 
     def __init__(self,obs):
         self.__id = None

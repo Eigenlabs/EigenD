@@ -45,7 +45,7 @@ class ScriptManager(atom.Atom):
         atom.Atom.__init__(self,names='script',protocols='browse')
 
         self.__factorydir = os.path.join(picross.release_resource_dir(),'Scripts')
-        self.__userdir = resource.user_resource_dir('Scripts','')
+        self.__userdir = resource.user_resource_dir(resource.scripts_dir,'')
         self.__timestamp = piw.tsd_time()
         self.__selected=None
         self.__armed=None

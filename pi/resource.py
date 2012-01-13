@@ -58,7 +58,18 @@ def is_linux():
 def is_windows():
     return picross.is_windows()
 
-setup_dir='setups'
+bugs_dir='Bugs'
+global_dir='Global'
+help_dir='Help'
+impulseresponse_dir='ImpulseResponse'
+lock_dir='Lock'
+log_dir='Log'
+loop_dir='Loop'
+plugins_dir='Plugins'
+recordings_dir='Recordings'
+recordingstmp_dir='Recordings-tmp'
+scripts_dir='Scripts'
+setup_dir='Setups'
 default_setup='default_setup'
 current_setup='current_setup'
 user_details='user_details'
@@ -73,7 +84,7 @@ def __mkdir(name):
 def lock_file(name):
     userdir_g = picross.global_library_dir()
     __mkdir(userdir_g)
-    lockdir_g = os.path.join(userdir_g,'lock')
+    lockdir_g = os.path.join(userdir_g,lock_dir)
     __mkdir(lockdir_g)
 
     return os.path.join(lockdir_g,name+'.lck')
@@ -82,7 +93,7 @@ def current_version():
     return picross.release()
 
 def cache_dir():
-    return os.path.join(get_home_dir(),'cache')
+    return os.path.join(get_home_dir(),'Cache')
 
 def get_home_dir(version=None):
     release = current_version() if version is None else version
@@ -200,7 +211,7 @@ def user_resource_file(category,name,version=None):
     return filename
 
 def clean_current_setup():
-    def_state_file = user_resource_file('global',current_setup)
+    def_state_file = user_resource_file(global_dir,current_setup)
     for statefile in glob.glob(def_state_file+'*'):
         os.unlink(statefile)
 
@@ -256,13 +267,13 @@ def rotate_logfile(dir,target,logfile_max,suffix='log'):
 
 
 def get_logfile(target,logfile_max=7):
-    dir = user_resource_dir('log')
+    dir = user_resource_dir(log_dir)
     rotate_logfile(dir,target,logfile_max)
     log = os.path.join(dir,'%s.0.log' % target)
     return log
 
 def get_bugfile():
-    dir = user_resource_dir('Bugs',version='')
+    dir = user_resource_dir(bugs_dir,version='')
     rotate_logfile(dir,'bug-report',logfile_max=30,suffix='zip')
     log = os.path.join(dir,'%s.0.zip' % 'bug-report')
     return log

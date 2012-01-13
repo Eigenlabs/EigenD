@@ -482,7 +482,7 @@ class Backend(eigend_native.c2p):
         return upgrade.get_description_from_file(setup)
 
     def __get_email(self):
-        filename = resource.user_resource_file('global',resource.user_details,version='')
+        filename = resource.user_resource_file(resource.global_dir,resource.user_details,version='')
         try:
             l = open(filename,'r').readlines()
             return l[0].strip(),l[1].strip()
@@ -499,7 +499,7 @@ class Backend(eigend_native.c2p):
         return 'Bug Report: ' + time.strftime("%a, %d %b %Y")
 
     def file_bug(self,user,email,subj,desc):
-        filename = resource.user_resource_file('global',resource.user_details,version='')
+        filename = resource.user_resource_file(resource.global_dir,resource.user_details,version='')
         open(filename,'w').write("%s\n%s\n" % (user.strip(),email.strip()))
         bugs_cli.file_bug(user,email,subj,desc)
 

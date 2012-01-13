@@ -99,7 +99,7 @@ class HelpManager:
     def update(self):
 
         try:
-            doc_file = resource.user_resource_file('Help','documentation.xml')
+            doc_file = resource.user_resource_file(resource.help_dir,'documentation.xml')
             ((major,minor,build),tag) = resource.split_version(version.version)
             doc_url = "%s/%d.%d" % (doc_base,major,minor)
             print 'loading documentation from',doc_url
@@ -121,8 +121,8 @@ class HelpManager:
         self.__agents = {}
         self.__cache = {}
 
-        user_doc = resource.find_resource('Help','documentation.xml')
-        release_doc = resource.find_release_resource('Help','documentation.xml')
+        user_doc = resource.find_resource(resource.help_dir,'documentation.xml')
+        release_doc = resource.find_release_resource(resource.help_dir,'documentation.xml')
 
         try:
             self.load_file(user_doc)

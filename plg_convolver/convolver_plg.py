@@ -70,7 +70,7 @@ def rgetsamples(res):
 
 def wav_resource(name):
     # this is the impulse response directory
-    uf = resource.user_resource_file('ImpulseResponse',name,version='')
+    uf = resource.user_resource_file(resource.impulseresponse_dir,name,version='')
     if os.path.isfile(uf):
         return fgetsamples(uf)
     return rgetsamples('plg_convolver/%s'%name)

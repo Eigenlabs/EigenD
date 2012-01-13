@@ -88,9 +88,9 @@ def qtables():
 
 class LoopDatabase:
     def __init__(self):
-        self.__dbfile = os.path.join(resource.user_resource_dir('Loop'),'loops.db')
+        self.__dbfile = os.path.join(resource.user_resource_dir(resource.loop_dir),'loops.db')
         self.__factorydir = os.path.join(picross.global_resource_dir(),'loop')
-        self.__userdir = resource.user_resource_dir('Loop','')
+        self.__userdir = resource.user_resource_dir(resource.loop_dir,'')
         e = os.path.exists(self.__dbfile)
         if not e:
             self.scan()
@@ -109,11 +109,11 @@ class LoopDatabase:
         meta = []
         nxt = 0
         nxt = self.__scandir(nxt,files,meta,os.path.join(picross.global_resource_dir(),'loop'))
-        nxt = self.__scandir(nxt,files,meta,resource.user_resource_dir('Loop',''))
+        nxt = self.__scandir(nxt,files,meta,resource.user_resource_dir(resource.loop_dir,''))
         print '%d loops indexed' % nxt
 
         if not mtime1:
-            mtime1=self.__get_modtime(resource.user_resource_dir('Loop',''))
+            mtime1=self.__get_modtime(resource.user_resource_dir(resource.loop_dir,''))
 
         if not mtime2:
             mtime2=self.__get_modtime(os.path.join(picross.global_resource_dir(),'loop'))
@@ -142,7 +142,7 @@ class LoopDatabase:
         return mtime
 
     def __check_modtime(self):
-        mtime1=self.__get_modtime(resource.user_resource_dir('Loop',''))
+        mtime1=self.__get_modtime(resource.user_resource_dir(resource.loop_dir,''))
         mtime2=self.__get_modtime(os.path.join(picross.global_resource_dir(),'loop'))
         modtime=self.__modtime()
         if not modtime or (abs(modtime[0][1]-mtime1)>1) or (abs(modtime[1][1]-mtime2)>1):

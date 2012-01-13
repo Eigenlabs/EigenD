@@ -265,7 +265,7 @@ class Workspace(atom.Atom):
         self.__load_errors = None
         self.__load_path = None
 
-        self.__dbfile = resource.user_resource_file('global',"%s-%s" % (resource.current_setup,name))
+        self.__dbfile = resource.user_resource_file(resource.global_dir,"%s-%s" % (resource.current_setup,name))
 
         if os.path.exists(self.__dbfile):
             os.remove(self.__dbfile)

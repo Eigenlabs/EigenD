@@ -87,7 +87,7 @@ def probe_alpha():
 
 
 def get_default_setup():
-    filename = resource.user_resource_file('global',resource.default_setup)
+    filename = resource.user_resource_file(resource.global_dir,resource.default_setup)
 
     if os.path.exists(filename):
         setup = open(filename,'r').read()
@@ -574,7 +574,7 @@ class Agent(agent.Agent):
 
 def set_default_setup(path):
     try:
-        def_state_file = resource.user_resource_file('global',resource.default_setup)
+        def_state_file = resource.user_resource_file(resource.global_dir,resource.default_setup)
         print 'default file:',def_state_file,path
         fd = open(def_state_file,'w').write(path)
         fd.close()
@@ -583,11 +583,11 @@ def set_default_setup(path):
 
 
 def upgrade_default_setup():
-    filename = resource.user_resource_file('global',resource.default_setup)
+    filename = resource.user_resource_file(resource.global_dir,resource.default_setup)
 
     if not os.path.exists(filename):
         for v in resource.find_installed_versions(filter_upgradeable_version):
-            old_filename = resource.user_resource_file('global',resource.default_setup,version=v)
+            old_filename = resource.user_resource_file(resource.global_dir,resource.default_setup,version=v)
             if os.path.exists(old_filename):
                 setup = open(old_filename,'r').read()
                 if ''==setup:

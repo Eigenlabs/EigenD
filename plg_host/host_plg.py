@@ -56,7 +56,7 @@ def plugin_id_escaped(plg):
 
 class PluginList:
 
-    __plugins_cache = os.path.join(resource.user_resource_dir('Plugins',version=''),'plugins_cache')
+    __plugins_cache = os.path.join(resource.user_resource_dir(resource.plugins_dir,version=''),'plugins_cache')
 
     def __init__(self):
         self.plugins_by_manufacturer = dict()
