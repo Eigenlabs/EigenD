@@ -345,7 +345,9 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         included_pkgvers = {}
         pkg_path = []
 
+        meta = self.shared.collections[name]
         v = self.subst('$PI_RELEASE')
+        prereq = meta.get('prereq',[])
 
         for p in included_pkgnames:
             included_pkgvers[p] = v
@@ -375,17 +377,31 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
             f=open(d+'','w')
             f.write('<?xml version="1.0" encoding="utf-8"?>\n')
             f.write('<installer-gui-script minSpecVersion="1">\n')
+            f.write('<title>%s %s</title>\n' % (name,v))
 
             if license:
-                f.write('<license file="%s"\n></license>\n' % os.path.basename(license))
+                f.write('<license file="%s"></license>\n' % os.path.basename(license))
 
             if background:
-                f.write('<background file="%s"\n></background>\n' % os.path.basename(background))
+                f.write('<background file="%s"></background>\n' % os.path.basename(background))
 
             for pkg in included_pkgnames:
                 f.write('  <pkg-ref id="%s"/>\n' % pkg.capitalize())
 
             f.write('  <options customize="never" require-scripts="false" rootVolumeOnly="true"/>\n')
+
+            if prereq:
+                f.write('  <volume-check script="pm_volume_check();"/>\n')
+                f.write('  <script>function pm_volume_check() {\n')
+
+                for tf,m in prereq:
+                    f.write("   if(!(system.files.fileExistsAtPath(my.target.mountpoint + '%s') == true)) { my.result.title = 'Failure'; my.result.message = '%s'; my.result.type = 'Fatal'; return false; }\n" % (tf,m))
+
+                f.write('  return true;\n')
+                f.write('  }\n')
+                f.write('  </script>\n')
+
+
             f.write('  <choices-outline>\n')
             f.write('    <line choice="default">\n')
 

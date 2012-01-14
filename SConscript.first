@@ -39,11 +39,12 @@ master_env.PiPackageDescription('eigend',desc='EigenD Application',groups=('app'
 
 if master_env['IS_WINDOWS']:
     prereq = [
-        ('runtime-1.0.0',"Please install the EigenD Resources package before installing EigenD.")
+        ('runtime-1.0.0',"Please install the EigenD Support package before installing EigenD.")
     ]
 
 if master_env['IS_MACOSX']:
     prereq = [
+        ('/usr/pi/Python.framework',"Please install the EigenD Support package before installing EigenD.")
     ]
 
 if master_env['IS_LINUX']:
