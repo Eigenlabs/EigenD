@@ -75,3 +75,25 @@ libxcursor-dev
 libasound2-dev
 libxinerama-dev
 mesa-common-dev
+
+Non GPL Agents
+---------------
+
+As of Release 2.0.35, Agents are deployed into their own directories.
+Certain Agents are not currently GPL'd and are not included in this
+tree.   Currently, only the Audio agent is not GPL'ed.
+
+You can still run setups which use these agents by copying the Agent
+directory from a release into your tmp/plugins directory.
+
+On a Mac:
+
+  cp -r /usr/pi/release-2.0.35-experimental/plugins/plg_audio tmp/plugins
+
+On Windows:
+
+  Use whatever method to copy the plg_audio directory to tmp/plugins.
+  The plg_audio directory will be found at:
+
+  Program Files (x86)\Eigenlabs\release-2.0.35\plugins (64 bit systems)
+  Program Files\Eigenlabs\release-2.0.35\plugins (32 bit systems)
