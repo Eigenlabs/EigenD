@@ -38,7 +38,10 @@ namespace ukbd
             ~bundle_t();
             void close();
             std::string name();
-            piw::data_t get_courses();
+            piw::data_t get_rowlen();
+            piw::data_t get_rowoffset();
+            piw::data_t get_courselen();
+            piw::data_t get_courseoffset();
             piw::change_nb_t led_functor();
             float get_threshold1();
             float get_threshold2();

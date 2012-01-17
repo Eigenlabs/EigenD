@@ -199,7 +199,7 @@ class Keyboard(agent.Agent):
         self.__setpedal(pedal)
 
     def controllerinit(self):
-        return utils.makedict({'courselen':self.keyboard.get_courses(),'rowlen':self.keyboard.get_courses()},0)
+        return utils.makedict({'rowlen':self.keyboard.get_rowlen(),'rowoffset':self.keyboard.get_rowoffset(),'courselen':self.keyboard.get_courselen(),'courseoffset':self.keyboard.get_courseoffset()},0)
 
     def close_server(self):
         agent.Agent.close_server(self)
@@ -433,7 +433,7 @@ class Keyboard_Tau( Keyboard ):
         self[103] = HeadphoneInput(self)
 
     def controllerinit(self):
-        return utils.makedict({'courselen':self.keyboard.get_courses(),'rowlen':self.keyboard.get_courses()},0)
+        return utils.makedict({'rowlen':self.keyboard.get_rowlen(),'rowoffset':self.keyboard.get_rowoffset(),'courselen':self.keyboard.get_courselen(),'courseoffset':self.keyboard.get_courseoffset()},0)
 
     def nativekeyboard_setup(self):
         self.keyboard=keyboard_native.tau_bundle(self.usbdev,self.kclone.cookie(),utils.notify(self.dead))
