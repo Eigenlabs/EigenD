@@ -20,5 +20,5 @@
 
 Import('env')
 
-env.PiPythonPackage(package='eigend',per_agent=True)
+env.PiPythonPackage(package='eigend',agent_package=True)
 env.PiAgent('pico_manager','plg_pkbd','pico_manager_plg',cversion='1.0.1')

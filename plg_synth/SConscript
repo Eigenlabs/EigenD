@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiPythonPackage(package='eigend', resources=Split('mixer.png'),per_agent=True)
+env.PiPythonPackage(package='eigend', resources=Split('mixer.png'),agent_package=True)
 
 env.PiAgent('ahdsr','plg_synth','ahdsr_plg',cversion='1.0.0')
 env.PiAgent('envelope','plg_synth','envelope_plg',cversion='1.0.0')

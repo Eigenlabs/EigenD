@@ -24,7 +24,7 @@ Import('env')
 # and arrange for installation.  Python modules go into tmp/modules
 # in compiled form.  
 #
-env.PiPythonPackage( package='eigend', per_agent=True)
+env.PiPythonPackage( package='eigend', agent_package=True)
 
 #
 # Install the agent contained in the plg_osc module, where the main is

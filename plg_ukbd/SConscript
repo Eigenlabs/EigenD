@@ -20,5 +20,5 @@
 
 Import('env')
 
-env.PiPythonPackage(package='eigend',per_agent=True)
+env.PiPythonPackage(package='eigend',agent_package=True)
 env.PiAgent('micro_manager','plg_ukbd','ukbd_plg',cversion='1.0.1')

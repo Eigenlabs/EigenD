@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiPythonPackage(resources=Split('*.png'),package='eigend',per_agent=True)
+env.PiPythonPackage(resources=Split('*.png'),package='eigend',agent_package=True)
 
 env.PiResources('upgrade_manager','script_*',package='eigend')
 env.PiResources('scale_manager','User Scales.txt',package='eigend')

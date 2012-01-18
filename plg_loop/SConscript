@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiPythonPackage(resources=Split('accent.wav beat.wav *.png'),package='eigend',per_agent=True)
+env.PiPythonPackage(resources=Split('accent.wav beat.wav *.png'),package='eigend',agent_package=True)
 env.PiAgent('metronome','plg_loop','metronome_plg',cversion='1.0.0')
 env.PiAgent('drummer','plg_loop','drummer_plg',cversion='1.0.1')
 env.PiAgent('clicker','plg_loop','clicker_plg',cversion='1.0.0')

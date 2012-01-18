@@ -20,5 +20,5 @@
 
 Import('env')
 
-env.PiPythonPackage(package='eigend',per_agent=True)
+env.PiPythonPackage(package='eigend',agent_package=True)
 env.PiAgent('audio_unit','plg_host','host_plg',cversion='1.0.3')

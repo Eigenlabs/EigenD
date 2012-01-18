@@ -425,7 +425,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         for hdr in glob.glob(join(me,'*.pip')):
             env.Install(root1,env.File(hdr))
 
-    def PiPythonPackage(self,package=None,per_agent=False,subdirs=(),resources=()):
+    def PiPythonPackage(self,package=None,agent_package=False,subdirs=(),resources=()):
         env = self.Clone()
 
         def build_version(target,source,env):
@@ -434,13 +434,13 @@ class PiGenericEnvironment(SCons.Environment.Environment):
             output.write("\n")
             output.close()
 
-        node=env.PiDynamicPython('version.py',[],build_version,package=package,per_agent=per_agent)
+        node=env.PiDynamicPython('version.py',[],build_version,package=package,per_agent=agent_package)
 
         env.Depends(node,env.Value(self.shared.release))
         me=env.Dir('.').srcnode().abspath
         pypackage=os.path.basename(me)
 
-        if per_agent:
+        if agent_package:
             env.set_agent_group(pypackage)
 
         env.set_python_pkg(pypackage)
@@ -451,7 +451,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         if package:
             env.set_package(package)
             root2 = env.subst('$MODSTAGEDIR')
-            if per_agent:
+            if agent_package:
                 self.shared.agent_groups[pypackage][0] = package
 
         env.__installpy(root1,root2,me,subdirs)
