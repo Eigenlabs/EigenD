@@ -53,6 +53,9 @@ class Registry:
         self.__path = []
 
         self.add_path(os.path.join(picross.release_root_dir(),'plugins'))
+        self.add_path(os.path.join(picross.contrib_root_dir(),'plugins'))
+
+        print 'Agent Path:', self.__path
 
         for p in self.__path:
             self.scan_path(p,klass)

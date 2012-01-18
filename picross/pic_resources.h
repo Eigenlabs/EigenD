@@ -29,6 +29,7 @@ namespace pic
     PIC_DECLSPEC_FUNC(std::string) global_resource_dir();
     PIC_DECLSPEC_FUNC(std::string) release_resource_dir();
     PIC_DECLSPEC_FUNC(std::string) release_root_dir();
+    PIC_DECLSPEC_FUNC(std::string) contrib_root_dir();
     PIC_DECLSPEC_FUNC(std::string) global_library_dir();
     PIC_DECLSPEC_FUNC(std::string) release_library_dir();
     PIC_DECLSPEC_FUNC(std::string) python_prefix_dir();

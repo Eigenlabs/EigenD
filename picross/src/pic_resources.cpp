@@ -311,6 +311,16 @@ std::string pic::python_prefix_dir()
     return buffer;
 }
 
+std::string pic::contrib_root_dir()
+{
+    char buffer[RES_PATH_MAX+1];
+    get_prefix(buffer);
+    strcat(buffer,RES_SEPERATOR_STR);
+    strcat(buffer,"contrib-");
+    strcat(buffer,PI_RELEASE);
+    return buffer;
+}
+
 std::string pic::release_root_dir()
 {
     char buffer[RES_PATH_MAX+1];
