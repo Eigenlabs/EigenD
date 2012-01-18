@@ -506,7 +506,7 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
             setup = self.make_setup_nsis(c,cpkgs,meta)
 
     def libmapper(self,target,source,env,for_signature):
-        libs = env.subst('$PILIBS')
+        libs = env.get('PILIBS')
         map = []
 
         for l in libs:
@@ -612,7 +612,7 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         return env.addlibname(run_library1[0],target)
 
 
-    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True,deffile=None,per_agent=None,public=False):
+    def PiSharedLibrary(self,target,sources,libraries=[],package=None,hidden=True,deffile=None,per_agent=None,public=False):
         env = self.Clone()
 
         env.Append(PILIBS=libraries)
@@ -664,3 +664,14 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         etc_env.set_package(package)
         stagesource = etc_env.Install(etc_env.subst('$ETCSTAGEDIR'),name)
         self.shared.shortcuts.setdefault(package,[]).append((bigname,'etc\\%s\\%s' % (package,name)))
+
+    def PiExternalRelease(self,version):
+        root = os.environ.get('ProgramFiles(x86)')
+        if not root:
+            root = os.environ.get('ProgramFiles')
+
+        self.PiRelease('contrib',version)
+
+        dist = os.path.join(root,'Eigenlabs','release-%s' % version)
+        self.Append(LIBPATH=[os.path.join(dist,'bin')])
+        self.Append(CPPPATH=[os.path.join(dist,'include')])

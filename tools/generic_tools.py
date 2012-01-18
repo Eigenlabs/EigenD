@@ -390,7 +390,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         tgt=env.File(target).srcnode().abspath
         src=[env.File(s) for s in env.Flatten((source,))]
-        pypackage=os.path.basename(env.Dir('.').abspath)
+        pypackage=os.path.basename(env.Dir('.').srcnode().abspath)
 
         if per_agent:
             env.set_agent_group(pypackage)
