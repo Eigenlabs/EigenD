@@ -139,7 +139,7 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
 
     def Initialise(self):
         unix_tools.PiUnixEnvironment.Initialise(self)
-        #self.clear_dir('APPRUNDIR')
+        self.safe_mkdir(self.Dir(self.subst('$APPRUNDIR')).abspath)
 
     def Finalise(self):
         unix_tools.PiUnixEnvironment.Finalise(self)
@@ -436,3 +436,10 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         mpkgnode = self.Command(self.File(mpkgname,self.subst('$PKGDIR')),infonode+included_pkgnodes.values(),pkg_file)
         self.Alias('target-mpkg',mpkgnode)
         return mpkgnode
+
+    def PiExternalRelease(self,version):
+        root = '/usr/pi'
+        self.PiRelease('contrib',version)
+        dist = os.path.join(root,'release-%s' % version)
+        self.Append(LIBPATH=[os.path.join(dist,'bin')])
+        self.Append(CPPPATH=[os.path.join(dist,'include')])
