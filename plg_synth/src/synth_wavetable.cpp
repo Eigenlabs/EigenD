@@ -66,7 +66,6 @@ namespace
 
             piw::data_nb_t o = piw::makenorm_nb(t,bs,&out,&fs);
 
-            //float sr = (float)env->cfilterenv_clock()->get_sample_rate();
             float inc = size_*current_freq_*current_detune_/sr;
 
             piw::data_nb_t d;
