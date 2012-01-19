@@ -361,6 +361,25 @@ class PiGenericEnvironment(SCons.Environment.Environment):
                 return True
         return False
 
+    def __installdir(self,root,src,dest=None):
+        for f in os.listdir(src):
+            if f=='.svn': continue
+            if f=='.git': continue
+            if f=='.': continue
+            if f=='..': continue
+
+            if f.endswith('.pyc'): continue
+            if f.endswith('.pyo'): continue
+
+            fqs=join(src,f)
+            fqd=join(dest,f) if dest else f
+
+            if os.path.isdir(fqs):
+                self.__installdir(root,fqs,fqd)
+                continue
+
+            self.InstallAs(join(root,fqd),fqs)
+
     def __installpy(self,root1,root2,src,subdirs,dest=None):
         for f in os.listdir(src):
             if f=='.svn': continue
@@ -424,6 +443,13 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         for hdr in glob.glob(join(me,'*.pip')):
             env.Install(root1,env.File(hdr))
+
+    def PiBuildSystem(self,package=None):
+        env = self.Clone()
+        env.set_package(package)
+        dst = os.path.join(env.subst('$RELEASESTAGEDIR'),'tools')
+        src = os.path.join(os.path.dirname(__file__))
+        env.__installdir(dst,src)
 
     def PiPythonPackage(self,package=None,agent_package=False,subdirs=(),resources=()):
         env = self.Clone()

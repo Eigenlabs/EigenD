@@ -36,6 +36,8 @@ master_env.Prepend(CPPPATH=[master_env.Dir('.').srcnode().abspath])
 master_env.Prepend(CPPPATH=[os.path.join(master_env.Dir('.').srcnode().abspath,'steinberg')])
 master_env.PiRelease('release',tag)
 master_env.PiPackageDescription('eigend',desc='EigenD Application',groups=('app',))
+master_env.PiPackageDescription('eigend-build',desc='EigenD Build System',groups=('bld',))
+master_env.PiBuildSystem(package='eigend-build')
 
 if master_env['IS_WINDOWS']:
     prereq = [
