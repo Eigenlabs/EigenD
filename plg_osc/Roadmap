@@ -91,7 +91,7 @@ If you want to look at the event output of the keyboard, try this:
 Press a key, and while holding it down (substitute whatever you got from 
 the identify above):
 
-    tmp/bin/bcat2 -idD '<4654aecb6829/1pico_manager>'
+    tmp/bin/bcat -idD '<4654aecb6829/1pico_manager>'
 
 In EigenD 2.* these silly names with hashes are more human friendly and predictable.
 
@@ -133,10 +133,10 @@ and using RPC's to restore those values.
 Agents are a tree of Atoms.  The root atom has some additional metadata
 describing the agent, and implements certain agent level RPC's
 
-You can use the bcat2 command line utility to dump all aspects of a state tree.  
+You can use the bcat command line utility to dump all aspects of a state tree.  
 
 bls '<main>' will list all agents
-bcat2 '<agent>' will dump the state tree
+bcat '<agent>' will dump the state tree
 
 An atom is prepresented by pi.atom.Atom.  This class just deals with metadata
 and tree structure.  How the fast and slow data is handled is delegated to a
@@ -280,7 +280,7 @@ use to which an agent puts the data stream.
 There are bundle classes for cloning bundles, aggregating them, gating them
 on and off, and transforming event id's and event data.
 
-The command bcat2 -idD '<agent>' will dump the state tree, including the
+The command bcat -idD '<agent>' will dump the state tree, including the
 current values of its fast event channels.
 
 Clocking
