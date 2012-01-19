@@ -66,6 +66,7 @@ class Registry:
         self.__alias={}
         self.__path = []
 
+        self.add_extra()
         self.add_path(os.path.join(picross.release_root_dir(),'plugins'))
         self.add_path(os.path.join(picross.contrib_root_dir(),'plugins'))
 
@@ -73,6 +74,26 @@ class Registry:
 
         for p in self.__path:
             self.scan_path(p,klass)
+
+    def add_extra(self):
+        extra_dir = os.path.join(picross.global_library_dir(),'Global')
+        extra = os.path.join(extra_dir,'paths.txt')
+
+        try: os.makedirs(extra_dir)
+        except: pass
+
+        if not os.path.exists(extra):
+            f = open(extra,'w')
+            f.write('# add plugin paths here')
+            f.close()
+            return
+
+        paths = open(extra,'r').read()
+        for p in paths.splitlines():
+            p = p.strip()
+            if p.startswith('#'): continue
+            if os.path.exists(p):
+                self.add_path(p)
 
     def add_path(self,path):
         if path not in self.__path:
@@ -137,10 +158,12 @@ class Registry:
         if name not in r:
             r[name] = {}
 
-        if version in r[name]:
-            raise RuntimeError('module %s:%s already defined' % (name,version))
+        if version not in r[name]:
+            r[name][version] = (cversion,module)
+            return
 
-        r[name][version] = (cversion,module)
+        print 'module %s:%s already defined' % (name,version)
+
 
     def add_alias(self,name,version,original):
         a = self.__alias
@@ -148,10 +171,12 @@ class Registry:
         if name not in a:
             a[name] = {}
 
-        if version in a[name]:
-            raise RuntimeError('alias %s:%s already defined' % (name,version))
+        if version not in a[name]:
+            a[name][version] = original
+            return
 
-        a[name][version] = original
+        print 'alias %s:%s already defined' % (name,version)
+
 
     def __find_paths(self,path):
         p = set()
