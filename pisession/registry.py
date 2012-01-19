@@ -22,6 +22,7 @@ import glob,zipfile,os
 import sys
 import picross
 import imp
+from pi import resource
 
 def iscompatible(mod_version, state_version):
     mod_version = mod_version.split('.')
@@ -67,10 +68,12 @@ class Registry:
         self.__path = []
 
         self.add_extra()
+        self.add_path(resource.user_resource_dir('Plugins'))
         self.add_path(os.path.join(picross.release_root_dir(),'plugins'))
         self.add_path(os.path.join(picross.contrib_root_dir(),'plugins'))
 
-        print 'Agent Path:', self.__path
+        for p in self.__path:
+            print 'Agent Path:',p
 
         for p in self.__path:
             self.scan_path(p,klass)
