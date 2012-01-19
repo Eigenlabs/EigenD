@@ -512,9 +512,9 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         for l in libs:
             ll=env.get_shlib(l)
             if not ll.libnode:
-                map.append('%s.lib' % l)
+                map.append('"%s.lib"' % l)
             else:
-                map.append(ll.libnode.abspath)
+                map.append('"%s"' % ll.libnode.abspath)
 
         return ' '.join(map)
 
@@ -665,12 +665,12 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         stagesource = etc_env.Install(etc_env.subst('$ETCSTAGEDIR'),name)
         self.shared.shortcuts.setdefault(package,[]).append((bigname,'etc\\%s\\%s' % (package,name)))
 
-    def PiExternalRelease(self,version):
+    def PiExternalRelease(self,version,organisation):
         root = os.environ.get('ProgramFiles(x86)')
         if not root:
             root = os.environ.get('ProgramFiles')
 
-        self.PiRelease('contrib',version)
+        self.PiRelease('contrib',version,organisation)
 
         dist = os.path.join(root,'Eigenlabs','release-%s' % version)
         self.Append(LIBPATH=[os.path.join(dist,'bin')])

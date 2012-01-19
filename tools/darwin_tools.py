@@ -437,9 +437,9 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         self.Alias('target-mpkg',mpkgnode)
         return mpkgnode
 
-    def PiExternalRelease(self,version):
+    def PiExternalRelease(self,version,organisation):
         root = '/usr/pi'
-        self.PiRelease('contrib',version)
+        self.PiRelease('contrib',version,organisation)
         dist = os.path.join(root,'release-%s' % version)
         self.Append(LIBPATH=[os.path.join(dist,'bin')])
         self.Append(CPPPATH=[os.path.join(dist,'include')])

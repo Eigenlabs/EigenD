@@ -19,5 +19,5 @@
 #
 
 Import('env')
-env.PiPythonPackage(resources=Split(''),package='eigend',agent_package=True)
+env.PiPythonPackage(resources=Split(''),package='eigend',per_agent='plg_arranger')
 env.PiAgent('arranger','plg_arranger','arranger_plg',cversion='1.0.1')

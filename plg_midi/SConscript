@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiPythonPackage(package='eigend',agent_package=True)
+env.PiPythonPackage(package='eigend',per_agent='plg_midi')
 env.PiAgent('midi_output','plg_midi','midi_output_plg',cversion='1.0.0')
 env.PiAgent('midi_converter','plg_midi','midi_converter_plg',cversion='1.0.3')
 env.PiAgent('midi_clock','plg_midi','midi_clock_plg',cversion='1.0.0')

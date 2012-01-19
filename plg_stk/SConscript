@@ -19,7 +19,7 @@
 #
 
 Import('env')
-env.PiPythonPackage(package='eigend',agent_package=True)
+env.PiPythonPackage(package='eigend',per_agent='plg_stk')
 env.PiAgent('panpipe_oscillator','plg_stk','panpipe_oscillator_plg',cversion='1.0.0')
 env.PiAgent('clarinet_oscillator','plg_stk','clarinet_oscillator_plg',cversion='1.0.0')
 env.PiAgent('sax_oscillator','plg_stk','blownstring_oscillator_plg',cversion='1.0.0')

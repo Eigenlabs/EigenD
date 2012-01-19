@@ -19,6 +19,6 @@
 
 Import('env')
 
-env.PiPythonPackage(package='eigend', agent_package=True)
+env.PiPythonPackage(package='eigend', per_agent='plg_primitive')
 env.PiAgent('latch', 'plg_primitive','latch_plg', cversion='0.0.1')
 env.PiAgent('orb', 'plg_primitive','orb_plg', cversion='0.0.1')

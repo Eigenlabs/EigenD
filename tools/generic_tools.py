@@ -247,6 +247,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.shared.py_pkgs = {}
         self.shared.runtime = []
         self.shared.runtime_user = []
+        self.shared.organisation = 'Eigenlabs'
 
         self.Replace(PI_PLATFORM=platform)
         self.Replace(PI_PYTHON=os.environ.get('PI_PYTHON',python) or sys.executable)
@@ -277,20 +278,20 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         self.Replace(MODSTAGEDIR_GLOBAL=join('$RELEASESTAGEDIR','modules','$PI_PYTHONPKG'))
         self.Replace(MODRUNDIR_GLOBAL=join('#tmp','modules','$PI_PYTHONPKG'))
-        self.Replace(MODSTAGEDIR_PLUGIN=join('$RELEASESTAGEDIR','plugins','$PI_AGENTGROUP'))
-        self.Replace(MODRUNDIR_PLUGIN=join('#tmp','plugins','$PI_AGENTGROUP'))
+        self.Replace(MODSTAGEDIR_PLUGIN=join('$RELEASESTAGEDIR','plugins','$PI_ORGANISATION','$PI_AGENTGROUP'))
+        self.Replace(MODRUNDIR_PLUGIN=join('#tmp','plugins','$PI_ORGANISATION','$PI_AGENTGROUP'))
 
         self.Replace(BINSTAGEDIR_GLOBAL=join('$RELEASESTAGEDIR','bin'))
         self.Replace(BINRUNDIR_GLOBAL=join('#tmp','bin'))
-        self.Replace(BINSTAGEDIR_PLUGIN=join('$RELEASESTAGEDIR','plugins','$PI_AGENTGROUP'))
-        self.Replace(BINRUNDIR_PLUGIN=join('#tmp','plugins','$PI_AGENTGROUP'))
+        self.Replace(BINSTAGEDIR_PLUGIN=join('$RELEASESTAGEDIR','plugins','$PI_ORGANISATION','$PI_AGENTGROUP'))
+        self.Replace(BINRUNDIR_PLUGIN=join('#tmp','plugins','$PI_ORGANISATION','$PI_AGENTGROUP'))
 
         self.Replace(HDRSTAGEDIR=join('$RELEASESTAGEDIR','include'))
 
         self.Replace(PYDSTAGEDIR_GLOBAL=join('$RELEASESTAGEDIR','modules'))
         self.Replace(PYDRUNDIR_GLOBAL=join('#tmp','modules'))
-        self.Replace(PYDSTAGEDIR_PLUGIN=join('$RELEASESTAGEDIR','plugins','$PI_AGENTGROUP'))
-        self.Replace(PYDRUNDIR_PLUGIN=join('#tmp','plugins','$PI_AGENTGROUP'))
+        self.Replace(PYDSTAGEDIR_PLUGIN=join('$RELEASESTAGEDIR','plugins','$PI_ORGANISATION','$PI_AGENTGROUP'))
+        self.Replace(PYDRUNDIR_PLUGIN=join('#tmp','plugins','$PI_ORGANISATION','$PI_AGENTGROUP'))
 
         self.Replace(RESSTAGEDIR=join('$RELEASESTAGEDIR','resources'))
         self.Replace(RESRUNDIR=join('#tmp','resources'))
@@ -332,6 +333,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         self.Replace(PI_RELEASE=lambda target,source,env,for_signature: self.shared.release)
         self.Replace(PI_COLLECTION=lambda target,source,env,for_signature: self.shared.collection)
+        self.Replace(PI_ORGANISATION=lambda target,source,env,for_signature: self.shared.organisation)
 
         self.Alias('target-exports',join('#tmp','exp'))
         self.Alias('target-default',join('#tmp','plugins'))
@@ -404,7 +406,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
             if root2:
                 self.InstallAs(self.File(join(root2,fqd+'c')),pyc_node)
 
-    def PiDynamicPython(self,target,source,builder,package=None,per_agent=False):
+    def PiDynamicPython(self,target,source,builder,package=None,per_agent=None):
         env = self.Clone()
 
         tgt=env.File(target).srcnode().abspath
@@ -412,6 +414,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         pypackage=os.path.basename(env.Dir('.').srcnode().abspath)
 
         if per_agent:
+            pypackage = per_agent
             env.set_agent_group(pypackage)
 
         env.set_python_pkg(pypackage)
@@ -451,7 +454,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         src = os.path.join(os.path.dirname(__file__))
         env.__installdir(dst,src)
 
-    def PiPythonPackage(self,package=None,agent_package=False,subdirs=(),resources=()):
+    def PiPythonPackage(self,package=None,per_agent=None,subdirs=(),resources=()):
         env = self.Clone()
 
         def build_version(target,source,env):
@@ -460,13 +463,14 @@ class PiGenericEnvironment(SCons.Environment.Environment):
             output.write("\n")
             output.close()
 
-        node=env.PiDynamicPython('version.py',[],build_version,package=package,per_agent=agent_package)
+        node=env.PiDynamicPython('version.py',[],build_version,package=package,per_agent=per_agent)
 
         env.Depends(node,env.Value(self.shared.release))
         me=env.Dir('.').srcnode().abspath
         pypackage=os.path.basename(me)
 
-        if agent_package:
+        if per_agent:
+            pypackage = per_agent
             env.set_agent_group(pypackage)
 
         env.set_python_pkg(pypackage)
@@ -477,7 +481,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         if package:
             env.set_package(package)
             root2 = env.subst('$MODSTAGEDIR')
-            if agent_package:
+            if per_agent:
                 self.shared.agent_groups[pypackage][0] = package
 
         env.__installpy(root1,root2,me,subdirs)
@@ -505,12 +509,13 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         runroot = join(env['RESRUNDIR'],section)
         env.Install(runroot,res)
 
-    def PiRelease(self,collection,release):
+    def PiRelease(self,collection,release,organisation=None):
         if self.shared.release:
             raise RuntimeError('PiRelease called twice')
         c = collection or 'release'
         self.shared.release=release
         self.shared.collection=c
+        self.shared.organisation=organisation or 'Eigenlabs'
 
     def set_agent_group(self,ag):
         if ag:
@@ -631,7 +636,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         inc=' '.join(map(lambda x: '"%s"'% self.Dir(x).abspath,self['CPPPATH']))
         cppfile=self.File(module+'_python.cpp')
 
-        cppnode=self.Command(cppfile,spec,'"$PI_PYTHON" "$PI_PIPCMD" '+module+' $SOURCES $TARGET '+inc)
+        cppnode=self.Command(cppfile,spec,'"$PI_PYTHON" "$PI_PIPCMD" "'+module+'" $SOURCES $TARGET '+inc)
 
         self.Depends(cppnode,self.Alias('build-tools'))
 

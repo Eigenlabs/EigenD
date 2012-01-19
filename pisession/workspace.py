@@ -175,7 +175,7 @@ class AgentLoader:
     def __init__(self,module):
         self.agent = None
         self.context = None
-        self.module = __import__(module,fromlist=['main','unload','isgui'])
+        self.module = registry.import_module(module)
 
     def __run(self,func,*args,**kwds):
         current_context = piw.tsd_snapshot()

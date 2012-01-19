@@ -21,6 +21,7 @@
 import glob,zipfile,os
 import sys
 import picross
+import imp
 
 def iscompatible(mod_version, state_version):
     mod_version = mod_version.split('.')
@@ -46,6 +47,19 @@ def iscompatible(mod_version, state_version):
 
     return True
 
+def import_module(full_path):
+    mod_name = os.path.basename(full_path)
+    mod_path = os.path.dirname(full_path)
+    pkg_name = os.path.basename(mod_path)
+    pkg_path = os.path.dirname(mod_path)
+
+    if pkg_path not in sys.path:
+        sys.path.insert(0,pkg_path)
+
+    pkg = __import__('%s.%s' % (pkg_name,mod_name))
+
+    return getattr(pkg,mod_name)
+
 class Registry:
     def __init__(self,klass):
         self.__registry={}
@@ -63,7 +77,6 @@ class Registry:
     def add_path(self,path):
         if path not in self.__path:
             self.__path.append(path)
-            sys.path.append(path)
 
     def dump(self,dumper):
         for (mname,vlist) in self.__registry.iteritems():
@@ -140,17 +153,30 @@ class Registry:
 
         a[name][version] = original
 
+    def __find_paths(self,path):
+        p = set()
+
+        try:
+            for (root,dirs,files) in os.walk(path,followlinks=True):
+                if 'Manifest' in files:
+                    p.add(root)
+        except:
+            pass
+
+        return list(p)
+
     def scan_path(self,directory,klass):
-        for pkg in os.listdir(directory):
+        for p in self.__find_paths(directory):
             try:
-                manifest = open(os.path.join(directory,pkg,'Manifest'),'r').read()
+                manifest = open(os.path.join(p,'Manifest'),'r').read()
+                pkg = os.path.basename(p)
             except:
                 continue
 
             for a in manifest.splitlines():
                 a = a.split(':')
                 (name,module,cversion,version) = a[0:4]
-                fullmodule = '%s.%s' % (pkg,module)
+                fullmodule = os.path.join(p,module)
                 self.add_module(name,version,cversion,klass(name,version,cversion,fullmodule))
                 for e in a[4:]:
                     self.add_alias(e,version,name)

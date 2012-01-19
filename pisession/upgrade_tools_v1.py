@@ -359,7 +359,7 @@ class Registry(registry.Registry):
         if sig in self.__instances:
             return self.__instances[sig]
 
-        m = __import__(agent.module,fromlist=['upgrade'])
+        m = registry.import_module(agent.module)
         self.__instances[sig] = m.upgrade
         return m.upgrade
 
