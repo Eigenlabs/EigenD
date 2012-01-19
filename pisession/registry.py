@@ -74,8 +74,6 @@ class Registry:
 
         for p in self.__path:
             print 'Agent Path:',p
-
-        for p in self.__path:
             self.scan_path(p,klass)
 
     def add_extra(self):
@@ -87,7 +85,7 @@ class Registry:
 
         if not os.path.exists(extra):
             f = open(extra,'w')
-            f.write('# add plugin paths here')
+            f.write('# add plugin paths here\n')
             f.close()
             return
 
@@ -185,7 +183,7 @@ class Registry:
         p = set()
 
         try:
-            for (root,dirs,files) in os.walk(path,followlinks=True):
+            for (root,dirs,files) in os.walk(path):
                 if 'Manifest' in files:
                     p.add(root)
         except:

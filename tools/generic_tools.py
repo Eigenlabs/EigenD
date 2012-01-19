@@ -197,7 +197,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
             if not ll.libnode:
                 map.append('-l%s' % l)
             else:
-                map.append(ll.libnode.abspath)
+                map.append('"%s"' % ll.libnode.abspath)
 
         return ' '.join(map)
 
