@@ -20,6 +20,7 @@
 
 import piw
 from pi import const,utils,logic
+from pibelcanto import lexicon
 
 def convert_data(value, src_dom, sink_dom):
     if src_dom == sink_dom:
@@ -223,6 +224,61 @@ class EnumOrNull(Enum):
         return Enum.down_by(self,val,inc)
     def default(self):
         return None
+
+class StringEnum(Domain):
+    def __init__(self,*values):
+        Domain.__init__(self)
+        self.values=values
+        control=self.hint('control')
+        self.control = control[0] if control is not None else 'updown'
+
+    def normalizer(self):
+        return piw.string_normalizer()
+
+    def denormalizer(self):
+        return piw.string_denormalizer()
+
+    def data2value(self,d):
+        if d.is_string():
+            v=d.as_string()
+            if v in self.values:
+                return v
+        return self.values[0]
+
+    def value2data(self,v,t=0L):
+        if v is None: 
+            raise ValueError('empty string is not in belcanto lexicon')
+        e=lexicon.lexicon.get(v)
+        if e is None:
+            raise ValueError(v,'not in belcanto lexicon')
+        v=str(v)
+        return piw.makestring(v,t)
+
+    def canonical(self):
+        return 'enums(%s)' % ','.join(map(str,self.values))
+
+    def default(self):
+        return self.values[0]
+
+    def up(self,val):
+        return self.up_by(val,1)
+
+    def down(self,val):
+        return self.down_by(val,1)
+
+    def up_by(self,val,inc):
+        try:
+            i=self.values.index(val)
+        except:
+            raise ValueError('bad value for string enum',val)
+        return self.values[min(i+inc,len(self.values)-1)]
+
+    def down_by(self,val,inc):
+        try:
+            i=self.values.index(val)
+        except:
+            raise ValueError('bad value for string enum',val)
+        return self.values[max(i-inc,0)]
 
 class BoundedFloat(Domain):
     numeric = True
@@ -470,7 +526,7 @@ class Iso(Domain):
     def iso(self):
         return True
 
-__traits=dict(null=Null,bint=BoundedInt,bintn=BoundedIntOrNull,bfloat=BoundedFloat,bfloatn=BoundedFloatOrNull,string=String,bool=Bool,trigger=Trigger,enum=Enum,enumn=EnumOrNull,aniso=Aniso,iso=Iso)
+__traits=dict(null=Null,bint=BoundedInt,bintn=BoundedIntOrNull,bfloat=BoundedFloat,bfloatn=BoundedFloatOrNull,string=String,bool=Bool,trigger=Trigger,enum=Enum,enumn=EnumOrNull,enums=StringEnum,aniso=Aniso,iso=Iso)
 
 def traits(domain):
     """
