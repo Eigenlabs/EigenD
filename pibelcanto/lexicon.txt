@@ -15,6 +15,7 @@ Unassigned but in use only in text form:
 
                : Addr          : Addr              : Stopgap
 
+
 Not properly assigned, in use:
 
 
@@ -652,8 +653,8 @@ Notes            Word           Classification     Synonyms
 6   4   6      : Unused        : Unused            : None
 6   4   7      : Unused        : Unused            : None
 6   4   8      : Unused        : Unused            : None
-6   5   1      : Unused        : Unused            : None
-6   5   2      : Unused        : Unused            : None
+6   5   1      : Tune          : Noun              : None
+6   5   2      : Song          : Noun              : None
 6   5   3      : Unused        : Unused            : None
 6   5   4      : Unused        : Unused            : None
 6   5   5      : Unused        : Unused            : None
@@ -3634,66 +3635,66 @@ Notes            Word           Classification     Synonyms
 6   4   8   6  : Unused        : Unused            : None
 6   4   8   7  : Unused        : Unused            : None
 6   4   8   8  : Unused        : Unused            : None
-6   5   1   1  : Unused        : Unused            : None
-6   5   1   2  : Unused        : Unused            : None
-6   5   1   3  : Unused        : Unused            : None
-6   5   1   4  : Unused        : Unused            : None
-6   5   1   5  : Unused        : Unused            : None
-6   5   1   6  : Unused        : Unused            : None
-6   5   1   7  : Unused        : Unused            : None
-6   5   1   8  : Unused        : Unused            : None
-6   5   2   1  : Unused        : Unused            : None
-6   5   2   2  : Unused        : Unused            : None
-6   5   2   3  : Unused        : Unused            : None
-6   5   2   4  : Unused        : Unused            : None
-6   5   2   5  : Unused        : Unused            : None
-6   5   2   6  : Unused        : Unused            : None
-6   5   2   7  : Unused        : Unused            : None
-6   5   2   8  : Unused        : Unused            : None
-6   5   3   1  : Unused        : Unused            : None
-6   5   3   2  : Unused        : Unused            : None
-6   5   3   3  : Unused        : Unused            : None
-6   5   3   4  : Unused        : Unused            : None
-6   5   3   5  : Unused        : Unused            : None
-6   5   3   6  : Unused        : Unused            : None
-6   5   3   7  : Unused        : Unused            : None
-6   5   3   8  : Unused        : Unused            : None
-6   5   4   1  : Unused        : Unused            : None
-6   5   4   2  : Unused        : Unused            : None
-6   5   4   3  : Unused        : Unused            : None
-6   5   4   4  : Unused        : Unused            : None
-6   5   4   5  : Unused        : Unused            : None
-6   5   4   6  : Unused        : Unused            : None
-6   5   4   7  : Unused        : Unused            : None
-6   5   4   8  : Unused        : Unused            : None
-6   5   5   1  : Unused        : Unused            : None
-6   5   5   2  : Unused        : Unused            : None
-6   5   5   3  : Unused        : Unused            : None
-6   5   5   4  : Unused        : Unused            : None
-6   5   5   5  : Unused        : Unused            : None
-6   5   5   6  : Unused        : Unused            : None
-6   5   5   7  : Unused        : Unused            : None
-6   5   5   8  : Unused        : Unused            : None
-6   5   6   1  : Unused        : Unused            : None
-6   5   6   2  : Unused        : Unused            : None
-6   5   6   3  : Unused        : Unused            : None
-6   5   6   4  : Unused        : Unused            : None
-6   5   6   5  : Unused        : Unused            : None
-6   5   6   6  : Unused        : Unused            : None
-6   5   6   7  : Unused        : Unused            : None
-6   5   6   8  : Unused        : Unused            : None
-6   5   7   1  : Unused        : Unused            : None
-6   5   7   2  : Unused        : Unused            : None
-6   5   7   3  : Unused        : Unused            : None
-6   5   7   4  : Unused        : Unused            : None
-6   5   7   5  : Unused        : Unused            : None
-6   5   7   6  : Unused        : Unused            : None
-6   5   7   7  : Unused        : Unused            : None
-6   5   7   8  : Unused        : Unused            : None
-6   5   8   1  : Unused        : Unused            : None
-6   5   8   2  : Unused        : Unused            : None
-6   5   8   3  : Unused        : Unused            : None
-6   5   8   4  : Unused        : Unused            : None
+6   5   1   1  : Blues         : Noun              : None
+6   5   1   2  : Rock          : Noun              : None
+6   5   1   3  : Country       : Noun              : None
+6   5   1   4  : Folk          : Noun              : None
+6   5   1   5  : Dance         : Noun              : None
+6   5   1   6  : Disco         : Noun              : None
+6   5   1   7  : Funk          : Noun              : None
+6   5   1   8  : Grunge        : Noun              : None
+6   5   2   1  : Hiphop        : Noun              : None
+6   5   2   2  : Jazz          : Noun              : None
+6   5   2   3  : Metal         : Noun              : None
+6   5   2   4  : Pop           : Noun              : None
+6   5   2   5  : Rap           : Noun              : None
+6   5   2   6  : Reggae        : Noun              : None
+6   5   2   7  : Techno        : Noun              : None
+6   5   2   8  : Industrial    : Noun              : None
+6   5   3   1  : Alternative   : Noun              : None
+6   5   3   2  : Ska           : Noun              : None
+6   5   3   3  : Ambient       : Noun              : None
+6   5   3   4  : Triphop       : Noun              : None
+6   5   3   5  : Vocal         : Noun              : None
+6   5   3   6  : Fusion        : Noun              : None
+6   5   3   7  : Trance        : Noun              : None
+6   5   3   8  : Classical     : Noun              : None
+6   5   4   1  : Instrumental  : Noun              : None
+6   5   4   2  : Acid          : Noun              : None
+6   5   4   3  : House         : Noun              : None
+6   5   4   4  : Gospel        : Noun              : None
+6   5   4   5  : Soul          : Noun              : None
+6   5   4   6  : Punk          : Noun              : None
+6   5   4   7  : Ethnic        : Noun              : None
+6   5   4   8  : Gothic        : Noun              : None
+6   5   5   1  : Electronic    : Noun              : None
+6   5   5   2  : Jungle        : Noun              : None
+6   5   5   3  : Lofi          : Noun              : None
+6   5   5   4  : Retro         : Noun              : None
+6   5   5   5  : Rockandroll   : Noun              : None
+6   5   5   6  : Hard          : Noun              : None
+6   5   5   7  : Swing         : Noun              : None
+6   5   5   8  : Fusion        : Noun              : None
+6   5   6   1  : Latin         : Noun              : None
+6   5   6   2  : Bluegrass     : Noun              : None
+6   5   6   3  : Avantgarde    : Noun              : None
+6   5   6   4  : Progressive   : Noun              : None
+6   5   6   5  : Psychedelic   : Noun              : None
+6   5   6   6  : Symphonic     : Noun              : None
+6   5   6   7  : Chorus        : Noun              : None
+6   5   6   8  : Acoustic      : Noun              : None
+6   5   7   1  : Sonata        : Noun              : None
+6   5   7   2  : Tango         : Noun              : None
+6   5   7   3  : Samba         : Noun              : None
+6   5   7   4  : Ballad        : Noun              : None
+6   5   7   5  : Drumandbass   : Noun              : None
+6   5   7   6  : Hardcore      : Noun              : None
+6   5   7   7  : Indie         : Noun              : None
+6   5   7   8  : BritPop       : Noun              : None
+6   5   8   1  : Heavy         : Noun              : None
+6   5   8   2  : Salsa         : Noun              : None
+6   5   8   3  : Thrash        : Noun              : None
+6   5   8   4  : Original      : Noun              : None
 6   5   8   5  : Unused        : Unused            : None
 6   5   8   6  : Unused        : Unused            : None
 6   5   8   7  : Unused        : Unused            : None
@@ -3890,6 +3891,9 @@ Notes            Word           Classification     Synonyms
 6   8   8   6  : Unused        : Unused            : None
 6   8   8   7  : Unused        : Unused            : None
 6   8   8   8  : Unused        : Unused            : None
+
+=== The range 7 1 X X to 7 4 X X is used for he individual Agent Lexicons DO NOT CHANGE THIS BLOCK HERE===
+
 7   1   1   1  : Unused        : Unused            : None
 7   1   1   2  : Unused        : Unused            : None
 7   1   1   3  : Unused        : Unused            : None
@@ -4146,6 +4150,9 @@ Notes            Word           Classification     Synonyms
 7   4   8   6  : Unused        : Unused            : None
 7   4   8   7  : Unused        : Unused            : None
 7   4   8   8  : Unused        : Unused            : None
+
+===End of the individual Agent Lexicon reserved block
+
 7   5   1   1  : Unused        : Unused            : None
 7   5   1   2  : Unused        : Unused            : None
 7   5   1   3  : Unused        : Unused            : None
