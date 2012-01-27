@@ -451,18 +451,20 @@ class Keyboard_Alpha1( Keyboard ):
 class BaseStation:
     def __init__(self,usbname,agent):
         self.__usbname = usbname
-        self.__device = picross.usbdevice(usbname,0)
         self.__agent = agent
         self.__thing = piw.thing()
-        piw.tsd_thing(self.__thing)
+        self.__device = 0
         self.__instrument = 0
+        self.__kbd = None
+        piw.tsd_thing(self.__thing)
         self.__thing.set_slow_timer_handler(utils.notify(self.__poll))
         self.__counter = itertools.cycle([1]+[0]*20)
-        self.__kbd = None
         self.__thing.timer_slow(1000)
 
     @utils.nothrow
     def __poll(self):
+        if not self.__device:
+            self.__device = picross.usbdevice(self.__usbname,0)
         basecfg = self.bs_config_read()
         instcfg = self.inst_config_read()
         if self.__counter.next():
@@ -493,6 +495,7 @@ class BaseStation:
             self.__kbd = None
             k.dead()
         self.__thing.close_thing()
+        self.__device = 0
         self.__instrument = 0
 
 
