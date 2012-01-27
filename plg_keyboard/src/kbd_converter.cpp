@@ -294,9 +294,11 @@ kbd::converter_t::converter_t()
 
 kbd::converter_t::~converter_t()
 {
-    if(impl_.current())
+    impl_t *c = impl_.current();
+    if(c)
     {
-        delete impl_.current();
+        impl_.set(0);
+        delete c;
     }
 }
 
@@ -315,6 +317,7 @@ unsigned long kbd::converter_t::reset(unsigned long sr, unsigned bs, unsigned q)
 bool kbd::converter_t::write(const float *buffer, unsigned bs)
 {
     pic::flipflop_t<impl_t *>::guard_t g(impl_);
+    if(!g.value()) return false;
     return g.value()->write(buffer,bs);
 }
 
@@ -322,6 +325,7 @@ bool kbd::converter_t::write(const float *buffer, unsigned bs)
 void kbd::converter_t::read(void (*consumer)(void *ctx,const float *interleaved, unsigned dl, unsigned period), void *ctx)
 {
     pic::flipflop_t<impl_t *>::guard_t g(impl_);
+    if(!g.value()) return;
     g.value()->read(consumer,ctx);
 }
 

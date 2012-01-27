@@ -493,6 +493,7 @@ class BaseStation:
             self.__kbd = None
             k.dead()
         self.__thing.close_thing()
+        self.__instrument = 0
 
 
 class KeyboardFactory( agent.Agent ):
