@@ -738,7 +738,7 @@ Notes            Word           Classification     Synonyms
 7   7   3      : Unused        : Unused            : None
 7   7   4      : Unused        : Unused            : None
 7   7   5      : Gain          : Noun              : None
-7   7   6      : Song          : Noun              : None
+7   7   6      : Unused        : Unused            : None
 7   7   7      : Unused        : Unused            : None
 7   7   8      : Unused        : Unused            : None
 7   8   1      : Unused        : Unused            : None
@@ -3635,7 +3635,7 @@ Notes            Word           Classification     Synonyms
 6   4   8   6  : Unused        : Unused            : None
 6   4   8   7  : Unused        : Unused            : None
 6   4   8   8  : Unused        : Unused            : None
-6   5   1   1  : Blues         : Noun              : None
+6   5   1   1  : Unused        : Unused            : None
 6   5   1   2  : Rock          : Noun              : None
 6   5   1   3  : Country       : Noun              : None
 6   5   1   4  : Folk          : Noun              : None
@@ -3672,31 +3672,31 @@ Notes            Word           Classification     Synonyms
 6   5   5   3  : Lofi          : Noun              : None
 6   5   5   4  : Retro         : Noun              : None
 6   5   5   5  : Rockandroll   : Noun              : None
-6   5   5   6  : Hard          : Noun              : None
-6   5   5   7  : Swing         : Noun              : None
-6   5   5   8  : Fusion        : Noun              : None
-6   5   6   1  : Latin         : Noun              : None
-6   5   6   2  : Bluegrass     : Noun              : None
-6   5   6   3  : Avantgarde    : Noun              : None
-6   5   6   4  : Progressive   : Noun              : None
-6   5   6   5  : Psychedelic   : Noun              : None
-6   5   6   6  : Symphonic     : Noun              : None
-6   5   6   7  : Chorus        : Noun              : None
-6   5   6   8  : Acoustic      : Noun              : None
-6   5   7   1  : Sonata        : Noun              : None
-6   5   7   2  : Tango         : Noun              : None
-6   5   7   3  : Samba         : Noun              : None
-6   5   7   4  : Ballad        : Noun              : None
-6   5   7   5  : Drumandbass   : Noun              : None
-6   5   7   6  : Hardcore      : Noun              : None
-6   5   7   7  : Indie         : Noun              : None
-6   5   7   8  : Britpop       : Noun              : None
-6   5   8   1  : Heavy         : Noun              : None
-6   5   8   2  : Salsa         : Noun              : None
-6   5   8   3  : Thrash        : Noun              : None
-6   5   8   4  : Original      : Noun              : None
-6   5   8   5  : Dub           : Unused            : None
-6   5   8   6  : Dubstep       : Unused            : None
+6   5   5   6  : Swing         : Noun              : None
+6   5   5   7  : Latin         : Noun              : None
+6   5   5   8  : Bluegrass     : Noun              : None
+6   5   6   1  : Avantgarde    : Noun              : None
+6   5   6   2  : Progressive   : Noun              : None
+6   5   6   3  : Psychedelic   : Noun              : None
+6   5   6   4  : Symphonic     : Noun              : None
+6   5   6   5  : Chorus        : Noun              : None
+6   5   6   6  : Acoustic      : Noun              : None
+6   5   6   7  : Sonata        : Noun              : None
+6   5   6   8  : Tango         : Noun              : None
+6   5   7   1  : Samba         : Noun              : None
+6   5   7   2  : Ballad        : Noun              : None
+6   5   7   3  : Drumandbass   : Noun              : None
+6   5   7   4  : Hardcore      : Noun              : None
+6   5   7   5  : Indie         : Noun              : None
+6   5   7   6  : Britpop       : Noun              : None
+6   5   7   7  : Heavy         : Noun              : None
+6   5   7   8  : Salsa         : Noun              : None
+6   5   8   1  : Thrash        : Noun              : None
+6   5   8   2  : Original      : Noun              : None
+6   5   8   3  : Dub           : Noun              : None
+6   5   8   4  : Dubstep       : Noun              : None
+6   5   8   5  : Unused        : Unused            : None
+6   5   8   6  : Unused        : Unused            : None
 6   5   8   7  : Unused        : Unused            : None
 6   5   8   8  : Unused        : Unused            : None
 6   6   1   1  : Unused        : Unused            : None
