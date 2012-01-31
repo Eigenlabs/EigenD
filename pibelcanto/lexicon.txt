@@ -683,7 +683,7 @@ Notes            Word           Classification     Synonyms
 6   8   4      : Unused        : Unused            : None
 6   8   5      : Unused        : Unused            : None
 6   8   6      : Unused        : Unused            : None
-6   8   7      : Unused        : Unused            : None
+6   8   7      : Looper        : Noun              : None
 6   8   8      : Unused        : Unused            : None
 7   1   1      : Unused        : Unused            : None
 7   1   2      : Unused        : Unused            : None
