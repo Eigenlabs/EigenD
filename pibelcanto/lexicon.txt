@@ -111,7 +111,7 @@ Not properly assigned, in use:
 8   7   4   2  : Bypass        : Verb              : None
 8   7   4   3  : Close         : Verb              : None
 8   7   4   4  : Modwheel      : Noun              : None
-8   7   4   5  : Poly          : Noun              : None            
+8   7   4   5  : Unused        : Unused            : None            
 8   7   4   6  : Foot          : Noun              : None            
 8   7   4   7  : Expression    : Noun              : None
 8   7   4   8  : Bow           : Noun              : None
@@ -565,7 +565,7 @@ Notes            Word           Classification     Synonyms
 5   1   6      : Unused        : Unused            : None
 5   1   7      : Unused        : Unused            : None
 5   1   8      : Unused        : Unused            : None
-5   2   1      : Unused        : Unused            : None
+5   2   1      : Polyphonic    : Noun              : None
 5   2   2      : Unused        : Unused            : None
 5   2   3      : Unused        : Unused            : None
 5   2   4      : Unused        : Unused            : None
