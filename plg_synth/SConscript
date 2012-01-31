@@ -36,4 +36,4 @@ env.PiAgent('triangle_oscillator','plg_synth','triangle_oscillator_plg',cversion
 env.PiAgent('sine_oscillator','plg_synth','sine_oscillator_plg',cversion='1.0.0')
 env.PiAgent('delay','plg_synth','delay_plg',cversion='1.0.0')
 env.PiAgent('console_mixer','plg_synth','console_mixer_plg',cversion='1.0.1')
-env.PiAgent('poly_summer','plg_synth','poly_summer_plg',cversion='1.0.0')
+env.PiAgent('polyphonic_summer','plg_synth','polyphonic_summer_plg',cversion='1.0.0',extra=['poly_summer'])

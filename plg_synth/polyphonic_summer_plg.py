@@ -19,7 +19,7 @@
 #
 
 from pi import agent,atom,domain,errors,action,policy,utils,bundles,async,paths,collection
-from . import poly_summer_version as version,synth_native
+from . import polyphonic_summer_version as version,synth_native
 
 import piw
 
@@ -87,7 +87,7 @@ class AudioInputList(collection.Collection):
 
 class Agent(agent.Agent):
     def __init__(self,address, ordinal):
-        agent.Agent.__init__(self,signature=version,names='poly summer',ordinal=ordinal)
+        agent.Agent.__init__(self,signature=version,names='polyphonic summer',ordinal=ordinal)
         self.domain = piw.clockdomain_ctl()
 
         self.__timestamp = 0
