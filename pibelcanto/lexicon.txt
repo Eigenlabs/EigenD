@@ -565,7 +565,7 @@ Notes            Word           Classification     Synonyms
 5   1   6      : Unused        : Unused            : None
 5   1   7      : Unused        : Unused            : None
 5   1   8      : Unused        : Unused            : None
-5   2   1      : Polyphonic    : Noun              : None
+5   2   1      : Polyphony     : Noun              : None
 5   2   2      : Unused        : Unused            : None
 5   2   3      : Unused        : Unused            : None
 5   2   4      : Unused        : Unused            : None
