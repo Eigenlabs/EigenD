@@ -485,11 +485,21 @@ bct_data_t inode_t::api_member_name(bct_index_host_ops_t **o, int c, int fqn)
     try
     {
         pia_mainguard_t guard(h->entity_->glue());
+        pia_data_t n = h->member_name(c);
+
+        if(n.type() == BCTVTYPE_NULL)
+        {
+            return 0;
+        }
 
         if(!fqn)
-            return h->entity_->collapse_address_relative(h->member_name(c),h->name()).give();
+        {
+            return h->entity_->collapse_address_relative(n,h->name()).give();
+        }
         else
-            return h->member_name(c).give();
+        {
+            return n.give();
+        }
     }
     PIA_CATCHLOG_EREF(h->entity_)
 

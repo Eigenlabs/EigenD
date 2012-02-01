@@ -71,12 +71,8 @@ def main(klass,upgrader=None,gui=False):
         return root
 
     def __unload(env,obj,destroy):
-
-        ss=''
         if hasattr(obj,'unload'):
-            ss = obj.unload(destroy)
-
-        return ss
+            obj.unload(destroy)
 
     def __on_quit(obj):
         obj.quit()
@@ -474,13 +470,8 @@ class Agent(atom.Atom):
         atom.Atom.close_server(self)
 
     def unload(self,destroy=False):
-        ss = ''
-        if self.open():
-            ss = logic.render_term(tuple([ss.id() for ss in self.__subsystems.values()]))
         self.notify_destroy()
         self.close_server()
-
-        return ss
 
     def quit(self):
         for v in self.__subsystems.itervalues():

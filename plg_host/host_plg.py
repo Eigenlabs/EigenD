@@ -566,7 +566,7 @@ class Agent(agent.Agent):
         t = '%s %s' % (desc.name(),desc.format())
         return t 
 
-    def property_change(self,key,value):
+    def property_change(self,key,value,delegate):
         if key == 'ordinal':
             self.__set_title()
 

@@ -117,7 +117,7 @@ class Event(talker.Talker):
     def detach_event(self):
         self.__key.key_aggregator.clear_output(self.__index)
 
-    def property_change(self,key,value):
+    def property_change(self,key,value,delegate):
         if key=='help' and value and value.is_string():
             self.__key.agent.update()
 

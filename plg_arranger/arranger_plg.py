@@ -29,7 +29,7 @@ class RowTargetEvent(talker.Talker):
 
         talker.Talker.__init__(self,self.__target.agent.finder,fast,None,ordinal=index,protocols='remove')
 
-    def property_change(self,key,value):
+    def property_change(self,key,value,delegate):
         if key=='help' and value and value.is_string():
             self.__target.agent.update()
 
