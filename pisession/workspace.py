@@ -759,7 +759,7 @@ class Workspace(atom.Atom):
         if agent.load(factory.module,self.__name,address,ordinal):
             return agent
 
-        delegate.add_error("Problems loading plugin %s" % (plugin,version))
+        delegate.add_error("Problems loading plugin %s" % plugin)
         return None
 
     def __retracted(self,signature,plugin,destroy):

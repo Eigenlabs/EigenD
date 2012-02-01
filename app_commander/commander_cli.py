@@ -60,6 +60,8 @@ class ViewManager(agent.Agent):
         self.langModel=gui.call_bg_sync(self.__create_lang)
         self.historyModel=history.HistoryModel(self.langModel)
         self.commandModel=command.CommandModel(self.langModel)
+        self.dictionaryModel = dictionary.DictionaryModel(self.langModel)
+
         self.cdomain = piw.clockdomain_ctl()
         self.cdomain.set_source(piw.makestring('*',0))
 

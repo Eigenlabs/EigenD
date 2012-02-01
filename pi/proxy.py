@@ -61,7 +61,7 @@ class AtomProxy(node.Client):
 
     __slots__ = ('__ready','__domain','__syncers','__data','__meta','__current_meta')
 
-    monitor = set(['domain','master','protocols','ordinal','name',
+    monitor = set(['domain','master','protocols','ordinal','name','vocab',
                    'latency','frelation','fuzzy','relation','insert',
                    'ideals','verbs','modes','cname','cordinal','help'])
 
@@ -181,6 +181,9 @@ class AtomProxy(node.Client):
 
     def relations(self):
         return self.__as_termlist('relation')
+
+    def vocab(self):
+        return self.__as_termlist('vocab')
 
     def latency(self):
         return self.__as_long('latency')

@@ -42,14 +42,14 @@ def readonly_policy():
 def null_domain():
     return domain.Null()
 
-standard_veto = set(['latency','frelation','modes','verbs','domain','ideals','protocols','timestamp','cname','cordinal'])
+standard_veto = set(['latency','frelation','modes','verbs','domain','ideals','protocols','timestamp','cname','cordinal','vocab'])
 
 class VerbEntry:
     pass
 
 class Atom(node.Server):
 
-    def __init__(self,init=None,domain=None,policy=None,transient=False,rtransient=False,names=None,protocols=None,ordinal=None,fuzzy=None,creator=None,wrecker=None,pronoun=None,icon=None,container=None,ideals=None,bignode=False,dynlist=False):
+    def __init__(self,init=None,domain=None,policy=None,transient=False,rtransient=False,names=None,protocols=None,ordinal=None,fuzzy=None,creator=None,wrecker=None,pronoun=None,icon=None,container=None,ideals=None,bignode=False,dynlist=False,vocab=None):
 
         self.__listeners = []
 
@@ -129,6 +129,15 @@ class Atom(node.Server):
 
             if n is not None:
                 self[n] = c
+
+        if vocab:
+            self.set_vocab(vocab)
+
+    def set_vocab(self,vocab):
+        if vocab:
+            self.set_property_termlist('vocab',[ logic.make_term(e,m,c) for (e,(m,c)) in vocab.iteritems() ],notify=False)
+        else:
+            self.del_property('vocab')
 
     def load_value(self,delegate,value):
         self.__server_change(value,delegate)

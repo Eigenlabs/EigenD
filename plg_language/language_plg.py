@@ -63,8 +63,10 @@ class Agent(agent.Agent):
         agent.Agent.__init__(self,signature=version, names='interpreter',protocols='langagent has_subsys',container=10,ordinal=ordinal)
         self.__transcript = resource.open_logfile('transcript')
 
-        self.database = database.Database()
+        self.database = database.Database(lexicon_changed=self.__lexicon_changed)
         self.help_manager = help_manager.HelpManager()
+
+        self.set_property_string('timestamp',self.database.get_lexicon().get_timestamp())
 
         self.__builtin = builtin_misc.Builtins(self,self.database)
         self[12] = script.ScriptManager(self,self.__runner)
@@ -157,6 +159,15 @@ class Agent(agent.Agent):
 
         self[15] = self.widgets
 
+    def __lexicon_changed(self):
+        l = self.database.get_lexicon()
+        t = l.get_timestamp()
+        self.set_property_string('timestamp',t)
+
+        print 'lexicon changed',t
+        for (e,(m,c)) in l.lexicon_iter(False):
+            print "%s -> %s (%s)" % (e,m,c)
+
     def __loadhelp(self,subject,dummy):
         self.help_manager.update()
         self.database.update_all_agents()
@@ -164,6 +175,12 @@ class Agent(agent.Agent):
 
     def interpret(self,interp,scope,words):
         return noun.interpret(interp,scope,words)
+
+    def property_veto(self,key,value):
+        if agent.Agent.property_veto(self,key,value):
+            return True
+
+        return key in ['timestamp']
 
     @async.coroutine('internal error')
     def __runscript(self,subject,arg):
@@ -241,6 +258,20 @@ class Agent(agent.Agent):
             rv.append(p.get_value())
 
         yield async.Coroutine.success(rv)
+
+    def rpc_lexicon(self,arg):
+        l = self.database.get_lexicon()
+        t = l.get_timestamp()
+        d = [ x for x in l.lexicon_iter() ]
+        nd = len(d)
+        i = int(arg)
+
+        if i<0 or i>=nd:
+            return async.success('%s:%d:' % (t,nd))
+
+        d = d[i:i+100]
+        ds = logic.render_termlist([logic.make_term(e,m,c) for (e,(m,c)) in d])
+        return '%s:%d:%s' % (t,nd,ds)
 
     @async.coroutine('internal error')
     def rpc_identify(self,arg):
@@ -419,7 +450,7 @@ class Agent(agent.Agent):
                 m.append(w)
         else:
             for w in words:
-                music=self.database.translate_to_music2(w) 
+                music=self.database.expand_to_music(w) 
                 if music:
                     m.extend(music)
                 else:
@@ -435,8 +466,9 @@ class Agent(agent.Agent):
         self.message(msg,'err_msg',speaker)    
 
     def rpc_inject(self,msg):
+        print 'rpc_inject',msg
         for word in msg.split():
-            m = self.database.translate_to_music2(word)
+            m = self.database.expand_to_music(word)
 
             for music in m:
                 if music.startswith('!'): music=music[1:]
@@ -451,9 +483,9 @@ class Agent(agent.Agent):
         self[11].set_property_string('timestamp',str(t))
 
     def word_in(self,word):
-        print 'word input:',word
         english = self.database.translate_to_english(word) or ''
         music = self.database.translate_to_music(word) or ''
+        print 'word input:',word,english,music
         self.__log(english,music)
         self.queue.interpret(word)
 

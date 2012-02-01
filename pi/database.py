@@ -21,23 +21,12 @@
 import piw
 import sys
 import time
+import pibelcanto
 
 from pi import const,logic,paths,proxy,action,utils,index,async,constraints,rpc
 from pi.logic.shortcuts import *
 
 rules_database = """
-    # synonym(A/bound,B) -> B is synonymous with A
-        synonym(A,A).
-        synonym(A,B) :- db_translation(A,B).
-        synonym(A,B) :- db_translation(B,A).
-
-    # classify(word,class)
-        classify(W,CLS,S) :- synonym(W,S), @or(db_classification(S,CLS), db_classification2(S,CLS)).
-
-    # translate(english,music)
-        translate(E,M) :- db_translation(E,M).
-        toenglish(M,E) :- @or(db_translation(E,M),@is(E,M)).
-
     db_relation(connect,cnc(FROMID),[role(to,[instance(TOID)])]) :- @ssmaster(TOID,FROMID).
 
     connect_contains(A,A).
@@ -481,6 +470,170 @@ class RelationCache:
             return r
 
         return False
+
+
+class Lexicon:
+    def __init__(self,callback=None):
+        self.__base_forward = pibelcanto.lexicon.lexicon # e-> (m,c)
+        self.__base_reverse = pibelcanto.lexicon.reverse_lexicon # m -> (e,c)
+
+        self.__sources = {} # id -> [ { e -> (m,c) }, { m -> (e,c) } ]
+        self.__forward = {} # e -> (id,m,c)
+        self.__reverse = {} # m -> (id,e,c)
+
+        self.__callback = callback
+        self.__timestamp = str(piw.tsd_time())
+
+    def classify(self,w):
+        if w.startswith('!'):
+            x = self.__base_reverse.get(w[1:])
+            if x: return x[1],x[0]
+            x = self.__forward.get(w[1:])
+            if x: return x[2],x[1]
+        else:
+            x = self.__base_forward.get(w)
+            if x: return x[1],w
+            x = self.__forward.get(w)
+            if x: return x[2],w
+
+        return 'noun',w
+
+    def translate_to_english(self,w):
+        if not w.startswith('!'):
+            return w
+
+        x = self.__base_reverse.get(w[1:])
+        if x: return x[0]
+        x = self.__reverse.get(w[1:])
+        if x: return x[1]
+
+        return None
+
+    def translate_to_music(self,w):
+        if w.startswith('!'):
+            return w
+
+        x = self.__base_forward.get(w)
+        if x: return "!"+x[0]
+        x = self.__forward.get(w)
+        if x: return "!"+x[1]
+
+        return w
+
+    def expand_to_music(self,w):
+        if w.startswith('!'):
+            return [w]
+
+        if not self.__isnumber(w):
+            return [ self.translate_to_music(w) ]
+
+        return [ self.translate_to_music(d) for d in w ]
+
+    def __isnumber(self,word):
+        for w in word:
+            if not w.isdigit() and w!='.':
+                return False
+        return True
+
+    @utils.nothrow
+    def lexicon_changed(self):
+        self.__timestamp = str(piw.tsd_time())
+        if self.__callback:
+            self.__callback()
+
+    def get_timestamp(self):
+        return self.__timestamp
+
+    def lexicon_iter(self,base=False):
+        if base:
+            for i in self.__base_forward.iteritems():
+                yield i
+        for (e,(sid,m,c)) in self.__forward.iteritems():
+            yield (e,(m,c))
+
+    def set_vocab(self,sid,lex):
+        self.remove_vocab(sid)
+
+        changed = False
+        rlex = {}
+
+        for (e,(m,c)) in lex.iteritems():
+            rlex[m] = (e,c)
+
+            if e in self.__base_forward or m in self.__base_reverse:
+                continue
+            if e in self.__forward or m in self.__reverse:
+                continue
+
+            self.__forward[e] = (sid,m,c)
+            self.__reverse[m] = (sid,e,c)
+            changed = True
+
+        self.__sources[sid] = (lex,rlex)
+
+        if changed:
+            self.lexicon_changed()
+
+
+    def remove_vocab(self,sid):
+        s = self.__sources.pop(sid,None)
+
+        if not s:
+            return
+
+        echeck = set()
+        mcheck = set()
+
+        for (e,(m,c)) in s[0].iteritems():
+            f = self.__forward.get(e)
+            r = self.__reverse.get(m)
+
+            if f and f[0] == sid:
+                del self.__forward[e]
+                echeck.add(e)
+
+            if r and r[0] == sid:
+                del self.__reverse[m]
+                mcheck.add(m)
+
+        if not mcheck and not echeck:
+            return
+
+        for (sid,(lex,rlex)) in self.__sources.iteritems():
+            for e in echeck.copy():
+                if not e in lex:
+                    continue
+
+                (m,c) = lex[e]
+
+                if m in self.__reverse:
+                    continue
+
+                self.__forward[e] = (sid,m,c)
+                self.__reverse[m] = (sid,e,c)
+
+                mcheck.discard(m)
+                echeck.discard(e)
+
+            for m in mcheck.copy():
+                if not m in rlex:
+                    continue
+
+                (e,c) = rlex[m]
+
+                if e in self.__forward:
+                    continue
+                
+                self.__forward[e] = (sid,m,c)
+                self.__reverse[m] = (sid,e,c)
+
+                mcheck.discard(m)
+                echeck.discard(e)
+
+            if not mcheck and not echeck:
+                break
+
+        self.lexicon_changed()
 
 
 class ConnectionCache:
@@ -947,13 +1100,17 @@ class DatabaseProxy(proxy.AtomProxy):
     def node_ready(self):
         self.root().__changed = True
 
-        self.__rules,props,verbs = self.database.make_rules(self,True,self.monitor)
+        self.__rules,props,verbs,vocab = self.database.make_rules(self,True,self.monitor)
+
         if 0 == len(self.__rules):
             self.__rules = None
 
         myid = self.database_id()
 
-        if verbs is not None:
+        if vocab:
+            self.database.get_lexicon().set_vocab(myid,vocab)
+
+        if verbs:
             self.database.get_verbcache().set_verbs(myid,verbs)
 
         if self.__rules is not None:
@@ -980,10 +1137,13 @@ class DatabaseProxy(proxy.AtomProxy):
             self.root().__timestamp = piw.tsd_time()
             self.database.set_timestamp(self.root().__timestamp)
         
-        newrules,newprops,newverbs = self.database.make_rules(self,False,parts)
+        newrules,newprops,newverbs,newvocab = self.database.make_rules(self,False,parts)
 
         myid = self.database_id()
         
+        if newvocab is not None:
+            self.database.get_lexicon().set_vocab(myid,newvocab)
+
         if newverbs is not None:
             self.database.get_verbcache().set_verbs(myid,newverbs)
 
@@ -1026,6 +1186,7 @@ class DatabaseProxy(proxy.AtomProxy):
         myid = self.database_id()
 
         self.database.get_verbcache().retract_verbs(myid)
+        self.database.get_lexicon().remove_vocab(myid)
 
         if self.__rules is not None:
             for v in self.__rules.itervalues():
@@ -1077,7 +1238,7 @@ class VerbCache:
 
 
 class Database(logic.Engine):
-    def __init__(self):
+    def __init__(self,lexicon_changed=None):
         logic.Engine.__init__(self)
         self.__partof = RelationCache('partof')
         self.__assocwith = RelationCache('assocwith')
@@ -1096,6 +1257,7 @@ class Database(logic.Engine):
         self.__desccache = PropertyCache()
         self.__canonical = PropertyCache()
         self.__verbcache = VerbCache()
+        self.__lexicon = Lexicon(callback=lexicon_changed)
 
         #print 'database timestamp = 1'
         self.__timestamp = 1
@@ -1153,6 +1315,9 @@ class Database(logic.Engine):
             return []
                 
                     
+    def get_lexicon(self):
+        return self.__lexicon
+
     def get_propcaches(self):
         return self.__properties.iterkeys()
 
@@ -1283,16 +1448,6 @@ class Database(logic.Engine):
 
         return logic.unify(ssid,env,ss,env)
 
-    def add_lexicon(self,lex):
-        rules = []
-
-        for (e,(m,c)) in lex.iteritems():
-            rules.append(R(T('db_classification',e,c)))
-            if m is not None:
-                rules.append(R(T('db_translation',e,'!'+m)))
-
-        self.assert_rules(rules)
-
     def make_relation_rule(self,id,rlist):
         rules = []
 
@@ -1328,9 +1483,20 @@ class Database(logic.Engine):
 
         return ids
 
+    def make_vocab(self,vocab):
+        v = {}
+
+        for w in vocab:
+            if logic.is_term(w) and w.arity==2:
+                v[w.pred] = w.args
+
+        return v
+
     def make_rules(self,ap,init,parts):
         rules = {}
         props = {}
+        vocab = None
+        verbs = None
 
         did = ap.database_id()
         pid = ap.parent_id()
@@ -1352,13 +1518,15 @@ class Database(logic.Engine):
 
             rules['init']=r
 
-        verb_return = None
+        if 'vocab' in parts:
+            vocab = self.make_vocab(ap.vocab())
+
         if 'verbs' in parts:
-            verb_return = []
+            verbs = []
             for s in ap.verbs():
                 p = self.make_verb_proxy(did,s)
                 if p is not None:
-                    verb_return.append(p)
+                    verbs.append(p)
 
         if 'master' in parts:
             r=[]
@@ -1487,13 +1655,10 @@ class Database(logic.Engine):
 
         props['props'] = (prop_add,prop_del)
 
-        return rules,props,verb_return
+        return rules,props,verbs,vocab
 
     def classify(self,word):
-        result = self.search_any(T('classify',word,V('C'),V('X')))
-        if result is not None:
-            return (result['C'], result['X'])
-        return None
+        return self.__lexicon.classify(word)
 
     def find_joined_master(self,item):
         return self.__jointo.direct_rights(item)
@@ -1616,33 +1781,13 @@ class Database(logic.Engine):
         return desc or ''
 
     def translate_to_english(self,word):
-        if not word.startswith('!'):
-            return word
+        return self.__lexicon.translate_to_english(word)
 
-        result = self.search_any_key('C',T('translate',V('C'),word))
-        return result
-
-    def __isnumber(self,word):
-        for w in word:
-            if not w.isdigit() and w!='.':
-                return False
-        return True
-
-    def translate_to_music2(self,word):
-        if word.startswith('!'):
-            return [word]
-
-        if not self.__isnumber(word):
-            return [ self.search_any_key('C',T('translate',word,V('C'))) or word ]
-
-        return [ self.search_any_key('C',T('translate',w,V('C'))) for w in word ]
+    def expand_to_music(self,word):
+        return self.__lexicon.expand_to_music(word)
 
     def translate_to_music(self,word):
-        if word.startswith('!'):
-            return word
-
-        result = self.search_any_key('C',T('translate',word,V('C')))
-        return result or word
+        return self.__lexicon.translate_to_music(word)
 
     def subsys_sync(self,proxy):
         pass
@@ -1699,9 +1844,9 @@ class Database(logic.Engine):
 class SimpleDatabase(Database):
     proxy = DatabaseProxy
 
-    def __init__(self):
+    def __init__(self,*args,**kwds):
         self.__index = None
-        Database.__init__(self)
+        Database.__init__(self,*args,**kwds)
 
     def start(self,name):
         if not self.__index:

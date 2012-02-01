@@ -402,7 +402,7 @@ class Agent(agent.Agent):
 
         self.__foreground = piw.tsd_snapshot()
 
-        agent.Agent.__init__(self,signature=upgrade_agentd,names='eigend', protocols='agentfactory setupmanager set', container = 3, ordinal = ordinal)
+        agent.Agent.__init__(self,signature=upgrade_agentd,names='eigend', protocols='agentfactory setupmanager set', container = 3, ordinal = ordinal, vocab = self.__registry.get_vocab())
 
         self.ordinal = ordinal
         self.uid = '<eigend%d>' % ordinal

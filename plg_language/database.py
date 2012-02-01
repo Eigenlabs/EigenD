@@ -19,7 +19,6 @@
 #
 
 from pi import atom,database,utils,logic,container,node,action,const,async,rpc,paths,index
-from pibelcanto import lexicon
 from . import noun,verb,macro,imperative
 import piw
 
@@ -31,18 +30,16 @@ class DatabaseProxy(database.DatabaseProxy):
 class Database(database.Database):
     proxy = DatabaseProxy
 
-    def __init__(self):
+    def __init__(self,*args,**kwds):
         self.__primitives = {}
         self.__index = {}
         self.__hostcache = database.PropertyCache()
 
-        database.Database.__init__(self)
+        database.Database.__init__(self,*args,**kwds)
 
         self.add_module(noun)
         self.add_module(verb)
         self.add_module(imperative)
-
-        self.add_lexicon(lexicon.lexicon)
 
         # widget manager for updating widget names if they change
         self.__widget_manager = None
@@ -68,7 +65,7 @@ class Database(database.Database):
         return database.Database.get_propcache(self,name)
 
     def make_rules(self,ap,init,parts):
-        (rules,props,verbs) = database.Database.make_rules(self,ap,init,parts)
+        (rules,props,verbs,vocab) = database.Database.make_rules(self,ap,init,parts)
 
         pa,pd = props['props']
 
@@ -85,7 +82,7 @@ class Database(database.Database):
         else:
             pd.append('inrig')
 
-        return rules,props,verbs
+        return rules,props,verbs,vocab
 
     @async.coroutine('internal error')
     def sync(self, *args):

@@ -19,8 +19,7 @@
 #
 
 import wx
-from pibelcanto import lexicon
-from pigui import colours,fonts,utils,drawutils,stavedrawing,panels
+from pigui import colours,fonts,utils,drawutils,stavedrawing,panels,language
 from pi import atom,action,async,errors
 
 def getRoles():
@@ -32,15 +31,31 @@ def getName():
 def getView(factory,args,parent):
     return DictionaryPanel(parent,factory)
 
-class DictionaryModel(panels.ViewModel):
-    def __init__(self):
-        panels.ViewModel.__init__(self)
+class DictionaryModel(language.LanguageDisplayModel):
+    def __init__(self,langModel):
+        language.LanguageDisplayModel.__init__(self,langModel)
         self.byWord=True
         self.m2e={}
         self.e2m={}
-        self.m2e.clear()
-        self.e2m.clear()
-        lex=lexicon.lexicon
+        self.e2mkeys = []
+        self.m2ekeys = []
+        self.__listeners = []
+
+    def addDictionaryListener(self,listener):
+        if listener not in self.__listeners:
+            self.__listeners.append(listener)
+
+    def update(self):
+        for listener in self.__listeners:
+            listener.dictionaryUpdate()
+            
+    def lexicon_changed(self):
+        print 'dictionary model lexicon changed'
+        language.LanguageDisplayModel.lexicon_changed(self)
+        self.set_lexicon(self.get_lexicon())
+        self.update()
+
+    def set_lexicon(self,lex):
         for (e,(m,t)) in lex.iteritems():
             if m and e:
                 self.m2e[m]=e
@@ -70,10 +85,14 @@ class DictionaryModel(panels.ViewModel):
 class DictionaryAgent(atom.Null):
     def __init__(self,parent,name):
         atom.Null.__init__(self,names=name,container=(None,'dict',parent.verb_container()))
-        self.model=DictionaryModel()
+        self.model=parent.dictionaryModel
         self.add_verb2(1,'show([],None,role(by,[abstract,matches([word])]))',callback=self.sortByWord)
         self.add_verb2(2,'show([],None,role(by,[abstract,matches([note])]))',callback=self.sortByNote)
  
+    def set_lexicon(self,lex):
+        self.model.set_lexicon(lex)
+        self.model.update()
+
     def sortByWord(self,*args):
         if self.model.byWord:
             return async.success(errors.nothing_to_do('show'))
@@ -117,8 +136,8 @@ class DictionaryPanel(wx.Window):
         self.minY=0
         self.maxY=0
 
-        self.model=agent[9].model
-        self.model.addListener(self)
+        self.model=agent.dictionaryModel
+        self.model.addDictionaryListener(self)
         self.SetScrollbar(wx.HORIZONTAL,0,10,9)
 
 #    def OnSetFocus(self,evt):
@@ -128,14 +147,14 @@ class DictionaryPanel(wx.Window):
 
     def onIdle(self,evt):
         if self.__updateRequired:
-            self.update()
+            self.dictionaryUpdate()
 
     def __getClientDC(self):
-	if self.IsDoubleBuffered():
+        if self.IsDoubleBuffered():
            dc=wx.ClientDC(self)
-	else:
-	   dc=wx.BufferedDC(wx.ClientDC(self))
-	return dc
+        else:
+           dc=wx.BufferedDC(wx.ClientDC(self))
+        return dc
 
     def onScroll(self,evt):
         print 'onScroll: evtPos=',evt.GetPosition(),'scrollRange=',self.scrollRange
@@ -184,7 +203,7 @@ class DictionaryPanel(wx.Window):
 #    def open(self):
 #        self.model.addListener(self)
 
-    def update(self):
+    def dictionaryUpdate(self):
         print 'DictionaryPanel:update'
         self.__updateRequired=False
         dc=self.__getClientDC()
@@ -244,7 +263,7 @@ class DictionaryPanel(wx.Window):
 #        self.drawRequired=True
 
     def doDrawing(self,dc):
-	self.__backgroundDrawing(dc)
+        self.__backgroundDrawing(dc)
         print 'dictionary: doDrawing'
         self.drawingItems=[]
         self.oldXOffset=0
@@ -302,7 +321,7 @@ class DictionaryPanel(wx.Window):
                     origin=(xpos,ypos)
                     staveHeight=1.6*dc.GetTextExtent('0')[1]
 
-                    stave=stavedrawing.stave(origin,staveHeight,width=stavelen,words=[(music,'')],margins=(0.1,0.1),translation=False,numbers=True)
+                    stave=stavedrawing.stave(origin,staveHeight,width=stavelen,words=[(music,'')],margins=(0.1,0.1),translation=False,numbers=True,matchesNotes=True)
                     stave.setColour(colours.staff,colours.staffLines)
                     self.staveManager.addStave(stave)
 
@@ -344,9 +363,9 @@ class DictionaryPanel(wx.Window):
 #        return dc.MaxX()+50-self.GetClientSize()[0]
 
     def __backgroundDrawing(self,dc):
-	size=self.GetClientSize()
-	drawutils.setPenColour(dc,colours.borderGradient1)
-	drawutils.setBrushColour(dc,colours.borderGradient1)
+        size=self.GetClientSize()
+        drawutils.setPenColour(dc,colours.borderGradient1)
+        drawutils.setBrushColour(dc,colours.borderGradient1)
         dc.DrawRectangle(0,0,size[0],size[1])
 
     def test_scroll_both(self,h,v,mouse=False):
@@ -404,6 +423,4 @@ class DictionaryPanel(wx.Window):
         self.staveManager.draw(dc)
 
     def getTitle(self):
-        word='Dictionary'
-        return '%s (%s)' % (word,lexicon.lexicon[word.lower()][0])
-
+        return 'Dictionary'

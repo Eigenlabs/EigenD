@@ -176,13 +176,9 @@ class Interpreter:
     def sync(self, *args):
         return self.__database.sync(*args)
 
-    def classify(self,word):
-        classification = self.__database.classify(word)
-        if classification: return classification
-        return ('noun',word)
-
     def interpret(self,word):
-        (klass,word) = self.classify(word)
+        klass,word = self.__database.classify(word)
+        print 'interpreting',word,klass
         return self.__interpret0(klass,word)
 
     def undo(self):

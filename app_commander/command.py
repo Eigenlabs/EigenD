@@ -19,14 +19,18 @@
 #
 
 from pisession import gui
-from pigui import vocab, language
+from pigui import language
 
 class CommandModel(language.LanguageDisplayModel): 
-    def __init__(self,langmodel,listener=None):
-        language.LanguageDisplayModel.__init__(self,langmodel,listener)
+    def __init__(self,langmodel):
+        language.LanguageDisplayModel.__init__(self,langmodel)
+        self.__listeners = []
         self.words=[]
         self.notes=[]
-        self.vocab=vocab.Vocabulary()
+
+    def addCommandListener(self,listener):
+        if listener not in self.__listeners:
+            self.__listeners.append(listener)
 
     def inject(self,msg):
         gui.call_bg_async(self.langmodel.inject,msg)
@@ -34,13 +38,28 @@ class CommandModel(language.LanguageDisplayModel):
     def cmdline_changed(self,cmdline):
         print 'CommandModel:cmdline_changed',cmdline
         words=cmdline[0].split()
-        self.words=self.vocab.getWordTuples(words)
+        self.words=self.getWordTuples(words)
         notes=str(cmdline[1])
         self.notes=list(notes)
-        self.update()
+        self.updateCommand()
 
-    def update(self):
-        print 'CommandModel:update listener',self.words,self.notes,self.listeners
-        for listener in self.listeners:
-            listener.update()
+    def updateCommand(self):
+        print 'CommandModel:update listener',self.words,self.notes,self.__listeners
+        for listener in self.__listeners:
+            listener.commandUpdate()
 
+    def language_disconnected(self):
+        print 'LanguageDisplayModel:language_disconnected'
+        for listener in self.__listeners:
+            listener.statusUpdate("No Belcanto Interpreter")
+        
+    def language_ready(self,name):
+        print 'LanguageDisplayModel:language_ready'
+        for listener in self.__listeners:
+            print 'update status on  listeners'
+            listener.statusUpdate( "Belcanto Interpreter connected")
+
+    def language_gone(self,name):
+        print 'LanguageDisplayModel:language_gone'
+        for listener in self.__listeners:
+            listener.statusUpdate( "Belcanto Interpreter disconnected")

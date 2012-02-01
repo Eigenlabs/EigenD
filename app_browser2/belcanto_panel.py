@@ -24,35 +24,35 @@ from pigui import colours,fonts,utils,drawutils
 class BelcantoPanel(wx.Window):
     def __init__(self,parent,size,agent,style=wx.BORDER_NONE):
         wx.Window.__init__(self,parent,-1,size=size,style=style)  
-	self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
+        self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.model=agent.historyModel
-        self.model.addListener(self)
+        self.model.addHistoryListener(self)
         self.SetBackgroundColour(colours.borderGradient1)
         self.__agent=agent
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.font=wx.Font(13,wx.FONTFAMILY_MODERN,wx.FONTSTYLE_NORMAL,weight=wx.FONTWEIGHT_LIGHT)
 
     def __getClientDC(self):
-	if self.IsDoubleBuffered():
+        if self.IsDoubleBuffered():
            dc=wx.ClientDC(self)
-	else:
-	   dc=wx.BufferedDC(wx.ClientDC(self))
+        else:
+           dc=wx.BufferedDC(wx.ClientDC(self))
         dc.Clear()
         brush=dc.GetBrush()
         brush.SetColour(colours.borderGradient1)
         dc.SetBackground(brush)
         dc.SetFont(self.font)
-	return dc
+        return dc
 
     def onPaint(self,evt):
-	dc=self.__getClientDC()
+        dc=self.__getClientDC()
         self.doPaint(dc)
         evt.Skip()
 
-    def update(self):
+    def historyUpdate(self):
         print 'BelcantoPanel:update'
         if self.model.words:
-	    dc=self.__getClientDC()
+            dc=self.__getClientDC()
             self.doPaint(dc)
 
     def updateStatus(self,str):
@@ -62,7 +62,7 @@ class BelcantoPanel(wx.Window):
 #        self.update()
 
     def doPaint(self,dc):
-	self.__backgroundDrawing(dc)
+        self.__backgroundDrawing(dc)
         y=2
         x=2
         
@@ -85,8 +85,8 @@ class BelcantoPanel(wx.Window):
     
     def __backgroundDrawing(self,dc):
         size=self.GetClientSize()
-	drawutils.setPenColour(dc,colours.borderGradient1)
-	drawutils.setBrushColour(dc,colours.borderGradient1)
+        drawutils.setPenColour(dc,colours.borderGradient1)
+        drawutils.setBrushColour(dc,colours.borderGradient1)
         dc.DrawRectangle(0,0,size[0],size[1])
  
     def __borderDrawing(self,dc):

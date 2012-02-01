@@ -21,20 +21,18 @@
 import wx
 
 from pisession import gui
-from pibelcanto import lexicon
-from pigui import colours,utils,drawutils,vocab,stavedrawing,language
+from pigui import colours,utils,drawutils,stavedrawing,language
 
 #def getName():
 #    return 'history'
 
 class HistoryModel(language.LanguageDisplayModel): 
     def __init__(self,langmodel,listener=None,scroller=None):
-        language.LanguageDisplayModel.__init__(self,langmodel,None)
+        language.LanguageDisplayModel.__init__(self,langmodel)
         self.maxItems=50
-        self.vocab=vocab.Vocabulary()
 
         self.items=[]
-        self.listeners=[]
+        self.__listeners=[]
         self.scroller=scroller
         self.__lasti=0
         self.__maxRequested=0
@@ -43,6 +41,9 @@ class HistoryModel(language.LanguageDisplayModel):
 
     def history_cleared(self):
         self.clear()
+
+    def addHistoryListener(self,listener):
+        self.__listeners.append(listener)
 
     def clear(self):
         self.items=[]
@@ -115,7 +116,7 @@ class HistoryModel(language.LanguageDisplayModel):
         for word in w.split():
             english='***'
             if word.startswith('!'):
-                english=self.vocab.getEnglish(word[1:])
+                english=self.getEnglish(word[1:])
             else:
                 english=word
 
@@ -145,13 +146,15 @@ class HistoryModel(language.LanguageDisplayModel):
 
         item.append(words)
         item.set_status(status)
+
         if feedback:
             item.set_feedback(feedback)
+
         if speaker:
-            item.set_speaker(speaker,self.vocab)
+            item.set_speaker(speaker,self)
         
-        for listener in self.listeners:
-            listener.update()
+        for listener in self.__listeners:
+            listener.historyUpdate()
             print 'History model call to reset scroller', self.scroller
             if self.scroller:
                 self.scroller.reset_v(-1)
@@ -167,8 +170,8 @@ class HistoryModel(language.LanguageDisplayModel):
             self.items[self.maxItems-1]=item
 
     def update(self):
-        for listener in self.listeners:
-            listener.update()
+        for listener in self.__listeners:
+            listener.historyUpdate()
 
 class HistoryPanel(wx.Window):
     def __init__(self,parent,size,agent,style=wx.BORDER_NONE|wx.VSCROLL):
@@ -188,7 +191,7 @@ class HistoryPanel(wx.Window):
         self.Bind(wx.EVT_SCROLLWIN, self.onScroll)
         self.Bind(wx.EVT_SIZE,self.OnSize)
         self.Bind(wx.EVT_IDLE,self.OnIdle)
-        self.model.addListener(self)
+        self.model.addHistoryListener(self)
         self.scrollRange=0
         self.SetScrollbar(wx.VERTICAL,0,10,9)
 
@@ -202,7 +205,7 @@ class HistoryPanel(wx.Window):
 
     def OnIdle(self,evt):
         if self.redrawRequired:
-            self.update()
+            self.historyUpdate()
         self.redrawRequired=False
 
     def OnPaint(self,evt):
@@ -217,7 +220,7 @@ class HistoryPanel(wx.Window):
 	   dc=wx.BufferedDC(wx.ClientDC(self))
 	return dc
 
-    def update(self):
+    def historyUpdate(self):
         print 'history update'
         dc=self.__getClientDC()
         self.initDC(dc)
@@ -477,7 +480,7 @@ class MusicItem(HistoryItem):
         self.drawingItems=[]
         self.staves=[]
         self.staveheight=2*dc.GetTextExtent('0')[1]
-        self.staves.append(stavedrawing.stave((0,0),self.staveheight,words=[],margins=(0.1,0.1),translation=True))
+        self.staves.append(stavedrawing.stave((0,0),self.staveheight,words=[],margins=(0.1,0.1),translation=True,matchesNotes=True))
         words=list(self.music)
         swords=[]
         if self.speaker:
@@ -495,12 +498,12 @@ class MusicItem(HistoryItem):
                 if len(self.staves[lineNo].words)>1:
                     words.append(self.staves[lineNo].popWord())
                 lineNo=lineNo+1
-                self.staves.append(stavedrawing.stave((0,0),self.staveheight,words=[],margins=(0.1,0.1),translation=True))
+                self.staves.append(stavedrawing.stave((0,0),self.staveheight,words=[],margins=(0.1,0.1),translation=True,matchesNotes=True))
         if self.feedback:
             self.feedback.set_width(parent.GetSize()[0])
 
     def getDrawingItem(self,origin,height,parent):
-        drawingItem=stavedrawing.stave(origin,height,words=self.music,parent=parent)
+        drawingItem=stavedrawing.stave(origin,height,words=self.music,parent=parent,matchesNotes=True)
         drawingItem.setStatus(self.status)
         if self.status=='message':
             drawingItem.setColour(colours.talkerText,colours.talkerStaffLines)

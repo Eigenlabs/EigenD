@@ -66,6 +66,7 @@ class Registry:
         self.__registry={}
         self.__alias={}
         self.__path = []
+        self.__vocab = {}
 
         self.add_extra()
         self.add_path(resource.user_resource_dir('Plugins'))
@@ -75,6 +76,9 @@ class Registry:
         for p in self.__path:
             print 'Agent Path:',p
             self.scan_path(p,klass)
+
+    def get_vocab(self):
+        return self.__vocab
 
     def add_extra(self):
         extra_dir = os.path.join(picross.global_library_dir(),'Global')
@@ -96,6 +100,9 @@ class Registry:
             if os.path.exists(p):
                 self.add_path(p)
 
+    def add_vocab(self,e,m,c):
+        self.__vocab[e] = (m,c)
+
     def add_path(self,path):
         if path not in self.__path:
             self.__path.append(path)
@@ -103,7 +110,10 @@ class Registry:
     def dump(self,dumper):
         for (mname,vlist) in self.__registry.iteritems():
             for (version,(cversion,module)) in vlist.iteritems():
-                print '%s:%s:%s %s' % (mname,version,cversion,dumper(module))
+                print 'plugin %s:%s:%s %s' % (mname,version,cversion,dumper(module))
+
+        for (e,(m,c)) in self.__vocab.iteritems():
+            print 'vocab %s %s %s' % (e,m,c)
 
     def modules(self):
         return self.__registry.keys()
@@ -200,9 +210,17 @@ class Registry:
                 continue
 
             for a in manifest.splitlines():
-                a = a.split(':')
-                (name,module,cversion,version) = a[0:4]
-                fullmodule = os.path.join(p,module)
-                self.add_module(name,version,cversion,klass(name,version,cversion,fullmodule))
-                for e in a[4:]:
-                    self.add_alias(e,version,name)
+                a = a.strip()
+
+                if a[0] == 'a':
+                    a = a[1:].strip().split(':')
+                    (name,module,cversion,version) = a[0:4]
+                    fullmodule = os.path.join(p,module)
+                    self.add_module(name,version,cversion,klass(name,version,cversion,fullmodule))
+                    for e in a[4:]:
+                        self.add_alias(e,version,name)
+                    continue
+
+                if a[0] == 'm':
+                    (e,m,c) = a[1:].strip().split(':')
+                    self.add_vocab(e,m,c)

@@ -19,30 +19,7 @@
 #
 
 import wx
-from pigui import colours,fonts,drawutils,vocab
-
-def checkWidth(text,dc):
-    staveHeight=2*dc.GetTextExtent('0')[1]
-    v=vocab.Vocabulary()
-    m=v.words_to_notes(text)
-    s=stave((0,0),staveHeight,words=m,margins=(0.1,0.1),translation=True)
-    width=1.1*s.getOverallLength(dc)
-    return width    
-
-def checkOverallHeight(height,dc):
-    v=vocab.Vocabulary()
-    m=v.words_to_notes('oops')
-    s=stave((0,0),height,words=m,margins=(0.1,0.1),translation=True)
-    return s.getOverallHeight(dc)    
-
-
-def getMaxWidth(textlist,dc):
-    maxWidth=0
-    for text in textList:
-        width=checkWidth(text,dc)
-        if width>maxWidth:
-            maxWidth=width
-    return maxWidth
+from pigui import colours,fonts,drawutils
 
 validnotes=(1,2,3,4,5,6,7,8)
 ERROR_COLOUR=1
@@ -111,7 +88,7 @@ class staveDrawingManager:
 
     
 class stave:
-    def __init__(self,origin,height,width=None,words=[],notes=[],margins=(0,0),translation=True,parent=None,numbers=True,fitInWindow=False,interactive=False):
+    def __init__(self,origin,height,width=None,words=[],notes=[],margins=(0,0),translation=True,parent=None,numbers=True,fitInWindow=False,interactive=False,matchesNotes=False):
         self.margins=(margins[0]*height,margins[1]*height)
         self.translation=translation
         self.parent=parent
@@ -127,11 +104,11 @@ class stave:
         self.xpos=0
         self.lineWidth=1
         self.fitInWindow=fitInWindow
-        self.vocab=vocab.Vocabulary()
         self.colour=colours.defaultStaffLines
         self.status=''
         self.staveColour=colours.defaultStaffLines
         self.textColour=colours.defaultStaffLines
+        self.matchesNotes = matchesNotes
 
         self.interactive=interactive
         self.oldXOffset=0
@@ -159,7 +136,6 @@ class stave:
         self.origin=(int(origin[0]+self.margins[0]),int(origin[1]+self.margins[1]))
 
     def __calcWidth(self,dc):
-        
         width=2*self.margins[0]
         for word in self.words:
             if word[0]=='' and word[1][0]=='!':
@@ -342,7 +318,7 @@ class stave:
         
 
     def __drawNotes(self,dc):
-        if self.vocab.matchesWord(self.notes):
+        if self.matchesNotes:
             colour=self.staveColour
         else:
             colour=colours.error

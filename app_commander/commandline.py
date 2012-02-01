@@ -442,7 +442,7 @@ class StaffPanel(wx.Window):
         self.Bind(wx.EVT_PAINT,self.OnPaint)
         self.agent=agent
         self.model=agent.commandModel
-        self.model.addListener(self)
+        self.model.addCommandListener(self)
         self.font=wx.Font(13,wx.FONTFAMILY_MODERN,wx.FONTSTYLE_NORMAL,weight=wx.FONTWEIGHT_NORMAL)
 
 
@@ -451,29 +451,29 @@ class StaffPanel(wx.Window):
         dc.SetFont(self.font)
         dc.Clear()
         self.draw(dc)
-	evt.Skip()
+        evt.Skip()
 
     def __getClientDC(self):
-	if self.IsDoubleBuffered():
+        if self.IsDoubleBuffered():
            dc=wx.ClientDC(self)
-	else:
-	   dc=wx.BufferedDC(wx.ClientDC(self))
-	return dc
+        else:
+           dc=wx.BufferedDC(wx.ClientDC(self))
+        return dc
 
     def __backgroundDrawing(self,dc):
-	size=self.GetClientSize()
-	drawutils.setPenColour(dc,colours.borderGradient1)
-	drawutils.setBrushColour(dc,colours.borderGradient1)
+        size=self.GetClientSize()
+        drawutils.setPenColour(dc,colours.borderGradient1)
+        drawutils.setBrushColour(dc,colours.borderGradient1)
         dc.DrawRectangle(0,0,size[0],size[1])
 
     def draw(self,dc):
         print 'StaffPanel draw'
-	self.__backgroundDrawing(dc)
+        self.__backgroundDrawing(dc)
         pts,weight=fonts.setStaffFont(dc)
  
         self.height=min([self.GetSize()[1],4*dc.GetFont().GetPointSize()])
         self.setOrigin()
-        myStave=stavedrawing.stave(self.origin,self.height,width=self.GetSize()[0],words=self.model.words,notes=self.model.notes,parent=self,fitInWindow=True,interactive=True)
+        myStave=stavedrawing.stave(self.origin,self.height,width=self.GetSize()[0],words=self.model.words,notes=self.model.notes,parent=self,fitInWindow=True,interactive=True,matchesNotes=self.model.matchesWord(self.model.notes))
         staveLength=myStave.getOverallLength(dc)
         if staveLength>0.9*self.GetSize()[0]:
             myStave.setOrigin((0.9*self.GetSize()[0]-staveLength,self.origin[1]))
@@ -490,7 +490,7 @@ class StaffPanel(wx.Window):
 
         self.__borderDrawing(dc)
 
-    def update(self):
+    def commandUpdate(self):
         print "StaffPanel: update"
         dc=self.__getClientDC();
         dc.SetFont(self.font)
@@ -502,7 +502,7 @@ class StaffPanel(wx.Window):
         ypos=max([20,calcpos])
         self.origin=(0,ypos)
 
-    def updateStatus(self,text):
+    def statusUpdate(self,text):
         print 'StaffPanel: updateStatus',text
         self.agent.updateStatus(text)
 
@@ -559,16 +559,16 @@ class CommandPanel(wx.Window):
         self.SetFocus()
 
     def __getClientDC(self):
-	if self.IsDoubleBuffered():
+        if self.IsDoubleBuffered():
            dc=wx.ClientDC(self)
-	else:
-	   dc=wx.BufferedDC(wx.ClientDC(self))
-	return dc
+        else:
+           dc=wx.BufferedDC(wx.ClientDC(self))
+        return dc
 
     def __backgroundDrawing(self,dc):
-	size=self.GetClientSize()
-	drawutils.setPenColour(dc,colours.borderGradient1)
-	drawutils.setBrushColour(dc,colours.borderGradient1)
+        size=self.GetClientSize()
+        drawutils.setPenColour(dc,colours.borderGradient1)
+        drawutils.setBrushColour(dc,colours.borderGradient1)
         dc.DrawRectangle(0,0,size[0],size[1])
 
 
@@ -696,7 +696,7 @@ class CommandPanel(wx.Window):
 #	print 'onTimer',self.blink
         if self.displayManager.cursorStarted:
 #            dc=self.__getClientDC()
-	    dc=wx.ClientDC(self)
+            dc=wx.ClientDC(self)
             self.displayManager.blinkCursor(dc)
 
     def OnChar(self,evt):
@@ -854,7 +854,7 @@ class CommandPanel(wx.Window):
         dc.SetTextForeground(colours.commandlineText)
         dc.Clear()
        
-	self.__backgroundDrawing(dc)
+        self.__backgroundDrawing(dc)
         self.displayManager.clear()
         self.displayManager.load(dc,self.lines)
         self.displayManager.draw(dc)
@@ -866,7 +866,7 @@ class CommandPanel(wx.Window):
         dc=self.__getClientDC()
         dc.SetFont(self.font)
         self.drawText(dc)
-	evt.Skip()
+        evt.Skip()
 
     def __borderDrawing(self,dc):
         size=self.GetClientSize()

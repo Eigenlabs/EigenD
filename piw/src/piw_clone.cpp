@@ -218,13 +218,16 @@ void clone_wire_ctl_t::activate(bool b, unsigned long long t)
 
                 if(iterator->latest(filtered_signal_,d,t))
                 {
-                    piw::data_nb_t nd = filter_(d);
+                    piw::data_nb_t nid = filter_(d);
 
-                    active_ = true;
-                    id_.set_nb(current_id());
-                    //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " activating event " << current_id();
-                    current_data().add_value(filtered_signal_, nd);
-                    source_start(seq_,current_id().restamp(t),current_data());
+                    if(nid.is_path())
+                    {
+                        active_ = true;
+                        id_.set_nb(current_id());
+                        //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " activating event " << current_id();
+                        current_data().add_value(filtered_signal_, nid);
+                        source_start(seq_,current_id().restamp(t),current_data());
+                    }
                 }
             }
             else
