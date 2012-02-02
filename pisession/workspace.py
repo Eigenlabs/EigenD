@@ -172,16 +172,16 @@ class Controller(state.Manager):
         yield async.Coroutine.success(rve)
 
 class AgentLoader:
-    def __init__(self,module):
+    def __init__(self):
+        self.module = None
         self.agent = None
         self.context = None
-        self.module = registry.import_module(module)
 
-    def __run(self,func,*args,**kwds):
+    def __run(self,ctx,func,*args,**kwds):
         current_context = piw.tsd_snapshot()
 
         try:
-            self.context.install()
+            ctx.install()
             piw.tsd_lock()
             try:
                 return func(*args,**kwds)
@@ -190,39 +190,50 @@ class AgentLoader:
         finally:
             current_context.install()
 
-    def is_gui(self):
-        return self.module.isgui
+    @utils.nothrow
+    def __load(self,module,context,name,ordinal):
+        a = module.main(context.getenv(),name,ordinal)
+        return a
 
-    def __load(self,name,ordinal):
-        self.agent = self.module.main(self.context.getenv(),name,ordinal)
-
+    @utils.nothrow
     def __quit(self):
         if self.agent:
             self.module.on_quit(self.agent)
 
+    @utils.nothrow
     def __unload(self,destroy):
         if self.agent:
-            ss = self.module.unload(self.context.getenv(),self.agent,destroy)
+            self.module.unload(self.context.getenv(),self.agent,destroy)
             self.context.kill()
             self.context.clear()
-            self.context = None
-            self.agent = None
-            return ss
 
-    def load(self,scope,name,ordinal):
-        if self.context is not None and self.agent is not None:
-            self.unload(False)
+    @utils.nothrow_ret(False)
+    def load(self,module_name,scope,name,ordinal):
+        self.unload(False)
+        m = registry.import_module(module_name)
+        c = piw.tsd_subcontext(m.isgui,scope,name)
+        a = self.__run(c,self.__load,m,c,name,ordinal)
 
-        self.context = piw.tsd_subcontext(self.is_gui(),scope,name)
-        self.__run(self.__load,name,ordinal)
+        if a:
+            self.module = m
+            self.agent = a
+            self.context = c
+            return True
+
+        c.kill()
+        c.clear()
+        return False
 
     def unload(self,destroy):
         if self.context is not None and self.agent is not None:
-            return self.__run(self.__unload,destroy)
+            self.__run(self.context,self.__unload,destroy)
+            self.context = None
+            self.agent = None
+            self.module = None
 
     def on_quit(self):
         if self.context is not None and self.agent is not None:
-            self.__run(self.__quit)
+            self.__run(self.context,self.__quit)
 
 class AgentFactory:
     def __init__(self,name,version,cversion,module):
@@ -261,7 +272,6 @@ class Workspace(atom.Atom):
 
         self.__load_queue = []
         self.__load_result = None
-        self.__plugin_count = 0
         self.__load_errors = None
         self.__load_path = None
 
@@ -311,10 +321,17 @@ class Workspace(atom.Atom):
         else:
             plugin_ordinal = 0
 
-        plugin_addr = self.create(factory,ordinal=plugin_ordinal)
+        class DummyDelegate():
+            def __init__(self):
+                self.errors = []
+            def add_error(self,msg):
+                self.errors.append(msg)
+
+        delegate = DummyDelegate()
+        plugin_addr = self.create(factory,delegate,ordinal=plugin_ordinal)
 
         if not plugin_addr:
-            return async.failure('ordinal in use')
+            return async.failure(','.join(delegate.errors))
 
         print 'created',plugin_addr,'as',plugin_slug
         return async.success(plugin_addr)
@@ -552,7 +569,7 @@ class Workspace(atom.Atom):
             if status is not None:
                 try: pending.discard(args[0])
                 except: pass
-                w.enable(60000)
+                w.enable(5000)
             else:
                 w.disable()
 
@@ -729,29 +746,31 @@ class Workspace(atom.Atom):
         self.__meta.visit(visitor)
         return ordinal[0]+1
 
-    def __make_unloader(self,name):
-        def u(status):
-            self.__plugin_count -= 1
-            print 'unloaded',name,'plg count:',self.__plugin_count
-        return u
-
-    def __asserted(self,signature):
+    def __asserted(self,signature,delegate):
         (address,plugin,version,cversion,ordinal) = signature.args
         factory = self.__registry.get_compatible_module(plugin,cversion)
+
+        if not factory:
+            delegate.add_error("No plugin for %s version %s" % (plugin,cversion))
+            return None
+
         self.add_frelation(self.__relation(address))
-        agent = AgentLoader(factory.module)
-        self.__plugin_count += 1
-        agent.load(self.__name,address,ordinal)
-        return agent
+        agent = AgentLoader()
+        if agent.load(factory.module,self.__name,address,ordinal):
+            return agent
+
+        delegate.add_error("Problems loading plugin %s" % (plugin,version))
+        return None
 
     def __retracted(self,signature,plugin,destroy):
         self.del_frelation(self.__relation(signature.args[0]))
-        return plugin.unload(destroy)
+        plugin.unload(destroy)
+        return True
 
     def unload(self,address,destroy=False):
-        # unload address and return ss or None
-        ss = self.__meta.retract_state(lambda v,s: v.args[0]==address,destroy)
-        return ss
+        if self.__meta.retract_state(lambda v,s: v.args[0]==address,destroy):
+            return True
+        return False
 
     def unload_all(self,destroy=False):
         self.__meta.clear(destroy)
@@ -760,22 +779,28 @@ class Workspace(atom.Atom):
         # call on_quit for all plugins
         self.__meta.visit(lambda v,s: s.on_quit())
 
-    def create(self,factory,address=None,ordinal=0):
+    def create(self,factory,delegate,address=None,ordinal=0):
         if ordinal:
             if self.check_ordinal(factory.name,ordinal):
+                delegate.add_error('%s %d already exists' % (factory.name,ordinal))
                 return None
         else:
             ordinal = self.find_new_ordinal(factory.name)
 
         if address:
             if self.check_address(address):
+                delegate.add_error('%s already exists at given address' % (factory.name))
                 return None
         else:
             address = guid.toguid("%s%d" % (factory.name,ordinal))
 
         print 'assigned ordinal',ordinal,'to',factory.name
         signature = logic.make_term('a',address,factory.name,factory.version,factory.cversion,ordinal)
-        plugin = self.__meta.assert_state(signature)
+        plugin = self.__meta.assert_state(signature,delegate=delegate)
+
+        if not plugin:
+            return None
+
         return address
 
 

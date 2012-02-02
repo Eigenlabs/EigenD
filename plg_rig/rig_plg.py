@@ -115,7 +115,7 @@ class RigOutput(atom.Atom):
     def set_names(self,value):
         self.__master.set_names(value)
 
-    def property_change(self,key,value):
+    def property_change(self,key,value,delegate):
         if key != 'slave':
             return
 
@@ -305,7 +305,7 @@ class RigInputPolicyImpl:
         backend=self.__ctrl.get_backend(config)
         return backend,backend
 
-    def __add_connection(self,src):
+    def __add_connection(self,src,delegate):
         iid = (max(self.__connection_iids)+1 if self.__connection_iids else 1)
 
         (a,f,c) = self.make_filter(src,iid)
@@ -344,7 +344,7 @@ class RigInput(atom.Atom):
         self.__output_peer[self.__index].notify_destroy()
         del self.__output_peer[self.__index]
 
-    def property_change(self,key,value):
+    def property_change(self,key,value,delegate):
         if key in ['name','ordinal']:
             self.__output_peer[self.__index].set_property(key,value,notify=False,allow_veto=False)
 

@@ -230,7 +230,7 @@ class Agent(agent.Agent):
 
         self.set_ordinal(ordinal)
 
-    def property_change(self,key,value):
+    def property_change(self,key,value,delegate):
         if key == 'ordinal':
             self[1].set_index(self.get_property_long('ordinal',1))
             

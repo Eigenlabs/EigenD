@@ -45,7 +45,7 @@ class Parameter(atom.Atom):
                             names='parameter',protocols='input explicit',ordinal=k)
         self.__delegate.parameter_name_changed(self.__index)
 
-    def property_change(self,key,value):
+    def property_change(self,key,value,delegate):
         if key in ['name','ordinal']:
             self.__delegate.parameter_name_changed(self.__index)
 

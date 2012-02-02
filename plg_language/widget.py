@@ -147,7 +147,7 @@ class Widget(atom.Atom):
         self.have_target = False
         self.have_widget = False
 
-    def property_change(self,key,value):
+    def property_change(self,key,value,delegate):
         if widget_debug:
             print 'Widget: property_change',key,value,'is open=',self.open()
         if self.open():

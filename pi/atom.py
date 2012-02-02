@@ -44,9 +44,6 @@ def null_domain():
 
 standard_veto = set(['latency','frelation','modes','verbs','domain','ideals','protocols','timestamp','cname','cordinal'])
 
-class ModeEntry:
-    pass
-
 class VerbEntry:
     pass
 
@@ -129,13 +126,30 @@ class Atom(node.Server):
             self.__container = c
             self.__label = l
             self.__verblist = {}
-            self.__modelist = {}
 
             if n is not None:
                 self[n] = c
 
+    def load_value(self,delegate,value):
+        self.__server_change(value,delegate)
+
     def server_change(self,new_value):
         node.Server.server_change(self,new_value)
+
+        class DummyDelegate:
+            def __init__(self):
+                self.errors = []
+            def add_error(self,msg):
+                self.errors.append(msg)
+
+        d = DummyDelegate()
+        self.__server_change(new_value,d)
+        if d.errors:
+            print 'errors setting value'
+            for e in d.errors:
+                print '* ',e
+
+    def __server_change(self,new_value,delegate):
 
         if new_value.is_dict():
             old_value = node.Server.get_data(self)
@@ -147,56 +161,56 @@ class Atom(node.Server):
             keys_common = old_keys.intersection(new_keys)
 
             for k in keys_del:
-                self.set_property(k,None,allow_veto=True)
+                self.set_property(k,None,allow_veto=True,delegate=delegate)
 
             for k in keys_create:
                 v = new_value.as_dict_lookup(k)
-                self.set_property(k,v,allow_veto=True)
+                self.set_property(k,v,allow_veto=True,delegate=delegate)
 
             for k in keys_common:
                 v = new_value.as_dict_lookup(k)
                 if old_value.as_dict_lookup(k) != v:
-                    self.set_property(k,v,allow_veto=True)
+                    self.set_property(k,v,allow_veto=True,delegate=delegate)
 
-    def set_property_long(self,key,value,allow_veto=False,notify=True):
-        self.set_property(key,piw.makelong(value,0),allow_veto,notify)
+    def set_property_long(self,key,value,allow_veto=False,notify=True,delegate=None):
+        self.set_property(key,piw.makelong(value,0),allow_veto,notify,delegate)
 
     def get_property_long(self,key,default = 0):
         v = self.get_property(key,None)
         return v.as_long() if v and v.is_long() else default
 
-    def set_property_string(self,key,value,allow_veto=False,notify=True):
-        self.set_property(key,piw.makestring(value,0),allow_veto,notify)
+    def set_property_string(self,key,value,allow_veto=False,notify=True,delegate=None):
+        self.set_property(key,piw.makestring(value,0),allow_veto,notify,delegate)
 
     def get_property_string(self,key,default = ''):
         v = self.get_property(key,None)
         return v.as_string() if v and v.is_string() else default
 
-    def set_property_termlist(self,key,value,allow_veto=False,notify=True):
-        self.set_property(key,piw.makestring(logic.render_termlist(value),0),allow_veto,notify)
+    def set_property_termlist(self,key,value,allow_veto=False,notify=True,delegate=None):
+        self.set_property(key,piw.makestring(logic.render_termlist(value),0),allow_veto,notify,delegate)
 
     def get_property_termlist(self,key,default = []):
         v = self.get_property(key,None)
         if v and v.is_string(): return logic.parse_clauselist(v.as_string(),nosubst=True)
         return copy.copy(default)
 
-    def add_property_termlist(self,key,term,allow_veto=False,notify=True):
+    def add_property_termlist(self,key,term,allow_veto=False,notify=True,delegate=None):
         term = logic.parse_clause(term,nosubst=True)
         l = self.get_property_termlist(key)
         if term not in l: l.append(term)
-        self.set_property_termlist(key,l,allow_veto,notify)
+        self.set_property_termlist(key,l,allow_veto,notify,delegate)
 
-    def del_property_termlist(self,key,term,allow_veto=False,notify=True):
+    def del_property_termlist(self,key,term,allow_veto=False,notify=True,delegate=None):
         term = logic.parse_clause(term,nosubst=True)
         l = self.get_property_termlist(key)
         if term in l:
             l.remove(term)
-        self.set_property_termlist(key,l,allow_veto,notify)
+        self.set_property_termlist(key,l,allow_veto,notify,delegate)
 
-    def del_property(self,key,allow_veto=False,notify=True):
-        self.set_property(key,None,allow_veto,notify)
+    def del_property(self,key,allow_veto=False,notify=True,delegate=None):
+        self.set_property(key,None,allow_veto,notify,delegate)
 
-    def set_property(self,key,value,allow_veto=False,notify=True):
+    def set_property(self,key,value,allow_veto=False,notify=True,delegate=None):
         if key == 'ordinal':
             if value == self.get_property('cordinal'):
                 value = None
@@ -212,7 +226,7 @@ class Atom(node.Server):
             for lr in self.__listeners[:]:
                 l = lr
                 if l is not None:
-                    if l(True,key,value):
+                    if l.property_veto(key,value):
                         return
 
         old_value = node.Server.get_data(self)
@@ -225,11 +239,11 @@ class Atom(node.Server):
         node.Server.set_data(self,d)
 
         if notify:
-            self.property_change(key,value)
+            self.property_change(key,value,delegate)
             for lr in self.__listeners[:]:
                 l = lr
                 if l is not None:
-                    l(False,key,value)
+                    l.property_change(key,value,delegate)
 
     def get_property(self,key,default=None):
         v = node.Server.get_data(self).as_dict_lookup(key)
@@ -255,7 +269,7 @@ class Atom(node.Server):
                 self.__listeners.remove(l)
                 break
 
-    def property_change(self,key,value):
+    def property_change(self,key,value,delegate):
         pass
 
     def property_veto(self,key,value):
@@ -296,21 +310,6 @@ class Atom(node.Server):
                 return (errors.out_of_range(range,'set'),)
             return (errors.invalid_value(value,'set'),)
         self.change_value(value)
-
-    def add_mode2(self,label,schema,icallback,qcallback,ccallback,acallback=None):
-        #action.check_mode_schema(schema)
-
-        assert label not in self.__modelist
-
-        s = ModeEntry()
-        s.schema = 'v(%d,%s)' % (label,schema)
-        s.icallback = utils.weaken(icallback)
-        s.ccallback = utils.weaken(ccallback)
-        s.qcallback = utils.weaken(qcallback)
-        s.acallback = utils.weaken(acallback)
-
-        self.__modelist[label]=s
-        self.set_property_string('modes',','.join([s.schema for s in self.__modelist.itervalues()]))
 
     def add_verb2(self,label,schema,callback=None,create_action=None,destroy_action=None,clock=False,status_action=None):
         #action.check_verb_schema(schema)
@@ -424,60 +423,6 @@ class Atom(node.Server):
             return self.__slowinvoke(server,interp,args)
         else:
             return self.__fastinvoke(server,args)
-
-    def rpc_mattach(self,arg):
-        args = action.unmarshal(arg)
-        print 'attaching',args
-        index = args[0]
-        id = args[1]
-        args = args[2:]
-        server = self.__modelist[index]
-
-        if server.acallback:
-            if not server.acallback(id,*args):
-                return async.success(action.marshal(None))
-
-        return async.success(action.marshal(id))
-
-    def rpc_mcancel(self,arg):
-        args = action.unmarshal(arg)
-        print 'canceling',args
-        index = args[0]
-        id = args[1]
-        server = self.__modelist[index]
-
-        if server.ccallback(id):
-            return async.success(action.marshal(id))
-
-        return async.success(action.marshal(None))
-
-    def rpc_mfind(self,arg):
-        args = action.unmarshal(arg)
-        index = int(args[0])
-        args = args[1:]
-        server = self.__modelist[index]
-
-        result = tuple(server.qcallback(*args))
-        return async.success(action.marshal(result))
-
-    def rpc_minvoke(self,arg):
-        args = action.unmarshal(arg)
-        index = int(args[0])
-        args = args[1:]
-        server = self.__modelist[index]
-
-        result = server.icallback(*args)
-
-        if not isinstance(result,async.Deferred):
-            return async.success(action.marshal(result))
-
-        deferred = async.Deferred()
-
-        def success(value):
-            deferred.succeeded(action.marshal(value))
-
-        result.setCallback(success).setErrback(deferred.failed)
-        return deferred
 
     def __status_action(self,index,ctx,*arg):
         s = self.__verblist[index]

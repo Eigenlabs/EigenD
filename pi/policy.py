@@ -385,7 +385,7 @@ class ConnectablePolicyImpl:
     def count_connections(self):
         return self.__dconnections+self.__cconnections
 
-    def __add_connection(self,src):
+    def __add_connection(self,src,delegate):
         iid = (max(self.__connection_iids)+1 if self.__connection_iids else 1)
 
         (a,f) = self.make_filter(src,iid)

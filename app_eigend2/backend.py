@@ -151,7 +151,7 @@ class Backend(eigend_native.c2p):
     def __load_ended(self,errors):
         self.frontend.load_ended()
         if errors:
-            self.frontent.alert_dialog('Load Problems','Load Problems','\n'.join(errors))
+            self.frontend.alert_dialog('Load Problems','Load Problems','\n'.join(errors))
 
     def __set_latest_release(self,release):
         self.frontend.set_latest_release(release)

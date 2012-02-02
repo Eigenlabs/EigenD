@@ -135,6 +135,7 @@ enum EigenCommands
     commandStartScanner,
     commandStartStage,
     commandStartWorkbench,
+    commandLibraryDirectory,
     commandMainWindow,
     commandQuit,
     commandDownload,
@@ -522,6 +523,14 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
             {
                 setVisible(true);
                 menuItemsChanged();
+            }
+            break;
+
+        case commandLibraryDirectory:
+            {
+                juce::String libdir(T("file://"));
+                libdir = libdir + pic::global_library_dir().c_str();
+                juce::URL(libdir).launchInDefaultBrowser();
             }
             break;
 
@@ -919,6 +928,7 @@ void EigenMainWindow::getAllCommands (Array <CommandID>& commands)
         commandStartStage,
         commandStartWorkbench,
         commandMainWindow,
+        commandLibraryDirectory,
         commandQuit,
         commandDownload,
         commandResetWarnings,
@@ -1018,6 +1028,10 @@ void EigenMainWindow::getCommandInfo (const CommandID commandID, ApplicationComm
             result.addDefaultKeypress (T('s'), ModifierKeys::commandModifier);
             break;
 
+        case commandLibraryDirectory:
+            result.setInfo (T("Open Library Directory"), T("Open Library Directory"), generalCategory, 0);
+            break;
+
         case commandMainWindow:
             result.setInfo (T("Load Window"), T("Load Window"), generalCategory, 0);
             result.addDefaultKeypress (T('w'), ModifierKeys::commandModifier);
@@ -1091,6 +1105,7 @@ const PopupMenu EigenMainWindow::getMenuForIndex (int topLevelMenuIndex, const S
         menu.addCommandItem (manager(),commandStartScanner);
         menu.addSeparator();
         menu.addCommandItem (manager(),commandResetWarnings);
+        menu.addCommandItem (manager(),commandLibraryDirectory);
     }
 
     if (topLevelMenuIndex == 3)

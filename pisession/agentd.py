@@ -412,8 +412,8 @@ class Agent(agent.Agent):
         self[2] = self.__workspace
 
         constraint = 'or([%s])' % ','.join(['[matches([%s],%s)]' % (m.replace('_',','),m) for m in self.__registry.modules()])
-        self.add_verb2(1,'create([un],None,role(None,[concrete,issubject(create,[role(by,[cnc(~self)])])]))',callback=self.__destroy)
-        self.add_verb2(2,'create([],None,role(None,[abstract,%s]))' % constraint, callback=self.__create)
+        self.add_verb2(1,'create([un],None,role(None,[concrete,issubject(create,[role(by,[cnc(~self)])])]))',callback=self.__uncreateverb)
+        self.add_verb2(2,'create([],None,role(None,[abstract,%s]))' % constraint, callback=self.__createverb)
         self.add_verb2(3,'save([],None,role(None,[abstract]))', self.__saveverb)
         self.add_verb2(4,'load([],None,role(None,[abstract]))', self.__loadverb)
         self.add_verb2(5,'set([],None,role(None,[abstract,matches([startup])]),role(to,[abstract]))', self.__set_startup)
@@ -433,24 +433,15 @@ class Agent(agent.Agent):
 
     def rpc_destroy(self,arg):
         a=logic.parse_clause(arg)
-        ss = self.__workspace.unload(a,True)
-        if ss is None:
+        if not self.__workspace.unload(a,True):
             return async.failure('no such agent')
-        rvt = self.__parse_return(ss)
-        rvt.append(a)
+        return async.success(a)
 
-        return async.success(logic.render_term(tuple(rvt)))
-
-    def __destroy(self,subject,agents):
+    def __uncreateverb(self,subject,agents):
         r = []
         for a in action.concrete_objects(agents):
-            ss = self.__workspace.unload(a,True)
-            if ss is None:
+            if not self.__workspace.unload(a,True):
                 r.append(errors.doesnt_exist('agent','un create'))
-                continue
-
-            rvt = self.__parse_return(ss)
-            r.append(action.removed_return(a,*rvt))
 
         return async.success(r)
 
@@ -481,14 +472,21 @@ class Agent(agent.Agent):
         if not factory:
             return async.failure('no such agent')
 
-        address = self.__workspace.create(factory,address=address)
+        class DummyDelegate():
+            def __init__(self):
+                self.errors = []
+            def add_error(self,msg):
+                self.errors.append(msg)
+
+        delegate = DummyDelegate()
+        address = self.__workspace.create(factory,delegate,address=address)
 
         if not address:
-            return async.failure('address in use')
+            return async.failure(','.join(delegate.errors))
 
         return async.success(address)
 
-    def __create(self,subject,plugin):
+    def __createverb(self,subject,plugin):
         plugin = action.abstract_string(plugin)
         plugin = '_'.join(plugin.split())
         factory = self.__registry.get_module(plugin)
@@ -496,12 +494,19 @@ class Agent(agent.Agent):
         if not factory:
             return async.failure('no such agent')
 
-        address = self.__workspace.create(factory)
+        class DummyDelegate():
+            def __init__(self):
+                self.errors = []
+            def add_error(self,msg):
+                self.errors.append(msg)
+
+        delegate = DummyDelegate()
+        address = self.__workspace.create(factory,delegate)
 
         if not address:
-            return async.failure('address in use')
+            return [action.error_return(m,plugin,'create',ENG) for m in delegate.errors]
 
-        return action.created_return(address)
+        return action.concrete_return(address)
 
     @async.coroutine('internal error')
     def save_file(self,path,desc=''):

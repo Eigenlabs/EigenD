@@ -110,14 +110,8 @@ def timespec_map(arg):
         l=l[3:]
     return m
 
-def initialise_return(*ids):
-    return T('initialise',tuple([T('cnc',n) for n in ids]))
-
 def removed_return(*ids):
     return T('removed',tuple([T('cnc',n) for n in ids]))
-
-def created_return(*ids):
-    return T('created',tuple([T('cnc',n) for n in ids]))
 
 def concrete_return(*ids):
     return T('concrete',tuple([T('cnc',n) for n in ids]))
@@ -164,9 +158,3 @@ def check_verb_schema(schema):
     vocab.check_word('verb',clause.pred)
     vocab.check_words('role',roles,True)
     vocab.check_words('modifier',mod)
-
-def check_mode_schema(schema):
-    clause = logic.parse_term(schema, dict(server='0',self='1',parent='2',grandparent='3',a='0',s='1',p='1',pp='1'))
-    roles = [ a.args[0] for a in clause.args[1:] ]
-    roles = [ r for r in roles if r != 'none' ]
-    vocab.check_words('role',roles)

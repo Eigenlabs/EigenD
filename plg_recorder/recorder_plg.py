@@ -373,7 +373,7 @@ class AuxOutput(bundles.Output):
     def cordinal(self):
         return self.get_property_long('cordinal')
 
-    def property_change(self,key,value):
+    def property_change(self,key,value,delegate):
         if key == 'name':
             value = piw.makestring(name_subst(value.as_string(),'output','input'),0)
             self.__callback(self.cordinal(),True,value)
