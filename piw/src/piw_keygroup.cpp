@@ -23,7 +23,7 @@
 #include <piw/piw_status.h>
 #include <picross/pic_ref.h>
 
-#define KEYGROUP_MAPPER_DEBUG 1
+#define KEYGROUP_MAPPER_DEBUG 0
 
 namespace
 {

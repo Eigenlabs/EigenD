@@ -1038,7 +1038,6 @@ class Agent(agent.Agent):
             col_in = entry[1][1]
             row_out = entry[0][0]
             col_out = entry[0][1]
-            print 'rel calculation',row_in,col_in,row_out,col_out,max_row,rowlengths[row_out]
             row_out_rel = row_out - 1 - max_row
             col_out_rel = col_out - 1 - rowlengths[row_out]
             mapper.set_physical_mapping(row_in,col_in,row_out,col_out,row_out_rel,col_out_rel,sequential)
