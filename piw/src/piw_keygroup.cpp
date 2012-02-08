@@ -308,26 +308,29 @@ struct piw::modekey_handler_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
             piw::data_nb_t key = d.as_tuple_value(1);
             piw::data_nb_t geo = upstream_rowlen_.get();
 
-            int row = row_;
-            int col = column_;
+            if(geo.is_tuple())
+            {
+                int row = row_;
+                int col = column_;
 
 #if KEYGROUP_MAPPER_DEBUG>0
-            pic::logmsg() << "modekey key_filter " << d << " (" << row << "," << col << ")";
+                pic::logmsg() << "modekey key_filter " << d << " (" << row << "," << col << ")";
 #endif
 
-            if(row<0)
-            {
-                row = geo.as_tuplelen() + row + 1;
-            }
+                if(row<0)
+                {
+                    row = geo.as_tuplelen() + row + 1;
+                }
 
-            if(col<0 && row<=int(geo.as_tuplelen()))
-            {
-                col = geo.as_tuple_value(row-1).as_long();
-            }
+                if(col<0 && row<=int(geo.as_tuplelen()))
+                {
+                    col = geo.as_tuple_value(row-1).as_long();
+                }
 
-            if(int(key.as_tuple_value(0).as_float())==row && int(key.as_tuple_value(1).as_float())==col)
-            {
-                return true;
+                if(int(key.as_tuple_value(0).as_float())==row && int(key.as_tuple_value(1).as_float())==col)
+                {
+                    return true;
+                }
             }
         }
 

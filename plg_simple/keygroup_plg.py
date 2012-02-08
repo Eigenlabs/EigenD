@@ -627,24 +627,37 @@ class Agent(agent.Agent):
         try:
             if not c.is_dict(): return 0
 
+            refresh_mappings = False
+
             # store the upstream row lengths
             rl = c.as_dict_lookup('rowlen')
+            new_rl = None
             if rl.is_tuple():
                 self.modekey_handler.set_upstream_rowlength(rl)
-                self.__upstream_rowlen = [ i.as_long() for i in utils.tuple_items(rl) ]
+                new_rl = [ i.as_long() for i in utils.tuple_items(rl) ]
             else:
-                self.__upstream_rowlen = None
+                self.modekey_handler.set_upstream_rowlength(piw.makenull(0))
+
+            if new_rl != self.__upstream_rowlen:
+                refresh_mappings = True
+
+            self.__upstream_rowlen = new_rl
 
             # store the upstream course lengths
             cl = c.as_dict_lookup('courselen')
+            new_cl = None
             if cl.is_tuple():
-                self.__upstream_courselen = [ i.as_long() for i in utils.tuple_items(cl) ]
-            else:
-                self.__upstream_courselen = None
+                new_cl = [ i.as_long() for i in utils.tuple_items(cl) ]
+
+            if new_cl != self.__upstream_courselen:
+                refresh_mappings = True
+
+            self.__upstream_courselen = new_cl
 
             # refresh the mappings
-            self.__set_physical_mapping(self.__current_physical_mapping())
-            self.__set_musical_mapping(self.__current_musical_mapping())
+            if refresh_mappings:
+                self.__set_physical_mapping(self.__current_physical_mapping())
+                self.__set_musical_mapping(self.__current_musical_mapping())
 
             # calculate the total number of musical keys upstream
             total_keys = 0
