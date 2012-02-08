@@ -28,8 +28,8 @@
 namespace
 {
     typedef std::pair<int,int> coordinate_t;
-    typedef pic::lckmap_t<const coordinate_t,std::pair<const coordinate_t,int> >::lcktype forward_mapping_t;
-    typedef pic::lckmap_t<const coordinate_t,const coordinate_t>::lcktype reverse_mapping_t;
+    typedef pic::lckmap_t<coordinate_t,std::pair<coordinate_t,int> >::lcktype forward_mapping_t;
+    typedef pic::lckmap_t<coordinate_t,coordinate_t>::lcktype reverse_mapping_t;
 
     struct mapping_t
     {
