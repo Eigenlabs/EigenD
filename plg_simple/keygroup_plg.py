@@ -525,8 +525,8 @@ class Agent(agent.Agent):
         self[23] = atom.Atom(domain=domain.Aniso(), names='mode key input', policy=policy.FastPolicy(self.modepulse,policy.FilterStreamPolicy(self.modekey_handler.key_filter())))
         self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key row', init=None, policy=atom.default_policy(self.__change_mode_key_row))
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key column', init=None, policy=atom.default_policy(self.__change_mode_key_column))
-        self[27] = atom.Atom(domain=domain.String(), init='[]', names='physical map', policy=atom.default_policy(self.__set_physical_key_map))
-        self[34] = atom.Atom(domain=domain.String(), init='[]', names='musical map', policy=atom.default_policy(self.__set_musical_key_map))
+        self[27] = atom.Atom(domain=domain.String(), init='[]', names='physical map',protocols='mapper', policy=atom.default_policy(self.__set_physical_key_map))
+        self[34] = atom.Atom(domain=domain.String(), init='[]', names='musical map',protocols='mapper', policy=atom.default_policy(self.__set_musical_key_map))
         self[35] = atom.Atom(domain=domain.String(), init='[]', names='course offset', policy=atom.default_policy(self.__set_course_offset))
 
         self.add_verb2(3,'set([un],None)',callback=self.__untune)
