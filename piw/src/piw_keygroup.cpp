@@ -121,8 +121,8 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
         pic::flipflop_t<mapping_t>::guard_t gm(musical_mapping_);
         pic::flipflop_t<mapping_t>::guard_t gp(physical_mapping_);
 
-        if(gp.value().forward.empty() ||
-           gm.value().forward.empty() ||
+        if(gp.value().reverse.empty() ||
+           gm.value().reverse.empty() ||
            !in.is_blob())
         {
 #if KEYGROUP_MAPPER_DEBUG>0

@@ -73,7 +73,6 @@ class Controller:
                 v = d.as_dict_lookup(x)
                 self.__dict.put_ctl(x,v)
             self.__state.set_data(self.__dict.get_ctl_dict().make_normal())
-            self.__agent.controller_changed()
 
     def thing_changed(self,d,kk):
         self.__dict.put(kk,d)
@@ -140,12 +139,10 @@ class Controller:
     def setlist(self,name,l):
         self.__dict.put_ctl(name, utils.maketuple(l,piw.tsd_time()))
         self.__state.set_data(self.__dict.get_ctl_dict())
-        self.__agent.controller_changed()
 
     def settuple(self,name,t):
         self.__dict.put_ctl(name, t)
         self.__state.set_data(self.__dict.get_ctl_dict())
-        self.__agent.controller_changed()
 
     def getlist(self,name):
         d = self.gettuple(name)
@@ -525,8 +522,8 @@ class Agent(agent.Agent):
         self[23] = atom.Atom(domain=domain.Aniso(), names='mode key input', policy=policy.FastPolicy(self.modepulse,policy.FilterStreamPolicy(self.modekey_handler.key_filter())))
         self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key row', init=None, policy=atom.default_policy(self.__change_mode_key_row))
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key column', init=None, policy=atom.default_policy(self.__change_mode_key_column))
-        self[27] = atom.Atom(domain=domain.String(), init='[]', names='physical map',protocols='mapper', policy=atom.default_policy(self.__set_physical_key_map))
-        self[34] = atom.Atom(domain=domain.String(), init='[]', names='musical map',protocols='mapper', policy=atom.default_policy(self.__set_musical_key_map))
+        self[27] = atom.Atom(domain=domain.String(), init='[]', names='physical map', protocols='mapper', policy=atom.default_policy(self.__set_physical_key_map))
+        self[34] = atom.Atom(domain=domain.String(), init='[]', names='musical map', protocols='mapper', policy=atom.default_policy(self.__set_musical_key_map))
         self[35] = atom.Atom(domain=domain.String(), init='[]', names='course offset', policy=atom.default_policy(self.__set_course_offset))
 
         self.add_verb2(3,'set([un],None)',callback=self.__untune)
@@ -998,9 +995,6 @@ class Agent(agent.Agent):
         # activate the new physical mapping
         self.__set_physical_mapping(physical_mapping)
 
-    def controller_changed(self):
-        self[35].set_value(logic.render_term(self.controller.get_course_offsets()))
-
     def __current_physical_mapping(self):
         return logic.parse_clause(self[27].get_value())
 
@@ -1059,8 +1053,13 @@ class Agent(agent.Agent):
         mapper.activate_physical_mapping()
 
         # adapt the controller stream
-        self.controller.setlist('rowlen', [piw.makelong(r,0) for r in rowlengths.values()])
-        self.controller.setlist('rowoffset', [piw.makelong(r,0) if r is not None else piw.makenull(0) for r in rowoffsets])
+        if len(mapping):
+            self.controller.setlist('rowlen', [piw.makelong(r,0) for r in rowlengths.values()])
+            self.controller.setlist('rowoffset', [piw.makelong(r,0) if r is not None else piw.makenull(0) for r in rowoffsets])
+        else:
+            # if the mapping was empty, use the upstream row lengths and no offsets
+            self.controller.setlist('rowlen', [piw.makelong(r,0) for r in self.__upstream_rowlen])
+            self.controller.setlist('rowoffset', [piw.makelong(0,0) for r in self.__upstream_rowlen])
 
         # update the outputs status indexes
         self[1].update_status_indexes()
@@ -1114,7 +1113,16 @@ class Agent(agent.Agent):
         mapper.activate_musical_mapping()
 
         # adapt the controller stream
-        self.controller.setlist('courselen', [piw.makelong(c,0) for c in courselengths.values()])
+        if len(mapping):
+            self.controller.setlist('courselen', [piw.makelong(c,0) for c in courselengths.values()])
+            courseoffsets = logic.parse_clause(self[34].get_value())
+            if not courseoffsets:
+                courseoffsets = list()
+            self.controller.setlist('courseoffset', [piw.makefloat(o,0) for o in courseoffsets])
+        else:
+            # if the mapping was empty, use the upstream courselen
+            self.controller.setlist('courselen', [piw.makelong(c,0) for c in self.__upstream_courselen])
+            self.controller.setlist('courseoffset', [piw.makefloat(0.0,0) for c in self.__upstream_courselen])
 
         # store the mapping description in the state of the agent
         self[34].set_value(logic.render_term(mapping))
