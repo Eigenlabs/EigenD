@@ -41,15 +41,16 @@ class Plumber:
         connect([un],global_unconnect,role(None,[concrete]))
         """
         print 'un connect',t
-        t = self.database.to_database_id(action.concrete_object(t))
-        tproxy = self.database.find_item(t)
-        print '__unconnect',t
-        objs = self.database.search_any_key('W',T('input_list',t,V('W')))
-        print '__unconnect',t,objs
+        for o in action.concrete_objects(t):
+            t2 = self.database.to_database_id(o)
+            tproxy = self.database.find_item(t2)
+            print '__unconnect',t2
+            objs = self.database.search_any_key('W',T('input_list',t2,V('W')))
+            print '__unconnect',t2,objs
 
-        for (s,m) in objs:
-            sproxy = self.database.find_item(s)
-            yield interpreter.RpcAdapter(sproxy.invoke_rpc('clrconnect',''))
+            for (s,m) in objs:
+                sproxy = self.database.find_item(s)
+                yield interpreter.RpcAdapter(sproxy.invoke_rpc('clrconnect',''))
 
         yield async.Coroutine.success()
 
@@ -59,18 +60,19 @@ class Plumber:
         connect([un],global_unconnect_from,role(None,[concrete]),role(from,[concrete,singular]))
         """
         f = self.database.to_database_id(action.concrete_object(f))
-        t = self.database.to_database_id(action.concrete_object(t))
-        print 'un connect',t,'from',f
-        tproxy = self.database.find_item(t)
-        objs = self.database.search_any_key('W',T('unconnect_from_list',t,f,V('W')))
+        for o in action.concrete_objects(t):
+            t2 = self.database.to_database_id(o)
+            print 'un connect',t2,'from',f
+            tproxy = self.database.find_item(t2)
+            objs = self.database.search_any_key('W',T('unconnect_from_list',t2,f,V('W')))
 
-        for (s,m) in objs:
-            sproxy = self.database.find_item(s)
-            cnxs = logic.parse_clauselist(sproxy.get_master())
-            for cnx in cnxs:
-                if logic.is_pred_arity(cnx,'conn',5) and self.database.to_database_id(cnx.args[2])==m:
-                    print 'disconnect',cnx,'from',s
-                    yield interpreter.RpcAdapter(sproxy.invoke_rpc('disconnect',logic.render_term(cnx)))
+            for (s,m) in objs:
+                sproxy = self.database.find_item(s)
+                cnxs = logic.parse_clauselist(sproxy.get_master())
+                for cnx in cnxs:
+                    if logic.is_pred_arity(cnx,'conn',5) and self.database.to_database_id(cnx.args[2])==m:
+                        print 'disconnect',cnx,'from',s
+                        yield interpreter.RpcAdapter(sproxy.invoke_rpc('disconnect',logic.render_term(cnx)))
 
         yield async.Coroutine.success()
 
