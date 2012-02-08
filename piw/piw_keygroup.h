@@ -25,6 +25,23 @@
 
 namespace piw
 {
+    class PIW_DECLSPEC_CLASS modekey_handler_t
+    {
+        public:
+            class impl_t;
+
+        public:
+            modekey_handler_t();
+            ~modekey_handler_t();
+
+            piw::d2b_nb_t key_filter();
+            void set_modekey(int row, int column);
+            void set_upstream_rowlength(const piw::data_t &rowlen);
+
+        private:
+            impl_t *impl_;
+    };
+
     class PIW_DECLSPEC_CLASS keygroup_mapper_t
     {
         public:
@@ -38,12 +55,15 @@ namespace piw
             piw::d2d_nb_t light_filter();
 
             void clear_mapping();
-            void set_mapping(unsigned in, unsigned out);
             void activate_mapping();
-            void set_upstream_rowlen(data_t rowlen);
-            void set_rowlen(data_t rowlen);
-            void set_rowoffset(data_t rowoffset);
-            void set_courselen(data_t courselen);
+
+            void clear_physical_mapping();
+            void set_physical_mapping(int row_in, int column_in, int row_out, int column_out, int rel_row_out, int rel_column_out, unsigned sequential_out);
+            void activate_physical_mapping();
+
+            void clear_musical_mapping();
+            void set_musical_mapping(int course_in, int key_in, int course_out, int key_out, int rel_course_out, int rel_key_out, unsigned sequential_out);
+            void activate_musical_mapping();
 
         private:
             impl_t *impl_;

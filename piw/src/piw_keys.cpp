@@ -73,7 +73,7 @@ unsigned piw::calc_keynum(piw::data_t geo, int row, int col)
     return 0;
 }
 
-PIW_DECLSPEC_FUNC(piw::data_nb_t) piw::key_position(unsigned key, const piw::data_nb_t &lengths, unsigned long long t)
+piw::data_nb_t piw::key_position(unsigned key, const piw::data_nb_t &lengths, unsigned long long t)
 {
     int row,col;
 
@@ -90,7 +90,7 @@ PIW_DECLSPEC_FUNC(piw::data_nb_t) piw::key_position(unsigned key, const piw::dat
     return d;
 }
 
-PIW_DECLSPEC_FUNC(void) piw::key_position(unsigned key, const piw::data_nb_t &lengths, int *row, int *col)
+void piw::key_position(unsigned key, const piw::data_nb_t &lengths, int *row, int *col)
 {
     *row = 0;
     *col = 0;

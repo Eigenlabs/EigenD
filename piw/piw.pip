@@ -58,6 +58,7 @@
 #include <piw/piw_status.h>
 #include <piw/piw_controllerdict.h>
 #include <piw/piw_strummer.h>
+#include <piw/piw_keys.h>
 >>>
 
 from picross_native[picross/picross.pip] import notify, f_string, f2f, status
@@ -537,18 +538,34 @@ class talker_mapper[piw::talker_mapper_t]
     void set_mapping(unsigned, unsigned)
 }
 
+unsigned calc_keynum[piw::calc_keynum](data, int, int)
+
+class modekey_handler[piw::modekey_handler_t]
+{
+    modekey_handler()
+
+    d2b_nb key_filter()
+    void set_modekey(int,int)
+    void set_upstream_rowlength(const data &)
+}
+
 class keygroup_mapper[piw::keygroup_mapper_t]
 {
     keygroup_mapper()
+
     d2d_nb key_filter()
     d2d_nb light_filter()
+
     void clear_mapping()
     void activate_mapping()
-    void set_mapping(unsigned, unsigned)
-    void set_upstream_rowlen(data)
-    void set_rowlen(data)
-    void set_rowoffset(data)
-    void set_courselen(data)
+
+    void clear_physical_mapping()
+    void set_physical_mapping(int,int,int,int,int,int,unsigned)
+    void activate_physical_mapping()
+
+    void clear_musical_mapping()
+    void set_musical_mapping(int,int,int,int,int,int,unsigned)
+    void activate_musical_mapping()
 }
 
 class sclone[piw::sclone_t] /gc/
@@ -715,20 +732,6 @@ class d2b_nb[piw::d2b_nb_t] /gc/
         """
     bool __call__[invoke](const data_nb &)
 }
-
-<<<
-static PyObject *piw_make_d2b_nb_functor(PyObject *args);
->>>
-
-inline make_d2b_nb_functor(args)
-    """
-    make_d2b_nb_functor(callable) -> new d2b_nb functor
-    
-    Make d2b_nb functor from python callable
-    """
-<<<
-   return piw_make_d2b_nb_functor(args);
->>>
 
 class d2d[piw::d2d_t] /gc/
     """
@@ -2569,44 +2572,6 @@ struct piw_d2b_nb_sink_t: public piw::d2b_nb_t::sinktype_t
     PyInterpreterState *_interp;
     PyObject *_callable;
 };
-
-PyObject *piw_make_d2b_nb_functor(PyObject *args)
-{
-    PyObject *o;
-
-    PyEval_InitThreads();
-
-    if(!PyArg_ParseTuple(args,"O",&o))
-    {
-        return 0;
-    }
-
-    if(!PyCallable_Check(o))
-    {
-        PyErr_SetString(PyExc_TypeError,"can't make d2b functor from non callable");
-        return 0;
-    }
-
-    Py_INCREF(o);
-
-    piw::d2b_nb_t *c = 0;
-
-    try
-    {
-        PyInterpreterState *interp = PyThreadState_Get()->interp;
-        {   unlock_p2c unlock;
-            c = new piw::d2b_nb_t(pic::ref(new piw_d2b_nb_sink_t(interp,o)));
-        }
-    }
-    catch(...)
-    {
-        PyErr_SetString(PyExc_RuntimeError,"unknown c++ exception creating functor");
-        Py_DECREF(o);
-        return 0;
-    }
-
-    return d2b_nb_wrap_(c,true);
-}
 
 struct piw_dd2d_sink_t: public piw::dd2d_t::sinktype_t
 {

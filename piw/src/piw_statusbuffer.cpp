@@ -70,7 +70,7 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
         {
             piw::statusdata_t::int2c(0,dp+0);
             piw::statusdata_t::int2c(n,dp+2);
-            piw::statusdata_t::status2c(false,BCTSTATUS_BLINK,dp+4);
+            piw::statusdata_t::status2c(true,BCTSTATUS_BLINK,dp+4);
             dp+=5;
         }
 

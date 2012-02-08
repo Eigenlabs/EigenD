@@ -50,7 +50,7 @@ def rgetsamples(res):
 
 def wav_resource(name):
     print 'loading wav resource',name
-    uf = resource.user_resource_file('Loop',name,version='')
+    uf = resource.user_resource_file(resource.loop_dir,name,version='')
     if os.path.isfile(uf):
         return fgetsamples(uf)
     return rgetsamples('plg_loop/%s'%name)

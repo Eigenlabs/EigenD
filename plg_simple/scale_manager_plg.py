@@ -277,7 +277,7 @@ class VirtualScale(atom.Atom):
     def __init__(self, activate):
         atom.Atom.__init__(self,names='scale',protocols='virtual browse')
         self.descriptions = {}
-        self.__user = resource.user_resource_file('Scale Manager','User Scales.txt',version='')
+        self.__user = resource.user_resource_file(resource.scalemanager_dir,'User Scales.txt',version='')
         self.__mtime = None
         self.__selected = None
         self.__selected_name = None

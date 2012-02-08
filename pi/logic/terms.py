@@ -111,7 +111,7 @@ def is_const(term):
     return True
 
 def is_list(term):
-    return isinstance(term,tuple)
+    return isinstance(term,tuple) or isinstance(term,list)
 
 def expand(term,env):
     if is_bound(term):
