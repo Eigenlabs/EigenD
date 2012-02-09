@@ -574,6 +574,32 @@ class Agent(agent.Agent):
         self[1] = OutputList(self)
         self.outputchoice = utils.make_change_nb(piw.slowchange(utils.changify(self[1].output_selector)))
 
+    def rpc_fetch_sourcekeys(self,arg):
+        name = str(arg)
+        result = []
+
+        if name == self[27].get_property_string('cname') and self.__upstream_rowlen:
+            row = 0
+            for rl in self.__upstream_rowlen:
+                row += 1
+                for col in range(1,rl+1):
+                    result.append((row,col))
+        elif name == self[34].get_property_string('cname') and self.__upstream_courselen:
+            course = 0
+            for cl in self.__upstream_courselen:
+                course += 1
+                for key in range(1,cl+1):
+                    result.append((course,key))
+
+        return logic.render_term(result)
+
+    def rpc_choose(self,arg):
+        course = int(arg)
+        self.__choose_base(course)
+
+    def rpc_unchoose(self,arg):
+        self.__unchoose_base()
+
     def __mode_selection(self,d):
         if d.as_long():
             piw.changelist_connect_nb(self.keypulse,self.outputchoice)
@@ -939,6 +965,9 @@ class Agent(agent.Agent):
             self.status_buffer.send()
 
     def __unchoose(self,subject):
+        self.__unchoose_base()
+
+    def __unchoose_base(self):
         self.__choices = None
         self.__coursekeys = None
         self.__mappedkeys = None
