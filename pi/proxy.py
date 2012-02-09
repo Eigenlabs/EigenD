@@ -82,6 +82,12 @@ class AtomProxy(node.Client):
 
         self.set_internal(const.data_node,self.__data)
 
+    def set_data_monitor(self,callback):
+        self.__data.set_change_handler(callback)
+
+    def clear_data_monitor(self):
+        self.__data.clear_change_handler()
+
     def set_data_clone(self,clone):
         self.__data.set_clone(clone)
 

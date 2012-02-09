@@ -1258,6 +1258,8 @@ class Database(logic.Engine):
         self.__canonical = PropertyCache()
         self.__verbcache = VerbCache()
         self.__lexicon = Lexicon(callback=lexicon_changed)
+        self.__data_listener=None
+        self.__monitors={}
 
         #print 'database timestamp = 1'
         self.__timestamp = 1
@@ -1285,6 +1287,16 @@ class Database(logic.Engine):
             
     def get_timestamp(self):
         return self.__timestamp
+
+    def set_data_monitor(self,aid,callback):
+        p = self.find_item(aid)
+        if p:
+            p.set_data_monitor(callback)
+
+    def clear_data_monitor(self,aid):
+        p = self.find_item(aid)
+        if p:
+            p.clear_data_monitor()
 
     def update_all_agents(self):
         new_timstamp = piw.tsd_time()
@@ -1839,6 +1851,40 @@ class Database(logic.Engine):
 
     def filter_term(self,filt,term):
         return filter_term(filt,term)
+
+    def set_monitor_listener(self, listener):
+        if self.__data_listener:
+            self.__data_listener = listener
+            if not listener:
+                for pid in self.__monitors:
+                    self.clear_data_monitor(pid)
+        else:
+            self.__data_listener = listener
+            if listener:
+                for pid in self.__monitors:
+                    self.set_data_monitor(pid,lambda d,p=pid: listener(p,d))
+
+    def clear_monitor_listener(self):
+        self.set_monitor_listener(None)
+
+    def start_monitor(self,pid):
+        if pid in self.__monitors:
+            self.__monitors[pid] = self.__monitors[pid]+1
+            return
+
+        self.__monitors[pid]=1
+
+        if self.__data_listener:
+            self.set_data_monitor(pid,lambda d,p=pid: self.__data_listener(p,d))
+
+    def stop_monitor(self,pid):
+        if pid in self.__monitors:
+            c = self.__monitors[pid]-1
+            self.__monitors[pid] = c
+            if not c:
+                del self.__monitors[pid]
+                if self.__data_listener:
+                    self.clear_data_monitor(pid)
 
 
 class SimpleDatabase(Database):
