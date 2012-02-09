@@ -689,7 +689,7 @@ namespace
         {
             if(getenv("PI_FULLNET")==0)
             {
-                pic::logmsg() << "warning: networking disabled";
+                //pic::logmsg() << "warning: networking disabled";
                 local_ = true;
             }
         }
@@ -856,7 +856,6 @@ struct pia::udpnet_t::impl_t: netbase_t
 
     ~impl_t()
     {
-		pic::logmsg() << "deleting udpnet object and calling network shutdown"; 
 		shutdown();
     }
 
@@ -889,7 +888,6 @@ struct pia::udpnet_t::impl_t: netbase_t
 
 pia::udpnet_t::udpnet_t(pic::nballocator_t *a, bool clock)
 {
-	pic::logmsg() << "constructing udp network";
 	pia_logguard_t guard(0,a);
 	impl_=new impl_t(a,clock);
 }
