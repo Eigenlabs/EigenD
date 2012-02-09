@@ -1055,7 +1055,7 @@ namespace
             skipping_=false;
 
             source_start(0,id_.restamp(t),output_);
-            output_.add_value(5, piw::makekey(index_, row_, column_, index_, 1, index_, t));
+            output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_LIGHT,t));
             running_=true;
             maxpressure_=0;
             gated_=0;
@@ -1088,12 +1088,14 @@ namespace
             {
                 gated_=3;
                 gated_count_=20;
+                output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_HARD,t));
                 output_.add_value(1,piw::makefloat_bounded_nb(3,0,0,3,t));
             }
         }
 
         if(!gated_ && maxpressure_ > keyboard_->threshold1_)
         {
+            output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_SOFT,t));
             output_.add_value(1,piw::makefloat_bounded_nb(3,0,0,2,t));
             gated_=2;
             gated_count_=20;

@@ -19,11 +19,12 @@
 
 #include <piw/piw_keys.h>
 
-piw::data_nb_t piw::makekey(unsigned pseq, int row, int col, unsigned mseq, int course, int key, unsigned long long t)
+piw::data_nb_t piw::makekey(unsigned pseq, int row, int col, unsigned mseq, int course, int key, piw::hardness_t hardness, unsigned long long t)
 {
     piw::data_nb_t physical_key = piw::tuplenull_nb(t);
     physical_key = piw::tupleadd_nb(physical_key, piw::makefloat_nb(row,t));
     physical_key = piw::tupleadd_nb(physical_key, piw::makefloat_nb(col,t));
+
     piw::data_nb_t musical_key = piw::tuplenull_nb(t);
     musical_key = piw::tupleadd_nb(musical_key, piw::makefloat_nb(course,t));
     musical_key = piw::tupleadd_nb(musical_key, piw::makefloat_nb(key,t));
@@ -33,6 +34,7 @@ piw::data_nb_t piw::makekey(unsigned pseq, int row, int col, unsigned mseq, int 
     result = piw::tupleadd_nb(result, physical_key);
     result = piw::tupleadd_nb(result, piw::makelong_nb(mseq,t));
     result = piw::tupleadd_nb(result, musical_key);
+    result = piw::tupleadd_nb(result, piw::makelong_nb(hardness,t));
 
     return result;
 }
@@ -42,9 +44,9 @@ bool piw::is_key(const piw::data_t &d)
     return piw::decode_key(d.make_nb());
 }
 
-bool piw::decode_key(const piw::data_nb_t &d, unsigned *pseq, float *row, float *col, unsigned *mseq, float *course, float *key)
+bool piw::decode_key(const piw::data_nb_t &d, unsigned *pseq, float *row, float *col, unsigned *mseq, float *course, float *key, piw::hardness_t *hardness)
 {
-    if(!d.is_tuple() || d.as_tuplelen() != 4)
+    if(!d.is_tuple() || d.as_tuplelen() != 5)
     {
         return false;
     }
@@ -53,10 +55,12 @@ bool piw::decode_key(const piw::data_nb_t &d, unsigned *pseq, float *row, float 
     piw::data_nb_t d_pkey = d.as_tuple_value(1);
     piw::data_nb_t d_mseq = d.as_tuple_value(2);
     piw::data_nb_t d_mkey = d.as_tuple_value(3);
+    piw::data_nb_t d_hardness = d.as_tuple_value(4);
 
     if(!d_pseq.is_long() || !d_mseq.is_long() ||
        !d_pkey.is_tuple() || d_pkey.as_tuplelen() != 2 ||
-       !d_mkey.is_tuple() || d_mkey.as_tuplelen() != 2)
+       !d_mkey.is_tuple() || d_mkey.as_tuplelen() != 2 ||
+       !d_hardness.is_long())
     {
         return false;
     }
@@ -77,6 +81,7 @@ bool piw::decode_key(const piw::data_nb_t &d, unsigned *pseq, float *row, float 
     if(mseq) *mseq = d_mseq.as_long();
     if(course) *course = d_course.as_float();
     if(key) *key = d_key.as_float();
+    if(hardness) *hardness = (piw::hardness_t)(d_hardness.as_long());
 
     return true;
 }

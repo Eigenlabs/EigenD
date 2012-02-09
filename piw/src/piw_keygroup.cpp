@@ -68,7 +68,8 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
         }
 
         float row,col,course,key;
-        if(!piw::decode_key(in,0,&row,&col,0,&course,&key))
+        piw::hardness_t hardness;
+        if(!piw::decode_key(in,0,&row,&col,0,&course,&key,&hardness))
         {
 #if KEYGROUP_MAPPER_DEBUG>0
             pic::logmsg() << "forward_mapping out " << in;
@@ -82,7 +83,7 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
         forward_mapping_t::const_iterator im = gm.value().forward.find(coord_mus);
         if(ip!=gp.value().forward.end() && im!=gm.value().forward.end())
         {
-            piw::data_nb_t result = piw::makekey(ip->second.second,ip->second.first.first,ip->second.first.second,im->second.second,im->second.first.first,im->second.first.second,in.time());
+            piw::data_nb_t result = piw::makekey(ip->second.second,ip->second.first.first,ip->second.first.second,im->second.second,im->second.first.first,im->second.first.second,hardness,in.time());
 
 #if KEYGROUP_MAPPER_DEBUG>0
             pic::logmsg() << "forward_mapping out " << result;

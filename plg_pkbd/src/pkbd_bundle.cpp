@@ -684,7 +684,7 @@ namespace
             if(active)
             {
                 output_ = piw::xevent_data_buffer_t(17,PIW_DATAQUEUE_SIZE_NORM);
-                output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,t));
+                output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_HARD,t));
                 source_start(0,id_.restamp(t),output_);
             }
             else
@@ -754,7 +754,7 @@ namespace
             output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,0,t));
             output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,0,t));
             output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,0,t));
-            output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,t));
+            output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_LIGHT,t));
 
             start_=t;
             source_start(0,id_.restamp(t), output_);
@@ -779,6 +779,7 @@ namespace
 
             if(maxpressure > keyboard->threshold2)
             {
+                output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_HARD,t));
                 output_.add_value(1,piw::makefloat_bounded_nb(3.0,0.0,0.0,3.0,t));
                 gated = true;
             }
@@ -786,6 +787,7 @@ namespace
 
         if(!gated && maxpressure > keyboard->threshold1)
         {
+            output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_SOFT,t));
             output_.add_value(1,piw::makefloat_bounded_nb(3.0,0.0,0.0,2.0,t));
             gated=true;
         }
