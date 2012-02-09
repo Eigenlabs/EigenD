@@ -538,7 +538,8 @@ class talker_mapper[piw::talker_mapper_t]
     void set_mapping(unsigned, unsigned)
 }
 
-unsigned calc_keynum[piw::calc_keynum](data, int, int)
+bool is_key[piw::is_key](const data &)
+unsigned key_sequential[piw::key_sequential](const data &, int, int)
 
 class modekey_handler[piw::modekey_handler_t]
 {

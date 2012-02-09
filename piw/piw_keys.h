@@ -26,9 +26,11 @@
 
 namespace piw
 {
-    PIW_DECLSPEC_FUNC(unsigned) calc_keynum(piw::data_t geo, int row, int col);
-    PIW_DECLSPEC_FUNC(piw::data_nb_t) key_position(unsigned key, const piw::data_nb_t &lengths, unsigned long long t);
-    PIW_DECLSPEC_FUNC(void) key_position(unsigned key, const piw::data_nb_t &lengths, int *row, int *col);
+    PIW_DECLSPEC_FUNC(piw::data_nb_t) makekey(unsigned pseq, int row, int col, unsigned mseq, int course, int key, unsigned long long t);
+    PIW_DECLSPEC_FUNC(bool) is_key(const piw::data_t &d);
+    PIW_DECLSPEC_FUNC(bool) decode_key(const piw::data_nb_t &d, unsigned *pseq=0, float *row=0, float *col=0, unsigned *mseq=0, float *course=0, float *key=0);
+    PIW_DECLSPEC_FUNC(unsigned) key_sequential(const piw::data_t &lengths, int x, int x);
+    PIW_DECLSPEC_FUNC(void) key_coordinates(unsigned sequential, const piw::data_nb_t &lengths, int *x, int *y);
 };
 
 #endif

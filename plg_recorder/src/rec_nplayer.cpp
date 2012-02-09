@@ -214,41 +214,31 @@ void ::kwire_t::ticked(unsigned long long f,unsigned long long t)
         source_start(0,event_,buffer_);
 
         // synthesize the key press of the note signal
-        piw::data_nb_t note = piw::makelong_nb(note_,time_);
-
-        piw::data_nb_t key = piw::tuplenull_nb(time_);
-        key = piw::tupleadd_nb(key,note);
-
+        int row,col;
         piw::data_nb_t rowlen = nplayer_->courselen_;
         if(rowlen.is_null())
         {
-            piw::data_nb_t rowposition = piw::tuplenull_nb(time_);
-            rowposition = piw::tupleadd_nb(rowposition,piw::makefloat_nb(1,time_));
-            rowposition = piw::tupleadd_nb(rowposition,piw::makefloat_nb(note_,time_));
-
-            key = piw::tupleadd_nb(key,rowposition);
+            row = 1;
+            col = note_;
         }
         else
         {
-            key = piw::tupleadd_nb(key,piw::key_position(note_,rowlen,time_));
+            piw::key_coordinates(note_,rowlen,&row,&col);
         }
 
-        key = piw::tupleadd_nb(key,note);
-
+        int course,key;
         piw::data_nb_t courselen = nplayer_->courselen_;
         if(courselen.is_null())
         {
-            piw::data_nb_t courseposition = piw::tuplenull_nb(time_);
-            courseposition = piw::tupleadd_nb(courseposition,piw::makefloat_nb(1,time_));
-            courseposition = piw::tupleadd_nb(courseposition,piw::makefloat_nb(note_,time_));
-
-            key = piw::tupleadd_nb(key,courseposition);
+            course = 1;
+            key = note_;
         }
         else
         {
-            key = piw::tupleadd_nb(key,piw::key_position(note_,courselen,time_));
+            piw::key_coordinates(note_,courselen,&course,&key);
         }
-        buffer_.add_value(sig_key_,key);
+
+        buffer_.add_value(sig_key_,piw::makekey(note_,row,col,note_,course,key,time_));
     }
 
     while(time_<=t)

@@ -206,20 +206,11 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
     {
         ctlset.clear();
 
-        if(!key.is_tuple() || key.as_tuplelen() != 4) return;
-
-        int kn = key.as_tuple_value(0).as_long();
-        piw::data_nb_t coord = key.as_tuple_value(1);
-
-        if(!coord.is_tuple() || coord.as_tuplelen() !=2 || !coord.as_tuple_value(0).is_float() || !coord.as_tuple_value(1).is_float()) return;
-
-        int kr = coord.as_tuple_value(0).as_float();
-        int kc = coord.as_tuple_value(1).as_float();
-
-        if(kr==0 && kc==0)
-        {
-            return;
-        }
+        unsigned kn = 0;
+        float kr = 0;
+        float kc = 0;
+        if(!piw::decode_key(key,&kn,&kr,&kc)) return;
+        if(kr==0 && kc==0) { return; }
 
         piw::data_nb_t rowlen;
         int nr = 0;
@@ -258,7 +249,7 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
 
             if(r==0)
             {
-                if(c==kn)
+                if(unsigned(c)==kn)
                 {
                     ctlset.insert((*li)->client_);
                     continue;

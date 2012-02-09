@@ -304,11 +304,11 @@ class Output(atom.Atom):
             
             self.__tee = None
     
-    def calc_keynum(self):
+    def key_sequential(self):
         return self.__agent.calc_physical_keynum(self[24].get_value(),self[25].get_value())
 
     def update_status_index(self):
-        keynum = self.calc_keynum()
+        keynum = self.key_sequential()
         if keynum:
             self.__agent.mode_selector.gate_status_index(self.__slot,keynum)
         
@@ -402,7 +402,7 @@ class OutputList(atom.Atom):
                 elif row == 0 and ocol == keynum:
                     select = True
                 else:
-                    okeynum = o.calc_keynum()
+                    okeynum = o.key_sequential()
                     if okeynum == keynum:
                         select = True
 
@@ -693,7 +693,7 @@ class Agent(agent.Agent):
             return 0
 
     def calc_physical_keynum(self,row,col):
-        return piw.calc_keynum(self.controller.gettuple('rowlen'),row,col)
+        return piw.key_sequential(self.controller.gettuple('rowlen'),row,col)
 
     def __upstream(self,c):
         size = self.__decode(c)
@@ -1144,7 +1144,7 @@ class Agent(agent.Agent):
         # adapt the controller stream
         if len(mapping):
             self.controller.setlist('courselen', [piw.makelong(c,0) for c in courselengths.values()])
-            courseoffsets = logic.parse_clause(self[34].get_value())
+            courseoffsets = logic.parse_clause(self[35].get_value())
             if not courseoffsets:
                 courseoffsets = list()
             self.controller.setlist('courseoffset', [piw.makefloat(o,0) for o in courseoffsets])

@@ -27,6 +27,7 @@
 #include <piw/piw_table.h>
 #include <piw/piw_clock.h>
 #include <piw/piw_status.h>
+#include <piw/piw_keys.h>
 
 #include <picross/pic_time.h>
 #include <picross/pic_log.h>
@@ -502,20 +503,7 @@ namespace
             output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,0,0));
             output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,0,0));
             output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,0,0));
-
-            piw::data_nb_t physical_key = piw::tuplenull_nb(t);
-            physical_key = piw::tupleadd_nb(physical_key, piw::makefloat_nb(row_,t));
-            physical_key = piw::tupleadd_nb(physical_key, piw::makefloat_nb(column_,t));
-            piw::data_nb_t musical_key = piw::tuplenull_nb(t);
-            musical_key = piw::tupleadd_nb(musical_key, piw::makefloat_nb(1,t));
-            musical_key = piw::tupleadd_nb(musical_key, piw::makefloat_nb(index_,t));
-
-            piw::data_nb_t key = piw::tuplenull_nb(t);
-            key = piw::tupleadd_nb(key, piw::makelong_nb(index_,t));
-            key = piw::tupleadd_nb(key, physical_key);
-            key = piw::tupleadd_nb(key, piw::makelong_nb(index_,t));
-            key = piw::tupleadd_nb(key, musical_key);
-            output_.add_value(5, key);
+            output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,t));
 
             source_start(0,id_.restamp(t), output_);
 

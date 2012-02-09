@@ -18,6 +18,7 @@
 */
 
 #include <lib_midi/control_params.h>
+#include <piw/piw_keys.h>
 
 namespace midi
 {
@@ -228,7 +229,7 @@ namespace midi
 
     bool param_input_t::is_key_data(const piw::data_nb_t &d)
     {
-        return d.is_tuple() && 4 == d.as_tuplelen() && d.as_tuple_value(0).is_long();
+        return piw::decode_key(d);
     }
 
     bool param_input_t::wiredata_processed(param_wire_t *w, const piw::data_nb_t &d)

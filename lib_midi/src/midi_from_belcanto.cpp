@@ -29,6 +29,7 @@
 #include <picross/pic_ilist.h>
 #include <piw/piw_bundle.h>
 #include <piw/piw_clockclient.h>
+#include <piw/piw_keys.h>
 
 #include <lib_midi/midi_gm.h>
 #include <lib_midi/midi_from_belcanto.h>
@@ -412,10 +413,7 @@ namespace
         piw::data_nb_t dk;
         if(iterator_->latest(IN_KEY,dk,t))
         {
-            if(dk.is_tuple() && 4 == dk.as_tuplelen())
-            {
-                key_ = dk.as_tuple_value(2).as_long();
-            }
+            piw::decode_key(dk,0,0,0,&key_,0,0);
         }
 
         root_->channel_list_.register_channel(id_, channel_);

@@ -59,8 +59,7 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
         pic::flipflop_t<mapping_t>::guard_t gm(musical_mapping_);
 
         if(gp.value().forward.empty() ||
-           gm.value().forward.empty() ||
-           !in.is_tuple() || in.as_tuplelen() != 4)
+           gm.value().forward.empty())
         {
 #if KEYGROUP_MAPPER_DEBUG>0
             pic::logmsg() << "forward_mapping out " << in;
@@ -68,10 +67,8 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
             return in;
         }
 
-        data_nb_t upstream_phys = in.as_tuple_value(1);
-        data_nb_t upstream_mus = in.as_tuple_value(3);
-        if(!upstream_phys.is_tuple() || upstream_phys.as_tuplelen() != 2 ||
-           !upstream_mus.is_tuple() || upstream_mus.as_tuplelen() != 2)
+        float row,col,course,key;
+        if(!piw::decode_key(in,0,&row,&col,0,&course,&key))
         {
 #if KEYGROUP_MAPPER_DEBUG>0
             pic::logmsg() << "forward_mapping out " << in;
@@ -79,27 +76,13 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
             return in;
         }
 
-        const coordinate_t coord_phys = coordinate_t(upstream_phys.as_tuple_value(0).as_float(),upstream_phys.as_tuple_value(1).as_float());
-        const coordinate_t coord_mus = coordinate_t(upstream_mus.as_tuple_value(0).as_float(),upstream_mus.as_tuple_value(1).as_float());
+        const coordinate_t coord_phys = coordinate_t(row,col);
+        const coordinate_t coord_mus = coordinate_t(course,key);
         forward_mapping_t::const_iterator ip = gp.value().forward.find(coord_phys);
         forward_mapping_t::const_iterator im = gm.value().forward.find(coord_mus);
         if(ip!=gp.value().forward.end() && im!=gm.value().forward.end())
         {
-            unsigned long long t = in.time();
-
-            piw::data_nb_t phys_out = piw::tuplenull_nb(t);
-            phys_out = piw::tupleadd_nb(phys_out, piw::makefloat_nb(ip->second.first.first,t));
-            phys_out = piw::tupleadd_nb(phys_out, piw::makefloat_nb(ip->second.first.second,t));
-
-            piw::data_nb_t mus_out = piw::tuplenull_nb(t);
-            mus_out = piw::tupleadd_nb(mus_out, piw::makefloat_nb(im->second.first.first,t));
-            mus_out = piw::tupleadd_nb(mus_out, piw::makefloat_nb(im->second.first.second,t));
-
-            piw::data_nb_t result = piw::tuplenull_nb(t);
-            result = piw::tupleadd_nb(result, piw::makelong_nb(ip->second.second,t));
-            result = piw::tupleadd_nb(result, phys_out);
-            result = piw::tupleadd_nb(result, piw::makelong_nb(im->second.second,t));
-            result = piw::tupleadd_nb(result, mus_out);
+            piw::data_nb_t result = piw::makekey(ip->second.second,ip->second.first.first,ip->second.first.second,im->second.second,im->second.first.first,im->second.first.second,in.time());
 
 #if KEYGROUP_MAPPER_DEBUG>0
             pic::logmsg() << "forward_mapping out " << result;
@@ -303,31 +286,31 @@ struct piw::modekey_handler_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
 
     bool key_filter(const piw::data_nb_t &d)
     {
-        if(row_ && column_ && d.is_tuple() && !upstream_rowlen_.is_empty())
+        float row,col;
+        if(row_ && column_ && piw::decode_key(d,0,&row,&col) && !upstream_rowlen_.is_empty())
         {
-            piw::data_nb_t key = d.as_tuple_value(1);
             piw::data_nb_t geo = upstream_rowlen_.get();
 
             if(geo.is_tuple())
             {
-                int row = row_;
-                int col = column_;
+                int mode_row = row_;
+                int mode_col = column_;
 
 #if KEYGROUP_MAPPER_DEBUG>0
-                pic::logmsg() << "modekey key_filter " << d << " (" << row << "," << col << ")";
+                pic::logmsg() << "modekey key_filter " << d << " (" << mode_row << "," << mode_col << ")";
 #endif
 
-                if(row<0)
+                if(mode_row<0)
                 {
-                    row = geo.as_tuplelen() + row + 1;
+                    mode_row = geo.as_tuplelen() + mode_row + 1;
                 }
 
-                if(col<0 && row<=int(geo.as_tuplelen()))
+                if(mode_col<0 && mode_row<=int(geo.as_tuplelen()))
                 {
-                    col = geo.as_tuple_value(row-1).as_long();
+                    mode_col = geo.as_tuple_value(mode_row-1).as_long();
                 }
 
-                if(int(key.as_tuple_value(0).as_float())==row && int(key.as_tuple_value(1).as_float())==col)
+                if(int(row)==mode_row && int(col)==mode_col)
                 {
                     return true;
                 }

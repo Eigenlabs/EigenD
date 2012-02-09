@@ -265,9 +265,7 @@ def tuple_items(d):
     return [ (d.as_tuple_value(i)) for i in range(0,d.as_tuplelen()) ]
 
 def key_to_lists(d):
-    if d is None or not d.is_tuple() or d.as_tuplelen() != 4: return None
-    if not d.as_tuple_value(0).is_long() or not d.as_tuple_value(1).is_tuple() or not d.as_tuple_value(2).is_long() or not d.as_tuple_value(3).is_tuple(): return None
-    if d.as_tuple_value(1).as_tuplelen() != 2 or d.as_tuple_value(3).as_tuplelen() != 2: return None
+    if not piw.is_key(d): return None
 
     physkeynum = d.as_tuple_value(0).as_long()
     row = d.as_tuple_value(1).as_tuple_value(0).as_float()

@@ -26,6 +26,7 @@
 #include <piw/piw_stringer.h>
 #include <piw/piw_tsd.h>
 #include <piw/piw_scaler.h>
+#include <piw/piw_keys.h>
 
 #include <picross/pic_ilist.h>
 #include <picross/pic_ref.h>
@@ -475,13 +476,14 @@ void main_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::
 #endif // STRINGER_USE_PATH==1
 
     piw::data_nb_t d;
-    if(b.latest(6,d,id.time()) && d.is_tuple() && 4 == d.as_tuplelen())
+    if(b.latest(6,d,id.time()))
     {
-        knum = d.as_tuple_value(2).as_long();
-
-        piw::data_nb_t muskey = d.as_tuple_value(3);
-        kcourse = unsigned(muskey.as_tuple_value(0).as_float());
-        kkey = unsigned(muskey.as_tuple_value(1).as_float());
+        float course,key;
+        if(piw::decode_key(d,0,0,0,&knum,&course,&key))
+        {
+            kcourse = unsigned(course);
+            kkey = unsigned(key);
+        }
     }
 
 #if STRINGER_DEBUG>0

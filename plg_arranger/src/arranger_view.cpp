@@ -25,6 +25,7 @@
 #include <piw/piw_tsd.h>
 #include <piw/piw_thing.h>
 #include <piw/piw_fastdata.h>
+#include <piw/piw_keys.h>
 #include <memory>
 #include <algorithm>
 #include <piarranger_exports.h>
@@ -866,9 +867,9 @@ void vp_wire_t::invalidate()
 void vp_wire_t::event_start(unsigned seq,const piw::data_nb_t &id,const piw::xevent_data_buffer_t &b)
 {
     piw::data_nb_t d;
-    if(b.latest(5,d,id.time()) && d.is_tuple() && 4 == d.as_tuplelen())
+    if(b.latest(5,d,id.time()))
     {
-        active_ = d.as_tuple_value(2).as_long();
+        piw::decode_key(d,0,0,0,&active_);
     }
     else
     {

@@ -22,6 +22,7 @@
 #include <picross/pic_flipflop.h>
 #include <piw/piw_fastdata.h>
 #include <piw/piw_address.h>
+#include <piw/piw_keys.h>
 #include <map>
 #include <math.h>
 
@@ -272,7 +273,7 @@ void language::updown_t::uimpl_t::control_receive(unsigned s, const piw::data_nb
     switch(s)
     {
         case 1:
-            activate(d.is_tuple() && 4 == d.as_tuplelen(), d.time());
+            activate(piw::decode_key(d), d.time());
             break;
 
         case 4:
@@ -333,7 +334,7 @@ void language::xselector_t::simpl_t::control_receive(unsigned s, const piw::data
 {
     if(s!=1)
         return;
-    if(!value.is_tuple() || value.as_tuplelen() != 4)
+    if(!piw::decode_key(value))
         return;
     if(selecting_)
         return;
@@ -487,7 +488,7 @@ void language::toggle_t::timpl_t::control_receive(unsigned s, const piw::data_nb
 {
     if(!d.is_null())
     {
-        if(s==1 && d.is_tuple() && 4 == d.as_tuplelen())
+        if(s==1 && piw::decode_key(d))
         {
             output_(piw::makebool_nb(!on_,d.time()));
         }

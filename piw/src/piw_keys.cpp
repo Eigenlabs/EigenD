@@ -19,12 +19,74 @@
 
 #include <piw/piw_keys.h>
 
-unsigned piw::calc_keynum(piw::data_t geo, int row, int col)
+piw::data_nb_t piw::makekey(unsigned pseq, int row, int col, unsigned mseq, int course, int key, unsigned long long t)
 {
-    if(geo.is_null() || !geo.is_tuple())
+    piw::data_nb_t physical_key = piw::tuplenull_nb(t);
+    physical_key = piw::tupleadd_nb(physical_key, piw::makefloat_nb(row,t));
+    physical_key = piw::tupleadd_nb(physical_key, piw::makefloat_nb(col,t));
+    piw::data_nb_t musical_key = piw::tuplenull_nb(t);
+    musical_key = piw::tupleadd_nb(musical_key, piw::makefloat_nb(course,t));
+    musical_key = piw::tupleadd_nb(musical_key, piw::makefloat_nb(key,t));
+
+    piw::data_nb_t result = piw::tuplenull_nb(t);
+    result = piw::tupleadd_nb(result, piw::makelong_nb(pseq,t));
+    result = piw::tupleadd_nb(result, physical_key);
+    result = piw::tupleadd_nb(result, piw::makelong_nb(mseq,t));
+    result = piw::tupleadd_nb(result, musical_key);
+
+    return result;
+}
+
+bool piw::is_key(const piw::data_t &d)
+{
+    return piw::decode_key(d.make_nb());
+}
+
+bool piw::decode_key(const piw::data_nb_t &d, unsigned *pseq, float *row, float *col, unsigned *mseq, float *course, float *key)
+{
+    if(!d.is_tuple() || d.as_tuplelen() != 4)
+    {
+        return false;
+    }
+
+    piw::data_nb_t d_pseq = d.as_tuple_value(0);
+    piw::data_nb_t d_pkey = d.as_tuple_value(1);
+    piw::data_nb_t d_mseq = d.as_tuple_value(2);
+    piw::data_nb_t d_mkey = d.as_tuple_value(3);
+
+    if(!d_pseq.is_long() || !d_mseq.is_long() ||
+       !d_pkey.is_tuple() || d_pkey.as_tuplelen() != 2 ||
+       !d_mkey.is_tuple() || d_mkey.as_tuplelen() != 2)
+    {
+        return false;
+    }
+
+    piw::data_nb_t d_row = d_pkey.as_tuple_value(0);
+    piw::data_nb_t d_col = d_pkey.as_tuple_value(1);
+    piw::data_nb_t d_course = d_mkey.as_tuple_value(0);
+    piw::data_nb_t d_key = d_mkey.as_tuple_value(1);
+    if(!d_row.is_float() || !d_col.is_float() ||
+       !d_course.is_float() || !d_key.is_float())
+    {
+        return false;
+    }
+
+    if(pseq) *pseq = d_pseq.as_long();
+    if(row) *row = d_row.as_float();
+    if(col) *col = d_col.as_float();
+    if(mseq) *mseq = d_mseq.as_long();
+    if(course) *course = d_course.as_float();
+    if(key) *key = d_key.as_float();
+
+    return true;
+}
+
+unsigned piw::key_sequential(const piw::data_t &lengths, int row, int col)
+{
+    if(lengths.is_null() || !lengths.is_tuple())
         return 0;
 
-    int geolen = geo.as_tuplelen();
+    int geolen = lengths.as_tuplelen();
     if(0 == geolen)
         return 0;
 
@@ -46,7 +108,7 @@ unsigned piw::calc_keynum(piw::data_t geo, int row, int col)
     if(row < 1 || row > geolen)
         return 0;
 
-    int rowlen = geo.as_tuple_value(row-1).as_long();
+    int rowlen = lengths.as_tuple_value(row-1).as_long();
 
     // resolve relative columns
     if(col < 0)
@@ -63,7 +125,7 @@ unsigned piw::calc_keynum(piw::data_t geo, int row, int col)
         unsigned keynum = 0;
         for(int i = 1; i < row; ++i)
         {
-            keynum += geo.as_tuple_value(i-1).as_long();
+            keynum += lengths.as_tuple_value(i-1).as_long();
         }
         keynum += col;
 
@@ -73,49 +135,32 @@ unsigned piw::calc_keynum(piw::data_t geo, int row, int col)
     return 0;
 }
 
-piw::data_nb_t piw::key_position(unsigned key, const piw::data_nb_t &lengths, unsigned long long t)
+void piw::key_coordinates(unsigned seq, const piw::data_nb_t &lengths, int *x, int *y)
 {
-    int row,col;
+    *x = 0;
+    *y = 0;
 
-    key_position(key, lengths, &row, &col);
-
-    if(0==row || 0==col)
-    {
-        return piw::makenull_nb(0);
-    }
-
-    piw::data_nb_t d = piw::tuplenull_nb(t);
-    d = piw::tupleadd_nb(d, piw::makefloat_nb(row,t));
-    d = piw::tupleadd_nb(d, piw::makefloat_nb(col,t));
-    return d;
-}
-
-void piw::key_position(unsigned key, const piw::data_nb_t &lengths, int *row, int *col)
-{
-    *row = 0;
-    *col = 0;
-
-    if(key <= 0 || !lengths.is_tuple())
+    if(seq <= 0 || !lengths.is_tuple())
     {
         return;
     }
 
     for(unsigned i=0; i<lengths.as_tuplelen(); ++i)
     {
-        if(0==*col)
+        if(0==*y)
         {
-            *col = key;
+            *y = seq;
         }
         else
         {
-            int prev_course = lengths.as_tuple_value(i-1).as_long();
-            if(*col<=prev_course)
+            int prev_length = lengths.as_tuple_value(i-1).as_long();
+            if(*y<=prev_length)
             {
                 break;
             }
-            (*col) -= prev_course;
+            (*y) -= prev_length;
         }
 
-        (*row)++;
+        (*x)++;
     }
 }

@@ -25,6 +25,7 @@
 #include <piw/piw_ufilter.h>
 #include <piw/piw_status.h>
 #include <piw/piw_aggregator.h>
+#include <piw/piw_keys.h>
 #include <picross/pic_float.h>
 
 #include <vector>
@@ -486,16 +487,12 @@ namespace
 
         void setkey(const piw::data_nb_t &v)
         {
-            if(v.is_tuple() && 4 == v.as_tuplelen())
+            float course,key;
+            if(piw::decode_key(v,0,0,0,0,&course,&key))
             {
-                piw::data_nb_t v2(v.as_tuple_value(3));
-
-                if(v2.is_tuple() && v2.as_tuplelen()==2)
-                {
-                    keycourse_ = v2.as_tuple_value(0).as_float()-1.0;
-                    keynum_ = v2.as_tuple_value(1).as_float()-1.0;
-                    time_ = std::max(time_,v.time());
-                }
+                keycourse_ = course-1.0;
+                keynum_ = key-1.0;
+                time_ = std::max(time_,v.time());
             }
         }
 
@@ -519,22 +516,18 @@ namespace
             pic::logmsg() << "------- scaler start " << time_;
 #endif // SCALER_DEBUG>0
 
+            keynum_=-1.0;
+            keycourse_=0.0;
+
             piw::data_nb_t d;
-
-            if(e->ufilterenv_latest(SCALER_KEY,d,time_) && d.is_tuple() && 4 == d.as_tuplelen())
+            if(e->ufilterenv_latest(SCALER_KEY,d,time_))
             {
-                piw::data_nb_t v2(d.as_tuple_value(3));
-
-                if(v2.is_tuple() && v2.as_tuplelen()==2)
+                float course,key;
+                if(piw::decode_key(d,0,0,0,0,&course,&key))
                 {
-                    keynum_=v2.as_tuple_value(1).as_float()-1.0;
-                    keycourse_=v2.as_tuple_value(0).as_float()-1.0;
+                    keycourse_=course-1.0;
+                    keynum_=key-1.0;
                 }
-            }
-            else
-            {
-                keynum_=-1.0;
-                keycourse_=0.0;
             }
 
             kbend_=0;
