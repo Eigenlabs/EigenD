@@ -321,7 +321,7 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
 
     void blinker(const piw::data_nb_t &d)
     {
-        if(d.is_null() || d.as_norm()==0 || blinking_)
+        if(d.is_null() || d.as_norm()<0.5 || blinking_)
         {
             return;
         }
