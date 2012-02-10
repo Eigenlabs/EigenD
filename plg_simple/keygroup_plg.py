@@ -388,27 +388,29 @@ class OutputList(atom.Atom):
 
     def output_selector(self,v):
         if v.is_tuple():
-            keynum = v.as_tuple_value(0).as_long()
-            row = int(v.as_tuple_value(1).as_tuple_value(0).as_float())
-            col = int(v.as_tuple_value(1).as_tuple_value(1).as_float())
-            for k,o in self.items():
-                orow = o[24].get_value()
-                ocol = o[25].get_value()
+            hardness = v.as_tuple_value(4).as_long()
+            if hardness > 0:
+                keynum = v.as_tuple_value(0).as_long()
+                row = int(v.as_tuple_value(1).as_tuple_value(0).as_float())
+                col = int(v.as_tuple_value(1).as_tuple_value(1).as_float())
+                for k,o in self.items():
+                    orow = o[24].get_value()
+                    ocol = o[25].get_value()
 
-                select = False
+                    select = False
 
-                if row == orow and col == ocol:
-                    select = True
-                elif row == 0 and ocol == keynum:
-                    select = True
-                else:
-                    okeynum = o.key_sequential()
-                    if okeynum == keynum:
+                    if row == orow and col == ocol:
                         select = True
+                    elif row == 0 and ocol == keynum:
+                        select = True
+                    else:
+                        okeynum = o.key_sequential()
+                        if okeynum == keynum:
+                            select = True
 
-                if select:
-                    self.agent.mode_selector.gate_input(k)(piw.makebool_nb(True,v.time()))
-                    break
+                    if select:
+                        self.agent.mode_selector.gate_input(k)(piw.makebool_nb(True,v.time()))
+                        break
 
     def uncreate(self,oid):
         for k,v in self.items():
