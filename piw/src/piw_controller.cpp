@@ -64,6 +64,19 @@ namespace
         xctl->control_init();
         return 0;
     }
+
+    static bool compare_phys_key(const piw::data_nb_t &k1, const piw::data_nb_t &k2)
+    {
+        unsigned k1n; float k1r,k1c;
+        unsigned k2n; float k2r,k2c;
+
+        if(!piw::decode_key(k1,&k1n,&k1r,&k1c)) return false;
+        if(!piw::decode_key(k2,&k2n,&k2r,&k2c)) return false;
+        if(k1n!=k2n) return false;
+        if(k1r!=k2r) return false;
+        if(k1c!=k2c) return false;
+        return true;
+    }
 }
 
 struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_real_t
@@ -455,6 +468,7 @@ void ctlfilter_t::start__(unsigned long long t)
     controller_->get_controlled(controlled_,current_key_.get(),current_ctl_.get());
 
     ctlset_t::const_iterator it;
+
     for(it=controlled_.begin(); it!=controlled_.end(); ++it)
     {
         (*it)->control_start(t);
@@ -486,7 +500,7 @@ void ctlfilter_t::ufilterfunc_data(piw::ufilterenv_t *env,unsigned s,const piw::
 
         if(s==1)
         {
-            if(d.compare(current_key_.get(),false)!=0)
+            if(!compare_phys_key(d,current_key_.get()))
             {
                 current_key_.set_nb(d);
                 changed=true;
@@ -776,10 +790,13 @@ void piw::fasttrigger_t::control_term(unsigned long long t)
 
 void piw::fasttrigger_t::control_receive(unsigned s,const piw::data_nb_t &value)
 {
-    if(s!=1) return;
+    piw::hardness_t h;
 
-    unsigned long long t = value.time();
-    tsd_fastcall(__ping_direct,this,&t);
+    if(s==1 && piw::decode_key(value,0,0,0,0,0,0,&h) && h!=piw::KEY_LIGHT)
+    {
+        unsigned long long t = value.time();
+        __ping_direct(this,&t);
+    }
 }
 
 void piw::fasttrigger_t::trigger__(const piw::data_t &d)
