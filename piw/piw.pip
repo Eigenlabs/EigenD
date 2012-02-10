@@ -32,7 +32,6 @@
 #include <piw/piw_panner.h>
 #include <piw/piw_velocitydetect.h>
 #include <piw/piw_scroller.h>
-#include <piw/piw_scroller2.h>
 #include <piw/piw_scheduler.h>
 #include <piw/piw_controller.h>
 #include <piw/piw_backend.h>
@@ -649,6 +648,7 @@ class scroller[piw::scroller_t]
     void enable()
     void disable()
     void set_scheme(unsigned)
+    void set_key(bool,int,int);
 }
 
 class scroller2[piw::scroller2_t]
@@ -657,6 +657,7 @@ class scroller2[piw::scroller2_t]
     cookie cookie()
     void enable()
     void disable()
+    void set_key(bool,int,int);
 }
 
 class splitter_node[piw::splitter_node_t]: server

@@ -29,7 +29,7 @@ piw_files=Split("""
     piw_normalize.cpp piw_logtable.cpp piw_powtable.cpp piw_policy.cpp piw_delay.cpp
     piw_interpolator.cpp piw_selector.cpp piw_sampler.cpp piw_scaler.cpp piw_panner.cpp
     piw_gate.cpp piw_resource.cpp piw_gain.cpp piw_rpc.cpp piw_lights.cpp
-    piw_clockclient.cpp piw_velocitydetect.cpp piw_lopass.cpp piw_scroller2.cpp
+    piw_clockclient.cpp piw_velocitydetect.cpp piw_lopass.cpp
     piw_scroller.cpp piw_trigger.cpp piw_sclone.cpp piw_keygroup.cpp piw_stereosummer.cpp
     piw_throttler.cpp piw_connector.cpp piw_backend.cpp piw_multiplexer.cpp
     piw_sample.cpp piw_scheduler.cpp piw_monomixer.cpp piw_capture.cpp piw_stringer.cpp

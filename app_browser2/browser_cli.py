@@ -28,46 +28,14 @@ import sys
 from pi import atom,action,node,domain,logic,bundles,resource,version,agent,utils
 from pisession import gui,session
 from pi.logic.shortcuts import T
-from pigui import fonts,language
+from pigui import fonts,language,scroller
+
 from app_browser2 import browse,mainframe,history,upgrade
 
 def active():
     print '**************************** active'
     picross.display_active()
     picross.to_front()
-
-class Scroller2(piw.scroller2):
-    def __init__(self,func):
-        piw.scroller2.__init__(self,utils.changify(func))
-
-    def set_scheme(self,s):
-        pass
-
-    def reset(self,a,b):
-        pass
-
-    def reset_h(self,a):
-        pass
-
-    def reset_v(self,a):
-        pass
-
-class ScrollerDelegate(piw.scrolldelegate):
-    def __init__(self,scrollfunc,tapfunc):
-        self.__scrollfunc = scrollfunc
-        self.__tapfunc=tapfunc
-        piw.scrolldelegate.__init__(self)
-    def scroll(self,h,v):
-        if self.__scrollfunc:
-            self.__scrollfunc(h,v)
-    def tap(self):
-        if self.__tapfunc:
-            self.__tapfunc()
-
-class Scroller(piw.scroller):
-    def __init__(self,func1,func2):
-        self.__delegate = ScrollerDelegate(func1,func2)
-        piw.scroller.__init__(self,self.__delegate,0.5,0.5,100)
 
 class ViewManager(agent.Agent):
     def __init__(self,name):
@@ -81,22 +49,21 @@ class ViewManager(agent.Agent):
         self.cdomain = piw.clockdomain_ctl()
         self.cdomain.set_source(piw.makestring('*',0))
 
-        self.scroller1 = Scroller2(self.__scroll1) # scrolls the left hand pane
-        self.scroller2 = Scroller(self.__scroll2,self.__tap2) # scrolls the right hand (dinfo) pane
-        self.scroller3 = Scroller(self.__scroll3,self.__tap3) # scrolls the path pane
+        self[25] = scroller.Scroller2(self.__scroll1,names="scroller",ordinal=1) # scrolls the left hand pane
+        self[26] = scroller.Scroller(self.__scroll2,self.__tap2,names="scroller",ordinal=2) # scrolls the right hand (dinfo) pane
+        self[27] = scroller.Scroller(self.__scroll3,self.__tap3,names="scroller",ordinal=3) # scrolls the path pane
 
-        self.scroller_in1 = bundles.VectorInput(self.scroller1.cookie(),self.cdomain,signals=(1,2,3))
-        self.scroller_in2 = bundles.VectorInput(self.scroller2.cookie(),self.cdomain,signals=(1,2,3))
-        self.scroller_in3 = bundles.VectorInput(self.scroller3.cookie(),self.cdomain,signals=(1,2,3))
+        self.scroller_clone = piw.clone(True)
+        self.scroller_clone.set_output(1,self[25].cookie())
+        self.scroller_clone.set_output(2,self[26].cookie())
+        self.scroller_clone.set_output(3,self[27].cookie())
 
-        nudge=(T('inc',0.1),)
-        self[1] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=nudge), init=0, names='sideways nudger', ordinal=1, policy=self.scroller_in1.vector_policy(1,False))
-        #self[2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=nudge), init=0, names='vertical nudger', ordinal=1, policy=self.scroller_in1.vector_policy(2,False),rtransient=True)
-        self[2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=nudge), init=0, names='vertical nudger', ordinal=1, policy=self.scroller_in1.vector_policy(2,False))
+        self.scroller_in = bundles.VectorInput(self.scroller_clone.cookie(),self.cdomain,signals=(1,2,3,4))
 
-
-        self[3] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=nudge), init=0, names='sideways nudger', ordinal=2, policy=self.scroller_in2.vector_policy(1,False))
-        self[4] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=nudge), init=0, names='vertical nudger', ordinal=2, policy=self.scroller_in2.vector_policy(2,False))
+        self[28] = atom.Atom(domain=domain.BoundedFloat(-1,1), init=0, names='roll', policy=self.scroller_in.merge_policy(2,False))
+        self[29] = atom.Atom(domain=domain.BoundedFloat(-1,1), init=0, names='yaw', policy=self.scroller_in.merge_policy(1,False))
+        self[30] = atom.Atom(domain=domain.BoundedFloat(-1,1), init=0, names='key', policy=self.scroller_in.vector_policy(3,False))
+        self[31] = atom.Atom(domain=domain.Aniso(), names='controller', policy=self.scroller_in.merge_policy(4,False))
 
         self[8]=browse.BrowseAgent(self,browse.getName())
 
@@ -108,11 +75,6 @@ class ViewManager(agent.Agent):
         self.font.SetPointSize(fonts.DEFAULT_PTS)
 
         self[12]=atom.Atom(domain=domain.BoundedInt(5,20,rest=11),names='text',protocols='nostage',policy=atom.default_policy(self.__set_fontsize))
-        self[15] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=nudge), init=-1, names='sideways nudger', ordinal=3, policy=self.scroller_in3.vector_policy(1,False))
-        self[16] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=nudge), init=-1, names='vertical nudger', ordinal=3, policy=self.scroller_in3.vector_policy(2,False))
-        self[17] = atom.Atom(domain=domain.BoundedFloat(0,1), init=0, names='tapper', ordinal=1, policy=self.scroller_in1.vector_policy(3,False))
-        self[18] = atom.Atom(domain=domain.BoundedFloat(0,1), init=0, names='tapper', ordinal=2, policy=self.scroller_in2.vector_policy(3,False))
-        self[19] = atom.Atom(domain=domain.BoundedFloat(0,1), init=0, names='tapper', ordinal=3, policy=self.scroller_in3.vector_policy(3,False))
 
         self.__size=node.Server(change=self.__size_changed)
         self.set_private(node.Server())
@@ -129,13 +91,12 @@ class ViewManager(agent.Agent):
         self.__rootFrame=None
         self.__createRootFrame()
 
-#        self.scroller2.reset(-1,-1)
-        self.scroller3.reset(-1,1)
-        self.scroller1.set_scheme(1)
+        self[27].reset(-1,1)
+        #self[25].set_scheme(1)
 
-        self.scroller1.enable()
-        self.scroller2.enable()
-        self.scroller3.enable()
+        self[25].enable()
+        self[26].enable()
+        self[27].enable()
 
     def __do_browse(self,subject,*args):
         print '__do_browse',args
@@ -173,14 +134,15 @@ class ViewManager(agent.Agent):
         return language.LanguageModel()
 
     def reset1(self,h=None,v=None):
+        pass
         #print 'reset1:  v=',v
-        self.scroller1.reset(h,v*-1)
+        #self[25].reset(h,v*-1)
  
     def reset2(self,h=None,v=None):
-        self.scroller2.reset(h,v*-1)
+        self[26].reset(h,v*-1)
     
     def reset3(self,h=None,v=None):
-        self.scroller3.reset(h,v*-1)
+        self[27].reset(h,v*-1)
 
     def getTitlePanel(self):
         if self.__rootFrame:

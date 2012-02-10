@@ -61,6 +61,7 @@ namespace
             piw::tsd_fastdata(this);
             enable(true,false,false);
         }
+
         bool fastdata_receive_event(const piw::data_nb_t &d,const piw::dataqueue_t &q)
         {
 
@@ -74,6 +75,7 @@ namespace
 
             return false;
         }
+
         bool fastdata_receive_data(const piw::data_nb_t &d);
 
         filter_wire_t *wire_;
