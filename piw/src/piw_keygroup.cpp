@@ -288,7 +288,8 @@ struct piw::modekey_handler_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
     bool key_filter(const piw::data_nb_t &d)
     {
         float row,col;
-        if(row_ && column_ && piw::decode_key(d,0,&row,&col) && !upstream_rowlen_.is_empty())
+        piw::hardness_t hardness;
+        if(row_ && column_ && !upstream_rowlen_.is_empty() && piw::decode_key(d,0,&row,&col,0,0,0,&hardness) && hardness > 0)
         {
             piw::data_nb_t geo = upstream_rowlen_.get();
 
