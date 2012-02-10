@@ -54,6 +54,7 @@ namespace {
         bool fastdata_receive_event(const piw::data_nb_t &d,const piw::dataqueue_t &q);
         bool fastdata_receive_data(const piw::data_nb_t &d);
         void clear_buffer();
+        void filter(unsigned long long t);
         void filter_data(unsigned long long t);
         void filter_id(unsigned long long t);
 
@@ -172,6 +173,18 @@ void clone_wire_ctl_t::clear_buffer()
     }
 }
 
+void clone_wire_ctl_t::filter(unsigned long long t)
+{
+    if(filtered_signal_)
+    {
+        filter_data(t);
+    }
+    else
+    {
+        filter_id(t);
+    }
+}
+
 void clone_wire_ctl_t::filter_data(unsigned long long t)
 {
     piw::data_nb_t d;
@@ -217,14 +230,7 @@ void clone_wire_ctl_t::event_start(unsigned seq, const piw::data_nb_t &id, const
         return;
     }
 
-    if(filtered_signal_)
-    {
-        filter_data(id.time());
-    }
-    else
-    {
-        filter_id(id.time());
-    }
+    filter(id.time());
 }
 
 bool clone_wire_ctl_t::fastdata_receive_event(const piw::data_nb_t &d, const piw::dataqueue_t &q)
@@ -258,14 +264,7 @@ void clone_wire_ctl_t::activate(bool b, unsigned long long t)
     {
         if(parent_->policy_)
         {
-            if(filtered_signal_)
-            {
-                filter_data(t);
-            }
-            else
-            {
-                filter_id(t);
-            }
+            filter(t);
         }
     }
     else
