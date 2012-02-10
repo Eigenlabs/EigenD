@@ -233,26 +233,6 @@ class LanguageProxy(proxy.AtomProxy):
     def flush(self):
         self[11].flush()
 
-    def yaw_id(self,key):
-        assert self.is_ready()
-        assert (key>0 and key<3) or key==6
-        return ("%s#9.3" % self.id(), str(key+10))
-
-    def roll_id(self,key):
-        assert self.is_ready()
-        assert (key>0 and key<3) or key==6
-        return ("%s#9.2" % self.id(), str(key+10))
-     
-    def pressure_id(self,key):
-        assert self.is_ready()
-        assert key>0 and key<5
-        return ("%s#9.4" % self.id(), str(key+10))
-
-    def activation_id(self,key):
-        assert self.is_ready()
-        assert key>0 and key<7
-        return ("%s#9.1" % self.id(), str(key+10))
-
     def node_ready(self):
         print 'proxy ready',self.id()
         if 'langagent' in self.protocols():

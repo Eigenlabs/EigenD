@@ -99,7 +99,7 @@ class Agent(agent.Agent):
 
         self[1] = atom.Atom(names='inputs')
 
-        self[1][1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(1,False),names='activation input')
+        self[1][1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(1,False),names='key input')
         self[1][2] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(2,False),names='roll input')
         self[1][3] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(3,False),names='yaw input')
         self[1][4] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(4,False),names='pressure input')
@@ -108,23 +108,15 @@ class Agent(agent.Agent):
 
         self[2] = atom.Atom(init='',names='word output',domain=domain.String())
 
-        self[5] = atom.Atom(names='main keygroup')
-        self[5][1] = bundles.Output(1,False, names='activation output')
+        self[5] = atom.Atom(names='outputs')
+        self[5][1] = bundles.Output(1,False, names='key output')
         self[5][2] = bundles.Output(2,False, names='roll output')
         self[5][3] = bundles.Output(3,False, names='yaw output')
         self[5][4] = bundles.Output(4,False, names='pressure output')
 
-        self[9] = atom.Atom(names='auxilliary keygroup')
-        self[9][1] = bundles.Output(1,False, names='activation output')
-        self[9][2] = bundles.Output(2,False, names='roll output')
-        self[9][3] = bundles.Output(3,False, names='yaw output')
-        self[9][4] = bundles.Output(4,False, names='pressure output')
-
         self.output1 = bundles.Splitter(self.domain,*self[5].values())
-        self.output2 = bundles.Splitter(self.domain,*self[9].values())
 
-        self.cloner.set_filtered_output(3,self.output1.cookie(), piw.last_lt_filter(9))
-        self.cloner.set_filtered_output(4,self.output2.cookie(), piw.last_gt_filter(10))
+        self.cloner.set_output(2,self.output1.cookie())
 
         self.add_verb2(30,'message([],None,role(None,[abstract]))', self.__message)
         self.add_verb2(150,'execute([],None,role(None,[abstract]))',self.__runscript)

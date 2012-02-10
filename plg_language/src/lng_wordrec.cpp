@@ -20,6 +20,7 @@
 
 #include "lng_wordrec.h"
 
+#include <piw/piw_keys.h>
 #include <piw/piw_clock.h>
 #include <piw/piw_tsd.h>
 #include <piw/piw_fastdata.h>
@@ -32,7 +33,7 @@ struct wordrec_wire_t;
 
 struct wordrec_wire_t: piw::wire_t, piw::event_data_sink_t, piw::fastdata_t, virtual public pic::lckobject_t
 {
-    wordrec_wire_t(language::wordrec_t::impl_t *i,const piw::event_data_source_t &es): fastdata_t(PLG_FASTDATA_SENDER), impl_(i), id_(-1)
+    wordrec_wire_t(language::wordrec_t::impl_t *i,const piw::event_data_source_t &es): fastdata_t(PLG_FASTDATA_SENDER), impl_(i)
     {
         subscribe(es);
         piw::tsd_fastdata(this);
@@ -43,8 +44,6 @@ struct wordrec_wire_t: piw::wire_t, piw::event_data_sink_t, piw::fastdata_t, vir
 
     void event_start(unsigned seq,const piw::data_nb_t &d,const piw::xevent_data_buffer_t &ei)
     {
-        id_=d.as_path()[d.as_pathlen()-1];
-        last_=0;
         send_fast(d,ei.signal(1));
     }
 
@@ -56,7 +55,6 @@ struct wordrec_wire_t: piw::wire_t, piw::event_data_sink_t, piw::fastdata_t, vir
 
     bool event_end(unsigned long long t)
     {
-        id_=-1;
         return true;
     }
 
@@ -68,12 +66,11 @@ struct wordrec_wire_t: piw::wire_t, piw::event_data_sink_t, piw::fastdata_t, vir
 
     bool fastdata_receive_data(const piw::data_nb_t &d);
 
+    unsigned get_key(const piw::data_nb_t &d,bool &hard);
     void wire_closed() { delete this; }
-    void invalidate() { unsubscribe(); id_=-1; disconnect(); }
+    void invalidate() { unsubscribe(); disconnect(); }
 
     language::wordrec_t::impl_t *impl_;
-    int id_;
-    float last_;
 };
 
 struct language::wordrec_t::impl_t: piw::thing_t, piw::decoder_t, piw::decode_ctl_t, virtual pic::lckobject_t
@@ -90,22 +87,44 @@ struct language::wordrec_t::impl_t: piw::thing_t, piw::decoder_t, piw::decode_ct
     piw::change_t functor_;
 };
 
+unsigned wordrec_wire_t::get_key(const piw::data_nb_t &d, bool &hard)
+{
+    unsigned mn;
+    float mc,mr;
+    piw::hardness_t h;
+
+    if(!piw::decode_key(d,0,0,0,&mn,&mr,&mc,&h) || h==piw::KEY_LIGHT)
+    {
+        return 0;
+    }
+
+    hard = (h==piw::KEY_HARD);
+    pic::logmsg() << "k " << mn << ' ' << mr << ' ' << mc << ' ' << hard;
+
+    if(mr==1 && mc>=1 && mc<=8)
+    {
+        return mc;
+    }
+
+    if(mr==2 && mc>=1 && mc<=2)
+    {
+        return 9+mc-1;
+    }
+
+    return 0;
+}
+
 bool wordrec_wire_t::fastdata_receive_data(const piw::data_nb_t &d)
 {
-    if(id_>=0)
+    bool hard;
+    int key;
+
+    if((key=get_key(d,hard))>0)
     {
-        float v = d.as_renorm(0.0, 3.0, 0.0);
-
-        if(v != last_)
-        {
-            last_ = v;
-
-            if(v > 1.5)
-            {
-                impl_->key_pressed(id_,v > 2.5);
-            }
-        }
+        impl_->key_pressed(key,hard);
+        return false;
     }
+
     return true;
 }
 

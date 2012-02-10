@@ -192,7 +192,7 @@ class IndexModel(piw.index):
 
 
 class LanguageModel:
-    def __init__(self,connector=None):
+    def __init__(self):
         self.lang=None
         self.initialising=True
         self.agentIndex=IndexModel()
@@ -202,7 +202,6 @@ class LanguageModel:
         self.langName=''
         self.displays=[]
         self.status=0
-        self.__connector = connector
  
     def update(self):
         self.languageAgents=self.agentIndex.getList()
@@ -268,29 +267,11 @@ class LanguageModel:
 
     def language_ready(self):
         print 'LanguageModel:language_ready' 
+
         for display in self.displays:
             gui.call_fg_async(display.language_ready,self.langName)
+
         self.status=1
-        if self.__connector is not None:
-
-            h1=self.lang.roll_id(1)
-            h2=self.lang.roll_id(2)
-            
-            v1=self.lang.yaw_id(1)
-            v2=self.lang.yaw_id(2)
-
-            a1=self.lang.activation_id(1)
-            a2=self.lang.activation_id(2)
-            a3=self.lang.activation_id(3)
-            a4=self.lang.activation_id(4)
-            a5=self.lang.activation_id(5)
-            a6=self.lang.activation_id(6)
-
-            h6=self.lang.roll_id(6)
-            v6=self.lang.yaw_id(6)
-            
-            a1=self.lang.activation_id(1)
-            gui.call_fg_async(self.__connector,h1,v1,h2,v2,a3,a4,a5,h6,v6,a1,a2,a6)
         self.lang.flush()
 
     def lexicon_changed(self):

@@ -164,6 +164,7 @@ void clone_wire_ctl_t::event_start(unsigned seq,const piw::data_nb_t &id, const 
     {
         piw::xevent_data_buffer_t::iter_t iterator = b.iterator();
         piw::data_nb_t d;
+
         if(iterator->latest(filtered_signal_,d,id.time()))
         {
             piw::data_nb_t nd = filter_(d);
@@ -178,7 +179,6 @@ void clone_wire_ctl_t::event_start(unsigned seq,const piw::data_nb_t &id, const 
                 iterator->clear_signal(filtered_signal_);
                 output.add_value(filtered_signal_, nd);
                 output.merge(b, 0);
-
                 source_start(seq,id,output);
             }
         }
