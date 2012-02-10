@@ -63,10 +63,10 @@ namespace
         {
             if(r==0)
             {
-                return (kn==c);
+                return (int(kn)==c);
             }
 
-            return (kc==c && kr==r);
+            return (int(kc)==c && int(kr)==r);
         }
 
         if(!ctl.is_dict())
@@ -88,7 +88,7 @@ namespace
             r = t.as_tuplelen()+nr+1;
         }
 
-        if(r==0 || r>nr || r!=kr)
+        if(r==0 || r>nr || r!=int(kr))
         {
             return false;
         }
@@ -98,7 +98,7 @@ namespace
             c = t.as_tuple_value(r-1).as_long()+c+1;
         }
 
-        if(c != kc)
+        if(c != int(kc))
         {
             return false;
         }
