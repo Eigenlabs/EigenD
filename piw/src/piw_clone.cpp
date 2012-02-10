@@ -22,6 +22,7 @@
 #include <piw/piw_clock.h>
 #include <piw/piw_tsd.h>
 #include <piw/piw_policy.h>
+#include <piw/piw_fastdata.h>
 #include <picross/pic_flipflop.h>
 
 #include <map>
@@ -39,7 +40,7 @@ namespace {
         unsigned filtered_signal_;
     };
 
-    struct clone_wire_ctl_t: piw::wire_ctl_t, piw::event_data_source_real_t, piw::event_data_sink_t, virtual public pic::lckobject_t
+    struct clone_wire_ctl_t: piw::wire_ctl_t, piw::event_data_source_real_t, piw::event_data_sink_t, piw::fastdata_t, virtual public pic::lckobject_t
     {
         clone_wire_ctl_t(unsigned o, piw::clone_t::impl_t *impl, const piw::d2d_nb_t &filter, unsigned filtered_signal, const piw::event_data_source_t &es);
         ~clone_wire_ctl_t();
@@ -50,6 +51,12 @@ namespace {
         void source_ended(unsigned seq);
         void activate(bool b, unsigned long long t);
 
+        bool fastdata_receive_event(const piw::data_nb_t &d,const piw::dataqueue_t &q);
+        bool fastdata_receive_data(const piw::data_nb_t &d);
+        void clear_buffer();
+        void filter_data(unsigned long long t);
+        void filter_id(unsigned long long t);
+
         unsigned output_;
         piw::clone_t::impl_t *parent_;
         bool active_;
@@ -57,6 +64,7 @@ namespace {
         unsigned filtered_signal_;
         unsigned seq_;
         piw::dataholder_nb_t id_;
+        piw::xevent_data_buffer_t *buffer_;
     };
 
     struct clone_wire_t: piw::wire_t
@@ -72,7 +80,6 @@ namespace {
         void wire_closed() { delete this; }
         void invalidate();
         void activate(bool b, unsigned o, unsigned long long t);
-
 
         piw::clone_t::impl_t *parent_;
         piw::event_data_source_t source_;
@@ -146,12 +153,62 @@ void clone_wire_t::activate(bool b, unsigned o, unsigned long long t)
     c->activate(b,t);
 }
 
-clone_wire_ctl_t::clone_wire_ctl_t(unsigned o, piw::clone_t::impl_t *impl, const piw::d2d_nb_t &filter, unsigned filtered_signal, const piw::event_data_source_t &es): piw::event_data_source_real_t(es.path()), output_(o), parent_(impl), active_(false), filter_(filter), filtered_signal_(filtered_signal)
+clone_wire_ctl_t::clone_wire_ctl_t(unsigned o, piw::clone_t::impl_t *impl, const piw::d2d_nb_t &filter, unsigned filtered_signal, const piw::event_data_source_t &es):
+    piw::event_data_source_real_t(es.path()), piw::fastdata_t(PLG_FASTDATA_SENDER), output_(o), parent_(impl), active_(false), filter_(filter), filtered_signal_(filtered_signal), buffer_(0)
 {
     subscribe_and_ping(es);
+
+    piw::tsd_fastdata(this);
+    enable(true,false,false);
 }
 
-void clone_wire_ctl_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::xevent_data_buffer_t &b)
+void clone_wire_ctl_t::clear_buffer()
+{
+    if(buffer_ != 0)
+    {
+        buffer_->clear();
+        delete buffer_;
+        buffer_ = 0;
+    }
+}
+
+void clone_wire_ctl_t::filter_data(unsigned long long t)
+{
+    piw::data_nb_t d;
+    if(current_data().latest(filtered_signal_,d,t))
+    {
+        piw::data_nb_t nd = filter_(d);
+        if(!nd.is_null())
+        {
+            PIC_ASSERT(buffer_ == 0);
+            buffer_ = new piw::xevent_data_buffer_t(SIG1(filtered_signal_),PIW_DATAQUEUE_SIZE_ISO);
+
+            active_ = true;
+            id_.set_nb(current_id());
+            //pic::logmsg() << "filtered cloner " << (void *)this << " on " << output_ << " filtering data of event " << id << "<-" << current_id();
+
+            buffer_->add_value(filtered_signal_, nd);
+            buffer_->merge(current_data(), 0);
+
+            send_fast(current_id(),current_data().signal(filtered_signal_));
+            source_start(seq_,current_id().restamp(t),*buffer_);
+        }
+    }
+}
+
+void clone_wire_ctl_t::filter_id(unsigned long long t)
+{
+    piw::data_nb_t nid = filter_(current_id());
+    if(nid.is_path())
+    {
+        active_ = true;
+        id_.set_nb(nid);
+        //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " filtering id of event " << nid << "<-" << current_id();
+        source_start(seq_,nid.restamp(t),current_data());
+    }
+}
+
+void clone_wire_ctl_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::xevent_data_buffer_t &b)
 {
     seq_ = seq;
 
@@ -162,40 +219,30 @@ void clone_wire_ctl_t::event_start(unsigned seq,const piw::data_nb_t &id, const 
 
     if(filtered_signal_)
     {
-        piw::xevent_data_buffer_t::iter_t iterator = b.iterator();
-        piw::data_nb_t d;
-        if(iterator->latest(filtered_signal_,d,id.time()))
-        {
-            piw::data_nb_t nd = filter_(d);
-            if(!nd.is_null())
-            {
-                piw::xevent_data_buffer_t output = piw::xevent_data_buffer_t((1 << (filtered_signal_-1)),PIW_DATAQUEUE_SIZE_ISO);
-
-                active_ = true;
-                id_.set_nb(id);
-                //pic::logmsg() << "filtered cloner " << (void *)this << " on " << output_ << " starting event " << id << "<-" << current_id();
-
-                iterator->clear_signal(filtered_signal_);
-                output.add_value(filtered_signal_, nd);
-                output.merge(b, 0);
-
-                source_start(seq,id,output);
-            }
-        }
+        filter_data(id.time());
     }
     else
     {
-        piw::data_nb_t nid = filter_(id);
+        filter_id(id.time());
+    }
+}
 
-        if(nid.is_path())
-        {
-            active_ = true;
-            id_.set_nb(nid);
-            //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " starting event " << nid << "<-" << current_id();
-            source_start(seq,nid,b);
-        }
+bool clone_wire_ctl_t::fastdata_receive_event(const piw::data_nb_t &d, const piw::dataqueue_t &q)
+{
+    return true;
+}
+
+bool clone_wire_ctl_t::fastdata_receive_data(const piw::data_nb_t &d)
+{
+    if(buffer_)
+    {
+        piw::data_nb_t nd = filter_(d);
+        buffer_->add_value(filtered_signal_, nd);
+
+        return true;
     }
 
+    return false;
 }
 
 void clone_wire_ctl_t::activate(bool b, unsigned long long t)
@@ -213,34 +260,11 @@ void clone_wire_ctl_t::activate(bool b, unsigned long long t)
         {
             if(filtered_signal_)
             {
-                piw::xevent_data_buffer_t::iter_t iterator = current_data().iterator();
-                piw::data_nb_t d;
-
-                if(iterator->latest(filtered_signal_,d,t))
-                {
-                    piw::data_nb_t nid = filter_(d);
-
-                    if(nid.is_path())
-                    {
-                        active_ = true;
-                        id_.set_nb(current_id());
-                        //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " activating event " << current_id();
-                        current_data().add_value(filtered_signal_, nid);
-                        source_start(seq_,current_id().restamp(t),current_data());
-                    }
-                }
+                filter_data(t);
             }
             else
             {
-                piw::data_nb_t nid = filter_(current_id());
-
-                if(nid.is_path())
-                {
-                    active_ = true;
-                    id_.set_nb(nid);
-                    //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " activating event " << nid << "<-" << current_id();
-                    source_start(seq_,nid.restamp(t),current_data());
-                }
+                filter_id(t);
             }
         }
     }
@@ -249,6 +273,7 @@ void clone_wire_ctl_t::activate(bool b, unsigned long long t)
         active_ = false;
         //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " deactivating event " << id_;
         source_end(t);
+        clear_buffer();
     }
 }
 
@@ -375,6 +400,7 @@ clone_wire_ctl_t::~clone_wire_ctl_t()
     disconnect();
     end_slow(piw::tsd_time());
     source_shutdown();
+    clear_buffer();
 }
 
 bool clone_wire_ctl_t::event_end(unsigned long long t)
@@ -385,6 +411,7 @@ bool clone_wire_ctl_t::event_end(unsigned long long t)
     {
         active_=false;
         bool v = source_end(t);
+        clear_buffer();
         //pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " ending event " << id_ << ": " << v;
         return v;
     }

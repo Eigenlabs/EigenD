@@ -60,7 +60,7 @@ namespace piw
 
             void set_upstream(bct_fastdata_t *f) { PIC_ASSERT(open()); PIC_ASSERT(bct_fastdata_host_set_upstream(this,f)>=0); }
             void clear_upstream() { set_upstream(0); }
-            void enable(bool e, bool p, bool s) { int rs=s?1:0; PIC_ASSERT(open()); PIC_ASSERT(bct_fastdata_host_enable(this,e?1:0,&rs,p?1:0)>=0); }
+            void enable(bool enable, bool ping, bool supress) { int rs=supress?1:0; PIC_ASSERT(open()); PIC_ASSERT(bct_fastdata_host_enable(this,enable?1:0,&rs,ping?1:0)>=0); }
             void suppress(bool s, bool p) { PIC_ASSERT(open()); PIC_ASSERT(bct_fastdata_host_suppress(this,s?1:0,p?1:0)>=0); }
             void suppress() { suppress(true,false); }
             piw::data_nb_t current(bool id) const { PIC_ASSERT(open()); return piw::data_nb_t::from_given(bct_fastdata_host_current(this,id?1:0)); }

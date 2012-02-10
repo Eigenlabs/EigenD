@@ -92,6 +92,8 @@ namespace piw
             typedef pic::ref_t<evtiterator_t> iter_t;
             inline iter_t iterator() const { return pic::ref(new evtiterator_t(event_)); }
 
+            void clear() { event_.clear(); }
+
             void dump(bool full) const;
 
             inline bool latest(unsigned sig,piw::data_nb_t &d,unsigned long long t) const { return event_->signals_[sig-1].latest(d,0,t); }
