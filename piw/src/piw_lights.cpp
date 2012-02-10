@@ -183,7 +183,7 @@ struct piw::lightsource_t::impl_t: piw::root_ctl_t, piw::thing_t, virtual pic::t
 
     void blink(const piw::data_nb_t &d)
     {
-        if(d.is_null() || d.as_norm()==0 || blinking_)
+        if(d.is_null() || d.as_norm()<0.5 || blinking_)
         {
             return;
         }
