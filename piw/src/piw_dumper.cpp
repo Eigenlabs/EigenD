@@ -99,11 +99,6 @@ void piw::dump_client(piw::client_t *client, unsigned flags, bool log)
             msg << ' ' << type2str(sd.type());
         }
 
-        if(flags & PIW_DUMP_STIME)
-        {
-            msg << " @" << sd.time();
-        }
-
         if(flags & PIW_DUMP_SDATA)
         {
             msg << ' ' << sd;
@@ -112,6 +107,11 @@ void piw::dump_client(piw::client_t *client, unsigned flags, bool log)
         if((flags&PIW_DUMP_SSCALAR) && !sd.is_null())
         {
             msg << " <" << sd.as_array_lbound() << ':' << sd.as_array_rest() << ':' << sd.as_array_ubound() << "> " << sd.as_norm();
+        }
+
+        if(flags & PIW_DUMP_STIME)
+        {
+            msg << " @" << sd.time();
         }
     }
 
@@ -134,6 +134,11 @@ void piw::dump_client(piw::client_t *client, unsigned flags, bool log)
         {
             msg << " id=" << id;
         }
+
+        if(flags&PIW_DUMP_IDTIME)
+        {
+            msg << " @" << id.time();
+        }
     }
 
     if(flags & (PIW_DUMP_FDATA|PIW_DUMP_FSCALAR|PIW_DUMP_FVECTOR|PIW_DUMP_FTIME|PIW_DUMP_FTYPE))
@@ -152,11 +157,6 @@ void piw::dump_client(piw::client_t *client, unsigned flags, bool log)
             msg << ' ' << type2str(fd.type());
         }
 
-        if(flags & PIW_DUMP_FTIME)
-        {
-            msg << " @" << fd.time();
-        }
-
         if(flags & PIW_DUMP_FDATA)
         {
             msg << ' ' << fd;
@@ -165,6 +165,11 @@ void piw::dump_client(piw::client_t *client, unsigned flags, bool log)
         if((flags&PIW_DUMP_FSCALAR) && !fd.is_null())
         {
             msg << " <" << fd.as_array_lbound() << ':' << fd.as_array_rest() << ':' << fd.as_array_ubound() << "> " << fd.as_norm();
+        }
+
+        if(flags & PIW_DUMP_FTIME)
+        {
+            msg << " @" << fd.time();
         }
     }
 

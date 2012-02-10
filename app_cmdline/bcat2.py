@@ -54,6 +54,7 @@ def main():
 
     parser = optparse.OptionParser(usage=sys.argv[0]+' [options] id')
     parser.add_option('-i','--id',action='store_const',dest='id',const=0x0020,default=0,help='fast id')
+    parser.add_option('-I','--idtime',action='store_const',dest='idtime',const=0x2000,default=0,help='id time')
     parser.add_option('-D','--fdata',action='store_const',dest='fdata',const=0x0040,default=0,help='fast data')
     parser.add_option('-S','--fscalar',action='store_const',dest='fscalar',const=0x0080,default=0,help='fast scalar')
     parser.add_option('-V','--fvector',action='store_const',dest='fvector',const=0x0100,default=0,help='fast vector')
@@ -72,7 +73,7 @@ def main():
         parser.error('wrong number of arguments')
 
     id = args[1]
-    flags = opt.id|opt.fdata|opt.fscalar|opt.fvector|opt.ftime|opt.sdata|opt.sscalar|opt.svector|opt.stime|opt.flags
+    flags = opt.id|opt.fdata|opt.fscalar|opt.fvector|opt.ftime|opt.sdata|opt.sscalar|opt.svector|opt.stime|opt.flags|opt.idtime
 
     if flags==0:
         flags=0x0001

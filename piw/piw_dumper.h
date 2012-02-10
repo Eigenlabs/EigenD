@@ -36,6 +36,7 @@
 #define PIW_DUMP_FTYPE   0x0400
 #define PIW_DUMP_FLAGS   0x0800
 #define PIW_DUMP_ADDRESS 0x1000
+#define PIW_DUMP_IDTIME  0x2000
 
 namespace piw
 {
