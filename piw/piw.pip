@@ -560,11 +560,11 @@ class keygroup_mapper[piw::keygroup_mapper_t]
     void activate_mapping()
 
     void clear_physical_mapping()
-    void set_physical_mapping(int,int,int,int,int,int,unsigned)
+    void set_physical_mapping(int,int,int,int,unsigned,int,int,int,int,unsigned)
     void activate_physical_mapping()
 
     void clear_musical_mapping()
-    void set_musical_mapping(int,int,int,int,int,int,unsigned)
+    void set_musical_mapping(int,int,int,int,int,unsigned,int,int,int,unsigned)
     void activate_musical_mapping()
 }
 

@@ -41,7 +41,6 @@ class Agent(agent.Agent):
         self.set_private(node.Server(value=piw.makebool(False,0),change=self.__changefix))
 
         self[1] = atom.Atom(names='outputs')
-        self[1][1] = bundles.Output(1,False,names='activation output')
         self[1][2] = bundles.Output(2,False,names='pressure output')
         self[1][3] = bundles.Output(3,False,names='roll output')
         self[1][4] = bundles.Output(4,False,names='yaw output')
@@ -53,16 +52,15 @@ class Agent(agent.Agent):
         self.lights = bundles.Splitter(self.domain,self[2])
 
         self.ctl = piw.scaler_controller(self.lights.cookie())
-        self.ctl_input = bundles.VectorInput(self.ctl.cookie(),self.domain,signals=(1,5))
+        self.ctl_input = bundles.VectorInput(self.ctl.cookie(),self.domain,signals=(1,))
 
         self.output = bundles.Splitter(self.domain,*self[1].values())
         self.filter = piw.scaler(self.ctl,self.output.cookie(),cubic())
-        self.input = bundles.VectorInput(self.filter.cookie(), self.domain,signals=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17))
+        self.input = bundles.VectorInput(self.filter.cookie(), self.domain,signals=(2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17))
         self.input.correlator.clocksink().add_upstream(self.ctl_input.correlator.clocksink())
 
         self[4]=atom.Atom(names='inputs')
 
-        self[4][1]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.merge_policy(1,False),names='activation input',protocols='nostage')
         self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input',protocols='nostage')
         self[4][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(3,False),names='roll input',protocols='nostage')
         self[4][4]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(4,False),names='yaw input',protocols='nostage')
@@ -82,7 +80,6 @@ class Agent(agent.Agent):
         self[4][13]=atom.Atom(domain=domain.Bool(),policy=self.input.merge_policy(14,False),names='override',protocols='bind')
         self[4][14]=atom.Atom(domain=domain.BoundedFloat(-1,9,hints=th),init=3,policy=self.input.merge_policy(15,False),names='octave input',protocols='bind',container=(None,'octave',self.verb_container()))
         self[4][15]=atom.Atom(domain=domain.BoundedInt(1,4),init=2,policy=atom.default_policy(self.__set_curve),names='curve',protocols='bind')
-        self[4][16]=atom.Atom(domain=domain.BoundedFloat(0,1000),policy=self.input.merge_nodefault_policy(16,False),names='key number input', protocols="explicit")
         self[4][17]=atom.Atom(domain=domain.BoundedFloat(-10,10,hints=th),init=0,policy=self.input.merge_policy(17,False),names='relative octave input',protocols='bind')
 
         self.add_verb2(3,'choose([],None,role(none,[ideal([None,scale]),singular]))',callback=self.__tune_scale)

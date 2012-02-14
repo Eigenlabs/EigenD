@@ -276,7 +276,7 @@ class Agent(agent.Agent):
         self.domain.set_source(piw.makestring('*',0))
         self.set_private(node.Server(value=piw.makestring('[]',0), change=self.__settrim))
 
-        self[1] = bundles.Output(1,False,names='activation output')
+        self[1] = bundles.Output(1,False,names='key output')
         self[2] = bundles.Output(2,False,names='continuous controller output')
 
         self.output = bundles.Splitter(self.domain,self[1],self[2])

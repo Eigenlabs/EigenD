@@ -55,7 +55,7 @@ namespace
         voice_t(piw::stringer_t::impl_t *i, const piw::data_t &path): piw::event_data_source_real_t(path), impl_(i), state_(VSTATE_IDLE), owner_(0) {}
         ~voice_t() { source_shutdown(); }
 
-        void startup(main_wire_t *owner,const piw::data_nb_t &id,std::string path, unsigned course, unsigned relkey, unsigned abskey,const piw::xevent_data_buffer_t &b, unsigned long long t);
+        void startup(main_wire_t *owner, const piw::data_nb_t &id, std::string path, unsigned course, const piw::data_nb_t &key, const piw::xevent_data_buffer_t &b, unsigned long long t);
         bool shutdown(unsigned long long time);
 
         void source_ended(unsigned seq);
@@ -76,7 +76,8 @@ namespace
         // list of active wires
         std::list<main_wire_t *> active_wires_;
 
-        unsigned course_,abskey_,relkey_;
+        unsigned course_;
+        piw::data_nb_t key_;
         std::string path_;
     };
 
@@ -105,8 +106,7 @@ namespace
         piw::data_nb_t id_;
         std::string kpath_;
         unsigned kcourse_;
-        unsigned kkey_;
-        unsigned knum_;
+        piw::data_nb_t key_;
         piw::xevent_data_buffer_t b_;
 
     };
@@ -129,11 +129,11 @@ struct piw::stringer_t::impl_t: piw::decode_ctl_t, virtual pic::lckobject_t
     void set_clock(bct_clocksink_t *c) { main_encoder_.set_clock(c); }
     void set_latency(unsigned l) { main_encoder_.set_latency(l); }
 
-    voice_t *allocate_voice(main_wire_t *owner,const piw::data_nb_t &id, std::string path, unsigned course, unsigned relkey, unsigned abskey,const piw::xevent_data_buffer_t &b)
+    voice_t *allocate_voice(main_wire_t *owner, const piw::data_nb_t &id, std::string path, unsigned course, const piw::data_nb_t &key,const piw::xevent_data_buffer_t &b)
     {
         // allocate a note from a course to a voice
 #if STRINGER_DEBUG>0
-        pic::logmsg() << "allocate voice rel=" << relkey << " abs=" << abskey;
+        pic::logmsg() << "allocate voice key=" << key;
 #endif // STRINGER_DEBUG>0
 
         pic::lckmap_t<std::pair<std::string,unsigned>,voice_t *>::nbtype::iterator i;
@@ -149,7 +149,7 @@ struct piw::stringer_t::impl_t: piw::decode_ctl_t, virtual pic::lckobject_t
             if((i=pathcourse2voice_.find(std::make_pair(path,course)))!=pathcourse2voice_.end())
             {
                 // then startup the new key on the voice
-                i->second->startup(owner,id,path,course,relkey,abskey,b,id.time());
+                i->second->startup(owner,id,path,course,key,b,id.time());
                 return i->second;
             }
         }
@@ -167,7 +167,7 @@ struct piw::stringer_t::impl_t: piw::decode_ctl_t, virtual pic::lckobject_t
         }
 
         // start up the key on the voice
-        voice->startup(owner,id,path,course,relkey,abskey,b,id.time());
+        voice->startup(owner,id,path,course,key,b,id.time());
 
         // return voice to wire
         return voice;
@@ -281,7 +281,7 @@ piw::data_nb_t piw::stringer_t::impl_t::nextid(const piw::data_nb_t &d_)
 // new notes cause an end event and a start event with the same timestamp
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void voice_t::startup(main_wire_t *owner,const piw::data_nb_t &id,std::string path, unsigned course, unsigned relkey, unsigned abskey,const piw::xevent_data_buffer_t &b,unsigned long long t)
+void voice_t::startup(main_wire_t *owner, const piw::data_nb_t &id, std::string path, unsigned course, const piw::data_nb_t &key, const piw::xevent_data_buffer_t &b,unsigned long long t)
 {
     if(owner_)
     {
@@ -303,17 +303,15 @@ void voice_t::startup(main_wire_t *owner,const piw::data_nb_t &id,std::string pa
         id_=id;
     }
 
-    owner_=owner;
-    path_=path;
-    course_=course;
-    abskey_=abskey;
-    relkey_=relkey;
+    owner_= owner;
+    path_= path;
+    course_= course;
+    key_= key;
 
-    buffer_ = piw::xevent_data_buffer_t(SIG1(5),5);
-    buffer_.merge(b,SIG5(1,2,3,4,6));
-    // send the abskey out on the key output
-    buffer_.add_value(5,piw::makelong_bounded_nb(1000,0,0,abskey,id_.time()));
-//    buffer_.add_value(5,piw::makelong_bounded_nb(1000,0,0,abskey,t));
+    buffer_ = piw::xevent_data_buffer_t(SIG1(6),6);
+    buffer_.merge(b,SIG3(2,3,4));
+    // send the key out on the key output
+    buffer_.add_value(6,key.restamp(id_.time()));
 
     // start the new downstream event
 #if STRINGER_DEBUG>0
@@ -329,7 +327,7 @@ void voice_t::startup(main_wire_t *owner,const piw::data_nb_t &id,std::string pa
     }
 
 #if STRINGER_DEBUG>0
-    pic::logmsg() << "voice " << (void *)this << " starting " << id_ << ' ' << abskey_;
+    pic::logmsg() << "voice " << (void *)this << " starting " << id_ << ' ' << key_;
 #endif // STRINGER_DEBUG>0
 }
 
@@ -407,7 +405,7 @@ void voice_t::remove_wire(main_wire_t *wire, unsigned long long t)
         {
             // play next
             main_wire_t *next = active_wires_.front();
-            startup(next,next->id_,next->kpath_,next->kcourse_,next->kkey_,next->knum_,next->b_,t);
+            startup(next,next->id_,next->kpath_,next->kcourse_,next->key_,next->b_,t);
         }
     }
     else
@@ -461,45 +459,41 @@ void main_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::
 {
     seq_=seq;
 
-    unsigned knum=0;
-    unsigned kcourse=0;
-    unsigned kkey=0;
+    unsigned kcourse = 0;
 
 #if STRINGER_USE_PATH==1
-    unsigned chaff_len=id.as_pathchafflen();
+    unsigned chaff_len = id.as_pathchafflen();
     //pic::logmsg() << "id = " << id << " chaff_len=" << chaff_len;
 
-    std::string chaff=id.as_pathstr();
+    std::string chaff = id.as_pathstr();
     chaff.resize(chaff_len);
 #else
     std::string chaff("path");
 #endif // STRINGER_USE_PATH==1
 
-    piw::data_nb_t d;
-    if(b.latest(6,d,id.time()))
+    piw::data_nb_t key;
+    if(b.latest(6,key,id.time()))
     {
-        float course,key;
-        if(piw::decode_key(d,0,0,0,&knum,&course,&key))
+        float course = 0.0f;
+        if(piw::decode_key(key,0,0,0,0,&course,0))
         {
             kcourse = unsigned(course);
-            kkey = unsigned(key);
         }
     }
 
 #if STRINGER_DEBUG>0
-    pic::logmsg() << "event start key=" << knum << " course=" << kcourse << " key=" << kkey;
+    pic::logmsg() << "event start key=" << key << " course=" << kcourse;
 #endif // STRINGER_DEBUG>0
 
     // assign to a voice according to the course this note belongs to
     // and start playing the voice (will be at head of active wire list so play it)
-    voice_ = impl_->allocate_voice(this,id,chaff,kcourse,kkey,knum,b);
+    voice_ = impl_->allocate_voice(this,id,chaff,kcourse,key,b);
 
     // store note info in case the wire is reallocated later
     id_ = id;
     kpath_ = chaff;
     kcourse_ = kcourse;
-    kkey_ = kkey;
-    knum_ = knum;
+    key_ = key;
     b_ = b;
 
     // put this at the head of the list of active wires

@@ -62,10 +62,9 @@ class Agent(agent.Agent):
         # Setting the second argument to false means that they're not isochronous data streams.
 		#
         self[2] = atom.Atom(names="outputs")
-        self[2][1] = bundles.Output(1, False, names='activation output')
-        self[2][2] = bundles.Output(2, False, names='pressure output')
-        self[2][3] = bundles.Output(3, False, names='roll output')
-        self[2][4] = bundles.Output(4, False, names='yaw output')
+        self[2][1] = bundles.Output(1, False, names='pressure output')
+        self[2][2] = bundles.Output(2, False, names='roll output')
+        self[2][3] = bundles.Output(3, False, names='yaw output')
 
         #
         # bundles.Splitter is a bundle component which demultiplexes the events onto separate
@@ -88,7 +87,7 @@ class Agent(agent.Agent):
         # constructed to handle 4 signals, numbered 1,2,3 and 4. The events will
         # be sent to the output stage through the use of the native implementation's cookie.
         #
-        self.key_input = bundles.VectorInput(self.native.cookie(), self.domain, signals=(1,2,3,4))
+        self.key_input = bundles.VectorInput(self.native.cookie(), self.domain, signals=(1,2,3))
 
 		#
         # Create a null atom just to group our inputs. We still name this atom so that it
@@ -109,10 +108,9 @@ class Agent(agent.Agent):
         # We create 4 inputs, with vector policies routing them to signals 1,2,3 and 4 on
         # our bundle. These are all non-iso inputs.
         #
-        self[1][1] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.key_input.vector_policy(1,False), names='activation input')
-        self[1][2] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.key_input.vector_policy(2,False), names='pressure input')
-        self[1][3] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.key_input.vector_policy(3,False), names='roll input')
-        self[1][4] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.key_input.vector_policy(4,False), names='yaw input')
+        self[1][1] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.key_input.vector_policy(1,False), names='pressure input')
+        self[1][2] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.key_input.vector_policy(2,False), names='roll input')
+        self[1][3] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.key_input.vector_policy(3,False), names='yaw input')
 
         #
         # Lastly, create atoms called 'minimum' and 'controller' to store values for those.
@@ -121,7 +119,7 @@ class Agent(agent.Agent):
         # (because its a numeric domain).
         #
         self[3] = atom.Atom(domain=domain.BoundedFloat(0,1), init=0.5, policy=atom.default_policy(self.__minimum), names='minimum')
-        self[4] = atom.Atom(domain=domain.BoundedInt(2,4), init=2, policy=atom.default_policy(self.__controller), names='controller')
+        self[4] = atom.Atom(domain=domain.BoundedInt(1,3), init=1, policy=atom.default_policy(self.__controller), names='controller')
 
 	#
 	# This method will be called when the 'minimum' atom is changed and

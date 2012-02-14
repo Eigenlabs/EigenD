@@ -202,7 +202,6 @@ class Output(atom.Atom):
         self.light_output = piw.clone(True)
         self.light_input = bundles.VectorInput(self.light_output.cookie(),self.__agent.domain,signals=(1,))
 
-        self[1] = bundles.Output(1,False, names='activation output')
         self[2] = bundles.Output(2,False, names='pressure output')
         self[3] = bundles.Output(3,False, names='roll output')
         self[4] = bundles.Output(4,False, names='yaw output')
@@ -225,7 +224,7 @@ class Output(atom.Atom):
         self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key row', init=None, policy=atom.default_policy(self.__change_key_row))
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key column', init=None, policy=atom.default_policy(self.__change_key_column))
 
-        self.koutput = bundles.Splitter(self.__agent.domain,self[1],self[2],self[3],self[4],self[22])
+        self.koutput = bundles.Splitter(self.__agent.domain,self[2],self[3],self[4],self[22])
         self.s1output = bundles.Splitter(self.__agent.domain,self[5],self[10])
         self.s2output = bundles.Splitter(self.__agent.domain,self[9],self[11])
         self.boutput = bundles.Splitter(self.__agent.domain,self[6])
@@ -492,9 +491,8 @@ class Agent(agent.Agent):
         self[32] = atom.Atom(domain=domain.Aniso(), policy=self.input_pedal3.vector_policy(1,False),names='pedal input', ordinal=3)
         self[33] = atom.Atom(domain=domain.Aniso(), policy=self.input_pedal4.vector_policy(1,False),names='pedal input', ordinal=4)
 
-        self.kinput = bundles.VectorInput(self.key_mapper.cookie(),self.domain,signals=(1,2,3,4,5),threshold=10)
+        self.kinput = bundles.VectorInput(self.key_mapper.cookie(),self.domain,signals=(2,3,4,5),threshold=10)
 
-        self[11] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.kinput.vector_policy(1,False), names='activation input')
         self[12] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.kinput.vector_policy(2,False), names='pressure input')
         self[13] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.kinput.vector_policy(3,False), names='roll input')
         self[14] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.kinput.vector_policy(4,False), names='yaw input')
@@ -945,7 +943,9 @@ class Agent(agent.Agent):
 
     def __choice(self,v):
         choice = utils.key_to_lists(v)
+        print choice
         if not choice: return
+        if not choice[4]: return
 
         # if this choice is the same as the previous one
         # stop choose mode and store the new mapping
@@ -1069,16 +1069,33 @@ class Agent(agent.Agent):
 
         # re-iterate over the mapping and calculate the sequential position
         # while adding each entry to the underlying mapper
-        sequential = 0
+        sequential_out = 0
         for entry in reverse_mapping:
-            sequential = sequential + 1
+
+            # calculate the entry's input key data
             row_in = entry[1][0]
             col_in = entry[1][1]
+            if row_in <= 0 or col_in <= 0:
+                continue
+            row_in_rel = 0
+            col_in_rel = 0
+            sequential_in = 0
+            if self.__upstream_rowlen and row_in <= len(self.__upstream_rowlen):
+                row_in_rel = row_in - 1 - len(self.__upstream_rowlen)
+                col_in_rel = col_in - 1 - self.__upstream_rowlen[row_in-1]
+                for i in range(1,row_in):
+                    sequential_in += self.__upstream_rowlen[i-1]
+                sequential_in += col_in
+
+            # calculate the entry's output key data
             row_out = entry[0][0]
             col_out = entry[0][1]
             row_out_rel = row_out - 1 - max_row
             col_out_rel = col_out - 1 - rowlengths[row_out]
-            mapper.set_physical_mapping(row_in,col_in,row_out,col_out,row_out_rel,col_out_rel,sequential)
+            sequential_out = sequential_out + 1
+
+            # add the mapping for this entry
+            mapper.set_physical_mapping(row_in,col_in,row_in_rel,col_in_rel,sequential_in,row_out,col_out,row_out_rel,col_out_rel,sequential_out)
 
         # activate the physical mappings
         mapper.activate_physical_mapping()
@@ -1129,16 +1146,33 @@ class Agent(agent.Agent):
 
         # iterate over the mapping that's sorted by out key and calculate
         # the sequential position and the length of each course
-        sequential = 0
+        sequential_out = 0
         for entry in reverse_mapping:
-            sequential = sequential + 1
+
+            # calculate the entry's input key data
             course_in = entry[1][0]
             key_in = entry[1][1]
+            if course_in <= 0 or key_in <= 0:
+                continue
+            course_in_rel = 0
+            key_in_rel = 0
+            sequential_in = 0
+            if self.__upstream_courselen and course_in <= len(self.__upstream_courselen):
+                course_in_rel = course_in - 1 - len(self.__upstream_courselen)
+                key_in_rel = key_in - 1 - self.__upstream_courselen[course_in-1]
+                for i in range(1,course_in):
+                    sequential_in += self.__upstream_courselen[i-1]
+                sequential_in += key_in
+
+            # calculate the entry's output key data
             course_out = entry[0][0]
             key_out = entry[0][1]
             course_out_rel = course_out - 1 - max_course
             key_out_rel = key_out - 1 - courselengths[course_out]
-            mapper.set_musical_mapping(course_in,key_in,course_out,key_out,course_out_rel,key_out_rel,sequential)
+            sequential_out = sequential_out + 1
+
+            # add the mapping for this entry
+            mapper.set_musical_mapping(course_in,key_in,course_in_rel,key_in_rel,sequential_in,course_out,key_out,course_out_rel,key_out_rel,sequential_out)
 
         # activate the musical mappings
         mapper.activate_musical_mapping()

@@ -28,7 +28,8 @@
 namespace
 {
     typedef std::pair<int,int> coordinate_t;
-    typedef pic::lckmap_t<coordinate_t,std::pair<coordinate_t,int> >::lcktype forward_mapping_t;
+    typedef std::pair<coordinate_t,int> coord_seq_t;
+    typedef pic::lckmap_t<coordinate_t,coord_seq_t>::lcktype forward_mapping_t;
     typedef pic::lckmap_t<coordinate_t,coordinate_t>::lcktype reverse_mapping_t;
 
     struct mapping_t
@@ -213,25 +214,54 @@ void piw::keygroup_mapper_t::clear_physical_mapping()
     impl_->physical_mapping_.alternate().reverse.clear();
 }
 
-void piw::keygroup_mapper_t::set_physical_mapping(int row_in, int column_in, int row_out, int column_out, int rel_row_out, int rel_column_out, unsigned sequential_out)
+void piw::keygroup_mapper_t::set_physical_mapping(int row_in, int column_in, int rel_row_in, int rel_column_in, unsigned sequential_in, int row_out, int column_out, int rel_row_out, int rel_column_out, unsigned sequential_out)
 {
-    coordinate_t in = coordinate_t(row_in,column_in);
-    coordinate_t out = coordinate_t(row_out,column_out);
-    coordinate_t out_rel = coordinate_t(rel_row_out,rel_column_out);
-    coordinate_t out_rel_row = coordinate_t(rel_row_out,column_out);
-    coordinate_t out_rel_column = coordinate_t(row_out,rel_column_out);
-    coordinate_t out_seq = coordinate_t(0,sequential_out);
-
 #if KEYGROUP_MAPPER_DEBUG>0
-    pic::logmsg() << "set_physical_mapping out (" << row_in << ","  << column_in << ") (" << row_out << "," << column_out << ") (" << rel_row_out << "," << rel_column_out << ") " << sequential_out;
+    pic::logmsg() << "set_physical_mapping in (" << row_in << ","  << column_in << "), rel in  (" << rel_row_in << "," << rel_column_in << "), seq in " << sequential_in << ", out (" << row_out << "," << column_out << "), rel out (" << rel_row_out << "," << rel_column_out << "), seq out " << sequential_out;
 #endif
 
-    impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in,std::make_pair(out,sequential_out)));
+    if(row_in <= 0 || column_in <= 0 || row_out <= 0 || column_out <= 0)
+    {
+        return;
+    }
+
+    coordinate_t in = coordinate_t(row_in,column_in);
+    coordinate_t out = coordinate_t(row_out,column_out);
+    coord_seq_t out_full = std::make_pair(out,sequential_out);
+    impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in,out_full));
     impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out,in));
-    impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_rel,in));
-    impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_row,in));
-    impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_column,in));
-    impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_seq,in));
+
+    if(rel_row_in < 0 && rel_column_in < 0)
+    {
+        coordinate_t in_rel = coordinate_t(rel_row_in,rel_column_in);
+        coordinate_t in_rel_row = coordinate_t(rel_row_in,column_in);
+        coordinate_t in_rel_column = coordinate_t(row_in,rel_column_in);
+        impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in_rel,out_full));
+        impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in_rel_row,out_full));
+        impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in_rel_column,out_full));
+    }
+
+    if(sequential_in > 0)
+    {
+        coordinate_t in_seq = coordinate_t(0,sequential_in);
+        impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in_seq,out_full));
+    }
+
+    if(rel_row_out < 0 && rel_column_out < 0)
+    {
+        coordinate_t out_rel = coordinate_t(rel_row_out,rel_column_out);
+        coordinate_t out_rel_row = coordinate_t(rel_row_out,column_out);
+        coordinate_t out_rel_column = coordinate_t(row_out,rel_column_out);
+        impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_rel,in));
+        impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_row,in));
+        impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_column,in));
+    }
+
+    if(sequential_out > 0)
+    {
+        coordinate_t out_seq = coordinate_t(0,sequential_out);
+        impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_seq,in));
+    }
 }
 
 void piw::keygroup_mapper_t::activate_physical_mapping()
@@ -245,25 +275,54 @@ void piw::keygroup_mapper_t::clear_musical_mapping()
     impl_->musical_mapping_.alternate().reverse.clear();
 }
 
-void piw::keygroup_mapper_t::set_musical_mapping(int course_in, int key_in, int course_out, int key_out, int rel_course_out, int rel_key_out, unsigned sequential_out)
+void piw::keygroup_mapper_t::set_musical_mapping(int course_in, int key_in, int rel_course_in, int rel_key_in, unsigned sequential_in, int course_out, int key_out, int rel_course_out, int rel_key_out, unsigned sequential_out)
 {
-    coordinate_t in = coordinate_t(course_in,key_in);
-    coordinate_t out = coordinate_t(course_out,key_out);
-    coordinate_t out_rel = coordinate_t(rel_course_out,rel_key_out);
-    coordinate_t out_rel_course = coordinate_t(rel_course_out,key_out);
-    coordinate_t out_rel_key = coordinate_t(course_out,rel_key_out);
-    coordinate_t out_seq = coordinate_t(0,sequential_out);
-
 #if KEYGROUP_MAPPER_DEBUG>0
-    pic::logmsg() << "set_musical_mapping out (" << course_in << ","  << key_in << ") (" << course_out << "," << key_out << ") (" << rel_course_out << "," << rel_key_out << ") " << sequential_out;
+    pic::logmsg() << "set_musical_mapping in (" << course_in << ","  << key_in << "), rel in (" << rel_course_in << "," << rel_key_in << "), seq in " << sequential_in << ", out (" << course_out << "," << key_out << "), rel out (" << rel_course_out << "," << rel_key_out << "), seq out " << sequential_out;
 #endif
 
-    impl_->musical_mapping_.alternate().forward.insert(std::make_pair(in,std::make_pair(out,sequential_out)));
+    if(course_in <= 0 || key_in <= 0 || course_out <= 0 || key_out <= 0)
+    {
+        return;
+    }
+
+    coordinate_t in = coordinate_t(course_in,key_in);
+    coordinate_t out = coordinate_t(course_out,key_out);
+    coord_seq_t out_full = std::make_pair(out,sequential_out);
+    impl_->musical_mapping_.alternate().forward.insert(std::make_pair(in,out_full));
     impl_->musical_mapping_.alternate().reverse.insert(std::make_pair(out,in));
-    impl_->musical_mapping_.alternate().reverse.insert(std::make_pair(out_rel,in));
-    impl_->musical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_course,in));
-    impl_->musical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_key,in));
-    impl_->musical_mapping_.alternate().reverse.insert(std::make_pair(out_seq,in));
+
+    if(rel_course_in < 0 && rel_key_in < 0)
+    {
+        coordinate_t in_rel = coordinate_t(rel_course_in,rel_key_in);
+        coordinate_t in_rel_course = coordinate_t(rel_course_in,key_in);
+        coordinate_t in_rel_key = coordinate_t(course_in,rel_key_in);
+        impl_->musical_mapping_.alternate().forward.insert(std::make_pair(in_rel,out_full));
+        impl_->musical_mapping_.alternate().forward.insert(std::make_pair(in_rel_course,out_full));
+        impl_->musical_mapping_.alternate().forward.insert(std::make_pair(in_rel_key,out_full));
+    }
+
+    if(sequential_in > 0)
+    {
+        coordinate_t in_seq = coordinate_t(0,sequential_in);
+        impl_->musical_mapping_.alternate().forward.insert(std::make_pair(in_seq,out_full));
+    }
+
+    if(rel_course_out < 0 && rel_key_out < 0)
+    {
+        coordinate_t out_rel = coordinate_t(rel_course_out,rel_key_out);
+        coordinate_t out_rel_course = coordinate_t(rel_course_out,key_out);
+        coordinate_t out_rel_key = coordinate_t(course_out,rel_key_out);
+        impl_->musical_mapping_.alternate().reverse.insert(std::make_pair(out_rel,in));
+        impl_->musical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_course,in));
+        impl_->musical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_key,in));
+    }
+
+    if(sequential_out > 0)
+    {
+        coordinate_t out_seq = coordinate_t(0,sequential_out);
+        impl_->musical_mapping_.alternate().reverse.insert(std::make_pair(out_seq,in));
+    }
 }
 
 void piw::keygroup_mapper_t::activate_musical_mapping()

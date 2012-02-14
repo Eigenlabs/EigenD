@@ -22,6 +22,7 @@
 #include <piw/piw_thing.h>
 #include <piw/piw_fastdata.h>
 #include <piw/piw_bundle.h>
+#include <piw/piw_keys.h>
 
 #include <picross/pic_time.h>
 #include <picross/pic_log.h>
@@ -113,9 +114,9 @@ namespace
 
         void sendkey(unsigned m, unsigned long long t)
         {
-            unsigned act=(m==0)?0:((m>63)?3:2);
+            piw::hardness_t hardness = (m==0)?piw::KEY_LIGHT:((m>63)?piw::KEY_HARD:piw::KEY_SOFT);
 
-            piw::data_nb_t d = piw::makefloat_bounded_nb(3,0,0,act,t);
+            piw::data_nb_t d = piw::makekey(id_,0,id_,id_,0,id_,hardness,t);
 
             if(m)
             {

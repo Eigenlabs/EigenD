@@ -30,11 +30,9 @@ class Agent(agent.Agent):
         agent.Agent.__init__(self, signature=version, names='stringer',protocols='bind set',container=(5,'stringer',atom.VerbContainer(clock_domain=self.domain)),ordinal=ordinal)
         
         self[1] = atom.Atom(names='outputs')
-        self[1][1] = bundles.Output(1,False,names='activation output', protocols='')
         self[1][2] = bundles.Output(2,False,names='pressure output', protocols='')
         self[1][3] = bundles.Output(3,False,names='roll output', protocols='')
         self[1][4] = bundles.Output(4,False,names='yaw output', protocols='')
-        self[1][5] = bundles.Output(5,False,names='key number output', protocols='')
         self[1][6] = bundles.Output(6,False,names='key output', protocols='')
 
         self[2] = bundles.Output(1,False, names='controller output', continuous=True)
@@ -50,10 +48,9 @@ class Agent(agent.Agent):
         self.cclone.set_output(1,self.coutput.cookie())
 
         self.ctl_input = bundles.VectorInput(self.cclone.cookie(),self.domain,signals=(1,))
-        self.data_input = bundles.VectorInput(self.stringer.data_cookie(),self.domain,signals=(1,2,3,4,6))
+        self.data_input = bundles.VectorInput(self.stringer.data_cookie(),self.domain,signals=(2,3,4,6))
 
         self[4]=atom.Atom(names='inputs')
-        self[4][1]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.data_input.merge_policy(1,False),names='activation input',protocols='nostage')
         self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.data_input.vector_policy(2,False),names='pressure input',protocols='nostage')
         self[4][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.data_input.merge_policy(3,False),names='roll input',protocols='nostage')
         self[4][4]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.data_input.merge_policy(4,False),names='yaw input',protocols='nostage')

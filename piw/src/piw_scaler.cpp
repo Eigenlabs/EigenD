@@ -496,16 +496,6 @@ namespace
             }
         }
 
-        void setkeynumber(const piw::data_nb_t &v)
-        {
-            keynum_= v.as_renorm_float(0,1000,0)-1;
-            keycourse_ = 0;
-            time_ = std::max(time_,v.time());
-#if SCALER_DEBUG>0
-            pic::logmsg() << "keynum override " << keycourse_ << ':' << keynum_;
-#endif // SCALER_DEBUG>0
-        }
-
         void ufilterfunc_start(piw::ufilterenv_t *e,const piw::data_nb_t &id)
         {
             //e->ufilterenv_dump(false);
@@ -544,7 +534,6 @@ namespace
             if(e->ufilterenv_latest(SCALER_GBEND,d,time_)) setgbend(d);
             if(e->ufilterenv_latest(SCALER_KRANGE,d,time_)) setkrange(d);
             if(e->ufilterenv_latest(SCALER_GRANGE,d,time_)) setgrange(d);
-            if(e->ufilterenv_latest(SCALER_KNUMBER,d,time_)) setkeynumber(d);
 
 #if SCALER_DEBUG>0
             pic::logmsg() << "scaler start key: " << keynum_ << ':' << keycourse_;
@@ -634,7 +623,6 @@ namespace
             switch(sig)
             {
                 case SCALER_KEY: nc=true; setkey(d); break;
-                case SCALER_KNUMBER: nc=true; setkeynumber(d); break;
                 case SCALER_OVERRIDE: nc=true;  setoverride(d); break;
                 case SCALER_GBEND: gc=true; setgbend(d); break;
                 case SCALER_GRANGE: gc=true; setgrange(d); break;

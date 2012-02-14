@@ -59,7 +59,7 @@ namespace
         piw::xevent_data_buffer_t output_; // buffer that is used by this wire's own data source for the output
 
         unsigned long long last_from_; // remember the last time the wire ticked
-        piw::data_nb_t last_value_[4]; // remember the last values so that the can be send when the latch is triggered
+        piw::data_nb_t last_value_[3]; // remember the last values so that the can be send when the latch is triggered
     };
 };
 
@@ -77,7 +77,7 @@ struct prim::latch_t::impl_t:
         root_t(0),
         up_(0),
         minimum_(0.5f),
-        controller_(2)
+        controller_(1)
     {
         // Connect the root control to the downstream cookie.
         connect(c);
@@ -293,8 +293,8 @@ void latch_wire_t::invalidate()
  */
 void latch_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::xevent_data_buffer_t &b)
 {
-    // Create a new buffer that handles 4 signals 
-    output_ = piw::xevent_data_buffer_t(SIG4(1,2,3,4),PIW_DATAQUEUE_SIZE_NORM);
+    // Create a new buffer that handles 3 signals 
+    output_ = piw::xevent_data_buffer_t(SIG3(1,2,3),PIW_DATAQUEUE_SIZE_NORM);
 
     // Obtain an iterator to access the incoming data buffer
     input_ = b.iterator();
@@ -304,14 +304,14 @@ void latch_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw
     last_from_ = t;
 
     // Reset the last values
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         last_value_[i] = piw::makefloat_nb(0,t);
     }
 
     // Process any data that has been sent along by the buffer at event start
     piw::data_nb_t d;
-    for(int s = 1; s <= 4; ++s)
+    for(int s = 1; s <= 3; ++s)
     {
         if(input_->latest(s,d,t))
         {
@@ -371,7 +371,7 @@ void latch_wire_t::ticked(unsigned long long f, unsigned long long t)
     piw::data_nb_t d;
     unsigned s;
 
-    while(input_->next(SIG4(1,2,3,4),s,d,t))
+    while(input_->next(SIG3(1,2,3),s,d,t))
     {
         process(s,d,t);
     }
@@ -392,7 +392,7 @@ void latch_wire_t::source_ended(unsigned seq)
  */
 void latch_wire_t::process(unsigned s, const piw::data_nb_t &d, unsigned long long t)
 {
-    if(s == 1 || s == root_->controller_)
+    if(s == root_->controller_)
     {
         last_value_[s-1] = d;
         output_.add_value(s,d);
@@ -455,7 +455,7 @@ void prim::latch_t::set_minimum(float m)
 
 void prim::latch_t::set_controller(unsigned c)
 {
-    if(c<=1) return;
+    if(c<1) return;
     // Ensure that this actual state change is executed in the fast thread.
     piw::tsd_fastcall(__set_controller,impl_,&c);
 }

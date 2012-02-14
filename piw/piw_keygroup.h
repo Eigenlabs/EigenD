@@ -58,11 +58,11 @@ namespace piw
             void activate_mapping();
 
             void clear_physical_mapping();
-            void set_physical_mapping(int row_in, int column_in, int row_out, int column_out, int rel_row_out, int rel_column_out, unsigned sequential_out);
+            void set_physical_mapping(int row_in, int column_in, int rel_row_in, int rel_column_in, unsigned sequential_in, int row_out, int column_out, int rel_row_out, int rel_column_out, unsigned sequential_out);
             void activate_physical_mapping();
 
             void clear_musical_mapping();
-            void set_musical_mapping(int course_in, int key_in, int course_out, int key_out, int rel_course_out, int rel_key_out, unsigned sequential_out);
+            void set_musical_mapping(int course_in, int key_in, int rel_course_in, int rel_key_in, unsigned sequential_in, int course_out, int key_out, int rel_course_out, int rel_key_out, unsigned sequential_out);
             void activate_musical_mapping();
 
         private:

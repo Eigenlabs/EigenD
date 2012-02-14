@@ -273,5 +273,6 @@ def key_to_lists(d):
     muskeynum = d.as_tuple_value(2).as_long()
     course = d.as_tuple_value(3).as_tuple_value(0).as_float()
     key = d.as_tuple_value(3).as_tuple_value(1).as_float()
+    hardness = d.as_tuple_value(4).as_long()
 
-    return [physkeynum,[row,column],muskeynum,[course,key]]
+    return [physkeynum,[row,column],muskeynum,[course,key],hardness]
