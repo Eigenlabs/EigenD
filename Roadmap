@@ -65,15 +65,6 @@ Fundamental Libraries and Tools
 
         Does depend on picross.
 
-    lib_alpha1
-
-        Basic abstractions for handling an alpha version 1 (an 
-        early non production version)
-
-        Plus a few test and utility programs.
-
-        Depends on picross only.
-
     lib_alpha2
 
         Basic abstractions for handling alpha version 2 (Production

@@ -439,19 +439,6 @@ class Keyboard_Tau( Keyboard ):
         self.audio_input_setup()
 
 
-class Keyboard_Alpha1( Keyboard ):
-
-    def __init__(self,usbname,ordinal,dom,remove):
-        self.usbname = usbname
-        Keyboard.__init__(self,'alpha keyboard',ordinal,dom,remove,132)
-        self.nativekeyboard_setup()
-        self.set_threshhold() #define in base class 
-        self.setup_leds() #define in base class 
-
-    def nativekeyboard_setup(self):
-        self.keyboard=keyboard_native.bundle(self.usbname,self.kclone.cookie(),utils.notify(self.dead))
-
-
 class BaseStation:
     def __init__(self,usbname,agent):
         self.__usbname = usbname
@@ -518,17 +505,12 @@ class KeyboardFactory( agent.Agent ):
         self.__enum = []
         
         lsf = lambda c: picross.make_string_functor(utils.make_locked_callable(c))
-        self.__enum.append(picross.enumerator(0x049f,0x505a,lsf(self.add_alpha1keyboard)))
         self.__enum.append(picross.enumerator(0xbeca,0x0102,lsf(self.add_alpha2keyboard)))
         self.__enum.append(picross.enumerator(0xbeca,0x0103,lsf(self.add_taukeyboard)))
         self.__enum.append(picross.enumerator(0x2139,0x0002,lsf(self.download_base_station)))
         self.__enum.append(picross.enumerator(0x2139,0x0003,lsf(self.download_psu)))
         self.__enum.append(picross.enumerator(0x2139,0x0104,lsf(self.add_base_station),lsf(self.del_base_station)))
         self.__enum.append(picross.enumerator(0x2139,0x0105,lsf(self.add_base_station),lsf(self.del_base_station)))
-
-    def add_alpha1keyboard( self, usbname):
-        msg = 'alpha1:%s' % usbname
-        self.__thing.enqueue_slow(piw.makestring(msg,0))
 
     def add_taukeyboard( self, usbname ):
         msg = 'tau:%s' % usbname
@@ -606,9 +588,7 @@ class KeyboardFactory( agent.Agent ):
             
         i=self.next_keyboard()
 
-        if version == 'alpha1': 
-            k = Keyboard_Alpha1(name,i,self.domain,lambda: self.del_keyboard(i))
-        elif version == 'alpha2':
+        if version == 'alpha2':
             k = Keyboard_Alpha2(i,self.domain,lambda:self.del_keyboard(i),usbname=name)
         else:
             k = Keyboard_Tau(i,self.domain,lambda:self.del_keyboard(i),usbname=name)
