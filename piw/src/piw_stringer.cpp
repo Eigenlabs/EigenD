@@ -335,7 +335,9 @@ void voice_t::source_ended(unsigned seq)
 {
     impl_->busy_queue_.remove(this);
     impl_->free_queue_.append(this);
+    id_=piw::data_nb_t();
     owner_=0;
+    key_=piw::data_nb_t();
 }
 
 bool voice_t::shutdown(unsigned long long time)

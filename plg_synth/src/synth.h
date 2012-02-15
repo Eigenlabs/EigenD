@@ -144,7 +144,7 @@ namespace synth
             impl_t *impl_;
     };
 
-    PISYNTH_DECLSPEC_FUNC(piw::dd2d_nb_t) sharpener(float sharpness);
+    PISYNTH_DECLSPEC_FUNC(piw::d2d_nb_t) sharpener(float sharpness);
     PISYNTH_DECLSPEC_FUNC(piw::d2d_nb_t) compressor(float compression);
 };
 

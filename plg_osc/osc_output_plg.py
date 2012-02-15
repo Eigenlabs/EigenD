@@ -108,7 +108,7 @@ class Agent(agent.Agent):
         # We create 4 inputs, with vector policies routing them to signals 1,2,3 and 4 on
         # our bundle. These are all non-iso inputs.
         #
-        self[1][1] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.key_input.vector_policy(1,False), names='activation input')
+        self[1][1] = atom.Atom(domain=domain.Aniso(), policy=self.key_input.vector_policy(1,False), names='key input')
         self[1][2] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.key_input.vector_policy(2,False), names='pressure input')
         self[1][3] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.key_input.vector_policy(3,False), names='roll input')
         self[1][4] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.key_input.vector_policy(4,False), names='yaw input')

@@ -85,5 +85,5 @@ class polysummer[synth::polysummer_t]
 }
 
 d2d_nb compressor[synth::compressor](float)
-dd2d_nb sharpener[synth::sharpener](float)
+d2d_nb sharpener[synth::sharpener](float)
 

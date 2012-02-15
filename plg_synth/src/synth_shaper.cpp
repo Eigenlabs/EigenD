@@ -73,7 +73,7 @@ namespace
         {
         }
 
-        piw::data_nb_t operator()(const piw::data_nb_t &v, const piw::data_nb_t &p) const
+        piw::data_nb_t operator()(const piw::data_nb_t &p) const
         {
 /*
             bool b = (v.as_renorm(0,1,0)>0.0);
@@ -114,9 +114,9 @@ namespace
     };
 }
 
-piw::dd2d_nb_t synth::sharpener(float s)
+piw::d2d_nb_t synth::sharpener(float s)
 {
-    return piw::dd2d_nb_t::callable(sharpener_t(s));
+    return piw::d2d_nb_t::callable(sharpener_t(s));
 }
 
 piw::d2d_nb_t synth::compressor(float c)

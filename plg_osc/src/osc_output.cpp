@@ -20,9 +20,12 @@
 
 #include "osc_output.h"
 #include "osc_transport.h"
+#include <piw/piw_keys.h>
 
 #include <lib_lo/lo/lo.h>
 #include <map>
+
+#define IN_KEY 1
 
 // 
 // Read the Roadmap in plg_osc/Roadmap for some background information
@@ -121,17 +124,13 @@ namespace
         // iterator used to get data values in sequence across all signals
         piw::xevent_data_buffer_t::iter_t iterator_;
 
-        // current event ID
-        piw::data_nb_t id_;
+        // current event ID as a string, using a dataholder ensures that at construction
+        // the allocation doesn't happen in another thread than the fast thread,
+        // it has really nothing stored in it until it's set
+        piw::dataholder_nb_t id_string_;
 
         // our full OSC path (including agent, output name, and channel number)
         char osc_path_[64];
-
-        // event id as a string
-        pic::msg_t id_string_;
-
-        // keynumber derived from the event ID
-        unsigned keynum_;
 
         // the last time data was processed
         unsigned long long last_processed_;
@@ -228,41 +227,12 @@ void osc_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::
     // an iterator keeps track of a read position for each signal
     // in a buffer and lets us retrieve changes by time across
     // all the signals
-
     iterator_ = b.iterator();
 
-    id_ = id;
-
     // build the string version of the event ID
-    id_string_ = pic::msg_t();
-    id_string_ << id_;
-
-    // work out the key number
-    //
-    // In EigenD 1.*, key number is encoded in the event ID.
-    // In EigenD 2.*, it's carried as a signal and event IDs have no
-    // overloaded semantics
-    //
-    // In EigenD 1.* event IDs have 'grist' and 'chaff' components.
-    // This is being completely flushed out for 2.0 because
-    // time proved that this was not an efficient nor intuitive approach.
-    //
-    // The key number is essentially the last component of the path.
-    //
-    // EigenD 2.* systems have a key identification signal which carries
-    // physical and logical key identification together.
-
-    unsigned lp = id.as_pathgristlen();
-    const unsigned char *p = id.as_pathgrist();
-
-    if(lp>0)
-    {
-        keynum_=p[lp-1]-1;
-    }
-    else
-    {
-        keynum_=0;
-    }
+    pic::msg_t msg;
+    msg << id;
+    id_string_.set_nb(piw::makestring_nb(msg.str().c_str(),id.time()));
 
     // send the initial values, at event start time
     send(id.time());
@@ -282,7 +252,6 @@ void osc_wire_t::ticked(unsigned long long from, unsigned long long to)
     // data_nb_t objects are not thread safe, and are for fast thread only.
     // be careful.
     //
-
     piw::data_nb_t d;
     unsigned s;
 
@@ -299,8 +268,6 @@ void osc_wire_t::ticked(unsigned long long from, unsigned long long to)
         // send the current values for the change time.
         // this will also reset the iterator so it wont
         // return any other changes for that time.
-
-
         send(d.time());
     }
 }
@@ -330,36 +297,48 @@ void osc_wire_t::send(unsigned long long t)
     piw::data_nb_t d;
 
     // add the event id
-    lo_message_add(msg,"s",id_string_.str().c_str());
-
-    // fake the key number
-    if(output_->fake_key_)
+    if(!id_string_.is_empty())
     {
-        lo_message_add(msg,"i",keynum_);
+        lo_message_add(msg,"s",id_string_.get().as_string());
     }
 
     // add the signal values
     for(unsigned i=1;i<=output_->signals_;i++)
     {
-        float f = 0.0;
-
         // check for the last bit of data on the signal 
         // before or at time t
         if(iterator_->latest(i,d,t))
         {
-            // output it as a float, in denormalised form.
-            // data values are sent in denormalised form
-            // ie, 345 hz, along with bounding information
-            // which allows one to convert it to normalised
-            // -1 -> 0 -> 1 or 0 -> 1 form.
-            // Non numeric values have an arbitrary normalised form.
-            // this function will use that to create a numeric
-            // form if necessary.
-
-            f = d.as_denorm_float();
+            unsigned pseq, mseq;
+            float row, col, course, key;
+            piw::hardness_t hardness;
+            if(IN_KEY==i && piw::decode_key(d,&pseq,&row,&col,&mseq,&course,&key,&hardness))
+            {
+                // fake the key number
+                if(output_->fake_key_)
+                {
+                    lo_message_add(msg,"i",pseq);
+                    lo_message_add(msg,"f",row);
+                    lo_message_add(msg,"f",col);
+                    lo_message_add(msg,"i",mseq);
+                    lo_message_add(msg,"f",course);
+                    lo_message_add(msg,"f",key);
+                    lo_message_add(msg,"i",hardness);
+                }
+            }
+            else
+            {
+                // output it as a float, in denormalised form.
+                // data values are sent in denormalised form
+                // ie, 345 hz, along with bounding information
+                // which allows one to convert it to normalised
+                // -1 -> 0 -> 1 or 0 -> 1 form.
+                // Non numeric values have an arbitrary normalised form.
+                // this function will use that to create a numeric
+                // form if necessary.
+                lo_message_add(msg,"f",d.as_denorm_float());
+            }
         }
-
-        lo_message_add(msg,"f",f);
 
         // reset the signal in the iterator
         iterator_->reset(i,t+1);
@@ -389,25 +368,32 @@ bool osc_wire_t::event_end(unsigned long long t)
     send(t);
 
     // clear the event id
-    id_ = piw::data_nb_t();
+    id_string_.clear();
 
     // clear the iterator
     iterator_.clear();
 
     // output end-of-event message
     // null event id, all 0 data
-
     lo_message msg = lo_message_new();
     lo_message_add(msg,"s","");
 
-    if(output_->fake_key_)
-    {
-        lo_message_add(msg,"i",0);
-    }
-
     for(unsigned i=1;i<=output_->signals_;i++)
     {
-        lo_message_add(msg,"f",0.0);
+        if(IN_KEY && output_->fake_key_)
+        {
+            lo_message_add(msg,"i",0);
+            lo_message_add(msg,"f",0.f);
+            lo_message_add(msg,"f",0.f);
+            lo_message_add(msg,"i",0);
+            lo_message_add(msg,"f",0.f);
+            lo_message_add(msg,"f",0.f);
+            lo_message_add(msg,"i",0);
+        }
+        else
+        {
+            lo_message_add(msg,"f",0.f);
+        }
     }
 
     output_->server_->osc_send_fast(osc_path_,msg);
