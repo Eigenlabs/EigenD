@@ -425,7 +425,6 @@ class Agent(agent.Agent):
 
 
         self[2] = atom.Atom(names='outputs')
-        self[2][1] = bundles.Output(1,False,names='activation output', protocols='')
         self[2][2] = bundles.Output(2,False,names='pressure output', protocols='')
         self[2][3] = bundles.Output(3,False,names='roll output', protocols='')
         self[2][4] = bundles.Output(4,False,names='yaw output', protocols='')
@@ -441,7 +440,7 @@ class Agent(agent.Agent):
         self[2][13] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=9, protocols='')
         self[2][14] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=10, protocols='')
 
-        self.output_data = bundles.Splitter(self.domain,self[2][1],self[2][2],self[2][3],self[2][4],self[2][15])
+        self.output_data = bundles.Splitter(self.domain,self[2][2],self[2][3],self[2][4],self[2][15])
         self.output_aux1 = bundles.Splitter(self.domain,self[2][5])
         self.output_aux2 = bundles.Splitter(self.domain,self[2][6])
         self.output_aux3 = bundles.Splitter(self.domain,self[2][7])
@@ -493,8 +492,8 @@ class Agent(agent.Agent):
         self.input_clock = bundles.ScalarInput(self.input_aggregator.get_filtered_output(1,piw.grist_aggregation_filter(1)), self.domain, signals=(1,2,3))
         self.input_clock.add_upstream(self.verb_container().clock)
 
-        self.input_poly = piw.polyctl(10,self.input_aggregator.get_filtered_output(2,piw.grist_aggregation_filter(2)), False,5)
-        self.input_data = bundles.VectorInput(self.input_poly.cookie(), self.domain, signals=(1,2,3,4,5))
+        self.input_poly = piw.polyctl(10, self.input_aggregator.get_filtered_output(2,piw.grist_aggregation_filter(2)), False, 5)
+        self.input_data = bundles.VectorInput(self.input_poly.cookie(), self.domain, signals=(2,3,4,5))
 
         self.input_aux1 = bundles.VectorInput(self.input_aggregator.get_filtered_output(3,piw.grist_aggregation_filter(3)), self.domain, signals=(1,))
         self.input_aux2 = bundles.VectorInput(self.input_aggregator.get_filtered_output(4,piw.grist_aggregation_filter(4)), self.domain, signals=(1,))
@@ -516,7 +515,6 @@ class Agent(agent.Agent):
 
         self[1] = atom.Atom(names='inputs')
 
-        self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.input_data.vector_policy(1,False),names='activation input')
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.input_data.vector_policy(2,False),names='pressure input')
         self[1][3]=atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input_data.vector_policy(3,False),names='roll input')
         self[1][4]=atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input_data.vector_policy(4,False),names='yaw input')
