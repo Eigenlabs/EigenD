@@ -35,11 +35,10 @@ class Agent(agent.Agent):
 
         self.output = bundles.Splitter(self.domain, self[1])
         self.inst = stk_native.panpipe(self.output.cookie(),self.domain)
-        self.input = bundles.VectorInput(self.inst.cookie(), self.domain,signals=(1,2,3,4,5,6,7))
+        self.input = bundles.VectorInput(self.inst.cookie(), self.domain,signals=(2,3,4,5,6,7))
 
         param=(T('inc',0.02),T('biginc',0.2),T('control','updown'))
         self[2] = atom.Atom()
-        self[2][1] = atom.Atom(names='activation input', domain=domain.BoundedFloat(0,1), policy=self.input.merge_policy(1,False))
         self[2][2] = atom.Atom(names='frequency input', domain=domain.BoundedFloat(1,96000), policy=self.input.vector_policy(2,filtered_policy()))
         self[2][3] = atom.Atom(names='pressure input', domain=domain.BoundedFloat(0,1), policy=self.input.merge_policy(3,False))
         self[2][4] = atom.Atom(names='reed stiffness input', domain=domain.BoundedFloat(0,1,hints=param), init=0.5, policy=self.input.merge_policy(4,False))

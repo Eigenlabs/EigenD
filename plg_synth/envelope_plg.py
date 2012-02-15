@@ -36,12 +36,11 @@ class Agent(agent.Agent):
         self.output = bundles.Splitter(self.domain,*self[2].values())
         self.adsr = synth_native.adsr(self.output.cookie(),self.domain)
         self.vel = piw.velocitydetect(self.adsr.cookie(), 2, 1)
-        self.input = bundles.VectorInput(self.vel.cookie(), self.domain,signals=(1,2,8,9,10,11),threshold=5)
+        self.input = bundles.VectorInput(self.vel.cookie(), self.domain,signals=(2,8,9,10,11),threshold=5)
 
         time=(T('inc',0.01),T('biginc',0.2),T('control','updown'))
         self[1] = atom.Atom()
 
-        self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1), names='activation input',policy=self.input.merge_policy(1,False))
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,1), init=0, policy=self.input.vector_policy(2,False), names='pressure input')
         self[1][8]=atom.Atom(domain=domain.BoundedFloat(0,60,hints=time),init=0.01,names="attack input",policy=self.input.merge_policy(8,False))
         self[1][9]=atom.Atom(domain=domain.BoundedFloat(0,60,hints=time),init=0.05,names="decay input",policy=self.input.merge_policy(9,False))

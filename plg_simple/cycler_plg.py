@@ -32,7 +32,6 @@ class Agent(agent.Agent):
         self.get_private()[2]=node.Server(change=self.__invert_set,value=piw.makebool(False,0))
 
         self[2] = atom.Atom(names='outputs')
-        self[2][1] = bundles.Output(1,False,names='activation output')
         self[2][2] = bundles.Output(2,False,names='pressure output')
         self[2][3] = bundles.Output(3,False,names='roll output')
         self[2][4] = bundles.Output(4,False,names='yaw output')
@@ -45,10 +44,10 @@ class Agent(agent.Agent):
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
-        self.main_output = bundles.Splitter(self.domain,self[2][1],self[2][2],self[2][3],self[2][4],self[2][5],self[2][6])
+        self.main_output = bundles.Splitter(self.domain,self[2][2],self[2][3],self[2][4],self[2][5],self[2][6])
         self.damp_output = bundles.Splitter(self.domain,self[2][7])
         self.cycler = piw.cycler(self.domain,32,self.main_output.cookie(),self.damp_output.cookie(),False)
-        self.input = bundles.VectorInput(self.cycler.main_cookie(),self.domain,signals=(1,2,3,4,5,6,16,17),threshold=5)
+        self.input = bundles.VectorInput(self.cycler.main_cookie(),self.domain,signals=(2,3,4,5,6,16,17),threshold=5)
         self.feedback = bundles.VectorInput(self.cycler.feedback_cookie(),self.domain,signals=(1,),threshold=5)
 
         self.cycler.set_cycle(True)
@@ -57,7 +56,6 @@ class Agent(agent.Agent):
         self.cycler.set_curve(1.0)
 
         self[1] = atom.Atom(names='inputs')
-        self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(1,False),names='activation input')
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input')
         self[1][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(3,False),names='roll input')
         self[1][4]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(4,False),names='yaw input')

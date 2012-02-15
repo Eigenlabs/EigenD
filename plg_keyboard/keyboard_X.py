@@ -79,7 +79,6 @@ class Keyboard(agent.Agent):
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
 
-        self[1] = bundles.Output(1,False,names='activation output')
         self[2] = bundles.Output(2,False,names='pressure output')
         self[3] = bundles.Output(3,False,names='roll output')
         self[4] = bundles.Output(4,False,names='yaw output')
@@ -102,7 +101,7 @@ class Keyboard(agent.Agent):
 
         self[100] = VirtualKey(self.kbd_keys)
 
-        self.koutput = bundles.Splitter(self.domain,self[1],self[2],self[3],self[4],self[17])
+        self.koutput = bundles.Splitter(self.domain,self[2],self[3],self[4],self[17])
         self.kpoly = piw.polyctl(10,self.koutput.cookie(),False,5)
         self.s1output = bundles.Splitter(self.domain,self[5],self[10])
         self.boutput = bundles.Splitter(self.domain,self[7])

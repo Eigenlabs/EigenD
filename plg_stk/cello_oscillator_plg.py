@@ -35,15 +35,13 @@ class Agent(agent.Agent):
 
         self.output = bundles.Splitter(self.domain, self[1])
         self.inst = stk_native.cello(self.output.cookie(),self.domain)
-        self.input = bundles.VectorInput(self.inst.cookie(), self.domain,signals=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24))
+        self.input = bundles.VectorInput(self.inst.cookie(), self.domain,signals=(2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24))
         
         #self.bow_input = bundles.ScalarInput(self.inst.bow_cookie(), self.domain, signals=(1,2))
 
         param=(T('inc',0.02),T('biginc',0.2),T('control','updown'))
         self[2] = atom.Atom(names='inputs')
         # playing inputs
-        # bow activation
-        self[2][1] = atom.Atom(names='activation input', domain=domain.BoundedFloat(0,1), policy=self.input.merge_policy(1,False),protocols='nostage')
         # frequency
         self[2][2] = atom.Atom(names='frequency input', domain=domain.BoundedFloat(1,96000), policy=self.input.vector_policy(2,False))
         # bow pressure
