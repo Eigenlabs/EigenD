@@ -51,7 +51,7 @@ else:
     env.PiResources('eigend','state','states/*')
 
 if env['IS_MACOSX']:
-    env.PiEtc('eigend',Split('global-postflight'))
+    env.PiEtc('eigend',Split('postflight-docs'))
     env.PiEtc('eigend',Split('releasenotes.pdf'))
     env.PiEtc('eigend',Split('pico-setup.pdf'))
     env.PiEtc('eigend',Split('alpha-setup.pdf'))
