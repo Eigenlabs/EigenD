@@ -65,6 +65,8 @@ def mycopytree(src, dst, symlinks=False, ignore=None):
 
     XXX Consider this example code rather than the ultimate tool.
 
+    return the size
+
     """
     names = os.listdir(src)
     if ignore is not None:
@@ -74,6 +76,8 @@ def mycopytree(src, dst, symlinks=False, ignore=None):
 
     os.makedirs(dst)
     errors = []
+    size = 0
+
     for name in names:
         if name in ignored_names:
             continue
@@ -84,9 +88,10 @@ def mycopytree(src, dst, symlinks=False, ignore=None):
                 linkto = os.readlink(srcname)
                 os.symlink(linkto, dstname)
             elif os.path.isdir(srcname):
-                mycopytree(srcname, dstname, symlinks, ignore)
+                size += mycopytree(srcname, dstname, symlinks, ignore)
             else:
                 os.link(srcname, dstname)
+                size += os.path.getsize(dstname)
             # XXX What about devices, sockets etc.?
         except (IOError, os.error), why:
             errors.append((srcname, dstname, str(why)))
@@ -102,8 +107,11 @@ def mycopytree(src, dst, symlinks=False, ignore=None):
             pass
         else:
             errors.extend((src, dst, str(why)))
+
     if errors:
         raise shutil.Error, errors
+
+    return size
 
 class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
 
@@ -394,89 +402,73 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
 
     def make_mpkg(env,name,pkgs,meta):
 
+        def get_pkgid(pkg):
+            fn = os.path.basename(pkg.abspath)
+            fn = fn.replace('.','_')
+            fn = fn.replace('-','_')
+            fn = fn.replace(' ','_')
+            return fn
+
+
         def mpkg(env,target,source):
             d = target[0].abspath
+            prereqs = meta['prereq']
+
             env.safe_mkdir(join(d,'Contents','Packages'))
-            f=open(join(d,'Contents','PkgInfo'),'w')
-            f.write("sjmdsjmd")
-            f.close()
-
             env.safe_mkdir(join(d,'Contents','Resources'))
-
-            f=open(join(d,'Contents','Resources','package_version'),'w')
-            f.write('major: 1\nminor: 0\n')
-            f.close()
+            env.safe_mkdir(join(d,'Contents','Resources','en.lproj'))
 
             bg = env.subst('$PI_BACKGROUND')
-            if bg and os.path.exists(bg):
-                shutil.copy(bg,join(d,'Contents','Resources','background.tiff'))
-
-            env.safe_mkdir(join(d,'Contents','Resources','English.lproj'))
-
             license = env.subst('$PI_LICENSE')
-            if license:
-                shutil.copy(license,join(d,'Contents','Resources','English.lproj','License.rtf'))
             
-            f=open(join(d,'Contents','Resources','English.lproj','%s.info'%name),'w')
-            f.write('Title %s\n' % name)
-            f.write('Version %s\n' % env.subst('$PI_RELEASE'))
-            f.write('Description The world of PI.\n')
-            f.write('DefaultLocation \n')
-            f.write('DeleteWarning \n')
-            f.write('### Package Flags\n')
-            f.write('NeedsAuthorization NO\n')
-            f.write('Required NO\n')
-            f.write('Relocatable NO\n')
-            f.write('RequiresReboot NO\n')
-            f.write('UseUserMask NO\n')
-            f.write('OverwritePermissions NO\n')
-            f.write('InstallFat NO\n')
-            f.write('RootVolumeOnly YES\n')
-            f.write('OnlyUpdateInstalledLanguages NO\n')
-            f.close()
+            f=open(join(d,'Contents','distribution.dist'),'w')
+            f.write('<installer-script minSpecVersion="1">\n')
+            f.write('<title>%s %s</title>\n' % (name,env.subst('$PI_RELEASE')))
 
-            f=open(join(d,'Contents','Resources','English.lproj','Description.plist'),'w')
-            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-            f.write('<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
-            f.write('<plist version="1.0">\n')
-            f.write('<dict>\n')
-            f.write('	<key>IFPkgDescriptionDescription</key>\n')
-            f.write('	<string>The world of PI.</string>\n')
-            f.write('	<key>IFPkgDescriptionTitle</key>\n')
-            f.write('	<string>%s</string>\n' % name)
-            f.write('</dict>\n')
-            f.write('</plist>\n')
-            f.close()
+            if license and os.path.exists(license):
+                shutil.copy(license,join(d,'Contents','Resources','en.lproj'))
+                f.write('<license file="%s"/>\n' % os.path.basename(license))
 
-            f=open(join(d,'Contents','Info.plist'),'w')
-            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-            f.write('<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
-            f.write('<plist version="1.0">\n')
-            f.write('<dict>\n')
-            f.write('	<key>IFPkgFlagBackgroundAlignment</key>\n')
-            f.write('	<string>topleft</string>\n')
-            f.write('	<key>IFPkgFlagBackgroundScaling</key>\n')
-            f.write('	<string>none</string>\n')
-            f.write('	<key>IFPkgFlagComponentDirectory</key>\n')
-            f.write('	<string>Contents/Packages</string>\n')
-            f.write('	<key>IFPkgFlagPackageList</key>\n')
-            f.write('	<array>\n')
+            if bg and os.path.exists(bg):
+                shutil.copy(bg,join(d,'Contents','Resources','en.lproj'))
+                f.write('<background file="%s"></background>\n' % os.path.basename(bg))
+
+            f.write('<options customize="never" allow-external-scripts="no" rootVolumeOnly="true"/>\n')
+            f.write('<volume-check script="pm_volume_check();"/>\n')
+            f.write('<script>function pm_volume_check() {\n')
+
+            for (pf,pm) in prereqs:
+                f.write('  if(!(system.files.fileExistsAtPath(my.target.mountpoint + "%s") == true)) {\n' % pf)
+                f.write('    my.result.title = "Failure";\n')
+                f.write('    my.result.message = "%s";\n' % pm)
+                f.write('    my.result.type = "Fatal";\n')
+                f.write('    return false;\n')
+                f.write('  }\n')
+
+            f.write('  return true;\n')
+            f.write('  }\n')
+            f.write('</script>\n')
+
+            f.write('<choices-outline>\n')
+            f.write('  <line choice="default"/>\n')
+            f.write('</choices-outline>\n')
+
+            f.write('<choice id="default">\n')
+            for pkg in source:
+                pn=get_pkgid(pkg)
+                f.write(' <pkg-ref id="%s"/>\n' % pn)
+
+            f.write('</choice>\n')
 
             for pkg in source:
                 pn=os.path.basename(pkg.abspath)
-                mycopytree(pkg.abspath,join(d,'Contents','Packages',pn),ignore=svn_filter)
-                f.write('		<dict>\n')
-                f.write('            <key>IFPkgFlagPackageLocation</key>\n')
-                f.write('            <string>%s</string>\n' % pn)
-                f.write('            <key>IFPkgFlagPackageSelection</key>\n')
-                f.write('            <string>selected</string>\n')
-                f.write('		</dict>\n')
+                size=mycopytree(pkg.abspath,join(d,'Contents','Packages',pn),ignore=svn_filter)
+                id=get_pkgid(pkg)
+                f.write('<pkg-ref id="%s" version="%s" auth="Root">' % (id,env.subst('$PI_RELEASE')))
+                f.write('file:./Contents/Packages/%s' % pn)
+                f.write('</pkg-ref>\n')
 
-            f.write('	</array>\n')
-            f.write('	<key>IFPkgFormatVersion</key>\n')
-            f.write('	<real>0.10000000149011612</real>\n')
-            f.write('</dict>\n')
-            f.write('</plist>\n')
+            f.write('</installer-script>\n')
             f.close()
 
             etc = env.subst('$ETCROOTINSTALLDIR')
