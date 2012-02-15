@@ -668,11 +668,12 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         self.shared.shortcuts.setdefault(package,[]).append((bigname,'etc\\%s\\%s' % (package,name)))
 
     def PiExternalRelease(self,version,organisation):
+        if not self.PiRelease('contrib',version,organisation):
+            return
+
         root = os.environ.get('ProgramFiles(x86)')
         if not root:
             root = os.environ.get('ProgramFiles')
-
-        self.PiRelease('contrib',version,organisation)
 
         dist = os.path.join(root,'Eigenlabs','release-%s' % version)
         self.Append(LIBPATH=[os.path.join(dist,'bin')])

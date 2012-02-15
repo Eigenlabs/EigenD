@@ -584,11 +584,12 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
     def PiRelease(self,collection,release,organisation=None):
         if self.shared.release:
-            raise RuntimeError('PiRelease called twice')
+            return False
         c = collection or 'release'
         self.shared.release=release
         self.shared.collection=c
         self.shared.organisation=organisation or 'Eigenlabs'
+        return True
 
     def set_agent_group(self,ag):
         if ag:

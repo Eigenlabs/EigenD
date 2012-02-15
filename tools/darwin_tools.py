@@ -438,8 +438,10 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         return mpkgnode
 
     def PiExternalRelease(self,version,organisation):
+        if not self.PiRelease('contrib',version,organisation):
+            return
+
         root = '/usr/pi'
-        self.PiRelease('contrib',version,organisation)
         dist = os.path.join(root,'release-%s' % version)
         self.Append(LIBPATH=[os.path.join(dist,'bin')])
         self.Append(CPPPATH=[os.path.join(dist,'include')])
