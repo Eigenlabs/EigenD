@@ -244,26 +244,29 @@ class Agent(atom.Atom):
                 
         delegate = LoadResults()
         delegate.set_residual(self,state)
-
         yield self.load_agent_state(delegate)
 
+        oldkeys = set(delegate.residual.keys())
         while delegate.residual:
             r = delegate.residual
-            r2 = r.copy()
             delegate.residual = {}
 
             while r:
                 (k,v) = r.popitem()
                 yield k.load_state(v,delegate,1)
 
-            if delegate.residual.keys() == r2.keys():
+            newkeys = set(delegate.residual.keys())
+            if oldkeys == newkeys:
                 break
+
+            oldkeys = newkeys
 
         if delegate.residual:
             print 'didnt load after phase 1:',[(k,v.render()) for (k,v) in delegate.residual.items()]
 
         delegate.residual = delegate.deferred
 
+        oldkeys = set(delegate.residual.keys())
         while delegate.residual:
             r = delegate.residual
             r2 = r.copy()
@@ -273,8 +276,11 @@ class Agent(atom.Atom):
                 (k,v) = r.popitem()
                 yield k.load_state(v,delegate,2)
 
-            if delegate.residual.keys() == r2.keys():
+            newkeys = set(delegate.residual.keys())
+            if oldkeys == newkeys:
                 break
+
+            oldkeys = newkeys
 
         if delegate.residual:
             print 'didnt load after phase 2:',[(k,v.render()) for (k,v) in delegate.residual.items()]
