@@ -196,6 +196,9 @@ class RigOutput(atom.Atom):
             del self.__inputs[iid]
             self.__setup()
 
+    def input(self):
+        return self.__master
+
 
 class RigInputPlumber(proxy.AtomProxy):
 
@@ -428,12 +431,21 @@ class InputList(collection.Collection):
     def instance_wreck(self,k,e,name):
         del self[k]
         e.destroy_input()
+        yield async.Coroutine.success()
 
     def dynamic_create(self,i):
         return RigInput(self.__scope,i,self.__output_peer)
 
     def dynamic_destroy(self,i,v):
         v.destroy_input()
+
+    @async.coroutine('internal error')
+    def rpc_delinstance(self,arg):
+        iid = paths.to_relative(paths.to_absolute(arg,scope=self.scope()))
+        r = collection.Collection.rpc_delinstance(self,iid)
+        yield r
+        yield async.Coroutine.completion(r.status(),*r.args(),**r.kwds())
+
         
 class OutputList(atom.Atom):
     def __init__(self,scope=None):
@@ -454,9 +466,6 @@ class OutputList(atom.Atom):
     def set_peer(self,peer):
         self.__peer = peer
 
-    def scope(self):
-        return self.__scope
-
     def rpc_createinstance(self,arg):
         return self.__peer.rpc_createinstance(arg)
 
@@ -466,8 +475,21 @@ class OutputList(atom.Atom):
     def rpc_instancename(self,arg):
         return self.__peer.rpc_instancename(arg)
 
+    @async.coroutine('internal error')
     def rpc_delinstance(self,arg):
-        return self.__peer.rpc_delinstance(arg)
+        iid = paths.to_relative(paths.to_absolute(arg,scope=self.scope()))
+        pid = None
+        for v in self.values():
+            if iid == v.id():
+                pid = v.input().id()
+                break
+
+        if pid:
+            r =  self.__peer.rpc_delinstance(pid)
+            yield r
+            yield async.Coroutine.completion(r.status(),*r.args(),**r.kwds())
+        else:
+            yield async.Coroutine.failure('output not in use')
 
 class InnerAgent(agent.Agent):
     def __init__(self,outer_agent):
@@ -553,7 +575,7 @@ class OuterAgent(agent.Agent):
 
         self.set_property_string('rig',self.file_name)
 
-        self[2] = OutputList(self.inner_name)
+        self[2] = OutputList(None)
         self[3] = InputList(None)
 
         self[3].set_output_peer(self.__inner_agent[2])

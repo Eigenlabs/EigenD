@@ -72,17 +72,14 @@ class Collection(atom.Atom):
 
     @async.coroutine('internal error')
     def rpc_delinstance(self,arg):
-        name = int(arg)
-
         for k,v in self.items():
-            o = v.get_property_long('ordinal',0)
-            if o == name:
-                oid = v.id()
+            if v.id() == arg:
+                o = v.get_property_long('ordinal',0)
                 oresult = self.__wrecker(k,v,o)
                 yield oresult
                 v.notify_destroy()
                 if k in self: del self[k]
-                yield async.Coroutine.success(oid)
+                yield async.Coroutine.success(arg)
 
         yield async.Coroutine.failure('output not in use')
 

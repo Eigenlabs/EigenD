@@ -336,15 +336,12 @@ class OutputList(atom.Atom):
         return output.id()
 
     def rpc_delinstance(self,arg):
-        n = int(arg)
-
         for k,v in self.items():
-            if n == k:
-                oid = v.id()
+            if arg == v.id():
                 v.notify_destroy()
                 del self[k]
                 self.__check_single()
-                return oid
+                return arg
 
         return async.failure('output not in use')
 
