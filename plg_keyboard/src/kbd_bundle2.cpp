@@ -322,7 +322,6 @@ namespace
         float maxpressure_;
         unsigned counter_;
         unsigned gated_;
-        unsigned gated_count_;
         bool running_;
         bool skipping_;
         unsigned long long ts_;
@@ -988,7 +987,7 @@ namespace
         std::auto_ptr<breath_t> breath1_;
     };
 
-    kwire_t::kwire_t(unsigned i, unsigned r, unsigned c, const piw::data_t &path, keyboard_t *k): piw::event_data_source_real_t(path), index_(i), row_(r), column_(c), id_(piw::pathone_nb(i,0)), keyboard_(k), maxpressure_(0), counter_(0), gated_(0),gated_count_(0), running_(false), ts_(0), output_(63,PIW_DATAQUEUE_SIZE_NORM),cur_pressure_(0), cur_roll_(0), cur_yaw_(0)
+    kwire_t::kwire_t(unsigned i, unsigned r, unsigned c, const piw::data_t &path, keyboard_t *k): piw::event_data_source_real_t(path), index_(i), row_(r), column_(c), id_(piw::pathone_nb(i,0)), keyboard_(k), maxpressure_(0), counter_(0), gated_(0), running_(false), ts_(0), output_(63,PIW_DATAQUEUE_SIZE_NORM),cur_pressure_(0), cur_roll_(0), cur_yaw_(0)
     {
         k->connect_wire(this,source());
     }
@@ -1028,7 +1027,6 @@ namespace
             {
                 source_end(t);
                 output_ = piw::xevent_data_buffer_t(31,PIW_DATAQUEUE_SIZE_NORM);
-                output_.add_value(1,piw::makefloat_bounded_nb(3,0,0,0,t));
                 output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,0,t));
                 output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,0,t));
                 output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,0,t));
@@ -1059,7 +1057,6 @@ namespace
             running_=true;
             maxpressure_=0;
             gated_=0;
-            gated_count_=0;
             return;
         }
 
@@ -1068,7 +1065,6 @@ namespace
             return;
         }
 
-        if(gated_>0 && gated_count_>0) { --gated_count_; output_.add_value(1,piw::makefloat_bounded_nb(3,0,0,gated_,t)); }
         if(p!=cur_pressure_) output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,p/4096.0,t));
         if(r!=cur_roll_) output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,__clip(r/1024.0,keyboard_->roll_axis_window_),t));
         if(y!=cur_yaw_) output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,__clip(y/1024.0,keyboard_->yaw_axis_window_),t));
@@ -1086,19 +1082,15 @@ namespace
         {
             if(maxpressure_ > keyboard_->threshold2_)
             {
-                gated_=3;
-                gated_count_=20;
+                gated_=2;
                 output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_HARD,t));
-                output_.add_value(1,piw::makefloat_bounded_nb(3,0,0,3,t));
             }
         }
 
         if(!gated_ && maxpressure_ > keyboard_->threshold1_)
         {
             output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_SOFT,t));
-            output_.add_value(1,piw::makefloat_bounded_nb(3,0,0,2,t));
-            gated_=2;
-            gated_count_=20;
+            gated_=1;
         }
 
         counter_++;
