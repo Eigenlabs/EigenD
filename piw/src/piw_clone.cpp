@@ -191,6 +191,7 @@ void clone_wire_ctl_t::filter_data(unsigned long long t)
     if(current_data().latest(filtered_signal_,d,t))
     {
         piw::data_nb_t nd = filter_(d);
+
         if(!nd.is_null())
         {
             PIC_ASSERT(buffer_ == 0);
@@ -198,11 +199,8 @@ void clone_wire_ctl_t::filter_data(unsigned long long t)
 
             active_ = true;
             id_.set_nb(current_id());
-            //pic::logmsg() << "filtered cloner " << (void *)this << " on " << output_ << " filtering data of event " << id << "<-" << current_id();
-
-            buffer_->add_value(filtered_signal_, nd);
+            //pic::logmsg() << "filtered cloner " << (void *)this << " on " << output_ << " filtering data of event " << nd << "<-" << current_id();
             buffer_->merge(current_data(), 0);
-
             send_fast(current_id(),current_data().signal(filtered_signal_));
             source_start(seq_,current_id().restamp(t),*buffer_);
         }
@@ -235,6 +233,7 @@ void clone_wire_ctl_t::event_start(unsigned seq, const piw::data_nb_t &id, const
 
 bool clone_wire_ctl_t::fastdata_receive_event(const piw::data_nb_t &d, const piw::dataqueue_t &q)
 {
+    ping(d.time(),q);
     return true;
 }
 
@@ -243,6 +242,7 @@ bool clone_wire_ctl_t::fastdata_receive_data(const piw::data_nb_t &d)
     if(buffer_)
     {
         piw::data_nb_t nd = filter_(d);
+        //pic::logmsg() << "filtered cloner (rd) " << (void *)this << " on " << output_ << " filtering data of event " << nd << "<-" << d;
         buffer_->add_value(filtered_signal_, nd);
 
         return true;
