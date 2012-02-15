@@ -211,9 +211,16 @@ class Registry:
 
             for a in manifest.splitlines():
                 a = a.strip()
+                asplit = a.split()
 
-                if a[0] == 'a':
-                    a = a[1:].strip().split(':')
+                if len(asplit)==1:
+                    asplit=['agent']+asplit
+
+                if len(asplit)!=2:
+                    continue
+
+                if asplit[0] == 'agent':
+                    a = asplit[1].strip().split(':')
                     (name,module,cversion,version) = a[0:4]
                     fullmodule = os.path.join(p,module)
                     self.add_module(name,version,cversion,klass(name,version,cversion,fullmodule))
@@ -221,6 +228,6 @@ class Registry:
                         self.add_alias(e,version,name)
                     continue
 
-                if a[0] == 'm':
-                    (e,m,c) = a[1:].strip().split(':')
+                if asplit[0] == 'vocab':
+                    (e,m,c) = asplit[1].strip().split(':')
                     self.add_vocab(e,m,c)

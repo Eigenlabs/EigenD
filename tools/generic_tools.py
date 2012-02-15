@@ -778,13 +778,13 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         for a in agent_list:
             extra = ':'.join(a[4])
             if extra: extra=':'+extra
-            textnodes.append(env.Value('a %s:%s:%s:%s%s' % (a[0],a[1],a[2],a[3],extra)))
+            textnodes.append(env.Value('agent %s:%s:%s:%s%s' % (a[0],a[1],a[2],a[3],extra)))
             vnode = env.Command(join(env.subst("$MODRUNDIR_PLUGIN"),'%s_version.py' % a[0]),[env.Value(a[0]),env.Value(a[2])],build_version)
             if package:
                 env.Install(env.subst("$MODSTAGEDIR_PLUGIN"),vnode)
 
         for (e,(m,c)) in manifest.items():
-            textnodes.append(env.Value('m %s:%s:%s' % (e,m,c)))
+            textnodes.append(env.Value('vocab %s:%s:%s' % (e,m,c)))
 
 
         def build_manifest(target,source,env):
