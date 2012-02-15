@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,talker,collection
+from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,talker,collection,paths
 from . import scheduler_version as version
 import piw
 from pi.logic.shortcuts import *
@@ -264,9 +264,14 @@ class Agent(agent.Agent):
         self[4][3] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.vector_policy(1,False), names='key input',protocols='nostage')
 
         self[5] = EventBrowser(self.__eventlist)
+        self[6] = atom.Atom(domain=domain.String(),names='identifier')
 
     def __eventlist(self):
         return self[3].values()
+
+    def server_opened(self):
+        agent.Agent.server_opened(self)
+        self[6].set_value(paths.to_absolute(self.id()))
 
     def rpc_delete_trigger(self,args):
         trigger = action.unmarshal(args)

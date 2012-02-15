@@ -553,7 +553,6 @@ class Agent(agent.Agent):
         self.add_verb2(8,'repeat([],None,role(None,%(x)s),%(o)s)'%c,callback=self.__repeat,**a)
         self.add_verb2(9,'name([],None,role(None,[ideal([~server,take]),singular]),role(to,[abstract]))',self.__name)
         self.add_verb2(10,'copy([],None,role(None,[gideal(take),singular]))',callback=self.__copy)
-        self.add_verb2(11,'use([],None,role(None,[concrete,proto(scheduler),singular]))',callback=self.__usesched)
         self.add_verb2(12,'delete([],None,role(None,[ideal([~server,take]),singular]))',self.__delete)
         self.add_verb2(13,'play([],None,role(None,[mass([note])]),role(with,[mass([velocity])]))',create_action=self.__playnv,clock=True)
         self.add_verb2(14,'play([],None,role(None,[mass([note])]),role(with,[mass([velocity])]),role(for,[mass([second])]))',create_action=self.__playnvl,clock=True)
@@ -570,8 +569,6 @@ class Agent(agent.Agent):
         self.library = TakeLibrary(self)
 
         self.__scheduler = schedproxy.SchedProxy(delegate=self)
-        self.set_private(node.server(value=piw.makestring('',0),change=self.__schedchange))
-
         self.__schedready = False
 
         self[5] = Voice(self)
@@ -579,6 +576,10 @@ class Agent(agent.Agent):
         # don't use self[6], it was previously used by a legacy status output that was removed in 1.2
 
         self[7]=toggle.Toggle(None,self.domain,container=(None,'overdub',self.verb_container()),init=False,names='overdub',transient=True)
+        self[8]=atom.Atom(domain=domain.String(),names='scheduler identifier',policy=atom.default_policy(self.__schedchange),transient=True)
+
+    def __schedchange(self,arg):
+        self.__scheduler.set_address(arg)
 
     def __is_overdub_enabled(self):
         return self[7].get_value()
@@ -611,11 +612,11 @@ class Agent(agent.Agent):
 
     def scheduler_ready(self):
         self.__schedready = True
-        #print 'attached to scheduler'
+        print 'attached to scheduler'
 
     def scheduler_gone(self):
         self.__schedready = False
-        #print 'detached from scheduler'
+        print 'detached from scheduler'
 
     def __record(self,subject,duration,mode):
 
@@ -989,16 +990,6 @@ class Agent(agent.Agent):
         self.library.add_file(fn)
         self[5].update()
         yield async.Coroutine.success(action.nosync_return())
-
-    def __usesched(self,subject,sched):
-        sched = action.concrete_object(sched)
-        self.__scheduler.set_address(sched)
-        self.get_private().set_data(piw.makestring(sched,0))
-
-    def __schedchange(self,arg):
-        if arg.is_string():
-            self.__scheduler.set_address(arg.as_string())
-            self.get_private().set_data(arg)
 
     def __delete(self,subj,thing):
         self.__unplay(subj,thing)
