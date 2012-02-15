@@ -943,9 +943,9 @@ class Agent(agent.Agent):
 
     def __choice(self,v):
         choice = utils.key_to_lists(v)
-        print choice
         if not choice: return
-        if not choice[4]: return
+        if not choice[-1]: return
+        del choice[-1]
 
         # if this choice is the same as the previous one
         # stop choose mode and store the new mapping
