@@ -43,12 +43,14 @@ env.PiResources('Help','documentation.xml',package='eigend')
 
 if env['IS_WINDOWS']:
     env.PiResources('state','states_win/*',package='eigend')
+    env.PiResources('example','examples_win/*',package='eigend')
     env.PiReleaseFile('eigend','releasenotes.pdf','Release Notes')
     env.PiReleaseFile('eigend','pico-setup.pdf','Pico Setup Guide')
     env.PiReleaseFile('eigend','alpha-setup.pdf','Alpha Setup Guide')
     env.PiReleaseFile('eigend','tau-setup.pdf','Tau Setup Guide')
 else:
-    env.PiResources('state','states/*',package='eigend')
+    env.PiResources('state','states_mac/*',package='eigend')
+    env.PiResources('example','examples_mac/*',package='eigend')
 
 if env['IS_MACOSX']:
     env.PiEtc('eigend',Split('postflight-docs'))
