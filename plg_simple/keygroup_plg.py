@@ -538,8 +538,8 @@ class Agent(agent.Agent):
         self.add_verb2(17,'clear([],None,role(None,[matches([physical])]))',self.__physicalclear)
         self.add_verb2(18,'clear([],None,role(None,[mass([row])]))',self.__rowclear)
 
-        self.add_verb2(13,'add([],None,role(None,[coord(physical,[row],[column])]),option(to,[mass([row])]))',self.__kadd_physical)
-        self.add_verb2(14,'add([],None,role(None,[coord(musical,[key],[course])]),option(to,[mass([column])]))',self.__kadd_musical)
+        self.add_verb2(13,'add([],None,role(None,[coord(physical,[row],[column])]),role(to,[coord(physical,[row],[column])]))',self.__kadd_physical)
+        self.add_verb2(14,'add([],None,role(None,[coord(musical,[key],[course])]),role(to,[coord(musical,[key],[course])]))',self.__kadd_musical)
 
         self.add_verb2(15,'choose([],None,role(None,[mass([output])]))', self.__ochoose)
 
@@ -801,52 +801,39 @@ class Agent(agent.Agent):
 
         self.__set_physical_mapping(physical_mapping)
 
-    """
-    TODO: see previous todo
+    def __kadd_physical(self,subject,kfrom,kto):
+        frow,fcol = action.coord_value(kfrom)
+        trow,tcol = action.coord_value(kto)
 
-    def __getkeys(self):
-        mapping = self.__cur_mapping()
-        courses = [i.as_long() for i in self.controller.getlist('courselen')]
+        old = self.__current_physical_mapping()
+        new = []
 
-        if not courses:
-            courses = [len(mapping)]
+        for ((fx,fy),(tx,ty)) in old:
+            if fx==frow and fy==fcol:
+                continue
+            if tx==trow and ty==tcol:
+                continue
+            new.append(((fx,fy),(tx,ty)))
+            
+        new.append(((frow,fcol),(trow,tcol)))
+        self.__set_physical_mapping(new)
 
-        coursekeys = []
-        keys = [m[0] for m in self.__cur_mapping()]
-        while len(courses):
-            courselen = courses[0]
-            coursekeys.append(keys[:courselen])
-            courses = courses[1:]
-            keys = keys[courselen:]
+    def __kadd_musical(self,subject,kfrom,kto):
+        fkey,fcourse = action.coord_value(kfrom)
+        tkey,tcourse = action.coord_value(kto)
 
-        return coursekeys
+        old = self.__current_musical_mapping()
+        new = []
 
-    def __setkeys(self,coursekeys):
-        while len(coursekeys)>0 and not coursekeys[-1]:
-            coursekeys.pop()
-
-        self.controller.setlist('courselen',[piw.makelong(len(k),0) for k in coursekeys])
-
-        keys = []
-        for c in coursekeys:
-            keys.extend(c)
-
-        mapping = [(k,i+1) for (i,k) in enumerate(keys)]
-        self.__set_mapping(tuple(mapping))
-
-
-        
-    """
-
-    def __kadd_physical(self,subject,k,col):
-        krow,kcol = action.coord_value(k)
-        tcol = action.mass_quantity(col) if col else 1
-        print "add physical key",krow,kcol,"to",tcol
-
-    def __kadd_musical(self,subject,k,course):
-        kkey,kcourse = action.coord_value(k)
-        tcourse = action.mass_quantity(course) if course else 1
-        print "add musical key",kkey,kcourse,"to",tcourse
+        for ((fx,fy),(tx,ty)) in old:
+            if fx==fcourse and fy==fkey:
+                continue
+            if tx==tcourse and ty==tkey:
+                continue
+            new.append(((fx,fy),(tx,ty)))
+            
+        new.append(((fcourse,fkey),(tcourse,tkey)))
+        self.__set_musical_mapping(new)
 
     def __choose(self,subject,dummy,course):
         c = int(action.abstract_string(course)) if course else None

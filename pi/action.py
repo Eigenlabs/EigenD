@@ -137,8 +137,11 @@ def nosync_return():
 def coord_tag(arg):
     return arg[0].args[0][0]
 
-def coord_value(arg):
+def coord_value_float(arg):
     return [float(x) for x in arg[0].args[0][1:] ]
+
+def coord_value(arg):
+    return [int(x) for x in arg[0].args[0][1:] ]
 
 def mass_quantity(arg):
     return float(arg[0].args[0][0])
