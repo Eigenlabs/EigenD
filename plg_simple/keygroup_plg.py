@@ -537,11 +537,10 @@ class Agent(agent.Agent):
         self.add_verb2(16,'clear([],None,role(None,[mass([course])]))',self.__courseclear)
         self.add_verb2(17,'clear([],None,role(None,[matches([physical])]))',self.__physicalclear)
         self.add_verb2(18,'clear([],None,role(None,[mass([row])]))',self.__rowclear)
-        """
-        TODO: waiting for a Belcanto extension that supports tuples
-        self.add_verb2(13,'add([],None,role(None,[mass([key])]),option(to,[mass([course])]))',self.__kadd)
-        self.add_verb2(14,'add([],None,role(None,[mass([key])]),role(to,[mass([key])]),option(as,[mass([course])]))',self.__radd)
-        """
+
+        self.add_verb2(13,'add([],None,role(None,[coord(physical,[row],[column])]),option(to,[mass([row])]))',self.__kadd_physical)
+        self.add_verb2(14,'add([],None,role(None,[coord(musical,[key],[course])]),option(to,[mass([column])]))',self.__kadd_musical)
+
         self.add_verb2(15,'choose([],None,role(None,[mass([output])]))', self.__ochoose)
 
         self[9] = atom.Atom(domain=domain.BoundedFloatOrNull(-20,20),init=None,policy=atom.default_policy(self.__change_base),names='base note')
@@ -837,53 +836,17 @@ class Agent(agent.Agent):
 
 
         
-    def __radd(self,subject,f,t,course):
-        if course:
-            course = int(action.mass_quantity(course))-1
-        else:
-            course = 0
-
-        f = int(action.mass_quantity(f))
-        t = int(action.mass_quantity(t))
-        r = range(f,t+1)
-
-        self.controller.ensure(course+1)
-        coursekeys = self.__getkeys()
-
-        while len(coursekeys) <= course:
-            coursekeys.append([])
-
-        #coursekeys[course] = []
-
-        for i in range(0,len(coursekeys)):
-            coursekeys[i] = removelist(coursekeys[i],r)
-
-        coursekeys[course].extend(r)
-        self.__setkeys(coursekeys)
-
-
-    def __kadd(self,subject,k,course):
-        k = int(action.mass_quantity(k))
-
-        if course:
-            course = int(action.mass_quantity(course))-1
-        else:
-            course = 0
-
-        self.controller.ensure(course+1)
-        coursekeys = self.__getkeys()
-
-        while len(coursekeys) <= course:
-            coursekeys.append([])
-
-        for i in range(0,len(coursekeys)):
-            if k in coursekeys[i]:
-                coursekeys[i].remove(k)
-
-        coursekeys[course].append(k)
-
-        self.__setkeys(coursekeys)
     """
+
+    def __kadd_physical(self,subject,k,col):
+        krow,kcol = action.coord_value(k)
+        tcol = action.mass_quantity(col) if col else 1
+        print "add physical key",krow,kcol,"to",tcol
+
+    def __kadd_musical(self,subject,k,course):
+        kkey,kcourse = action.coord_value(k)
+        tcourse = action.mass_quantity(course) if course else 1
+        print "add musical key",kkey,kcourse,"to",tcourse
 
     def __choose(self,subject,dummy,course):
         c = int(action.abstract_string(course)) if course else None

@@ -134,6 +134,12 @@ def message_return(msg):
 def nosync_return():
     return T('nosync')
 
+def coord_tag(arg):
+    return arg[0].args[0][0]
+
+def coord_value(arg):
+    return [float(x) for x in arg[0].args[0][1:] ]
+
 def mass_quantity(arg):
     return float(arg[0].args[0][0])
 

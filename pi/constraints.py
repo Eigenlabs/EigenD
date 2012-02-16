@@ -151,6 +151,65 @@ def constraint_timespec_1(db,c,objects):
 
     return matches
 
+def __partition(words):
+    numbers = []
+    text = [[]]
+
+    for w in words:
+        if is_number(w):
+            numbers.append(w)
+            if text[-1]:
+                text.append([])
+        else:
+            text[-1].append(w)
+
+    if not text[-1]:
+        text.pop()
+
+    return (text,numbers)
+
+def __constraint_coord(db,c,objects):
+    matches = []
+    tag = c.args[0]
+    dimensions = len(c.args[1:])
+    dimensionsets = [ (i,set(a)) for i,a in enumerate(c.args[1:]) ]
+    dimensionresults = [ None for i in dimensionsets ]
+
+    for r in objects:
+        if not logic.is_pred(r,'abstract'):
+            continue
+
+        (w,n) = __partition(r.args[0])
+
+        if len(w) != dimensions or len(n) != dimensions:
+            continue
+
+        for (wx,nx) in zip(w,n):
+            wxs = set(wx)
+            for (di,ds) in dimensionsets:
+                if ds == wxs:
+                    dimensionresults[di] = nx
+                    break
+
+        if None in dimensionresults:
+            continue
+
+        matches.append(logic.make_term('abstract',(tag,)+tuple(dimensionresults)))
+
+    return matches
+
+def constraint_coord_2(db,c,objects):
+    return __constraint_coord(db,c,objects)
+
+def constraint_coord_3(db,c,objects):
+    return __constraint_coord(db,c,objects)
+
+def constraint_coord_4(db,c,objects):
+    return __constraint_coord(db,c,objects)
+
+def constraint_coord_5(db,c,objects):
+    return __constraint_coord(db,c,objects)
+
 def constraint_mass_1(db,c,objects):
     wordlist = set(c.args[0])
     matches = []
