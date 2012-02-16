@@ -210,7 +210,7 @@ void ::kwire_t::ticked(unsigned long long f,unsigned long long t)
     if(!event_.get().is_path())
     {
         // create a new event
-        event_.set_nb(piw::pathappend_chaff_nb(piw::pathone_nb(note_,time_),name_));
+        event_.set_nb(piw::pathappend_channel_nb(piw::pathone_nb(note_,time_),name_));
         source_start(0,event_,buffer_);
 
         // synthesize the key press of the note signal

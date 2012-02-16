@@ -115,7 +115,6 @@ namespace midi
             void started(param_wire_t *);
             void ending(param_wire_t *, unsigned long long);
             void ended(param_wire_t *);
-            unsigned char extract_keynum(const piw::data_nb_t &);
             void schedule(unsigned long long from, unsigned long long to);
             void resend_current(const piw::data_nb_t &);
             void update_origins();

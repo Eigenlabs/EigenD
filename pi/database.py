@@ -1699,10 +1699,6 @@ class Database(logic.Engine):
     def find_parents(self,item):
         return self.__partof.direct_rights(item)
 
-    def find_by_name(self, name):
-        item = self.search_any_key('P',T('@name',name,V('P')))
-        return item
-
     def find_item(self, item):
         proxy = self.search_any_key('P',T('db_item',item,V('P')))
         return proxy

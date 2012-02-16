@@ -59,19 +59,6 @@ def id2server(id):
     (a,p) = id.split('#')
     return a
 
-def path2grist(path):
-    if ':' not in path:
-        p = path.split('.')
-        if len(p)>0:
-            return int(p[-1])
-        return None
-
-    (p1,p2) = path.split(':')
-    p = p2.split('.')
-    if len(p)>0:
-        return int(p[-1])
-    return None
-
 def breakid_list(path):
     if '#' not in path:
         return (path,[])

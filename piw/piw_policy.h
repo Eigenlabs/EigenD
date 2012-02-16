@@ -57,14 +57,14 @@ namespace piw
     PIW_DECLSPEC_FUNC(d2d_nb_t) aggregation_filter(unsigned);
     PIW_DECLSPEC_FUNC(d2d_nb_t) aggregation_filter3(unsigned,unsigned,unsigned);
     PIW_DECLSPEC_FUNC(d2d_nb_t) deaggregation_filter(unsigned);
-    PIW_DECLSPEC_FUNC(d2d_nb_t) grist_aggregation_filter(unsigned);
-    PIW_DECLSPEC_FUNC(d2d_nb_t) gristchaff_aggregation_filter(unsigned,unsigned);
-    PIW_DECLSPEC_FUNC(d2d_nb_t) grist_deaggregation_filter(unsigned);
-    PIW_DECLSPEC_FUNC(d2d_nb_t) grist_deaggregation_filter2(unsigned,unsigned);
+    PIW_DECLSPEC_FUNC(d2d_nb_t) event_aggregation_filter(unsigned);
+    PIW_DECLSPEC_FUNC(d2d_nb_t) eventchannel_aggregation_filter(unsigned,unsigned);
+    PIW_DECLSPEC_FUNC(d2d_nb_t) event_deaggregation_filter(unsigned);
+    PIW_DECLSPEC_FUNC(d2d_nb_t) event_deaggregation_filter2(unsigned,unsigned);
     PIW_DECLSPEC_FUNC(d2d_nb_t) last_lt_filter(unsigned);
     PIW_DECLSPEC_FUNC(d2d_nb_t) last_gt_filter(unsigned);
     PIW_DECLSPEC_FUNC(d2d_nb_t) last_filter();
-    PIW_DECLSPEC_FUNC(d2d_nb_t) grist_filter();
+    PIW_DECLSPEC_FUNC(d2d_nb_t) event_filter();
 }
 
 #endif

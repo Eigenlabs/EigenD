@@ -171,7 +171,7 @@ piw::data_nb_t piw::polyctl_t::impl_t::nextid(const piw::data_nb_t &d_)
 
     if(id_)
     {
-        d = piw::pathappend_chaff_nb(d,id_++);
+        d = piw::pathappend_channel_nb(d,id_++);
         if(id_>255)
             id_=1;
     }

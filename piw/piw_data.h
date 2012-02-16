@@ -141,7 +141,7 @@ namespace piw
             unsigned long long time() const { return bct_data_time(_rep); }
             unsigned long count() const { return bct_data_count(_rep); }
 
-            int compare_grist(const data_base_t &d) const;
+            int compare_event(const data_base_t &d) const;
             int compare(const data_base_t &d, bool ts=true) const;
             int compare_path(const data_base_t &d) const;
             int compare_path_beginning(const data_base_t &d) const;
@@ -199,9 +199,9 @@ namespace piw
             bool as_bool() const { PIC_ASSERT(is_bool()); return *(char *)host_data(); }
             const unsigned char *as_path() const { PIC_ASSERT(is_path()); return ((const unsigned char *)host_data())+1; }
             unsigned as_pathlen() const { PIC_ASSERT(is_path()); return host_length()-1; }
-            unsigned as_pathchafflen() const { PIC_ASSERT(is_path()); return *(unsigned char *)(host_data()); }
-            const unsigned char *as_pathgrist() const { PIC_ASSERT(is_path()); const unsigned char *p = (const unsigned char *)host_data(); unsigned c=*p; return &p[1+c]; }
-            unsigned as_pathgristlen() const { PIC_ASSERT(is_path()); const unsigned char *p = (const unsigned char *)host_data(); unsigned c=*p; return host_length()-1-c; }
+            unsigned as_pathchannellen() const { PIC_ASSERT(is_path()); return *(unsigned char *)(host_data()); }
+            const unsigned char *as_pathevent() const { PIC_ASSERT(is_path()); const unsigned char *p = (const unsigned char *)host_data(); unsigned c=*p; return &p[1+c]; }
+            unsigned as_patheventlen() const { PIC_ASSERT(is_path()); const unsigned char *p = (const unsigned char *)host_data(); unsigned c=*p; return host_length()-1-c; }
             const void *as_blob() const { PIC_ASSERT(is_blob()); return (const void *)host_data(); }
             unsigned as_bloblen() const { PIC_ASSERT(is_blob()); return host_length(); }
             std::string as_blob2() const { PIC_ASSERT(is_blob()); return std::string((const char *)host_data(),host_length()); }
@@ -398,13 +398,13 @@ namespace piw
     PIW_DECLSPEC_FUNC(data_t) pathone_ex(unsigned nb, unsigned v, unsigned long long t);
     PIW_DECLSPEC_FUNC(data_t) pathprepend_ex(unsigned nb, const data_t &d, unsigned p);
     PIW_DECLSPEC_FUNC(data_t) pathtwo_ex(unsigned nb, unsigned v1, unsigned v2, unsigned long long t);
-    PIW_DECLSPEC_FUNC(data_t) pathprepend_grist_ex(unsigned nb, const data_t &d, unsigned p);
-    PIW_DECLSPEC_FUNC(data_t) pathappend_chaff_ex(unsigned nb, const data_t &d, unsigned p);
+    PIW_DECLSPEC_FUNC(data_t) pathprepend_event_ex(unsigned nb, const data_t &d, unsigned p);
+    PIW_DECLSPEC_FUNC(data_t) pathappend_channel_ex(unsigned nb, const data_t &d, unsigned p);
     PIW_DECLSPEC_FUNC(data_t) pathtruncate_ex(unsigned nb, const data_t &d);
     PIW_DECLSPEC_FUNC(data_t) pathpretruncate_ex(unsigned nb, const data_t &d);
     PIW_DECLSPEC_FUNC(data_t) pathpretruncate_ex(unsigned nb, const data_t &d,unsigned l);
-    PIW_DECLSPEC_FUNC(data_t) pathreplacegrist_ex(unsigned nb, const data_t &d, unsigned g);
-    PIW_DECLSPEC_FUNC(data_t) pathgristpretruncate_ex(unsigned nb, const data_t &d);
+    PIW_DECLSPEC_FUNC(data_t) pathreplaceevent_ex(unsigned nb, const data_t &d, unsigned g);
+    PIW_DECLSPEC_FUNC(data_t) patheventpretruncate_ex(unsigned nb, const data_t &d);
     PIW_DECLSPEC_FUNC(data_t) makeblob_ex(unsigned nb, unsigned long long ts, unsigned size, unsigned char **pdata);
     PIW_DECLSPEC_FUNC(data_t) makedouble_ex(unsigned nb, double v, unsigned long long t=0L);
     PIW_DECLSPEC_FUNC(data_t) makefloat_ex(unsigned nb, float v, unsigned long long t=0L);
@@ -430,13 +430,13 @@ namespace piw
     inline data_t pathone(unsigned v, unsigned long long t) { return pathone_ex(PIC_ALLOC_NORMAL,v,t); }
     inline data_t pathprepend(const data_t &d, unsigned p) { return pathprepend_ex(PIC_ALLOC_NORMAL,d,p); }
     inline data_t pathtwo(unsigned v1, unsigned v2, unsigned long long t) { return pathtwo_ex(PIC_ALLOC_NORMAL,v1,v2,t); }
-    inline data_t pathprepend_grist(const data_t &d, unsigned p) { return pathprepend_grist_ex(PIC_ALLOC_NORMAL,d,p); }
-    inline data_t pathappend_chaff(const data_t &d, unsigned p) { return pathappend_chaff_ex(PIC_ALLOC_NORMAL,d,p); }
+    inline data_t pathprepend_event(const data_t &d, unsigned p) { return pathprepend_event_ex(PIC_ALLOC_NORMAL,d,p); }
+    inline data_t pathappend_channel(const data_t &d, unsigned p) { return pathappend_channel_ex(PIC_ALLOC_NORMAL,d,p); }
     inline data_t pathtruncate(const data_t &d) { return pathtruncate_ex(PIC_ALLOC_NORMAL,d); }
     inline data_t pathpretruncate(const data_t &d) { return pathpretruncate_ex(PIC_ALLOC_NORMAL,d); }
     inline data_t pathpretruncate(const data_t &d,unsigned l) { return pathpretruncate_ex(PIC_ALLOC_NORMAL,d,l); }
-    inline data_t pathgristpretruncate(const data_t &d) { return pathgristpretruncate_ex(PIC_ALLOC_NORMAL,d); }
-    inline data_t pathreplacegrist(const data_t &d, unsigned g) { return pathreplacegrist_ex(PIC_ALLOC_NORMAL,d,g); }
+    inline data_t patheventpretruncate(const data_t &d) { return patheventpretruncate_ex(PIC_ALLOC_NORMAL,d); }
+    inline data_t pathreplaceevent(const data_t &d, unsigned g) { return pathreplaceevent_ex(PIC_ALLOC_NORMAL,d,g); }
     inline data_t dictnull(unsigned long long t) { return dictnull_ex(PIC_ALLOC_NORMAL,t); }
     inline data_t dictdel(const data_t &d, const std::string &k) { return dictdel_ex(PIC_ALLOC_NORMAL,d,k); }
     inline data_t dictset(const data_t &d, const std::string &k, const data_t &v) { return dictset_ex(PIC_ALLOC_NORMAL,d,k,v); }
@@ -479,13 +479,13 @@ namespace piw
     PIW_DECLSPEC_FUNC(data_nb_t) pathone_nb_ex(unsigned nb, unsigned v, unsigned long long t);
     PIW_DECLSPEC_FUNC(data_nb_t) pathprepend_nb_ex(unsigned nb, const data_nb_t &d, unsigned p);
     PIW_DECLSPEC_FUNC(data_nb_t) pathtwo_nb_ex(unsigned nb, unsigned v1, unsigned v2, unsigned long long t);
-    PIW_DECLSPEC_FUNC(data_nb_t) pathprepend_grist_nb_ex(unsigned nb, const data_nb_t &d, unsigned p);
-    PIW_DECLSPEC_FUNC(data_nb_t) pathappend_chaff_nb_ex(unsigned nb, const data_nb_t &d, unsigned p);
+    PIW_DECLSPEC_FUNC(data_nb_t) pathprepend_event_nb_ex(unsigned nb, const data_nb_t &d, unsigned p);
+    PIW_DECLSPEC_FUNC(data_nb_t) pathappend_channel_nb_ex(unsigned nb, const data_nb_t &d, unsigned p);
     PIW_DECLSPEC_FUNC(data_nb_t) pathtruncate_nb_ex(unsigned nb, const data_nb_t &d);
     PIW_DECLSPEC_FUNC(data_nb_t) pathpretruncate_nb_ex(unsigned nb, const data_nb_t &d);
     PIW_DECLSPEC_FUNC(data_nb_t) pathpretruncate_nb_ex(unsigned nb, const data_nb_t &d,unsigned l);
-    PIW_DECLSPEC_FUNC(data_nb_t) pathreplacegrist_nb_ex(unsigned nb, const data_nb_t &d, unsigned g);
-    PIW_DECLSPEC_FUNC(data_nb_t) pathgristpretruncate_nb_ex(unsigned nb, const data_nb_t &d);
+    PIW_DECLSPEC_FUNC(data_nb_t) pathreplaceevent_nb_ex(unsigned nb, const data_nb_t &d, unsigned g);
+    PIW_DECLSPEC_FUNC(data_nb_t) patheventpretruncate_nb_ex(unsigned nb, const data_nb_t &d);
     PIW_DECLSPEC_FUNC(data_nb_t) makeblob_nb_ex(unsigned nb, unsigned long long ts, unsigned size, unsigned char **pdata);
     PIW_DECLSPEC_FUNC(data_nb_t) makedouble_nb_ex(unsigned nb ,double v, unsigned long long t=0L);
     PIW_DECLSPEC_FUNC(data_nb_t) makefloat_nb_ex(unsigned nb, float v, unsigned long long t=0L);
@@ -511,13 +511,13 @@ namespace piw
     inline data_nb_t pathone_nb(unsigned v, unsigned long long t) { return pathone_nb_ex(PIC_ALLOC_NB,v,t); }
     inline data_nb_t pathprepend_nb(const data_nb_t &d, unsigned p) { return pathprepend_nb_ex(PIC_ALLOC_NB,d,p); }
     inline data_nb_t pathtwo_nb(unsigned v1, unsigned v2, unsigned long long t) { return pathtwo_nb_ex(PIC_ALLOC_NB,v1,v2,t); }
-    inline data_nb_t pathprepend_grist_nb(const data_nb_t &d, unsigned p) { return pathprepend_grist_nb_ex(PIC_ALLOC_NB,d,p); }
-    inline data_nb_t pathappend_chaff_nb(const data_nb_t &d, unsigned p) { return pathappend_chaff_nb_ex(PIC_ALLOC_NB,d,p); }
+    inline data_nb_t pathprepend_event_nb(const data_nb_t &d, unsigned p) { return pathprepend_event_nb_ex(PIC_ALLOC_NB,d,p); }
+    inline data_nb_t pathappend_channel_nb(const data_nb_t &d, unsigned p) { return pathappend_channel_nb_ex(PIC_ALLOC_NB,d,p); }
     inline data_nb_t pathtruncate_nb(const data_nb_t &d) { return pathtruncate_nb_ex(PIC_ALLOC_NB,d); }
     inline data_nb_t pathpretruncate_nb(const data_nb_t &d) { return pathpretruncate_nb_ex(PIC_ALLOC_NB,d); }
     inline data_nb_t pathpretruncate_nb(const data_nb_t &d,unsigned l) { return pathpretruncate_nb_ex(PIC_ALLOC_NB,d,l); }
-    inline data_nb_t pathgristpretruncate_nb(const data_nb_t &d) { return pathgristpretruncate_nb_ex(PIC_ALLOC_NB,d); }
-    inline data_nb_t pathreplacegrist_nb(const data_nb_t &d, unsigned g) { return pathreplacegrist_nb_ex(PIC_ALLOC_NB,d,g); }
+    inline data_nb_t patheventpretruncate_nb(const data_nb_t &d) { return patheventpretruncate_nb_ex(PIC_ALLOC_NB,d); }
+    inline data_nb_t pathreplaceevent_nb(const data_nb_t &d, unsigned g) { return pathreplaceevent_nb_ex(PIC_ALLOC_NB,d,g); }
     inline data_nb_t dictnull_nb(unsigned long long t) { return dictnull_nb_ex(PIC_ALLOC_NB,t); }
     inline data_nb_t dictdel_nb(const data_nb_t &d, const std::string &k) { return dictdel_nb_ex(PIC_ALLOC_NB,d,k); }
     inline data_nb_t dictset_nb(const data_nb_t &d, const std::string &k, const data_nb_t &v) { return dictset_nb_ex(PIC_ALLOC_NB,d,k,v); }
@@ -653,9 +653,9 @@ namespace piw
         bool operator()(const data_base_t &a, const data_base_t &b) const { return a.compare_path_lexicographic(b)>0; }
     };
 
-    struct grist_less
+    struct event_less
     {
-        bool operator()(const data_base_t &a, const data_base_t &b) const { return a.compare_grist(b)<0; }
+        bool operator()(const data_base_t &a, const data_base_t &b) const { return a.compare_event(b)<0; }
     };
 
     struct notime_less

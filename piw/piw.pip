@@ -188,14 +188,14 @@ d2d_nb signal_cnc_filter[piw::signal_cnc_filter](unsigned,unsigned)
 d2d_nb aggregation_filter[piw::aggregation_filter](unsigned)
 d2d_nb aggregation_filter3[piw::aggregation_filter3](unsigned,unsigned,unsigned)
 d2d_nb deaggregation_filter[piw::deaggregation_filter](unsigned)
-d2d_nb grist_aggregation_filter[piw::grist_aggregation_filter](unsigned)
-d2d_nb gristchaff_aggregation_filter[piw::gristchaff_aggregation_filter](unsigned,unsigned)
-d2d_nb grist_deaggregation_filter[piw::grist_deaggregation_filter](unsigned)
-d2d_nb grist_deaggregation_filter2[piw::grist_deaggregation_filter2](unsigned,unsigned)
+d2d_nb event_aggregation_filter[piw::event_aggregation_filter](unsigned)
+d2d_nb eventchannel_aggregation_filter[piw::eventchannel_aggregation_filter](unsigned,unsigned)
+d2d_nb event_deaggregation_filter[piw::event_deaggregation_filter](unsigned)
+d2d_nb event_deaggregation_filter2[piw::event_deaggregation_filter2](unsigned,unsigned)
 d2d_nb last_gt_filter[piw::last_gt_filter](unsigned)
 d2d_nb last_lt_filter[piw::last_lt_filter](unsigned)
 d2d_nb last_filter[piw::last_filter]()
-d2d_nb grist_filter[piw::grist_filter]()
+d2d_nb event_filter[piw::event_filter]()
 
 d2d_nb dict_merger[piw::dict_merger](const data &)
 
@@ -529,13 +529,6 @@ class controllerdict[piw::controllerdict_t]
 }
 
 d2d_nb d2d_const[piw::d2d_const](const data &)
-
-class talker_mapper[piw::talker_mapper_t]
-{
-    talker_mapper()
-    d2d_nb key_filter()
-    void set_mapping(unsigned, unsigned)
-}
 
 bool is_key[piw::is_key](const data &)
 unsigned key_sequential[piw::key_sequential](const data &, int, int)

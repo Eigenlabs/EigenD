@@ -268,18 +268,6 @@ namespace midi
         return mapping.calculate(d.as_norm()) * 16383.f;
     }
 
-    unsigned char param_input_t::extract_keynum(const piw::data_nb_t &id)
-    {
-        unsigned char keynum = 0;
-        unsigned lp = id.as_pathgristlen();
-        if(lp>0)
-        {
-            const unsigned char *p = id.as_pathgrist();
-            keynum = p[lp-1];
-        }
-        return keynum;
-    }
-
     void param_input_t::resend_current(const piw::data_nb_t &context)
     {
         piw::data_nb_t id = current_id_;

@@ -190,7 +190,7 @@ struct piw::connector_t::impl_t: piw::client_t
         {
             if(!child_get(&i,1))
             {
-                piw::data_t p2(piw::pathappend_chaff(path_,i));
+                piw::data_t p2(piw::pathappend_channel(path_,i));
                 std::auto_ptr<impl_t> p(new impl_t(ctl_,dbackend_,cbackend_,p2,filter_,iso_));
                 child_add(i, p.get());
                 children_[i] = p.release();

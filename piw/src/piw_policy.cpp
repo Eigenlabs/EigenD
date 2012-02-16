@@ -96,13 +96,13 @@ namespace
         }
     };
 
-    struct grist_filter_t: virtual public pic::lckobject_t
+    struct event_filter_t: virtual public pic::lckobject_t
     {
-        grist_filter_t() {}
+        event_filter_t() {}
 
-        grist_filter_t(const grist_filter_t &o) {}
-        bool operator==(const grist_filter_t &o) const { return true; }
-        grist_filter_t &operator=(const grist_filter_t &o) { return *this; }
+        event_filter_t(const event_filter_t &o) {}
+        bool operator==(const event_filter_t &o) const { return true; }
+        event_filter_t &operator=(const event_filter_t &o) { return *this; }
 
         piw::data_nb_t operator()(const piw::data_nb_t &x) const
         {
@@ -115,37 +115,15 @@ namespace
         }
     };
 
-    struct gristchaff_aggregation_filter_t: virtual public pic::lckobject_t
+    struct eventchannel_aggregation_filter_t: virtual public pic::lckobject_t
     {
         unsigned g_,c_;
 
-        gristchaff_aggregation_filter_t(unsigned g,unsigned c): g_(g),c_(c) {}
+        eventchannel_aggregation_filter_t(unsigned g,unsigned c): g_(g),c_(c) {}
 
-        gristchaff_aggregation_filter_t(const gristchaff_aggregation_filter_t &o): g_(o.g_),c_(o.c_) {}
-        bool operator==(const gristchaff_aggregation_filter_t &o) const { return g_==o.g_ && c_==o.c_; }
-        gristchaff_aggregation_filter_t &operator=(const gristchaff_aggregation_filter_t &o) { g_=o.g_; c_=o.c_; return *this; }
-
-        piw::data_nb_t operator()(const piw::data_nb_t &x) const
-        {
-            if(!x.is_path())
-            {
-                return x;
-            }
-
-            piw::data_nb_t d= pathprepend_nb(pathprepend_grist_nb(x,g_),c_);
-            return d;
-        }
-    };
-
-    struct grist_aggregation_filter_t: virtual public pic::lckobject_t
-    {
-        unsigned s_;
-
-        grist_aggregation_filter_t(unsigned s): s_(s) {}
-
-        grist_aggregation_filter_t(const grist_aggregation_filter_t &o): s_(o.s_) {}
-        bool operator==(const grist_aggregation_filter_t &o) const { return s_==o.s_; }
-        grist_aggregation_filter_t &operator=(const grist_aggregation_filter_t &o) { s_=o.s_; return *this; }
+        eventchannel_aggregation_filter_t(const eventchannel_aggregation_filter_t &o): g_(o.g_),c_(o.c_) {}
+        bool operator==(const eventchannel_aggregation_filter_t &o) const { return g_==o.g_ && c_==o.c_; }
+        eventchannel_aggregation_filter_t &operator=(const eventchannel_aggregation_filter_t &o) { g_=o.g_; c_=o.c_; return *this; }
 
         piw::data_nb_t operator()(const piw::data_nb_t &x) const
         {
@@ -154,57 +132,79 @@ namespace
                 return x;
             }
 
-            piw::data_nb_t d= pathprepend_grist_nb(x,s_);
+            piw::data_nb_t d= pathprepend_nb(pathprepend_event_nb(x,g_),c_);
             return d;
         }
     };
 
-    struct grist_deaggregation_filter_t: virtual public pic::lckobject_t
+    struct event_aggregation_filter_t: virtual public pic::lckobject_t
     {
         unsigned s_;
 
-        grist_deaggregation_filter_t(unsigned s): s_(s) {}
+        event_aggregation_filter_t(unsigned s): s_(s) {}
 
-        grist_deaggregation_filter_t(const grist_deaggregation_filter_t &o): s_(o.s_) {}
-        bool operator==(const grist_deaggregation_filter_t &o) const { return s_==o.s_; }
-        grist_deaggregation_filter_t &operator=(const grist_deaggregation_filter_t &o) { s_=o.s_; return *this; }
+        event_aggregation_filter_t(const event_aggregation_filter_t &o): s_(o.s_) {}
+        bool operator==(const event_aggregation_filter_t &o) const { return s_==o.s_; }
+        event_aggregation_filter_t &operator=(const event_aggregation_filter_t &o) { s_=o.s_; return *this; }
 
         piw::data_nb_t operator()(const piw::data_nb_t &x) const
         {
-            if(!x.is_path() || x.as_pathgristlen()<1 || x.as_pathgrist()[0]!=s_)
+            if(!x.is_path())
+            {
+                return x;
+            }
+
+            piw::data_nb_t d= pathprepend_event_nb(x,s_);
+            return d;
+        }
+    };
+
+    struct event_deaggregation_filter_t: virtual public pic::lckobject_t
+    {
+        unsigned s_;
+
+        event_deaggregation_filter_t(unsigned s): s_(s) {}
+
+        event_deaggregation_filter_t(const event_deaggregation_filter_t &o): s_(o.s_) {}
+        bool operator==(const event_deaggregation_filter_t &o) const { return s_==o.s_; }
+        event_deaggregation_filter_t &operator=(const event_deaggregation_filter_t &o) { s_=o.s_; return *this; }
+
+        piw::data_nb_t operator()(const piw::data_nb_t &x) const
+        {
+            if(!x.is_path() || x.as_patheventlen()<1 || x.as_pathevent()[0]!=s_)
             {
                 return piw::makenull_nb(x.time());
             }
 
-            piw::data_nb_t d = pathgristpretruncate_nb(x);
+            piw::data_nb_t d = patheventpretruncate_nb(x);
             return d;
         }
     };
 
-    struct grist_deaggregation_filter2_t: virtual public pic::lckobject_t
+    struct event_deaggregation_filter2_t: virtual public pic::lckobject_t
     {
         unsigned s1_;
         unsigned s2_;
 
-        grist_deaggregation_filter2_t(unsigned s1,unsigned s2): s1_(s1),s2_(s2) {}
+        event_deaggregation_filter2_t(unsigned s1,unsigned s2): s1_(s1),s2_(s2) {}
 
-        grist_deaggregation_filter2_t(const grist_deaggregation_filter2_t &o): s1_(o.s1_),s2_(o.s2_) {}
-        bool operator==(const grist_deaggregation_filter2_t &o) const { return s1_==o.s1_ && s2_==o.s2_; }
-        grist_deaggregation_filter2_t &operator=(const grist_deaggregation_filter2_t &o) { s1_=o.s1_; s2_=o.s2_; return *this; }
+        event_deaggregation_filter2_t(const event_deaggregation_filter2_t &o): s1_(o.s1_),s2_(o.s2_) {}
+        bool operator==(const event_deaggregation_filter2_t &o) const { return s1_==o.s1_ && s2_==o.s2_; }
+        event_deaggregation_filter2_t &operator=(const event_deaggregation_filter2_t &o) { s1_=o.s1_; s2_=o.s2_; return *this; }
 
         piw::data_nb_t operator()(const piw::data_nb_t &x) const
         {
-            if(!x.is_path() || x.as_pathgristlen()<1)
+            if(!x.is_path() || x.as_patheventlen()<1)
             {
                 return piw::makenull_nb(x.time());
             }
 
-            if(x.as_pathgrist()[0]!=s1_ && x.as_pathgrist()[0]!=s2_)
+            if(x.as_pathevent()[0]!=s1_ && x.as_pathevent()[0]!=s2_)
             {
                 return piw::makenull_nb(x.time());
             }
 
-            piw::data_nb_t d = pathgristpretruncate_nb(x);
+            piw::data_nb_t d = patheventpretruncate_nb(x);
             return d;
         }
     };
@@ -221,7 +221,7 @@ namespace
 
         piw::data_nb_t operator()(const piw::data_nb_t &x) const
         {
-            if(!x.is_path() || x.as_pathchafflen()<1 || x.as_path()[0]!=s_)
+            if(!x.is_path() || x.as_pathchannellen()<1 || x.as_path()[0]!=s_)
             {
                 return piw::makenull_nb(x.time());
             }
@@ -341,7 +341,7 @@ namespace
                 
                 if(g_)
                 {
-                    d=piw::pathprepend_grist_nb(d,g_);
+                    d=piw::pathprepend_event_nb(d,g_);
                 }
 
                 if((s_&0xff)!=0)
@@ -372,9 +372,9 @@ piw::d2d_nb_t piw::last_lt_filter(unsigned s)
     return piw::d2d_nb_t::callable(lt_filter_t(s));
 }
 
-piw::d2d_nb_t piw::grist_filter()
+piw::d2d_nb_t piw::event_filter()
 {
-    return piw::d2d_nb_t::callable(grist_filter_t());
+    return piw::d2d_nb_t::callable(event_filter_t());
 }
 
 piw::d2d_nb_t piw::last_filter()
@@ -382,14 +382,14 @@ piw::d2d_nb_t piw::last_filter()
     return piw::d2d_nb_t::callable(last_filter_t());
 }
 
-piw::d2d_nb_t piw::gristchaff_aggregation_filter(unsigned g,unsigned c)
+piw::d2d_nb_t piw::eventchannel_aggregation_filter(unsigned g,unsigned c)
 {
-    return piw::d2d_nb_t::callable(gristchaff_aggregation_filter_t(g,c));
+    return piw::d2d_nb_t::callable(eventchannel_aggregation_filter_t(g,c));
 }
 
-piw::d2d_nb_t piw::grist_aggregation_filter(unsigned s)
+piw::d2d_nb_t piw::event_aggregation_filter(unsigned s)
 {
-    return piw::d2d_nb_t::callable(grist_aggregation_filter_t(s));
+    return piw::d2d_nb_t::callable(event_aggregation_filter_t(s));
 }
 
 piw::d2d_nb_t piw::aggregation_filter(unsigned s)
@@ -407,14 +407,14 @@ piw::d2d_nb_t piw::deaggregation_filter(unsigned s)
     return piw::d2d_nb_t::callable(deaggregation_filter_t(s));
 }
 
-piw::d2d_nb_t piw::grist_deaggregation_filter(unsigned s)
+piw::d2d_nb_t piw::event_deaggregation_filter(unsigned s)
 {
-    return piw::d2d_nb_t::callable(grist_deaggregation_filter_t(s));
+    return piw::d2d_nb_t::callable(event_deaggregation_filter_t(s));
 }
 
-piw::d2d_nb_t piw::grist_deaggregation_filter2(unsigned s1,unsigned s2)
+piw::d2d_nb_t piw::event_deaggregation_filter2(unsigned s1,unsigned s2)
 {
-    return piw::d2d_nb_t::callable(grist_deaggregation_filter2_t(s1,s2));
+    return piw::d2d_nb_t::callable(event_deaggregation_filter2_t(s1,s2));
 }
 
 piw::d2d_nb_t piw::signal_cnc_filter(unsigned s, unsigned g)

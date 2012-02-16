@@ -189,7 +189,7 @@ static void __WriteFloat(double v,piu_output_t w, void *wa)
 	}
 }
 
-static void __WritePath(const unsigned char *buf, unsigned chaff, unsigned size, piu_output_t w, void *wa)
+static void __WritePath(const unsigned char *buf, unsigned channellen, unsigned size, piu_output_t w, void *wa)
 {
     unsigned i;
 
@@ -199,14 +199,14 @@ static void __WritePath(const unsigned char *buf, unsigned chaff, unsigned size,
         return;
     }
 
-    if(chaff>size)
+    if(channellen>size)
     {
-        chaff=size;
+        channellen=size;
     }
 
-    if(chaff>0)
+    if(channellen>0)
     {
-        for(i=0;i<chaff;i++)
+        for(i=0;i<channellen;i++)
         {
             if(i>0) w(wa,'.');
             __WriteInt(buf[i],w,wa);
@@ -215,15 +215,15 @@ static void __WritePath(const unsigned char *buf, unsigned chaff, unsigned size,
         w(wa,':');
     }
 
-    if(chaff==size)
+    if(channellen==size)
     {
         w(wa,'.');
         return;
     }
 
-    for(i=chaff;i<size;i++)
+    for(i=channellen;i<size;i++)
     {
-        if(i>chaff) w(wa,'.');
+        if(i>channellen) w(wa,'.');
         __WriteInt(buf[i],w,wa);
     }
 }

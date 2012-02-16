@@ -37,9 +37,9 @@
 #define VSTATE_ACTIVE    1
 
 #define STRINGER_DEBUG 0
-// flag to activate one mono note per chaff path per course
+// flag to activate one mono note per channel path per course
 // 0 = mono per course
-// 1 = mono per cource per path (chaff), e.g. mono each take from the recorder
+// 1 = mono per cource per path (channel), e.g. mono each take from the recorder
 #define STRINGER_USE_PATH 1
 
 namespace
@@ -261,7 +261,7 @@ piw::data_nb_t piw::stringer_t::impl_t::nextid(const piw::data_nb_t &d_)
 
     if(id_)
     {
-        d = piw::pathappend_chaff_nb(d,id_++);
+        d = piw::pathappend_channel_nb(d,id_++);
         if(id_>255)
             id_=1;
     }
@@ -464,13 +464,13 @@ void main_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::
     unsigned kcourse = 0;
 
 #if STRINGER_USE_PATH==1
-    unsigned chaff_len = id.as_pathchafflen();
-    //pic::logmsg() << "id = " << id << " chaff_len=" << chaff_len;
+    unsigned channel_len = id.as_pathchannellen();
+    //pic::logmsg() << "id = " << id << " channel_len=" << channel_len;
 
-    std::string chaff = id.as_pathstr();
-    chaff.resize(chaff_len);
+    std::string channel = id.as_pathstr();
+    channel.resize(channel_len);
 #else
-    std::string chaff("path");
+    std::string channel("path");
 #endif // STRINGER_USE_PATH==1
 
     piw::data_nb_t key;
@@ -489,11 +489,11 @@ void main_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::
 
     // assign to a voice according to the course this note belongs to
     // and start playing the voice (will be at head of active wire list so play it)
-    voice_ = impl_->allocate_voice(this,id,chaff,kcourse,key,b);
+    voice_ = impl_->allocate_voice(this,id,channel,kcourse,key,b);
 
     // store note info in case the wire is reallocated later
     id_ = id;
-    kpath_ = chaff;
+    kpath_ = channel;
     kcourse_ = kcourse;
     key_ = key;
     b_ = b;

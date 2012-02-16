@@ -50,64 +50,15 @@ namespace
             return data_.get()==o.data_.get();
         }
 
-        piw::data_nb_t operator()(const piw::data_nb_t &) const
+        piw::data_nb_t operator()(const piw::data_nb_t &x) const
         {
+            pic::logmsg() << "d2d in " << x << " out " << data_.get();
             return data_.get();
         }
 
         piw::dataholder_nb_t data_;
     };
 };
-
-struct piw::talker_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lckobject_t
-{
-    ~impl_t()
-    {
-        tracked_invalidate();
-    }
-    
-    piw::data_nb_t mapping(const piw::data_nb_t &in)
-    {
-        piw::data_nb_t out;
-
-        unsigned l = in.as_pathgristlen();
-
-        if(l>0)
-        {
-            if(in.as_pathgrist()[0]==in_)
-            {
-                out = piw::pathprepend_grist_nb(piw::pathgristpretruncate_nb(in),out_);
-                
-            }
-        }
-
-        //pic::logmsg() << "talker mapper mapping " << in << "->" << out;
-        return out;
-    }
-
-    unsigned in_;
-    unsigned out_;
-};
-
-piw::talker_mapper_t::talker_mapper_t(): impl_(new impl_t)
-{
-}
-
-piw::talker_mapper_t::~talker_mapper_t()
-{
-    delete impl_;
-}
-
-piw::d2d_nb_t piw::talker_mapper_t::key_filter()
-{
-    return piw::d2d_nb_t::method(impl_,&impl_t::mapping);
-}
-
-void piw::talker_mapper_t::set_mapping(unsigned in, unsigned out)
-{
-    impl_->in_ = in;
-    impl_->out_ = out;
-}
 
 piw::d2d_nb_t piw::d2d_const(const piw::data_t &value)
 {

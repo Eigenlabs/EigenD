@@ -34,10 +34,10 @@ namespace
 
         void send(const piw::data_nb_t &p, const piw::data_nb_t &d)
         {
-            std::map<piw::data_t,piw::change_nb_t,piw::grist_less>::const_iterator fi;
+            std::map<piw::data_t,piw::change_nb_t,piw::event_less>::const_iterator fi;
 
             {
-                pic::flipflop_t<std::map<piw::data_t,piw::change_nb_t,piw::grist_less> >::guard_t g(functors_);
+                pic::flipflop_t<std::map<piw::data_t,piw::change_nb_t,piw::event_less> >::guard_t g(functors_);
 
                 if((fi=g.value().find(p.make_normal())) != g.value().end())
                 {
@@ -53,8 +53,8 @@ namespace
 
         int gc_traverse(void *v, void *a)
         {
-            const std::map<piw::data_t,piw::change_nb_t,piw::grist_less> &l(functors_.current());
-            std::map<piw::data_t,piw::change_nb_t,piw::grist_less>::const_iterator i;
+            const std::map<piw::data_t,piw::change_nb_t,piw::event_less> &l(functors_.current());
+            std::map<piw::data_t,piw::change_nb_t,piw::event_less>::const_iterator i;
             int r;
 
             for(i=l.begin();i!=l.end();i++)
@@ -82,7 +82,7 @@ namespace
         }
 
         unsigned signal_;
-        pic::flipflop_t<std::map<piw::data_t, piw::change_nb_t,piw::grist_less> > functors_;
+        pic::flipflop_t<std::map<piw::data_t, piw::change_nb_t,piw::event_less> > functors_;
         pic::flipflop_t<piw::change_nb_t> gfunctor_;
         pic::flipflop_t<bool> send_duplicates_;
     };

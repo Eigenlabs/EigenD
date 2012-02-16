@@ -170,7 +170,7 @@ static T __makewire(unsigned nb,unsigned dl, const unsigned char *dp)
 }
 
 template <class T>
-static T __pathprepend_chaff(unsigned nb,const T &o, unsigned p)
+static T __pathprepend_channel(unsigned nb,const T &o, unsigned p)
 {
     unsigned char *dp;
     const unsigned char *op;
@@ -196,7 +196,7 @@ static T __pathprepend_chaff(unsigned nb,const T &o, unsigned p)
 }
 
 template <class T>
-static T __pathprepend_grist(unsigned nb,const T &o, unsigned p)
+static T __pathprepend_event(unsigned nb,const T &o, unsigned p)
 {
     unsigned char *dp;
     const unsigned char *op;
@@ -223,7 +223,7 @@ static T __pathprepend_grist(unsigned nb,const T &o, unsigned p)
 }
 
 template <class T>
-static T __pathappend_chaff(unsigned nb,const T &o, unsigned p)
+static T __pathappend_channel(unsigned nb,const T &o, unsigned p)
 {
     unsigned char *dp;
     const unsigned char *op;
@@ -333,7 +333,7 @@ static T __pathpretruncate(unsigned nb,const T &o, unsigned l)
 }
 
 template <class T>
-static T __pathreplacegrist(unsigned nb,const T &o,unsigned g)
+static T __pathreplaceevent(unsigned nb,const T &o,unsigned g)
 {
     unsigned char *dp; float *vv;
     T d;
@@ -357,7 +357,7 @@ static T __pathreplacegrist(unsigned nb,const T &o,unsigned g)
 }
 
 template <class T>
-static T __pathgristpretruncate(unsigned nb,const T &o)
+static T __patheventpretruncate(unsigned nb,const T &o)
 {
     unsigned char *dp; float *vv;
     T d;
@@ -918,15 +918,15 @@ piw::data_t piw::makelong_bounded_units_ex(unsigned nb,unsigned u,float ubound, 
 piw::data_t piw::makewire_ex(unsigned nb,unsigned dl, const unsigned char *dp) { return (__makewire<data_t>(nb,dl,dp)); }
 piw::data_t piw::pathnull_ex(unsigned nb,unsigned long long t) { return (__makepath<data_t>(nb,t,0,0,0)); }
 piw::data_t piw::pathone_ex(unsigned nb,unsigned v,unsigned long long t) { unsigned char vv=v; return (__makepath<data_t>(nb,t,&vv,1,0)); }
-piw::data_t piw::pathprepend_ex(unsigned nb,const data_t &d, unsigned p) { return (__pathprepend_chaff<data_t>(nb,d,p)); }
+piw::data_t piw::pathprepend_ex(unsigned nb,const data_t &d, unsigned p) { return (__pathprepend_channel<data_t>(nb,d,p)); }
 piw::data_t piw::pathtwo_ex(unsigned nb,unsigned v1,unsigned v2,unsigned long long t) { return pathprepend_ex(nb,pathone_ex(nb,v2,t),v1); }
-piw::data_t piw::pathprepend_grist_ex(unsigned nb,const data_t &d, unsigned p) { return (__pathprepend_grist<data_t>(nb,d,p)); }
-piw::data_t piw::pathappend_chaff_ex(unsigned nb,const data_t &d, unsigned p) { return (__pathappend_chaff<data_t>(nb,d,p)); }
+piw::data_t piw::pathprepend_event_ex(unsigned nb,const data_t &d, unsigned p) { return (__pathprepend_event<data_t>(nb,d,p)); }
+piw::data_t piw::pathappend_channel_ex(unsigned nb,const data_t &d, unsigned p) { return (__pathappend_channel<data_t>(nb,d,p)); }
 piw::data_t piw::pathtruncate_ex(unsigned nb,const data_t &d) { return (__pathtruncate<data_t>(nb,d)); }
 piw::data_t piw::pathpretruncate_ex(unsigned nb,const data_t &d) { return (__pathpretruncate<data_t>(nb,d)); }
 piw::data_t piw::pathpretruncate_ex(unsigned nb,const data_t &d,unsigned l) { return (__pathpretruncate<data_t>(nb,d,l)); }
-piw::data_t piw::pathreplacegrist_ex(unsigned nb,const data_t &d,unsigned g) { return (__pathreplacegrist<data_t>(nb,d,g)); }
-piw::data_t piw::pathgristpretruncate_ex(unsigned nb,const data_t &d) { return (__pathgristpretruncate<data_t>(nb,d)); }
+piw::data_t piw::pathreplaceevent_ex(unsigned nb,const data_t &d,unsigned g) { return (__pathreplaceevent<data_t>(nb,d,g)); }
+piw::data_t piw::patheventpretruncate_ex(unsigned nb,const data_t &d) { return (__patheventpretruncate<data_t>(nb,d)); }
 piw::data_t piw::makeblob_ex(unsigned nb,unsigned long long ts, unsigned size, unsigned char **pdata) { return __makeblob_ex<data_t>(nb,ts,size,pdata); }
 piw::data_t piw::makedouble_ex(unsigned nb,double v, unsigned long long t) { return (__makedouble<data_t>(nb,t,v)); }
 piw::data_t piw::makefloat_ex(unsigned nb,float v, unsigned long long t) { return (__makefloat<data_t>(nb,t,v)); }
@@ -958,15 +958,15 @@ piw::data_nb_t piw::makelong_bounded_units_nb_ex(unsigned nb,unsigned u,float ub
 piw::data_nb_t piw::makewire_nb_ex(unsigned nb,unsigned dl, const unsigned char *dp) { return (__makewire<data_nb_t>(nb,dl,dp)); }
 piw::data_nb_t piw::pathnull_nb_ex(unsigned nb,unsigned long long t) { return (__makepath<data_nb_t>(nb,t,0,0,0)); }
 piw::data_nb_t piw::pathone_nb_ex(unsigned nb,unsigned v,unsigned long long t) { unsigned char vv=v; return (__makepath<data_nb_t>(nb,t,&vv,1,0)); }
-piw::data_nb_t piw::pathprepend_nb_ex(unsigned nb,const data_nb_t &d, unsigned p) { return (__pathprepend_chaff<data_nb_t>(nb,d,p)); }
+piw::data_nb_t piw::pathprepend_nb_ex(unsigned nb,const data_nb_t &d, unsigned p) { return (__pathprepend_channel<data_nb_t>(nb,d,p)); }
 piw::data_nb_t piw::pathtwo_nb_ex(unsigned nb,unsigned v1,unsigned v2,unsigned long long t) { return pathprepend_nb_ex(nb,pathone_nb_ex(nb,v2,t),v1); }
-piw::data_nb_t piw::pathprepend_grist_nb_ex(unsigned nb,const data_nb_t &d, unsigned p) { return (__pathprepend_grist<data_nb_t>(nb,d,p)); }
-piw::data_nb_t piw::pathappend_chaff_nb_ex(unsigned nb,const data_nb_t &d, unsigned p) { return (__pathappend_chaff<data_nb_t>(nb,d,p)); }
+piw::data_nb_t piw::pathprepend_event_nb_ex(unsigned nb,const data_nb_t &d, unsigned p) { return (__pathprepend_event<data_nb_t>(nb,d,p)); }
+piw::data_nb_t piw::pathappend_channel_nb_ex(unsigned nb,const data_nb_t &d, unsigned p) { return (__pathappend_channel<data_nb_t>(nb,d,p)); }
 piw::data_nb_t piw::pathtruncate_nb_ex(unsigned nb,const data_nb_t &d) { return (__pathtruncate<data_nb_t>(nb,d)); }
 piw::data_nb_t piw::pathpretruncate_nb_ex(unsigned nb,const data_nb_t &d) { return (__pathpretruncate<data_nb_t>(nb,d)); }
 piw::data_nb_t piw::pathpretruncate_nb_ex(unsigned nb,const data_nb_t &d,unsigned l) { return (__pathpretruncate<data_nb_t>(nb,d,l)); }
-piw::data_nb_t piw::pathreplacegrist_nb_ex(unsigned nb,const data_nb_t &d,unsigned g) { return (__pathreplacegrist<data_nb_t>(nb,d,g)); }
-piw::data_nb_t piw::pathgristpretruncate_nb_ex(unsigned nb,const data_nb_t &d) { return (__pathgristpretruncate<data_nb_t>(nb,d)); }
+piw::data_nb_t piw::pathreplaceevent_nb_ex(unsigned nb,const data_nb_t &d,unsigned g) { return (__pathreplaceevent<data_nb_t>(nb,d,g)); }
+piw::data_nb_t piw::patheventpretruncate_nb_ex(unsigned nb,const data_nb_t &d) { return (__patheventpretruncate<data_nb_t>(nb,d)); }
 piw::data_nb_t piw::makeblob_nb_ex(unsigned nb,unsigned long long ts, unsigned size, unsigned char **pdata) { return __makeblob_ex<data_nb_t>(nb,ts,size,pdata); }
 piw::data_nb_t piw::makedouble_nb_ex(unsigned nb,double v, unsigned long long t) { return (__makedouble<data_nb_t>(nb,t,v)); }
 piw::data_nb_t piw::makefloat_nb_ex(unsigned nb,float v, unsigned long long t) { return (__makefloat<data_nb_t>(nb,t,v)); }
@@ -1009,14 +1009,14 @@ bct_data_t piw::data_base_t::give_copy(unsigned nb) const
     return d;
 }
 
-int piw::data_base_t::compare_grist(const data_base_t &other) const
+int piw::data_base_t::compare_event(const data_base_t &other) const
 {
     if(!is_path() || !other.is_path()) return -1;
 
     unsigned al=as_pathlen();
     unsigned bl=other.as_pathlen();
-    unsigned ac=as_pathchafflen();
-    unsigned bc=other.as_pathchafflen();
+    unsigned ac=as_pathchannellen();
+    unsigned bc=other.as_pathchannellen();
     unsigned ag=al-ac;
     unsigned bg=bl-bc;
 

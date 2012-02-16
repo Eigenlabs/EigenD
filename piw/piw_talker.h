@@ -25,23 +25,6 @@
 
 namespace piw
 {
-    class PIW_DECLSPEC_CLASS talker_mapper_t
-    {
-        public:
-            class impl_t;
-
-        public:
-            talker_mapper_t();
-            ~talker_mapper_t();
-
-            piw::d2d_nb_t key_filter();
-
-            void set_mapping(unsigned in, unsigned out);
-
-        private:
-            impl_t *impl_;
-    };
-
     PIW_DECLSPEC_FUNC(d2d_nb_t) d2d_const(const data_t &value);
 };
 
