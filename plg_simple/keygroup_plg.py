@@ -891,16 +891,16 @@ class Agent(agent.Agent):
     def __choice(self,v):
         choice = utils.key_to_lists(v)
         if not choice: return
-        if not choice[-1]: return
-        del choice[-1]
+        if not choice[4]: return
+        del choice[4]
 
         # if this choice is the same as the previous one
         # stop choose mode and store the new mapping
         if self.__choices and choice==self.__choices[-1]:
-            self.mode_selector.choose(False)
             piw.changelist_disconnect_nb(self.keypulse,self.keychoice)
             self.status_buffer.override(False)
             self.__do_mapping()
+            self.mode_selector.choose(False)
             return
 
         # if this is a new choice, store it and adapt the status leds
