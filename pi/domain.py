@@ -248,14 +248,15 @@ class StringEnum(Domain):
     def value2data(self,v,t=0L):
         if v is None: 
             raise ValueError('empty string is not in belcanto lexicon')
-        e=lexicon.lexicon.get(v)
-        if e is None:
-            raise ValueError(v,'not in belcanto lexicon')
+        for w in v.split():
+            e=lexicon.lexicon.get(w)
+            if e is None:
+                raise ValueError(w,'not in belcanto lexicon')
         v=str(v)
         return piw.makestring(v,t)
 
     def canonical(self):
-        return 'enums(%s)' % ','.join(map(str,self.values))
+        return 'enums(%s)' % ','.join(map(logic.render_term,self.values))
 
     def default(self):
         return self.values[0]
