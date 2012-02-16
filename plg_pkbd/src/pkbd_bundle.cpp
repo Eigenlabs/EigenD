@@ -598,7 +598,7 @@ namespace
             }
 
             piw::data_nb_t courses = piw::tuplenull_nb(0);
-            courses = piw::tupleadd_nb(courses, piw::makelong_nb(0,0));
+            courses = piw::tupleadd_nb(courses, piw::makefloat_nb(0.0,0));
 
             courseoffset_.set_nb(courses);
 

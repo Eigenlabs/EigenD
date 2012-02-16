@@ -892,6 +892,7 @@ class Agent(agent.Agent):
         choice = utils.key_to_lists(v)
         if not choice: return
         if not choice[4]: return
+        # remove the hardness so that it's not part of the identity of the choice
         del choice[4]
 
         # if this choice is the same as the previous one
@@ -979,6 +980,51 @@ class Agent(agent.Agent):
     def __current_musical_mapping(self):
         return logic.parse_clause(self[34].get_value())
 
+    def __sanitize_mapping(self,mapping):
+        if mapping is None:
+            mapping = list()
+
+        mapping = list(mapping)
+        mapping.sort()
+
+        # reverse the mapping so that the target coordinates come first
+        # allowing them to be sorted easy afterwards, which makes
+        # assigning the sequential number trivial
+        # also prune the mapping so that only one of each source coordinate
+        # remains
+        prev_entry = None
+        reverse_mapping = list()
+        for entry in mapping:
+            if entry[0][0] <= 0 or entry[0][1] <= 0 or entry[1][0] <= 0 or entry[1][1] <= 0:
+                print 'forward ignoring',entry
+                continue
+            if entry[0] == prev_entry:
+                print 'forward ignoring',entry
+                continue
+            prev_entry = entry[0]
+            reverse_mapping.append( (entry[1],entry[0]) )
+        reverse_mapping.sort()
+
+        # prune the reverse mapping to only preserve valid entries
+        prev_entry = None
+        pruned_mapping = list()
+        pruned_reverse = list()
+        for entry in reverse_mapping:
+            if entry[0] == prev_entry:
+                print 'reverse ignoring',entry
+                continue
+            prev_entry = entry[0]
+            pruned_mapping.append( (entry[1],entry[0]) )
+            pruned_reverse.append(entry)
+
+        pruned_mapping.sort()
+
+        print 'forward',pruned_mapping
+        print 'reverse',pruned_reverse
+
+        return (pruned_mapping,pruned_reverse)
+
+
     def __set_physical_key_map(self,value):
         mapping = logic.parse_clause(value)
         self.__set_physical_mapping(mapping)
@@ -987,11 +1033,7 @@ class Agent(agent.Agent):
         mapper = self.mapper
         mapper.clear_physical_mapping()
 
-        # reverse the mapping so that the target coordinates come first
-        # allowing them to be sorted easy afterwards, which makes
-        # assigning the sequential number trivial
-        reverse_mapping = [ (entry[1],entry[0]) for entry in mapping ]
-        reverse_mapping.sort()
+        mapping,reverse_mapping = self.__sanitize_mapping(mapping)
 
         # initialize the row offsets
         rowoffsets = []
@@ -1004,6 +1046,7 @@ class Agent(agent.Agent):
         rowlengths = dict()
         max_row = 0
         for entry in reverse_mapping:
+            row_in = entry[1][0]
             col_in = entry[1][1]
             row_out = entry[0][0]
             max_row = max(max_row,row_out)
@@ -1022,8 +1065,6 @@ class Agent(agent.Agent):
             # calculate the entry's input key data
             row_in = entry[1][0]
             col_in = entry[1][1]
-            if row_in <= 0 or col_in <= 0:
-                continue
             row_in_rel = 0
             col_in_rel = 0
             sequential_in = 0
@@ -1073,11 +1114,7 @@ class Agent(agent.Agent):
         mapper = self.mapper
         mapper.clear_musical_mapping()
 
-        # reverse the mapping so that the target coordinates come first
-        # allowing them to be sorted easy afterwards, which makes
-        # assigning the sequential number trivial
-        reverse_mapping = [ (entry[1],entry[0]) for entry in mapping ]
-        reverse_mapping.sort()
+        mapping,reverse_mapping = self.__sanitize_mapping(mapping)
 
         # iterate over the mapping that's sorted by out key and calculate
         # each course length
@@ -1099,8 +1136,6 @@ class Agent(agent.Agent):
             # calculate the entry's input key data
             course_in = entry[1][0]
             key_in = entry[1][1]
-            if course_in <= 0 or key_in <= 0:
-                continue
             course_in_rel = 0
             key_in_rel = 0
             sequential_in = 0
@@ -1130,6 +1165,11 @@ class Agent(agent.Agent):
             courseoffsets = logic.parse_clause(self[35].get_value())
             if not courseoffsets:
                 courseoffsets = list()
+            # ensure that there's a course offset for each course
+            if len(courseoffsets) < max_course:
+                courseoffsets = list(courseoffsets)
+                courseoffsets.extend( [ 0.0 for i in range(max_course-len(courseoffsets)) ] )
+            self[35].set_value(logic.render_term(courseoffsets))
             self.controller.setlist('courseoffset', [piw.makefloat(o,0) for o in courseoffsets])
         else:
             # if the mapping was empty, use the upstream courselen
