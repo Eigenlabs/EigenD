@@ -63,7 +63,7 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
            gm.value().forward.empty())
         {
 #if KEYGROUP_MAPPER_DEBUG>0
-            pic::logmsg() << "forward_mapping out " << in;
+            pic::logmsg() << "forward_mapping empty out " << in;
 #endif
             return in;
         }
@@ -73,7 +73,7 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
         if(!piw::decode_key(in,0,&row,&col,0,&course,&key,&hardness))
         {
 #if KEYGROUP_MAPPER_DEBUG>0
-            pic::logmsg() << "forward_mapping out " << in;
+            pic::logmsg() << "forward_mapping not key out " << in;
 #endif
             return in;
         }
@@ -111,7 +111,7 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
            !in.is_blob())
         {
 #if KEYGROUP_MAPPER_DEBUG>0
-            pic::logmsg() << "reverse_mapping out " << in;
+            pic::logmsg() << "reverse_mapping empty out " << in;
 #endif
             return in;
         }
@@ -131,7 +131,7 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
             unsigned xc = 0;
 
 #if KEYGROUP_MAPPER_DEBUG>0
-            pic::logmsg() << "reverse_mapping in " << ir << ", " << ic << ", " << im;
+            pic::logmsg() << "reverse_mapping values in " << ir << ", " << ic << ", " << im;
 #endif
             const coordinate_t coord = coordinate_t(ir,ic);
 
@@ -155,7 +155,7 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
             }
 
 #if KEYGROUP_MAPPER_DEBUG>0
-            pic::logmsg() << "reverse_mapping out " << xr << ", " << xc << ", " << im;
+            pic::logmsg() << "reverse_mapping values out " << xr << ", " << xc << ", " << im;
 #endif
 
             piw::statusdata_t::int2c(xr,&out_buffer[0]);

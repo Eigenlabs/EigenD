@@ -717,7 +717,6 @@ namespace
         if(!a)
         {
             counter=0;
-            output_.add_value(2,piw::makefloat_bounded_nb(1.0,0.0,0.0,0.0,t));
 
             source_end(t+1);
             ts_ = pic_microtime();

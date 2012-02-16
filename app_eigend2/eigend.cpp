@@ -251,6 +251,7 @@ class EigenMainWindow: public DocumentWindow, public MenuBarModel, public piw::t
         EigenDialog *info(const String &klass, const String &label, const String &text);
         void ignore_klass(const juce::String &klass);
         bool select_setup(const char *setup);
+        void save_dialog();
         void save_dialog(const std::string &current);
         void edit_dialog(const std::string &current);
         void alert_dialog(const char *klass, const char *label, const char *text);
@@ -379,6 +380,8 @@ class EigenLoadComponent: public LoadDialogComponent, public EigenAlertDelegate
 {
     public:
         EigenLoadComponent(EigenMainWindow *mediator);
+        void updateSaveButton(bool enabled);
+        void updateSaveAsButton(bool enabled);
         void updateUpgradeToggle(bool enabled);
         void updateSetupButtons(bool term, bool user);
         void selected(const piw::term_t &term, bool dbl);
@@ -575,6 +578,16 @@ void EigenLoadComponent::updateSetupButtons(bool term, bool user)
     getDeleteButton()->setEnabled(term && user);
 }
 
+void EigenLoadComponent::updateSaveButton(bool enabled)
+{
+    getSaveButton()->setEnabled(enabled);
+}
+
+void EigenLoadComponent::updateSaveAsButton(bool enabled)
+{
+    getSaveAsButton()->setEnabled(enabled);
+}
+
 void EigenLoadComponent::updateUpgradeToggle(bool enabled)
 {
     getUpgradeToggle()->setEnabled(enabled);
@@ -644,6 +657,10 @@ void EigenLoadComponent::buttonClicked(Button *b)
             pic::logmsg() << "loading " << selected_;
             mediator_->backend()->load_setup(selected_.as_string(),upg);
         }
+    }
+    else if (b==getSaveAsButton())
+    {
+        mediator_->save_dialog();
     }
     else if (b==getEditButton())
     {
@@ -822,6 +839,11 @@ void EigenMainWindow::setups_changed(const char *file)
     {
         current_setup_ = file;
         select_setup(file);
+        component_->updateSaveAsButton(true);
+    }
+    else
+    {
+        component_->updateSaveAsButton(false);
     }
 }
 
@@ -849,8 +871,8 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
     centreWithSize (getWidth(), getHeight());
     setUsingNativeTitleBar(true);
     setResizable(true,true);
-    setResizeLimits(600,500,2000,2000);
-    setVisible (true);
+    setResizeLimits(600,575,2000,2000);
+    setVisible(true);
     pic::to_front();
     toFront(true);
     component_->getSetupLabel()->setText(T(""),false);
@@ -1052,7 +1074,7 @@ void EigenMainWindow::getCommandInfo (const CommandID commandID, ApplicationComm
             break;
 
         case commandResetWarnings:
-            result.setInfo (T("Reset warnings"), T("Reset warnings"), generalCategory, 0);
+            result.setInfo (T("Reset Warnings"), T("Reset Warnings"), generalCategory, 0);
             break;
     }
 }
@@ -1954,6 +1976,11 @@ pic::f_string_t EigenMainWindow::make_logger(const char *prefix)
 {
     JUCE_AUTORELEASEPOOL
         return EigenLogger::create(prefix,logger_);
+}
+
+void EigenMainWindow::save_dialog()
+{
+    save_dialog(current_setup_);
 }
 
 void EigenMainWindow::save_dialog(const std::string &current)

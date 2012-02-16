@@ -304,7 +304,7 @@ class Output(atom.Atom):
             self.__tee = None
     
     def key_sequential(self):
-        return self.__agent.calc_physical_keynum(self[24].get_value(),self[25].get_value())
+        return self.__agent.key_sequential(self[24].get_value(),self[25].get_value())
 
     def update_status_index(self):
         keynum = self.key_sequential()
@@ -467,8 +467,8 @@ class Agent(agent.Agent):
 
         self.kclone.set_policy(False)
 
-        self.key_mapper = piw.clone(True) # keys
-        self.key_mapper.set_filtered_data_output(1, self.kclone.cookie(), self.mapper.key_filter(), 5)
+        self.keymapfilter = piw.clone(True) # keys
+        self.keymapfilter.set_filtered_data_output(1, self.kclone.cookie(), self.mapper.key_filter(), 5)
 
         self.s1input = bundles.ScalarInput(self.s1clone.cookie(),self.domain,signals=(1,2))
         self.s2input = bundles.ScalarInput(self.s2clone.cookie(),self.domain,signals=(1,2))
@@ -488,7 +488,7 @@ class Agent(agent.Agent):
         self[32] = atom.Atom(domain=domain.Aniso(), policy=self.input_pedal3.vector_policy(1,False),names='pedal input', ordinal=3)
         self[33] = atom.Atom(domain=domain.Aniso(), policy=self.input_pedal4.vector_policy(1,False),names='pedal input', ordinal=4)
 
-        self.kinput = bundles.VectorInput(self.key_mapper.cookie(),self.domain,signals=(2,3,4,5),threshold=10)
+        self.kinput = bundles.VectorInput(self.keymapfilter.cookie(),self.domain,signals=(2,3,4,5),threshold=10)
 
         self[12] = atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.kinput.vector_policy(2,False), names='pressure input')
         self[13] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.kinput.vector_policy(3,False), names='roll input')
@@ -498,12 +498,11 @@ class Agent(agent.Agent):
         self.controller = Controller(self,self.cclone.cookie())
         self.__private[2] = self.controller.state()
 
-        self.keypulse = piw.changelist_nb()
         self.keychoice = utils.make_change_nb(piw.slowchange(utils.changify(self.__choice)))
-        self.selgate = piw.functor_backend(5,True)
-        self.selgate.set_gfunctor(self.keypulse)
-        self.kclone.enable(250,True)
-        self.kclone.set_output(250,self.selgate.cookie())
+        self.keychoicefunctor = piw.functor_backend(5,True)
+        self.keychoicefunctor.set_gfunctor(self.keychoice)
+        self.keymapfilter.set_output(250,self.keychoicefunctor.cookie())
+        self.keymapfilter.enable(250,False)
 
         self.status_buffer = piw.statusbuffer(self.light_switch.gate_input(),251,self.light_switch.get_input(251))
         self.status_buffer.autosend(False)
@@ -568,7 +567,12 @@ class Agent(agent.Agent):
         self[21] = atom.Atom(domain=domain.BoundedFloatOrNull(0,20),init=0.5,policy=atom.default_policy(self.__change_blinktime),names='blink')
 
         self[1] = OutputList(self)
+
         self.outputchoice = utils.make_change_nb(piw.slowchange(utils.changify(self[1].output_selector)))
+        self.outputchoicefunctor = piw.functor_backend(5,True)
+        self.outputchoicefunctor.set_gfunctor(self.outputchoice)
+        self.kclone.set_output(250,self.outputchoicefunctor.cookie())
+        self.kclone.enable(250,False)
 
     def rpc_fetch_sourcekeys(self,arg):
         name = str(arg)
@@ -598,9 +602,9 @@ class Agent(agent.Agent):
 
     def __mode_selection(self,d):
         if d.as_long():
-            piw.changelist_connect_nb(self.keypulse,self.outputchoice)
+            self.kclone.enable(250,True)
         else:
-            piw.changelist_disconnect_nb(self.keypulse,self.outputchoice)
+            self.kclone.enable(250,False)
 
     def __change_scale(self,val):
         self[20].set_value(val)
@@ -688,7 +692,7 @@ class Agent(agent.Agent):
         except:
             return 0
 
-    def calc_physical_keynum(self,row,col):
+    def key_sequential(self,row,col):
         return piw.key_sequential(self.controller.gettuple('rowlen'),row,col)
 
     def __upstream(self,c):
@@ -846,11 +850,11 @@ class Agent(agent.Agent):
         self.__mappedkeys = []
         self.__course = course
 
-        # we're clearing the mapping before starting choosing so that the upstream geometry is used
-        self.mapper.clear_mapping()
-        self.mapper.activate_mapping()
-        self.key_mapper.enable(1,False)
-        self.key_mapper.enable(1,True)
+        # disable the keymap filter and install a pass-through light functor
+        self.status_mapper.set_functor(piw.null_filter())
+        self.keymapfilter.enable(1,False)
+        self.keymapfilter.enable(250,False)
+        self.keymapfilter.enable(250,True)
 
         # store the upstream musical keys that correspond to the currently selected
         # musical keys for the course that is being chosen, if no specific course was
@@ -886,7 +890,12 @@ class Agent(agent.Agent):
         # the key selection to the changelist of the key input
         self.status_buffer.override(True)
         self.mode_selector.choose(True)
-        piw.changelist_connect_nb(self.keypulse,self.keychoice)
+
+    def __stop_choosing(self):
+        self.keymapfilter.enable(250,False)
+        self.status_buffer.override(False)
+        self.mode_selector.choose(False)
+        self.status_mapper.set_functor(self.mapper.light_filter())
 
     def __choice(self,v):
         choice = utils.key_to_lists(v)
@@ -898,10 +907,8 @@ class Agent(agent.Agent):
         # if this choice is the same as the previous one
         # stop choose mode and store the new mapping
         if self.__choices and choice==self.__choices[-1]:
-            piw.changelist_disconnect_nb(self.keypulse,self.keychoice)
-            self.status_buffer.override(False)
+            self.__stop_choosing()
             self.__do_mapping()
-            self.mode_selector.choose(False)
             return
 
         # if this is a new choice, store it and adapt the status leds
@@ -918,15 +925,8 @@ class Agent(agent.Agent):
         self.__unchoose_base()
 
     def __unchoose_base(self):
-        self.__choices = None
-        self.__coursekeys = None
-        self.__mappedkeys = None
-        self.__course = None
-        self.mode_selector.choose(False)
-        piw.changelist_disconnect_nb(self.keypulse,self.keychoice)
-        self.status_buffer.override(False)
-        self.__set_physical_mapping(self.__current_physical_mapping())
-        self.__set_musical_mapping(self.__current_musical_mapping())
+        self.__stop_choosing()
+        self.keymapfilter.enable(1,True)
 
     def __do_mapping(self):
         musical_mapping = []
@@ -980,7 +980,7 @@ class Agent(agent.Agent):
     def __current_musical_mapping(self):
         return logic.parse_clause(self[34].get_value())
 
-    def __sanitize_mapping(self,mapping):
+    def __sanitize_mapping(self,mapping,desc=""):
         if mapping is None:
             mapping = list()
 
@@ -996,10 +996,10 @@ class Agent(agent.Agent):
         reverse_mapping = list()
         for entry in mapping:
             if entry[0][0] <= 0 or entry[0][1] <= 0 or entry[1][0] <= 0 or entry[1][1] <= 0:
-                print 'forward ignoring',entry
+                print 'forward',desc,'ignoring',entry
                 continue
             if entry[0] == prev_entry:
-                print 'forward ignoring',entry
+                print 'forward',desc,'ignoring',entry
                 continue
             prev_entry = entry[0]
             reverse_mapping.append( (entry[1],entry[0]) )
@@ -1011,7 +1011,7 @@ class Agent(agent.Agent):
         pruned_reverse = list()
         for entry in reverse_mapping:
             if entry[0] == prev_entry:
-                print 'reverse ignoring',entry
+                print 'reverse',desc,'ignoring',entry
                 continue
             prev_entry = entry[0]
             pruned_mapping.append( (entry[1],entry[0]) )
@@ -1019,8 +1019,8 @@ class Agent(agent.Agent):
 
         pruned_mapping.sort()
 
-        print 'forward',pruned_mapping
-        print 'reverse',pruned_reverse
+        print 'forward',desc,pruned_mapping
+        print 'reverse',desc,pruned_reverse
 
         return (pruned_mapping,pruned_reverse)
 
@@ -1033,7 +1033,7 @@ class Agent(agent.Agent):
         mapper = self.mapper
         mapper.clear_physical_mapping()
 
-        mapping,reverse_mapping = self.__sanitize_mapping(mapping)
+        mapping,reverse_mapping = self.__sanitize_mapping(mapping,'physical')
 
         # initialize the row offsets
         rowoffsets = []
@@ -1103,8 +1103,8 @@ class Agent(agent.Agent):
         # store the mapping description in the state of the agent
         self[27].set_value(logic.render_term(mapping))
 
-        self.key_mapper.enable(1,False)
-        self.key_mapper.enable(1,True)
+        self.keymapfilter.enable(1,False)
+        self.keymapfilter.enable(1,True)
 
     def __set_musical_key_map(self,value):
         mapping = logic.parse_clause(value)
@@ -1114,7 +1114,7 @@ class Agent(agent.Agent):
         mapper = self.mapper
         mapper.clear_musical_mapping()
 
-        mapping,reverse_mapping = self.__sanitize_mapping(mapping)
+        mapping,reverse_mapping = self.__sanitize_mapping(mapping,'musical')
 
         # iterate over the mapping that's sorted by out key and calculate
         # each course length
@@ -1179,8 +1179,8 @@ class Agent(agent.Agent):
         # store the mapping description in the state of the agent
         self[34].set_value(logic.render_term(mapping))
 
-        self.key_mapper.enable(1,False)
-        self.key_mapper.enable(1,True)
+        self.keymapfilter.enable(1,False)
+        self.keymapfilter.enable(1,True)
 
 
 agent.main(Agent)

@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:51:56pm
+  Creation date:  16 Feb 2012 4:57:08pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_A2460CBF__
-#define __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_A2460CBF__
+#ifndef __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_A4A62574__
+#define __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_A4A62574__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -50,6 +50,8 @@ public:
     TextEditor *getLabel() { return description; }
     ToggleButton *getDefaultToggle() { return default_toggle; }
     TextButton *getLoadButton() { return load_button; }
+    TextButton *getSaveButton() { return save_button; }
+    TextButton *getSaveAsButton() { return saveas_button; }
     TextButton *getEditButton() { return edit_button; }
     TextButton *getDeleteButton() { return delete_button; }
     ToggleButton *getUpgradeToggle() { return upgrade_toggle; }
@@ -100,6 +102,7 @@ public:
     static const char* eigenD_png;
     static const int eigenD_pngSize;
 
+
     //==============================================================================
     juce_UseDebuggingNewOperator
 
@@ -116,6 +119,8 @@ private:
     TextButton* delete_button;
     TextButton* edit_button;
     ToggleButton* default_toggle;
+    TextButton* save_button;
+    TextButton* saveas_button;
     Image cachedImage_eigenD_png;
     Image cachedImage_backgroundBoxInner_png;
     Image cachedImage_backgroundBoxT_png;
@@ -136,6 +141,7 @@ private:
     Image cachedImage_innerBoxR_png;
     Image cachedImage_innerBoxInner_png;
 
+
     //==============================================================================
     // (prevent copy constructor and operator= being generated..)
     LoadDialogComponent (const LoadDialogComponent&);
@@ -143,4 +149,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_A2460CBF__
+#endif   // __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_A4A62574__

@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:51:56pm
+  Creation date:  16 Feb 2012 4:57:08pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -38,6 +38,8 @@ LoadDialogComponent::LoadDialogComponent ()
       delete_button (0),
       edit_button (0),
       default_toggle (0),
+      save_button (0),
+      saveas_button (0),
       cachedImage_eigenD_png (0),
       cachedImage_backgroundBoxInner_png (0),
       cachedImage_backgroundBoxT_png (0),
@@ -58,19 +60,19 @@ LoadDialogComponent::LoadDialogComponent ()
       cachedImage_innerBoxR_png (0),
       cachedImage_innerBoxInner_png (0)
 {
-    addAndMakeVisible (tree = new TreeView (T("new treeview")));
+    addAndMakeVisible (tree = new TreeView (L"new treeview"));
     tree->setRootItemVisible (false);
     tree->setColour (TreeView::backgroundColourId, Colour (0x884b4b));
     tree->setColour (TreeView::linesColourId, Colours::black);
 
-    addAndMakeVisible (load_button = new TextButton (T("Load")));
+    addAndMakeVisible (load_button = new TextButton (L"Load"));
     load_button->addListener (this);
     load_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
-    addAndMakeVisible (upgrade_toggle = new ToggleButton (T("Upgrade Setup")));
+    addAndMakeVisible (upgrade_toggle = new ToggleButton (L"Upgrade Setup"));
     upgrade_toggle->addListener (this);
 
-    addAndMakeVisible (description = new TextEditor (T("new text editor")));
+    addAndMakeVisible (description = new TextEditor (L"new text editor"));
     description->setMultiLine (true);
     description->setReturnKeyStartsNewLine (false);
     description->setReadOnly (true);
@@ -81,24 +83,32 @@ LoadDialogComponent::LoadDialogComponent ()
     description->setColour (TextEditor::shadowColourId, Colour (0x0));
     description->setText (String::empty);
 
-    addAndMakeVisible (setup_label = new Label (T("new label"),
-                                                T("label text")));
+    addAndMakeVisible (setup_label = new Label (L"new label",
+                                                L"label text"));
     setup_label->setFont (Font (15.0000f, Font::plain));
     setup_label->setJustificationType (Justification::centredLeft);
     setup_label->setEditable (false, false, false);
     setup_label->setColour (TextEditor::textColourId, Colours::black);
     setup_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (delete_button = new TextButton (T("Delete")));
+    addAndMakeVisible (delete_button = new TextButton (L"Delete"));
     delete_button->addListener (this);
     delete_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
-    addAndMakeVisible (edit_button = new TextButton (T("Edit")));
+    addAndMakeVisible (edit_button = new TextButton (L"Edit"));
     edit_button->addListener (this);
     edit_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
-    addAndMakeVisible (default_toggle = new ToggleButton (T("Default Setup")));
+    addAndMakeVisible (default_toggle = new ToggleButton (L"Default Setup"));
     default_toggle->addListener (this);
+
+    addAndMakeVisible (save_button = new TextButton (L"Save"));
+    save_button->addListener (this);
+    save_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
+
+    addAndMakeVisible (saveas_button = new TextButton (L"Save As"));
+    saveas_button->addListener (this);
+    saveas_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
     cachedImage_eigenD_png = ImageCache::getFromMemory (eigenD_png, eigenD_pngSize);
     cachedImage_backgroundBoxInner_png = ImageCache::getFromMemory (backgroundBoxInner_png, backgroundBoxInner_pngSize);
@@ -124,11 +134,14 @@ LoadDialogComponent::LoadDialogComponent ()
     default_toggle->setEnabled(false);
     load_button->setEnabled(false);
     upgrade_toggle->setEnabled(false);
+    save_button->setEnabled(false);
+    saveas_button->setEnabled(false);
     edit_button->setEnabled(false);
     delete_button->setEnabled(false);
     //[/UserPreSize]
 
-    setSize (600, 500);
+    setSize (600, 545);
+
 
     //[Constructor] You can add your own custom stuff here..
     //[/Constructor]
@@ -147,6 +160,9 @@ LoadDialogComponent::~LoadDialogComponent()
     deleteAndZero (delete_button);
     deleteAndZero (edit_button);
     deleteAndZero (default_toggle);
+    deleteAndZero (save_button);
+    deleteAndZero (saveas_button);
+
 
     //[Destructor]. You can add your own custom destruction code here..
     //[/Destructor]
@@ -179,19 +195,19 @@ void LoadDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (T("Choose a Setup:"),
+    g.drawText (L"Choose a Setup:",
                 36, 100, 200, 30,
                 Justification::centredLeft, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (T("Setup Description:"),
+    g.drawText (L"Setup Description:",
                 36, getHeight() - 191, 200, 30,
                 Justification::centredLeft, true);
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (T("Current Setup:"),
+    g.drawText (L"Current Setup:",
                 getWidth() - 384, 115 - ((30) / 2), 200, 30,
                 Justification::centredRight, true);
 
@@ -336,9 +352,11 @@ void LoadDialogComponent::resized()
     upgrade_toggle->setBounds (getWidth() - 139, 200, 112, 40);
     description->setBounds (48, getHeight() - 48 - 75, getWidth() - 96, 75);
     setup_label->setBounds (getWidth() - 184, 115 - ((24) / 2), 150, 24);
-    delete_button->setBounds (getWidth() - 139, 272, 112, 24);
-    edit_button->setBounds (getWidth() - 139, 240, 112, 24);
+    delete_button->setBounds (getWidth() - 139, 357, 112, 24);
+    edit_button->setBounds (getWidth() - 139, 325, 112, 24);
     default_toggle->setBounds (getWidth() - 139, 144, 112, 24);
+    save_button->setBounds (getWidth() - 139, 250, 112, 24);
+    saveas_button->setBounds (getWidth() - 139, 282, 112, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -373,6 +391,16 @@ void LoadDialogComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_default_toggle] -- add your button handler code here..
         //[/UserButtonCode_default_toggle]
     }
+    else if (buttonThatWasClicked == save_button)
+    {
+        //[UserButtonCode_save_button] -- add your button handler code here..
+        //[/UserButtonCode_save_button]
+    }
+    else if (buttonThatWasClicked == saveas_button)
+    {
+        //[UserButtonCode_saveas_button] -- add your button handler code here..
+        //[/UserButtonCode_saveas_button]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -395,7 +423,7 @@ BEGIN_JUCER_METADATA
 <JUCER_COMPONENT documentType="Component" className="LoadDialogComponent" componentName=""
                  parentClasses="public Component" constructorParams="" variableInitialisers=""
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
-                 fixedSize="0" initialWidth="600" initialHeight="500">
+                 fixedSize="0" initialWidth="600" initialHeight="545">
   <BACKGROUND backgroundColour="ff000000">
     <IMAGE pos="177R 12 146 60" resource="eigenD_png" opacity="1" mode="0"/>
     <RECT pos="0 74 100% 72M" fill="linear: 0C 0, 0C 0R, 0=ff000000, 1=ff545454"
@@ -464,14 +492,20 @@ BEGIN_JUCER_METADATA
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="33"/>
   <TEXTBUTTON name="Delete" id="7d092d6a6e09132" memberName="delete_button"
-              virtualName="" explicitFocusOrder="0" pos="139R 272 112 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="139R 357 112 24" bgColOff="ffaeaeae"
               buttonText="Delete" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Edit" id="b162eeb1f10b4771" memberName="edit_button" virtualName=""
-              explicitFocusOrder="0" pos="139R 240 112 24" bgColOff="ffaeaeae"
+              explicitFocusOrder="0" pos="139R 325 112 24" bgColOff="ffaeaeae"
               buttonText="Edit" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TOGGLEBUTTON name="Default Setup" id="dd0a8f33920b0649" memberName="default_toggle"
                 virtualName="" explicitFocusOrder="0" pos="139R 144 112 24" buttonText="Default Setup"
                 connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
+  <TEXTBUTTON name="Save" id="559e1e6b94605a39" memberName="save_button" virtualName=""
+              explicitFocusOrder="0" pos="139R 250 112 24" bgColOff="ffaeaeae"
+              buttonText="Save" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <TEXTBUTTON name="Save As" id="4d373d2dc1b3cb8" memberName="saveas_button"
+              virtualName="" explicitFocusOrder="0" pos="139R 282 112 24" bgColOff="ffaeaeae"
+              buttonText="Save As" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
