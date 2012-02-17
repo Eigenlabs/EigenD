@@ -33,7 +33,7 @@ Not properly assigned, in use:
 8   6   2   4  : Chord         : Noun              : None
 8   6   2   5  : Timeout       : Noun              : None
 8   6   2   6  : Identifier    : Noun              : None
-8   6   2   7  : Unused        : Unused            : None
+8   6   2   7  : Cycling       : Noun              : None
 8   6   2   8  : Unused        : Unused            : None
 8   6   3   1  : Unused        : Unused            : None
 8   6   3   2  : Unused        : Unused            : None

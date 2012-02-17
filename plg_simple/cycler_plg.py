@@ -39,8 +39,7 @@ class Agent(agent.Agent):
         self[2][6] = bundles.Output(6,False,names='frequency output')
         self[2][7] = bundles.Output(16,False,names='damper output')
 
-        self.add_verb2(1,'cycle([],None)',self.__cycle_on)
-        self.add_verb2(2,'cycle([un],None)',self.__cycle_off)
+        self[3] = atom.Atom(names="cycling",domain=domain.Bool(),init=True,policy=atom.default_policy(self.__setcycling))
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
@@ -52,7 +51,7 @@ class Agent(agent.Agent):
 
         self.cycler.set_cycle(True)
         self.cycler.set_maxdamp(1.0)
-        self.cycler.set_invert(False)
+        self.cycler.set_invert(True)
         self.cycler.set_curve(1.0)
 
         self[1] = atom.Atom(names='inputs')
@@ -67,28 +66,19 @@ class Agent(agent.Agent):
         self[1][12]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.latch_policy(17,False),names='hold pedal input')
         self[1][13]=atom.Atom(domain=domain.BoundedFloat(0.1,10),init=1,names="damper curve",policy=atom.default_policy(self.__setdcurve))
 
-        self[1][8].add_verb2(1,'invert([],None)',self.__invert_on)
-        self[1][8].add_verb2(2,'invert([un],None)',self.__invert_off)
+        self[4] = atom.Atom(names="inverted damper",domain=domain.Bool(),init=True,policy=atom.default_policy(self.__setinverted))
 
     def __setmaxdamp(self,v):
         self.cycler.set_maxdamp(v)
         return True
 
-    def __invert_on(self,subj):
-        self.cycler.set_invert(True)
-        self.get_private()[2].set_data(piw.makebool(True,0))
+    def __setinverted(self,v):
+        self.cycler.set_invert(v)
+        return True
 
-    def __invert_off(self,subj):
-        self.cycler.set_invert(False)
-        self.get_private()[2].set_data(piw.makebool(False,0))
-
-    def __cycle_on(self,subj):
-        self.cycler.set_cycle(True)
-        self.get_private()[1].set_data(piw.makebool(True,0))
-
-    def __cycle_off(self,subj):
-        self.cycler.set_cycle(False)
-        self.get_private()[1].set_data(piw.makebool(False,0))
+    def __setcycling(self,v):
+        self.cycler.set_cycle(v)
+        return True
 
     def __invert_set(self,d):
         if d.is_bool():
