@@ -423,6 +423,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(data_t) tuplenull_ex(unsigned nb, unsigned long long t=0L);
     PIW_DECLSPEC_FUNC(data_t) tupledel_ex(unsigned nb, const data_t &d, unsigned i);
     PIW_DECLSPEC_FUNC(data_t) tupleadd_ex(unsigned nb, const data_t &d, const data_t &v);
+    PIW_DECLSPEC_FUNC(data_t) tuplenorm_ex(unsigned nb, const data_t &d, float norm);
 
     inline data_t makewire(unsigned dl, const unsigned char *dp) { return makewire_ex(PIC_ALLOC_NORMAL,dl,dp); }
     inline data_t pathnull(unsigned long long t) { return pathnull_ex(PIC_ALLOC_NORMAL,t); }
@@ -443,6 +444,7 @@ namespace piw
     inline data_t tuplenull(unsigned long long t) { return tuplenull_ex(PIC_ALLOC_NORMAL,t); }
     inline data_t tupledel(const data_t &d, unsigned i) { return tupledel_ex(PIC_ALLOC_NORMAL,d,i); }
     inline data_t tupleadd(const data_t &d, const data_t &v) { return tupleadd_ex(PIC_ALLOC_NORMAL,d,v); }
+    inline data_t tuplenorm(const data_t &d, float norm) { return tuplenorm_ex(PIC_ALLOC_NORMAL,d,norm); }
     inline data_t makeblob(unsigned long long ts, unsigned size, unsigned char **pdata) { return makeblob_ex(PIC_ALLOC_NORMAL,ts,size,pdata); }
     inline data_t makeblob2(const std::string &s, unsigned long long ts) { unsigned char *p; data_t d(makeblob_ex(PIC_ALLOC_NORMAL,ts,s.size(),&p)); memcpy(p,s.c_str(),s.size()); return d; }
     inline data_t makedouble(double v, unsigned long long t=0L) { return makedouble_ex(PIC_ALLOC_NORMAL,v,t); }
@@ -502,6 +504,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(data_nb_t) tuplenull_nb_ex(unsigned nb, unsigned long long t=0L);
     PIW_DECLSPEC_FUNC(data_nb_t) tupledel_nb_ex(unsigned nb, const data_nb_t &d, unsigned i);
     PIW_DECLSPEC_FUNC(data_nb_t) tupleadd_nb_ex(unsigned nb, const data_nb_t &d, const data_nb_t &v);
+    PIW_DECLSPEC_FUNC(data_nb_t) tuplenorm_nb_ex(unsigned nb, const data_nb_t &d, float norm);
 
     inline data_nb_t makewire_nb(unsigned dl, const unsigned char *dp) { return makewire_nb_ex(PIC_ALLOC_NB,dl,dp); }
     inline data_nb_t pathnull_nb(unsigned long long t) { return pathnull_nb_ex(PIC_ALLOC_NB,t); }
@@ -522,6 +525,7 @@ namespace piw
     inline data_nb_t tuplenull_nb(unsigned long long t) { return tuplenull_nb_ex(PIC_ALLOC_NB,t); }
     inline data_nb_t tupledel_nb(const data_nb_t &d, unsigned i) { return tupledel_nb_ex(PIC_ALLOC_NB,d,i); }
     inline data_nb_t tupleadd_nb(const data_nb_t &d, const data_nb_t &v) { return tupleadd_nb_ex(PIC_ALLOC_NB,d,v); }
+    inline data_nb_t tuplenorm_nb(const data_nb_t &d, float norm) { return tuplenorm_nb_ex(PIC_ALLOC_NB,d,norm); }
     inline data_nb_t makeblob_nb(unsigned long long ts, unsigned size, unsigned char **pdata) { return makeblob_nb_ex(PIC_ALLOC_NB,ts,size,pdata); }
     inline data_nb_t makedouble_nb(double v, unsigned long long t=0L) { return makedouble_nb_ex(PIC_ALLOC_NB,v,t); }
     inline data_nb_t makefloat_nb(float v, unsigned long long t=0L) { return makefloat_nb_ex(PIC_ALLOC_NB,v,t); }

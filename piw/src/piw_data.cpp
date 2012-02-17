@@ -815,7 +815,7 @@ static T __tupledel_ex(unsigned nb, const T &old, unsigned i)
         r-=(2+vl);
     }
 
-    *vp=0;
+    *vp=old.as_norm();
     return d2;
 }
 
@@ -871,7 +871,26 @@ static T __tupleadd_ex(unsigned nb,const T &old, const T &v)
     pie_setu16(dp+l,2,v.wire_length());
     memcpy(dp+l+2,v.wire_data(),v.wire_length());
 
-    *vp=0;
+    *vp=old.as_norm();
+    return d2;
+}
+
+template <class T>
+static T __tuplenorm_ex(unsigned nb,const T &old, float norm)
+{
+    const unsigned char *b;
+    unsigned r;
+
+    b = (const unsigned char *)old.host_data();
+    r = old.host_length();
+
+    float *vp;
+    unsigned char *dp;
+    T d2 = T::from_given(__allocate_host(nb,old.time(),1,-1,0,BCTVTYPE_TUPLE,r,&dp,1,&vp));
+    memcpy(dp,b,r);
+
+    *vp = norm;
+
     return d2;
 }
 
@@ -926,6 +945,7 @@ piw::data_t piw::dictupdate_ex(unsigned nb,const data_t &old, const data_t &upd)
 piw::data_t piw::tuplenull_ex(unsigned nb,unsigned long long ts) { return __tuplenull_ex<data_t>(nb,ts); }
 piw::data_t piw::tupledel_ex(unsigned nb,const data_t &old, unsigned i) { return __tupledel_ex<data_t>(nb, old, i); }
 piw::data_t piw::tupleadd_ex(unsigned nb,const data_t &old, const data_t &v) { return __tupleadd_ex<data_t>(nb, old, v); }
+piw::data_t piw::tuplenorm_ex(unsigned nb,const data_t &old, float norm) { return __tuplenorm_ex<data_t>(nb, old, norm); }
 
 piw::data_nb_t piw::makearray_nb_ex(unsigned nb,unsigned long long ts, float ubound, float lbound, float rest, unsigned nfloats, float **pfloat, float **fs) { return __makearray_ex<data_nb_t>(nb,ts,ubound,lbound,rest,nfloats,pfloat,fs); }
 piw::data_nb_t piw::makenorm_nb_ex(unsigned nb,unsigned long long ts, unsigned nfloats, float **pfloat,float **fs) { return makearray_nb_ex(nb,ts,1,-1,0,nfloats,pfloat,fs); }
@@ -965,6 +985,7 @@ piw::data_nb_t piw::dictupdate_nb_ex(unsigned nb,const data_nb_t &old, const dat
 piw::data_nb_t piw::tuplenull_nb_ex(unsigned nb,unsigned long long ts) { return __tuplenull_ex<data_nb_t>(nb,ts); }
 piw::data_nb_t piw::tupledel_nb_ex(unsigned nb,const data_nb_t &old, unsigned i) { return __tupledel_ex<data_nb_t>(nb, old, i); }
 piw::data_nb_t piw::tupleadd_nb_ex(unsigned nb,const data_nb_t &old, const data_nb_t &v) { return __tupleadd_ex<data_nb_t>(nb, old, v); }
+piw::data_nb_t piw::tuplenorm_nb_ex(unsigned nb,const data_nb_t &old, float norm) { return __tuplenorm_ex<data_nb_t>(nb, old, norm); }
 
 /*
  * piw::data_base_t

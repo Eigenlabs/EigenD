@@ -35,6 +35,7 @@ piw::data_nb_t piw::makekey(unsigned pseq, int row, int col, unsigned mseq, int 
     result = piw::tupleadd_nb(result, piw::makelong_nb(mseq,t));
     result = piw::tupleadd_nb(result, musical_key);
     result = piw::tupleadd_nb(result, piw::makelong_nb(hardness,t));
+    result = piw::tuplenorm_nb(result, float(hardness)/piw::KEY_HARD);
 
     return result;
 }

@@ -32,7 +32,7 @@ namespace piw
      * It always starts off as a KEY_LIGHT press, potentially afterwards moving
      * towards either KEY_SOFT or KEY_HARD but never both
      */
-    enum hardness_t {KEY_LIGHT, KEY_SOFT, KEY_HARD};
+    enum hardness_t {KEY_LIGHT=0, KEY_SOFT=2, KEY_HARD=3};
 
     /**
      * Create a new key data structure with the required elements.
