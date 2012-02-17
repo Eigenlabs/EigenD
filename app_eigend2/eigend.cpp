@@ -394,6 +394,7 @@ class EigenLoadComponent: public LoadDialogComponent, public EigenAlertDelegate
         virtual ~EigenLoadComponent();
         EigenMainWindow *mediator() { return mediator_; }
         bool select_setup(const char *setup);
+        void clear_selection();
         bool is_selected_user();
         void alert_ok();
         void alert_cancel();
@@ -413,16 +414,14 @@ void EigenTreeItem::itemSelectionChanged(bool isNowSelected)
 {
     if(isNowSelected)
     {
-        pic::logmsg() << "item selected" << term_.render();
+        pic::logmsg() << "item selected " << term_.render();
         if(term_.arity()>2)
         {
             view_->selected(term_,false);
         }
         else
         {
-            view_->getDefaultToggle()->setToggleState(false,false);
-            view_->updateSetupButtons(false, false);
-            view_->updateUpgradeToggle(false);
+            view_->clear_selection();
         }
     }
 }
@@ -750,6 +749,17 @@ bool EigenLoadComponent::select_setup(const char *setup)
     return rv;
 }
 
+void EigenLoadComponent::clear_selection()
+{
+    getDefaultToggle()->setToggleState(false,false);
+    updateSetupButtons(false, false);
+    updateUpgradeToggle(false);
+    slot_ = piw::data_t();
+    selected_ = piw::data_t();
+    user_ = false;
+    upgrade_ = false;
+}
+
 void EigenLoadComponent::tree_changed()
 {
     typedef std::pair<TreeViewItem*, std::string> ItemStackEntry;
@@ -837,6 +847,7 @@ void EigenMainWindow::enable_save_menu(bool active)
 {
     save_menu_active_ = active;
     menuItemsChanged();
+    component_->updateSaveButton(active);
 }
 
 void EigenMainWindow::set_latest_release(const char *release)
@@ -854,6 +865,11 @@ void EigenMainWindow::setups_changed(const char *file)
     {
         current_setup_ = file;
         select_setup(file);
+        enable_save_menu(component_->is_selected_user());
+    }
+    else
+    {
+        enable_save_menu(false);
     }
 }
 
@@ -1175,7 +1191,6 @@ void EigenMainWindow::set_cpu(unsigned cpu)
 void EigenMainWindow::load_setup(const char *setup, bool user, bool upgrade)
 {
     backend_->load_setup(setup,user,upgrade);
-    component_->updateSaveButton(user);
     enable_save_menu(user);
 }
 
