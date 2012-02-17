@@ -412,11 +412,13 @@ namespace
                 return;
             }
 
-            if(abs(((long)p)-first_)>10)
+            if(abs(((long)p)-first_)<=10)
             {
-                pic::logmsg() << "pedal diff " << p << " from " << first_;
-                init_=true;
+                return;
             }
+
+            pic::logmsg() << "pedal diff " << p << " from " << first_;
+            init_=true;
         }
 
         if(abs((long)p-(long)last_)<2)
