@@ -228,7 +228,7 @@ class MicrophoneOutput(audio.AudioOutput):
         audio.AudioOutput.__init__(self,self.__agent.audio_output,1,1,names='microphone')
 
         self[100] = toggle.Toggle(self.__enable,self.__agent.domain,container=(None,'microphone enable',self.__agent.verb_container()),names='enable',transient=True)
-        self[101] = atom.Atom(domain=domain.String(),init='electret',names='type',policy=atom.default_policy(self.__type))
+        self[101] = atom.Atom(domain=domain.StringEnum(*sorted(self.mic_types.keys())),init='electret',names='type',policy=atom.default_policy(self.__type))
         self[102] = atom.Atom(domain=domain.BoundedInt(0,50,hints=(T('inc',1),T('biginc',5),T('control','updown'))),names='gain',init=30,policy=atom.default_policy(self.__gain))
         self[103] = toggle.Toggle(self.__pad,self.__agent.domain,container=(None,'microphone pad',self.__agent.verb_container()),names='pad')
         self[104] = toggle.Toggle(self.__loop_enable,self.__agent.domain,container=(None,'microphone loop',self.__agent.verb_container()),names='loop')
