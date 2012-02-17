@@ -865,10 +865,12 @@ void EigenMainWindow::setups_changed(const char *file)
     {
         current_setup_ = file;
         select_setup(file);
+        backend_->set_current_setup(file,component_->is_selected_user());
         enable_save_menu(component_->is_selected_user());
     }
     else
     {
+        backend_->set_current_setup("",false);
         enable_save_menu(false);
     }
 }

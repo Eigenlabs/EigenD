@@ -47,6 +47,7 @@ namespace eigend
         virtual std::string get_setup_slot(const char *) = 0;
         virtual void load_setup(const char *setup,bool user,bool upgrade) = 0;
         virtual void delete_setup(const char *) = 0;
+        virtual void set_current_setup(const char *setup,bool user) = 0;
         virtual bool save_current_setup() = 0;
         virtual std::string save_setup(const char *slot, const char *tag,const char *desc,const bool make_default) = 0;
         virtual std::string edit_setup(const char *orig, const char *slot, const char *tag,const char *desc) = 0;

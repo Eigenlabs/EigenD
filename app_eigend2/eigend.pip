@@ -17,6 +17,7 @@ class c2p[eigend::c2p_t]
     virtual stdstr get_setup_slot(const char *) = 0
     virtual void load_setup(const char *,bool,bool) = 0
     virtual void delete_setup(const char *) = 0
+    virtual void set_current_setup(const char *,bool) = 0
     virtual bool save_current_setup() = 0
     virtual stdstr save_setup(const char *, const char *, const char *, bool) = 0
     virtual stdstr edit_setup(const char *, const char *, const char *, const char *) = 0

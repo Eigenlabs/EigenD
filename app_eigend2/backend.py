@@ -355,8 +355,7 @@ class Backend(eigend_native.c2p):
         return agentd.find_user_setups_flat()
 
     def load_setup(self,setup,user,upgrade):
-        self.current_setup = setup
-        self.current_setup_user = user
+        self.set_current_setup(setup,user)
         self.run_background_async(self.agent.load_file,setup,upgrade)
 
     def __alert_dialog(self,klass,label,text):
@@ -403,6 +402,10 @@ class Backend(eigend_native.c2p):
         root_d = os.path.dirname(root)
         root_f = prefix+os.path.basename(root)
         return os.path.join(root_d,root_f)
+
+    def set_current_setup(self,setup,user):
+        self.current_setup = setup
+        self.current_setup_user = user
 
     def save_current_setup(self):
         if not self.current_setup or not self.current_setup_user:
