@@ -21,10 +21,12 @@ class Endpoint:
             w,s = self.__score_word(w)
             self.words[w] = self.words.get(w,0) + s
 
-    def connect(self,ostuff,u):
+    def connect(self,ostuff,src_chan,dst_chan):
         oid = paths.to_relative(ostuff.qid,scope=paths.id2scope(self.qid))
-        d=logic.render_term(logic.make_term('conn',u,self.channel,oid,ostuff.channel,ostuff.connect_static and 'ctl' or None))
-        print 'connecting',d,'->',self.id,'using',u
+        src_chan = ostuff.channel or src_chan
+        if src_chan: src_chan = str(src_chan)
+        d=logic.render_term(logic.make_term('conn',dst_chan,self.channel,oid,src_chan,ostuff.connect_static and 'ctl' or None))
+        print 'connecting',d,'->',self.id,'dst_chan',dst_chan
         rpc.invoke_rpc(self.qid,'connect',d)
 
     def __repr__(self):
@@ -95,7 +97,7 @@ class Endpoint:
         return 0
 
 @async.coroutine('internal error')
-def plumber(db,to_descriptor,from_descriptors,using=None):
+def plumber(db,to_descriptor,from_descriptors,dst_chan=None,src_chan=None):
     assoc_cache = db.get_assoccache()
     partof_cache = db.get_partcache()
     proto_cache = db.get_propcache('protocol')
@@ -103,13 +105,13 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
 
     (ti,tp) = to_descriptor
 
-    if using is None:
+    if dst_chan is None:
         if 'using' in proto_cache.get_valueset(ti):
-            using=True
+            dst_chan=True
 
     print 'connect2 from:',from_descriptors
     print '-          to:',ti,tp
-    print '-       using:',using
+    print '-    dst_chan:',dst_chan
 
     if 1 == len(from_descriptors) and 0 == len(partof_cache.direct_lefts(ti)) and 0 == len(partof_cache.direct_lefts(from_descriptors[0][0])):
         (fi,fp) = from_descriptors[0]
@@ -117,17 +119,17 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
         print '-                to:',ti,tp
         fe = Endpoint(db,fi,channel=fp)
         te = Endpoint(db,ti,channel=tp)
-        if using is True:
+        if dst_chan is True:
             iix = set()
             iim = db.find_masters(te.id)
             for ii2 in iim:
                 iixm = db.get_inputs(te.id,ii2)
                 iix = iix.union(iixm)
-            using = 1+reduce(max,iix,0)
-            print 'using',using,iix
-        if using == 0:
-            using = None
-        te.connect(fe,using)
+            dst_chan = 1+reduce(max,iix,0)
+            print 'dst_chan',dst_chan,iix
+        if dst_chan == 0:
+            dst_chan = None
+        te.connect(fe,src_chan,dst_chan)
         yield async.Coroutine.success([])
 
     normoutputs = []
@@ -147,7 +149,7 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
         norminputs.extend([Endpoint(db,i) for i in contains_forward])
         revoutputs.extend([Endpoint(db,i) for i in contains_reverse])
     else:
-        if ti in all_reversed:
+        if ti in all_reverse:
             if ti in all_output:
                 revoutputs.append(Endpoint(db,ti,channel=tp))
         else:
@@ -162,7 +164,7 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
             normoutputs.extend([Endpoint(db,i) for i in contains_forward])
             revinputs.extend([Endpoint(db,i) for i in contains_reverse])
         else:
-            if fi in all_reversed:
+            if fi in all_reverse:
                 if fi in all_input:
                     revinputs.append(Endpoint(db,fi,channel=fp))
             else:
@@ -173,27 +175,27 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
     print 'ro=',revoutputs
     print 'no=',normoutputs
     print 'ri=',revinputs
-    print 'u=',using
+    print 'u=',dst_chan
 
     allinputs = norminputs+revinputs
     alloutputs = normoutputs+revoutputs
 
-    if using is True:
+    if dst_chan is True:
         iix = set()
         for ii in allinputs:
             iim = db.find_masters(ii.id)
             for ii2 in iim:
                 iixm = db.get_inputs(ii.id,ii2)
                 iix = iix.union(iixm)
-        using = 1+reduce(max,iix,0)
-        print 'using',using,iix
+        dst_chan = 1+reduce(max,iix,0)
+        print 'dst_chan',dst_chan,iix
 
-    if using == 0:
-        using = None
+    if dst_chan == 0:
+        dst_chan = None
 
     if len(allinputs)==1 and len(alloutputs)==1:
         print 'direct connect'
-        allinputs[0].connect(alloutputs[0],using)
+        allinputs[0].connect(alloutputs[0],src_chan,dst_chan)
         yield async.Coroutine.success([])
 
     connections = []
@@ -234,6 +236,6 @@ def plumber(db,to_descriptor,from_descriptors,using=None):
         yield async.Coroutine.failure('incompatible')
 
     for (ostuff,istuff) in connections:
-        istuff.connect(ostuff,using)
+        istuff.connect(ostuff,src_chan,dst_chan)
 
     yield async.Coroutine.success([])

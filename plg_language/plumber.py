@@ -78,18 +78,21 @@ class Plumber:
 
 
     @async.coroutine('internal error')
-    def verb2_20_connect(self,subject,f,t,u):
+    def verb2_20_connect(self,subject,src,dst,dst_chan,src_chan):
         """
-        connect([],global_connect,role(None,[or([concrete],[composite([descriptor])])]),role(to,[concrete,singular]),option(using,[numeric,singular]))
+        connect([],global_connect,role(None,[or([concrete],[composite([descriptor])])]),role(to,[concrete,singular]),option(into,[mass([channel])]),option(from,[mass([channel])]))
         """
-        if u is not None:
-            u=int(action.abstract_string(u))
 
-        to_descriptor = (action.concrete_object(t),None)
+        if dst_chan is not None:
+            dst_chan=int(action.mass_quantity(dst_chan))
 
+        if src_chan is not None:
+            src_chan=int(action.mass_quantity(src_chan))
+
+        to_descriptor = (action.concrete_object(dst),None)
         to_descriptor = self.database.to_database_term(to_descriptor)
 
-        for ff in action.arg_objects(f):
+        for ff in action.arg_objects(src):
             if action.is_concrete(ff):
                 from_descriptors = [(action.crack_concrete(ff),None)]
             else:
@@ -97,7 +100,7 @@ class Plumber:
 
             from_descriptors = self.database.to_database_term(from_descriptors)
 
-            r = plumber.plumber(self.database,to_descriptor,from_descriptors,u)
+            r = plumber.plumber(self.database,to_descriptor,from_descriptors,dst_chan=dst_chan,src_chan=src_chan)
             yield r
             if not r.status():
                 yield async.Coroutine.failure(*r.args(),**r.kwds())
