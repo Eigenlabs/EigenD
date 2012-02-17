@@ -323,8 +323,7 @@ class Agent(agent.Agent):
         self[1] = atom.Atom(names='outputs')
         self[1][1] = bundles.Output(1,True,names="left audio output")
         self[1][10] = bundles.Output(2,True,names="right audio output")
-        self[1][2] = bundles.Output(3,False,names="activation output")
-        self[1][3] = bundles.Output(1,False,names="envelope output")
+        self[1][3] = bundles.Output(1,False,names="activation output")
         self[1][4] = bundles.Output(2,False,names="delay output")
         self[1][5] = bundles.Output(3,False,names="attack output")
         self[1][6] = bundles.Output(4,False,names="hold output")
@@ -332,7 +331,7 @@ class Agent(agent.Agent):
         self[1][8] = bundles.Output(6,False,names="sustain output")
         self[1][9] = bundles.Output(7,False,names="release output")
 
-        self.audio_output = bundles.Splitter(self.domain, self[1][1], self[1][2], self[1][10])
+        self.audio_output = bundles.Splitter(self.domain, self[1][1], self[1][10])
         self.envelope_output = bundles.Splitter(self.domain, self[1][3], self[1][4], self[1][5], self[1][6], self[1][7], self[1][8], self[1][9])
 
         self.synth_player = sampler2_native.player(self.audio_output.cookie(),self.domain)

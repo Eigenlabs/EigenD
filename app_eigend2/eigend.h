@@ -45,8 +45,9 @@ namespace eigend
         virtual piw::term_t get_setups() = 0;
         virtual piw::term_t get_user_setups() = 0;
         virtual std::string get_setup_slot(const char *) = 0;
-        virtual void load_setup(const char *setup,bool upg) = 0;
+        virtual void load_setup(const char *setup,bool user,bool upgrade) = 0;
         virtual void delete_setup(const char *) = 0;
+        virtual bool save_current_setup() = 0;
         virtual std::string save_setup(const char *slot, const char *tag,const char *desc,const bool make_default) = 0;
         virtual std::string edit_setup(const char *orig, const char *slot, const char *tag,const char *desc) = 0;
         virtual std::string get_description(const char *file) = 0;

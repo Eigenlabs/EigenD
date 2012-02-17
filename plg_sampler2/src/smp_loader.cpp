@@ -31,7 +31,7 @@
 #define IN_FREQ 1
 #define IN_VELOCITY 3
 
-#define OUT_LOADER_ACT 1
+#define OUT_LOADER_ACTIVATION 1
 #define OUT_LOADER_AHDSR_DELAY 2
 #define OUT_LOADER_AHDSR_ATTACK 3
 #define OUT_LOADER_AHDSR_HOLD 4
@@ -173,7 +173,7 @@ bool loaderfunc_t::cfilterfunc_start(piw::cfilterenv_t *env, const piw::data_nb_
     env->cfilterenv_output(OUT_LOADER_AHDSR_SUSTAIN,piw::makefloat_bounded_nb(1.0,0.0,0.0,es,id.time()));
     env->cfilterenv_output(OUT_LOADER_AHDSR_DECAY,piw::makefloat_bounded_units_nb(BCTUNIT_SECONDS,60000.0,0.0,0.0,edc,id.time()));
     env->cfilterenv_output(OUT_LOADER_AHDSR_RELEASE,piw::makefloat_bounded_units_nb(BCTUNIT_SECONDS,60000.0,0.0,0.0,er,id.time()));
-    env->cfilterenv_output(OUT_LOADER_ACT,piw::makebool_nb(true,id.time()+1));
+    env->cfilterenv_output(OUT_LOADER_ACTIVATION,piw::makebool_nb(true,id.time()+1));
 
     id_=id;
     ctl_->start_voice(id,voice);

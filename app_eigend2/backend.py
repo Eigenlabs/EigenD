@@ -104,6 +104,8 @@ class Backend(eigend_native.c2p):
         self.saving = False
         self.quitting = False
         self.savcond = threading.Condition()
+        self.current_setup = None
+        self.current_setup_user = False
 
         self.fgthing = piw.thing()
         self.fgthing.set_slow_trigger_handler(utils.notify(self.fgdequeue))
@@ -352,8 +354,10 @@ class Backend(eigend_native.c2p):
     def get_user_setups(self):
         return agentd.find_user_setups_flat()
 
-    def load_setup(self,setup,upg):
-        self.run_background_async(self.agent.load_file,setup,upg)
+    def load_setup(self,setup,user,upgrade):
+        self.current_setup = setup
+        self.current_setup_user = user
+        self.run_background_async(self.agent.load_file,setup,upgrade)
 
     def __alert_dialog(self,klass,label,text):
         self.frontend.alert_dialog(klass,label,text)
@@ -400,7 +404,25 @@ class Backend(eigend_native.c2p):
         root_f = prefix+os.path.basename(root)
         return os.path.join(root_d,root_f)
 
+    def save_current_setup(self):
+        if not self.current_setup or not self.current_setup_user:
+            return False
+        
+        term = self.get_user_setups()
+        for i in range(1,term.arity()):
+            if self.current_setup == term.arg(i).arg(2).value().as_string():
+                slot = term.arg(i).arg(1).value().as_string()
+                tag = None
+                if term.arg(i).arg(0).value().is_string():
+                    tag = term.arg(i).arg(0).value().as_string()
+                desc = self.get_description(self.current_setup)
+                self.save_setup(slot,tag,desc,False)
+                return True
+
+        return False
+
     def save_setup(self,slot,tag,desc,make_default):
+        print 'save setup',slot,tag,desc,make_default
         self.savcond.acquire()
         try:
             if self.quitting:

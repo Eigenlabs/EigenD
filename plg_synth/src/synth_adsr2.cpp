@@ -1175,7 +1175,11 @@ namespace
             bool act = (value.as_norm()>0.0);
             if(act!=act_)
             {
-                act_=act;
+                if(!act_)
+                {
+                    act_=act;
+                }
+
                 if(act)
                 {
                     keyon(env,velocity_,value.time());

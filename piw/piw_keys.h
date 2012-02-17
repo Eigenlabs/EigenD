@@ -33,6 +33,8 @@ namespace piw
      * towards either KEY_SOFT or KEY_HARD but never both
      */
     enum hardness_t {KEY_LIGHT=0, KEY_SOFT=2, KEY_HARD=3};
+    // note that the harness values are not evenly distributed to have 
+    // normalized values that are larger than 0.5
 
     /**
      * Create a new key data structure with the required elements.

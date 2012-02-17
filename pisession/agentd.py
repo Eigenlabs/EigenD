@@ -186,6 +186,7 @@ def find_user_setups_flat():
         for s in filter(filter_valid_setup,sn):
             t3 = piw.term('leaf',0)
             s3 = upgrade.split_setup(s)
+            print 'find_user_setups_flat',s,s3,s3[0]
             # unencode url encoded illegal chars to display them properly
             name = piw.term(piw.makestring(urllib.unquote(s3[0]),0)) if s3[0] else piw.term()
             slot = piw.term(piw.makestring(s3[1],0))

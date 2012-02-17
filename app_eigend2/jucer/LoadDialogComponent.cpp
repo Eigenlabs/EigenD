@@ -135,12 +135,12 @@ LoadDialogComponent::LoadDialogComponent ()
     load_button->setEnabled(false);
     upgrade_toggle->setEnabled(false);
     save_button->setEnabled(false);
-    saveas_button->setEnabled(false);
+    saveas_button->setEnabled(true);
     edit_button->setEnabled(false);
     delete_button->setEnabled(false);
     //[/UserPreSize]
 
-    setSize (600, 545);
+    setSize (600, 565);
 
 
     //[Constructor] You can add your own custom stuff here..
@@ -423,7 +423,7 @@ BEGIN_JUCER_METADATA
 <JUCER_COMPONENT documentType="Component" className="LoadDialogComponent" componentName=""
                  parentClasses="public Component" constructorParams="" variableInitialisers=""
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
-                 fixedSize="0" initialWidth="600" initialHeight="545">
+                 fixedSize="0" initialWidth="600" initialHeight="565">
   <BACKGROUND backgroundColour="ff000000">
     <IMAGE pos="177R 12 146 60" resource="eigenD_png" opacity="1" mode="0"/>
     <RECT pos="0 74 100% 72M" fill="linear: 0C 0, 0C 0R, 0=ff000000, 1=ff545454"
