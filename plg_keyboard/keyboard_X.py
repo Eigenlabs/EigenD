@@ -72,7 +72,7 @@ class Keyboard(agent.Agent):
 
     def __init__(self,names,ordinal,dom,remove,keys):
         self.kbd_keys = keys
-        agent.Agent.__init__(self,names=names,ordinal=ordinal,signature=version,subsystem='kbd',volatile=True,container=102,protocols='browse is_subsys')
+        agent.Agent.__init__(self,names=names,ordinal=ordinal,signature=version,subsystem='kbd',volatile=True,container=102,protocols='oldbrowse is_subsys')
 
         self.remover=remove
 

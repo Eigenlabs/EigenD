@@ -67,7 +67,7 @@ class ViewManager(agent.Agent):
 
         self[8]=browse.BrowseAgent(self,browse.getName())
 
-        self.add_verb2(1,'browse([],None,role(None,[proto(browse),singular]))',callback=self.__do_browse)
+        self.add_verb2(1,'browse([],None,role(None,[or([proto(browse)],[proto(oldbrowse)]),singular]))',callback=self.__do_browse)
         self.add_verb2(2,'minimise([],None)',callback=self.__minimise)
         self.add_verb2(3,'maximise([],None)',callback=self.__maximise)
         

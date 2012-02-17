@@ -489,7 +489,7 @@ class Agent(agent.Agent):
 
     def __init__(self, address, ordinal):
         # self[3] is the verb container
-        agent.Agent.__init__(self, signature=version, names='console mixer', protocols='inputlist has_subsys browse', container=3,ordinal=ordinal)
+        agent.Agent.__init__(self, signature=version, names='console mixer', protocols='inputlist has_subsys oldbrowse', container=3,ordinal=ordinal)
 
         self.clk = piw.clockdomain_ctl()
 

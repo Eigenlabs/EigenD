@@ -270,7 +270,7 @@ class VoiceList(collection.Collection):
         self.__agent = agent
         self.__timestamp = piw.tsd_time()
 
-        collection.Collection.__init__(self,names='voice list',protocols='browse',creator=self.__create_voice,wrecker=self.__wreck_voice,inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
+        collection.Collection.__init__(self,names='voice list',protocols='oldbrowse',creator=self.__create_voice,wrecker=self.__wreck_voice,inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
         self.update()
 
     def rpc_displayname(self,arg):
@@ -352,7 +352,7 @@ class VoiceList(collection.Collection):
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         self.domain = piw.clockdomain_ctl()
-        agent.Agent.__init__(self, signature=version,names='drummer',container=(4,'drummer',atom.VerbContainer(clock_domain=self.domain)),protocols='browse',ordinal=ordinal)
+        agent.Agent.__init__(self, signature=version,names='drummer',container=(4,'drummer',atom.VerbContainer(clock_domain=self.domain)),protocols='oldbrowse',ordinal=ordinal)
 
         self.updater = Updater()
         self.loopdb = loopdb.LoopDatabase()
