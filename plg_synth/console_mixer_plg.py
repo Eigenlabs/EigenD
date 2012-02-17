@@ -506,8 +506,7 @@ class Agent(agent.Agent):
 
         self.mixer = piw.consolemixer(self.vol,self.pan,self.clk,self.output.cookie())
 
-        sh=(T('choices',*pan_laws.keys()), T('control','selector'))
-        self[10] = atom.Atom(names='pan curve',domain=domain.String(hints=sh),init='default',policy=atom.default_policy(self.__set_pan))
+        self[10] = atom.Atom(names='pan curve',domain=domain.StringEnum(*sorted(pan_laws.keys())),init='default',policy=atom.default_policy(self.__set_pan))
 
         self.master_controls_input = bundles.ScalarInput(self.mixer.master_controls_cookie(),self.clk,signals=(1,2))
 
