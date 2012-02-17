@@ -24,7 +24,7 @@ pic_files=Split("""
     pic_backtrace.c 
     pic_time.c pic_usb_generic.cpp usb_serial.cpp pic_safeq.cpp
     pic_error.cpp pic_log.cpp pic_fastalloc.cpp pic_power.cpp
-    pic_mlock.cpp pic_fastmark.cpp pic_resources.cpp
+    pic_mlock.cpp pic_resources.cpp
     """)
 
 pic_env = env.Clone()
@@ -36,16 +36,16 @@ if env['IS_MACOSX']:
     pic_files=pic_files+Split('pic_thread_posix.cpp pic_cfrunloop.cpp pic_usb_macosx.cpp pic_tool_macosx.cpp')
     pic_env.Append(LINKFLAGS='-framework CoreServices -framework CoreFoundation -framework IOKit -framework CoreAudio -framework vecLib -framework ApplicationServices')
     pic_env.Append(CCFLAGS='-Wno-unknown-pragmas')
-    pic_env.PiSharedLibrary('pic',pic_files,package='eigend',public=True)
+    pic_env.PiSharedLibrary('pic',pic_files,package='eigend',public=True,locked=True)
 
 if env['IS_LINUX']:
     pic_files=pic_files+Split('pic_thread_posix.cpp pic_usb_linux.cpp pic_tool_linux.cpp')
-    pic_env.PiSharedLibrary('pic',pic_files,package='eigend',public=True)
+    pic_env.PiSharedLibrary('pic',pic_files,package='eigend',public=True,locked=True)
 
 if env['IS_WINDOWS']:
     pic_files=pic_files+Split('pic_thread_win32.cpp pic_usb_win32.cpp pic_winloop.cpp pic_tool_win32.cpp')
     pic_env.Append(LIBS=Split('shell32'))
-    pic_env.PiSharedLibrary('pic',pic_files,libraries=Split('openwindev'),package='eigend',public=True)
+    pic_env.PiSharedLibrary('pic',pic_files,libraries=Split('openwindev'),package='eigend',public=True,locked=True)
 
 pic_pip_env = env.Clone()
 pic_pip_env.PiPipBinding('picross_native',env.Pipfile('picross.pip'),libraries=Split('pic'),package='eigend')

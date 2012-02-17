@@ -36,7 +36,7 @@ pistk_files=Split("""
     Sampler.cpp Moog.cpp Simple.cpp Drummer.cpp Shakers.cpp 
     Modal.cpp ModalBar.cpp BandedWG.cpp Resonate.cpp VoicForm.cpp Phonemes.cpp Whistle.cpp 
     Messager.cpp Skini.cpp MidiFileIn.cpp
-    pistk.cpp stk_fastmark.cpp
+    pistk.cpp
     """)
 
-env.PiPipBinding('stk_native','stk.pip',sources=pistk_files,libraries=Split('pic piw pie pia'),package='eigend',per_agent='plg_stk')
+env.PiPipBinding('stk_native','stk.pip',sources=pistk_files,libraries=Split('pic piw pie pia'),package='eigend',per_agent='plg_stk',locked=True)

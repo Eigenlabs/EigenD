@@ -115,7 +115,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
             root1 = e2.subst('$HDRSTAGEDIR')
             e2.Install(root1,run_exp)
 
-    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True,deffile=None,per_agent=None,public=False):
+    def PiSharedLibrary(self,target,sources,libraries={},package=None,hidden=True,deffile=None,per_agent=None,public=False,locked=False):
         env = self.Clone()
         env.Append(PILIBS=libraries)
         env.Append(CCFLAGS='-DBUILDING_%s' % target.upper())
@@ -704,7 +704,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         return self.Command(target,self.Value(text),action)
 
-    def PiPipBinding(self,module,spec,sources=[],libraries={},package=None,hidden=True,per_agent=None):
+    def PiPipBinding(self,module,spec,sources=[],libraries={},package=None,hidden=True,per_agent=None,locked=True):
         me=self.Dir('.').abspath
 
         inc=' '.join(map(lambda x: '"%s"'% self.Dir(x).abspath,self['CPPPATH']))

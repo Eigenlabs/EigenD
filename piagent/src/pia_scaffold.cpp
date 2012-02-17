@@ -25,7 +25,6 @@
 #include <picross/pic_time.h>
 #include <picross/pic_ref.h>
 #include <picross/pic_safeq.h>
-#include <picross/pic_mlock.h>
 #include "pia_glue.h"
 
 #include <vector>
@@ -114,9 +113,9 @@ namespace
         fastthread_t(unsigned pri,pia::manager_t *m,usage_t *u=0);
         ~fastthread_t();
 
-        bool isfast() PIC_FASTCODE;
-        void service() PIC_FASTCODE;
-        void thread_main() PIC_FASTCODE;
+        bool isfast();
+        void service();
+        void thread_main();
         void start();
         void shutdown(bool w);
         void thread_init();

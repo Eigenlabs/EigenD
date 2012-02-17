@@ -19,5 +19,5 @@
 #
 
 Import('env')
-env.PiSharedLibrary('piarranger',Split('arranger_view.cpp arranger_model.cpp arranger_fastmark.cpp'),libraries=Split('pic piw pie pia'),package='eigend',per_agent='plg_arranger')
+env.PiSharedLibrary('piarranger',Split('arranger_view.cpp arranger_model.cpp'),libraries=Split('pic piw pie pia'),package='eigend',per_agent='plg_arranger',locked=True)
 env.PiPipBinding('arranger_native','arranger.pip',libraries=Split('piarranger pic piw pie pia'),package='eigend',per_agent='plg_arranger')

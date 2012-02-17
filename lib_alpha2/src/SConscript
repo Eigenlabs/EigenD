@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiSharedLibrary('alpha2',Split('alpha2_passive.cpp alpha2_active.cpp alpha2_fastmark.cpp'),libraries=Split('pic'),package='eigend')
+env.PiSharedLibrary('alpha2',Split('alpha2_passive.cpp alpha2_active.cpp'),libraries=Split('pic'),package='eigend',locked=True)
 
 env.PiProgram('a2dump','a2dump.cpp',libraries=Split('pic alpha2'))
 env.PiProgram('audio_test','audio_test.cpp',libraries=Split('pic alpha2'))

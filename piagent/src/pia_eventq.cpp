@@ -25,7 +25,6 @@
 #include <picross/pic_time.h>
 #include <picross/pic_log.h>
 #include <picross/pic_thread.h>
-#include <picross/pic_mlock.h>
 
 /*
  *  Synchronisation.  When a job is cancelled, the guarantee is that

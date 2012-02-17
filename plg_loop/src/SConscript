@@ -20,6 +20,6 @@
 
 Import('env')
 
-loop_src=Split('loop_fastmark.cpp loop_bundle.cpp loop_file.cpp loop_slice.cpp loop_pinger.cpp loop_clicker.cpp')
-env.PiSharedLibrary('piloop',loop_src,libraries=Split('pic piw pie pia pisamplerate'),package='eigend',per_agent='plg_loop')
+loop_src=Split('loop_bundle.cpp loop_file.cpp loop_slice.cpp loop_pinger.cpp loop_clicker.cpp')
+env.PiSharedLibrary('piloop',loop_src,libraries=Split('pic piw pie pia pisamplerate'),package='eigend',per_agent='plg_loop',locked=True)
 env.PiPipBinding('loop_native','loop.pip',libraries=Split('piloop pic piw pie pia pisamplerate'),package='eigend',per_agent='plg_loop')

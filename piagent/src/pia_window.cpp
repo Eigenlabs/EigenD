@@ -26,7 +26,6 @@
 #include <picross/pic_ilist.h>
 #include <picross/pic_flipflop.h>
 #include <picross/pic_log.h>
-#include <picross/pic_mlock.h>
 
 #include <stdlib.h>
 #include <cstring>
@@ -225,7 +224,7 @@ void wnode_t::api_window_title(bct_window_host_ops_t **t_, const char *ti)
     PIA_CATCHLOG_EREF(t->entity_)
 }
 
-PIC_FASTDATA bct_window_host_ops_t wnode_t::dispatch__ =
+bct_window_host_ops_t wnode_t::dispatch__ =
 {
     api_window_close,
     api_window_state,

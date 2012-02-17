@@ -25,7 +25,6 @@
 #include <picross/pic_flipflop.h>
 #include <picross/pic_ilist.h>
 #include <picross/pic_stl.h>
-#include <picross/pic_mlock.h>
 
 #include <list>
 #include <memory>

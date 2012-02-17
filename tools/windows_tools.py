@@ -134,6 +134,8 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         self.Append(LINK=' $LIBMAPPER')
         self.Append(LIBS=Split('shell32'))
 
+        self.Replace(LINKFLAGS_LOCKED=Split("/SECTION:.text,!P /SECTION:.data,!P /SECTION:.rdata,!P /SECTION:.bss,!P /SECTION:.tls,!P"))
+
         if os.environ.get('PI_DEBUGBUILD'):
             self.Append(CCFLAGS=Split('/Zi'))
             self.Append(LINKFLAGS=Split('/DEBUG'))
@@ -614,13 +616,24 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         return env.addlibname(run_library1[0],target)
 
 
-    def PiSharedLibrary(self,target,sources,libraries=[],package=None,hidden=True,deffile=None,per_agent=None,public=False):
+    def PiPipBinding(self,module,spec,locked=False,**kwds):
+        env = self.Clone()
+
+        if locked:
+            env.Append(LINKFLAGS=env.subst('$LINKFLAGS_LOCKED'))
+            
+        return generic_tools.PiGenericEnvironment.PiPipBinding(env,module,spec,**kwds)
+
+    def PiSharedLibrary(self,target,sources,libraries=[],package=None,hidden=True,deffile=None,per_agent=None,public=False,locked=False):
         env = self.Clone()
 
         env.Append(PILIBS=libraries)
         env.Append(CCFLAGS='-DBUILDING_%s' % target.upper())
         env.Replace(SHLIBNAME=target)
         env.Replace(PDB='%s.pdb' % target)
+
+        if locked:
+            env.Append(LINKFLAGS=env.subst('$LINKFLAGS_LOCKED'))
 
         env.set_agent_group(per_agent)
 

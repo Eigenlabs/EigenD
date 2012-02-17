@@ -20,5 +20,5 @@
 
 Import('env')
 
-env.PiSharedLibrary('pipkbdplg',Split('pkbd_bundle.cpp pkbd_fastmark.cpp'),libraries=Split('pic piw pie pia pico'),package='eigend',per_agent='plg_pkbd')
+env.PiSharedLibrary('pipkbdplg',Split('pkbd_bundle.cpp'),libraries=Split('pic piw pie pia pico'),package='eigend',per_agent='plg_pkbd',locked=True)
 env.PiPipBinding('pkbd_native','pkbd.pip',libraries=Split('pipkbdplg pic piw pie pia pico'),package='eigend',per_agent='plg_pkbd')

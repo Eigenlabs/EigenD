@@ -28,7 +28,6 @@
 #include <picross/pic_fastalloc.h>
 #include <picross/pic_thread.h>
 #include <picross/pic_log.h>
-#include <picross/pic_mlock.h>
 
 namespace pic
 {
@@ -38,8 +37,8 @@ namespace pic
     {
         public:
             safeq_t();
-            bool add(void (*cb)(void *, void *, void *, void *), void *ctx1, void *ctx2, void *ctx3, void *ctx4) PIC_FASTCODE;
-            void run() PIC_FASTCODE;
+            bool add(void (*cb)(void *, void *, void *, void *), void *ctx1, void *ctx2, void *ctx3, void *ctx4);
+            void run();
 
         private:
             safe_t * volatile head_;

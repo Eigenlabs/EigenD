@@ -19,7 +19,7 @@
 #
 
 Import('env')
-env.PiSharedLibrary('micro',Split('micro_active.cpp micro_passive.cpp micro_fastmark.cpp'),libraries=Split('pic pico_decoder_1_0_0'),package='eigend')
+env.PiSharedLibrary('micro',Split('micro_active.cpp micro_passive.cpp'),libraries=Split('pic pico_decoder_1_0_0'),package='eigend',locked=True)
 env.PiProgram('microraw','microraw.cpp',libraries=Split('pic micro'))
 env.PiProgram('ustripcal','stripcal.cpp',libraries=Split('pic micro'))
 env.PiPipBinding('micro_native','micro.pip',libraries=Split('pic micro'),package='eigend')

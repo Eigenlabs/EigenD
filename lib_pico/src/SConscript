@@ -20,7 +20,7 @@
 
 Import('env')
 
-env.PiSharedLibrary('pico',Split('pico_active.cpp pico_passive.cpp pico_fastmark.cpp'),libraries=Split('pic pico_decoder_1_0_0'),package='eigend')
+env.PiSharedLibrary('pico',Split('pico_active.cpp pico_passive.cpp'),libraries=Split('pic pico_decoder_1_0_0'),package='eigend',locked=True)
 env.PiProgram('praw','praw.cpp',libraries=Split('pic pico'))
 env.PiProgram('pstripcal','stripcal.cpp',libraries=Split('pic pico'))
 env.PiProgram('picodump','picodump.cpp',libraries=Split('pic pico'))

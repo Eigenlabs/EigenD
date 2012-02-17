@@ -18,7 +18,6 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <picross/pic_mlock.h>
 #include <picross/pic_thread.h>
 
 #ifdef PI_MACOSX
@@ -87,11 +86,9 @@ static void locker__(const struct mach_header* mh, intptr_t slide,const char *se
 
 static void handler__(const struct mach_header* mh, intptr_t slide)
 {
-    if(finder__(mh,slide,"__TEXT","__fastcode",0) || finder__(mh,slide,"__DATA","__fastdata",0))
+    if(finder__(mh,slide,"__DATA","__fastdata",0))
     {
         printf("locking %s\n",name__(mh));
-        locker__(mh,slide,"__TEXT","__fastcode");
-        locker__(mh,slide,"__DATA","__fastdata");
         locker__(mh,slide,"__DATA","__const"); // vtables in here...
         locker__(mh,slide,"__TEXT","__text"); // code in here...
     }

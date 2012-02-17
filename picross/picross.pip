@@ -5,7 +5,6 @@
 #include <picross/pic_error.h>
 #include <picross/pic_platform.h>
 #include <picross/pic_power.h>
-#include <picross/pic_mlock.h>
 #include <picross/pic_table.h>
 #include <picross/pic_time.h>
 #include <picross/pic_resources.h>
