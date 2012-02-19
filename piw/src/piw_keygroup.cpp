@@ -368,7 +368,7 @@ struct piw::modekey_handler_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
 
                 if(mode_col<0 && mode_row<=int(geo.as_tuplelen()))
                 {
-                    mode_col = geo.as_tuple_value(mode_row-1).as_long();
+                    mode_col = geo.as_tuple_value(mode_row-1).as_long() + mode_col + 1;
                 }
 
                 if(int(row)==mode_row && int(col)==mode_col)
