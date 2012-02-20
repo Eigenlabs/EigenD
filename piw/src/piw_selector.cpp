@@ -318,11 +318,20 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
         if(ci!=g.value().end())
         {
             ci->second->state_ = state;
-            if(state) lightswitch_(piw::makelong_nb(ci->first,t));
             ci->second->gate(MODE_RUNNING);
             ci->second->change_status(&statusbuffer_,selecting_);
-            statusbuffer_.send();
         }
+        unsigned light_channel = lightchannel_;
+        for(ci=g.value().begin(); ci!=g.value().end(); ++ci)
+        {
+            if(ci->second->state_)
+            {
+                light_channel = ci->first;
+                break;
+            }
+        }
+        lightswitch_(piw::makelong_nb(light_channel,t));
+        statusbuffer_.send();
     }
 
     void gate_input(unsigned idx, const piw::data_nb_t &d)

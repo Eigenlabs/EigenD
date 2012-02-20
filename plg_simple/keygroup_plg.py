@@ -220,9 +220,11 @@ class Output(atom.Atom):
 
         self[20] = VirtualKey(self.__agent.keygroup_size,self.__agent.key_choice)
 
-        self[23] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='enable')
+        self[23] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='enable',protocols='set',container=(None,'output%d'%self.__slot,self.__agent.verb_container()))
         self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key row', init=None, policy=atom.default_policy(self.__change_key_row))
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key column', init=None, policy=atom.default_policy(self.__change_key_column))
+
+        self[23].add_verb2(1,'set([toggle],~a,role(None,[instance(~self)]))', callback=self.__enable_toggle, status_action=self.__status)
 
         self.koutput = bundles.Splitter(self.__agent.domain,self[2],self[3],self[4],self[22])
         self.s1output = bundles.Splitter(self.__agent.domain,self[5],self[10])
@@ -247,11 +249,23 @@ class Output(atom.Atom):
         return False
 
     def __setstate(self,data):
-        self[23].set_value(data.as_norm()!=0.0)
+        state = (data.as_norm()!=0.0)
+        self[23].set_value(state)
+        self.__set_status(state)
 
     def enable(self,val):
         self.__agent.mode_selector.select(self.__slot,val)
         return True
+    
+    def __enable_toggle(self,subj,prop):
+        self.enable(not self[23].get_value())
+        return action.nosync_return()
+
+    def __status(self,subj,prop):
+        return 'dsc(~(a)"#36","%s")' % self.__slot
+
+    def __set_status(self,active):
+        self.__agent.status_lights.set_status(self.__slot,const.status_active if active else const.status_inactive)
 
     def plumb(self):
         self.unplumb()
@@ -340,7 +354,7 @@ class OutputList(atom.Atom):
             if arg == v.id():
                 v.notify_destroy()
                 del self[k]
-                self.__check_single()
+                self.__outputs_changed()
                 return arg
 
         return async.failure('output not in use')
@@ -360,7 +374,7 @@ class OutputList(atom.Atom):
             v.enable(v[23].get_value())
 
         self.__plumbing = True
-        self.__check_single()
+        self.__outputs_changed()
 
     def __create(self,i):
         return Output(self,i)
@@ -378,7 +392,7 @@ class OutputList(atom.Atom):
         output.plumb()
         self[slot] = output
 
-        self.__check_single()
+        self.__outputs_changed()
 
         return output
 
@@ -413,21 +427,26 @@ class OutputList(atom.Atom):
             if v.id()==oid:
                 v.notify_destroy()
                 del self[k]
-                self.__check_single()
+                self.__outputs_changed()
                 return True
 
         return False
 
     def activate(self,name):
         for k,v in self.items():
-            if v.id()==name:
+            print 'activate',name,k
+            if k==name:
                 self.agent.mode_selector.activate(k)
                 break
 
-    def __check_single(self):
+    def __outputs_changed(self):
+        # check if there's just a single output
         outputs = self.values()
         if len(outputs)==1:
             outputs[0].enable(True)
+
+        # update the size of the status output light buffer
+        self.agent.status_lights.set_size(len(outputs))
 
     def update_status_indexes(self):
         for v in self.values():
@@ -510,6 +529,10 @@ class Agent(agent.Agent):
         modeselection = utils.make_change_nb(piw.slowchange(utils.changify(self.__mode_selection)))
         self.mode_selector = piw.selector(self.light_switch.get_input(250),lightselection,modeselection,250,False)
 
+        self[36] = bundles.Output(1,False,names='status output')
+        self.status_output = bundles.Splitter(self.domain, self[36])
+        self.status_lights = piw.lightsource(piw.change_nb(), 0, self.status_output.cookie())
+
         self.modepulse = piw.changelist_nb()
         piw.changelist_connect_nb(self.modepulse,self.status_buffer.blinker())
         piw.changelist_connect_nb(self.modepulse,self.mode_selector.mode_input())
@@ -529,18 +552,18 @@ class Agent(agent.Agent):
         self.add_verb2(7,'choose([],None,role(None,[matches([key])]),option(as,[numeric]))',self.__choose)
         self.add_verb2(11,'choose([un],None)',self.__unchoose)
         
-        self.add_verb2(8,'set([],None,role(None,[tagged_ideal([~server,course],[offset])]),role(to,[mass([semitone])]))',callback=self.__set_course_semi)
-        self.add_verb2(9,'set([],None,role(None,[tagged_ideal([~server,course],[offset])]),role(to,[mass([interval])]))',callback=self.__set_course_int)
+        self.add_verb2(8,'set([],None,role(None,[tagged_ideal([~server,course],[offset])]),role(to,[mass([semitone])]))', callback=self.__set_course_semi)
+        self.add_verb2(9,'set([],None,role(None,[tagged_ideal([~server,course],[offset])]),role(to,[mass([interval])]))', callback=self.__set_course_int)
 
-        self.add_verb2(12,'clear([],None,role(None,[matches([musical])]))',self.__musicalclear)
-        self.add_verb2(16,'clear([],None,role(None,[mass([course])]))',self.__courseclear)
-        self.add_verb2(17,'clear([],None,role(None,[matches([physical])]))',self.__physicalclear)
-        self.add_verb2(18,'clear([],None,role(None,[mass([row])]))',self.__rowclear)
+        self.add_verb2(12,'clear([],None,role(None,[matches([musical])]))', callback=self.__musicalclear)
+        self.add_verb2(16,'clear([],None,role(None,[mass([course])]))', callback=self.__courseclear)
+        self.add_verb2(17,'clear([],None,role(None,[matches([physical])]))', callback=self.__physicalclear)
+        self.add_verb2(18,'clear([],None,role(None,[mass([row])]))', callback=self.__rowclear)
 
-        self.add_verb2(13,'add([],None,role(None,[coord(physical,[row],[column])]),role(to,[coord(physical,[row],[column])]))',self.__kadd_physical)
-        self.add_verb2(14,'add([],None,role(None,[coord(musical,[key],[course])]),role(to,[coord(musical,[key],[course])]))',self.__kadd_musical)
+        self.add_verb2(13,'add([],None,role(None,[coord(physical,[row],[column])]),role(to,[coord(physical,[row],[column])]))', callback=self.__kadd_physical)
+        self.add_verb2(14,'add([],None,role(None,[coord(musical,[key],[course])]),role(to,[coord(musical,[key],[course])]))', callback=self.__kadd_musical)
 
-        self.add_verb2(15,'choose([],None,role(None,[mass([output])]))', self.__ochoose)
+        self.add_verb2(15,'choose([],None,role(None,[mass([output])]))', callback=self.__ochoose, status_action=self.__ostatus)
 
         self[9] = atom.Atom(domain=domain.BoundedFloatOrNull(-20,20),init=None,policy=atom.default_policy(self.__change_base),names='base note')
 
@@ -762,6 +785,10 @@ class Agent(agent.Agent):
     def __ochoose(self,subj,name):
         name = int(action.abstract_wordlist(name)[0])
         self[1].activate(name)
+
+    def __ostatus(self,subj,name):
+        name = int(action.abstract_wordlist(name)[0])
+        return 'dsc(~(a)"#36","%s")' % name
 
     def __create(self,subj,name):
         name = int(action.abstract_wordlist(name)[0])
