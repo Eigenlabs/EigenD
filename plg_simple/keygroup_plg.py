@@ -446,7 +446,7 @@ class OutputList(atom.Atom):
             outputs[0].enable(True)
 
         # update the size of the status output light buffer
-        self.agent.status_lights.set_size(len(outputs))
+        self.agent.status_lights.set_size(max(self.keys()))
 
     def update_status_indexes(self):
         for v in self.values():
