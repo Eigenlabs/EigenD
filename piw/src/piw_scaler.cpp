@@ -337,7 +337,7 @@ namespace
                             for(unsigned k=0; k<b.layout->length(c); k++)
                             {
                                 l->offsets(c,key_offset,note_offset);
-                                if(0 == (k+int(key_offset+m))%scale_size)
+                                if(0 == abs(k+int(key_offset+m))%scale_size)
                                 {
                                     piw::statusdata_t statusdata = piw::statusdata_t(true,c+1,k+1);
                                     status.insert(std::make_pair(statusdata,1));
@@ -460,6 +460,11 @@ namespace
             override_=false;
         }
 
+        ~sfunc_t()
+        {
+            scale_data_.clear();
+        }
+
         void setkbend(const piw::data_nb_t &v)
         {
             kbend_=v.as_renorm_float(-1,1,0);
@@ -575,18 +580,23 @@ namespace
 
         void setscale(const piw::data_nb_t &d)
         {
-            if(d.is_string())
+            if(scale_data_.is_empty() || scale_data_.get().compare(d) != 0)
             {
-                scale_ = pic::ref(new piw::scaler_controller_t::scale_t(d.as_string()));
-            }
-            else if(!d.is_null())
-            {
-                unsigned n = (unsigned)(fabsf(d.as_norm())*parent_->controller_->common_scale_count());
-                scale_ = parent_->controller_->common_scale_at(n);
-            }
+                scale_data_.set_nb(d);
 
-            time_ = std::max(time_,d.time());
-            update_lights(id_);
+                if(d.is_string())
+                {
+                    scale_ = pic::ref(new piw::scaler_controller_t::scale_t(d.as_string()));
+                }
+                else if(!d.is_null())
+                {
+                    unsigned n = (unsigned)(fabsf(d.as_norm())*parent_->controller_->common_scale_count());
+                    scale_ = parent_->controller_->common_scale_at(n);
+                }
+
+                time_ = std::max(time_,d.time());
+                update_lights(id_);
+            }
         }
 
         void setroctave(const piw::data_nb_t &d)
@@ -762,6 +772,7 @@ namespace
         float roctave_;
         float mode_;
         piw::scaler_controller_t::sref_t scale_;
+        piw::dataholder_nb_t scale_data_;
         bool override_;
 
         float krange_,grange_;
