@@ -334,7 +334,7 @@ namespace
 
                         for(unsigned c=0; c<b.layout->courses(); c++)
                         {
-                            for(int k=0; k<b.layout->length(c); k++)
+                            for(int k=0; k<int(b.layout->length(c)); k++)
                             {
                                 l->offsets(c,key_offset,note_offset);
                                 if(0 == abs(k+int(key_offset+m))%scale_size)
