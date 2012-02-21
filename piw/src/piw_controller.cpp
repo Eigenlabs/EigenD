@@ -65,13 +65,14 @@ namespace
         return 0;
     }
 
-    static bool compare_phys_key(const piw::data_nb_t &k1, const piw::data_nb_t &k2)
+    static bool compare_phys_key(const piw::data_nb_t &k1, const piw::data_nb_t &k2, bool accept_lightpress)
     {
-        unsigned k1n; float k1r,k1c;
+        unsigned k1n; float k1r,k1c; piw::hardness_t k1h;
         unsigned k2n; float k2r,k2c;
 
-        if(!piw::decode_key(k1,&k1n,&k1r,&k1c)) return false;
-        if(!piw::decode_key(k2,&k2n,&k2r,&k2c)) return false;
+        if(!piw::decode_key(k1,&k1n,&k1r,&k1c,0,0,0,&k1h)) return false;
+        if(!accept_lightpress && k1h == piw::KEY_LIGHT) return false;
+        if(!piw::decode_key(k2,&k2n,&k2r,&k2c)) return true;
         if(k1n!=k2n) return false;
         if(k1r!=k2r) return false;
         if(k1c!=k2c) return false;
@@ -500,7 +501,7 @@ void ctlfilter_t::ufilterfunc_data(piw::ufilterenv_t *env,unsigned s,const piw::
 
         if(s==1)
         {
-            if(!compare_phys_key(d,current_key_.get()))
+            if(!compare_phys_key(d,current_key_.get(),false))
             {
                 current_key_.set_nb(d);
                 changed=true;
