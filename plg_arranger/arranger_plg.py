@@ -68,6 +68,9 @@ class RowTarget(collection.Collection):
     def __wreck(self,k,v):
         self.agent.update()
 
+    def rpc_instancename(self,a):
+        return 'action'
+
     @async.coroutine('internal error')
     def instance_create(self,name):
         e = RowTargetEvent(self,self.__fastdata,name)
