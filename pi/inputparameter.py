@@ -42,7 +42,7 @@ class Parameter(atom.Atom):
         self.__input = bundles.VectorInput(self.__delegate.parameter_input(k),clockdomain,signals=(1,))
         self.__index = k
         atom.Atom.__init__(self,domain=domain.Aniso(),policy=self.__input.vector_policy(1,False),
-                            names='parameter',protocols='input explicit',ordinal=k)
+                            names='parameter',protocols='input',ordinal=k)
         self.__delegate.parameter_name_changed(self.__index)
 
     def property_change(self,key,value,delegate):
