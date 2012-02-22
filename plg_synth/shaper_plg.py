@@ -26,27 +26,26 @@ class Agent(agent.Agent):
     def __init__(self,address, ordinal):
         agent.Agent.__init__(self,signature=version,names='shaper',ordinal=ordinal)
 
-        self[2] = atom.Atom(names='outputs')
-        self[2][2] = bundles.Output(2,False,names='pressure output')
+        self[3] = bundles.Output(1,False,names='output')
 
         self.domain = piw.clockdomain_ctl()
-        self.output = bundles.Splitter(self.domain,*self[2].values())
+        self.output = bundles.Splitter(self.domain,self[3])
 
         Z = piw.makefloat_bounded(1,0,0,0,0)
 
-        self.compress = piw.function1(False,2,2,Z,self.output.cookie())
+        self.compress = piw.function1(False,1,1,Z,self.output.cookie())
         self.compress.set_functor(synth_native.compressor(0))
 
-        self.sharpen = piw.function1(False,2,2,Z,self.compress.cookie())
+        self.sharpen = piw.function1(False,1,1,Z,self.compress.cookie())
         self.sharpen.set_functor(synth_native.sharpener(0))
 
-        self.input = bundles.VectorInput(self.sharpen.cookie(), self.domain,signals=(2,))
+        self.input = bundles.VectorInput(self.sharpen.cookie(), self.domain,signals=(1,))
 
-        self[1] = atom.Atom(names='inputs')
-        self[1][2]=atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input.vector_policy(2,False), names='pressure input')
+        self[2] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input.vector_policy(1,False), names='input')
 
-        self[1][3]=atom.Atom(domain=domain.BoundedFloat(0,1),names="compression",policy=atom.default_policy(self.__compression))
-        self[1][4]=atom.Atom(domain=domain.BoundedFloat(0,1),names="sharpness",policy=atom.default_policy(self.__sharpness))
+        self[1] = atom.Atom(names='controls')
+        self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1),names="compression",policy=atom.default_policy(self.__compression))
+        self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,1),names="sharpness",policy=atom.default_policy(self.__sharpness))
 
     def __sharpness(self,v):
         self.sharpen.set_functor(synth_native.sharpener(v))
