@@ -365,21 +365,20 @@ def name_subst(name,find,repl):
         oname.append(w)
     return ' '.join(oname)
 
-class AuxOutput(bundles.Output):
-    def __init__(self,callback,*args,**kwds):
+class RecorderOutput(bundles.Output):
+    def __init__(self,linked,callback,*args,**kwds):
+        self.__linked = linked
         self.__callback = callback
         bundles.Output.__init__(self,*args,**kwds)
 
-    def cordinal(self):
-        return self.get_property_long('cordinal')
-
     def property_change(self,key,value,delegate):
         if key == 'name':
-            value = piw.makestring(name_subst(value.as_string(),'output','input'),0)
-            self.__callback(self.cordinal(),True,value)
+            if value is not None and value.is_string():
+                value = piw.makestring(name_subst(value.as_string(),'output','input'),0)
+            self.__callback(self.__linked,True,value)
 
         if key == 'ordinal':
-            self.__callback(self.cordinal(),False,value)
+            self.__callback(self.__linked,False,value)
 
     def callback(self,isname,value):
         if isname:
@@ -388,23 +387,21 @@ class AuxOutput(bundles.Output):
             self.set_ordinal(value)
 
 
-class AuxInput(atom.Atom):
-    def __init__(self,callback,*args,**kwds):
+class RecorderInput(atom.Atom):
+    def __init__(self,linked,callback,*args,**kwds):
+        self.__linked = linked
         self.__callback = callback
         atom.Atom.__init__(self,*args,**kwds)
-
-    def cordinal(self):
-        return self.get_property_long('cordinal')
 
     def callback(self,isname,value):
         self.set_property('name' if isname else 'ordinal',value,notify=False,allow_veto=False)
 
     def set_ordinal(self,value):
-        self.__callback(self.cordinal(),False,value)
+        self.__callback(self.__linked,False,value)
 
     def set_names(self,value):
         value = name_subst(value,'input','output')
-        self.__callback(self.cordinal(),True,value)
+        self.__callback(self.__linked,True,value)
 
     def property_veto(self,key,value):
         if atom.Atom.property_veto(self,key,value):
@@ -418,27 +415,30 @@ class Agent(agent.Agent):
         agent.Agent.__init__(self, signature=version, names='recorder', protocols='bind',container=(3,'agent',atom.VerbContainer(clock_domain=self.domain)),ordinal=ordinal)
 
         def output_link(ordinal,*args,**kwds):
-            self[2][ordinal+4].callback(*args,**kwds)
+            self[2][ordinal].callback(*args,**kwds)
 
         def input_link(ordinal,*args,**kwds):
-            self[1][ordinal+4].callback(*args,**kwds)
+            self[1][ordinal].callback(*args,**kwds)
 
 
         self[2] = atom.Atom(names='outputs')
-        self[2][2] = bundles.Output(2,False,names='pressure output', protocols='')
-        self[2][3] = bundles.Output(3,False,names='roll output', protocols='')
-        self[2][4] = bundles.Output(4,False,names='yaw output', protocols='')
-        self[2][15] = bundles.Output(5,False,names='key output', protocols='')
-        self[2][5] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=1, protocols='')
-        self[2][6] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=2, protocols='')
-        self[2][7] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=3, protocols='')
-        self[2][8] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=4, protocols='')
-        self[2][9] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=5, protocols='')
-        self[2][10] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=6, protocols='')
-        self[2][11] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=7, protocols='')
-        self[2][12] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=8, protocols='')
-        self[2][13] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=9, protocols='')
-        self[2][14] = AuxOutput(input_link,1,False,names='auxilliary output', ordinal=10, protocols='')
+
+        self[2][2] = RecorderOutput(2,input_link,2,False,names='pressure output', protocols='')
+        self[2][3] = RecorderOutput(3,input_link,3,False,names='roll output', protocols='')
+        self[2][4] = RecorderOutput(4,input_link,4,False,names='yaw output', protocols='')
+        self[2][15] = RecorderOutput(19,input_link,5,False,names='key output', protocols='')
+
+        self[2][5] = RecorderOutput(5,input_link,1,False,names='auxilliary output', ordinal=1, protocols='')
+        self[2][6] = RecorderOutput(6,input_link,1,False,names='auxilliary output', ordinal=2, protocols='')
+        self[2][7] = RecorderOutput(7,input_link,1,False,names='auxilliary output', ordinal=3, protocols='')
+        self[2][8] = RecorderOutput(8,input_link,1,False,names='auxilliary output', ordinal=4, protocols='')
+        self[2][9] = RecorderOutput(9,input_link,1,False,names='auxilliary output', ordinal=5, protocols='')
+        self[2][10] = RecorderOutput(10,input_link,1,False,names='auxilliary output', ordinal=6, protocols='')
+        self[2][11] = RecorderOutput(11,input_link,1,False,names='auxilliary output', ordinal=7, protocols='')
+        self[2][12] = RecorderOutput(12,input_link,1,False,names='auxilliary output', ordinal=8, protocols='')
+        self[2][13] = RecorderOutput(13,input_link,1,False,names='auxilliary output', ordinal=9, protocols='')
+        self[2][14] = RecorderOutput(14,input_link,1,False,names='auxilliary output', ordinal=10, protocols='')
+        self[2][16] = RecorderOutput(15,input_link,1,False,names='controller output', protocols='')
 
         self.output_data = bundles.Splitter(self.domain,self[2][2],self[2][3],self[2][4],self[2][15])
         self.output_aux1 = bundles.Splitter(self.domain,self[2][5])
@@ -451,6 +451,7 @@ class Agent(agent.Agent):
         self.output_aux8 = bundles.Splitter(self.domain,self[2][12])
         self.output_aux9 = bundles.Splitter(self.domain,self[2][13])
         self.output_aux10 = bundles.Splitter(self.domain,self[2][14])
+        self.output_controller = bundles.Splitter(self.domain,self[2][16])
 
         self.poly_data = piw.polyctl(poly_data_initial,self.output_data.cookie(),False,poly_data_headroom)
         self.poly_aux1 = piw.polyctl(poly_aux_initial,self.output_aux1.cookie(),False,poly_aux_headroom)
@@ -463,6 +464,7 @@ class Agent(agent.Agent):
         self.poly_aux8 = piw.polyctl(poly_aux_initial,self.output_aux8.cookie(),False,poly_aux_headroom)
         self.poly_aux9 = piw.polyctl(poly_aux_initial,self.output_aux9.cookie(),False,poly_aux_headroom)
         self.poly_aux10 = piw.polyctl(poly_aux_initial,self.output_aux10.cookie(),False,poly_aux_headroom)
+        self.poly_controller = piw.polyctl(poly_aux_initial,self.output_controller.cookie(),False,poly_aux_headroom)
 
         self.output_clone = piw.clone(True)
         self.output_clone.set_filtered_output(2,self.poly_data.cookie(),piw.event_deaggregation_filter2(2,100))
@@ -476,6 +478,7 @@ class Agent(agent.Agent):
         self.output_clone.set_filtered_output(10,self.poly_aux8.cookie(),piw.event_deaggregation_filter(10))
         self.output_clone.set_filtered_output(11,self.poly_aux9.cookie(),piw.event_deaggregation_filter(11))
         self.output_clone.set_filtered_output(12,self.poly_aux10.cookie(),piw.event_deaggregation_filter(12))
+        self.output_clone.set_filtered_output(13,self.poly_controller.cookie(),piw.event_deaggregation_filter(13))
 
         self.output_aggregator = piw.aggregator(self.output_clone.cookie(), self.domain)
 
@@ -505,24 +508,26 @@ class Agent(agent.Agent):
         self.input_aux8 = bundles.VectorInput(self.input_aggregator.get_filtered_output(10,piw.event_aggregation_filter(10)), self.domain, signals=(1,))
         self.input_aux9 = bundles.VectorInput(self.input_aggregator.get_filtered_output(11,piw.event_aggregation_filter(11)), self.domain, signals=(1,))
         self.input_aux10 = bundles.VectorInput(self.input_aggregator.get_filtered_output(12,piw.event_aggregation_filter(12)), self.domain, signals=(1,))
+        self.input_controller = bundles.VectorInput(self.input_aggregator.get_filtered_output(13,piw.event_aggregation_filter(13)), self.domain, signals=(1,))
 
         self[1] = atom.Atom(names='inputs')
 
-        self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.input_data.vector_policy(2,False),names='pressure input')
-        self[1][3]=atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input_data.vector_policy(3,False),names='roll input')
-        self[1][4]=atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input_data.vector_policy(4,False),names='yaw input')
-        self[1][19]=atom.Atom(domain=domain.Aniso(), policy=self.input_data.vector_policy(5,False),names='key input')
+        self[1][2]=RecorderInput(2,output_link,domain=domain.BoundedFloat(0,1), policy=self.input_data.vector_policy(2,False),names='pressure input')
+        self[1][3]=RecorderInput(3,output_link,domain=domain.BoundedFloat(-1,1), policy=self.input_data.vector_policy(3,False),names='roll input')
+        self[1][4]=RecorderInput(4,output_link,domain=domain.BoundedFloat(-1,1), policy=self.input_data.vector_policy(4,False),names='yaw input')
+        self[1][19]=RecorderInput(15,output_link,domain=domain.Aniso(), policy=self.input_data.vector_policy(5,False),names='key input')
 
-        self[1][5]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux1.vector_policy(1,False),names='auxilliary input', ordinal=1)
-        self[1][6]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux2.vector_policy(1,False),names='auxilliary input', ordinal=2)
-        self[1][7]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux3.vector_policy(1,False),names='auxilliary input', ordinal=3)
-        self[1][8]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux4.vector_policy(1,False),names='auxilliary input', ordinal=4)
-        self[1][9]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux5.vector_policy(1,False),names='auxilliary input', ordinal=5)
-        self[1][10]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux6.vector_policy(1,False),names='auxilliary input', ordinal=6)
-        self[1][11]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux7.vector_policy(1,False),names='auxilliary input', ordinal=7)
-        self[1][12]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux8.vector_policy(1,False),names='auxilliary input', ordinal=8)
-        self[1][13]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux9.vector_policy(1,False),names='auxilliary input', ordinal=9)
-        self[1][14]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux10.vector_policy(1,False),names='auxilliary input', ordinal=10)
+        self[1][5]=RecorderInput(5,output_link,domain=domain.Aniso(), policy=self.input_aux1.vector_policy(1,False),names='auxilliary input', ordinal=1)
+        self[1][6]=RecorderInput(6,output_link,domain=domain.Aniso(), policy=self.input_aux2.vector_policy(1,False),names='auxilliary input', ordinal=2)
+        self[1][7]=RecorderInput(7,output_link,domain=domain.Aniso(), policy=self.input_aux3.vector_policy(1,False),names='auxilliary input', ordinal=3)
+        self[1][8]=RecorderInput(8,output_link,domain=domain.Aniso(), policy=self.input_aux4.vector_policy(1,False),names='auxilliary input', ordinal=4)
+        self[1][9]=RecorderInput(9,output_link,domain=domain.Aniso(), policy=self.input_aux5.vector_policy(1,False),names='auxilliary input', ordinal=5)
+        self[1][10]=RecorderInput(10,output_link,domain=domain.Aniso(), policy=self.input_aux6.vector_policy(1,False),names='auxilliary input', ordinal=6)
+        self[1][11]=RecorderInput(11,output_link,domain=domain.Aniso(), policy=self.input_aux7.vector_policy(1,False),names='auxilliary input', ordinal=7)
+        self[1][12]=RecorderInput(12,output_link,domain=domain.Aniso(), policy=self.input_aux8.vector_policy(1,False),names='auxilliary input', ordinal=8)
+        self[1][13]=RecorderInput(13,output_link,domain=domain.Aniso(), policy=self.input_aux9.vector_policy(1,False),names='auxilliary input', ordinal=9)
+        self[1][14]=RecorderInput(14,output_link,domain=domain.Aniso(), policy=self.input_aux10.vector_policy(1,False),names='auxilliary input', ordinal=10)
+        self[1][15]=RecorderInput(16,output_link,domain=domain.Aniso(), policy=self.input_controller.vector_policy(1,False),names='controller input')
 
         self[1][16]=atom.Atom(domain=domain.BoundedFloat(0,10000000), policy=self.input_clock.nodefault_policy(1,False),names='song beat input')
         self[1][17]=atom.Atom(domain=domain.BoundedFloat(0,100), policy=self.input_clock.nodefault_policy(2,False),names='bar beat input')
