@@ -39,11 +39,11 @@ unsigned count = 0;
  * for different sampling frequencies
  */
 // Fs=44.1kHz
-const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_coeffs_44_[] =
+const StkFloat Clarinet2 :: refl_filt_coeffs_44_[] =
 {-0.06734822596636, 1, 1.60866845795955, 0.79033697044981, -0.00843592161383, -0.75860644369670};
-const PIC_FASTCODE StkFloat Clarinet2 :: tran_filt_coeffs_44_[] =
+const StkFloat Clarinet2 :: tran_filt_coeffs_44_[] =
 {-0.834797947580800, 1, -1.996950273367395, 0.996978312332094, -1.706660482696107, 0.707131817477271};
-const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_delay_44_[] =
+const StkFloat Clarinet2 :: refl_filt_delay_44_[] =
 {
     7.487356, 7.476225, 7.443184, 7.389260,
     7.316061, 7.225639, 7.120338, 7.002632,
@@ -56,11 +56,11 @@ const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_delay_44_[] =
 };
 
 // Fs=48kHz
-const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_coeffs_48_[] =
+const StkFloat Clarinet2 :: refl_filt_coeffs_48_[] =
 {-0.068578, 0.971461, 1.381875, 0.775549, -0.023429, -0.761997};
-const PIC_FASTCODE StkFloat Clarinet2 :: tran_filt_coeffs_48_[] =
+const StkFloat Clarinet2 :: tran_filt_coeffs_48_[] =
 {-0.855676, 1.006699, -0.048772, -0.954681, 0.207889, -0.682685};
-const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_delay_48_[] =
+const StkFloat Clarinet2 :: refl_filt_delay_48_[] =
 {
     8.149023, 8.136914, 8.100971, 8.042311,
     7.962681, 7.864315, 7.749760, 7.621709,
@@ -73,11 +73,11 @@ const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_delay_48_[] =
 };
 
 // Fs=88.2kHz
-const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_coeffs_88_[] =
+const StkFloat Clarinet2 :: refl_filt_coeffs_88_[] =
 {-0.068858, 1.056762, -0.334089, 0.880915, -0.256545, -0.633035};
-const PIC_FASTCODE StkFloat Clarinet2 :: tran_filt_coeffs_88_[] =
+const StkFloat Clarinet2 :: tran_filt_coeffs_88_[] =
 {-0.854894, 1.000282, -0.006795, -0.991790, -0.006052, -0.703029};
-const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_delay_88_[] =
+const StkFloat Clarinet2 :: refl_filt_delay_88_[] =
 {
     14.679654, 14.658770, 14.596752, 14.495450,
     14.357766, 14.187421, 13.988681, 13.766078,
@@ -90,11 +90,11 @@ const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_delay_88_[] =
 };
 
 // Fs=96kHz
-const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_coeffs_96_[] =
+const StkFloat Clarinet2 :: refl_filt_coeffs_96_[] =
 {-0.068918, 1.091212, -0.562248, 0.916703, -0.301445, -0.598922};
-const PIC_FASTCODE StkFloat Clarinet2 :: tran_filt_coeffs_96_[] =
+const StkFloat Clarinet2 :: tran_filt_coeffs_96_[] =
 {-0.854896, 0.994176, -0.007765, -0.984857, -0.042281, -0.691886};
-const PIC_FASTCODE StkFloat Clarinet2 :: refl_filt_delay_96_[] =
+const StkFloat Clarinet2 :: refl_filt_delay_96_[] =
 {
     15.927466, 15.904965, 15.838140, 15.728971,
     15.580566, 15.396913, 15.182584, 14.942445,

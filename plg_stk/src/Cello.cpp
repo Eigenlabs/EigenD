@@ -37,7 +37,7 @@
 #define CELLO_LOWER_FADE 5
 
 /*
-const PIC_FASTCODE StkFloat Cello :: delay_compensation_44_[][2] =
+const StkFloat Cello :: delay_compensation_44_[][2] =
 {
         {1046.502319, -3.66},        { 987.766602, -3.95},        { 880.000000, -4.19},        { 783.990845, -3.54},
         { 698.456482, -4.01},        { 659.255127, -4.24},        { 587.329529, -4.54},        { 523.251160, -4.66},
@@ -49,7 +49,7 @@ const PIC_FASTCODE StkFloat Cello :: delay_compensation_44_[][2] =
         {  65.406395, -7.43}
 };
 
-const PIC_FASTCODE StkFloat Cello :: delay_compensation_48_[][2] =
+const StkFloat Cello :: delay_compensation_48_[][2] =
 {
         {1046.502319, -3.63},        { 987.766602, -3.85},        { 880.000000, -4.13},        { 783.990845, -3.57},
         { 698.456482, -4.05},        { 659.255127, -4.28},        { 587.329529, -4.57},        { 523.251160, -4.67},
@@ -61,7 +61,7 @@ const PIC_FASTCODE StkFloat Cello :: delay_compensation_48_[][2] =
         {  65.406395, -7.72}
 };
 
-const PIC_FASTCODE StkFloat Cello :: delay_compensation_96_[][2] =
+const StkFloat Cello :: delay_compensation_96_[][2] =
 {
         {1046.502319, -3.62},        { 987.766602, -3.87},        { 880.000000, -2.34},        { 783.990845, -3.47},
         { 698.456482, -4.44},        { 659.255127, -4.79},        { 587.329529, -5.16},        { 523.251160, -4.41},
@@ -74,7 +74,7 @@ const PIC_FASTCODE StkFloat Cello :: delay_compensation_96_[][2] =
 };
 */
 
-const PIC_FASTCODE StkFloat Cello :: delay_compensation_44_[][2] =
+const StkFloat Cello :: delay_compensation_44_[][2] =
 {
         {1046.5023,    -4.09},       { 987.7666,    -4.20},       { 880.0000,    -4.17},       { 783.9908,    -4.24},
         { 698.4565,    -4.08},       { 659.2551,    -4.08},       { 587.3295,    -4.30},       { 523.2512,    -4.24},
@@ -86,7 +86,7 @@ const PIC_FASTCODE StkFloat Cello :: delay_compensation_44_[][2] =
         {  65.4064,    -7.25}
 };
 
-const PIC_FASTCODE StkFloat Cello :: delay_compensation_48_[][2] =
+const StkFloat Cello :: delay_compensation_48_[][2] =
 {
         {1046.5023,    -4.27},       { 987.7666,    -4.25},       { 880.0000,    -4.25},       { 783.9908,    -4.25},
         { 698.4565,    -4.25},       { 659.2551,    -4.35},       { 587.3295,    -4.35},       { 523.2512,    -4.35},
@@ -98,7 +98,7 @@ const PIC_FASTCODE StkFloat Cello :: delay_compensation_48_[][2] =
         {  65.4064,    -7.57},
 };
 
-const PIC_FASTCODE StkFloat Cello :: delay_compensation_96_[][2] =
+const StkFloat Cello :: delay_compensation_96_[][2] =
 {
         {1046.5023,    -4.53},       { 987.7666,    -4.72},       { 880.0000,    -4.19},       { 783.9908,    -4.61},
         { 698.4565,    -4.61},       { 659.2551,    -4.51},       { 587.3295,    -4.51},       { 523.2512,    -4.77},

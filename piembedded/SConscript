@@ -22,7 +22,7 @@ Import('env')
 
 pie_files=Split("""
     pie_message_impl.c pie_parse_impl.c pie_print_impl.c
-    pie_string_impl.c pie_wire_impl.c pie_fastmark.c
+    pie_string_impl.c pie_wire_impl.c
     """)
 
-env.PiSharedLibrary('pie',pie_files,package='eigend')
+env.PiSharedLibrary('pie',pie_files,package='eigend',locked=True)

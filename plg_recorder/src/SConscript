@@ -20,5 +20,5 @@
 
 Import('env')
 
-env.PiSharedLibrary('pirecorder',Split('rec_fastmark.cpp rec_recording.cpp rec_recorder.cpp rec_player.cpp rec_nplayer.cpp'),libraries=Split('pic piw pie pia'),package='eigend',per_agent='plg_recorder')
+env.PiSharedLibrary('pirecorder',Split('rec_recording.cpp rec_recorder.cpp rec_player.cpp rec_nplayer.cpp'),libraries=Split('pic piw pie pia'),package='eigend',per_agent='plg_recorder',locked=True)
 env.PiPipBinding('recorder_native','recorder.pip',libraries=Split('pirecorder pic piw pie pia'),package='eigend',per_agent='plg_recorder')

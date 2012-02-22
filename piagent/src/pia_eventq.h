@@ -22,7 +22,6 @@
 
 #include <picross/pic_nocopy.h>
 #include <picross/pic_ref.h>
-#include <picross/pic_mlock.h>
 
 #include "pia_data.h"
 

@@ -129,12 +129,6 @@ static float gaintable__[199] = {
     0.293488, 0.291931, 0.290375, 0.288818, 0.287262, 0.285736, 0.284241, 0.282715, 0.28125, 0.279755,
     0.27829, 0.276825, 0.275391, 0.273956, 0.272552, 0.271118, 0.269745, 0.268341, 0.266968, 0.265594,
     0.264252, 0.262909, 0.261566, 0.260223, 0.258911, 0.257599, 0.256317, 0.255035, 0.25375 };
-#include <picross/pic_config.h>
-#ifndef PI_WINDOWS
-static pic::lckarray_t<float,199> locker__(gaintable__);
-#else
-#pragma message ("warning: gain table not mlocked on windows")
-#endif
 
 static inline float __interp(float r, float a, float b)
 {

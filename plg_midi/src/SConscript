@@ -29,5 +29,5 @@ plg_libs=Split("""
     pic piw pie pia juce midilib
 """)
 
-env.PiSharedLibrary('pimidi',plg_files,plg_libs,package='eigend',per_agent='plg_midi')
+env.PiSharedLibrary('pimidi',plg_files,libraries=plg_libs,package='eigend',per_agent='plg_midi')
 env.PiPipBinding('midi_native','midi.pip',libraries=Split('pimidi')+plg_libs,package='eigend',per_agent='plg_midi')

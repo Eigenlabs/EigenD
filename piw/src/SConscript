@@ -34,7 +34,7 @@ piw_files=Split("""
     piw_throttler.cpp piw_connector.cpp piw_backend.cpp piw_multiplexer.cpp
     piw_sample.cpp piw_scheduler.cpp piw_monomixer.cpp piw_capture.cpp piw_stringer.cpp
     piw_ufilter.cpp piw_stereomixer.cpp piw_evtdump.cpp piw_cycler.cpp piw_window.cpp
-    piw_polyctl.cpp piw_correlator.cpp piw_cfilter.cpp piw_phase.cpp piw_fastmark.cpp
+    piw_polyctl.cpp piw_correlator.cpp piw_cfilter.cpp piw_phase.cpp
     piw_dataqueue.cpp piw_wavrecorder.cpp piw_consolemixer.cpp piw_ranger.cpp
     piw_termparse.cpp piw_state.cpp piw_strummer.cpp piw_talker.cpp
     piw_lightconvertor.cpp piw_statusbuffer.cpp piw_statusmixer.cpp piw_statusledconvertor.cpp
@@ -46,6 +46,6 @@ piw_env=env.Clone()
 if piw_env['IS_MACOSX']:
     piw_env.Append(LINKFLAGS='-framework vecLib')
 
-piw_env.PiSharedLibrary('piw',piw_files,libraries=Split('pia pic pie pisamplerate'),package='eigend',public=True)
+piw_env.PiSharedLibrary('piw',piw_files,libraries=Split('pia pic pie pisamplerate'),package='eigend',public=True,locked=True)
 
 env.PiPipBinding('piw_native',env.Pipfile('piw.pip'),libraries=Split('pic piw pia pie'),package='eigend')

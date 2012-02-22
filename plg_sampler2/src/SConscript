@@ -20,5 +20,5 @@
 
 Import('env')
 
-env.PiSharedLibrary('pisampler2',Split('smp_loader.cpp smp_player.cpp smp_fastmark.cpp'),libraries=Split('piw pie pia pic'),package='eigend',per_agent='plg_sampler2')
+env.PiSharedLibrary('pisampler2',Split('smp_loader.cpp smp_player.cpp'),libraries=Split('piw pie pia pic'),package='eigend',per_agent='plg_sampler2',locked=True)
 env.PiPipBinding('sampler2_native','sampler2.pip',libraries=Split('pisampler2 piw pie pia pic'),package='eigend',per_agent='plg_sampler2')

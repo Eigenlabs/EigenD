@@ -22,5 +22,5 @@ Import('env')
 
 #env.Append(CCFLAGS='-F/System/Library/PrivateFrameworks')
 #env.Append(LINKFLAGS='-F/System/Library/PrivateFrameworks -framework CHUD')
-env.PiSharedLibrary('pikeyboardplg',Split('kbd_fastmark.cpp kbd_converter.cpp kbd_bundle2.cpp'),libraries=Split('piw pia pic alpha2 pie pisamplerate'),package='eigend',per_agent='plg_keyboard')
+env.PiSharedLibrary('pikeyboardplg',Split('kbd_converter.cpp kbd_bundle2.cpp'),libraries=Split('piw pia pic alpha2 pie pisamplerate'),package='eigend',per_agent='plg_keyboard',locked=True)
 env.PiPipBinding('keyboard_native','keyboard.pip',libraries=Split('pikeyboardplg pisamplerate piw pia pic alpha2 pie'),package='eigend',per_agent='plg_keyboard')

@@ -506,20 +506,12 @@ class Agent(agent.Agent):
         self.input_aux9 = bundles.VectorInput(self.input_aggregator.get_filtered_output(11,piw.event_aggregation_filter(11)), self.domain, signals=(1,))
         self.input_aux10 = bundles.VectorInput(self.input_aggregator.get_filtered_output(12,piw.event_aggregation_filter(12)), self.domain, signals=(1,))
 
-        self.nplayer = recorder_native.nplayer(self.output_aggregator.get_filtered_output(3,piw.eventchannel_aggregation_filter(100,3)),16,2,5,self.domain)
-        self.input_clock.add_upstream(self.nplayer.get_clock())
-
-        self.ctl_fb = piw.functor_backend(1,True)
-        self.ctl_fb.set_functor(piw.pathnull(0),self.nplayer.control())
-        self.ctl_input = bundles.ScalarInput(self.ctl_fb.cookie(),self.domain,signals=(1,))
-
         self[1] = atom.Atom(names='inputs')
 
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,1), policy=self.input_data.vector_policy(2,False),names='pressure input')
         self[1][3]=atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input_data.vector_policy(3,False),names='roll input')
         self[1][4]=atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.input_data.vector_policy(4,False),names='yaw input')
         self[1][19]=atom.Atom(domain=domain.Aniso(), policy=self.input_data.vector_policy(5,False),names='key input')
-        self[1][20]=atom.Atom(domain=domain.Aniso(), policy=self.ctl_input.policy(1,False),names='controller input')
 
         self[1][5]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux1.vector_policy(1,False),names='auxilliary input', ordinal=1)
         self[1][6]=AuxInput(output_link,domain=domain.Aniso(), policy=self.input_aux2.vector_policy(1,False),names='auxilliary input', ordinal=2)
@@ -554,8 +546,6 @@ class Agent(agent.Agent):
         self.add_verb2(9,'name([],None,role(None,[ideal([~server,take]),singular]),role(to,[abstract]))',self.__name)
         self.add_verb2(10,'copy([],None,role(None,[gideal(take),singular]))',callback=self.__copy)
         self.add_verb2(12,'delete([],None,role(None,[ideal([~server,take]),singular]))',self.__delete)
-        self.add_verb2(13,'play([],None,role(None,[mass([note])]),role(with,[mass([velocity])]))',create_action=self.__playnv,clock=True)
-        self.add_verb2(14,'play([],None,role(None,[mass([note])]),role(with,[mass([velocity])]),role(for,[mass([second])]))',create_action=self.__playnvl,clock=True)
 
         self.add_verb2(15,'play([toggle],None,role(None,%(x)s),%(o)s)'%c,callback=self.__tog_play_now,**a)
         self.add_verb2(16,'play([toggle],None,role(None,%(x)s),role(at,%(c)s),option(until,%(c)s),option(every,%(c)s),%(o)s)'%c,callback=self.__tog_play_aue,**a)
@@ -999,19 +989,5 @@ class Agent(agent.Agent):
             return action.nosync_return()
         except:
             return async.success(errors.invalid_value(cookie,'delete'))
-
-    def __playnvl(self,ctx,subj,note,velocity,s):
-        note = action.mass_quantity(note)
-        velocity = action.mass_quantity(velocity)
-        length = max(1,int(1000000*action.mass_quantity(s)))
-        print 'play note',note,'velocity',velocity,'sec',s,'us',length
-        return self.nplayer.play(note,velocity,length),None
-
-    def __playnv(self,ctx,subj,note,velocity):
-        note = action.mass_quantity(note)
-        velocity = action.mass_quantity(velocity)
-        print 'play note',note,'velocity',velocity
-        return self.nplayer.play(note,velocity,500000),None
-
 
 agent.main(Agent)

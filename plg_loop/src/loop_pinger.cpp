@@ -25,7 +25,6 @@
 
 
 #include <picross/pic_config.h>
-#include <picross/pic_mlock.h>
 #include <piw/piw_clock.h>
 #include <piw/piw_fastdata.h>
 #include <piw/piw_bundle.h>

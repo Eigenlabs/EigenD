@@ -2425,10 +2425,3 @@ float synth::sine_table[synth::sine_table_size] =
 -0.00523596, -0.00497417, -0.00471237, -0.00445057, -0.00418878, -0.00392698, -0.00366518, -0.00340339, -0.00314159, -0.00287979, 
 -0.00261799, -0.00235619, -0.00209439, -0.00183259, -0.0015708, -0.001309, -0.0010472, -0.000785398, -0.000523599, -0.000261799, 
 }; 
-
-#include <picross/pic_config.h>
-#ifndef PI_WINDOWS
-static pic::lckarray_t<float,synth::sine_table_size> locker__(synth::sine_table);
-#else
-#pragma message ("warning: sine table not mlocked on windows")
-#endif
