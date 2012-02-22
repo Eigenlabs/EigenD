@@ -26,12 +26,12 @@ def channel_name(c,n):
 
 class AudioOutput(atom.Atom):
 
-    def __init__(self,splitter,base,channels,name='audio output',**kwds):
+    def __init__(self,splitter,base,channels,child_name='audio output',**kwds):
         atom.Atom.__init__(self,dynlist=True,**kwds)
         self.__base = base
         self.__channels = 0
         self.__splitter = splitter
-        self.__name = name
+        self.__child_name = child_name
         self.set_channels(channels)
 
     def cookie(self):
@@ -44,7 +44,7 @@ class AudioOutput(atom.Atom):
             return
 
         while c < channels:
-            o = bundles.Output(self.__base+c,True,names=self.__name,ordinal=1+c)
+            o = bundles.Output(self.__base+c,True,names=self.__child_name,ordinal=1+c)
             self.__splitter.add_output(o)
             self[1+c] = o
             c = c+1
@@ -58,15 +58,15 @@ class AudioOutput(atom.Atom):
         self.__channels = c
         for i in range(1,c+1):
             self[i].set_ordinal(i)
-            self[i].set_names(channel_name(c,i)+' '+self.__name)
+            self[i].set_names(channel_name(c,i)+' '+self.__child_name)
 
 class AudioInput(atom.Atom):
-    def __init__(self,input,base,channels,name='audio input',**kwds):
+    def __init__(self,input,base,channels,child_name='audio input',**kwds):
         atom.Atom.__init__(self,dynlist=True,**kwds)
         self.__base = base
         self.__channels = 0
         self.__input = input
-        self.__name = name
+        self.__child_name = child_name
         self.set_channels(channels)
 
     def set_channels(self,channels):
@@ -76,7 +76,7 @@ class AudioInput(atom.Atom):
             return
 
         while c < channels:
-            o = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.__get_policy(c),protocols='nostage',names=self.__name,ordinal=1+c)
+            o = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.__get_policy(c),protocols='nostage',names=self.__child_name,ordinal=1+c)
             self[1+c] = o
             c = c+1
 
@@ -88,7 +88,7 @@ class AudioInput(atom.Atom):
         self.__channels = c
         for i in range(1,c+1):
             self[i].set_ordinal(i)
-            self[i].set_names(channel_name(c,i)+' '+self.__name)
+            self[i].set_names(channel_name(c,i)+' '+self.__child_name)
 
     def __get_policy(self,c):
         p = self.__input.vector_policy if isinstance(self.__input,bundles.VectorInput) else self.__input.policy

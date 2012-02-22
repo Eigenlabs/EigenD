@@ -318,7 +318,7 @@ class Agent(agent.Agent):
 
         self.__browser = PluginBrowser(self)
         self.__domain = piw.clockdomain_ctl()
-        self.__audio_output = audio.AudioOutput(bundles.Splitter(self.__domain),1,2)
+        self.__audio_output = audio.AudioOutput(bundles.Splitter(self.__domain),1,2,names='channels')
         self.__audio_output_channels = audio.AudioChannels(self.__audio_output)
         self.__midi_output = bundles.Splitter(self.__domain)
         self.__observer = PluginObserver(self.__state,self)
@@ -328,7 +328,7 @@ class Agent(agent.Agent):
             self.__domain,self.__audio_output.cookie(),self.__midi_output.cookie(),
             utils.statusify(self.__window_state_changed))
         self.parameter_list = inputparameter.List(self.__host,self.__host.clock_domain(),self.verb_container())
-        self.__audio_input = audio.AudioInput(bundles.ScalarInput(self.__host.audio_input(),self.__domain,signals=range(1,65)),1,2)
+        self.__audio_input = audio.AudioInput(bundles.ScalarInput(self.__host.audio_input(),self.__domain,signals=range(1,65)),1,2,names='channels')
         self.__audio_input_channels = audio.AudioChannels(self.__audio_input)
         self.__velocity_detector = piw.velocitydetect(self.__host.midi_from_belcanto(),1,4)
         self.__key_input = bundles.VectorInput(self.__velocity_detector.cookie(),self.__domain,signals=(1,2,5))
