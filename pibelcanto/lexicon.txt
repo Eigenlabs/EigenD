@@ -36,7 +36,7 @@ Not properly assigned, in use:
 8   6   2   7  : Cycling       : Noun              : None
 8   6   2   8  : Player        : Noun              : None
 8   6   3   1  : Advanced      : Noun              : None
-8   6   3   2  : Unused        : Unused            : None
+8   6   3   2  : Instrument    : Noun               : None
 8   6   3   3  : Unused        : Unused            : None
 8   6   3   4  : Unused        : Unused            : None
 8   6   3   5  : Unused        : Unused            : None
