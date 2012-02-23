@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,action,bundles,domain,node,upgrade
+from pi import agent,atom,action,bundles,domain,node,upgrade,const
 from . import recorder_version as version,recorder_native
 
 import piw
@@ -27,7 +27,7 @@ import picross
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         self.domain = piw.clockdomain_ctl()
-        agent.Agent.__init__(self, signature=version, names='player', ordinal=ordinal)
+        agent.Agent.__init__(self, signature=version, names='player', container=(const.verb_node,'player',atom.VerbContainer(clock_domain=self.domain)), ordinal=ordinal)
 
         self[2] = atom.Atom(names='outputs')
         self[2][1] = bundles.Output(1,False,names='pressure output', protocols='')
