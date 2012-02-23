@@ -152,47 +152,67 @@ class EigenAlertDelegate
         virtual void alert_cancel() {}
 };
 
-class EigenAlertComponent2: public AlertComponent2
+class EigenDialogContent
+{
+    public:
+        virtual bool returnKeyPressed() { return false; }
+};
+
+class EigenAlertComponent2: public AlertComponent2, EigenDialogContent
 {
     public:
         EigenAlertComponent2(EigenMainWindow *main,const String &klass,const String &label, const String &text, EigenAlertDelegate *listener);
         ~EigenAlertComponent2();
         void set_listener(EigenAlertDelegate *l);
         void buttonClicked (Button* b);
+        bool returnKeyPressed() { buttonClicked(get_ok_button()); return true; }
 
     private:
         EigenMainWindow *main_;
         EigenAlertDelegate *listener_;
 };
 
-class EigenAlertComponent1: public AlertComponent1
+class EigenAlertComponent1: public AlertComponent1, public EigenDialogContent
 {
     public:
         EigenAlertComponent1(EigenMainWindow *main,const String &klass,const String &label, const String &text);
         ~EigenAlertComponent1();
         void buttonClicked (Button* buttonThatWasClicked);
+        bool returnKeyPressed() {  buttonClicked(get_ok_button()); return true; }
 
     private:
         EigenMainWindow *main_;
 };
 
-class EigenInfoComponent: public InfoComponent
+class EigenInfoComponent: public InfoComponent, public EigenDialogContent
 {
     public:
         EigenInfoComponent(EigenMainWindow *main,const String &klass,const String &label, const String &text);
         ~EigenInfoComponent();
         void buttonClicked (Button* buttonThatWasClicked);
+        bool returnKeyPressed() {  buttonClicked(get_ok_button()); return true; }
 
     private:
         EigenMainWindow *main_;
 };
 
-class EigenHelpComponent: public HelpComponent
+class EigenLoadProgressComponent: public LoadProgressComponent, public EigenDialogContent
+{
+    public:
+        EigenLoadProgressComponent() {}
+        ~EigenLoadProgressComponent() {}
+
+    private:
+        EigenMainWindow *main_;
+};
+
+class EigenHelpComponent: public HelpComponent, public EigenDialogContent
 {
     public:
         EigenHelpComponent(EigenMainWindow *main,const String &klass,const String &label, const String &text);
         ~EigenHelpComponent();
         void buttonClicked (Button* buttonThatWasClicked);
+        bool returnKeyPressed() {  buttonClicked(get_ok_button()); return true; }
 
     private:
         EigenMainWindow *main_;
@@ -213,14 +233,19 @@ class EigenLogger
         pic::f_string_t logger_;
 };
 
-class EigenDialog: public DocumentWindow
+class EigenDialog: public DocumentWindow, public KeyListener, public MessageListener
 {
     public:
         EigenDialog(EigenMainWindow *main,Component *content,int,int,int,int,int,int,Component *position = 0);
         void closeButtonPressed();
         ~EigenDialog();
+        bool keyPressed (const KeyPress& key, Component* originatingComponent);
+        bool keyStateChanged (bool isKeyDown, Component* originatingComponent);
+        void handleMessage(const Message &m);
+
     private:
         EigenMainWindow *main_;
+        Component *component_;
 };
 
 class EigenMainWindow: public DocumentWindow, public MenuBarModel, public piw::thing_t, public eigend::p2c_t, public ApplicationCommandTarget
@@ -315,7 +340,7 @@ class EigenD : public ejuce::Application, virtual public pic::tracked_t
         FILE *logfile_;
 };
 
-class EigenSaveComponent: public SaveDialogComponent, public EigenAlertDelegate
+class EigenSaveComponent: public SaveDialogComponent, public EigenAlertDelegate, public EigenDialogContent
 {
     public:
         EigenSaveComponent(EigenMainWindow *mediator, const std::string &current);
@@ -334,7 +359,7 @@ class EigenSaveComponent: public SaveDialogComponent, public EigenAlertDelegate
         int max_;
 };
 
-class EigenEditComponent: public EditDialogComponent
+class EigenEditComponent: public EditDialogComponent, public EigenDialogContent
 {
     public:
         EigenEditComponent(EigenMainWindow *mediator, const std::string &current);
@@ -347,7 +372,7 @@ class EigenEditComponent: public EditDialogComponent
         std::string orig_;
 };
 
-class EigenBugComponent: public BugComponent
+class EigenBugComponent: public BugComponent, public EigenDialogContent
 {
     public:
         EigenBugComponent(EigenMainWindow *mediator);
@@ -414,7 +439,6 @@ void EigenTreeItem::itemSelectionChanged(bool isNowSelected)
 {
     if(isNowSelected)
     {
-        pic::logmsg() << "item selected " << term_.render();
         if(term_.arity()>2)
         {
             view_->selected(term_,false);
@@ -428,7 +452,6 @@ void EigenTreeItem::itemSelectionChanged(bool isNowSelected)
 
 void EigenTreeItem::itemDoubleClicked(const MouseEvent &)
 {
-    pic::logmsg() << "item dbl clicked " << term_.render();
     if(term_.arity()>2)
     {
         view_->selected(term_,true);
@@ -445,7 +468,7 @@ piw::data_t EigenTreeItem::name()
     return term_.arg(0).value();
 }
 
-class EigenStatusComponent: public StatusComponent
+class EigenStatusComponent: public StatusComponent, public EigenDialogContent
 {
     public:
         EigenStatusComponent(EigenMainWindow *mediator);
@@ -455,7 +478,7 @@ class EigenStatusComponent: public StatusComponent
         EigenMainWindow *mediator_;
 };
 
-class EigenAboutComponent: public AboutComponent
+class EigenAboutComponent: public AboutComponent, public EigenDialogContent
 {
     public:
         EigenAboutComponent(EigenMainWindow *mediator);
@@ -606,7 +629,6 @@ void EigenLoadComponent::selected(const piw::term_t &term,bool dbl)
     user_ = term.arg(6).value().as_bool();
     upgrade_ = term.arg(5).value().as_bool();
 
-    pic::logmsg() << "selected " << selected_ << " user " << user_ << " upgrade " << upgrade_;
     std::string d = mediator_->backend()->get_description(selected_.as_string());
     getLabel()->setText(d.c_str(),false);
 
@@ -616,13 +638,9 @@ void EigenLoadComponent::selected(const piw::term_t &term,bool dbl)
     std::string default_setup = mediator_->backend()->get_default_setup(true);
     getDefaultToggle()->setToggleState(!default_setup.compare(selected_.as_string()),false);
 
-    pic::logmsg() << "selected2 " << selected_ << " user " << user_ << " upgrade " << upgrade_;
-
     if(dbl)
     {
-	pic::logmsg() << "selected3 " << selected_ << " user " << user_ << " upgrade " << upgrade_;
         buttonClicked(getLoadButton());
-	pic::logmsg() << "selected4 " << selected_ << " user " << user_ << " upgrade " << upgrade_;
     }
 }
 
@@ -649,11 +667,8 @@ void EigenLoadComponent::buttonClicked(Button *b)
 {
     if(b==getLoadButton())
     {
-        pic::logmsg() << "load button " << selected_;
-
         if(selected_.is_string())
         {
-            pic::logmsg() << "loading " << selected_;
             mediator_->load_setup(selected_.as_string(),user_,upgrade_);
         }
     }
@@ -1210,7 +1225,7 @@ void EigenMainWindow::load_started(const char *setup)
         progress_ = 0;
     }
 
-    LoadProgressComponent *c = new LoadProgressComponent();
+    EigenLoadProgressComponent *c = new EigenLoadProgressComponent();
     juce::String title = T("Loading ");
     title += setup;
     c->setName(title);
@@ -1491,7 +1506,6 @@ unsigned EigenSaveComponent::getUserNumber(const juce::String &tag)
 
 EigenSaveComponent::EigenSaveComponent(EigenMainWindow *mediator, const std::string &current): mediator_(mediator), confirm_(0)
 {
-    pic::logmsg() << "save component " << current;
     setName(T("Save"));
     term_ = mediator->backend()->get_user_setups();
     max_ = 0;
@@ -1779,8 +1793,6 @@ void EigenSaveComponent::alert_cancel()
 
 EigenEditComponent::EigenEditComponent(EigenMainWindow *mediator, const std::string &current): mediator_(mediator)
 {
-    pic::logmsg() << "edit component " << current;
-
     term_ = mediator->backend()->get_user_setups();
 
     for(unsigned i=1;i<term_.arity();i++)
@@ -1838,7 +1850,7 @@ bool EigenMainWindow::select_setup(const char *setup)
     return component_->select_setup(setup);
 }
 
-EigenDialog::EigenDialog(EigenMainWindow *main,Component *content,int w,int h,int mw,int mh,int xw,int xh,Component *position): DocumentWindow(content->getName(), Colours::black, DocumentWindow::closeButton, true), main_(main)
+EigenDialog::EigenDialog(EigenMainWindow *main,Component *content,int w,int h,int mw,int mh,int xw,int xh,Component *position): DocumentWindow(content->getName(), Colours::black, DocumentWindow::closeButton, true), main_(main), component_(content)
 {
     setContentOwned(content, true);
     setSize(w,h);
@@ -1862,6 +1874,51 @@ EigenDialog::EigenDialog(EigenMainWindow *main,Component *content,int w,int h,in
         setResizable (true, true);
     }
 
+    addKeyListener(this);
+
+}
+
+void EigenDialog::handleMessage (const Message &m)
+{
+    if(m.intParameter1)
+    {
+        EigenDialogContent *c = dynamic_cast<EigenDialogContent *>(component_);
+
+        if(c)
+        {
+            c->returnKeyPressed();
+        }
+    }
+    else
+    {
+        closeButtonPressed();
+    }
+}
+
+bool EigenDialog::keyPressed (const KeyPress& key, Component* originatingComponent)
+{
+    if(key.getKeyCode() == KeyPress::escapeKey)
+    {
+        postMessage(new Message(0,0,0,0));
+        return true;
+    }
+
+    if(key.getKeyCode() == KeyPress::returnKey)
+    {
+        EigenDialogContent *c = dynamic_cast<EigenDialogContent *>(component_);
+
+        if(c)
+        {
+            postMessage(new Message(1,0,0,0));
+        }
+    }
+
+    return false;
+}
+
+bool EigenDialog::keyStateChanged (bool isKeyDown, Component* originatingComponent)
+{
+    return false;
 }
 
 void EigenDialog::closeButtonPressed()
@@ -1982,7 +2039,6 @@ void EigenD::log(const char *msg)
 
 void EigenD::anotherInstanceStarted (const String& commandLine)
 {
-    pic::logmsg() << "new instance";
 }
 
 EigenStatusComponent::EigenStatusComponent(EigenMainWindow *mediator): mediator_(mediator)
