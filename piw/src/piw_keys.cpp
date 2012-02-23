@@ -19,7 +19,7 @@
 
 #include <piw/piw_keys.h>
 
-piw::data_nb_t piw::makekey(unsigned pseq, int row, int col, unsigned mseq, int course, int key, piw::hardness_t hardness, unsigned long long t)
+piw::data_nb_t piw::makekey(unsigned pseq, float row, float col, unsigned mseq, float course, float key, piw::hardness_t hardness, unsigned long long t)
 {
     piw::data_nb_t physical_key = piw::tuplenull_nb(t);
     physical_key = piw::tupleadd_nb(physical_key, piw::makefloat_nb(row,t));

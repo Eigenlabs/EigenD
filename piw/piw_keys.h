@@ -66,7 +66,7 @@ namespace piw
      *
      * @returns a new data instance with the provided key parameters
      */
-    PIW_DECLSPEC_FUNC(piw::data_nb_t) makekey(unsigned pseq, int row, int col, unsigned mseq, int course, int key, hardness_t hardness, unsigned long long t);
+    PIW_DECLSPEC_FUNC(piw::data_nb_t) makekey(unsigned pseq, float row, float col, unsigned mseq, float course, float key, hardness_t hardness, unsigned long long t);
 
     /**
      * Checks if the provided data contains valid key information.
