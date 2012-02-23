@@ -1383,8 +1383,8 @@ Notes            Word           Classification     Synonyms
 2   1   7   2  : Blownstring   : Noun              : None
 2   1   7   3  : Unused        : Unused            : None
 2   1   7   4  : Unused        : Unused            : None
-2   1   7   5  : Unused        : Unused            : None
-2   1   7   6  : Unused        : Unused            : None
+2   1   7   5  : Tin           : Noun              : None
+2   1   7   6  : Whistle       : Noun              : None
 2   1   7   7  : Unused        : Unused            : None
 2   1   7   8  : Unused        : Unused            : None
 2   1   8   1  : Unused        : Unused            : None
