@@ -158,7 +158,7 @@ class ConnectorOutput(atom.Atom):
         self.__connector = connector
         self.__monitor = None
 
-        atom.Atom.__init__(self,domain=domain.Aniso(),names='output',policy=policy.FastReadOnlyPolicy(),protocols="connect-static output nostage")
+        atom.Atom.__init__(self,domain=domain.Aniso(),names='control output',policy=policy.FastReadOnlyPolicy(),protocols="connect-static output nostage")
 
     def property_change(self,key,value,delegate):
         if key != 'slave':
