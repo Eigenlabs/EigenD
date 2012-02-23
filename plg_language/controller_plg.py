@@ -103,6 +103,79 @@ class Selector:
     def reset(self,v):
         pass
 
+class DataProxy(node.Client):
+    def __init__(self,connector):
+        self.__connector = connector
+        node.Client.__init__(self)
+
+    def client_opened(self):
+        node.Client.client_opened(self)
+        self.__connector.monitor_data(self.get_data())
+
+    def close_client(self):
+        node.Client.close_client(self)
+
+    def client_data(self,v):
+        self.__connector.monitor_data(v)
+
+class Monitor(proxy.AtomProxy):
+
+    monitor = set(['latency','domain'])
+
+    def __init__(self,connector,address):
+        proxy.AtomProxy.__init__(self)
+        self.address = address
+        self.__connector = connector
+        self.__dataproxy = None
+        self.__mainanchor = piw.canchor()
+        self.__mainanchor.set_client(self)
+        self.__mainanchor.set_address_str(address)
+
+    def disconnect(self):
+        self.__dataproxy = None
+        self.set_data_clone(self.__dataproxy)
+        self.__mainanchor.set_address_str('')
+
+    def node_ready(self):
+        self.__dataproxy = DataProxy(self.__connector)
+        self.__connector.monitor_connected(self)
+        self.set_data_clone(self.__dataproxy)
+
+    def node_removed(self):
+        self.__connector.monitor_disconnected()
+        self.set_data_clone(None)
+        self.__dataproxy = None
+
+    def node_changed(self,parts):
+        if 'domain' in parts:
+            self.node_removed()
+            self.node_ready()
+            return
+
+class ConnectorOutput(atom.Atom):
+
+    def __init__(self,connector):
+        self.__connector = connector
+        self.__monitor = None
+
+        atom.Atom.__init__(self,domain=domain.Aniso(),names='output',policy=policy.FastReadOnlyPolicy(),protocols="connect-static output nostage")
+
+    def property_change(self,key,value,delegate):
+        if key != 'slave':
+            return
+
+        cur_slaves = self.get_property_termlist('slave')
+
+        if self.__monitor:
+            if not self.__monitor.address in cur_slaves:
+                self.__monitor.disconnect()
+                self.__monitor = None
+
+        if not self.__monitor:
+            if cur_slaves:
+                self.__monitor = Monitor(self.__connector,cur_slaves[0])
+            
+
 class Connector(atom.Atom):
 
     controls = dict(updown=UpDown,selector=Selector,trigger=Trigger,toggle=Toggle)
@@ -113,22 +186,25 @@ class Connector(atom.Atom):
         self.controller = controller
         self.index = index
         self.control = None
+        self.monitor = None
 
         self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key row',init=0,policy=atom.default_policy(self.__change_key_row),protocols="input explicit")
         self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key column',init=0,policy=atom.default_policy(self.__change_key_column),protocols="input explicit")
-        self[3] = atom.Atom(domain=domain.Aniso(),names='feedback',policy=policy.SlowPolicy(self.__reset,callback=self.__feedback_connected),protocols="input explicit")
-        self[4] = atom.Atom(domain=domain.Aniso(),names='output',policy=policy.FastReadOnlyPolicy(),protocols="connect-static output nostage")
+        self[4] = ConnectorOutput(self)
 
-    def __feedback_connected(self,plumber):
-        if plumber is not None:
-            factory = self.controls.get(plumber.domain().control)
-            if factory:
-                self.control = factory(plumber,self.index,self.controller) 
-                self[4].get_policy().data_node().set_source(self.control.fastdata())
-                self.__update_event_key()
-        else:
+    def monitor_connected(self,proxy):
+        self.monitor_disconnected()
+        factory = self.controls.get(proxy.domain().control)
+
+        if factory:
+            self.control = factory(proxy,self.index,self.controller) 
+            self[4].get_policy().data_node().set_source(self.control.fastdata())
+            self.__update_event_key()
+
+    def monitor_disconnected(self):
+        if self.control:
             self[4].get_policy().data_node().clear_source()
-            self.disconnect()
+        self.disconnect()
 
     def __change_key_row(self,val):
         self[1].set_value(val)
@@ -151,7 +227,7 @@ class Connector(atom.Atom):
     def set_controller_latency(self,latency):
         self.set_latency(latency)
 
-    def __reset(self,v):
+    def monitor_data(self,v):
         if self.control:
             self.control.reset(v)
 
@@ -243,7 +319,7 @@ class Agent(agent.Agent):
         self[1][4] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(5,False),names='yaw input')
         self[1][5] = atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.vector_policy(6,False),names='strip position input')
         self[1][6] = atom.Atom(domain=domain.Aniso(),policy=self.input.vector_policy(1,False), names='key input')
-        self[5] = atom.Atom(domain=domain.Aniso(),policy=self.input.merge_nodefault_policy(2,False),names='controller input')
+        self[1][7] = atom.Atom(domain=domain.Aniso(),policy=self.input.merge_nodefault_policy(2,False),names='controller input')
 
         self.add_verb2(1,'create([],None,role(None,[mass([connector])]))', self.__create_connector)
         self.add_verb2(2,'create([un],None,role(None,[mass([connector])]))', self.__uncreate_connector)
