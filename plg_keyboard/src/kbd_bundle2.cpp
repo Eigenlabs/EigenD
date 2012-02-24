@@ -321,9 +321,7 @@ namespace
         keyboard_t *keyboard_;
         float maxpressure_;
         unsigned counter_;
-        unsigned gated_;
         bool running_;
-        bool skipping_;
         unsigned long long ts_;
         piw::xevent_data_buffer_t output_;
         float cur_pressure_, cur_roll_, cur_yaw_;
@@ -989,7 +987,7 @@ namespace
         std::auto_ptr<breath_t> breath1_;
     };
 
-    kwire_t::kwire_t(unsigned i, unsigned r, unsigned c, const piw::data_t &path, keyboard_t *k): piw::event_data_source_real_t(path), index_(i), row_(r), column_(c), id_(piw::pathone_nb(i,0)), keyboard_(k), maxpressure_(0), counter_(0), gated_(0), running_(false), ts_(0), output_(63,PIW_DATAQUEUE_SIZE_NORM),cur_pressure_(0), cur_roll_(0), cur_yaw_(0)
+    kwire_t::kwire_t(unsigned i, unsigned r, unsigned c, const piw::data_t &path, keyboard_t *k): piw::event_data_source_real_t(path), index_(i), row_(r), column_(c), id_(piw::pathone_nb(i,0)), keyboard_(k), maxpressure_(0), counter_(0), running_(false), ts_(0), output_(63,PIW_DATAQUEUE_SIZE_NORM),cur_pressure_(0), cur_roll_(0), cur_yaw_(0)
     {
         k->connect_wire(this,source());
     }
@@ -1028,10 +1026,6 @@ namespace
             if(running_)
             {
                 source_end(t);
-                output_ = piw::xevent_data_buffer_t(31,PIW_DATAQUEUE_SIZE_NORM);
-                output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,0,t));
-                output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,0,t));
-                output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,0,t));
                 running_=false;
             }
 
@@ -1048,21 +1042,22 @@ namespace
             if(ts_ && ts<ts_+DEBOUNCE_US)
             {
                 pic::logmsg() << "debounce " << index_ << ' ' << ts-ts_ << " us";
-                skipping_=true;
+                running_ = false;
                 return;
             }
 
-            skipping_=false;
-
-            source_start(0,id_.restamp(t),output_);
             output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_LIGHT,t));
+            output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,p/4096.0,t));
+            output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,__clip(r/1024.0,keyboard_->roll_axis_window_),t));
+            output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,__clip(y/1024.0,keyboard_->yaw_axis_window_),t));
+            source_start(0,id_.restamp(t),output_);
             running_=true;
             maxpressure_=0;
-            gated_=0;
+            cur_pressure_=p; cur_roll_=r; cur_yaw_=y;
             return;
         }
 
-        if(skipping_)
+        if(!running_)
         {
             return;
         }
@@ -1070,32 +1065,33 @@ namespace
         if(p!=cur_pressure_) output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,p/4096.0,t));
         if(r!=cur_roll_) output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,__clip(r/1024.0,keyboard_->roll_axis_window_),t));
         if(y!=cur_yaw_) output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,__clip(y/1024.0,keyboard_->yaw_axis_window_),t));
-        cur_pressure_=p; cur_roll_=r; cur_yaw_=y;
 
-        maxpressure_=std::max(maxpressure_,(float)p);
+        cur_pressure_=p; cur_roll_=r; cur_yaw_=y;
 
         if(counter_<ESTIMATION_END)
         {
             counter_++;
+            maxpressure_=std::max(maxpressure_,(float)p);
             return;
         }
 
         if(counter_==ESTIMATION_END)
         {
+            counter_++;
+            maxpressure_=std::max(maxpressure_,(float)p);
+
             if(maxpressure_ > keyboard_->threshold2_)
             {
-                gated_=2;
                 output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_HARD,t));
+                return;
+            }
+
+            if(maxpressure_ > keyboard_->threshold1_)
+            {
+                output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_SOFT,t));
+                return;
             }
         }
-
-        if(!gated_ && maxpressure_ > keyboard_->threshold1_)
-        {
-            output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_SOFT,t));
-            gated_=1;
-        }
-
-        counter_++;
     }
 
     struct mic_output_t: piw::root_ctl_t, piw::wire_ctl_t, piw::event_data_source_real_t, piw::clockdomain_ctl_t, piw::clocksink_t, piw::thing_t
