@@ -308,10 +308,10 @@ void voice_t::startup(main_wire_t *owner, const piw::data_nb_t &id, std::string 
     course_= course;
     key_= key;
 
-    buffer_ = piw::xevent_data_buffer_t(SIG1(6),6);
+    buffer_ = piw::xevent_data_buffer_t(SIG1(5),5);
     buffer_.merge(b,SIG3(2,3,4));
     // send the key out on the key output
-    buffer_.add_value(6,key.restamp(id_.time()));
+    buffer_.add_value(5,key.restamp(id_.time()));
 
     // start the new downstream event
 #if STRINGER_DEBUG>0
@@ -474,7 +474,7 @@ void main_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::
 #endif // STRINGER_USE_PATH==1
 
     piw::data_nb_t key;
-    if(b.latest(6,key,id.time()))
+    if(b.latest(5,key,id.time()))
     {
         float course = 0.0f;
         if(piw::decode_key(key,0,0,0,0,&course,0))
