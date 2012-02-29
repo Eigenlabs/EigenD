@@ -77,8 +77,8 @@ class Voice(atom.Atom):
 
         self.agent.lights.set_status(self.voice,const.status_inactive)
 
-        self[1] = atom.Atom(domain=domain.BoundedFloat(0.0,100.0,0.0,hints=(T('inc',1),T('biginc',10),T('control','updown')),verbinc=10.0),init=100.0,policy=atom.default_policy(self.set_volume),names='volume')
-        self[2] = atom.Atom(domain=domain.BoundedFloat(0.0,100.0,0.0,hints=(T('inc',1),T('biginc',10),T('control','updown')),verbinc=10.0),init=10.0,policy=atom.default_policy(self.set_chop),names='chop')
+        self[1] = atom.Atom(domain=domain.BoundedFloat(0.0,100.0,0.0,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown')),verbinc=10.0),init=100.0,policy=atom.default_policy(self.set_volume),names='volume')
+        self[2] = atom.Atom(domain=domain.BoundedFloat(0.0,100.0,0.0,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown')),verbinc=10.0),init=10.0,policy=atom.default_policy(self.set_chop),names='chop')
         self[3] = atom.Atom(domain=domain.Bool(),init=True,names='enable',policy=atom.default_policy(self.set_playing),protocols='set',container=(None,'voice%d'%voice,agent.verb_container()))
 
         self[3].add_verb2(1,'set([],~a,role(None,[instance(~self)]))', create_action=self.__enable_set, status_action=self.__enable_status)

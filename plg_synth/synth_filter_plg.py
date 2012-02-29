@@ -42,7 +42,7 @@ class Agent(agent.Agent):
         self.input.add_upstream(self.verb_container().clock)
 
         self[4]=atom.Atom(domain=domain.BoundedFloat(-1,1), names="audio input", policy=self.input.vector_policy(5,True))
-        self[5]=atom.Atom(domain=domain.BoundedFloat(0,1,rest=0.5,hints=(T('control','updown'),T('inc',0.01),T('biginc',0.05))), names="resonance input",policy=self.input.merge_policy(2,False))
+        self[5]=atom.Atom(domain=domain.BoundedFloat(0,1,rest=0.5,hints=(T('control','updown'),T('stageinc',0.01),T('inc',0.01),T('biginc',0.05))), names="resonance input",policy=self.input.merge_policy(2,False))
         self[6]=atom.Atom(domain=domain.BoundedFloat(0,96000), init=5000, names="cutoff frequency input",policy=self.input.merge_policy(3,False))
         self[7]=atom.Atom(domain=domain.BoundedFloat(-1,1), names="bend input",policy=self.input.merge_policy(4,False))
 

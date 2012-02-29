@@ -577,7 +577,7 @@ class Agent(agent.Agent):
         self[17] = atom.Atom(domain=domain.Aniso(), policy=self.cinput.nodefault_policy(1,False),names='controller input')
         self.cfunctor.set_functor(piw.pathnull(0),utils.make_change_nb(piw.slowchange(utils.changify(self.__upstream))))
 
-        th=(T('inc',1),T('biginc',1),T('control','updown'))
+        th=(T('stageinc',1),T('inc',1),T('biginc',1),T('control','updown'))
 
         self[18] = atom.Atom(domain=domain.BoundedFloatOrNull(-1,9,hints=th),init=None,policy=atom.default_policy(self.__change_octave),names='octave')
 

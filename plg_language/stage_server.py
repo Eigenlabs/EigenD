@@ -228,14 +228,19 @@ class StageXMLRPCFuncs:
                                 max = atomDomain.max
                                 xml += 'min="%f" '%min+'max="%f" '%max
 
+                            stageInc=atomDomain.hint('stageinc')
+                            controllerInc=atomDomain.hint('inc')
+                            if stageInc:
+                                xml += 'userStep="%f" '%stageInc
+                            elif controllerInc:
+                                xml += 'userStep="%f" '%controllerInc
+
                             xml += '/>\n'
 
                             xml += self.__atomHelpXml(atom[0])
 
                             xml += '</atom>'
 
-                    
-        
         return xml
 
     def __fullName(self,aid):

@@ -52,8 +52,8 @@ class Agent(agent.Agent):
         self.tap_input = bundles.ScalarInput(self.aggregator.get_output(1),self.domain, signals=(1,2))
         self.midi_clock_input = bundles.ScalarInput(self.aggregator.get_output(2),self.domain,signals=(1,))
 
-        self[2] = atom.Atom(domain=domain.BoundedFloat(0,500,hints=(T('inc',1),T('biginc',10),T('control','updown'))), init=120, names='tempo input', policy=atom.default_policy(self.__set_tempo))
-        self[3] = atom.Atom(domain=domain.BoundedFloat(0,100,rest=4,hints=(T('inc',1),)), names='beat input', policy=atom.default_policy(self.__set_beats))
+        self[2] = atom.Atom(domain=domain.BoundedFloat(0,500,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=120, names='tempo input', policy=atom.default_policy(self.__set_tempo))
+        self[3] = atom.Atom(domain=domain.BoundedFloat(0,100,rest=4,hints=(T('stageinc',1),T('inc',1),)), names='beat input', policy=atom.default_policy(self.__set_beats))
         # self[4] is the verb container
         self[5] = atom.Atom(domain=domain.BoundedFloat(0,1,rest=0,hints=(T('control','trigger'),)),policy=self.tap_input.nodefault_policy(1,policy.ImpulseStreamPolicy()),names='beat trigger',transient=True)
         self[6] = atom.Atom(domain=domain.BoundedFloat(0,1,rest=0,hints=(T('control','trigger'),)),policy=self.tap_input.nodefault_policy(2,policy.ImpulseStreamPolicy()),names='bar trigger',transient=True)

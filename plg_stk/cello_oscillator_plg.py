@@ -39,7 +39,7 @@ class Agent(agent.Agent):
         
         #self.bow_input = bundles.ScalarInput(self.inst.bow_cookie(), self.domain, signals=(1,2))
 
-        param=(T('inc',0.02),T('biginc',0.2),T('control','updown'))
+        param=(T('stageinc',0.01),T('inc',0.02),T('biginc',0.2),T('control','updown'))
         self[2] = atom.Atom(names='inputs')
         # playing inputs
         # frequency

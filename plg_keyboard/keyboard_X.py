@@ -229,10 +229,10 @@ class MicrophoneOutput(audio.AudioOutput):
 
         self[100] = toggle.Toggle(self.__enable,self.__agent.domain,container=(None,'microphone enable',self.__agent.verb_container()),names='enable',transient=True)
         self[101] = atom.Atom(domain=domain.StringEnum(*sorted(self.mic_types.keys())),init='electret',names='type',policy=atom.default_policy(self.__type))
-        self[102] = atom.Atom(domain=domain.BoundedInt(0,50,hints=(T('inc',1),T('biginc',5),T('control','updown'))),names='gain',init=30,policy=atom.default_policy(self.__gain))
+        self[102] = atom.Atom(domain=domain.BoundedInt(0,50,hints=(T('stageinc',1),T('inc',1),T('biginc',5),T('control','updown'))),names='gain',init=30,policy=atom.default_policy(self.__gain))
         self[103] = toggle.Toggle(self.__pad,self.__agent.domain,container=(None,'microphone pad',self.__agent.verb_container()),names='pad')
         self[104] = toggle.Toggle(self.__loop_enable,self.__agent.domain,container=(None,'microphone loop',self.__agent.verb_container()),names='loop')
-        self[105] = atom.Atom(domain=domain.BoundedInt(0,120,hints=(T('inc',1),T('biginc',5),T('control','updown'))),names='loop gain',init=100,policy=atom.default_policy(self.__loop_gain))
+        self[105] = atom.Atom(domain=domain.BoundedInt(0,120,hints=(T('stageinc',1),T('inc',1),T('biginc',5),T('control','updown'))),names='loop gain',init=100,policy=atom.default_policy(self.__loop_gain))
         self[106] = toggle.Toggle(self.__mute_enable,self.__agent.domain,container=(None,'microphone mute',self.__agent.verb_container()),names='automute')
         self[109] = atom.Atom(domain=domain.BoundedInt(0,4),names='quality',init=2,policy=atom.default_policy(self.__quality))
 
@@ -296,7 +296,7 @@ class HeadphoneInput(audio.AudioInput):
         self.__agent = agent
         audio.AudioInput.__init__(self,self.__agent.audio_input,1,2,names='headphone')
         self[100] = toggle.Toggle(self.__enable,self.__agent.domain,container=(None,'headphone',self.__agent.verb_container()),names='enable')
-        self[101] = atom.Atom(domain=domain.BoundedInt(0,127,hints=(T('inc',1),T('biginc',5),T('control','updown'))),names='gain',init=70,policy=atom.default_policy(self.__gain))
+        self[101] = atom.Atom(domain=domain.BoundedInt(0,127,hints=(T('stageinc',1),T('inc',1),T('biginc',5),T('control','updown'))),names='gain',init=70,policy=atom.default_policy(self.__gain))
         self[102] = atom.Atom(domain=domain.BoundedInt(0,4),names='quality',init=0,policy=atom.default_policy(self.__quality))
         self[103] = atom.Atom(domain=domain.Bool(),names='limit',init=True,policy=atom.default_policy(self.__limit))
 

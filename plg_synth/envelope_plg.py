@@ -38,7 +38,7 @@ class Agent(agent.Agent):
         self.vel = piw.velocitydetect(self.adsr.cookie(), 2, 1)
         self.input = bundles.VectorInput(self.vel.cookie(), self.domain,signals=(2,8,9,10,11),threshold=5)
 
-        time=(T('inc',0.01),T('biginc',0.2),T('control','updown'))
+        time=(T('stageinc',0.01),T('inc',0.01),T('biginc',0.2),T('control','updown'))
         self[1] = atom.Atom()
 
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,1), init=0, policy=self.input.vector_policy(2,False), names='pressure input')
