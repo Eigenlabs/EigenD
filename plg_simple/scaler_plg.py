@@ -56,7 +56,7 @@ class Agent(agent.Agent):
 
         self.output = bundles.Splitter(self.domain,*self[1].values())
         self.filter = piw.scaler(self.ctl,self.output.cookie(),cubic())
-        self.input = bundles.VectorInput(self.filter.cookie(), self.domain,signals=(2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17))
+        self.input = bundles.VectorInput(self.filter.cookie(), self.domain,signals=(2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18))
         self.input.correlator.clocksink().add_upstream(self.ctl_input.correlator.clocksink())
 
         self[4]=atom.Atom(names='inputs')
@@ -81,6 +81,7 @@ class Agent(agent.Agent):
         self[4][14]=atom.Atom(domain=domain.BoundedFloat(-1,9,hints=th),init=3,policy=self.input.merge_policy(15,False),names='octave input',protocols='bind',container=(None,'octave',self.verb_container()))
         self[4][15]=atom.Atom(domain=domain.BoundedInt(1,4),init=2,policy=atom.default_policy(self.__set_curve),names='curve',protocols='bind')
         self[4][17]=atom.Atom(domain=domain.BoundedFloat(-10,10,hints=th),init=0,policy=self.input.merge_policy(17,False),names='relative octave input',protocols='bind')
+        self[4][18]=atom.Atom(domain=domain.BoundedFloat(-10,10),policy=self.input.merge_policy(18,False),names='modifier input')
 
         self.add_verb2(3,'choose([],None,role(none,[ideal([None,scale]),singular]))',callback=self.__tune_scale)
         self.add_verb2(5,'fix([],None)',callback=self.__fix)

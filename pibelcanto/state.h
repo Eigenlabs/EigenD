@@ -91,6 +91,7 @@ extern "C" {
 #define BCTUNIT_BEATS       0x40 /** time: beats */
 #define BCTUNIT_CENTS       0x60 /** notes in cents */
 #define BCTUNIT_BPM         0x70 /** tempo in bpm */
+#define BCTUNIT_STEPS       0x80 /** scale steps */
 
 #define BCTSTATUS_OFF              0
 #define BCTSTATUS_ACTIVE           1

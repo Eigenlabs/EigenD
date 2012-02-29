@@ -465,6 +465,13 @@ namespace
             scale_data_.clear();
         }
 
+        void setmodifier(const piw::data_nb_t &v)
+        {
+            modifier_=v.as_renorm_float(BCTUNIT_STEPS,-10,10,0);
+            time_ = std::max(time_,v.time());
+            //pic::logmsg() << "kbend = " << kbend_ << " time " << time_;
+        }
+
         void setkbend(const piw::data_nb_t &v)
         {
             kbend_=v.as_renorm_float(-1,1,0);
@@ -527,6 +534,7 @@ namespace
 
             kbend_=0;
             gbend_=0;
+            modifier_=0;
             override_=false;
 
             if(e->ufilterenv_latest(SCALER_OVERRIDE,d,time_)) setoverride(d);
@@ -539,6 +547,7 @@ namespace
             if(e->ufilterenv_latest(SCALER_GBEND,d,time_)) setgbend(d);
             if(e->ufilterenv_latest(SCALER_KRANGE,d,time_)) setkrange(d);
             if(e->ufilterenv_latest(SCALER_GRANGE,d,time_)) setgrange(d);
+            if(e->ufilterenv_latest(SCALER_MODIFIER,d,time_)) setmodifier(d);
 
 #if SCALER_DEBUG>0
             pic::logmsg() << "scaler start key: " << keynum_ << ':' << keycourse_;
@@ -547,6 +556,7 @@ namespace
             recalculate_note();
             recalculate_gbend();
             recalculate_kbend();
+            recalculate_modifier();
 
             time_ = id.time();
             e->ufilterenv_start(time_);
@@ -629,6 +639,7 @@ namespace
             bool nc=false;
             bool gc=false;
             bool kc=false;
+            bool mc=false;
 
             switch(sig)
             {
@@ -638,11 +649,17 @@ namespace
                 case SCALER_GRANGE: gc=true; setgrange(d); break;
                 case SCALER_KBEND: kc=true; setkbend(d); break;
                 case SCALER_KRANGE: kc=true; setkrange(d); break;
+                case SCALER_MODIFIER: mc=true; setmodifier(d); break;
             }
 
             if(nc)
             {
                 recalculate_note();
+            }
+
+            if(mc)
+            {
+                recalculate_modifier();
             }
 
             if(gc)
@@ -737,7 +754,7 @@ namespace
             if(dirty_ && note_ >= 0 && note_hz_ > 0)
             {
                 dirty_ = false;
-                float bend = kbend_note_+gbend_note_;
+                float bend = mbend_note_+kbend_note_+gbend_note_;
                 float note = note_+bend;
                 env->ufilterenv_output(SCALER_SCALENOTE,piw::makefloat_bounded_nb(136,16,16,note,time_));
 
@@ -767,6 +784,14 @@ namespace
             dirty_ = true;
         }
 
+        void recalculate_modifier()
+        {
+            float mbend_note = modifier_;
+            if (mbend_note_ == mbend_note) return;
+            mbend_note_ = mbend_note;
+            dirty_ = true;
+        }
+
         float tonic_;
         float octave_;
         float roctave_;
@@ -780,12 +805,14 @@ namespace
         float keynum_;
         float keycourse_;
 
+        float modifier_;
         float kbend_;
         float gbend_;
         float note_;
         float note_hz_;
         float kbend_note_;
         float gbend_note_;
+        float mbend_note_;
 
         bool dirty_;
         piw::data_nb_t id_;
