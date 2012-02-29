@@ -565,7 +565,9 @@ class Agent(agent.Agent):
 
         self.add_verb2(15,'choose([],None,role(None,[mass([output])]))', callback=self.__ochoose, status_action=self.__ostatus)
 
-        self[9] = atom.Atom(domain=domain.BoundedFloatOrNull(-20,20),init=None,policy=atom.default_policy(self.__change_base),names='base note')
+        th=(T('stageinc',1),T('inc',1),T('biginc',1),T('control','updown'))
+
+        self[9] = atom.Atom(domain=domain.BoundedFloatOrNull(-20,20,hints=th),init=None,policy=atom.default_policy(self.__change_base),names='base note')
 
         self[16] = VirtualCourse(self.controller)
 
@@ -577,8 +579,6 @@ class Agent(agent.Agent):
         self[17] = atom.Atom(domain=domain.Aniso(), policy=self.cinput.nodefault_policy(1,False),names='controller input')
         self.cfunctor.set_functor(piw.pathnull(0),utils.make_change_nb(piw.slowchange(utils.changify(self.__upstream))))
 
-        th=(T('stageinc',1),T('inc',1),T('biginc',1),T('control','updown'))
-
         self[18] = atom.Atom(domain=domain.BoundedFloatOrNull(-1,9,hints=th),init=None,policy=atom.default_policy(self.__change_octave),names='octave')
 
         self[19] = atom.Atom(domain=domain.BoundedFloatOrNull(0,12,hints=th),init=None,policy=atom.default_policy(self.__change_tonic),names='tonic',protocols='bind set',container=(None,'tonic',self.verb_container()))
@@ -587,7 +587,7 @@ class Agent(agent.Agent):
         self[20] = atom.Atom(domain=domain.String(),init='',policy=atom.default_policy(self.__change_scale),names='scale',protocols='bind set',container=(None,'scale',self.verb_container()))
         self[20].add_verb2(1,'set([],~a,role(None,[instance(~self)]),role(to,[ideal([None,scale]),singular]))',create_action=self.__tune_scale_fast,callback=self.__tune_scale)
         
-        self[21] = atom.Atom(domain=domain.BoundedFloatOrNull(0,20),init=0.5,policy=atom.default_policy(self.__change_blinktime),names='blink')
+        self[21] = atom.Atom(domain=domain.BoundedFloatOrNull(0,20,hints=(T('stageinc',0.1),T('inc',0.1),T('biginc',1),T('control','updown'))),init=0.5,policy=atom.default_policy(self.__change_blinktime),names='blink')
 
         self[1] = OutputList(self)
 
