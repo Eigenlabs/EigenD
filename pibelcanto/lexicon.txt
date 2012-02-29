@@ -1467,7 +1467,7 @@ Notes            Word           Classification     Synonyms
 2   3   1   6  : Unused        : Unused            : None
 2   3   1   7  : Bend          : Noun              : None
 2   3   1   8  : Mode          : Noun              : None
-2   3   2   1  : Unused        : Unused            : None
+2   3   2   1  : Modifier      : Noun              : None
 2   3   2   2  : Unused        : Unused            : None
 2   3   2   3  : Current       : Noun              : None
 2   3   2   4  : Unused        : Unused            : None
