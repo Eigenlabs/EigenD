@@ -155,6 +155,52 @@ class BundleInput:
     def check_signal(self,signal):
         assert signal in self.signals
 
+class VectorDefaultPolicyImpl(policy.ConnectablePolicyImpl):
+    protocols = 'input'
+
+    def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,clocked,callback,auto_slot):
+        self.__stream_policy = stream_policy
+        self.__input = input
+        self.__signal = signal
+        self.__callback = callback
+        self.__ctrl = None
+        self.__static_data = FastSender()
+        policy.ConnectablePolicyImpl.__init__(self,atom,data_domain,init,clocked,node.Server(transient=transient),auto_slot)
+        self.data_node().set_change_handler(self.__change)
+        self.__input.correlator.plumb_input(self.__signal,255,piw.pathnull(0),10,policy.Plumber.input_merge,self.__static_data,self.__stream_policy.create_converter(False),piw.null_filter())
+
+    def __change(self,d):
+        v = self.get_domain().data2value(d)
+        self.change_value(v)
+
+    def change_value(self,v,t=0,p=True):
+        self.set_value(v,t)
+
+    def set_value(self,v,t=0):
+        d = self.get_domain().value2data(v,t)
+        self.__static_data.send(d)
+        policy.ConnectablePolicyImpl.set_value(self,v,t)
+
+    def close(self):
+        policy.ConnectablePolicyImpl.close(self)
+        self.data_node().clear_change_handler()
+        self.__input.correlator.unplumb_input(self.__signal,255,piw.pathnull(0),10)
+
+    def get_backend(self,config):
+        if self.__ctrl is None:
+            f=piw.slowchange(utils.changify(self.__change))
+            self.__ctrl = policy.FunctorController(self.__input.clock_domain,functor=f)
+
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid,config.clocked),self.__ctrl.get_backend(config)
+
+    def create_plumber(self,config):
+        config.callback=self.__callback
+        return policy.Plumber(self,config)
+
+    def destroy_plumber(self,plumber):
+        if self.count_connections()==0:
+            self.__ctrl = None
+
 class VectorPolicyImpl(policy.ConnectablePolicyImpl):
     protocols = 'input nostage'
 
@@ -518,6 +564,13 @@ class VectorInput(BundleInput):
         """
         self.check_signal(signal)
         return PolicyFactory(VectorPolicyImpl,self,signal,policy.DefaultStreamPolicy(stream_policy),clocked,callback,auto_slot)
+    def vector_default_policy(self, signal, stream_policy, clocked=True, callback=None, auto_slot=False):
+        """
+        Pure vector policy.  These inputs have a static value which acts as a default 
+        in the case where there is no event on this input.
+        """
+        self.check_signal(signal)
+        return PolicyFactory(VectorDefaultPolicyImpl,self,signal,policy.DefaultStreamPolicy(stream_policy),clocked,callback,auto_slot)
     def linger_policy(self, signal, stream_policy, clocked=True, callback=None):
         """
         These inputs are merged into wires created by other policies: they never cause
