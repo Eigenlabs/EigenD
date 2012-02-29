@@ -192,11 +192,9 @@ class StageXMLRPCFuncs:
                         cache = self.__database.get_propcache('protocol')
                         noStage = 'nostage' in cache.get_valueset(atom[0])
 
-
-                        isNumericType = atomDomainType=='bint' or \
-                                           atomDomainType=='bfloat' or \
-                                           atomDomainType=='bintn' or \
-                                           atomDomainType=='bfloatn'
+                        isIntegerType = atomDomainType=='bint' or atomDomainType=='bintn'
+                        isFloatType = atomDomainType=='bfloat' or atomDomainType=='bfloatn'
+                        isNumericType = isIntegerType or isFloatType
                         isSupportedType = (isNumericType or atomDomainType=='bool' or atomDomainType=='trigger') and not noStage
 
                         #print oscPath,atomName,atomDomainCanonical,noStage,isSupportedType
@@ -234,6 +232,10 @@ class StageXMLRPCFuncs:
                                 xml += 'userStep="%f" '%stageInc
                             elif controllerInc:
                                 xml += 'userStep="%f" '%controllerInc
+                            elif isIntegerType:
+                                xml += 'userStep="1.0" '
+                            elif isFloatType:
+                                xml += 'userStep="0.01" '
 
                             xml += '/>\n'
 

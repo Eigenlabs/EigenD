@@ -22,6 +22,8 @@ import piw
 from pi import const,agent,atom,bundles,domain,upgrade,paths,utils,node
 from . import cycler_version as version
 
+from pi.logic.shortcuts import T
+
 class Agent(agent.Agent):
 
     def __init__(self, address, ordinal):
@@ -62,9 +64,9 @@ class Agent(agent.Agent):
         self[1][6]=atom.Atom(domain=domain.BoundedFloat(0,96000),policy=self.input.vector_policy(6,False),names='frequency input')
         self[1][7]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.feedback.vector_policy(1,False,clocked=False),names='feedback input')
         self[1][8]=atom.Atom(domain=domain.BoundedFloat(0,1),init=0.0,policy=self.input.linger_policy(16,False),names='damper pedal input',container=(None,'damper',self.verb_container()))
-        self[1][10]=atom.Atom(domain=domain.BoundedFloat(0,1),init=1.0,policy=atom.default_policy(self.__setmaxdamp),names='damper maximum input')
+        self[1][10]=atom.Atom(domain=domain.BoundedFloat(0,1,hints=(T('stageinc',0.01),T('inc',0.01),T('biginc',0.1),T('control','updown'))),init=1.0,policy=atom.default_policy(self.__setmaxdamp),names='damper maximum input')
         self[1][12]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.latch_policy(17,False),names='hold pedal input')
-        self[1][13]=atom.Atom(domain=domain.BoundedFloat(0.1,10),init=1,names="damper curve",policy=atom.default_policy(self.__setdcurve))
+        self[1][13]=atom.Atom(domain=domain.BoundedFloat(0.1,10,hints=(T('stageinc',0.1),T('inc',0.1),T('biginc',1),T('control','updown'))),init=1,names="damper curve",policy=atom.default_policy(self.__setdcurve))
 
         self[4] = atom.Atom(names="inverted damper",domain=domain.Bool(),init=True,policy=atom.default_policy(self.__setinverted))
 

@@ -338,20 +338,21 @@ class Agent(agent.Agent):
         self.synth_loader = sampler2_native.loader(self.synth_player,self.envelope_output.cookie(),self.domain)
         self.vdetector = piw.velocitydetect(self.synth_loader.cookie(),4,3)
 
+        vel=(T('stageinc',0.1),T('inc',0.1),T('biginc',1),T('control','updown'))
         self[4] = atom.Atom(domain=domain.BoundedInt(1,1000),init=4,names="velocity sample",policy=atom.default_policy(self.__set_samples))
-        self[5] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names="velocity curve",policy=atom.default_policy(self.__set_curve))
-        self[7] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names="velocity scale",policy=atom.default_policy(self.__set_scale))
+        self[5] = atom.Atom(domain=domain.BoundedFloat(0.1,10,hints=vel),init=4,names="velocity curve",policy=atom.default_policy(self.__set_curve))
+        self[7] = atom.Atom(domain=domain.BoundedFloat(0.1,10,hints=vel),init=4,names="velocity scale",policy=atom.default_policy(self.__set_scale))
 
         self.loader_input = bundles.VectorInput(self.vdetector.cookie(), self.domain, signals=(1,4),threshold=5)
         self.player_input = bundles.VectorInput(self.synth_player.cookie(), self.domain, signals=(1,2,3),threshold=5)
 
         self[2] = atom.Atom(names='inputs')
         self[2][1]=atom.Atom(domain=domain.BoundedFloat(0,96000,rest=440), names='frequency input',ordinal=1,policy=self.player_input.merge_policy(1,False))
-        self[2][2]=atom.Atom(domain=domain.BoundedFloat(-1200,1200), names='detune input',policy=self.player_input.merge_policy(2,False))
+        self[2][2]=atom.Atom(domain=domain.BoundedFloat(-1200,1200,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), names='detune input',policy=self.player_input.merge_policy(2,False))
         self[2][3]=atom.Atom(domain=domain.BoundedFloat(0,1), names='activation input',policy=self.player_input.vector_policy(3,False))
 
         self[2][4]=atom.Atom(domain=domain.BoundedFloat(0,1), names='pressure input',policy=self.loader_input.vector_policy(4,False))
-        self[2][5]=atom.Atom(domain=domain.BoundedFloat(-72,72), names='transpose', policy=atom.default_policy(self.__settranspose))
+        self[2][5]=atom.Atom(domain=domain.BoundedFloat(-72,72,hints=(T('stageinc',0.5),T('inc',0.5),T('biginc',12),T('control','updown'))), names='transpose', policy=atom.default_policy(self.__settranspose))
         self[2][6]=atom.Atom(domain=domain.BoundedFloat(0,96000,rest=440), names='frequency input',ordinal=2,policy=self.loader_input.merge_policy(1,False))
 
         self.__transpose = 0

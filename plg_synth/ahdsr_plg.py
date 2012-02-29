@@ -37,12 +37,13 @@ class Agent(agent.Agent):
         self.adsr = synth_native.adsr2(self.output.cookie(),self.domain)
         self.vdetect = piw.velocitydetect(self.adsr.cookie(),8,1)
 
+        vel=(T('stageinc',0.1),T('inc',0.1),T('biginc',1),T('control','updown'))
         self[3] = atom.Atom(domain=domain.BoundedInt(1,1000),init=4,names="velocity sample",policy=atom.default_policy(self.__set_samples))
-        self[4] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names="velocity curve",policy=atom.default_policy(self.__set_curve))
-        self[5] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names="velocity scale",policy=atom.default_policy(self.__set_scale))
+        self[4] = atom.Atom(domain=domain.BoundedFloat(0.1,10,hints=vel),init=4,names="velocity curve",policy=atom.default_policy(self.__set_curve))
+        self[5] = atom.Atom(domain=domain.BoundedFloat(0.1,10,hints=vel),init=4,names="velocity scale",policy=atom.default_policy(self.__set_scale))
         self.input = bundles.VectorInput(self.vdetect.cookie(), self.domain,signals=(2,3,4,5,6,7,8,9,10,11,12,13,14),threshold=5)
 
-        time=(T('inc',0.01),T('biginc',0.2),T('control','updown'))
+        time=(T('stageinc',0.01),T('inc',0.01),T('biginc',0.2),T('control','updown'))
         self[1] = atom.Atom(names='inputs')
         self[1][1]=atom.Atom(domain=domain.BoundedFloat(0,1), init=1.0, names="activation input", policy=self.input.merge_policy(13,False), protocols="nostage")
         self[1][2]=atom.Atom(domain=domain.BoundedFloat(0,60,hints=time),init=0, names="delay input", policy=self.input.merge_policy(2,False))
