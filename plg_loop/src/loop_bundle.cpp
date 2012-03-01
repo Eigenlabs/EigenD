@@ -74,7 +74,7 @@ namespace loop
 {
     struct player_t::impl_t : piw::root_t, piw::wire_t, piw::clocksink_t, piw::root_ctl_t, piw::wire_ctl_t, piw::event_data_source_real_t, piw::event_data_sink_t, piw::thing_t, virtual pic::tracked_t, virtual public pic::lckobject_t
     {
-        impl_t(const piw::cookie_t &c, piw::clockdomain_ctl_t *d,const pic::status_t &s): piw::root_t(0), piw::event_data_source_real_t(piw::pathnull(0)), up_(0), bmod_(0), interp_(1), transport_(false), playing_(PLAY), awake_(false), volume_(1.0), clockdomain_(d), status_(s)
+        impl_t(const piw::cookie_t &c, piw::clockdomain_ctl_t *d,const pic::status_t &s): piw::root_t(0), piw::event_data_source_real_t(piw::pathnull(0)), up_(0), bmod_(0), interp_(1), transport_(false), playing_(STOP), awake_(false), volume_(1.0), clockdomain_(d), status_(s)
         {
             connect(c);
             loaded_.set(false);

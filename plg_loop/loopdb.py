@@ -294,11 +294,21 @@ class LoopDatabase:
         if r:
             return r[0]
     
-    def idforfile(self,file):
+    def idforfile(self,filename):
         cx = sqlite3.connect(self.__dbfile)
-        r = cx.execute("""select id from files where file=?""",  (file,)).fetchone()
+        r = cx.execute("""select id from files where file=?""",  (filename,)).fetchone()
+
         if r:
-            return r[0]
+            return (filename,r[0])
+
+        basename = os.path.basename(filename)
+        r = cx.execute("""select id,file from files where basename=?""",  (basename,)).fetchone()
+
+        if r:
+            return (str(r[1]),str(r[0]))
+
+        return (filename,None)
+
     
     def idforbasename(self,basename):
         cx = sqlite3.connect(self.__dbfile)
