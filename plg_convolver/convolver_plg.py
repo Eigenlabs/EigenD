@@ -33,6 +33,7 @@ import sys
 import piw
 import picross
 from pi import  action,agent,atom,bundles,domain,files,paths,policy,resource,riff,upgrade,utils,node,logic,index,guid,rpc,async,state,container
+from pi.logic.shortcuts import T
 from . import convolver_version as version, convolver_native
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -281,13 +282,13 @@ class Agent(agent.Agent):
         self[6]=atom.Atom(domain=domain.BoundedFloat(-1,1), names="right audio input", policy=self.input.nodefault_policy(2,True))
 
         # wet/dry mix
-        self[7]=atom.Atom(domain=domain.BoundedFloat(0,1), init=0.5, names="mix", protocols='input', policy=self.input.merge_policy(3,False))
+        self[7]=atom.Atom(domain=domain.BoundedFloat(0,1,hints=(T('stageinc',0.01),T('inc',0.01),T('biginc',0.1),T('control','updown'))), init=0.5, names="mix", protocols='input', policy=self.input.merge_policy(3,False))
         # effect enable
         self[8]=atom.Atom(domain=domain.Bool(), init=True, names="enable", protocols='input', policy=atom.default_policy(self.__set_enable))
         # mono processing mode
         self[9]=atom.Atom(domain=domain.Bool(), init=False, names="mono", policy=atom.default_policy(self.__set_mono_processing))
         # enable time, time to fade in and out when enabling in ms
-        self[10] = atom.Atom(names='enable time input', domain=domain.BoundedFloat(0,100000), init=100, policy=atom.default_policy(self.__set_enable_time))
+        self[10] = atom.Atom(names='enable time input', domain=domain.BoundedFloat(0,100000,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=100, policy=atom.default_policy(self.__set_enable_time))
 
         self.__set_enable(self[8].get_value())
         self.__set_mono_processing(self[9].get_value())

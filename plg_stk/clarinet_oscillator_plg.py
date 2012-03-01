@@ -34,23 +34,22 @@ class Agent(agent.Agent):
         self.inst = stk_native.clarinet(self.output.cookie(),self.domain)
         self.input = bundles.VectorInput(self.inst.cookie(), self.domain,signals=(2,3,4,5,6,7,8,9))
 
-        param=(T('stageinc',0.01),T('inc',0.02),T('biginc',0.2),T('control','updown'))
         self[2] = atom.Atom(names='inputs')
         self[2][2] = atom.Atom(names='frequency input', domain=domain.BoundedFloat(1,96000), policy=self.input.vector_policy(2,False))
         self[2][3] = atom.Atom(names='pressure input', domain=domain.BoundedFloat(0,1), policy=self.input.merge_policy(3,False),protocols='nostage')
         
         # TODO: remove
-        #self[2][4] = atom.Atom(names='reed stiffness input', domain=domain.BoundedFloat(0,1,hints=param), init=0.5, policy=self.input.merge_policy(4,False))
+        #self[2][4] = atom.Atom(names='reed stiffness input', domain=domain.BoundedFloat(0,1), init=0.5, policy=self.input.merge_policy(4,False))
 
-        self[2][5] = atom.Atom(names='noise gain input', domain=domain.BoundedFloat(0,1,hints=param), init=0.25, policy=self.input.merge_policy(5,False))
+        self[2][5] = atom.Atom(names='noise gain input', domain=domain.BoundedFloat(0,1), init=0.25, policy=self.input.merge_policy(5,False))
 
         # TODO: remove
-        #self[2][6] = atom.Atom(names='vibrato frequency input', domain=domain.BoundedFloat(0,1,hints=param), init=0.2, policy=self.input.merge_policy(6,False), protocols='explicit')
+        #self[2][6] = atom.Atom(names='vibrato frequency input', domain=domain.BoundedFloat(0,1), init=0.2, policy=self.input.merge_policy(6,False), protocols='explicit')
         # TODO: remove
-        #self[2][7] = atom.Atom(names='vibrato gain input', domain=domain.BoundedFloat(0,1,hints=param), init=0, policy=self.input.merge_policy(7,False))
+        #self[2][7] = atom.Atom(names='vibrato gain input', domain=domain.BoundedFloat(0,1), init=0, policy=self.input.merge_policy(7,False))
         
-        self[2][8] = atom.Atom(names='pitch time input', domain=domain.BoundedFloat(0,100000,hints=param), init=10, policy=self.input.merge_policy(8,False))
-        self[2][9] = atom.Atom(names='minimum frequency', domain=domain.BoundedFloat(0.1,20,hints=param), init=20, policy=self.input.merge_policy(9,False))
+        self[2][8] = atom.Atom(names='pitch time input', domain=domain.BoundedFloat(0,100000,hints=(T('stageinc',10),T('inc',10),T('biginc',1000),T('control','updown'))), init=10, policy=self.input.merge_policy(8,False))
+        self[2][9] = atom.Atom(names='minimum frequency', domain=domain.BoundedFloat(0.1,20,hints=(T('stageinc',0.1),T('inc',0.1),T('biginc',0.2),T('control','updown'))), init=20, policy=self.input.merge_policy(9,False))
 
 #        self[2][9] = atom.Atom(names='refl frequency', domain=domain.BoundedFloat(1,96000,1), init=3400, policy=self.input.merge_policy(9,False))
 #        self[2][10] = atom.Atom(names='refl width', domain=domain.BoundedFloat(0.01,100), init=0.28, policy=self.input.merge_policy(10,False))

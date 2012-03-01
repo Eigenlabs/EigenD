@@ -20,6 +20,7 @@
 
 from pi import agent,atom,logic,node,utils,bundles,audio,domain,const,upgrade,errors,action,async,resource,inputparameter,paths
 from pibelcanto import lexicon
+from pi.logic.shortcuts import T
 from . import audio_unit_version as version, host_native
 
 import piw
@@ -369,10 +370,11 @@ class Agent(agent.Agent):
         self[7] =  atom.Atom(domain=domain.BoundedInt(0,16),init=0,names='midi channel',policy=atom.default_policy(self.set_midi_channel))
 
         # velocity curve control
+        vel=(T('stageinc',0.1),T('inc',0.1),T('biginc',1),T('control','updown'))
         self[8] = atom.Atom(names='velocity curve controls')
         self[8][1] = atom.Atom(domain=domain.BoundedInt(1,1000),init=4,names='velocity sample',policy=atom.default_policy(self.__set_velocity_samples))
-        self[8][2] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names='velocity curve',policy=atom.default_policy(self.__set_velocity_curve))
-        self[8][3] = atom.Atom(domain=domain.BoundedFloat(0.1,10),init=4,names='velocity scale',policy=atom.default_policy(self.__set_velocity_scale))
+        self[8][2] = atom.Atom(domain=domain.BoundedFloat(0.1,10,hints=vel),init=4,names='velocity curve',policy=atom.default_policy(self.__set_velocity_curve))
+        self[8][3] = atom.Atom(domain=domain.BoundedFloat(0.1,10,hints=vel),init=4,names='velocity scale',policy=atom.default_policy(self.__set_velocity_scale))
 
         self[10] = atom.Atom(domain=domain.BoundedFloatOrNull(0,100000),init=None,names='tail time',policy=atom.default_policy(self.__set_tail_time))
         self[11] = atom.Atom(domain=domain.BoundedInt(1,16),init=1,names='minimum channel',policy=atom.default_policy(self.set_min_channel))

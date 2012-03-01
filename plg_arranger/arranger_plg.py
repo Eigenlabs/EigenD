@@ -19,6 +19,7 @@
 #
 
 from pi import agent,atom,bundles,domain,errors,policy,utils,action,const,node,upgrade,logic,async,collection,talker
+from pi.logic.shortcuts import T
 from . import arranger_version as version,arranger_native
 import piw
 
@@ -224,7 +225,7 @@ class Parameters(atom.Atom):
         self[5] = atom.Atom(names="position",container=(None,'position',self.__agent.verb_container()),protocols='set')
         self[5].add_verb2(1,'set([],~a,role(None,[instance(~self)]),role(to,[numeric]))',create_action=self.__position_create,clock=True)
 
-        self[6] = atom.Atom(domain=domain.BoundedFloat(0.5,20),init=0.5,names='doubletap',policy=atom.default_policy(self.__doubletap_change))
+        self[6] = atom.Atom(domain=domain.BoundedFloat(0.5,20,hints=(T('stageinc',0.1),T('inc',0.1),T('biginc',1),T('control','updown'))),init=0.5,names='doubletap',policy=atom.default_policy(self.__doubletap_change))
         self.__agent.view.doubletap_set(piw.make_change_nb(utils.slowchange(self.__doubletap_set)))
 
     def __start_change(self,v):
