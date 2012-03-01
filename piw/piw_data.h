@@ -400,6 +400,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(data_t) pathtwo_ex(unsigned nb, unsigned v1, unsigned v2, unsigned long long t);
     PIW_DECLSPEC_FUNC(data_t) pathprepend_event_ex(unsigned nb, const data_t &d, unsigned p);
     PIW_DECLSPEC_FUNC(data_t) pathappend_channel_ex(unsigned nb, const data_t &d, unsigned p);
+    PIW_DECLSPEC_FUNC(data_t) pathappend_ex(unsigned nb, const data_t &d, unsigned p);
     PIW_DECLSPEC_FUNC(data_t) pathtruncate_ex(unsigned nb, const data_t &d);
     PIW_DECLSPEC_FUNC(data_t) pathpretruncate_ex(unsigned nb, const data_t &d);
     PIW_DECLSPEC_FUNC(data_t) pathpretruncate_ex(unsigned nb, const data_t &d,unsigned l);
@@ -432,6 +433,7 @@ namespace piw
     inline data_t pathtwo(unsigned v1, unsigned v2, unsigned long long t) { return pathtwo_ex(PIC_ALLOC_NORMAL,v1,v2,t); }
     inline data_t pathprepend_event(const data_t &d, unsigned p) { return pathprepend_event_ex(PIC_ALLOC_NORMAL,d,p); }
     inline data_t pathappend_channel(const data_t &d, unsigned p) { return pathappend_channel_ex(PIC_ALLOC_NORMAL,d,p); }
+    inline data_t pathappend(const data_t &d, unsigned p) { return pathappend_ex(PIC_ALLOC_NORMAL,d,p); }
     inline data_t pathtruncate(const data_t &d) { return pathtruncate_ex(PIC_ALLOC_NORMAL,d); }
     inline data_t pathpretruncate(const data_t &d) { return pathpretruncate_ex(PIC_ALLOC_NORMAL,d); }
     inline data_t pathpretruncate(const data_t &d,unsigned l) { return pathpretruncate_ex(PIC_ALLOC_NORMAL,d,l); }
@@ -481,6 +483,7 @@ namespace piw
     PIW_DECLSPEC_FUNC(data_nb_t) pathtwo_nb_ex(unsigned nb, unsigned v1, unsigned v2, unsigned long long t);
     PIW_DECLSPEC_FUNC(data_nb_t) pathprepend_event_nb_ex(unsigned nb, const data_nb_t &d, unsigned p);
     PIW_DECLSPEC_FUNC(data_nb_t) pathappend_channel_nb_ex(unsigned nb, const data_nb_t &d, unsigned p);
+    PIW_DECLSPEC_FUNC(data_nb_t) pathappend_nb_ex(unsigned nb, const data_nb_t &d, unsigned p);
     PIW_DECLSPEC_FUNC(data_nb_t) pathtruncate_nb_ex(unsigned nb, const data_nb_t &d);
     PIW_DECLSPEC_FUNC(data_nb_t) pathpretruncate_nb_ex(unsigned nb, const data_nb_t &d);
     PIW_DECLSPEC_FUNC(data_nb_t) pathpretruncate_nb_ex(unsigned nb, const data_nb_t &d,unsigned l);
@@ -512,6 +515,7 @@ namespace piw
     inline data_nb_t pathprepend_nb(const data_nb_t &d, unsigned p) { return pathprepend_nb_ex(PIC_ALLOC_NB,d,p); }
     inline data_nb_t pathtwo_nb(unsigned v1, unsigned v2, unsigned long long t) { return pathtwo_nb_ex(PIC_ALLOC_NB,v1,v2,t); }
     inline data_nb_t pathprepend_event_nb(const data_nb_t &d, unsigned p) { return pathprepend_event_nb_ex(PIC_ALLOC_NB,d,p); }
+    inline data_nb_t pathappend_nb(const data_nb_t &d, unsigned p) { return pathappend_nb_ex(PIC_ALLOC_NB,d,p); }
     inline data_nb_t pathappend_channel_nb(const data_nb_t &d, unsigned p) { return pathappend_channel_nb_ex(PIC_ALLOC_NB,d,p); }
     inline data_nb_t pathtruncate_nb(const data_nb_t &d) { return pathtruncate_nb_ex(PIC_ALLOC_NB,d); }
     inline data_nb_t pathpretruncate_nb(const data_nb_t &d) { return pathpretruncate_nb_ex(PIC_ALLOC_NB,d); }

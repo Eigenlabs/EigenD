@@ -223,6 +223,33 @@ static T __pathprepend_event(unsigned nb,const T &o, unsigned p)
 }
 
 template <class T>
+static T __pathappend(unsigned nb,const T &o, unsigned p)
+{
+    unsigned char *dp;
+    const unsigned char *op;
+    float *vv;
+    unsigned ol,oc;
+    T d;
+
+    PIC_ASSERT(o.type()==BCTVTYPE_PATH);
+
+    ol=o.host_length();
+    op=(const unsigned char *)o.host_data();
+    oc=*op;
+
+    d=T::from_given(__allocate_host(nb,o.time(),1,0,0,BCTVTYPE_PATH,1+ol,&dp,1,&vv));
+
+    dp[0]=oc;
+    memcpy(dp+1,op+1,oc);
+    memcpy(dp+1+oc,op+1+oc,ol-1-oc);
+    dp[ol]=p;
+
+    *vv=0;
+
+    return d;
+}
+
+template <class T>
 static T __pathappend_channel(unsigned nb,const T &o, unsigned p)
 {
     unsigned char *dp;
@@ -922,6 +949,7 @@ piw::data_t piw::pathprepend_ex(unsigned nb,const data_t &d, unsigned p) { retur
 piw::data_t piw::pathtwo_ex(unsigned nb,unsigned v1,unsigned v2,unsigned long long t) { return pathprepend_ex(nb,pathone_ex(nb,v2,t),v1); }
 piw::data_t piw::pathprepend_event_ex(unsigned nb,const data_t &d, unsigned p) { return (__pathprepend_event<data_t>(nb,d,p)); }
 piw::data_t piw::pathappend_channel_ex(unsigned nb,const data_t &d, unsigned p) { return (__pathappend_channel<data_t>(nb,d,p)); }
+piw::data_t piw::pathappend_ex(unsigned nb,const data_t &d, unsigned p) { return (__pathappend<data_t>(nb,d,p)); }
 piw::data_t piw::pathtruncate_ex(unsigned nb,const data_t &d) { return (__pathtruncate<data_t>(nb,d)); }
 piw::data_t piw::pathpretruncate_ex(unsigned nb,const data_t &d) { return (__pathpretruncate<data_t>(nb,d)); }
 piw::data_t piw::pathpretruncate_ex(unsigned nb,const data_t &d,unsigned l) { return (__pathpretruncate<data_t>(nb,d,l)); }
@@ -962,6 +990,7 @@ piw::data_nb_t piw::pathprepend_nb_ex(unsigned nb,const data_nb_t &d, unsigned p
 piw::data_nb_t piw::pathtwo_nb_ex(unsigned nb,unsigned v1,unsigned v2,unsigned long long t) { return pathprepend_nb_ex(nb,pathone_nb_ex(nb,v2,t),v1); }
 piw::data_nb_t piw::pathprepend_event_nb_ex(unsigned nb,const data_nb_t &d, unsigned p) { return (__pathprepend_event<data_nb_t>(nb,d,p)); }
 piw::data_nb_t piw::pathappend_channel_nb_ex(unsigned nb,const data_nb_t &d, unsigned p) { return (__pathappend_channel<data_nb_t>(nb,d,p)); }
+piw::data_nb_t piw::pathappend_nb_ex(unsigned nb,const data_nb_t &d, unsigned p) { return (__pathappend<data_nb_t>(nb,d,p)); }
 piw::data_nb_t piw::pathtruncate_nb_ex(unsigned nb,const data_nb_t &d) { return (__pathtruncate<data_nb_t>(nb,d)); }
 piw::data_nb_t piw::pathpretruncate_nb_ex(unsigned nb,const data_nb_t &d) { return (__pathpretruncate<data_nb_t>(nb,d)); }
 piw::data_nb_t piw::pathpretruncate_nb_ex(unsigned nb,const data_nb_t &d,unsigned l) { return (__pathpretruncate<data_nb_t>(nb,d,l)); }
