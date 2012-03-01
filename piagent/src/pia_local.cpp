@@ -589,6 +589,11 @@ void pia_lnode_t::api_set_source(bct_server_host_ops_t **s, bct_fastdata_t *f)
 
         if(n->isopen())
         {
+            if(!n->isfast() && !f)
+            {
+                return;
+            }
+
             n->ongoing();
 
             n->fastdata()->fastdata_set_upstream(f);

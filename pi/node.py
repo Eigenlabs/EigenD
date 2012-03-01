@@ -769,7 +769,7 @@ class client(piw.client):
             piw.client.set_sink(self,sink)
 
     def clear_sink(self):
-        self.set_sink(None)
+        piw.client.clear_sink()
 
     def close_client(self):
         if self.__children is not None:
