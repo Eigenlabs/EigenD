@@ -327,7 +327,6 @@ class Keyboard_Alpha2( Keyboard ):
         self.type = 1
         self.usbname = usbname
         self.usbdev = usbdev
-        self.ordinal = ordinal
         Keyboard.__init__(self,'alpha keyboard',ordinal,dom,remove,132)
 
         self[6] = bundles.Output(1,False,names='strip position output',ordinal=2)
@@ -406,10 +405,6 @@ class Keyboard_Alpha2( Keyboard ):
         print 'record key',k
         return action.nosync_return()
 
-    def subsys_prefix(self):
-        return "%d" % self.ordinal
-
-
 
 class Keyboard_Tau( Keyboard ):
     
@@ -417,7 +412,6 @@ class Keyboard_Tau( Keyboard ):
         self.type = 2
         self.usbname = usbname
         self.usbdev = usbdev
-        self.ordinal = ordinal
         Keyboard.__init__(self,'tau keyboard',ordinal,dom,remove,92)
         
         self.nativekeyboard_setup()
@@ -443,9 +437,6 @@ class Keyboard_Tau( Keyboard ):
     def nativekeyboard_setup(self):
         self.keyboard=keyboard_native.tau_bundle(self.usbdev,self.kclone.cookie(),utils.notify(self.dead))
         self.audio_input_setup()
-
-    def subsys_prefix(self):
-        return "t%d" % self.ordinal
 
 
 class BaseStation:
@@ -602,7 +593,7 @@ class KeyboardFactory( agent.Agent ):
         else:
             k = Keyboard_Tau(i,self.domain,lambda:self.del_keyboard(i),usbname=name)
 
-        self.add_subsystem(k.subsys_prefix(),k)
+        self.add_subsystem(str(i),k)
         print 'added keyboard',i,k.name()
 
     def create(self,type,name,device):
@@ -620,7 +611,7 @@ class KeyboardFactory( agent.Agent ):
         else:
             return None
 
-        self.add_subsystem(k.subsys_prefix(),k)
+        self.add_subsystem(str(i),k)
         print 'added keyboard',i,k.name()
         return k
 
