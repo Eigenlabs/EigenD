@@ -309,18 +309,15 @@ void osc_wire_t::send(unsigned long long t)
         // before or at time t
         if(iterator_->latest(i,d,t))
         {
-            unsigned pseq, mseq;
             float row, col, course, key;
             piw::hardness_t hardness;
-            if(IN_KEY==i && piw::decode_key(d,&pseq,&row,&col,&mseq,&course,&key,&hardness))
+            if(IN_KEY==i && piw::decode_key(d,0,&row,&col,0,&course,&key,&hardness))
             {
                 // fake the key number
                 if(output_->fake_key_)
                 {
-                    lo_message_add(msg,"i",pseq);
                     lo_message_add(msg,"f",row);
                     lo_message_add(msg,"f",col);
-                    lo_message_add(msg,"i",mseq);
                     lo_message_add(msg,"f",course);
                     lo_message_add(msg,"f",key);
                     lo_message_add(msg,"i",hardness);
@@ -382,10 +379,8 @@ bool osc_wire_t::event_end(unsigned long long t)
     {
         if(IN_KEY && output_->fake_key_)
         {
-            lo_message_add(msg,"i",0);
             lo_message_add(msg,"f",0.f);
             lo_message_add(msg,"f",0.f);
-            lo_message_add(msg,"i",0);
             lo_message_add(msg,"f",0.f);
             lo_message_add(msg,"f",0.f);
             lo_message_add(msg,"i",0);
