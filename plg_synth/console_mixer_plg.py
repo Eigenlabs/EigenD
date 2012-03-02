@@ -177,7 +177,7 @@ class FxChannel(atom.Atom):
         return self[1].is_connected() or self[2].is_connected()
 
     def get_cinfo(self):
-        l = '%s %s' % (self.name,self.ordinal_str)
+        l = self.get_description()
         return l+' fx'
 
     def __listener(self,veto,key,value):
@@ -345,7 +345,7 @@ class Channel(atom.Atom):
         return self[1].is_connected() or self[2].is_connected()
 
     def get_cinfo(self):
-        l = 'channel %d' % self.chan_num
+        l = self.get_description()
         return l
 
     def get_dinfo_pan(self):
