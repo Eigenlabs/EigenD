@@ -128,7 +128,7 @@ class Interpreter:
 
         self.__jobs.add(result)
 
-        def completed(status):
+        def completed(status,*args,**kwds):
             print 'background job',status
             self.__jobs.discard(result)
 
@@ -146,8 +146,8 @@ class Interpreter:
             else:
                 for w in waiters: w.failed('background job failed')
 
-        result.setCallback(lambda: completed(True))
-        result.setErrback(lambda msg: completed(False))
+        result.setCallback(lambda *args,**kwds: completed(True,*args,**kwds))
+        result.setErrback(lambda  *args,**kwds: completed(False,*args,**kwds))
 
     def set_result(self,r):
         self.__result = r

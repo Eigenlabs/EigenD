@@ -160,6 +160,7 @@ class VariableManager(atom.Atom):
         return v.find_alternative(value)
 
     def set_var(self,name,value):
+        print '*** SET VARIABLE',name,value
         v = self.variables.get(name)
         if v is None:
             i = self.find_hole()

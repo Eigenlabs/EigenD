@@ -448,6 +448,7 @@ class Atom(node.Server):
             return s.create_action(ctx,*arg)
 
         def func(value):
+            print 'TRIGGER FUNCTION',value,value.as_norm()
             if not value.is_null() and value.as_norm()!=0:
                 s.callback(*arg)
 
@@ -474,16 +475,7 @@ class Atom(node.Server):
     def rpc_set_icon(self,arg):
         self.set_icon(arg)
     
-    def rpc_notify_delete(self,arg):
-        self.add_property_termlist('notify',arg)
-
     def close_server(self):
-        if False:
-            if self.open():
-                id=self.id()
-                for agent in self.get_property_termlist('notify'):
-                    rpc.invoke_rpc(agent,'deleted',logic.render_term(id))
-
         self.__policy.close()
         node.Server.close_server(self)
 

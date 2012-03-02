@@ -338,6 +338,7 @@ class VirtualScale(atom.Atom):
                 self.__activated_name = k
                 self.__activated_scale = v
                 self.update_timestamp()
+                print 'updated choice to',k,v
                 return
 
         print 'no match',scale

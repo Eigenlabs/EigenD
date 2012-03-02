@@ -756,7 +756,7 @@ class BlockReferent(referent.Referent):
 
     def __init__(self,delim,words,open=True):
         referent.Referent.__init__(self)
-        self.__delim = delim
+        self.__delim = delim[:]
         self.__open = open
         self.__words = words[:]
 
@@ -769,10 +769,14 @@ class BlockReferent(referent.Referent):
 
         self.__words.append(word)
 
-        if klass == 'block' and word==self.__delim:
-            self.__open = False
-            self.set_referent(words=self.__words,objects=(logic.make_term('abstract',tuple(self.__words[1:-1])),))
-            return async.success(True)
+        if klass == 'block':
+            if word==self.__delim[-1]:
+                self.__delim.pop()
+                if not self.__delim:
+                    self.__open = False
+                    self.set_referent(words=self.__words,objects=(logic.make_term('abstract',tuple(self.__words[1:-1])),))
+            else:
+                self.__delim.append(word)
 
         return async.success(True)
 
@@ -837,16 +841,21 @@ class VarReferent(referent.Referent):
         if not self.__open:
             return async.success(False)
 
-        self.__open = False
-        self.__words.append(word)
+        if klass == 'noun':
+            self.__words.append(word)
+            return async.success(True)
 
-        var = interp.get_agent().get_variable(word)
+        self.__open = False
+
+        var = interp.get_agent().get_variable(' '.join(self.__words[1:]))
         obj = ()
         if var is not None:
             obj = logic.parse_clause(var)
 
+        print 'resolved variable', self.__words,obj
+
         self.set_referent(words=self.__words,objects=obj)
-        return async.success(True)
+        return async.success(False)
 
 @async.coroutine('internal error')
 def primitive_noun(interp,word):
@@ -893,7 +902,7 @@ def primitive_quote(interp,word):
     return async.success()
 
 def primitive_block(interp,word):
-    interp.push(BlockReferent(word,[word]))
+    interp.push(BlockReferent([word],[word]))
     return async.success()
 
 def primitive_it(interp,word):
