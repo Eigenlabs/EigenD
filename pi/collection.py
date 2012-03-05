@@ -74,10 +74,10 @@ class Collection(atom.Atom):
     def rpc_delinstance(self,arg):
         for k,v in self.items():
             if v.id() == arg:
+                v.notify_destroy()
                 o = v.get_property_long('ordinal',0)
                 oresult = self.__wrecker(k,v,o)
                 yield oresult
-                v.notify_destroy()
                 if k in self: del self[k]
                 yield async.Coroutine.success(arg)
 

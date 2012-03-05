@@ -52,6 +52,7 @@ class Atom(node.Server):
     def __init__(self,init=None,domain=None,policy=None,transient=False,rtransient=False,names=None,protocols=None,ordinal=None,fuzzy=None,creator=None,wrecker=None,pronoun=None,icon=None,container=None,ideals=None,bignode=False,dynlist=False,vocab=None):
 
         self.__listeners = []
+        self.__connection_scope = None
 
         ex = const.ext_node if bignode else None
         node.Server.__init__(self,creator=creator,wrecker=wrecker,rtransient=rtransient,extension=ex,dynlist=dynlist)
@@ -479,13 +480,6 @@ class Atom(node.Server):
         self.__policy.close()
         node.Server.close_server(self)
 
-    def notify_destroy(self):
-        for slave in self.get_property_termlist('slave'):
-            rpc.invoke_async_rpc(slave,'source_gone',self.id())
-
-        for (k,v) in self.iteritems():
-            v.notify_destroy()
-
     def rpc_download(self,arg):
         (cookie,start,length) = logic.parse_clause(arg)
 
@@ -623,22 +617,22 @@ class Atom(node.Server):
     def add_connection(self,src):
         old = self.get_property_termlist('master')
         self.add_property_termlist('master',src)
-        self.__update_listeners(old)
+        self.update_slaves(old)
 
     def set_connections(self,srcs):
         old = self.get_property_termlist('master')
         self.set_property_string('master',srcs)
-        self.__update_listeners(old)
+        self.update_slaves(old)
 
     def clear_connections(self):
         old = self.get_property_termlist('master')
         self.del_property('master')
-        self.__update_listeners(old)
+        self.update_slaves(old)
 
     def remove_connection(self,src):
         old = self.get_property_termlist('master')
         self.del_property_termlist('master',src)
-        self.__update_listeners(old)
+        self.update_slaves(old)
 
     def rpc_connected(self,arg):
         self.add_property_termlist('slave',logic.render_term(arg))
@@ -646,19 +640,37 @@ class Atom(node.Server):
     def rpc_disconnected(self,arg):
         self.del_property_termlist('slave',logic.render_term(arg))
 
-    def __update_listeners(self,old):
+    def set_connection_scope(self,scope):
+        self.__connection_scope = scope
+
+    def notify_destroy(self):
+        print self.id(),'notify destroy'
+        for slave in self.get_property_termlist('slave'):
+            slave = paths.to_absolute(slave,self.__connection_scope)
+            myrid = paths.to_relative(self.id(),scope=paths.id2scope(slave))
+            rpc.invoke_async_rpc(slave,'source_gone',myrid)
+
+        self.clear_connections();
+
+        for (k,v) in self.iteritems():
+            v.notify_destroy()
+
+    def update_slaves(self,old):
         masterids = set([x.args[2] for x in self.get_property_termlist('master')])
         previous = set([x.args[2] for x in old])
         dead_listeners = previous.difference(masterids)
         new_listeners = masterids.difference(previous)
-        print 'adding new listeners',new_listeners
-        print 'removing old listeners',dead_listeners
+        print 'listeners new=',new_listeners,'dead=',dead_listeners
 
         for id in dead_listeners:
+            id = paths.to_absolute(id,self.__connection_scope)
+            print 'removing old listener',id
             myrid = paths.to_relative(self.id(),scope=paths.id2scope(id))
             rpc.invoke_async_rpc(id,'disconnected',myrid)
 
         for id in new_listeners:
+            id = paths.to_absolute(id,self.__connection_scope)
+            print 'adding new listener',id
             myrid = paths.to_relative(self.id(),scope=paths.id2scope(id))
             rpc.invoke_async_rpc(id,'connected',myrid)
 

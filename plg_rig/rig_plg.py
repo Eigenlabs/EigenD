@@ -94,6 +94,7 @@ def RigOutputPolicy(*args,**kwds):
 class RigOutput(atom.Atom):
     def __init__(self,master,ordinal,scope):
         atom.Atom.__init__(self,ordinal=ordinal,policy=RigOutputPolicy(),protocols='remove')
+        self.set_connection_scope(scope)
 
         self.__inputs = {}
         self.__master = master
@@ -341,6 +342,7 @@ class RigInput(atom.Atom):
         policy=RigInputPolicy(self.__scope,self.__output_peer[self.__index])
 
         atom.Atom.__init__(self,ordinal=index,domain=domain.Aniso(),policy=policy,protocols='remove')
+        self.set_connection_scope(scope)
 
 
     def destroy_input(self):
@@ -370,6 +372,10 @@ class RigInput(atom.Atom):
             return
 
         self.set_domain(domain.Aniso())
+
+    def notify_destroy(self):
+        self.__output_peer[self.__index].notify_destroy()
+        atom.Atom.notify_destroy(self)
 
     def add_monitor(self,inp):
         iid = id(inp)
@@ -536,8 +542,8 @@ class InnerAgent(agent.Agent):
         return self.__workspace.addmodule_rpc(arg)
 
     def rpc_destroy(self,arg):
-        print 'destroy',arg
-        self.__workspace.unload(arg,True)
+        a=logic.parse_clause(arg)
+        self.__workspace.unload(a,True)
 
     def load_started(self,label):
         pass
@@ -558,10 +564,10 @@ class InnerAgent(agent.Agent):
         return func(*args,**kwds)
 
     def unload(self,destroy):
+        self.notify_destroy()
         self.__workspace.unload_all(destroy)
         if destroy:
             self.__workspace.shutdown()
-        self.notify_destroy()
 
 
 class OuterAgent(agent.Agent):
@@ -595,6 +601,7 @@ class OuterAgent(agent.Agent):
 
     def unload(self,destroy):
         self.__inner_agent.unload(destroy)
+        agent.Agent.unload(self,destroy)
 
     def __create_input(self,subject,dummy,name):
         name = action.abstract_string(name)
