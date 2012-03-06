@@ -359,6 +359,9 @@ class BrowseModel:
 
     @async.coroutine('internal error')
     def __get_name(self,targetId):    
+        if self.proxy is None:
+            return
+            
         db=self.proxy
         r=gui.defer_bg(db.getName,targetId)
         yield r
@@ -385,6 +388,9 @@ class BrowseModel:
 
     @async.coroutine('internal error')
     def __get_cinfo(self,id,path,start,ncolls):
+        if self.proxy is None:
+            return
+
         r = gui.defer_bg(self.proxy.cinfo,id,path,start,ncolls)
 
         yield r
@@ -418,6 +424,9 @@ class BrowseModel:
 
     @async.coroutine('internal error')
     def __get_dinfo(self,id,path):
+        if self.proxy is None:
+            return
+
         r = gui.defer_bg(self.proxy.dinfo,id,path)
 
         yield r
@@ -452,6 +461,9 @@ class BrowseModel:
 
     @async.coroutine('internal error')
     def __get_finfo(self,id,path):
+        if self.proxy is None:
+            return
+
         r = gui.defer_bg(self.proxy.finfo,id,path)
 
         yield r
@@ -482,6 +494,9 @@ class BrowseModel:
 
     @async.coroutine('internal error')
     def __enumerate(self,id,path):
+        if self.proxy is None:
+            return
+
         r = gui.defer_bg(self.proxy.enumerate,id,path)
 
         yield r
@@ -506,6 +521,9 @@ class BrowseModel:
 
     @async.coroutine('internal error')
     def __get_current(self,id):
+        if self.proxy is None:
+            return
+
         r = gui.defer_bg(self.proxy.current,id)
 
         yield r
@@ -533,6 +551,9 @@ class BrowseModel:
 
     @async.coroutine('internal error')
     def __check_enumerate(self,id,path):
+        if self.proxy is None:
+            return
+
         r = gui.defer_bg(self.proxy.enumerate,id,path)
 
         yield r
@@ -554,6 +575,9 @@ class BrowseModel:
 
     @async.coroutine('internal error')
     def __get_icon(self):
+        if self.proxy is None:
+            return
+
         r = gui.defer_bg(self.proxy.get_icon)
         yield r
         self.icon=None

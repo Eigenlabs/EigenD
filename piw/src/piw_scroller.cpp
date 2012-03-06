@@ -777,7 +777,7 @@ void piw::scroller2_t::impl_t::clocksink_ticked(unsigned long long from, unsigne
 
     if(iter_->latest(3,d,to))
     {
-        if(piw::decode_key(d,0,0,0,0,0,0,&hardness) && hardness==KEY_SOFT)
+        if(piw::decode_key(d,0,0,0,0,0,0,&hardness) && hardness==KEY_HARD)
         {
             activated_ = true;
         }
