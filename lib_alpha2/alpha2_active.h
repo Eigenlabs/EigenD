@@ -119,6 +119,10 @@ namespace alpha2
             void loopback_enable(bool);
             void loopback_gain(float);
             void mic_automute(bool);
+            void debounce_time(unsigned long);
+            void threshold_time(unsigned long long);
+            void key_threshold(unsigned);
+            void key_noise(unsigned);
 
             void restart();
             

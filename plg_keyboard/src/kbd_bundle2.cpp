@@ -2149,6 +2149,26 @@ void kbd::alpha2_bundle_t::set_mic_quality(unsigned q)
     _root->set_mic_quality(q);
 }
 
+void kbd::alpha2_bundle_t::debounce_time(unsigned long us)
+{
+    _root->loop_.debounce_time(us);
+}
+
+void kbd::alpha2_bundle_t::threshold_time(unsigned long long us)
+{
+    _root->loop_.threshold_time(us);
+}
+
+void kbd::alpha2_bundle_t::key_threshold(unsigned v)
+{
+    _root->loop_.key_threshold(v);
+}
+
+void kbd::alpha2_bundle_t::key_noise(unsigned v)
+{
+    _root->loop_.key_noise(v);
+}
+
 void kbd::alpha2_bundle_t::mic_enable(bool e)
 {
     _root->mic_output_->enable(e,false);
@@ -2390,6 +2410,26 @@ void kbd::tau_bundle_t::set_pedal_max(unsigned pedal, unsigned value)
 piw::cookie_t kbd::tau_bundle_t::audio_cookie()
 {
     return _root->audio_cookie();
+}
+
+void kbd::tau_bundle_t::debounce_time(unsigned long us)
+{
+    _root->loop_.debounce_time(us);
+}
+
+void kbd::tau_bundle_t::threshold_time(unsigned long long us)
+{
+    _root->loop_.threshold_time(us);
+}
+
+void kbd::tau_bundle_t::key_threshold(unsigned v)
+{
+    _root->loop_.key_threshold(v);
+}
+
+void kbd::tau_bundle_t::key_noise(unsigned v)
+{
+    _root->loop_.key_noise(v);
 }
 
 void kbd::tau_bundle_t::set_hp_quality(unsigned q)

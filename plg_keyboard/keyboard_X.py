@@ -150,6 +150,10 @@ class Keyboard(agent.Agent):
     def set_controller(self):
         self[9] = atom.Atom(names='controller output',domain=domain.Aniso(),init=self.controllerinit())
   
+    def set_keybounce(self):
+        self[230] = atom.Atom(domain=domain.BoundedFloat(0,31500), init=20000, protocols='input output', names='debounce time', policy=atom.default_policy(self.keyboard.debounce_time))
+        self.keyboard.debounce_time(self[230].get_value())
+
     def set_threshhold(self):
         self[241] = atom.Atom(domain=domain.BoundedInt(0,4095), init=self.keyboard.get_pedal_min(1), protocols='input output explicit', names='pedal minimum threshold', ordinal=1, policy=atom.default_policy(lambda v: self.__set_min(1,v)))
         self[242] = atom.Atom(domain=domain.BoundedInt(0,4095), init=self.keyboard.get_pedal_max(1), protocols='input output explicit', names='pedal maximum threshold', ordinal=1, policy=atom.default_policy(lambda v: self.__set_max(1,v)))
@@ -338,6 +342,7 @@ class Keyboard_Alpha2( Keyboard ):
         self.nativekeyboard_setup()
         self.set_controller() #define in base class 
         self.set_threshhold() #define in base class 
+        self.set_keybounce();
         self.setup_leds() #define in base class 
 
     def rpc_dinfo(self,arg):
@@ -418,6 +423,7 @@ class Keyboard_Tau( Keyboard ):
         self.set_controller() #define in base class 
         self.set_threshhold() #define in base class 
         self.setup_leds() #define in base class 
+        self.set_keybounce();
 
     def rpc_dinfo(self,arg):
         l=[]

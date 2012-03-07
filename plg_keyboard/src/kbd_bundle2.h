@@ -129,6 +129,10 @@ namespace kbd
             void loopback_gain(float);
             void headphone_gain(unsigned);
             void headphone_limit(bool);
+            void debounce_time(unsigned long us);
+            void threshold_time(unsigned long long us);
+            void key_threshold(unsigned);
+            void key_noise(unsigned);
 
             void restart();
 
@@ -179,6 +183,10 @@ namespace kbd
             void headphone_enable(bool);
             void headphone_limit(bool);
             void headphone_gain(unsigned);
+            void debounce_time(unsigned long us);
+            void threshold_time(unsigned long long us);
+            void key_threshold(unsigned);
+            void key_noise(unsigned);
 
             void restart();
 

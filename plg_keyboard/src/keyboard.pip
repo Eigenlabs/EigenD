@@ -84,6 +84,10 @@ class alpha2_bundle[kbd::alpha2_bundle_t] /gc/
     void set_mic_quality(unsigned)
     void set_hp_quality(unsigned)
     void restart()
+    void debounce_time(unsigned long);
+    void threshold_time(unsigned long long);
+    void key_threshold(unsigned);
+    void key_noise(unsigned);
 }
 
 class tau_bundle[kbd::tau_bundle_t] /gc/
@@ -122,4 +126,8 @@ class tau_bundle[kbd::tau_bundle_t] /gc/
     void arm_recording(unsigned)
     void set_hp_quality(unsigned)
     void restart()
+    void debounce_time(unsigned long);
+    void threshold_time(unsigned long long);
+    void key_threshold(unsigned);
+    void key_noise(unsigned);
 }
