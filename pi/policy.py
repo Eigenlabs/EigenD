@@ -474,8 +474,8 @@ class FastPolicyImpl(ConnectablePolicyImpl):
 
         if self.__backend is None:
             self.__backend = piw.functor_backend(1,True)
-            self.__backend.set_functor(piw.pathnull(0),utils.make_change_nb(self.__handler))
-            self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.root_filter(),self.__backend.cookie(),0,0)
+            self.__backend.set_gfunctor(utils.make_change_nb(self.__handler))
+            self.__correlator = piw.correlator(self.__clock_domain,chr(1),piw.null_filter(),self.__backend.cookie(),0,0)
 
         if config.clocked:
             self.__set_clock(self.__backend.get_clock())
