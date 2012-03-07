@@ -470,6 +470,62 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
         mic_config_done(mc);
     }
 
+    void debounce_time(unsigned long us) // RA_TIMEOUT
+    {
+        ra_timeout_ = us;
+
+        if(legacy_mode_ || kbd_state_ != KBD_STARTED)
+        {
+            return;
+        }
+
+        unsigned long v = std::min(us/500,63UL);
+        write_register(A2_REG_RA_TIMEOUT,v);
+        pic::logmsg() << "debounce time " << us;
+    }
+
+    void threshold_time(unsigned long us) // TF_TIMEOUT
+    {
+        tf_timeout_ = us;
+
+        if(legacy_mode_ || kbd_state_ != KBD_STARTED)
+        {
+            return;
+        }
+
+        unsigned long v = std::min(us/50,255UL);
+        write_register(A2_REG_TF_TIMEOUT,v);
+        pic::logmsg() << "threshold filter time " << us;
+    }
+
+    void key_threshold(unsigned us)
+    {
+        key_thresh_ = us;
+
+        if(legacy_mode_ || kbd_state_ != KBD_STARTED)
+        {
+            return;
+        }
+
+        unsigned v = std::min(us,63U);
+        write_register(A2_REG_KA_THRESH,v);
+        pic::logmsg() << "key threshold " << us;
+    }
+
+    void key_noise(unsigned us)
+    {
+        key_noise_ = us;
+
+        if(legacy_mode_ || kbd_state_ != KBD_STARTED)
+        {
+            return;
+        }
+
+        unsigned v = std::min(us,15U);
+        write_register(A2_REG_KA_NOISE,v);
+        pic::logmsg() << "key noise " << us;
+    }
+
     pic::usbdevice_t *device_;
     alpha2::active_t::delegate_t *handler_;
     key_in_pipe *pkey_in_pipe_;
@@ -489,6 +545,9 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     bool mic_pad_,mic_enable_,hp_enable_,loop_enable_,mic_automute_,hp_limit_,raw_mode_;
     unsigned mic_type_,mic_gain_,hp_gain_;
     float loop_gain_;
+    unsigned long long ra_timeout_, tf_timeout_;
+    unsigned key_noise_;
+    unsigned key_thresh_;
 
     unsigned kbd_state_;
 };
@@ -527,7 +586,7 @@ alpha2::active_t::impl_t::impl_t(pic::usbdevice_t *device, alpha2::active_t::del
     active_colour_(0x03),
     tau_mode_(false),
     mic_pad_(true), mic_enable_(false), hp_enable_(false), loop_enable_(false), mic_automute_(false), hp_limit_(true),raw_mode_(false),
-    mic_type_(1), mic_gain_(0x15), hp_gain_(0x46),
+    mic_type_(1), mic_gain_(0x15), hp_gain_(0x46), ra_timeout_(20000), tf_timeout_(5000), key_noise_(8), key_thresh_(25),
     kbd_state_(KBD_OFF)
 {
     device_->set_power_delegate(this);
@@ -829,6 +888,10 @@ bool alpha2::active_t::impl_t::poll(unsigned long long t)
             mic_pad(mic_pad_);
             mic_enable(mic_enable_);
             mic_gain(mg);
+            debounce_time(ra_timeout_);
+            threshold_time(tf_timeout_);
+            key_threshold(key_thresh_);
+            key_noise(key_noise_);
         }
     }
 
@@ -1373,3 +1436,22 @@ void alpha2::active_t::restart()
     _impl->restart();
 }
 
+void alpha2::active_t::debounce_time(unsigned long us)
+{
+    _impl->debounce_time(us);
+}
+
+void alpha2::active_t::threshold_time(unsigned long long us)
+{
+    _impl->threshold_time(us);
+}
+
+void alpha2::active_t::key_threshold(unsigned v)
+{
+    _impl->key_threshold(v);
+}
+
+void alpha2::active_t::key_noise(unsigned v)
+{
+    _impl->key_noise(v);
+}
