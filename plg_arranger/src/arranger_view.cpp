@@ -47,6 +47,11 @@
 #define KEY_RESETWINDOW 8
 #define KEY_CLEARALL 10
 
+#define SIG_PRESSURE 1
+#define SIG_ROLL 2
+#define SIG_YAW 3
+#define SIG_KEY 5
+
 #define DEFAULT_DOUBLETAP 0.5f
 
 namespace
@@ -343,7 +348,7 @@ namespace
 
         arranger::view_t::impl_t *parent_;
         unsigned active_;
-        vp_signal_t pressure_,roll_,yaw_;
+        vp_signal_t pressure_,roll_,yaw_,key_;
         piw::data_nb_t id_;
     };
 
@@ -613,7 +618,7 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
 
     void key_active(unsigned k,const piw::data_nb_t &d)
     {
-        // pic::logmsg() << "key active " << k << ", " << d;
+        //pic::logmsg() << "key active " << k << ", " << d;
         if(k<=control_keys_)
         {
             if(d.is_bool() && d.as_bool())
@@ -633,9 +638,22 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
                         reset_scrollers();
                         break;
                     case KEY_CLEARALL:
-                        clear_key_time_=d.time();
-                        timer_fast(doubletap_*1000);
-                        light1(KEY_CLEARALL,CLR_RED);
+                        if(clear_key_time_)
+                        {
+                            if(d.time()-clear_key_time_ < doubletap_*1000000)
+                            {
+                                clear_events();
+                                clear_key_time_=0;
+                                cancel_timer_fast();
+                                light1(KEY_CLEARALL,CLR_OFF);
+                            }
+                        }
+                        else
+                        {
+                            clear_key_time_=d.time();
+                            timer_fast(doubletap_*1000);
+                            light1(KEY_CLEARALL,CLR_RED);
+                        }
                         break;
                 }
             }
@@ -654,6 +672,7 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
 
     void thing_timer_fast()
     {
+        clear_key_time_=0;
         light1(KEY_CLEARALL,CLR_OFF);
     }
 
@@ -669,15 +688,6 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
                 case KEY_SCROLL_DOWN:
                 case KEY_SCROLL_UP:
                     ctrl_data(k-1,s,d);
-                    break;
-                case KEY_CLEARALL:
-                    if(clear_key_time_ && clear_key_time_-d.time() < doubletap_*1000000)
-                    {
-                        clear_events();
-                        clear_key_time_=0;
-                        cancel_timer_fast();
-                        light1(KEY_CLEARALL,CLR_OFF);
-                    }
                     break;
             }
             return;
@@ -849,7 +859,7 @@ void controller_t::light(const arranger::colrow_t &cr, unsigned z, unsigned colo
         parent_->light(cr);
 }
 
-vp_wire_t::vp_wire_t(arranger::view_t::impl_t *i, const piw::event_data_source_t &es) : parent_(i), active_(0), pressure_(this,1), roll_(this,2), yaw_(this,3)
+vp_wire_t::vp_wire_t(arranger::view_t::impl_t *i, const piw::event_data_source_t &es) : parent_(i), active_(0), pressure_(this,1), roll_(this,2), yaw_(this,3), key_(this,5)
 {
     subscribe(es);
 }
@@ -866,35 +876,29 @@ void vp_wire_t::invalidate()
 
 void vp_wire_t::event_start(unsigned seq,const piw::data_nb_t &id,const piw::xevent_data_buffer_t &b)
 {
-    piw::data_nb_t d;
-    if(b.latest(5,d,id.time()))
-    {
-        piw::decode_key(d,0,0,0,&active_);
-    }
-    else
-    {
-        return;
-    }
-
+    active_ = 0;
     id_ = id;
-    parent_->key_active(active_,piw::makebool_nb(true,id.time()));
-    pressure_.send_fast(id,b.signal(1));
-    roll_.send_fast(id,b.signal(2));
-    yaw_.send_fast(id,b.signal(3));
+    key_.send_fast(id,b.signal(SIG_KEY));
+    pressure_.send_fast(id,b.signal(SIG_PRESSURE));
+    roll_.send_fast(id,b.signal(SIG_ROLL));
+    yaw_.send_fast(id,b.signal(SIG_YAW));
 }
 
 void vp_wire_t::event_buffer_reset(unsigned s,unsigned long long t,const piw::dataqueue_t &o,const piw::dataqueue_t &n)
 {
     switch(s)
     {
-        case 1:
+        case SIG_PRESSURE:
             pressure_.send_fast(id_,n);
             break;
-        case 2:
+        case SIG_ROLL:
             roll_.send_fast(id_,n);
             break;
-        case 3:
+        case SIG_YAW:
             yaw_.send_fast(id_,n);
+            break;
+        case SIG_KEY:
+            key_.send_fast(id_,n);
             break;
     }
 }
@@ -915,7 +919,20 @@ vp_signal_t::vp_signal_t(vp_wire_t *w, unsigned s): fastdata_t(PLG_FASTDATA_SEND
 
 bool vp_signal_t::fastdata_receive_data(const piw::data_nb_t &d)
 {
-    wire_->parent_->key_data(wire_->active_,signal_,d);
+    if(SIG_KEY == signal_)
+    {
+        unsigned active;
+        piw::hardness_t hardness = piw::KEY_LIGHT;
+        if(piw::decode_key(d,0,0,0,&active,0,0,&hardness) && hardness != piw::KEY_LIGHT)
+        {
+            wire_->active_ = active;
+            wire_->parent_->key_active(wire_->active_,piw::makebool_nb(true,d.time()));
+        }
+    }
+    else if(wire_->active_)
+    {
+        wire_->parent_->key_data(wire_->active_,signal_,d);
+    }
     return true;
 }
 
