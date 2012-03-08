@@ -39,8 +39,8 @@ Not properly assigned, in use:
 8   6   3   2  : Instrument    : Noun              : None
 8   6   3   3  : Using         : Role              : None
 8   6   3   4  : Debounce      : Noun              : None
-8   6   3   5  : Unused        : Unused            : None
-8   6   3   6  : Unused        : Unused            : None
+8   6   3   5  : Gray          : Noun              : None
+8   6   3   6  : Simple        : Simple            : None
 8   6   3   7  : Unused        : Unused            : None
 8   6   3   8  : Unused        : Unused            : None
 8   6   4   1  : Unused        : Unused            : None
@@ -2511,8 +2511,8 @@ Notes            Word           Classification     Synonyms
 4   3   4   2  : Green         : Noun              : None
 4   3   4   3  : Amber         : Noun              : None
 4   3   4   4  : Blue          : Noun              : None
-4   3   4   5  : Unused        : Unused            : None
-4   3   4   6  : Unused        : Unused            : None
+4   3   4   5  : Grey          : Noun              : None
+4   3   4   6  : Orange        : Noun            : None
 4   3   4   7  : Unused        : Unused            : None
 4   3   4   8  : Unused        : Unused            : None
 4   3   5   1  : Unused        : Unused            : None
