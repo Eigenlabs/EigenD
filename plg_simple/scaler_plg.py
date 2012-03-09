@@ -101,7 +101,7 @@ class Agent(agent.Agent):
     def __tune_scale(self,subj,dummy,arg):
         print 'set scale',arg
         type,thing = action.crack_ideal(action.arg_objects(arg)[0])
-        if not self.__fixed: self[4][7].get_policy().set_value(thing)
+        if not self.__fixed: self[4][7].get_policy().set_value(action.marshal(thing))
         return action.nosync_return()
 
     def __set_curve(self,c):
