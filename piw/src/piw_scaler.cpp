@@ -450,14 +450,29 @@ namespace
     {
         sfunc_t(piw::scaler_t::impl_t *p) : parent_(p), time_(0)
         {
-            krange_=1;
-            grange_=12;
             tonic_=0;
             octave_=3;
             roctave_=0;
             mode_=0;
             scale_=parent_->controller_->common_scale_at(0);
             override_=false;
+
+            krange_=1;
+            grange_=12;
+
+            keynum_=-1.0;
+            keycourse_=-1.0;
+
+            modifier_=0.0;
+            kbend_=0.0;
+            gbend_=0.0;
+            note_=-1.0;
+            note_hz_=0.0;
+            kbend_note_=0.0;
+            gbend_note_=0.0;
+            mbend_note_=0.0;
+
+            dirty_=false;
         }
 
         ~sfunc_t()
@@ -511,7 +526,8 @@ namespace
         void ufilterfunc_start(piw::ufilterenv_t *e,const piw::data_nb_t &id)
         {
             //e->ufilterenv_dump(false);
-            id_=id;
+
+            id_ = id;
             time_ = id.time();
 
 #if SCALER_DEBUG>0
@@ -519,7 +535,7 @@ namespace
 #endif // SCALER_DEBUG>0
 
             keynum_=-1.0;
-            keycourse_=0.0;
+            keycourse_=-1.0;
 
             piw::data_nb_t d;
             if(e->ufilterenv_latest(SCALER_KEY,d,time_))
@@ -687,6 +703,13 @@ namespace
 
         void recalculate_note()
         {
+            if(keynum_ < 0 || keycourse_ < 0)
+            {
+                note_=-1.0;
+                note_hz_=0.0;
+                return;
+            }
+
             float t=tonic_,o=octave_,m=mode_;
 
             piw::scaler_controller_t::sref_t s=scale_;
@@ -717,7 +740,6 @@ namespace
             }
 
             key_offset += (keynum_+m);
-
 
             int scale_size = s->size()-1;
             float ntave_size = s->at(scale_size);
