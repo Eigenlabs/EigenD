@@ -713,7 +713,9 @@ int piw::controlled_t::__disable_direct(void *c_, void *_)
 
 void piw::controlled_t::control_receive(unsigned s,const piw::data_nb_t &value)
 {
-    if(s!=1) return;
+    piw::hardness_t h;
+
+    if(s!=1 || !piw::decode_key(value,0,0,0,0,0,0,&h) || h==piw::KEY_LIGHT) return;
 
     if(enabled_)
         disable();
