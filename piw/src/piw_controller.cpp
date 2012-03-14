@@ -222,9 +222,8 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
         unsigned kn = 0;
         float kr = 0;
         float kc = 0;
-        piw::hardness_t kh;
 
-        if(!piw::decode_key(key,&kn,&kr,&kc,0,0,0,&kh)) return;
+        if(!piw::decode_key(key,&kn,&kr,&kc)) return;
         if(kr==0 && kc==0) { return; }
 
         piw::data_nb_t rowlen;
