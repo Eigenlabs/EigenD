@@ -65,14 +65,13 @@ namespace
         return 0;
     }
 
-    static bool compare_phys_key(const piw::data_nb_t &k1, const piw::data_nb_t &k2, bool accept_lightpress)
+    static bool compare_phys_key(const piw::data_nb_t &k1, const piw::data_nb_t &k2)
     {
-        unsigned k1n; float k1r,k1c; piw::hardness_t k1h;
+        unsigned k1n; float k1r,k1c;
         unsigned k2n; float k2r,k2c;
 
-        if(!piw::decode_key(k1,&k1n,&k1r,&k1c,0,0,0,&k1h)) return false;
-        if(!accept_lightpress && k1h == piw::KEY_LIGHT) return false;
-        if(!piw::decode_key(k2,&k2n,&k2r,&k2c)) return true;
+        if(!piw::decode_key(k1,&k1n,&k1r,&k1c)) return false;
+        if(!piw::decode_key(k2,&k2n,&k2r,&k2c)) return false;
         if(k1n!=k2n) return false;
         if(k1r!=k2r) return false;
         if(k1c!=k2c) return false;
@@ -223,7 +222,9 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
         unsigned kn = 0;
         float kr = 0;
         float kc = 0;
-        if(!piw::decode_key(key,&kn,&kr,&kc)) return;
+        piw::hardness_t kh;
+
+        if(!piw::decode_key(key,&kn,&kr,&kc,0,0,0,&kh)) return;
         if(kr==0 && kc==0) { return; }
 
         piw::data_nb_t rowlen;
@@ -501,7 +502,7 @@ void ctlfilter_t::ufilterfunc_data(piw::ufilterenv_t *env,unsigned s,const piw::
 
         if(s==1)
         {
-            if(!compare_phys_key(d,current_key_.get(),false))
+            if(!compare_phys_key(d,current_key_.get()))
             {
                 current_key_.set_nb(d);
                 changed=true;
@@ -764,29 +765,19 @@ int piw::fasttrigger_t::__ping_direct(void *c_, void *v_)
 
     pic::logmsg() << "trigger fired " << t;
     c->send(piw::makebool_nb(true,t));
-    c->control_start(t);
+    c->start_event(t);
     c->send(piw::makebool_nb(false,t+1));
-    c->control_term(t+2);
+    c->end_event(t+2);
+
     return 0;
 }
 
 void piw::fasttrigger_t::control_start(unsigned long long t)
 {
-    if(active_++==0)
-    {
-        start_event(t);
-    }
 }
 
 void piw::fasttrigger_t::control_term(unsigned long long t)
 {
-    if(active_>0)
-    {
-        if(--active_==0)
-        {
-            end_event(t);
-        }
-    }
 }
 
 void piw::fasttrigger_t::control_receive(unsigned s,const piw::data_nb_t &value)
