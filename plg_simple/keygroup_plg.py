@@ -561,7 +561,7 @@ class Agent(agent.Agent):
         self.add_verb2(18,'clear([],None,role(None,[mass([row])]))', callback=self.__rowclear)
 
         self.add_verb2(13,'add([],None,role(None,[coord(physical,[row],[column])]),role(to,[coord(physical,[row],[column])]))', callback=self.__kadd_physical)
-        self.add_verb2(14,'add([],None,role(None,[coord(musical,[key],[course])]),role(to,[coord(musical,[key],[course])]))', callback=self.__kadd_musical)
+        self.add_verb2(14,'add([],None,role(None,[coord(musical,[course],[key])]),role(to,[coord(musical,[course],[key])]))', callback=self.__kadd_musical)
 
         self.add_verb2(15,'choose([],None,role(None,[mass([output])]))', callback=self.__ochoose, status_action=self.__ostatus)
 
@@ -850,8 +850,8 @@ class Agent(agent.Agent):
         self.__set_physical_mapping(new)
 
     def __kadd_musical(self,subject,kfrom,kto):
-        fkey,fcourse = action.coord_value(kfrom)
-        tkey,tcourse = action.coord_value(kto)
+        fcourse,fkey = action.coord_value(kfrom)
+        tcourse,tkey = action.coord_value(kto)
 
         old = self.__current_musical_mapping()
         new = []

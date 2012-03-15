@@ -41,8 +41,8 @@ Not properly assigned, in use:
 8   6   3   4  : Debounce      : Noun              : None
 8   6   3   5  : Gray          : Noun              : None
 8   6   3   6  : Simple        : Noun              : None
-8   6   3   7  : Unused        : Unused            : None
-8   6   3   8  : Unused        : Unused            : None
+8   6   3   7  : Physical      : Noun              : None
+8   6   3   8  : Musical       : Noun              : None
 8   6   4   1  : Unused        : Unused            : None
 8   6   4   2  : Unused        : Unused            : None
 8   6   4   3  : Unused        : Unused            : None
