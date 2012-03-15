@@ -225,6 +225,8 @@ class Output(atom.Atom):
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key column', init=None, policy=atom.default_policy(self.__change_key_column))
 
         self[23].add_verb2(1,'set([toggle],~a,role(None,[instance(~self)]))', callback=self.__enable_toggle, status_action=self.__status)
+        self[23].add_verb2(2,'set([],~a,role(None,[instance(~s)]))', callback=self.__enable_set, status_action=self.__status)
+        self[23].add_verb2(3,'set([un],~a,role(None,[instance(~s)]))', callback=self.__enable_unset, status_action=self.__status)
 
         self.koutput = bundles.Splitter(self.__agent.domain,self[2],self[3],self[4],self[22])
         self.s1output = bundles.Splitter(self.__agent.domain,self[5],self[10])
@@ -259,6 +261,14 @@ class Output(atom.Atom):
     
     def __enable_toggle(self,subj,prop):
         self.enable(not self[23].get_value())
+        return action.nosync_return()
+    
+    def __enable_set(self,subj,prop):
+        self.enable(True)
+        return action.nosync_return()
+    
+    def __enable_unset(self,subj,prop):
+        self.enable(False)
         return action.nosync_return()
 
     def __status(self,subj,prop):
