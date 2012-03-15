@@ -88,7 +88,7 @@ namespace
 
         int ticked(unsigned long long from,unsigned long long now, unsigned long sr, unsigned bs)
         {
-            //pic::logmsg() << "lopass tick " << from << "-" << now;
+            //pic::logmsg() << "lopass tick " << from << "-" << now << " idle " << idle_;
             if(idle_==0)
             {
                 //pic::logmsg() << "suppressing";

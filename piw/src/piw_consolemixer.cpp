@@ -53,7 +53,7 @@
 // 0: off
 // 1: lo
 // 2: hi
-#define CONSOLE_MIXER_DEBUG 0
+#define CONSOLE_MIXER_DEBUG 1
 
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -619,7 +619,6 @@ namespace
         bool event_end(unsigned long long t);
         void process(unsigned long long t);
         void set_gains();
-        void process();
         void set_curves(const pic::f2f_t &vol, const pic::f2f_t &pan);
 
         piw::dataqueue_t vinput_, pinput_;
@@ -683,23 +682,23 @@ namespace
         pindex_=0;
 
         process(id.time());
-
     }
 
     void consolemixer_controlwire_t::process(unsigned long long t)
     {
         piw::data_nb_t d;
+        unsigned long long nvindex, npindex;
 
-        if(vinput_.latest(d,&vindex_,t))
+        if(vinput_.latest(d,&nvindex,t) && nvindex!=vindex_)
         {
-            vindex_++;
+            vindex_=nvindex;
             volctl_ = d.as_renorm(0,120,0);
             reset_pan_ = true;
         }
 
-        if(pinput_.latest(d,&pindex_,t))
+        if(pinput_.latest(d,&npindex,t) && npindex!=pindex_)
         {
-            pindex_++;
+            pindex_=npindex;
             float u = d.as_array_ubound();
             float l = d.as_array_lbound();
             float r = d.as_array_rest();
@@ -826,7 +825,7 @@ namespace
             *sendgain_ = volfunc_(sendctl_);
 
 #if CONSOLE_MIXER_DEBUG>1
-            pic::logmsg() << "consolemixer_sendwire_t::set_gains() sendgain=" << *sendgain_;
+            pic::logmsg() << "consolemixer_sendwire_t::process() sendgain=" << *sendgain_;
 #endif // CONSOLE_MIXER_DEBUG>1
 
         }
@@ -1091,7 +1090,6 @@ namespace
             w=active_input_wires_.next(w);
         }
 
-        // process the control inputs
         control_wire_->process(t);
 
         piw::data_nb_t left_audio, right_audio, left_audio_gain, right_audio_gain, send_audio;
