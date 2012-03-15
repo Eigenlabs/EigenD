@@ -87,6 +87,7 @@ namespace piw
             class impl_t;
         public:
             statusbuffer_t(const piw::change_nb_t &, unsigned, const cookie_t &);
+            statusbuffer_t(const cookie_t &);
             ~statusbuffer_t();
             void send();
             void override(bool);

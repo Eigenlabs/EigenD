@@ -482,6 +482,7 @@ class lightconvertor[piw::lightconvertor_t]
 
 class statusbuffer[piw::statusbuffer_t] /gc/
 {
+    statusbuffer(const cookie &)
     statusbuffer(const change_nb &, unsigned, const cookie &)
     void send()
     void override(bool)

@@ -372,6 +372,10 @@ piw::statusbuffer_t::statusbuffer_t(const piw::change_nb_t &s, unsigned ch, cons
 {
 }
 
+piw::statusbuffer_t::statusbuffer_t(const cookie_t &c): root_(new impl_t(piw::change_nb_t(), 0, c))
+{
+}
+
 piw::statusbuffer_t::~statusbuffer_t()
 {
     delete root_;
