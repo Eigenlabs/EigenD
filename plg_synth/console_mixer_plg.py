@@ -102,7 +102,7 @@ class FxSendControls(atom.Atom):
         self.set_property_long('ordinal',ordinal,allow_veto=False)
 
     def disconnect(self):
-        self.channel.aggregator.clear_output(2+fx_chan_num)
+        self.channel.aggregator.clear_output(2+self.fx_chan_num)
 
     def __set_fx_send_enable(self, value):
         self.channel.main_agent.mixer.set_fx_send_enable(value, self.channel.get_chan_num()-1, self.fx_chan_num-1, self.__is_fx_chan)
@@ -162,8 +162,8 @@ class FxChannel(atom.Atom):
 
         self.control_input = bundles.ScalarInput(self.aggregator.get_output(1),main_agent.clk,signals=(1,2))        
         self[4] = atom.Atom(names='controls')
-        self[4][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='volume', policy=self.control_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
-        self[4][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('stageinc',0.1),T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
+        self[4][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='volume', policy=self.control_input.notify_policy(1,False,notify=main_agent.changes_pending), protocols='bind input')
+        self[4][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('stageinc',0.1),T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,False,notify=main_agent.changes_pending), protocols='bind input')
                 
         # audio return input
         self.return_input = bundles.VectorInput(self.aggregator.get_output(2),main_agent.clk,signals=(1,2))
