@@ -166,7 +166,7 @@ bool midi_clock_filter_t::cfilterfunc_process(piw::cfilterenv_t *env,unsigned lo
 
     while(env->cfilterenv_next(i, d, to))
     {
-        if(d.time() <= from)
+        if(d.time() < from)
             continue;
 
         switch(i)

@@ -575,7 +575,7 @@ namespace loop
 
             if(output_started_)
             {
-                output_.add_value(3,piw::makefloat_bounded_nb(1,0,0,0,t-1));
+                output_.add_value(3,piw::makefloat_bounded_nb(1,0,0,0,t));
                 output_started_ = false;
                 source_end(t);
             }

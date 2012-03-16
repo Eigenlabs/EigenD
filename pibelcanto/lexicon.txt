@@ -2512,7 +2512,7 @@ Notes            Word           Classification     Synonyms
 4   3   4   3  : Amber         : Noun              : None
 4   3   4   4  : Blue          : Noun              : None
 4   3   4   5  : Grey          : Noun              : None
-4   3   4   6  : Orange        : Noun            : None
+4   3   4   6  : Orange        : Noun              : None
 4   3   4   7  : Unused        : Unused            : None
 4   3   4   8  : Unused        : Unused            : None
 4   3   5   1  : Unused        : Unused            : None
