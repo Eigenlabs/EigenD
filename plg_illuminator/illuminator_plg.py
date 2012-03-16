@@ -99,14 +99,14 @@ class Agent(agent.Agent):
         self.__update_lights()
 
     def __unset_physical(self,subject,key):
-        row,col = action.coord_value(key)
-        phys = [x for x in logic.parse_clause(self[2].get_value()) if x[0][0] != row and x[0][1] != column]
+        row,column = action.coord_value(key)
+        phys = [x for x in logic.parse_clause(self[2].get_value()) if x[0][0] != row or x[0][1] != column]
         self[2].set_value(logic.render_term(phys))
         self.__update_lights()
 
     def __unset_musical(self,subject,key):
         course,key = action.coord_value(key)
-        mus = [x for x in logic.parse_clause(self[3].get_value()) if x[0][0] != course and x[0][1] != key]
+        mus = [x for x in logic.parse_clause(self[3].get_value()) if x[0][0] != course or x[0][1] != key]
         self[3].set_value(logic.render_term(mus))
         self.__update_lights()
 
