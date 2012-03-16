@@ -145,11 +145,11 @@ class RigOutput(atom.Atom):
 
     def plumb_clocks(self):
         for v in self.__inputs.values():
-            v.set_downstream(self.__clock)
+            v.set_downstream_clock(self.__clock)
 
     def unplumb_clocks(self):
         for v in self.__inputs.values():
-            v.clear_downstream()
+            v.clear_downstream_clock()
 
     def set_domain(self,dom):
         self.unplumb_clocks()
@@ -186,14 +186,14 @@ class RigOutput(atom.Atom):
 
     def add_input(self,iid,inp):
         if iid in self.__inputs:
-            self.__inputs[iid].clear_downstream()
+            self.__inputs[iid].clear_downstream_clock()
             del self.__inputs[iid]
         self.__inputs[iid] = inp
         self.__setup()
 
     def del_input(self,iid):
         if iid in self.__inputs:
-            self.__inputs[iid].clear_downstream()
+            self.__inputs[iid].clear_downstream_clock()
             del self.__inputs[iid]
             self.__setup()
 
@@ -220,6 +220,14 @@ class RigInputPlumber(proxy.AtomProxy):
         self.set_data_clone(None)
         self.__mainanchor.set_address_str('')
         self.__connector = None
+
+    def clear_downstream_clock(self):
+        if self.__connector:
+            self.__connector.clear_downstream()
+
+    def set_downstream_clock(self,clock):
+        if self.__connector:
+            self.__connector.set_downstream(clock)
 
     def node_ready(self):
         self.__output.add_input(self.__iid,self)
