@@ -43,7 +43,7 @@ Not properly assigned, in use:
 8   6   3   6  : Simple        : Noun              : None
 8   6   3   7  : Physical      : Noun              : None
 8   6   3   8  : Musical       : Noun              : None
-8   6   4   1  : Unused        : Unused            : None
+8   6   4   1  : Illuminator   : Noun              : None
 8   6   4   2  : Unused        : Unused            : None
 8   6   4   3  : Unused        : Unused            : None
 8   6   4   4  : Unused        : Unused            : None
