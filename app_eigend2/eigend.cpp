@@ -72,25 +72,6 @@ static const char *save_help_text = ""
 "\n"
 "When you go to load a Setup you will see that all your saved Setups are arranged in a hierarchy which uses each part of the Belcanto name as a level. This, along with the tags, helps you to organise and remember large collections of Setups.\n";
 
-const char *network_help_klass = "Network Error";
-const char *network_help_label = "Network Error";
-const char *network_help_text = ""
-"\n"
-"Your network does not appear to be configured correctly.\n"
-"\n"
-"In order to function, EigenD requires that multicast traffic "
-"is allowed between processes on this machine.  There appears "
-"to be something blocking this traffic.  This is usually a "
-"firewall or anti virus program.\n"
-"\n"
-"EigenD itself will function normally, but other applications\n"
-"like Commander and Browser will not work correctly.\n"
-"\n"
-"For more information, please visit:\n"
-"\n"
-"http://www.eigenlabs.com/network-error\n"
-"\n";
-
 #ifdef PI_MACOSX
 #define TOOL_BROWSER "EigenBrowser"
 #define TOOL_COMMANDER "EigenCommander"
@@ -1948,8 +1929,6 @@ void EigenD::initialise (const String& commandLine)
 
     printf("release root: %s\n",pic::release_root_dir().c_str());
 
-    bool net_test = eigend::test_network();
-
     pic::bgprocess_t(pic::private_exe_dir(),"eigenbugreporter",true).start();
 
     pic::f_string_t primary_logger = pic::f_string_t::method(this,&EigenD::log);
@@ -1990,15 +1969,6 @@ void EigenD::initialise (const String& commandLine)
         juce::AlertWindow::showMessageBox(juce::AlertWindow::WarningIcon, "An unexpected error occurred ...", python_->last_error().c_str());
     }
 
-    if(!net_test)
-    {
-        pic::logmsg() << "Network test failed";
-        main_window_->alert1(network_help_klass,network_help_label,network_help_text,true);
-    }
-    else
-    {
-        pic::logmsg() << "Network test passed";
-    }
 }
 
 void EigenD::shutdown()
