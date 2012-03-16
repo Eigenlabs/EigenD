@@ -488,7 +488,7 @@ class Lexicon:
         if w.startswith('!'):
             x = self.__base_reverse.get(w[1:])
             if x: return x[1],x[0]
-            x = self.__forward.get(w[1:])
+            x = self.__reverse.get(w[1:])
             if x: return x[2],x[1]
         else:
             x = self.__base_forward.get(w)
