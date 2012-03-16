@@ -52,7 +52,6 @@ namespace
 
         piw::data_nb_t operator()(const piw::data_nb_t &x) const
         {
-            pic::logmsg() << "d2d in " << x << " out " << data_.get();
             return data_.get();
         }
 

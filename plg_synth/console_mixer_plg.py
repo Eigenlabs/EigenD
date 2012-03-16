@@ -162,8 +162,8 @@ class FxChannel(atom.Atom):
 
         self.control_input = bundles.ScalarInput(self.aggregator.get_output(1),main_agent.clk,signals=(1,2))        
         self[4] = atom.Atom(names='controls')
-        self[4][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='volume', policy=self.control_input.notify_policy(1,False,notify=main_agent.changes_pending), protocols='bind input')
-        self[4][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('stageinc',0.1),T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,False,notify=main_agent.changes_pending), protocols='bind input')
+        self[4][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='volume', policy=self.control_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
+        self[4][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('stageinc',0.1),T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
                 
         # audio return input
         self.return_input = bundles.VectorInput(self.aggregator.get_output(2),main_agent.clk,signals=(1,2))
@@ -196,7 +196,6 @@ class FxChannel(atom.Atom):
 
     def property_change(self,k,v,delegate):
         if k in [ 'name','ordinal' ]:
-            print 'property change',self.fx_chan_num,k,v
             for k,v in self.main_agent.channels.iteritems():
                 v.update_fx_send_controls(self.fx_chan_num)
 
@@ -240,7 +239,6 @@ class FxChannel(atom.Atom):
             c = self.main_agent.fxchannels[index]
             o = c.get_property_long('ordinal',None)
             n = c.get_property_string('name',None)
-            print 'fx rename',index,n,o
             self[5][index].update_name(n,o)
             self.main_agent.changes_pending()
 
@@ -386,7 +384,6 @@ class Channel(atom.Atom):
         c = self.main_agent.fxchannels[index]
         o = c.get_property_long('ordinal',None)
         n = c.get_property_string('name',None)
-        print 'rename',index,n,o
         self[4][index].update_name(n,o)
         self.main_agent.changes_pending()
 
