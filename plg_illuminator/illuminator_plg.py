@@ -433,14 +433,24 @@ class Agent(agent.Agent):
 
     def __add_choices(self):
         if self.__choosemusical:
-            existing = list(logic.parse_clause(self.get_musical()))
+            new = []
+            newpos = []
             for choice in self.__choices:
-                existing.append([[int(choice[3][0]),int(choice[3][1])],self.__choosecolour])
+                pos = (int(choice[3][0]),int(choice[3][1]))
+                newpos.append(pos)
+                new.append([pos,self.__choosecolour])
+            existing = [x for x in logic.parse_clause(self.get_musical()) if x[0] not in newpos]
+            existing.extend(new)
             self.set_musical_map(logic.render_term(existing))
         else:
-            existing = list(logic.parse_clause(self.get_physical()))
+            new = []
+            newpos = []
             for choice in self.__choices:
-                existing.append([[int(choice[1][0]),int(choice[1][1])],self.__choosecolour])
+                pos = (int(choice[1][0]),int(choice[1][1]))
+                newpos.append(pos)
+                new.append([pos,self.__choosecolour])
+            existing = [x for x in logic.parse_clause(self.get_physical()) if x[0] not in newpos]
+            existing.extend(new)
             self.set_physical_map(logic.render_term(existing))
 
 
