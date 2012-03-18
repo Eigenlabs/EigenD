@@ -21,6 +21,157 @@ from pi import agent,atom,domain,policy,bundles,logic,action,utils
 from . import illuminator_version as version
 
 import piw
+import threading,sys,socket,fileinput,re
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+
+MATCH_PHYSICAL = re.compile('/row/(\d+)/column/(\d+)',re.IGNORECASE)
+MATCH_MUSICAL = re.compile('/course/(\d+)/key/(\d+)',re.IGNORECASE)
+MATCH_MAP = re.compile('\[(?:\[\[\d+,\d+\],\w+\](?:,\[\[\d+,\d+\],\w+\])*)?\]',re.IGNORECASE)
+
+class InterruptableHTTPServer(HTTPServer):
+    allow_reuse_address = True
+
+    def __init__(self, agent, snapshot, host, port, handler):
+        HTTPServer.__init__(self, (host,port), handler)
+        self.agent = agent
+        self.__snapshot = snapshot
+
+    def server_bind(self):
+        self.__timeToQuit = threading.Event()
+        self.__timeToQuit.clear()      
+
+        HTTPServer.server_bind(self)
+        self.socket.settimeout(1)
+
+    def get_request(self):
+        while not self.__timeToQuit.isSet():
+            try:
+                sock, addr = self.socket.accept()
+                sock.settimeout(None)
+                return (sock, addr)
+            except socket.timeout:
+                if self.__timeToQuit.isSet():
+                    raise socket.error
+        raise socket.error
+
+    def close_request(self, request):
+        if (request is None): return
+        HTTPServer.close_request(self, request)
+
+    def process_request(self, request, client_address):
+        if (request is None): return
+        HTTPServer.process_request(self, request, client_address)
+
+    def start(self):
+        self.__timeToQuit.clear()      
+        threading.Thread(target=self.serve).start()
+
+    def stop(self):
+        self.__timeToQuit.set()
+
+    def serve(self):
+        self.__snapshot.install()
+
+        while not self.__timeToQuit.isSet():
+            try:
+                self.handle_request()
+            except:
+                print 'server error: unexpected error', sys.exc_info()[0]
+        self.server_close()
+
+class IlluminatorRequestHandler(BaseHTTPRequestHandler):
+    def output_get(self, content):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")                     
+        self.end_headers()
+        self.wfile.write(content)
+
+    def do_GET(self):
+        if self.path == '/physical':
+            self.output_get(self.server.agent.get_physical())
+            return
+
+        if self.path == '/musical':
+            self.output_get(self.server.agent.get_musical())
+            return
+
+        self.send_response(404)
+        self.end_headers()
+
+    def do_PUT(self):
+        if self.path == '/physical':
+            content = self.rfile.read(int(self.headers['Content-Length']))
+            if MATCH_MAP.match(content):
+                self.send_response(200)
+                self.end_headers()
+                self.server.agent.set_physical_map(content)
+            else:
+                self.send_response(400)
+                self.end_headers()
+            return
+
+        match = MATCH_PHYSICAL.match(self.path)
+        if match:
+            self.send_response(200)
+            self.end_headers()
+            row = int(match.group(1))
+            column = int(match.group(2))
+            colour = self.rfile.read(int(self.headers['Content-Length']))
+            self.server.agent.set_physical(row,column,colour)
+            return
+
+        match = MATCH_MUSICAL.match(self.path)
+        if match:
+            self.send_response(200)
+            self.end_headers()
+            course = int(match.group(1))
+            key = int(match.group(2))
+            colour = self.rfile.read(int(self.headers['Content-Length']))
+            self.server.agent.set_musical(course,key,colour)
+            return
+
+        self.send_response(404)
+        self.end_headers()
+
+    def do_DELETE(self):
+        if self.path == '/':
+            self.send_response(200)
+            self.end_headers()
+            self.server.agent.clear()
+            return
+
+        if self.path == '/physical':
+            self.send_response(200)
+            self.end_headers()
+            self.server.agent.clear_physical()
+            return
+
+        if self.path == '/musical':
+            self.send_response(200)
+            self.end_headers()
+            self.server.agent.clear_musical()
+            return
+
+        match = MATCH_PHYSICAL.match(self.path)
+        if match:
+            self.send_response(200)
+            self.end_headers()
+            row = int(match.group(1))
+            column = int(match.group(2))
+            self.server.agent.unset_physical(row,column)
+            return
+
+        match = MATCH_MUSICAL.match(self.path)
+        if match:
+            self.send_response(200)
+            self.end_headers()
+            course = int(match.group(1))
+            key = int(match.group(2))
+            self.server.agent.unset_musical(course,key)
+            return
+
+        self.send_response(404)
+        self.end_headers()
 
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
@@ -36,6 +187,7 @@ class Agent(agent.Agent):
  
         self[2] = atom.Atom(domain=domain.String(), init='[]', names='physical light map', policy=atom.default_policy(self.__physical_light_map))
         self[3] = atom.Atom(domain=domain.String(), init='[]', names='musical light map', policy=atom.default_policy(self.__musical_light_map))
+        self[5] = atom.Atom(domain=domain.BoundedIntOrNull(0,65535,0), names='server port', policy=atom.default_policy(self.__server_port))
 
         self.keyfunctor = piw.functor_backend(1, False)
         self.keyinput = bundles.VectorInput(self.keyfunctor.cookie(), self.domain, signals=(1,))
@@ -60,60 +212,118 @@ class Agent(agent.Agent):
         self.add_verb2(16,'choose([],None,role(None,[matches([musical])]),role(as,[abstract,matches([green])]))',self.__choose_musical)
         self.add_verb2(17,'choose([],None,role(None,[matches([musical])]),role(as,[abstract,matches([orange])]))',self.__choose_musical)
         self.add_verb2(18,'choose([un],None)',self.__unchoose)
+
+        self.httpServer = None
+
+    def stop_http(self):
+        if self.httpServer:
+            print "shutting down HTTP server"
+            self.httpServer.stop()
+            self.httpServer = None
+
+    def start_http(self):
+        self.stop_http()
+
+        port = self[5].get_value()
+        if port:
+            print "starting up HTTP server on port", port
+            self.snapshot = piw.tsd_snapshot()
+            server = InterruptableHTTPServer(self, self.snapshot, '0.0.0.0', port, IlluminatorRequestHandler)
+            server.start()
+            self.httpServer = server
+
+    def close_server(self):
+        agent.Agent.close_server(self)
+        self.stop_http()
  
     def __physical_light_map(self,v):
-        self[2].set_value(v)
-        self.__update_lights()
+        self.set_physical_map(v)
 
     def __musical_light_map(self,v):
-        self[3].set_value(v)
-        self.__update_lights()
+        self.set_musical_map(v)
+
+    def __server_port(self,v):
+        self[5].set_value(v)
+
+        if v:
+            self.start_http()
+        else:
+            self.stop_http()
 
     def __clear(self,subj):
-        self[2].set_value('[]')
-        self[3].set_value('[]')
-        self.__update_lights()
+        self.clear()
+
+    def clear(self):
+        self.clear_physical()
+        self.clear_musical()
 
     def __clear_physical(self,subj,v):
-        self[2].set_value('[]')
+        self.clear_physical()
+
+    def clear_physical(self):
+        self.set_physical_map('[]')
         self.__update_lights()
 
     def __clear_musical(self,subj,v):
-        self[3].set_value('[]')
+        self.clear_musical()
+
+    def clear_musical(self):
+        self.set_musical_map('[]')
+
+    def get_physical(self):
+        return self[2].get_value()
+
+    def set_physical_map(self,content):
+        self[2].set_value(content)
         self.__update_lights()
 
     def __set_physical(self,subject,key,colour):
         row,column = action.coord_value(key)
         colour = action.abstract_string(colour)
-        phys = [x for x in logic.parse_clause(self[2].get_value()) if x[0][0] != row and x[0][1] != column]
+        self.set_physical(row,column,colour)
+
+    def set_physical(self,row,column,colour):
+        phys = [x for x in logic.parse_clause(self.get_physical()) if x[0][0] != row or x[0][1] != column]
         phys.append([[row,column],colour])
-        self[2].set_value(logic.render_term(phys))
+        self.set_physical_map(logic.render_term(phys))
+
+    def get_musical(self):
+        return self[3].get_value()
+
+    def set_musical_map(self,content):
+        self[3].set_value(content)
         self.__update_lights()
 
     def __set_musical(self,subject,key,colour):
         course,key = action.coord_value(key)
         colour = action.abstract_string(colour)
-        mus = [x for x in logic.parse_clause(self[3].get_value()) if x[0][0] != course and x[0][1] != key]
+        self.set_musical(course,key,colour)
+
+    def set_musical(self,course,key,colour):
+        mus = [x for x in logic.parse_clause(self.get_musical()) if x[0][0] != course or x[0][1] != key]
         mus.append([[course,key],colour])
-        self[3].set_value(logic.render_term(mus))
-        self.__update_lights()
+        self.set_musical_map(logic.render_term(mus))
 
     def __unset_physical(self,subject,key):
         row,column = action.coord_value(key)
-        phys = [x for x in logic.parse_clause(self[2].get_value()) if x[0][0] != row or x[0][1] != column]
-        self[2].set_value(logic.render_term(phys))
-        self.__update_lights()
+        self.unset_physical(row,column)
+
+    def unset_physical(self,row,column):
+        phys = [x for x in logic.parse_clause(self.get_physical()) if x[0][0] != row or x[0][1] != column]
+        self.set_physical_map(logic.render_term(phys))
 
     def __unset_musical(self,subject,key):
         course,key = action.coord_value(key)
-        mus = [x for x in logic.parse_clause(self[3].get_value()) if x[0][0] != course or x[0][1] != key]
-        self[3].set_value(logic.render_term(mus))
-        self.__update_lights()
+        self.unset_musical(course,key)
+
+    def unset_musical(self,course,key):
+        mus = [x for x in logic.parse_clause(self.get_musical()) if x[0][0] != course or x[0][1] != key]
+        self.set_musical_map(logic.render_term(mus))
 
     def __update_lights(self):
         self.status_buffer.clear()
-        self.__add_lights(False,self[2].get_value())
-        self.__add_lights(True,self[3].get_value())
+        self.__add_lights(False,self.get_physical())
+        self.__add_lights(True,self.get_musical())
         self.status_buffer.send()
         return True
 
@@ -186,17 +396,15 @@ class Agent(agent.Agent):
 
     def __add_choices(self):
         if self.__choosemusical:
-            existing = list(logic.parse_clause(self[3].get_value()))
+            existing = list(logic.parse_clause(self.get_musical()))
             for choice in self.__choices:
                 existing.append([[int(choice[3][0]),int(choice[3][1])],self.__choosecolour])
-            self[3].set_value(logic.render_term(existing))
+            self.set_musical_map(logic.render_term(existing))
         else:
-            existing = list(logic.parse_clause(self[2].get_value()))
+            existing = list(logic.parse_clause(self.get_physical()))
             for choice in self.__choices:
                 existing.append([[int(choice[1][0]),int(choice[1][1])],self.__choosecolour])
-            self[2].set_value(logic.render_term(existing))
-
-        self.__update_lights()
+            self.set_physical_map(logic.render_term(existing))
 
 
 agent.main(Agent)
