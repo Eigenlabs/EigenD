@@ -24,9 +24,10 @@ import piw
 import threading,sys,socket,fileinput,re
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
-MATCH_PHYSICAL = re.compile('/row/(\d+)/column/(\d+)',re.IGNORECASE)
-MATCH_MUSICAL = re.compile('/course/(\d+)/key/(\d+)',re.IGNORECASE)
-MATCH_MAP = re.compile('\[(?:\[\[\d+,\d+\],\w+\](?:,\[\[\d+,\d+\],\w+\])*)?\]',re.IGNORECASE)
+MATCH_PHYSICAL = re.compile('^/row/(\d+)/column/(\d+)$',re.IGNORECASE)
+MATCH_MUSICAL = re.compile('^/course/(\d+)/key/(\d+)$',re.IGNORECASE)
+MATCH_MAP = re.compile('^\[(?:\[\[\d+,\d+\],\w+\](?:,\[\[\d+,\d+\],\w+\])*)?\]$',re.IGNORECASE)
+MATCH_BITMAP = re.compile('^[RGO \\n\\,\\.]*$',re.IGNORECASE|re.MULTILINE)
 
 class InterruptableHTTPServer(HTTPServer):
     allow_reuse_address = True
@@ -86,6 +87,23 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
+    def parse_bitmap(self, bitmap):
+        result = []
+        row = 1 
+        column = 0
+        for c in bitmap.lower():
+            column += 1
+            if c == 'r':
+                result.append([[row,column],'red'])
+            elif c == 'o':
+                result.append([[row,column],'orange'])
+            elif c == 'g':
+                result.append([[row,column],'green'])
+            elif c == '\n' or c == ',' or c == '.':
+                row += 1
+                column = 0
+        return result
+
     def do_GET(self):
         if self.path == '/physical':
             self.output_get(self.server.agent.get_physical())
@@ -105,6 +123,25 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.end_headers()
                 self.server.agent.set_physical_map(content)
+            elif MATCH_BITMAP.match(content):
+                self.send_response(200)
+                self.end_headers()
+                self.server.agent.set_physical_map(logic.render_term(self.parse_bitmap(content)))
+            else:
+                self.send_response(400)
+                self.end_headers()
+            return
+
+        if self.path == '/musical':
+            content = self.rfile.read(int(self.headers['Content-Length']))
+            if MATCH_MAP.match(content):
+                self.send_response(200)
+                self.end_headers()
+                self.server.agent.set_musical_map(content)
+            elif MATCH_BITMAP.match(content):
+                self.send_response(200)
+                self.end_headers()
+                self.server.agent.set_musical_map(logic.render_term(self.parse_bitmap(content)))
             else:
                 self.send_response(400)
                 self.end_headers()
