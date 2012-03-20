@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import re, piw
+import re, lib_midi
 from pi import action,atom,bundles,domain,errors,const
 
 # The parameter delegate requires the following methods:
@@ -363,12 +363,12 @@ class List(atom.Atom):
             if self.__delegate.is_mapped_param(iparam_number,oparam_number):
                 info = self.__delegate.get_info_param(iparam_number,oparam_number);
             else:
-                info = piw.mapping_info(oparam_number);
+                info = lib_midi.mapping_info(oparam_number);
         elif midi_number != -1:
             if self.__delegate.is_mapped_midi(iparam_number,midi_number):
                 info = self.__delegate.get_info_midi(iparam_number,midi_number)
             else:
-                info = piw.mapping_info(midi_number);
+                info = lib_midi.mapping_info(midi_number);
 
         return (iparam_number,oparam_number,midi_number,info)
 
