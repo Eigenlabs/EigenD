@@ -196,13 +196,16 @@ class Plumber(proxy.AtomProxy):
         self.__config = config
         self.__connector = None
         self.__correlator = None 
+        self.__clocked = config.clocked
         self.__stream_policy = None
+        self.__cbackend = None
+        self.__dbackend = None
         self.__mainanchor = piw.canchor()
         self.__mainanchor.set_client(self)
         self.__mainanchor.set_address_str(config.address)
 
     def clocked(self):
-        return self.__config.clocked
+        return self.__clocked
 
     def connect_static(self):
         return self.__config.connect_static()
@@ -216,8 +219,12 @@ class Plumber(proxy.AtomProxy):
 
     def node_ready(self):
         self.__dbackend,self.__cbackend = self.__policy.get_backend(self.__config)
+
         self.__cbackend.set_latency(self.latency())
         self.__dbackend.set_latency(self.latency())
+        self.__cbackend.set_clocked(self.__clocked)
+        self.__dbackend.set_clocked(self.__clocked)
+
         self.__connector = piw.connector(self.__config.connect_static(),self.__dbackend,self.__cbackend,self.__config.filter,self.domain().iso())
 
         self.set_data_clone(self.__connector)
@@ -226,8 +233,9 @@ class Plumber(proxy.AtomProxy):
             self.__config.callback(self)
 
     def set_clocked(self,c):
-        if self.__connector:
-            self.__connector.set_clocked(c)
+        self.__clocked = c
+        if self.__cbackend: self.__cbackend.set_clocked(self.__clocked)
+        if self.__dbackend: self.__dbackend.set_clocked(self.__clocked)
 
     def node_removed(self):
         self.set_data_clone(None)

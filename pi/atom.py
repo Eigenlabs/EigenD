@@ -660,17 +660,14 @@ class Atom(node.Server):
         previous = set([x.args[2] for x in old])
         dead_listeners = previous.difference(masterids)
         new_listeners = masterids.difference(previous)
-        print 'listeners new=',new_listeners,'dead=',dead_listeners
 
         for id in dead_listeners:
             id = paths.to_absolute(id,self.__connection_scope)
-            print 'removing old listener',id
             myrid = paths.to_relative(self.id(),scope=paths.id2scope(id))
             rpc.invoke_async_rpc(id,'disconnected',myrid)
 
         for id in new_listeners:
             id = paths.to_absolute(id,self.__connection_scope)
-            print 'adding new listener',id
             myrid = paths.to_relative(self.id(),scope=paths.id2scope(id))
             rpc.invoke_async_rpc(id,'connected',myrid)
 

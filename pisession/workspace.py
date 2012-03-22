@@ -267,7 +267,7 @@ class Workspace(atom.Atom):
         atom.Atom.__init__(self)
         self.__backend = backend
         self.__registry = registry
-        self.__meta = container.PersistentMetaData(self,'agents',asserted=self.__asserted,retracted=self.__retracted)
+        self.__meta = container.PersistentMetaData(self,'agents',asserted=self.__asserted,retracted=self.__retracted,canonicalise=self.__canonicalise)
         self.__name = name
 
         self.__load_queue = []
@@ -746,7 +746,16 @@ class Workspace(atom.Atom):
         self.__meta.visit(visitor)
         return ordinal[0]+1
 
+    def __canonicalise(self,signature):
+        (address,plugin,version,cversion,ordinal) = signature.args
+        module = self.__registry.get_compatible_module(plugin,cversion)
+        new_signature = logic.make_term('a',address,module.name,module.version,module.cversion,ordinal)
+        print 'canonicalised ',signature,' to ',new_signature
+        return new_signature
+
+
     def __asserted(self,signature,delegate):
+        print 'loading',signature
         (address,plugin,version,cversion,ordinal) = signature.args
         factory = self.__registry.get_compatible_module(plugin,cversion)
 
@@ -763,6 +772,7 @@ class Workspace(atom.Atom):
         return None
 
     def __retracted(self,signature,plugin,destroy):
+        print 'unloading',signature,'destroy=',destroy
         self.del_frelation(self.__relation(signature.args[0]))
         plugin.unload(destroy)
         return True

@@ -32,11 +32,12 @@ class PersistentMetaData:
     represented as a list of strings.  Each string is associated with some
     metadata.
     """
-    def __init__(self, container, tag, asserted=None, retracted=None):
+    def __init__(self, container, tag, asserted=None, retracted=None, canonicalise=None):
         self.__container = container
         self.__tag = tag
         self.__asserted = utils.weaken(asserted or self.state_asserted)
         self.__retracted = utils.weaken(retracted or self.state_retracted)
+        self.__canonicalise = utils.weaken(canonicalise or self.state_canonicalise)
         self.__nodes = {}
         self.__container.add_listener(self)
         self.__set_termlist()
@@ -59,12 +60,14 @@ class PersistentMetaData:
             return
 
         if new_value is None or not new_value.is_string():
-            new_terms = set([])
+            new_terms = []
         else:
-            new_terms = set(logic.parse_clauselist(new_value.as_string()))
+            new_terms = logic.parse_clauselist(new_value.as_string())
 
         discards = {}
         nodes = {}
+
+        new_terms = set([ self.__canonicalise(v) for v in new_terms])
 
         for (v,s) in self.__nodes.iteritems():
             if v in new_terms:
@@ -86,6 +89,9 @@ class PersistentMetaData:
             nodes[v] = s
 
         self.__nodes = nodes
+
+    def state_canonicalise(self, value):
+        return value
 
     def assert_state(self, value, state=None, delegate=None):
         if state is None:

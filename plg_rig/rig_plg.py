@@ -354,7 +354,6 @@ class RigInput(atom.Atom):
 
 
     def destroy_input(self):
-        self.__output_peer[self.__index].notify_destroy()
         del self.__output_peer[self.__index]
 
     def property_change(self,key,value,delegate):
@@ -572,10 +571,8 @@ class InnerAgent(agent.Agent):
         return func(*args,**kwds)
 
     def unload(self,destroy):
-        self.notify_destroy()
         self.__workspace.unload_all(destroy)
-        if destroy:
-            self.__workspace.shutdown()
+        self.__workspace.shutdown()
 
 
 class OuterAgent(agent.Agent):

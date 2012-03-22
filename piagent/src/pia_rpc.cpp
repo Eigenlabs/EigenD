@@ -680,7 +680,7 @@ void cproxy_t::timer__(void *ctx)
     {
         if(++c->count_ > RSP_FAIL)
         {
-            pic::logmsg() << "rpc timeout for rsp";
+            pic::logmsg() << "rpc timeout for rsp " << c->invocation_->name() << c->invocation_->request() << " count=" << c->count_ << ' ' << (void *)c;
             c->net_response(0,pia_data_t());
             return;
         }
@@ -692,12 +692,12 @@ void cproxy_t::timer__(void *ctx)
 
     if(++c->count_ > ACK_FAIL)
     {
-        pic::logmsg() << "rpc timeout for ack";
+        pic::logmsg() << "rpc timeout for ack " << c->invocation_->name() << c->invocation_->request() << " count=" << c->count_ << ' ' << (void *)c;
         c->net_response(0,pia_data_t());
         return;
     }
 
-    pic::logmsg() << "retransmit ack";
+    pic::logmsg() << "retransmit ack " << c->invocation_->name() << c->invocation_->request() << " count=" << c->count_ << ' ' << (void *)c;
     c->network_->send_request(c->invocation_->key(),c->invocation_->name(),c->invocation_->request());
 }
 

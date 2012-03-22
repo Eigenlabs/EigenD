@@ -476,7 +476,9 @@ class Agent(atom.Atom):
         atom.Atom.close_server(self)
 
     def unload(self,destroy=False):
-        self.notify_destroy()
+        print 'agent unload, destroy=',destroy
+        if destroy:
+            self.notify_destroy()
         self.close_server()
 
     def quit(self):
