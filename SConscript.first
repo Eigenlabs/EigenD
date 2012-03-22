@@ -22,7 +22,7 @@ Import('master_env')
 
 import os.path
 
-release = '2.0.38'
+release = '2.0.39'
 
 status = {
     'windows': 'experimental',
@@ -46,7 +46,7 @@ if master_env['IS_WINDOWS']:
 
 if master_env['IS_MACOSX']:
     prereq = [
-        ('/usr/pi/Python.framework',"Please install the EigenD Support package before installing EigenD.")
+        ('/usr/pi/Python.framework/Python',"Please install the EigenD Support package before installing EigenD.")
     ]
 
 if master_env['IS_LINUX']:
