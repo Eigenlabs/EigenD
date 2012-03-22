@@ -68,7 +68,7 @@ namespace piw
 
             struct scale_t: pic::atomic_counted_t, pic::lckobject_t
             {
-                scale_t(const std::string &s) { parsevector(s,&notes_,13); }
+                scale_t(const std::string &s) : definition_(s) { parsevector(s,&notes_,13); }
 
                 unsigned size()
                 {
@@ -95,13 +95,14 @@ namespace piw
                 }
 
                 pic::lckvector_t<float>::nbtype notes_;
+                const std::string definition_;
             };
 
             typedef pic::ref_t<scale_t> sref_t;
 
             struct layout_t: pic::atomic_counted_t, pic::lckobject_t
             {
-                layout_t(const data_nb_t &offsets, const data_nb_t &lengths)
+                layout_t(const data_nb_t &offsets, const data_nb_t &lengths) : offsets_definition_(offsets), lengths_definition_(lengths)
                 {
                     pic::lckvector_t<float>::nbtype co;
 
@@ -223,6 +224,9 @@ namespace piw
                 pic::lckvector_t<int>::nbtype course_offset_key_;
                 pic::lckvector_t<float>::nbtype course_offset_note_;
                 pic::lckvector_t<float>::nbtype lengths_;
+
+                const data_nb_t offsets_definition_;
+                const data_nb_t lengths_definition_;
             };
 
             typedef pic::ref_t<layout_t> lref_t;

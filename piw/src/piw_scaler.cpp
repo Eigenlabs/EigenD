@@ -224,6 +224,12 @@ namespace
             id_ = id;
             env_ = e;
 
+            prev_notes_ = "";
+            prev_offsets_ = piw::makenull_nb();
+            prev_lengths_ = piw::makenull_nb();
+            prev_mode_ = -100;
+            prev_lights_ = piw::makenull_nb();
+
             impl_->func_.insert(std::make_pair(id_,this));
             e->ufilterenv_start(id.time());
         }
@@ -321,7 +327,11 @@ namespace
                     if(b.bits&BBASE)  m=b.base;
                 }
 
-                if(l.isvalid() && s.isvalid())
+                if(l.isvalid() && s.isvalid() &&
+                   (s->definition_.compare(prev_notes_) != 0 ||
+                    prev_offsets_.compare(l->offsets_definition_, false) != 0 ||
+                    prev_lengths_.compare(l->lengths_definition_, false) != 0 ||
+                    m != prev_mode_))
                 {
                     unsigned scale_size = s->size()-1;
 
@@ -346,7 +356,17 @@ namespace
                         }
                     }
 
-                    env_->ufilterenv_output(1,piw::statusbuffer_t::make_statusbuffer(status));
+                    piw::data_nb_t buffer = piw::statusbuffer_t::make_statusbuffer(status);
+                    if(buffer.compare(prev_lights_,false) != 0)
+                    {
+                        env_->ufilterenv_output(1,buffer);
+                    }
+
+                    prev_notes_ = s->definition_;
+                    prev_offsets_ = l->offsets_definition_;
+                    prev_lengths_ = l->lengths_definition_;
+                    prev_mode_ = m;
+                    prev_lights_ = buffer;
                 }
             }
         }
@@ -354,6 +374,12 @@ namespace
         piw::data_nb_t id_;
         piw::scaler_controller_t::impl_t *impl_;
         piw::ufilterenv_t *env_;
+
+        std::string prev_notes_;
+        piw::data_nb_t prev_offsets_;
+        piw::data_nb_t prev_lengths_;
+        float prev_mode_;
+        piw::data_nb_t prev_lights_;
     };
 }
 
