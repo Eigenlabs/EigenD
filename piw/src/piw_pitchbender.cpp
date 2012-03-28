@@ -71,7 +71,7 @@ piw::dd2d_nb_t piw::make_pitchbender(float range,float offset)
     return piw::dd2d_nb_t::callable(pitchbender(range,offset));
 }
 
-struct piw::fast_pitchbender_t::impl_t: piw::dd2d_nb_t::sinktype_t, virtual pic::tracked_t
+struct piw::fast_pitchbender_t::impl_t: virtual pic::tracked_t
 {
     impl_t() : range_(2.f), offset_(2.f)
     {
@@ -82,7 +82,7 @@ struct piw::fast_pitchbender_t::impl_t: piw::dd2d_nb_t::sinktype_t, virtual pic:
         tracked_invalidate();
     }
 
-    piw::data_nb_t invoke(const piw::data_nb_t &p1, const piw::data_nb_t &p2) const
+    piw::data_nb_t pitch_bend(const piw::data_nb_t &p1, const piw::data_nb_t &p2)
     {
         unsigned long long t = std::max(p1.time(),p2.time());
         float f=p1.as_renorm_float(BCTUNIT_HZ,0,96000,0);
@@ -135,6 +135,6 @@ piw::change_nb_t piw::fast_pitchbender_t::set_offset()
 
 piw::dd2d_nb_t piw::fast_pitchbender_t::bend_functor()
 {
-    return dd2d_nb_t(pic::ref(impl_));
+    return dd2d_nb_t::method(impl_,&impl_t::pitch_bend);
 }
 
