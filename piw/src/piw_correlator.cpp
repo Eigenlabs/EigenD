@@ -811,7 +811,11 @@ correlator_voice_t::correlator_voice_t(impl_t *root, unsigned id): piw::event_da
 
 piw::correlator_t::correlator_t(piw::clockdomain_ctl_t *d, const std::string &sigmap, const piw::d2d_nb_t &evtmap, const cookie_t &c,unsigned thr,unsigned poly) : impl_(new impl_t(d,sigmap,evtmap,c,thr,poly)) { }
 
-piw::correlator_t::~correlator_t() { delete impl_; }
+piw::correlator_t::~correlator_t()
+{
+    tracked_invalidate();
+    delete impl_;
+}
 
 void piw::correlator_t::set_latency(unsigned signal,unsigned iid, unsigned latency)
 {
@@ -1268,13 +1272,12 @@ void piw::correlator_t::impl_t::trash_voices()
 
 piw::correlator_t::impl_t::~impl_t()
 {
-    trash_inputs();
-    trash_voices();
-
     tracked_invalidate();
     tick_disable();
     close_sink();
     close_thing();
+    trash_inputs();
+    trash_voices();
 }
 
 void piw::correlator_t::impl_t::enable_ticking()

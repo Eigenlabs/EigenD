@@ -33,12 +33,18 @@ piw::backend_t::~backend_t()
 
 void piw::backend_t::set_latency(unsigned l)
 {
-    correlator_->set_latency(signal_,iid_,l);
+    if(correlator_.isvalid())
+    {
+        correlator_->set_latency(signal_,iid_,l);
+    }
 }
 
 void piw::backend_t::remove_latency()
 {
-    correlator_->remove_latency(signal_,iid_);
+    if(correlator_.isvalid())
+    {
+        correlator_->remove_latency(signal_,iid_);
+    }
 }
 
 struct piw::connector_t::impl_t: piw::client_t
@@ -115,8 +121,11 @@ struct piw::connector_t::impl_t: piw::client_t
         }
 
         //pic::logmsg() << "plumbing to correlator for signal " << backend_->signal_ << " at path " << path_ << " correlator=" << backend_->correlator_;
-        converter_=xbackend_->create_converter(iso_);
-        xbackend_->correlator_->plumb_input(xbackend_->signal_,xbackend_->iid_,path_,xbackend_->pri_,xbackend_->type_,data2_,converter_,filter_);
+        if(xbackend_.isvalid() && xbackend_->correlator_.isvalid())
+        {
+            converter_=xbackend_->create_converter(iso_);
+            xbackend_->correlator_->plumb_input(xbackend_->signal_,xbackend_->iid_,path_,xbackend_->pri_,xbackend_->type_,data2_,converter_,filter_);
+        }
     }
 
     void client_data(const piw::data_t &d)
@@ -141,7 +150,11 @@ struct piw::connector_t::impl_t: piw::client_t
     {
         if(data2_)
         {
-            xbackend_->correlator_->unplumb_input(xbackend_->signal_,xbackend_->iid_,path_,xbackend_->pri_);
+            if(xbackend_.isvalid() && xbackend_->correlator_.isvalid())
+            {
+                xbackend_->correlator_->unplumb_input(xbackend_->signal_,xbackend_->iid_,path_,xbackend_->pri_);
+            }
+
             converter_.clear();
             clear_sink();
             delete data2_;
@@ -154,7 +167,7 @@ struct piw::connector_t::impl_t: piw::client_t
 
     void plumb_clock(piw::client_t *c)
     {
-        if(cbackend_->clock_)
+        if(cbackend_.isvalid() && cbackend_->correlator_.isvalid() && cbackend_->clock_)
         {
             if(c->set_downstream(cbackend_->correlator_->clocksink()))
             {
@@ -167,7 +180,7 @@ struct piw::connector_t::impl_t: piw::client_t
                 cbackend_->correlator_->clock_plumbed(cbackend_->signal_,false);
             }
         }
-        if(dbackend_->clock_)
+        if(dbackend_.isvalid() && dbackend_->correlator_.isvalid() && dbackend_->clock_)
         {
             if(c->set_downstream(dbackend_->correlator_->clocksink()))
             {
@@ -191,7 +204,7 @@ struct piw::connector_t::impl_t: piw::client_t
             if(!child_get(&i,1))
             {
                 piw::data_t p2(piw::pathappend_channel(path_,i));
-                std::auto_ptr<impl_t> p(new impl_t(ctl_,dbackend_,cbackend_,p2,filter_,iso_));
+                std::auto_ptr<impl_t> p(new impl_t(ctl_,dbackend_.ptr(),cbackend_.ptr(),p2,filter_,iso_));
                 child_add(i, p.get());
                 children_[i] = p.release();
             }
@@ -221,9 +234,9 @@ struct piw::connector_t::impl_t: piw::client_t
     }
 
     bool ctl_;
-    piw::backend_t *dbackend_;
-    piw::backend_t *cbackend_;
-    piw::backend_t *xbackend_;
+    pic::weak_t<piw::backend_t> dbackend_;
+    pic::weak_t<piw::backend_t> cbackend_;
+    pic::weak_t<piw::backend_t> xbackend_;
     piw::data_t path_;
     std::map<unsigned char, impl_t *> children_;
     piw::fastdata_t *data2_;

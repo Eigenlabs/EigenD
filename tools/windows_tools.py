@@ -127,14 +127,14 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         self.Replace(PI_MODLINKFLAGS='$SHLINKFLAGS')
         self.Replace(RELEASESTAGEROOTDIR=join('$STAGEDIR'))
         self.Replace(RELEASESTAGEDIR=join('$STAGEDIR','$PI_COLLECTION-$PI_RELEASE'))
-        self.Append(CCFLAGS='/EHsc /w34355 /MD /O2 /fp:fast /arch:SSE2 /DWIN32')
+        self.Append(CCFLAGS='/EHsc /w34355 /MD /Od /fp:fast /arch:SSE2 /DWIN32')
         self.Replace(PI_PLATFORMTYPE='windows')
         self.Append(LINKFLAGS=Split('/MANIFEST /INCREMENTAL:NO /LARGEADDRESSAWARE'))
         self.Append(SHLINK=' $LIBMAPPER')
         self.Append(LINK=' $LIBMAPPER')
         self.Append(LIBS=Split('shell32'))
 
-        self.Replace(LINKFLAGS_LOCKED=Split("/SECTION:.text,!P /SECTION:.data,!P /SECTION:.rdata,!P /SECTION:.bss,!P /SECTION:.tls,!P"))
+        self.Replace(LINKFLAGS_LOCKED=Split("/SECTION:.text,!P /SECTION:.data,!P /SECTION:.rdata,!P /SECTION:.bss,!P"))
 
         if os.environ.get('PI_DEBUGBUILD'):
             self.Append(CCFLAGS=Split('/Zi'))

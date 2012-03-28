@@ -64,7 +64,7 @@ namespace piw
             friend class piw::connector_t::impl_t;
 
         private:
-            correlator_t *correlator_;
+            pic::weak_t<correlator_t> correlator_;
             unsigned iid_;
             unsigned signal_;
             int pri_;

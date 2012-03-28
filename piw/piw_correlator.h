@@ -33,7 +33,7 @@
 
 namespace piw
 {
-    class PIW_DECLSPEC_CLASS correlator_t
+    class PIW_DECLSPEC_CLASS correlator_t: virtual public pic::tracked_t
     {
         public:
             correlator_t(clockdomain_ctl_t *, const std::string &sigmap, const d2d_nb_t &filter, const cookie_t &,unsigned threshold,unsigned poly);
