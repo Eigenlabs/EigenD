@@ -45,6 +45,22 @@ typedef std::list<notifier_t *> notifierlist_t;
 
 typedef pia_clocklist_t::impl_t clockimpl_t;
 
+template <class T> bool list_remove(std::list<T> &list, const T &value)
+{
+    std::list<T>::const_iterator i;
+
+    for(i=list.begin(); i!=list.end(); i++)
+    {
+        if(*i==value)
+        {
+            list.erase(i);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 struct masterlist_t: virtual public pic::lckobject_t
 {
     masterlist_t() { list_.reserve(256); }
@@ -266,9 +282,11 @@ void sink_t::remove_upstream(sink_t *up)
         return;
     }
 
-    up_.remove(up);
-    up->down_.remove(this);
-    domain_->clocklist_->build();
+    if(list_remove(up_,up))
+    {
+        up->down_.remove(this);
+        domain_->clocklist_->build();
+    }
 }
 
 void sink_t::dfs(source_t *source)
@@ -910,11 +928,6 @@ int sink_t::api_add_upstream(bct_clocksink_host_ops_t **hops, bct_clocksink_t *u
 
 int sink_t::api_remove_upstream(bct_clocksink_host_ops_t **hops, bct_clocksink_t *up_)
 {
-    if(!up_->host_ops)
-    {
-        return 0;
-    }
-
     sink_t *s = PIC_STRBASE(sink_t, hops, ops_);
 
     try
