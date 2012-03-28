@@ -47,7 +47,7 @@ typedef pia_clocklist_t::impl_t clockimpl_t;
 
 template <class T> bool list_remove(std::list<T> &list, const T &value)
 {
-    std::list<T>::const_iterator i;
+    typename std::list<T>::iterator i;
 
     for(i=list.begin(); i!=list.end(); i++)
     {
