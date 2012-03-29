@@ -548,14 +548,15 @@ piw::xxcontrolled_t::xxcontrolled_t() : controller_(0), xximpl_(new impl_t())
 
 piw::xxcontrolled_t::~xxcontrolled_t()
 {
+    detach();
     piw::tsd_fastcall(__destruct,this,0);
+    delete xximpl_;
 }
 
 int piw::xxcontrolled_t::__destruct(void *self_, void *)
 {
     xxcontrolled_t *self = (xxcontrolled_t *)self_;
-    delete self->xximpl_;
-
+    self->end_event(piw::tsd_time());
     return 1;
 } 
 
