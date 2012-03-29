@@ -413,7 +413,7 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
             for pkg in included_pkgnames:
                 f.write('  <pkg-ref id="%s"/>\n' % pkg.capitalize())
 
-            f.write('  <options customize="never" require-scripts="false" rootVolumeOnly="true"/>\n')
+            f.write('  <options customize="never" allow-external-scripts="true" require-scripts="false" rootVolumeOnly="true"/>\n')
 
             if prereq:
                 f.write('  <volume-check script="pm_volume_check();"/>\n')
