@@ -260,9 +260,18 @@ class backend[piw::backend_t]
     void remove_latency()
 }
 
+class backend_delegate[piw::backend_delegate_t]
+{
+    backend_delegate()
+    virtual backend *get_controller_backend() = 0
+    virtual backend *get_data_backend() = 0
+    virtual bool has_controller_backend() = 0
+    virtual bool has_data_backend() = 0
+}
+
 class connector[piw::connector_t]: client /gc/
 {
-    connector(bool, backend *,backend *, const d2d_nb &, bool);
+    connector(bool, backend_delegate &, const d2d_nb &, bool);
     void client_opened()
     void client_clock()
     void close_client()

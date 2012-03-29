@@ -313,9 +313,11 @@ class RigInputPolicyImpl:
         self.__closed = True
         self.__connections.clear()
 
-    def get_backend(self,config):
-        backend=self.__ctrl.get_backend(config)
-        return backend,backend
+    def get_controller_backend(self,config):
+        return self.__ctrl.get_backend(config)
+
+    def get_data_backend(self,config):
+        return self.__ctrl.get_backend(config)
 
     def __add_connection(self,src,delegate):
         iid = (max(self.__connection_iids)+1 if self.__connection_iids else 1)

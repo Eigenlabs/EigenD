@@ -28,10 +28,20 @@ namespace piw
 {
     class backend_t;
 
+    class PIW_DECLSPEC_CLASS backend_delegate_t: public virtual pic::tracked_t
+    {
+        public:
+            virtual ~backend_delegate_t() {}
+            virtual backend_t *get_controller_backend() = 0;
+            virtual backend_t *get_data_backend() = 0;
+            virtual bool has_controller_backend() = 0;
+            virtual bool has_data_backend() = 0;
+    };
+
     class PIW_DECLSPEC_CLASS connector_t: public client_t
     {
         public:
-            connector_t(bool ctl, backend_t *dbackend,backend_t *cbackend, const d2d_nb_t &filter,bool iso);
+            connector_t(bool ctl, backend_delegate_t &backend, const d2d_nb_t &filter, bool iso);
             virtual ~connector_t();
 
             int gc_traverse(void *, void *) const;
