@@ -510,7 +510,7 @@ class InnerAgent(agent.Agent):
     def __init__(self,outer_agent):
         agent.Agent.__init__(self,signature=version,names='rig gateway',ordinal=1)
 
-        self.__registry = workspace.create_registry()
+        self.__registry = workspace.get_registry()
         self.__outer_agent = outer_agent
         self.__name = outer_agent.inner_name
         self.__workspace = workspace.Workspace(self.__name,self,self.__registry)

@@ -411,7 +411,7 @@ def copy_old_setup(src,dst,src_ver):
 class Agent(agent.Agent):
     def __init__(self,backend,ordinal):
         self.__backend = backend
-        self.__registry = workspace.create_registry()
+        self.__registry = workspace.get_registry()
 
         self.__foreground = piw.tsd_snapshot()
 

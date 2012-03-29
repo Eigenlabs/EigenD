@@ -46,6 +46,7 @@ from guppy import hpy; h=hpy()
 """
 
 rpc_chunksize = 1200
+global_registry = None
 
 def all_agents(snap):
     agents = []
@@ -813,6 +814,12 @@ class Workspace(atom.Atom):
 
         return address
 
+def get_registry():
+    global global_registry
+    if global_registry is None:
+        global_registry = create_registry()
+
+    return global_registry
 
 def create_registry():
     r=registry.Registry(AgentFactory)
