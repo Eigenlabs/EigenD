@@ -377,7 +377,7 @@ bool osc_wire_t::event_end(unsigned long long t)
 
     for(unsigned i=1;i<=output_->signals_;i++)
     {
-        if(IN_KEY && output_->fake_key_)
+        if(IN_KEY==i && output_->fake_key_)
         {
             lo_message_add(msg,"f",0.f);
             lo_message_add(msg,"f",0.f);
