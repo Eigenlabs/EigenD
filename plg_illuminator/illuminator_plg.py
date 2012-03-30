@@ -17,7 +17,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,domain,policy,bundles,logic,action,utils
+from pi import agent,atom,const,domain,policy,bundles,logic,action,utils
 from . import illuminator_version as version
 
 import piw
@@ -216,6 +216,11 @@ class Agent(agent.Agent):
 
         self.domain = piw.clockdomain_ctl()
 
+        self[7] = bundles.Output(1, False, names='server status output')
+        self.server_status_output = bundles.Splitter(self.domain, self[7])
+        self.server_lights = piw.lightsource(piw.change_nb(), 0, self.server_status_output.cookie())
+        self.server_lights.set_size(1)        
+
         self[1] = bundles.Output(1, False, names='light output',protocols='revconnect')
         self.output = bundles.Splitter(self.domain, self[1])
 
@@ -225,6 +230,7 @@ class Agent(agent.Agent):
         self[2] = atom.Atom(domain=domain.String(), init='[]', names='physical light map', policy=atom.default_policy(self.__physical_light_map))
         self[3] = atom.Atom(domain=domain.String(), init='[]', names='musical light map', policy=atom.default_policy(self.__musical_light_map))
         self[5] = atom.Atom(domain=domain.BoundedIntOrNull(0,65535,0), names='server port', policy=atom.default_policy(self.__server_port))
+        self[6] = atom.Atom(domain=domain.Bool(), init=False, names='server start', policy=atom.default_policy(self.__server_start))
 
         self.keyfunctor = piw.functor_backend(1, False)
         self.keyinput = bundles.VectorInput(self.keyfunctor.cookie(), self.domain, signals=(1,))
@@ -249,8 +255,13 @@ class Agent(agent.Agent):
         self.add_verb2(16,'choose([],None,role(None,[matches([musical])]),role(as,[abstract,matches([green])]))',self.__choose_musical)
         self.add_verb2(17,'choose([],None,role(None,[matches([musical])]),role(as,[abstract,matches([orange])]))',self.__choose_musical)
         self.add_verb2(18,'choose([un],None)',self.__unchoose)
+        self.add_verb2(19,'start([],None,role(None,[matches([server])]))',self.__start_server,status_action=self.__status_server)
+        self.add_verb2(20,'stop([],None,role(None,[matches([server])]))',self.__stop_server,status_action=self.__status_server)
+        self.add_verb2(21,'start([toggle],None,role(None,[matches([server])]))',self.__toggle_server,status_action=self.__status_server)
 
         self.httpServer = None
+
+        self.__update_server_status()
 
     def stop_http(self):
         if self.httpServer:
@@ -269,6 +280,34 @@ class Agent(agent.Agent):
             server.start()
             self.httpServer = server
 
+    def __start_server(self,subj=None,v=None):
+        try:
+            self.start_http()
+            self[6].set_value(True)
+        except:
+            print 'error starting HTTP server on port '+str(self[5].get_value()), sys.exc_info()[0]
+        self.__update_server_status()
+
+    def __stop_server(self,subj=None,v=None):
+        try:
+            self.stop_http()
+            self[6].set_value(False)
+        except:
+            print 'error stopping HTTP server on port '+str(self[5].get_value()), sys.exc_info()[0]
+        self.__update_server_status()
+
+    def __toggle_server(self,subj,v):
+        if self[6].get_value():
+            self.__stop_server()
+        else:
+            self.__start_server()
+
+    def __status_server(self,subj,v):
+        return 'dsc(~(s)"#7",None)'
+    
+    def __update_server_status(self):
+        self.server_lights.set_status(1, const.status_active if self[6].get_value() else const.status_inactive)
+
     def close_server(self):
         agent.Agent.close_server(self)
         self.stop_http()
@@ -282,10 +321,11 @@ class Agent(agent.Agent):
     def __server_port(self,v):
         self[5].set_value(v)
 
+    def __server_start(self,v):
         if v:
-            self.start_http()
+            self.__start_server()
         else:
-            self.stop_http()
+            self.__stop_server()
 
     def __clear(self,subj):
         self.clear()

@@ -1033,10 +1033,10 @@ class Agent(agent.Agent):
         reverse_mapping = list()
         for entry in mapping:
             if entry[0][0] <= 0 or entry[0][1] <= 0 or entry[1][0] <= 0 or entry[1][1] <= 0:
-                print 'forward',desc,'ignoring',entry
+                #print 'forward',desc,'ignoring',entry
                 continue
             if entry[0] == prev_entry:
-                print 'forward',desc,'ignoring',entry
+                #print 'forward',desc,'ignoring',entry
                 continue
             prev_entry = entry[0]
             reverse_mapping.append( (entry[1],entry[0]) )
@@ -1048,7 +1048,7 @@ class Agent(agent.Agent):
         pruned_reverse = list()
         for entry in reverse_mapping:
             if entry[0] == prev_entry:
-                print 'reverse',desc,'ignoring',entry
+                #print 'reverse',desc,'ignoring',entry
                 continue
             prev_entry = entry[0]
             pruned_mapping.append( (entry[1],entry[0]) )
@@ -1056,8 +1056,8 @@ class Agent(agent.Agent):
 
         pruned_mapping.sort()
 
-        print 'forward',desc,pruned_mapping
-        print 'reverse',desc,pruned_reverse
+        #print 'forward',desc,pruned_mapping
+        #print 'reverse',desc,pruned_reverse
 
         return (pruned_mapping,pruned_reverse)
 
