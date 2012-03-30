@@ -442,6 +442,7 @@ class Workspace(atom.Atom):
         e = r.args()[0]
 
         if post_load:
+            self.__backend.load_status('Final Initialisation',100)
             yield self.post_load(path)
 
         if upgrade_flag and r.status():
