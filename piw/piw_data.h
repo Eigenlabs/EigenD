@@ -383,7 +383,7 @@ namespace piw
 
     typedef std::map<std::string,data_t> datamap_t;
 
-    PIW_DECLSPEC_FUNC(bct_data_t) makecopy(unsigned nb, unsigned long long ts, bct_data_t &d);
+    PIW_DECLSPEC_FUNC(bct_data_t) makecopy(unsigned nb, unsigned long long ts, bct_data_t d);
 
     PIW_DECLSPEC_FUNC(data_t) makearray_ex(unsigned nb, unsigned long long ts, float ubound, float lbound, float rest, unsigned nfloats, float **pfloat, float **fs);
     PIW_DECLSPEC_FUNC(data_t) makenorm_ex(unsigned nb, unsigned long long ts, unsigned nfloats, float **pfloat,float **fs);

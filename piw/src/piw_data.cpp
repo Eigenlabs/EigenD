@@ -921,7 +921,7 @@ static T __tuplenorm_ex(unsigned nb,const T &old, float norm)
     return d2;
 }
 
-bct_data_t piw::makecopy(unsigned nb, unsigned long long ts, bct_data_t &d)
+bct_data_t piw::makecopy(unsigned nb, unsigned long long ts, bct_data_t d)
 {
     float *vp;
     unsigned char *dp;

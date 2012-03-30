@@ -43,6 +43,7 @@ namespace piw
                     if(buffer_[i])
                     {
                         piw_data_decref_atomic(buffer_[i]);
+                        buffer_[i]=0;
                     }
                 }
             }
@@ -101,6 +102,7 @@ namespace piw
                 }
 
                 piw_data_decref_atomic(d);
+                d=0;
                 return false;
             }
 

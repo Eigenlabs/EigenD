@@ -110,7 +110,6 @@ namespace midi
         {
             delete wires_.alternate().begin()->second;
         }
-        wires_.exchange();
     }
 
     void input_root_t::root_clock()
