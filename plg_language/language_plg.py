@@ -65,6 +65,7 @@ class Agent(agent.Agent):
 
         self.database = database.Database(lexicon_changed=self.__lexicon_changed)
         self.help_manager = help_manager.HelpManager()
+        self.__db_started = False
 
         self.set_property_string('timestamp',self.database.get_lexicon().get_timestamp())
 
@@ -553,10 +554,27 @@ class Agent(agent.Agent):
         self.__log(*words)
         return self.interpreter.process_block(words)
 
+    def start_database(self):
+        if not self.__db_started:
+            self.__db_started = True
+            print 'starting database'
+            self.database.start(piw.tsd_scope())
+
+    def stop_database(self):
+        if self.__db_started:
+            self.__db_started = False
+            print 'stopping database'
+            self.database.stop(piw.tsd_scope())
+
+    def agent_preload(self,filename):
+        self.stop_database()
+
+    def agent_postload(self,filename):
+        self.start_database()
+
     def server_opened(self):
         agent.Agent.server_opened(self)
         self.advertise('<language>')
-        self.database.start(piw.tsd_scope())
 
         # startup stage server
         print "starting up stage server"
@@ -567,7 +585,7 @@ class Agent(agent.Agent):
         self.stageServer.start()
 
     def close_server(self):
-        self.database.stop(piw.tsd_scope())
+        self.stop_database()
         agent.Agent.close_server(self)
 
         # shutdown stage server
