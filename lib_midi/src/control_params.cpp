@@ -49,6 +49,7 @@ namespace midi
         {
             piw::tsd_fastcall(__clear,this,0);
             unsubscribe();
+            disconnect();
             root_->wires_.alternate().erase(path_);
             root_->wires_.exchange();
             root_ = 0;
@@ -100,27 +101,40 @@ namespace midi
      * input_root_t
      */
 
-    input_root_t::input_root_t(clocking_delegate_t *d): piw::root_t(0), clocking_delegate_(d), clk_(0)
+    input_root_t::input_root_t(clocking_delegate_t *d): piw::root_t(0), clocking_delegate_(d), clock_(0)
     {
     }
 
     input_root_t::~input_root_t()
     {
+        invalidate();
+    }
+
+    void input_root_t::invalidate()
+    {
         while(!wires_.alternate().empty())
         {
             delete wires_.alternate().begin()->second;
+        }
+
+        piw::root_t::disconnect();
+
+        if(clock_)
+        {
+            clocking_delegate_->remove_upstream_clock(clock_);
+            clock_ = 0;
         }
     }
 
     void input_root_t::root_clock()
     {
-        if(clk_)
-            clocking_delegate_->remove_upstream_clock(clk_);
+        if(clock_)
+            clocking_delegate_->remove_upstream_clock(clock_);
 
-        clk_ = get_clock();
+        clock_ = get_clock();
 
-        if(clk_)
-            clocking_delegate_->add_upstream_clock(clk_);
+        if(clock_)
+            clocking_delegate_->add_upstream_clock(clock_);
     }
 
     piw::wire_t *input_root_t::root_wire(const piw::event_data_source_t &es)

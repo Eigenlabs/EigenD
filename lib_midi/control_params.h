@@ -84,8 +84,9 @@ namespace midi
         public:
             input_root_t(clocking_delegate_t *);
             ~input_root_t();
+            void invalidate();
             virtual void root_opened() { root_clock(); root_latency(); }
-            virtual void root_closed() {}
+            virtual void root_closed() { invalidate(); }
             virtual void root_latency() {}
             virtual void root_clock();
             virtual piw::wire_t *root_wire(const piw::event_data_source_t &es);
@@ -98,7 +99,7 @@ namespace midi
 
             clocking_delegate_t *clocking_delegate_;
             param_wire_map_flipflop_t wires_;
-            bct_clocksink_t *clk_;
+            bct_clocksink_t *clock_;
             pic::ilist_t<param_wire_t, 0> active_;
             pic::ilist_t<param_wire_t, 1> rotating_active_;
     };
