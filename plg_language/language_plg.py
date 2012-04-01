@@ -583,6 +583,7 @@ class Agent(agent.Agent):
 
         self.stageServer = stage_server.StageXMLRPCServer(self, self.snapshot, self.xmlrpc_server_port)
         self.stageServer.start()
+        self.start_database()
 
     def close_server(self):
         self.stop_database()
