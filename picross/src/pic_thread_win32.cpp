@@ -261,7 +261,7 @@ void pic_set_core_unlimited()
 
 pic::tsd_t pic::thread_t::genctx__;
 
-pic::thread_t::thread_t(unsigned realtime)
+pic::thread_t::thread_t(int realtime)
 {
     realtime_=realtime;
     run_gate_.open();
