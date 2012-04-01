@@ -81,7 +81,7 @@ static int __lock_stack()
     return 1;
 }
 
-static int __realtime(unsigned pri)
+static int __realtime(int pri)
 {
     unsigned pri2 = THREAD_PRIORITY_NORMAL;
 

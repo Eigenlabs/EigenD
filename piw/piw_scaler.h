@@ -82,8 +82,8 @@ namespace piw
 
                 float interpolate(float i)
                 {
-                    unsigned s = notes_.size();
-                    unsigned j = i;
+                    int s = notes_.size();
+                    int j = i;
                     float r = i-(float)j;
 
                     if(j<0) return notes_[0];

@@ -185,7 +185,7 @@ namespace pic
     class PIC_DECLSPEC_CLASS thread_t
     {
         public:
-            thread_t(unsigned priority=PIC_THREAD_PRIORITY_NORMAL);
+            thread_t(int priority=PIC_THREAD_PRIORITY_NORMAL);
             virtual ~thread_t();
             void run();
             void wait();

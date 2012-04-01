@@ -75,7 +75,7 @@ bool pic_threadid_equal(pic_threadid_t a, pic_threadid_t b)
     return pthread_equal(a, b);
 }
 
-static int __realtime(unsigned pri)
+static int __realtime(int pri)
 {
     struct sched_param sp;
 
@@ -117,7 +117,7 @@ void pic_init_dll_path(void)
 {
 }
 
-static void __realtime(pthread_t thread, unsigned pri)
+static void __realtime(pthread_t thread, int pri)
 {
     kern_return_t err;
 
@@ -395,7 +395,7 @@ void pic::mutex_t::lock() { PIC_ASSERT(pthread_mutex_lock(&data_)==0); }
 void pic::mutex_t::unlock() { PIC_ASSERT(pthread_mutex_unlock(&data_)==0); }
 bool pic::mutex_t::trylock() { return (pthread_mutex_trylock(&data_)==0); }
 
-pic::thread_t::thread_t(unsigned realtime)
+pic::thread_t::thread_t(int realtime)
 {
     realtime_=realtime;
     run_gate_.open();
