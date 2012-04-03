@@ -143,12 +143,26 @@ piw::dataqueue_t::dataqueue_t(bct_dataqueue_t q): queue_(q)
 {
 }
 
+static int clear__(void *self_, void *arg_)
+{
+    piw::dataqueue_t *self = (piw::dataqueue_t *)self_;
+
+    self->clear();
+
+    return 1;
+}
+
+piw::dataqueue_t::~dataqueue_t()
+{
+    piw::tsd_fastcall(clear__,this,0);
+}
+
 piw::data_nb_t piw::dataqueue_t::current() const
 {
     return queue_ ? piw::data_nb_t::from_given(bct_dataqueue_current(queue_)) : data_nb_t();
 }
 
-static int __trigger(void *q_, void *)
+static int trigger__(void *q_, void *)
 {
     piw::dataqueue_t *q = (piw::dataqueue_t *)q_;
     unsigned long long t = piw::tsd_time();
@@ -160,5 +174,5 @@ static int __trigger(void *q_, void *)
 
 void piw::dataqueue_t::trigger_slow()
 {
-    tsd_fastcall(__trigger,this,0);
+    piw::tsd_fastcall(trigger__,this,0);
 }

@@ -365,7 +365,7 @@ bool osc_wire_t::event_end(unsigned long long t)
     send(t);
 
     // clear the event id
-    id_string_.clear();
+    id_string_.clear_nb();
 
     // clear the iterator
     iterator_.clear();

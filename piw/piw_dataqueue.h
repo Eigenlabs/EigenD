@@ -38,7 +38,7 @@ namespace piw
             dataqueue_t(): queue_(0) {}
             dataqueue_t(const dataqueue_t &q): queue_(q.queue_) { piw_dataqueue_incref(queue_); }
             dataqueue_t &operator=(const dataqueue_t &q) { if(queue_!=q.queue_) { clear(); queue_=q.queue_; piw_dataqueue_incref(queue_); } return *this; }
-            ~dataqueue_t() { clear(); }
+            ~dataqueue_t();
 
             bct_dataqueue_t lend() const { return queue_; }
             bct_dataqueue_t give() const { piw_dataqueue_incref(queue_); return queue_; }

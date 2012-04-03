@@ -926,7 +926,7 @@ bool correlator_default_t::fastdata_receive_event(const piw::data_nb_t &d, const
     {
         //pic::logmsg() << (void *)this << "release voices";
         erase_defaultbyid();
-        current_id_.clear();
+        current_id_.clear_nb();
         release_voices(d.time());
     }
 

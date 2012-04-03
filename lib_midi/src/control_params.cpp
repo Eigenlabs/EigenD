@@ -49,7 +49,7 @@ namespace midi
         {
             piw::tsd_fastcall(__clear,this,0);
             unsubscribe();
-            disconnect();
+            wire_t::disconnect();
             root_->wires_.alternate().erase(path_);
             root_->wires_.exchange();
             root_ = 0;
@@ -112,9 +112,10 @@ namespace midi
 
     void input_root_t::invalidate()
     {
-        while(!wires_.alternate().empty())
+        param_wire_map_t::iterator wi;
+        while((wi=wires_.alternate().begin()) != wires_.alternate().end())
         {
-            delete wires_.alternate().begin()->second;
+            delete wi->second;
         }
 
         piw::root_t::disconnect();
@@ -139,11 +140,11 @@ namespace midi
 
     piw::wire_t *input_root_t::root_wire(const piw::event_data_source_t &es)
     {
-        piw::data_t path = es.path();
-        param_wire_map_t::const_iterator i = wires_.alternate().find(path);
-
+        param_wire_map_t::iterator i = wires_.alternate().find(es.path());
         if(i != wires_.alternate().end())
+        {
             delete i->second;
+        }
 
         return new param_wire_t(this,es);
     }

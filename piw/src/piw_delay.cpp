@@ -642,7 +642,7 @@ namespace
                 e->cfilterenv_output(i+1, audio_out[i]);
                 // clear the last_audio_ inputs to prevent the input buffer cycling
                 // when the input event stop
-                last_audio_[i].clear();
+                last_audio_[i].clear_nb();
             }
 
             if(lingering_)

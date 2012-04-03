@@ -102,6 +102,7 @@ namespace piw
             unsigned long long time() { return bct_entity_time(entity_); }
             piw::data_nb_t allocate_host(unsigned long long ts,float u,float l,float r,unsigned t,unsigned dl, unsigned char **dp,unsigned vl, float **vp);
             piw::data_nb_t allocate_wire(unsigned dl, const unsigned char *dp);
+            bct_entity_t entity() { return entity_; }
         private:
             bct_entity_t entity_;
     };

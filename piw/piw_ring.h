@@ -90,19 +90,20 @@ namespace piw
 
             // be careful when using this method, you shouldn't ever use the data after it's
             // been passed into it
-            bool send_raw(bct_data_t d)
+            bool send_raw(bct_data_t *d)
             {
-                if(0 == d) return false;
+                if(0 == (*d)) return false;
 
                 if(space() > 0)
                 {
-                    buffer_[in_]=d;
+                    buffer_[in_]=*d;
                     advance_in();
+                    d = 0;
                     return true;
                 }
 
-                piw_data_decref_atomic(d);
-                d=0;
+                piw_data_decref_atomic(*d);
+                d = 0;
                 return false;
             }
 

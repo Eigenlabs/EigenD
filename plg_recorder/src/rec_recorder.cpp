@@ -294,7 +294,7 @@ void datawire_t::event_start(unsigned seq,const piw::data_nb_t &d,const piw::xev
             return;
         }
 
-        stored_event_.clear();
+        stored_event_.clear_nb();
         return;
     }
 

@@ -153,7 +153,7 @@ namespace piw
     {
         public:
             event_data_source_real_t(const piw::data_t &path);
-            inline virtual ~event_data_source_real_t() { source_end(piw::tsd_time()); source_shutdown(); };
+            virtual ~event_data_source_real_t();
 
             inline event_data_source_t source() { return event_data_source_t(list_); }
 

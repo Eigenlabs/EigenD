@@ -460,7 +460,7 @@ void ctlfilter_t::ufilterfunc_end(piw::ufilterenv_t *env, unsigned long long t)
     if(!id_.is_empty())
     {
         end__(t);
-        id_.clear();
+        id_.clear_nb();
     }
 }
 

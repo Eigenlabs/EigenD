@@ -34,7 +34,7 @@ namespace midi
 {
     class param_wire_t;
 
-    typedef pic::lckmap_t<piw::data_t,param_wire_t *,piw::path_less>::lcktype param_wire_map_t;
+    typedef pic::lckmap_t<piw::data_t,param_wire_t *>::lcktype param_wire_map_t;
     typedef pic::flipflop_t<param_wire_map_t> param_wire_map_flipflop_t;
 
     class MIDILIB_DECLSPEC_CLASS clocking_delegate_t

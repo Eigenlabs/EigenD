@@ -161,7 +161,7 @@ namespace
         void invalidate();
 
         virtual void root_opened() { root_clock(); root_latency(); }
-        virtual void root_closed() {}
+        virtual void root_closed() { invalidate(); }
         virtual void root_latency() {}
         virtual void root_clock();
 

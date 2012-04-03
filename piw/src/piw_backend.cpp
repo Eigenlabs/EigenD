@@ -213,7 +213,7 @@ bool btof_wire_t::fastdata_receive_event(const piw::data_nb_t &id, const piw::da
 {
     if(!id.is_null())
     {
-        last_.clear();
+        last_.clear_nb();
         id_.set_nb(id);
         ping(id.time(),q);
         return true;

@@ -132,12 +132,12 @@ namespace
 
         virtual const unsigned int get_rowcount() = 0;
         virtual const unsigned int* get_rowlen_array() = 0;
-        const piw::data_nb_t get_rowlen_tuple();
-        const piw::data_nb_t get_rowoffset_tuple();
+        const piw::data_t get_rowlen_tuple();
+        const piw::data_t get_rowoffset_tuple();
 
         virtual const unsigned int get_courselen() = 0;
-        const piw::data_nb_t get_courselen_tuple();
-        const piw::data_nb_t get_courseoffset_tuple();
+        const piw::data_t get_courselen_tuple();
+        const piw::data_t get_courseoffset_tuple();
 
         void create_kwires();
 
@@ -165,10 +165,10 @@ namespace
         void (*midi_sink_)(void *,const unsigned char *,unsigned);
         void *midi_sink_ctx_;
         piw::resampler_t resampler_;
-        piw::dataholder_nb_t rowlen_;
-        piw::dataholder_nb_t rowoffset_;
-        piw::dataholder_nb_t courselen_;
-        piw::dataholder_nb_t courseoffset_;
+        piw::data_t rowlen_;
+        piw::data_t rowoffset_;
+        piw::data_t courselen_;
+        piw::data_t courseoffset_;
     };
 
     struct blob_t
@@ -597,70 +597,70 @@ namespace
         resampler_.reset();
     }
 
-    const piw::data_nb_t keyboard_t::get_rowlen_tuple()
+    const piw::data_t keyboard_t::get_rowlen_tuple()
     {
-        if(!rowlen_.is_empty())
+        if(!rowlen_.is_null())
         {
-            return rowlen_.get();
+            return rowlen_;
         }
 
-        piw::data_nb_t rows = piw::tuplenull_nb(0);
+        piw::data_t rows = piw::tuplenull(0);
         for(unsigned i = 0; i < get_rowcount(); ++i)
         {
-            rows = piw::tupleadd_nb(rows, piw::makelong_nb(get_rowlen_array()[i],0));
+            rows = piw::tupleadd(rows, piw::makelong(get_rowlen_array()[i],0));
         }
 
-        rowlen_.set_nb(rows);
+        rowlen_ = rows;
 
-        return rowlen_.get();
+        return rowlen_;
     }
 
-    const piw::data_nb_t keyboard_t::get_rowoffset_tuple()
+    const piw::data_t keyboard_t::get_rowoffset_tuple()
     {
-        if(!rowoffset_.is_empty())
+        if(!rowoffset_.is_null())
         {
-            return rowoffset_.get();
+            return rowoffset_;
         }
 
-        piw::data_nb_t rows = piw::tuplenull_nb(0);
+        piw::data_t rows = piw::tuplenull(0);
         for(unsigned i = 0; i < get_rowcount(); ++i)
         {
-            rows = piw::tupleadd_nb(rows, piw::makelong_nb(0,0));
+            rows = piw::tupleadd(rows, piw::makelong(0,0));
         }
 
-        rowoffset_.set_nb(rows);
+        rowoffset_ = rows;
 
-        return rowoffset_.get();
+        return rowoffset_;
     }
 
-    const piw::data_nb_t keyboard_t::get_courselen_tuple()
+    const piw::data_t keyboard_t::get_courselen_tuple()
     {
-        if(!courselen_.is_empty())
+        if(!courselen_.is_null())
         {
-            return courselen_.get();
+            return courselen_;
         }
 
-        piw::data_nb_t courses = piw::tuplenull_nb(0);
-        courses = piw::tupleadd_nb(courses, piw::makelong_nb(get_courselen(),0));
+        piw::data_t courses = piw::tuplenull(0);
+        courses = piw::tupleadd(courses, piw::makelong(get_courselen(),0));
 
-        courselen_.set_nb(courses);
+        courselen_ = courses;
 
-        return courselen_.get();
+        return courselen_;
     }
 
-    const piw::data_nb_t keyboard_t::get_courseoffset_tuple()
+    const piw::data_t keyboard_t::get_courseoffset_tuple()
     {
-        if(!courseoffset_.is_empty())
+        if(!courseoffset_.is_null())
         {
-            return courseoffset_.get();
+            return courseoffset_;
         }
 
-        piw::data_nb_t courses = piw::tuplenull_nb(0);
-        courses = piw::tupleadd_nb(courses, piw::makefloat_nb(0.0,0));
+        piw::data_t courses = piw::tuplenull(0);
+        courses = piw::tupleadd(courses, piw::makefloat(0.0,0));
 
-        courseoffset_.set_nb(courses);
+        courseoffset_ = courses;
 
-        return courseoffset_.get();
+        return courseoffset_;
     }
 
     piw::data_nb_t keyboard_t::mic_data(unsigned long long t, unsigned bs)
@@ -1619,22 +1619,22 @@ struct kbd::kbd_impl_t: piw::clockdomain_ctl_t, piw::clocksink_t, piw::thing_t, 
 
     piw::data_t get_rowlen()
     {
-        return pkeyboard_->get_rowlen_tuple().make_normal();
+        return pkeyboard_->get_rowlen_tuple();
     }
 
     piw::data_t get_rowoffset()
     {
-        return pkeyboard_->get_rowoffset_tuple().make_normal();
+        return pkeyboard_->get_rowoffset_tuple();
     }
 
     piw::data_t get_courselen()
     {
-        return pkeyboard_->get_courselen_tuple().make_normal();
+        return pkeyboard_->get_courselen_tuple();
     }
 
     piw::data_t get_courseoffset()
     {
-        return pkeyboard_->get_courseoffset_tuple().make_normal();
+        return pkeyboard_->get_courseoffset_tuple();
     }
 
     piw::cookie_t audio_cookie()

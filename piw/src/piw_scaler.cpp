@@ -503,7 +503,6 @@ namespace
 
         ~sfunc_t()
         {
-            scale_data_.clear();
         }
 
         void setmodifier(const piw::data_nb_t &v)

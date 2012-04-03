@@ -172,7 +172,7 @@ struct recorder::nplayer_t::impl_t: piw::root_ctl_t, piw::clocksink_t, virtual p
             }
             else
             {
-                courselen_.clear();
+                courselen_.clear_nb();
             }
             
             piw::data_nb_t rowlen = d.as_dict_lookup("rowlen");
@@ -182,7 +182,7 @@ struct recorder::nplayer_t::impl_t: piw::root_ctl_t, piw::clocksink_t, virtual p
             }
             else
             {
-                rowlen_.clear();
+                rowlen_.clear_nb();
             }
         }
     }

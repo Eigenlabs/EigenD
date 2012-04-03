@@ -42,9 +42,7 @@ inline void data_atomicity_assertion(bct_data_t d)
         oss << d->tid;
         oss << "(data thread) != ";
         oss << pic_current_threadid();
-        oss << "(current thread) [";
-        pie_print(bct_data_wirelen(d), bct_data_wiredata(d), pie::ostreamwriter, &oss);
-        oss << "]";
+        oss << "(current thread)";
         PIC_THROW(oss.str().c_str());
     }
 #endif

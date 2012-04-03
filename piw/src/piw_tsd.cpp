@@ -213,7 +213,7 @@ void piw::tsd_thing(bct_thing_t *s)
 std::string piw::tsd_scope()
 {
     bct_entity_t e = tsd_getcontext();
-    piw::data_nb_t d = piw::data_nb_t::from_given(bct_entity_scope(e));
+    piw::data_t d = piw::data_t::from_given(bct_entity_scope(e));
     return d.as_string();
 }
 

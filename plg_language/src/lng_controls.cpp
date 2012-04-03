@@ -253,12 +253,12 @@ void language::updown_t::uimpl_t::activate(bool on, unsigned long long t)
         else
         {
             current_.set_nb(reset_);
-            reset_.clear();
+            reset_.clear_nb();
         }
     }
     else
     {
-        reset_.clear();
+        reset_.clear_nb();
     }
 
     integrate_=0.f;

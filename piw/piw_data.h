@@ -39,7 +39,19 @@
 namespace piw
 {
 #ifdef DEBUG_DATA_ATOMICITY
-    void data_atomicity_assertion(bct_data_t d)
+    inline void data_atomicity_assertion(bct_data_t d)
+    {
+        if(d && d->tid && !pic_threadid_equal(d->tid, pic_current_threadid()))
+        {
+            std::stringstream oss;
+            oss << "piw_data thread mismatch ";
+            oss << d->tid;
+            oss << "(data thread) != ";
+            oss << pic_current_threadid();
+            oss << "(current thread)";
+            PIC_THROW(oss.str().c_str());
+        }
+    }
 #else
     inline void data_atomicity_assertion(bct_data_t d) {}
 #endif
@@ -600,16 +612,18 @@ namespace piw
             bool operator==(const dataholder_nb_t &d) const { return d.get()==get(); }
 
             void set_normal(const data_t &d);
-            void set_nb(const data_nb_t &d);
-            void clear();
             bool is_empty();
-            const data_nb_t get() const;
+
+            void set_nb(const data_nb_t &d); //fast
+            void clear_nb(); //fast
+            const data_nb_t get() const; //fast
 
         private:
             static int copy_constructor__(void *self_, void *arg_);
             static int assignment__(void *self_, void *arg_);
             static int clear__(void *self_, void *arg_);
             static int set_normal__(void *self_, void *arg_);
+            static int set_nb__(void *self_, void *arg_);
 
             bct_data_t data_;
     };

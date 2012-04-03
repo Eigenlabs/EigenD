@@ -736,7 +736,10 @@ namespace midi
         this->set_sink_latency(get_latency());
     }
 
-    void midi_from_belcanto_t::impl_t::root_closed() {}
+    void midi_from_belcanto_t::impl_t::root_closed()
+    {
+        invalidate();
+    }
 
     void midi_from_belcanto_t::impl_t::add_to_midi_buffer(const piw::data_nb_t &d)
     {

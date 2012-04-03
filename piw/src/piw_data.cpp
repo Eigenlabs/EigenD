@@ -30,24 +30,6 @@
 #include <sstream>
 #include <limits>
 
-#ifdef DEBUG_DATA_ATOMICITY
-void piw::data_atomicity_assertion(bct_data_t d)
-{
-    if(d && d->tid && !pic_threadid_equal(d->tid, pic_current_threadid()))
-    {
-        std::stringstream oss;
-        oss << "piw_data thread mismatch ";
-        oss << d->tid;
-        oss << "(data thread) != ";
-        oss << pic_current_threadid();
-        oss << "(current thread) [";
-        pie_print(bct_data_wirelen(d), bct_data_wiredata(d), pie::ostreamwriter, &oss);
-        oss << "]";
-        PIC_THROW(oss.str().c_str());
-    }
-}
-#endif
-
 static bct_data_t __allocate_host(unsigned nb,unsigned long long ts,float u, float l, float r,unsigned t, unsigned dl, unsigned char **dp, unsigned vl, float **vp)
 {
     bct_entity_t e = piw::tsd_getcontext();
@@ -1805,8 +1787,8 @@ int piw::dataholder_nb_t::assignment__(void *self_, void *arg_)
 
     if(self->data_!=d)
     {
-        self->clear();
-        self->data_=d;
+        self->clear_nb();
+        self->data_ = d;
         piw_data_incref_fast(self->data_);
     }
 
@@ -1817,7 +1799,7 @@ int piw::dataholder_nb_t::clear__(void *self_, void *arg_)
 {
     piw::dataholder_nb_t *self = (piw::dataholder_nb_t *)self_;
 
-    self->clear();
+    self->clear_nb();
 
     return 1;
 }
@@ -1839,12 +1821,11 @@ void piw::dataholder_nb_t::set_normal(const piw::data_t &d)
 
 void piw::dataholder_nb_t::set_nb(const piw::data_nb_t &d)
 {
-    clear();
-
+    clear_nb();
     data_ = d.give();
 }
 
-void piw::dataholder_nb_t::clear()
+void piw::dataholder_nb_t::clear_nb()
 {
     if(data_)
     {
