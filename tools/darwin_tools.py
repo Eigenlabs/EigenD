@@ -353,7 +353,7 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         pkgfile = env.File(pkgname,env.Dir('pkg',env.Dir('$PKGDIR')))
 
         def make_pkg(target,source,env):
-            cmd = 'pkgbuild --identifier %s --component-plist %s --scripts %s --version %s --root %s %s' % (name.capitalize(),infonode[0].abspath,scriptdir.abspath,v,source[0].abspath,target[0].abspath)
+            cmd = 'pkgbuild --identifier com.eigenlabs.%s-%s --component-plist %s --scripts %s --version %s --root %s %s' % (name.capitalize(),v,infonode[0].abspath,scriptdir.abspath,v,source[0].abspath,target[0].abspath)
             print cmd
             os.system(cmd)
 
