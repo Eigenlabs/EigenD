@@ -91,6 +91,7 @@ namespace midi
         void update_mapping(control_mapping_t &);
         void set_parameters(pic::lckvector_t<param_data_t>::nbtype &);
         void set_midi(pic::lckvector_t<midi_data_t>::nbtype &);
+        void set_title(const std::string &title);
 
         std::auto_ptr<param_input_t> param_input_[32];
 
@@ -261,6 +262,11 @@ namespace midi
         params_window_.set_window_state(false);
 
         tick_enable(false);
+    }
+
+    void midi_converter_t::impl_t::set_title(const std::string &title)
+    {
+        params_window_.set_window_title(title.c_str());
     }
 
     void midi_converter_t::impl_t::close()
@@ -510,6 +516,11 @@ namespace midi
     piw::cookie_t midi_converter_t::parameter_input(unsigned name)
     {
         return piw::cookie_t(impl_->param_input_[name-1].get());
+    }
+
+    void midi_converter_t::set_title(const std::string &title)
+    {
+        impl_->set_title(title);
     }
 
     void midi_converter_t::set_mapping(const std::string &mapping)

@@ -192,8 +192,8 @@ class AgentLoader:
             current_context.install()
 
     @utils.nothrow
-    def __load(self,module,context,name,ordinal):
-        a = module.main(context.getenv(),name,ordinal)
+    def __load(self,module,context,name,ordinal,enclosure):
+        a = module.main(context.getenv(),name,ordinal,enclosure)
         return a
 
     @utils.nothrow
@@ -209,11 +209,11 @@ class AgentLoader:
             self.context.clear()
 
     @utils.nothrow_ret(False)
-    def load(self,module_name,scope,name,ordinal):
+    def load(self,module_name,scope,name,ordinal,enclosure=None):
         self.unload(False)
         m = registry.import_module(module_name)
         c = piw.tsd_subcontext(m.isgui,scope,name)
-        a = self.__run(c,self.__load,m,c,name,ordinal)
+        a = self.__run(c,self.__load,m,c,name,ordinal,enclosure)
 
         if a:
             self.module = m
@@ -264,12 +264,13 @@ class WorkspaceBackend:
 
 
 class Workspace(atom.Atom):
-    def __init__(self,name,backend,registry):
+    def __init__(self,name,backend,registry,enclosure=None):
         atom.Atom.__init__(self)
         self.__backend = backend
         self.__registry = registry
         self.__meta = container.PersistentMetaData(self,'agents',asserted=self.__asserted,retracted=self.__retracted,canonicalise=self.__canonicalise)
         self.__name = name
+        self.__enclosure = enclosure
 
         self.__load_queue = []
         self.__load_result = None
@@ -287,6 +288,15 @@ class Workspace(atom.Atom):
         self.flush()
 
         self.index = index.Index(lambda a: Controller(self,a),False)
+
+    def set_enclosure(self,enclosure):
+        self.__enclosure = enclosure
+
+        for m in self.index.members():
+            ma = m.address
+            qa = self.index.to_absolute(ma)
+            r = rpc.invoke_async_rpc(qa,'set_enclosure',enclosure)
+
 
     def shutdown(self):
         self.close_server()
@@ -757,7 +767,7 @@ class Workspace(atom.Atom):
 
 
     def __asserted(self,signature,delegate):
-        print 'loading',signature
+        print 'loading',signature,'into enclosure',self.__enclosure
         (address,plugin,version,cversion,ordinal) = signature.args
         factory = self.__registry.get_compatible_module(plugin,cversion)
 
@@ -767,7 +777,7 @@ class Workspace(atom.Atom):
 
         self.add_frelation(self.__relation(address))
         agent = AgentLoader()
-        if agent.load(factory.module,self.__name,address,ordinal):
+        if agent.load(factory.module,self.__name,address,ordinal,self.__enclosure):
             return agent
 
         delegate.add_error("Problems loading plugin %s" % plugin)

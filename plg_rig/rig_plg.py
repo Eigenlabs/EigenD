@@ -510,10 +510,12 @@ class InnerAgent(agent.Agent):
     def __init__(self,outer_agent):
         agent.Agent.__init__(self,signature=version,names='rig gateway',ordinal=1)
 
+        self.__description = outer_agent.get_description(full=True)
+        print 'inner agent',self.__description
         self.__registry = workspace.get_registry()
         self.__outer_agent = outer_agent
         self.__name = outer_agent.inner_name
-        self.__workspace = workspace.Workspace(self.__name,self,self.__registry)
+        self.__workspace = workspace.Workspace(self.__name,self,self.__registry,enclosure=self.__description)
 
         self[1] = self.__workspace
         self[2] = OutputList(self.__name)
@@ -521,6 +523,11 @@ class InnerAgent(agent.Agent):
 
         self.add_verb2(1,'create([],None,role(None,[abstract,matches([input])]),option(called,[abstract]))',self.__create_input)
         self.add_verb2(2,'create([],None,role(None,[abstract,matches([output])]),option(called,[abstract]))',self.__create_output)
+
+    def update_description(self):
+        self.__description = self.__outer_agent.get_description(full=True)
+        print 'inner agent description now',self.__description
+        self.__workspace.set_enclosure(self.__description)
 
     def __create_input(self,subject,dummy,name):
         name = action.abstract_string(name)
@@ -605,6 +612,10 @@ class OuterAgent(agent.Agent):
         if agent.Agent.property_veto(self,key,value):
             return True
         return key == 'rig'
+
+    def property_change(self,key,value,delegate):
+        if key in ['name','ordinal']:
+            self.__inner_agent.update_description()
 
     def unload(self,destroy):
         self.__inner_agent.unload(destroy)

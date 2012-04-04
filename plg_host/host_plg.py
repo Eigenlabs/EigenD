@@ -557,9 +557,12 @@ class Agent(agent.Agent):
 
     def __set_title(self):
         if self.__host is None: return
-        o = self.get_property_long('ordinal',0)
+        e = self.get_enclosure()
         desc = self.__host.get_description()
-        t = '%s %s %d' % (desc.name(),desc.format(),o)
+        if e:
+            t = '%s %s (%s)' % (desc.name(),desc.format(),e.title())
+        else:
+            t = '%s %s' % (desc.name(),desc.format())
         self.__host.set_title(t)
 
     def get_title(self):
@@ -569,8 +572,12 @@ class Agent(agent.Agent):
         return t 
 
     def property_change(self,key,value,delegate):
-        if key == 'ordinal':
+        if key in ['name','ordinal']:
             self.__set_title()
+
+    def set_enclosure(self,enclosure):
+        agent.Agent.set_enclosure(self,enclosure)
+        self.__set_title()
 
     def agent_preload(self,filename):
         self.agent_presave(filename)

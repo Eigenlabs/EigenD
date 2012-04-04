@@ -160,10 +160,22 @@ class Agent(agent.Agent):
         self.__midi_converter.close();
         agent.Agent.close_server(self)
 
+    def property_change(self,key,value,delegate):
+        if key in ['name','ordinal']:
+            self.__set_title()
+
+    def set_enclosure(self,enclosure):
+        agent.Agent.set_enclosure(self,enclosure)
+        self.__set_title()
+
+    def __set_title(self):
+        self.__midi_converter.set_title(self.__get_title())
+
     def __get_title(self):
-        n = string.capwords(self.get_property_string('name',0))
-        o = self.get_property_long('ordinal',0)
-        t = '%s %d' % (n,o)
+        t = self.get_description().title()
+        e = self.get_enclosure()
+        if e:
+            t = '%s (%s)' % (t,e.title())
         return t
 
     def set_midi_channel(self,c):
