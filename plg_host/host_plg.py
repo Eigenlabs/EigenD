@@ -558,11 +558,12 @@ class Agent(agent.Agent):
     def __set_title(self):
         if self.__host is None: return
         e = self.get_enclosure()
+        d = self.get_description().title()
         desc = self.__host.get_description()
         if e:
-            t = '%s %s (%s)' % (desc.name(),desc.format(),e.title())
+            t = '%s %s (%s)' % (desc.name(),d,e.title())
         else:
-            t = '%s %s' % (desc.name(),desc.format())
+            t = '%s %s' % (desc.name(),d)
         self.__host.set_title(t)
 
     def get_title(self):
