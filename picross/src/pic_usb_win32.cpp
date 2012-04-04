@@ -876,7 +876,7 @@ pic::usbdevice_t::impl_t::~impl_t()
     close();
 }
 
-pic::usbdevice_t::impl_t::close()
+void pic::usbdevice_t::impl_t::close()
 {
     detach();
     if(opened_)
