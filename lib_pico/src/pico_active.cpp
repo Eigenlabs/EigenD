@@ -108,6 +108,7 @@ pico::active_t::impl_t::~impl_t()
     {
     }
     stop(); 
+    close();
 }
 
 void pico::active_t::impl_t::start()

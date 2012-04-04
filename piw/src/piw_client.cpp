@@ -139,19 +139,19 @@ piw::data_t piw::client_t::path()
 void piw::client_t::child_add(const unsigned char *o, unsigned l, bct_client_t *c) 
 {
     PIC_ASSERT(open() && c);
-    PIC_ASSERT(bct_client_host_child_add(this,o,l,c)>=0);
+    bct_client_host_child_add(this,o,l,c);
 }
 
 void piw::client_t::child_add(unsigned char n, bct_client_t *c)
 {
     PIC_ASSERT(open() && c);
-    PIC_ASSERT(bct_client_host_child_add(this,&n,1,c)>=0);
+    bct_client_host_child_add(this,&n,1,c);
 }
 
 void piw::client_t::child_remove(const unsigned char *o, unsigned l, bct_client_t *c) 
 {
     PIC_ASSERT(open() && c);
-    PIC_ASSERT(bct_client_host_child_remove(this,o,l,c)>=0);
+    bct_client_host_child_remove(this,o,l,c);
 }
 
 unsigned char piw::client_t::child_enum_child_str(const unsigned char *o, unsigned l, unsigned char ch) 

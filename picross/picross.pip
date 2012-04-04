@@ -242,6 +242,7 @@ class usbdevice[pic::usbdevice_t]
     stdstr control_in(unsigned char, unsigned char, unsigned short, unsigned short, unsigned)
     void start_pipes()
     void stop_pipes()
+    void close()
 }
 
 class enumerator[pic::usbenumerator_t] /gc/

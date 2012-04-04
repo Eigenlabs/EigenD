@@ -188,6 +188,7 @@ struct pic::usbdevice_t::impl_t: pic::thread_t, virtual pic::lckobject_t
 	void start_pipes();
 	void stop_pipes();
     void detach();
+    void close();
     void thread_main();
     void thread_init();
     bool check_version();
@@ -209,7 +210,7 @@ struct pic::usbdevice_t::impl_t: pic::thread_t, virtual pic::lckobject_t
     bool stopping_;
     bool hispeed_;
     unsigned count_;
-
+    bool opened_;
 };
 
 struct pic::usbenumerator_t::impl_t: pic::thread_t, virtual pic::tracked_t, virtual pic::lckobject_t
@@ -768,7 +769,7 @@ bool pic::usbdevice_t::impl_t::check_version()
     return true;
 }
 
-pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface, pic::usbdevice_t *dev): thread_t(PIC_THREAD_PRIORITY_REALTIME), device_(dev), pipe_out_(0), stopping_(false), count_(0)
+pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface, pic::usbdevice_t *dev): thread_t(PIC_THREAD_PRIORITY_REALTIME), device_(dev), pipe_out_(0), stopping_(false), count_(0), opened_(false)
 {
     InitializeCriticalSectionAndSpinCount(&device_lock_,0x400);
 	
@@ -776,6 +777,8 @@ pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface, pic::usbdevic
 	{
 		pic::hurlmsg() << "CreateFile() " << SystemError();
     }
+
+    opened_ = true;
 
     ULONG speed;
 	unsigned long retval = 0;
@@ -870,10 +873,18 @@ void pic::usbdevice_t::impl_t::set_iso_out(iso_out_pipe_t *p)
 
 pic::usbdevice_t::impl_t::~impl_t()
 {
-    detach();
-	CloseHandle(dhandle_);
-    DeleteCriticalSection(&device_lock_);
+    close();
+}
 
+pic::usbdevice_t::impl_t::close()
+{
+    detach();
+    if(opened_)
+    {
+        CloseHandle(dhandle_);
+        DeleteCriticalSection(&device_lock_);
+        opened_ = false;
+    }
 }
 
 void pic::usbdevice_t::impl_t::pipes_died(unsigned reason)
@@ -1128,6 +1139,11 @@ void pic::usbdevice_t::set_power_delegate(power_t *p)
 void pic::usbdevice_t::detach()
 {
     impl_->detach();
+}
+
+void pic::usbdevice_t::close()
+{
+    impl_->close();
 }
 
 const char *pic::usbdevice_t::name()

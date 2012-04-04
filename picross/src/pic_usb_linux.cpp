@@ -61,6 +61,10 @@ void pic::usbdevice_t::detach()
 {
 }
 
+void pic::usbdevice_t::close()
+{
+}
+
 const char *pic::usbdevice_t::name()
 {
     return "";

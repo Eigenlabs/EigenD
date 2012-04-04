@@ -156,6 +156,7 @@ namespace pic
 
             void set_power_delegate(power_t *);
             void detach();
+            void close();
 
             bool poll_pipe(unsigned long long t);
 

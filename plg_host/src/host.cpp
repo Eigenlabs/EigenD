@@ -736,8 +736,6 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
         plugin_.set(0);
 
-        deallocate_buffer();
-
         set_bypassed(true);
 
         if(p)
@@ -745,6 +743,8 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
             p->releaseResources();
             delete p;
         }
+
+        deallocate_buffer();
 
         observer_->description_changed("");
     }

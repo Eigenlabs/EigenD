@@ -492,6 +492,7 @@ class BaseStation:
             self.__kbd = None
             k.dead()
         self.__thing.close_thing()
+        self.__device.close()
         self.__device = 0
         self.__instrument = 0
 

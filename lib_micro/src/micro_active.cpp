@@ -34,7 +34,7 @@
 struct micro::active_t::impl_t: pic::usbdevice_t::iso_in_pipe_t, pic::usbdevice_t::power_t, pic::usbdevice_t, virtual pic::lckobject_t
 {
     impl_t(const char *, micro::active_t::delegate_t *);
-    ~impl_t() { stop(); }
+    ~impl_t() { stop(); close(); }
 
     void in_pipe_data(const unsigned char *frame, unsigned length, unsigned long long hf, unsigned long long ht,unsigned long long pt);
     void pipe_died(unsigned reason);

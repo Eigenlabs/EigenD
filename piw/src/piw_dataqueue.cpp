@@ -143,18 +143,9 @@ piw::dataqueue_t::dataqueue_t(bct_dataqueue_t q): queue_(q)
 {
 }
 
-static int clear__(void *self_, void *arg_)
-{
-    piw::dataqueue_t *self = (piw::dataqueue_t *)self_;
-
-    self->clear();
-
-    return 1;
-}
-
 piw::dataqueue_t::~dataqueue_t()
 {
-    piw::tsd_fastcall(clear__,this,0);
+    clear();
 }
 
 piw::data_nb_t piw::dataqueue_t::current() const

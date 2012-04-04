@@ -203,14 +203,23 @@ namespace
 
     void close_interface(IOUSBDeviceInterface197 **device, IOUSBInterfaceInterface197 **interface)
     {
-        (*interface)->USBInterfaceClose(interface);
-        (*interface)->Release(interface);
-        (*device)->USBDeviceClose(device);
+        if(interface)
+        {
+            (*interface)->USBInterfaceClose(interface);
+            (*interface)->Release(interface);
+        }
+        if(device)
+        {
+            (*device)->USBDeviceClose(device);
+        }
     }
 
     void close_device(IOUSBDeviceInterface197 **device)
     {
-        (*device)->Release(device);
+        if(device)
+        {
+            (*device)->Release(device);
+        }
     }
 
     unsigned device_enumerate(unsigned long v, unsigned long p, void (*visitor)(void *, IOUSBDeviceInterface197 **), void *arg)
@@ -321,6 +330,8 @@ namespace
     {
         macosx_usbdevice_t(const char *, unsigned);
         ~macosx_usbdevice_t();
+
+        void close();
 
         IOUSBDeviceInterface197 **device;
         IOUSBInterfaceInterface197 **interface;
@@ -441,6 +452,7 @@ struct pic::usbdevice_t::impl_t: pic::cfrunloop_t, virtual public pic::lckobject
     void start_pipes();
     void stop_pipes();
     void detach();
+    void close();
 
     void power_sleep();
     void power_wakeup();
@@ -1008,8 +1020,15 @@ macosx_usbdevice_t::macosx_usbdevice_t(const char *name, unsigned iface)
 
 macosx_usbdevice_t::~macosx_usbdevice_t()
 {
+    close();
+}
+
+void macosx_usbdevice_t::close()
+{
     close_interface(device,interface);
     close_device(device);
+    device = 0;
+    interface = 0;
 }
 
 pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface): pic::cfrunloop_t(0), name_(name), device(name,iface), power(0), power_port(MACH_PORT_NULL),outpipe(0),cmd_pending(0),state_(PIPES_STOPPED)
@@ -1068,8 +1087,14 @@ bool pic::usbdevice_t::impl_t::add_iso_in(iso_in_pipe_t *pipe)
 
 pic::usbdevice_t::impl_t::~impl_t()
 {
+    close();
+}
+
+void pic::usbdevice_t::impl_t::close()
+{
     stop_pipes();
     detach();
+    device.close();
 }
 
 
@@ -1531,6 +1556,11 @@ void pic::usbdevice_t::start_pipes()
 void pic::usbdevice_t::stop_pipes()
 {
     impl_->stop_pipes();
+}
+
+void pic::usbdevice_t::close()
+{
+    impl_->close();
 }
 
 pic::usbdevice_t::~usbdevice_t()
