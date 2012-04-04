@@ -63,11 +63,13 @@ def main(klass,upgrader=None,gui=False):
 
     """
 
-    def __main(env,name,ordinal):
+    def __main(env,name,ordinal,enclosure):
         piw.setenv(env)
         root = klass(name,ordinal)
         piw.tsd_server(name,root)
         root.advertise('<main>')
+        if enclosure:
+            root.set_enclosure(enclosure)
         return root
 
     def __unload(env,obj,destroy):
@@ -204,9 +206,29 @@ class Agent(atom.Atom):
         self.add_verb2(207,'down([],~a,role(None,[partof(~s),notproto(down)]),role(by,[numeric]))', self.__verb_builtin_down_by)
 
         self.__state_buffer = []
+        self.__enclosure = None
 
     def load_agent_state(self,delegate):
         return async.success()
+
+    def set_enclosure(self,enclosure):
+        print 'enclosure set to',enclosure
+        self.__enclosure = enclosure
+
+    def rpc_set_enclosure(self,enclosure):
+        self.set_enclosure(enclosure)
+
+    def get_enclosure(self):
+        return self.__enclosure
+
+    def get_description(self,full=False):
+        d = atom.Atom.get_description(self)
+
+        if full and self.__enclosure:
+            d = "%s %s" % (self.__enclosure,d)
+
+        return d
+
 
     @async.coroutine('internal error')
     def rpc_loadstate(self,arg):

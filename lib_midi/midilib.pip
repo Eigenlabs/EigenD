@@ -35,6 +35,7 @@ class midi_converter[midi::midi_converter_t]
     clockdomain_ctl *clock_domain()
 
     cookie parameter_input(unsigned)
+    void set_title(const stdstr &)
     void set_mapping(const stdstr &)
     stdstr get_mapping()
     void parameter_name_changed(unsigned)

@@ -36,6 +36,7 @@ namespace midi
 
         piw::cookie_t parameter_input(unsigned);
         void set_mapping(const std::string &);
+        void set_title(const std::string &);
         std::string get_mapping();
         void parameter_name_changed(unsigned);
         void map_param(unsigned, mapping_info_t);
