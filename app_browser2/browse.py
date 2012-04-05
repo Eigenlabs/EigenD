@@ -112,6 +112,7 @@ class BrowseModel:
     def __init__(self,agent):
         self.agent=agent
         self.proxy=None
+        self.new_proxy=None
         self.targetName=''
         self.numFiles=0
         self.numCollections=0
@@ -183,12 +184,34 @@ class BrowseModel:
     
     @async.coroutine()
     def ready(self,id):
-        #print 'BrowseModel:ready id=',id, 'targetid=',self.getTargetId()
         print 'BrowseModel:ready id=',id
-        # XXX if id==self.getTargetId():
-        yield self.__get_name(id)
-        yield self.__get_icon()
-        self.flush_updates()
+        r = gui.defer_bg(self.new_proxy.enumerate,id,[])
+        yield r
+
+        if not r.status():
+            print 'Enumerate check failed on',id,'- browse target unchanged'
+            self.__updating=False
+        else:
+            print 'Enumerate check suceeded on', id
+
+            db = self.proxy
+            if db:
+                self.proxy = None
+                gui.call_bg_sync(db.removeAllListeners)
+                gui.call_bg_sync(db.shutdown)
+
+            self.proxy=self.new_proxy
+            self.setTargetId(id)
+            self.path=[]
+            yield self.__get_name(id)
+            yield self.__get_icon()
+            self.flush_updates()
+
+            yield self.__get_directory_details(True)
+
+            self.__updating = False
+
+
 
     def __getBrowserName(self):
         return self.agent.parent.name
@@ -329,28 +352,8 @@ class BrowseModel:
         print 'BrowseModel: Attempt target change to',targetId,'from',self.getTargetId()
 
         if self.proxy is None or (targetId !=self.getTargetId()):
-            proxy=gui.call_bg_sync(self.__create_browse_proxy,targetId)
-            r = gui.defer_bg(proxy.enumerate,targetId,[])
-            yield r
-
-            if not r.status():
-                print 'Enumerate check failed on',targetId,'- browse target unchanged'
-                self.__updating=False
-            else:
-                print 'Enumerate check suceeded on', targetId
-
-                db = self.proxy
-                if db:
-                    self.proxy = None
-                    gui.call_bg_sync(db.removeAllListeners)
-                    gui.call_bg_sync(db.shutdown)
-
-                self.proxy=proxy
-                self.setTargetId(targetId)
-                self.path=[]
-                yield self.__get_directory_details(True)
-                self.__updating = False
-
+            self.new_proxy=gui.call_bg_sync(self.__create_browse_proxy,targetId)
+            # proxy calls ready() when its ready
         else:
             self.path=[]
             yield self.__get_directory_details(True)
