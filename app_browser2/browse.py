@@ -105,6 +105,7 @@ class BrowseAgent(atom.Null):
 
     def setTargetId(self,id):
         self.__t=id
+        print 'BrowseAgent: setTargetId to ',self.__t
         self.__setup_target()
 
 class BrowseModel:
@@ -182,11 +183,12 @@ class BrowseModel:
     
     @async.coroutine()
     def ready(self,id):
-        print 'BrowseModel:ready'
-        if id==self.getTargetId():
-            yield self.__get_name(id)
-            yield self.__get_icon()
-            self.flush_updates()
+        #print 'BrowseModel:ready id=',id, 'targetid=',self.getTargetId()
+        print 'BrowseModel:ready id=',id
+        # XXX if id==self.getTargetId():
+        yield self.__get_name(id)
+        yield self.__get_icon()
+        self.flush_updates()
 
     def __getBrowserName(self):
         return self.agent.parent.name
@@ -335,6 +337,7 @@ class BrowseModel:
                 print 'Enumerate check failed on',targetId,'- browse target unchanged'
                 self.__updating=False
             else:
+                print 'Enumerate check suceeded on', targetId
 
                 db = self.proxy
                 if db:
@@ -360,6 +363,7 @@ class BrowseModel:
     @async.coroutine('internal error')
     def __get_name(self,targetId):    
         if self.proxy is None:
+            print '__get_name: proxy is None - returning'
             return
             
         db=self.proxy
@@ -369,6 +373,7 @@ class BrowseModel:
         if r.status():
             (self.targetName,) = r.args()
         self.add_update(upd_title)
+        print 'get_name',self.targetName
 
     @async.coroutine('internal error')
     def __get_directory_details(self,flush):

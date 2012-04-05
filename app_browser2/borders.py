@@ -176,10 +176,11 @@ class TopPanel(wx.Window):
         targetName=self.model.targetName
         title=''
         if targetName:
-            if (not self.model.keyval) and self.model.numFiles==0 and self.model.numCollections==0:
-                title=targetName+ ' : None found'
-            else:
-                title=targetName
+#            if (not self.model.keyval) and self.model.numFiles==0 and self.model.numCollections==0:
+#                title=targetName+ ' : None found'
+#            else:
+#                title=targetName
+            title=targetName
         
         return title
 
