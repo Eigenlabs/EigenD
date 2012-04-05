@@ -40,6 +40,7 @@ namespace midi
 
     void param_wire_t::wire_closed()
     {
+        invalidate();
         delete this;
     }
 
@@ -47,11 +48,12 @@ namespace midi
     {
         if(root_)
         {
+            root_->wires_.alternate().erase(path_);
+            root_->wires_.exchange();
+
             piw::tsd_fastcall(__clear,this,0);
             unsubscribe();
             wire_t::disconnect();
-            root_->wires_.alternate().erase(path_);
-            root_->wires_.exchange();
             root_ = 0;
         }
     }
@@ -115,6 +117,7 @@ namespace midi
         param_wire_map_t::iterator wi;
         while((wi=wires_.alternate().begin()) != wires_.alternate().end())
         {
+            wi->second->invalidate();
             delete wi->second;
         }
 
@@ -143,6 +146,7 @@ namespace midi
         param_wire_map_t::iterator i = wires_.alternate().find(es.path());
         if(i != wires_.alternate().end())
         {
+            i->second->invalidate();
             delete i->second;
         }
 
