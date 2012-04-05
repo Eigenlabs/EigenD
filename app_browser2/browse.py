@@ -203,12 +203,11 @@ class BrowseModel:
             self.proxy=self.new_proxy
             self.setTargetId(id)
             self.path=[]
+            self.add_update(upd_path)
             yield self.__get_name(id)
             yield self.__get_icon()
-            self.flush_updates()
-
             yield self.__get_directory_details(True)
-
+            self.flush_updates()
             self.__updating = False
 
 
