@@ -21,8 +21,145 @@
 #include <piw/piw_connector.h>
 #include <memory>
 
-piw::backend_t::backend_t(correlator_t *correlator, unsigned iid, unsigned signal, int pri, unsigned type, bool clock):
-    correlator_(correlator), iid_(iid), signal_(signal), pri_(pri), type_(type), clock_(clock)
+piw::backend_delegate_t::backend_delegate_t(bool clocked): clocked_(clocked), latency_(0)
+{
+}
+
+piw::backend_delegate_t::~backend_delegate_t()
+{
+    clear();
+}
+
+void piw::backend_delegate_t::clear()
+{
+    if(clock_source_.isvalid() && clocked_)
+    {
+        clock_source_->clear_downstream();
+    }
+
+    if(ctl_backend_.isvalid())
+    {
+        ctl_backend_->remove_latency();
+    }
+
+    if(data_backend_.isvalid())
+    {
+        data_backend_->remove_latency();
+    }
+}
+
+piw::backend_t *piw::backend_delegate_t::get_data_backend()
+{
+    if(!data_backend_.isvalid())
+    {
+        data_backend_ = create_data_backend();
+
+        if(data_backend_.isvalid())
+        {
+            data_backend_->set_latency(latency_);
+
+            if(clock_source_.isvalid() && clocked_)
+            {
+                data_backend_->set_clock_source(clock_source_.ptr());
+            }
+        }
+    }
+
+    return data_backend_.ptr();
+}
+
+piw::backend_t *piw::backend_delegate_t::get_controller_backend()
+{
+    if(!ctl_backend_.isvalid())
+    {
+        ctl_backend_ = create_controller_backend();
+
+        if(ctl_backend_.isvalid())
+        {
+            ctl_backend_->set_latency(latency_);
+
+            //if(clock_source_.isvalid() && clocked_)
+            //{
+                //ctl_backend_->set_clock_source(clock_source_.ptr());
+            //}
+        }
+    }
+
+    return ctl_backend_.ptr();
+}
+
+void piw::backend_t::set_clock_source(piw::client_t *clock_source)
+{
+    if(correlator_.isvalid() && clock_source)
+    {
+        if(clock_source->set_downstream(correlator_->clocksink()))
+        {
+            correlator_->clock_plumbed(signal_,true);
+        }
+        else
+        {
+            pic::logmsg() << "bad clock for " << clock_source->id();
+            correlator_->clock_plumbed(signal_,false);
+        }
+    }
+}
+
+void piw::backend_delegate_t::set_clock_source(piw::client_t *clock_source)
+{
+    if(clock_source_.isvalid() && clocked_)
+    {
+        clock_source_->clear_downstream();
+    }
+
+    clock_source_ = clock_source;
+
+    if(clock_source_.isvalid() && clocked_)
+    {
+        //if(ctl_backend_.isvalid())
+        //{
+        //    ctl_backend_->set_clock_source(clock_source_.ptr());
+        //}
+
+        if(data_backend_.isvalid())
+        {
+            data_backend_->set_clock_source(clock_source_.ptr());
+        }
+    }
+}
+
+void piw::backend_delegate_t::set_clocked(bool clocked)
+{
+    if(clock_source_.isvalid() && clocked_)
+    {
+        clock_source_->clear_downstream();
+    }
+
+    clocked_ = clocked;
+
+    if(clock_source_.isvalid() && clocked_)
+    {
+        //if(ctl_backend_.isvalid())
+        //{
+        //    ctl_backend_->set_clock_source(clock_source_.ptr());
+        //}
+
+        if(data_backend_.isvalid())
+        {
+            data_backend_->set_clock_source(clock_source_.ptr());
+        }
+    }
+}
+
+void piw::backend_delegate_t::set_latency(unsigned latency)
+{
+    latency_ = latency;
+
+    if(ctl_backend_.isvalid()) ctl_backend_->set_latency(latency_);
+    if(data_backend_.isvalid()) data_backend_->set_latency(latency_);
+}
+
+piw::backend_t::backend_t(correlator_t *correlator, unsigned iid, unsigned signal, int pri, unsigned type):
+    correlator_(correlator), iid_(iid), signal_(signal), pri_(pri), type_(type)
 {
 }
 
@@ -49,7 +186,7 @@ void piw::backend_t::remove_latency()
 
 struct piw::connector_t::impl_t: piw::client_t
 {
-    impl_t(bool ctl, piw::backend_delegate_t &backend, const piw::data_t &p, const piw::d2d_nb_t &filter, bool iso): ctl_(ctl), backend_(backend), xbackend_(0), path_(p), data2_(0), filter_(filter), iso_(iso)
+    impl_t(bool ctl, piw::backend_delegate_t *backend, const piw::data_t &p, const piw::d2d_nb_t &filter, bool iso): ctl_(ctl), backend_(backend), xbackend_(0), path_(p), data2_(0), filter_(filter), iso_(iso)
     {
     }
 
@@ -96,11 +233,11 @@ struct piw::connector_t::impl_t: piw::client_t
 
         if(ctl_ || (get_host_flags()&PLG_SERVER_CTL)!=0)
         {
-            xbackend_ = backend_.get_controller_backend();
+            xbackend_ = backend_->get_controller_backend();
         }
         else
         {
-            xbackend_ = backend_.get_data_backend();
+            xbackend_ = backend_->get_data_backend();
         }
 
         if((get_host_flags()&PLG_SERVER_FAST)!=0)
@@ -167,40 +304,7 @@ struct piw::connector_t::impl_t: piw::client_t
 
     void plumb_clock(piw::client_t *c)
     {
-        if(backend_.has_controller_backend())
-        {
-            piw::backend_t *cbackend = backend_.get_controller_backend();
-            if(cbackend->correlator_.isvalid() && cbackend->clock_)
-            {
-                if(c->set_downstream(cbackend->correlator_->clocksink()))
-                {
-                    //pic::logmsg() << "good clock for " << id();
-                    cbackend->correlator_->clock_plumbed(cbackend->signal_,true);
-                }
-                else
-                {
-                    //pic::logmsg() << "bad clock for " << id();
-                    cbackend->correlator_->clock_plumbed(cbackend->signal_,false);
-                }
-            }
-        }
-        if(backend_.has_data_backend())
-        {
-            piw::backend_t *dbackend = backend_.get_data_backend();
-            if(dbackend->correlator_.isvalid() && dbackend->clock_)
-            {
-                if(c->set_downstream(dbackend->correlator_->clocksink()))
-                {
-                    //pic::logmsg() << "good clock for " << id();
-                    dbackend->correlator_->clock_plumbed(dbackend->signal_,true);
-                }
-                else
-                {
-                    //pic::logmsg() << "bad clock for " << id();
-                    dbackend->correlator_->clock_plumbed(dbackend->signal_,false);
-                }
-            }
-        }
+        backend_->set_clock_source(c);
     }
 
     void populate()
@@ -212,7 +316,7 @@ struct piw::connector_t::impl_t: piw::client_t
             if(!child_get(&i,1))
             {
                 piw::data_t p2(piw::pathappend_channel(path_,i));
-                std::auto_ptr<impl_t> p(new impl_t(ctl_,backend_,p2,filter_,iso_));
+                std::auto_ptr<impl_t> p(new impl_t(ctl_,backend_.ptr(),p2,filter_,iso_));
                 child_add(i, p.get());
                 children_[i] = p.release();
             }
@@ -242,7 +346,7 @@ struct piw::connector_t::impl_t: piw::client_t
     }
 
     bool ctl_;
-    piw::backend_delegate_t &backend_;
+    pic::weak_t<piw::backend_delegate_t> backend_;
     pic::weak_t<piw::backend_t> xbackend_;
     piw::data_t path_;
     std::map<unsigned char, impl_t *> children_;
@@ -253,7 +357,7 @@ struct piw::connector_t::impl_t: piw::client_t
     bool iso_;
 };
 
-piw::connector_t::connector_t(bool ctl, piw::backend_delegate_t &backend, const piw::d2d_nb_t &filter,bool iso): piw::client_t(PLG_CLIENT_CLOCK)
+piw::connector_t::connector_t(bool ctl, piw::backend_delegate_t *backend, const piw::d2d_nb_t &filter,bool iso): piw::client_t(PLG_CLIENT_CLOCK)
 {
     impl_ = new impl_t(ctl,backend,piw::pathnull(0),d2d_nb_t::indirect(filter),iso);
 }
@@ -262,11 +366,6 @@ piw::connector_t::~connector_t()
 {
     close_client();
     delete impl_;
-}
-
-void piw::backend_t::set_clocked(bool c)
-{
-    clock_ = c;
 }
 
 void piw::connector_t::client_clock()

@@ -253,25 +253,29 @@ class correlator[piw::correlator_t] /gc/
 
 class backend[piw::backend_t]
 {
-    backend(correlator *, unsigned, unsigned, int, unsigned,bool)
+    backend(correlator *, unsigned, unsigned, int, unsigned)
     virtual converter_ref create_converter(bool) = 0
-    void set_clocked(bool)
     void set_latency(unsigned)
     void remove_latency()
 }
 
 class backend_delegate[piw::backend_delegate_t]
 {
-    backend_delegate()
-    virtual backend *get_controller_backend() = 0
-    virtual backend *get_data_backend() = 0
-    virtual bool has_controller_backend() = 0
-    virtual bool has_data_backend() = 0
+    backend_delegate(bool)
+    virtual backend *create_controller_backend() = 0
+    virtual backend *create_data_backend() = 0
+    backend *get_controller_backend()
+    backend *get_data_backend()
+    void set_clock_source(client *)
+    void set_clocked(bool)
+    void set_latency(unsigned)
+    void clear()
+    bool isclocked()
 }
 
 class connector[piw::connector_t]: client /gc/
 {
-    connector(bool, backend_delegate &, const d2d_nb &, bool);
+    connector(bool, backend_delegate *, const d2d_nb &, bool);
     void client_opened()
     void client_clock()
     void close_client()

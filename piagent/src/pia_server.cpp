@@ -312,8 +312,15 @@ int cnode_t::api_set_downstream(bct_client_host_ops_t **co, bct_clocksink_t *dn)
         }
 
         c->clock_ = c->entity_->glue()->addclocknotify(dn, clockgone, c);
-        return c->entity_->glue()->setdownstreamclock(c->local_->clock_,c->clock_);
+
+        if(c->local_->clock_)
+        {
+            return c->entity_->glue()->setdownstreamclock(c->local_->clock_,c->clock_);
+        }
+
+        return 1;
     }
+
     PIA_CATCHLOG_EREF(c->entity_)
     return -1;
 }

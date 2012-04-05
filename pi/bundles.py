@@ -194,11 +194,11 @@ class VectorDefaultPolicyImpl(policy.ConnectablePolicyImpl):
         return self.__ctrl.get_backend(config)
 
     def get_data_backend(self,config):
-        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid,config.clocked)
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid)
 
-    def create_plumber(self,config):
+    def create_plumber(self,config,clocked):
         config.callback=self.__callback
-        return policy.Plumber(self,config)
+        return policy.Plumber(self,config,clocked)
 
     def destroy_plumber(self,plumber):
         if self.count_connections()==0:
@@ -222,11 +222,11 @@ class VectorPolicyImpl(policy.ConnectablePolicyImpl):
         return self.__ctrl.get_backend(config)
 
     def get_data_backend(self,config):
-        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid,config.clocked)
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid)
 
-    def create_plumber(self,config):
+    def create_plumber(self,config,clocked):
         config.callback=self.__callback
-        return policy.Plumber(self,config)
+        return policy.Plumber(self,config,clocked)
 
     def destroy_plumber(self,plumber):
         if self.count_connections()==0:
@@ -253,13 +253,11 @@ class LatchPolicyImpl(policy.ConnectablePolicyImpl):
         return self.__ctrl.get_backend(config)
 
     def get_data_backend(self,config):
-        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_latch,1,config.iid,config.clocked)
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_latch,1,config.iid)
 
-    def create_plumber(self,config):
-        assert config.clocked
-        config.clocked=True
+    def create_plumber(self,config,clocked):
         config.callback=self.__callback
-        return policy.Plumber(self,config)
+        return policy.Plumber(self,config,clocked)
 
     def destroy_plumber(self,plumber):
         if self.count_connections()==0:
@@ -309,15 +307,13 @@ class LocalPolicyImpl(policy.ConnectablePolicyImpl):
         return self.__ctrl.get_backend(config)
 
     def get_data_backend(self,config):
-        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid,config.clocked)
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid)
 
-    def create_plumber(self,config):
-        assert config.clocked
+    def create_plumber(self,config,clocked):
         if not config.connect_static() and self.count_data_connections()==0:
             self.__input.correlator.unplumb_input(self.__signal,1,piw.pathnull(0),-1)
-        config.clocked=True
         config.callback=self.__callback
-        return policy.Plumber(self,config)
+        return policy.Plumber(self,config,clocked)
 
 class LingerPolicyImpl(policy.ConnectablePolicyImpl):
     def __init__(self,atom,data_domain,init,transient,input,signal,stream_policy,clocked,callback):
@@ -360,13 +356,11 @@ class LingerPolicyImpl(policy.ConnectablePolicyImpl):
         return self.__ctrl.get_backend(config)
 
     def get_data_backend(self,config):
-        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_linger,10,config.iid,config.clocked)
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_linger,10,config.iid)
 
-    def create_plumber(self,config):
-        assert config.clocked
-        config.clocked=True
+    def create_plumber(self,config,clocked):
         config.callback=self.__callback
-        return policy.Plumber(self,config)
+        return policy.Plumber(self,config,clocked)
 
 class MergePolicyImpl(policy.ConnectablePolicyImpl):
     protocols = 'input output'
@@ -410,13 +404,11 @@ class MergePolicyImpl(policy.ConnectablePolicyImpl):
         return self.__ctrl.get_backend(config)
 
     def get_data_backend(self,config):
-        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_merge,1,config.iid,config.clocked)
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_merge,1,config.iid)
 
-    def create_plumber(self,config):
-        assert config.clocked
-        config.clocked=True
+    def create_plumber(self,config,clocked):
         config.callback=self.__callback
-        return policy.Plumber(self,config)
+        return policy.Plumber(self,config,clocked)
 
 class MergeNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
     protocols = 'input nostage'
@@ -458,13 +450,11 @@ class MergeNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
         return self.__ctrl.get_backend(config)
 
     def get_data_backend(self,config):
-        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_merge,1,config.iid,config.clocked)
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_merge,1,config.iid)
 
-    def create_plumber(self,config):
-        assert config.clocked
-        config.clocked=True
+    def create_plumber(self,config,clocked):
         config.callback=self.__callback
-        return policy.Plumber(self,config)
+        return policy.Plumber(self,config,clocked)
 
 class ScalarNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
     protocols = 'input nostage'
@@ -486,19 +476,17 @@ class ScalarNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
             self.__ctrl = None
 
     def get_contoller_backend(self,config):
-        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid,config.clocked)
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid)
 
     def get_data_backend(self,config):
-        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid,config.clocked)
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid)
 
     def close(self):
         self.data_node().clear_change_handler()
         policy.ConnectablePolicyImpl.close(self)
 
-    def create_plumber(self,config):
-        assert config.clocked
-        config.clocked=True
-        return policy.Plumber(self,config)
+    def create_plumber(self,config,clocked):
+        return policy.Plumber(self,config,clocked)
 
 class ScalarPolicyImpl(policy.ConnectablePolicyImpl):
     protocols = 'input output'
@@ -557,14 +545,12 @@ class ScalarPolicyImpl(policy.ConnectablePolicyImpl):
         return self.__ctrl.get_backend(config)
 
     def get_data_backend(self,config):
-        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid,config.clocked)
+        return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid)
 
-    def create_plumber(self,config):
-        assert config.clocked
+    def create_plumber(self,config,clocked):
         if not config.connect_static() and self.count_data_connections()==0:
             self.__unplumb_static()
-        config.clocked=True
-        return policy.Plumber(self,config)
+        return policy.Plumber(self,config,clocked)
 
 class NotifyScalarPolicyImpl(ScalarPolicyImpl):
     protocols = 'input output'
