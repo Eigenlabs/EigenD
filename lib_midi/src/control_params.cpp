@@ -28,8 +28,6 @@ namespace midi
 
     param_wire_t::param_wire_t(input_root_t *root, const piw::event_data_source_t &es): root_(root), path_(es.path()), id_(), ended_(false), processed_data_(false)
     {
-        root_->wires_.alternate().insert(std::make_pair(path_,this));
-        root_->wires_.exchange();
         subscribe_and_ping(es);
     }
 
@@ -62,6 +60,8 @@ namespace midi
     {
         param_wire_t *w = (param_wire_t *)a;
         w->iterator_.clear();
+        w->root_->active_.remove(w);
+        w->root_->rotating_active_.remove(w);
         return 0;
     }
 
@@ -143,14 +143,19 @@ namespace midi
 
     piw::wire_t *input_root_t::root_wire(const piw::event_data_source_t &es)
     {
-        param_wire_map_t::iterator i = wires_.alternate().find(es.path());
+        piw::data_t path = es.path();
+
+        param_wire_map_t::iterator i = wires_.alternate().find(path);
         if(i != wires_.alternate().end())
         {
             i->second->invalidate();
             delete i->second;
         }
 
-        return new param_wire_t(this,es);
+        param_wire_t *w = new param_wire_t(this,es);
+        wires_.alternate().insert(std::make_pair(path,w));
+        wires_.exchange();
+        return w;
     }
 
 
