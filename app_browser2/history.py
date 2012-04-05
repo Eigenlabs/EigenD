@@ -48,7 +48,6 @@ class HistoryModel(language.LanguageDisplayModel):
 
     def history_changed(self,max):
         self.get_history(max)
-        self.update()
 
     def get_history(self,k):
         r=gui.defer_bg(self.langmodel.get_history,k)
@@ -67,7 +66,8 @@ class HistoryModel(language.LanguageDisplayModel):
                     speaker=h[3]
                 if words:
                     self.words=words
-        
+                self.update()
+
         def history_failed():
             print 'history failed'
         r.setCallback(history_ok).setErrback(history_failed)
