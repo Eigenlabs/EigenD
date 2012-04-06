@@ -34,7 +34,7 @@ namespace midi
 {
     class param_wire_t;
 
-    typedef pic::lckmap_t<piw::data_t,param_wire_t *>::lcktype param_wire_map_t;
+    typedef pic::lckmap_t<piw::data_t,param_wire_t *,piw::path_less>::lcktype param_wire_map_t;
     typedef pic::flipflop_t<param_wire_map_t> param_wire_map_flipflop_t;
 
     class MIDILIB_DECLSPEC_CLASS clocking_delegate_t
@@ -47,24 +47,24 @@ namespace midi
 
     struct MIDILIB_DECLSPEC_CLASS param_data_t
     {
-        param_data_t(unsigned p, float v, unsigned s, piw::data_nb_t id): param_(p), value_(v), scope_(s), id_(id) {};
+        param_data_t(unsigned p, float v, unsigned s): param_(p), value_(v), scope_(s) {};
 
         unsigned param_;
         float value_;
         unsigned scope_;
-        piw::data_nb_t id_;
     };
 
     struct MIDILIB_DECLSPEC_CLASS midi_data_t
     {
-        midi_data_t(unsigned long long time, unsigned char mcc, unsigned char lcc, unsigned value, unsigned scope, unsigned channel, piw::data_nb_t id, bool continuous): time_(time), mcc_(mcc), lcc_(lcc), value_(value), scope_(scope), channel_(channel), id_(id), continuous_(continuous) {};
+        midi_data_t(unsigned long long time, unsigned char mcc, unsigned char lcc, unsigned value, unsigned scope, unsigned configured_channel, unsigned active_channel, piw::data_nb_t id, bool continuous): time_(time), mcc_(mcc), lcc_(lcc), value_(value), scope_(scope), configured_channel_(configured_channel), active_channel_(active_channel), id_(id), continuous_(continuous) {};
 
         unsigned long long time_;
         unsigned char mcc_;
         unsigned char lcc_;
         unsigned value_;
         unsigned scope_;
-        unsigned channel_;
+        unsigned configured_channel_;
+        unsigned active_channel_;
         piw::data_nb_t id_;
         bool continuous_;
     };
@@ -77,6 +77,7 @@ namespace midi
             virtual void update_mapping(control_mapping_t &) {};
             virtual void set_parameters(pic::lckvector_t<param_data_t>::nbtype &) {};
             virtual void set_midi(pic::lckvector_t<midi_data_t>::nbtype &) {};
+            virtual unsigned get_active_midi_channel(const piw::data_nb_t &) { return 0; };
     };
 
     class MIDILIB_DECLSPEC_CLASS input_root_t: public piw::root_t, virtual public pic::lckobject_t
@@ -93,6 +94,7 @@ namespace midi
             virtual void started(param_wire_t *) {}
             virtual void ending(param_wire_t *, unsigned long long) {}
             virtual void ended(param_wire_t *) {}
+            virtual unsigned get_active_midi_channel(const piw::data_nb_t &) { return 0; };
 
         protected:
             friend class param_wire_t;
@@ -112,6 +114,7 @@ namespace midi
             virtual float calculate_param_value(const piw::data_nb_t &, const piw::data_nb_t &, const mapping_data_t&, const float);
             virtual long calculate_midi_value(const piw::data_nb_t &, const piw::data_nb_t &, const mapping_data_t&);
             virtual bool wiredata_processed(param_wire_t *, const piw::data_nb_t &);
+            virtual unsigned get_active_midi_channel(const piw::data_nb_t &);
 
             void started(param_wire_t *);
             void ending(param_wire_t *, unsigned long long);
@@ -124,14 +127,15 @@ namespace midi
         private:
             void process_wire(param_wire_t *, pic::lckvector_t<param_data_t>::nbtype &, pic::lckvector_t<midi_data_t>::nbtype &, unsigned long long, bool, bool);
             bool process_wire_data(param_wire_t *, pic::lckvector_t<param_data_t>::nbtype &, pic::lckvector_t<midi_data_t>::nbtype &, bool, bool);
-            void process_params(pic::lckvector_t<param_data_t>::nbtype &, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool);
-            void process_midi(pic::lckvector_t<midi_data_t>::nbtype &, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool, bool);
+            void process_params(pic::lckvector_t<param_data_t>::nbtype &, unsigned, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool);
+            void process_midi(pic::lckvector_t<midi_data_t>::nbtype &, unsigned, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool, bool);
             void end_with_origins(param_wire_t *w, bool);
             bool is_key_data(const piw::data_nb_t &);
             params_delegate_t *params_delegate_;
             control_mapping_t control_mapping_;
             piw::dataholder_nb_t current_id_;
             piw::dataholder_nb_t current_data_;
+            unsigned current_channel_;
     };
     
     class MIDILIB_DECLSPEC_CLASS param_wire_t: public piw::wire_t, public piw::event_data_sink_t, public pic::element_t<0>, public pic::element_t<1>
@@ -155,6 +159,7 @@ namespace midi
             input_root_t *root_;
             piw::data_t path_;
             piw::dataholder_nb_t id_;
+            unsigned channel_;
             bool ended_;
             bool processed_data_;
     };

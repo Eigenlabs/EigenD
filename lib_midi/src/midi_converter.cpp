@@ -91,6 +91,7 @@ namespace midi
         void update_mapping(control_mapping_t &);
         void set_parameters(pic::lckvector_t<param_data_t>::nbtype &);
         void set_midi(pic::lckvector_t<midi_data_t>::nbtype &);
+        unsigned get_active_midi_channel(const piw::data_nb_t &);
         void set_title(const std::string &title);
 
         std::auto_ptr<param_input_t> param_input_[32];
@@ -260,6 +261,8 @@ namespace midi
         params_window_.set_state_handler(pic::status_t::method(this,&midi_converter_t::impl_t::window_state));
         params_window_.set_window_title(title.c_str());
         params_window_.set_window_state(false);
+
+        add_upstream(midi_from_belcanto_.clocksink());
 
         tick_enable(false);
     }
@@ -480,6 +483,8 @@ namespace midi
     void midi_converter_t::impl_t::add_upstream_clock(bct_clocksink_t *c)
     {
         add_upstream(c);
+        remove_upstream(midi_from_belcanto_.clocksink());
+        add_upstream(midi_from_belcanto_.clocksink());
     }
 
     void midi_converter_t::impl_t::update_origins(control_mapping_t &control_mapping)
@@ -498,6 +503,11 @@ namespace midi
     void midi_converter_t::impl_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &midi)
     {
         midi_from_belcanto_.set_midi(midi);
+    }
+
+    unsigned midi_converter_t::impl_t::get_active_midi_channel(const piw::data_nb_t &id)
+    {
+        return midi_from_belcanto_.get_active_midi_channel(id);
     }
 
     /*

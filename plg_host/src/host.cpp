@@ -523,6 +523,8 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         midi_from_belcanto_ = new midi::midi_from_belcanto_t(midi_aggregator_->get_output(1), clockdomain_);
         midi_from_belcanto_->set_resend_current(midi::resend_current_t ::method(this, &host::plugin_instance_t::impl_t::resend_parameter_current));
         midi_from_belcanto_->set_midi_channel(0);
+
+        add_upstream(midi_from_belcanto_->clocksink());
     }
 
     ~impl_t()
@@ -894,6 +896,11 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     void add_upstream_clock(bct_clocksink_t *c)
     {
         add_upstream(c);
+        if(midi_from_belcanto_)
+        {
+            remove_upstream(midi_from_belcanto_->clocksink());
+            add_upstream(midi_from_belcanto_->clocksink());
+        }
     }
 
     void update_origins(midi::control_mapping_t &control_mapping)
@@ -922,22 +929,18 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
         for(; i!=e; ++i)
         {
-            if(PERNOTE_SCOPE==i->scope_)
-            {
-                unsigned channel = midi_from_belcanto_->get_active_midi_channel(i->id_);
-                if(channel > 0) channel--;
-                pg.value()->setParameter(i->param_+channel,i->value_);
-            }
-            else
-            {
-                pg.value()->setParameter(i->param_,i->value_);
-            }
+            pg.value()->setParameter(i->param_,i->value_);
         }
     }
 
     void set_midi(pic::lckvector_t<midi::midi_data_t>::nbtype &midi)
     {
         midi_from_belcanto_->set_midi(midi);
+    }
+
+    unsigned get_active_midi_channel(const piw::data_nb_t &id)
+    {
+        return midi_from_belcanto_->get_active_midi_channel(id);
     }
 
     void clocksink_ticked(unsigned long long from, unsigned long long to)

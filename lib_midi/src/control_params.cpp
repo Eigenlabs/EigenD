@@ -71,6 +71,8 @@ namespace midi
         iterator_ = b.iterator();
         iterator_->reset_all(id.time());
         id_.set_nb(id);
+        channel_ = root_->get_active_midi_channel(id);
+        pic::logmsg() << "param_wire_t::event_start seq=" << seq << " id=" << id << " time=" << id.time() << " channel=" << channel_;
         root_->started(this);
         root_->active_.append(this);
         root_->rotating_active_.append(this);
@@ -78,6 +80,7 @@ namespace midi
 
     bool param_wire_t::event_end(unsigned long long t)
     {
+        pic::logmsg() << "param_wire_t::event_end id=" << id_ << " time=" << t << " channel=" << channel_;
         root_->ending(this, t);
 
         iterator_.clear();
@@ -179,6 +182,11 @@ namespace midi
         params_delegate_->update_mapping(control_mapping_);
     }
 
+    unsigned param_input_t::get_active_midi_channel(const piw::data_nb_t &id)
+    {
+        return params_delegate_->get_active_midi_channel(id);
+    }
+
     void param_input_t::started(param_wire_t *w)
     {
         if(active_.head()) return;
@@ -240,7 +248,14 @@ namespace midi
             if(io!=eo && io->first==ip->first &&
                ip->second.origin_return_)
             {
-                params.push_back(param_data_t(io->first, io->second, ip->second.scope_, w->id_.get()));
+                if(PERNOTE_SCOPE==ip->second.scope_ && w->channel_ > 0)
+                {
+                    params.push_back(param_data_t(io->first+w->channel_-1, io->second, PERNOTE_SCOPE));
+                }
+                else
+                {
+                    params.push_back(param_data_t(io->first, io->second, ip->second.scope_));
+                }
             }
         }
 
@@ -295,6 +310,7 @@ namespace midi
     {
         piw::data_nb_t id = current_id_;
         piw::data_nb_t d = current_data_;
+        unsigned channel = current_channel_;
 
         if(!id.is_null() && !d.is_null())
         {
@@ -308,7 +324,7 @@ namespace midi
                 if(0==id.compare_path(d))
                 {
                     pic::lckvector_t<midi_data_t>::nbtype midi;
-                    process_midi(midi, id, d, false, false, false);
+                    process_midi(midi, channel, id, d, false, false, false);
                     if(!midi.empty())
                     {
                         params_delegate_->set_midi(midi);
@@ -355,6 +371,7 @@ namespace midi
         if(w->ended_) return;
 
         current_id_.set_nb(w->get_id());
+        current_channel_ = w->channel_;
 
         piw::data_nb_t d;
         bool more_data = w->iterator_->nextsig(1,d,to);
@@ -385,13 +402,13 @@ namespace midi
     {
         bool continuous = wiredata_processed(w, current_data_);
 
-        process_params(params, current_id_, current_data_, first_wire, ending);
-        process_midi(midi, current_id_, current_data_, continuous, true, ending);
+        process_params(params, current_channel_, current_id_, current_data_, first_wire, ending);
+        process_midi(midi, current_channel_, current_id_, current_data_, continuous, true, ending);
 
         return continuous;
     }
 
-    void param_input_t::process_params(pic::lckvector_t<param_data_t>::nbtype &params, const piw::data_nb_t &id, const piw::data_nb_t &d, bool first_wire, bool ending)
+    void param_input_t::process_params(pic::lckvector_t<param_data_t>::nbtype &params, unsigned channel, const piw::data_nb_t &id, const piw::data_nb_t &d, bool first_wire, bool ending)
     {
         nb_param_map_t::iterator ip,bp,ep;
         bp = control_mapping_.params().begin();
@@ -449,11 +466,18 @@ namespace midi
             }
             ip->second.last_processed_ = current_time;
 
-            params.push_back(param_data_t(ip->first, value, ip->second.scope_, id));
+            if(PERNOTE_SCOPE==ip->second.scope_ && channel > 0)
+            {
+                params.push_back(param_data_t(ip->first+channel-1, value, PERNOTE_SCOPE));
+            }
+            else
+            {
+                params.push_back(param_data_t(ip->first, value, ip->second.scope_));
+            }
         }
     }
 
-    void param_input_t::process_midi(pic::lckvector_t<midi_data_t>::nbtype &midi, const piw::data_nb_t &id, const piw::data_nb_t &d, bool continuous, bool accept_global_scope, bool ending)
+    void param_input_t::process_midi(pic::lckvector_t<midi_data_t>::nbtype &midi, unsigned channel, const piw::data_nb_t &id, const piw::data_nb_t &d, bool continuous, bool accept_global_scope, bool ending)
     {
         nb_midi_map_t::iterator ic,bc,ec;
         bc = control_mapping_.midi().begin();
@@ -511,7 +535,7 @@ namespace midi
             ic->second.last_processed_ = current_time;
 
             // make sure that the value in the ending state is not send as continuous
-            midi.push_back(midi_data_t(d.time(), mid, lid, value, ic->second.scope_, ic->second.channel_, id, !ending && continuous));
+            midi.push_back(midi_data_t(d.time(), mid, lid, value, ic->second.scope_, ic->second.channel_, channel, id, !ending && continuous));
         }
     }
 

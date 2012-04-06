@@ -386,11 +386,12 @@ namespace
 
     void belcanto_note_wire_t::invalidate()
     {
+        root_->input_wires_.erase(path_);
+
         // unsubscribe from event data source
         unsubscribe();
         // disconnect this wire
         wire_t::disconnect();
-        root_->input_wires_.erase(path_);
     }
 
     void belcanto_note_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::xevent_data_buffer_t &b)
@@ -409,6 +410,8 @@ namespace
         last_from_ = t;
         id_ = id;
         channel_ = root_->get_channel();
+
+        pic::logmsg() << "belcanto_note_wire_t::event_start seq=" << seq << " id=" << id << " time=" << id.time() << " channel=" << channel_;
 
         piw::data_nb_t dk;
         if(iterator_->latest(IN_KEY,dk,t))
@@ -565,6 +568,8 @@ namespace
 
     bool belcanto_note_wire_t::event_end(unsigned long long t)
     {
+        pic::logmsg() << "belcanto_note_wire_t::event_end id=" << id_ << " time=" << t << " channel=" << channel_;
+
 #if MIDI_FROM_BELCANTO_DEBUG>0
         pic::logmsg() << "belcanto_note_wire_t::event_end";
 #endif // MIDI_FROM_BELCANTO_DEBUG>0
@@ -588,6 +593,7 @@ namespace
         }
 
         root_->channel_list_.unregister_channel(id_);
+
         if(root_->poly_)
         {
             root_->channel_list_.put(channel_);
@@ -597,10 +603,6 @@ namespace
         remove();
         return true;
     }
-
-
-
-
 } // namespace
 
 
@@ -705,20 +707,21 @@ namespace midi
 
     void midi_from_belcanto_t::impl_t::root_clock()
     {
-        // get the root_ctl_t clock of root_t
-        bct_clocksink_t *s(get_clock());
-
         // if old upstream clock then remove
         if(upstream_clk_)
         {
-            this->remove_upstream(upstream_clk_);
+            remove_upstream(upstream_clk_);
             upstream_clk_ = 0;
         }
+
+        // get the root_ctl_t clock of root_t
+        bct_clocksink_t *s(get_clock());
+
         // save clock of upstream root_ctl_t
         if(s)
         {
             upstream_clk_ = s;
-            this->add_upstream(s);
+            add_upstream(s);
 #if MIDI_FROM_BELCANTO_DEBUG>0
             pic::logmsg() << "midi_from_belcanto::root_clock add upstream " << s;
 #endif // MIDI_FROM_BELCANTO_DEBUG>0
@@ -915,10 +918,10 @@ namespace midi
                 switch(i->scope_)
                 {
                     case CHANNEL_SCOPE:
-                        if(i->channel_)
+                        if(i->configured_channel_)
                         {
                             global = false;
-                            channel = i->channel_;
+                            channel = i->configured_channel_;
                             break;
                         }
                     default:
@@ -941,10 +944,10 @@ namespace midi
                 switch(i->scope_)
                 {
                     case CHANNEL_SCOPE:
-                        if(i->channel_)
+                        if(i->configured_channel_)
                         {
                             global = false;
-                            channel = i->channel_;
+                            channel = i->configured_channel_;
                             break;
                         }
                     case GLOBAL_SCOPE:
@@ -953,7 +956,7 @@ namespace midi
                         break;
                     case PERNOTE_SCOPE:
                         global = false;
-                        channel = channel_list_.get_channel(i->id_);
+                        channel = i->active_channel_;
                         break;
                 }
             }
@@ -1335,6 +1338,7 @@ namespace midi
     void midi_from_belcanto_t::set_send_pitchbend(bool send) { piw::tsd_fastcall(__set_send_pitchbend,impl_,&send); }
     void midi_from_belcanto_t::set_send_hires_velocity(bool send) { piw::tsd_fastcall(__set_send_hires_velocity,impl_,&send); }
     unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &id) { return piw::tsd_fastcall(__get_channel,impl_,(void *)&id); }
+    piw::clocksink_t *midi_from_belcanto_t::clocksink() { return impl_; }
 
 } // namespace midi
 
