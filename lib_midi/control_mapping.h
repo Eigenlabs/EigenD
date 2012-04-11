@@ -39,10 +39,10 @@
 
 namespace midi
 {
-    class MIDILIB_DECLSPEC_CLASS mapping_observer_t
+    class MIDILIB_DECLSPEC_CLASS mapping_observer_t: virtual public pic::tracked_t
     {
         public:
-            virtual ~mapping_observer_t() {};
+            virtual ~mapping_observer_t() { tracked_invalidate(); };
 
             virtual void mapping_changed(const std::string &) = 0;
             virtual void parameter_changed(unsigned) = 0;

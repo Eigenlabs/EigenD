@@ -45,7 +45,7 @@ namespace midi
 
     struct midi_converter_t::impl_t: params_delegate_t, mapping_observer_t, piw::clocksink_t, piw::thing_t, virtual pic::tracked_t
     {
-        impl_t(mapping_observer_t &, midi_channel_delegate_t &, piw::clockdomain_ctl_t *, midi_from_belcanto_t &, const std::string &);
+        impl_t(mapping_observer_t *, midi_channel_delegate_t *, piw::clockdomain_ctl_t *, midi_from_belcanto_t *, const std::string &);
         ~impl_t() { invalidate(); }
 
         void resend_parameter_current(const piw::data_nb_t &d);
@@ -96,16 +96,16 @@ namespace midi
 
         std::auto_ptr<param_input_t> param_input_[32];
 
-        midi_channel_delegate_t &channel_delegate_;
+        pic::weak_t<midi_channel_delegate_t> channel_delegate_;
         settings_functors_t settings_functors_;
 
         piw::clockdomain_ctl_t *clockdomain_;
 
-        mapping_observer_t &observer_;
+        pic::weak_t<mapping_observer_t> observer_;
         pic::f_int_t parameter_changed_midi_cc_;
         pic::f_int_t parameter_changed_midi_behaviour_;
 
-        midi_from_belcanto_t &midi_from_belcanto_;
+        pic::weak_t<midi_from_belcanto_t> midi_from_belcanto_;
 
         const std::string title_;
         piw::window_t params_window_;
@@ -229,19 +229,19 @@ namespace midi
      * midi_converter_t::impl_t
      */
 
-    midi_converter_t::impl_t::impl_t(mapping_observer_t &observer, midi_channel_delegate_t &channel_delegate,
-        piw::clockdomain_ctl_t *d, midi_from_belcanto_t &midi_from_belcanto, const std::string &title):
+    midi_converter_t::impl_t::impl_t(mapping_observer_t *observer, midi_channel_delegate_t *channel_delegate,
+        piw::clockdomain_ctl_t *d, midi_from_belcanto_t *midi_from_belcanto, const std::string &title):
         channel_delegate_(channel_delegate),
         settings_functors_(settings_functors_t::init(
                 clearall_t::method(this,&midi_converter_t::impl_t::clear_all),
                 get_settings_t::method(this,&midi_converter_t::impl_t::get_settings),
                 change_settings_t::method(this,&midi_converter_t::impl_t::change_settings),
-                set_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::set_midi_channel),
-                set_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::set_min_channel),
-                set_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::set_max_channel),
-                get_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::get_midi_channel),
-                get_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::get_min_channel),
-                get_channel_t::method(&channel_delegate_,&midi_channel_delegate_t::get_max_channel)
+                set_channel_t::method(channel_delegate,&midi_channel_delegate_t::set_midi_channel),
+                set_channel_t::method(channel_delegate,&midi_channel_delegate_t::set_min_channel),
+                set_channel_t::method(channel_delegate,&midi_channel_delegate_t::set_max_channel),
+                get_channel_t::method(channel_delegate,&midi_channel_delegate_t::get_midi_channel),
+                get_channel_t::method(channel_delegate,&midi_channel_delegate_t::get_min_channel),
+                get_channel_t::method(channel_delegate,&midi_channel_delegate_t::get_max_channel)
                 )),
         clockdomain_(d), observer_(observer), midi_from_belcanto_(midi_from_belcanto),
         title_(title), params_(0), mapping_(*this),
@@ -256,13 +256,13 @@ namespace midi
             param_input_[i] = std::auto_ptr<param_input_t>(new param_input_t(this,i+1));
         }
 
-        midi_from_belcanto_.set_resend_current(resend_current_t::method(this, &midi_converter_t::impl_t::resend_parameter_current));
+        midi_from_belcanto_->set_resend_current(resend_current_t::method(this, &midi_converter_t::impl_t::resend_parameter_current));
 
         params_window_.set_state_handler(pic::status_t::method(this,&midi_converter_t::impl_t::window_state));
         params_window_.set_window_title(title.c_str());
         params_window_.set_window_state(false);
 
-        add_upstream(midi_from_belcanto_.clocksink());
+        add_upstream(midi_from_belcanto_->clocksink());
 
         tick_enable(false);
     }
@@ -337,12 +337,14 @@ namespace midi
 
     void midi_converter_t::impl_t::mapping_changed(const std::string &mapping)
     {
-        observer_.mapping_changed(mapping);
+        if(observer_.isvalid())
+            observer_->mapping_changed(mapping);
     }
 
     void midi_converter_t::impl_t::parameter_changed(unsigned param)
     {
-        observer_.parameter_changed(param);
+        if(observer_.isvalid())
+            observer_->parameter_changed(param);
         parameter_changed_midi_cc_(param);
         parameter_changed_midi_behaviour_(param);
     }
@@ -350,13 +352,16 @@ namespace midi
     void midi_converter_t::impl_t::settings_changed()
     {
         perform_settings_updates(get_settings());
-        observer_.settings_changed();
+        if(observer_.isvalid())
+            observer_->settings_changed();
         mapping_delegate_.settings_changed();
     }
 
     std::string midi_converter_t::impl_t::get_parameter_name(unsigned i)
     {
-        return observer_.get_parameter_name(i);
+        if(observer_.isvalid())
+            return observer_->get_parameter_name(i);
+        return "";
     }
 
     void midi_converter_t::impl_t::set_mapping(const std::string &mapping)
@@ -422,10 +427,13 @@ namespace midi
 
     void midi_converter_t::impl_t::perform_settings_updates(global_settings_t settings)
     {
-        midi_from_belcanto_.set_send_notes(settings.send_notes_);
-        midi_from_belcanto_.set_send_pitchbend(settings.send_pitchbend_);
-        midi_from_belcanto_.set_send_hires_velocity(settings.send_hires_velocity_);
-        midi_from_belcanto_.set_control_interval(settings.minimum_decimation_);
+        if(midi_from_belcanto_.isvalid())
+        {
+            midi_from_belcanto_->set_send_notes(settings.send_notes_);
+            midi_from_belcanto_->set_send_pitchbend(settings.send_pitchbend_);
+            midi_from_belcanto_->set_send_hires_velocity(settings.send_hires_velocity_);
+            midi_from_belcanto_->set_control_interval(settings.minimum_decimation_);
+        }
     }
 
     global_settings_t midi_converter_t::impl_t::get_settings()
@@ -482,9 +490,12 @@ namespace midi
 
     void midi_converter_t::impl_t::add_upstream_clock(bct_clocksink_t *c)
     {
-        add_upstream(c);
-        remove_upstream(midi_from_belcanto_.clocksink());
-        add_upstream(midi_from_belcanto_.clocksink());
+        if(midi_from_belcanto_.isvalid())
+        {
+            add_upstream(c);
+            remove_upstream(midi_from_belcanto_->clocksink());
+            add_upstream(midi_from_belcanto_->clocksink());
+        }
     }
 
     void midi_converter_t::impl_t::update_origins(control_mapping_t &control_mapping)
@@ -502,20 +513,27 @@ namespace midi
 
     void midi_converter_t::impl_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &midi)
     {
-        midi_from_belcanto_.set_midi(midi);
+        if(midi_from_belcanto_.isvalid())
+        {
+            midi_from_belcanto_->set_midi(midi);
+        }
     }
 
     unsigned midi_converter_t::impl_t::get_active_midi_channel(const piw::data_nb_t &id)
     {
-        return midi_from_belcanto_.get_active_midi_channel(id);
+        if(midi_from_belcanto_.isvalid())
+        {
+            return midi_from_belcanto_->get_active_midi_channel(id);
+        }
+        return 0;
     }
 
     /*
      * midi_converter_t
      */
 
-    midi_converter_t::midi_converter_t(mapping_observer_t &observer, midi_channel_delegate_t &channel_delegate,
-        piw::clockdomain_ctl_t *d, midi_from_belcanto_t &midi_from_belcanto, const std::string &title): impl_(new impl_t(observer, channel_delegate, d, midi_from_belcanto, title)) {}
+    midi_converter_t::midi_converter_t(mapping_observer_t *observer, midi_channel_delegate_t *channel_delegate,
+        piw::clockdomain_ctl_t *d, midi_from_belcanto_t *midi_from_belcanto, const std::string &title): impl_(new impl_t(observer, channel_delegate, d, midi_from_belcanto, title)) {}
     midi_converter_t::~midi_converter_t() { delete impl_; }
 
     piw::clockdomain_ctl_t* midi_converter_t::clock_domain()
@@ -611,50 +629,81 @@ namespace midi
 
     void midi_converter_t::set_midi_channel(unsigned ch)
     {
-        impl_->midi_from_belcanto_.set_midi_channel(ch);
-        impl_->settings_changed();
+        if(impl_->midi_from_belcanto_.isvalid())
+        {
+            impl_->midi_from_belcanto_->set_midi_channel(ch);
+            impl_->settings_changed();
+        }
     }
 
     void midi_converter_t::set_min_midi_channel(unsigned ch)
     {
-        impl_->midi_from_belcanto_.set_min_midi_channel(ch);
-        impl_->settings_changed();
+        if(impl_->midi_from_belcanto_.isvalid())
+        {
+            impl_->midi_from_belcanto_->set_min_midi_channel(ch);
+            impl_->settings_changed();
+        }
     }
 
     void midi_converter_t::set_max_midi_channel(unsigned ch)
     {
-        impl_->midi_from_belcanto_.set_max_midi_channel(ch);
-        impl_->settings_changed();
+        if(impl_->midi_from_belcanto_.isvalid())
+        {
+            impl_->midi_from_belcanto_->set_max_midi_channel(ch);
+            impl_->settings_changed();
+        }
     }
 
     void midi_converter_t::set_program_change(unsigned c)
     {
-        impl_->midi_from_belcanto_.set_program_change(c);
+        if(impl_->midi_from_belcanto_.isvalid())
+        {
+            impl_->midi_from_belcanto_->set_program_change(c);
+        }
     }
 
     piw::change_nb_t midi_converter_t::change_program()
     {
-        return impl_->midi_from_belcanto_.change_program();
+        if(impl_->midi_from_belcanto_.isvalid())
+        {
+            return impl_->midi_from_belcanto_->change_program();
+        }
+        return piw::change_nb_t();
     }
 
     void midi_converter_t::set_bank_change(unsigned c)
     {
-        impl_->midi_from_belcanto_.set_bank_change(c);
+        if(impl_->midi_from_belcanto_.isvalid())
+        {
+            impl_->midi_from_belcanto_->set_bank_change(c);
+        }
     }
 
     piw::change_nb_t midi_converter_t::change_bank()
     {
-        return impl_->midi_from_belcanto_.change_bank();
+        if(impl_->midi_from_belcanto_.isvalid())
+        {
+            return impl_->midi_from_belcanto_->change_bank();
+        }
+        return piw::change_nb_t();
     }
 
     void midi_converter_t::set_cc(unsigned c, unsigned v)
     {
-        impl_->midi_from_belcanto_.set_cc(c, v);
+        if(impl_->midi_from_belcanto_.isvalid())
+        {
+            impl_->midi_from_belcanto_->set_cc(c, v);
+        }
     }
 
     piw::change_nb_t midi_converter_t::change_cc()
     {
-        return impl_->midi_from_belcanto_.change_cc();
+        if(impl_->midi_from_belcanto_.isvalid())
+        {
+            return impl_->midi_from_belcanto_->change_cc();
+        }
+
+        return piw::change_nb_t();
     }
 
     void midi_converter_t::close()

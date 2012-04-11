@@ -37,10 +37,10 @@ namespace midi
     typedef pic::lckmap_t<piw::data_t,param_wire_t *,piw::path_less>::lcktype param_wire_map_t;
     typedef pic::flipflop_t<param_wire_map_t> param_wire_map_flipflop_t;
 
-    class MIDILIB_DECLSPEC_CLASS clocking_delegate_t
+    class MIDILIB_DECLSPEC_CLASS clocking_delegate_t: virtual public pic::tracked_t
     {
         public:
-            virtual ~clocking_delegate_t() {};
+            virtual ~clocking_delegate_t() { tracked_invalidate(); };
             virtual void remove_upstream_clock(bct_clocksink_t *) = 0;
             virtual void add_upstream_clock(bct_clocksink_t *) = 0;
     };
@@ -69,10 +69,10 @@ namespace midi
         bool continuous_;
     };
 
-    class MIDILIB_DECLSPEC_CLASS params_delegate_t: public clocking_delegate_t
+    class MIDILIB_DECLSPEC_CLASS params_delegate_t: public clocking_delegate_t, virtual public pic::tracked_t
     {
         public:
-            virtual ~params_delegate_t() {};
+            virtual ~params_delegate_t() { tracked_invalidate(); };
             virtual void update_origins(control_mapping_t &) {};
             virtual void update_mapping(control_mapping_t &) {};
             virtual void set_parameters(pic::lckvector_t<param_data_t>::nbtype &) {};
@@ -99,7 +99,7 @@ namespace midi
         protected:
             friend class param_wire_t;
 
-            clocking_delegate_t *clocking_delegate_;
+            pic::weak_t<clocking_delegate_t> clocking_delegate_;
             param_wire_map_flipflop_t wires_;
             bct_clocksink_t *clock_;
             pic::ilist_t<param_wire_t, 0> active_;
@@ -110,6 +110,7 @@ namespace midi
     {
         public:
             param_input_t(params_delegate_t *, unsigned);
+            ~param_input_t();
 
             virtual float calculate_param_value(const piw::data_nb_t &, const piw::data_nb_t &, const mapping_data_t&, const float);
             virtual long calculate_midi_value(const piw::data_nb_t &, const piw::data_nb_t &, const mapping_data_t&);
@@ -131,7 +132,7 @@ namespace midi
             void process_midi(pic::lckvector_t<midi_data_t>::nbtype &, unsigned, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool, bool);
             void end_with_origins(param_wire_t *w, bool);
             bool is_key_data(const piw::data_nb_t &);
-            params_delegate_t *params_delegate_;
+            pic::weak_t<params_delegate_t> params_delegate_;
             control_mapping_t control_mapping_;
             piw::dataholder_nb_t current_id_;
             piw::dataholder_nb_t current_data_;

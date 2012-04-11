@@ -95,10 +95,10 @@ namespace host
             impl_t *impl_;
     };
 
-    class PIHOST_DECLSPEC_CLASS plugin_observer_t
+    class PIHOST_DECLSPEC_CLASS plugin_observer_t: virtual public pic::tracked_t
     {
         public:
-            virtual ~plugin_observer_t() {}
+            virtual ~plugin_observer_t() {tracked_invalidate(); }
             virtual void description_changed(const std::string &) = 0;
             virtual void showing_changed(bool) = 0;
             virtual void bypassed_changed(bool) = 0;

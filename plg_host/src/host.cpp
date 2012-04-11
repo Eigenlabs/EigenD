@@ -150,6 +150,7 @@ namespace
     struct midi_input_t: midi::input_root_t
     {
         midi_input_t(host::plugin_instance_t::impl_t *);
+        ~midi_input_t() { invalidate(); }
         bool schedule(unsigned long long,unsigned long long);
         host::plugin_instance_t::impl_t *controller_;
     };
@@ -490,12 +491,12 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
                     midi::clearall_t::method(this,&host::plugin_instance_t::impl_t::clear_all),
                     midi::get_settings_t::method(this,&host::plugin_instance_t::impl_t::get_settings),
                     midi::change_settings_t::method(this,&host::plugin_instance_t::impl_t::change_settings),
-                    midi::set_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::set_midi_channel),
-                    midi::set_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::set_min_channel),
-                    midi::set_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::set_max_channel),
-                    midi::get_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::get_midi_channel),
-                    midi::get_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::get_min_channel),
-                    midi::get_channel_t::method(channel_delegate_,&midi::midi_channel_delegate_t::get_max_channel)
+                    midi::set_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::set_midi_channel),
+                    midi::set_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::set_min_channel),
+                    midi::set_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::set_max_channel),
+                    midi::get_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::get_midi_channel),
+                    midi::get_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::get_min_channel),
+                    midi::get_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::get_max_channel)
                     )),
             mapping_delegate_(settings_functors_),
             midi_aggregator_(0), midi_from_belcanto_(0)
@@ -1162,8 +1163,8 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     bool bypassed_;
 
-    plugin_observer_t *observer_;
-    midi::midi_channel_delegate_t *channel_delegate_;
+    pic::weak_t<plugin_observer_t> observer_;
+    pic::weak_t<midi::midi_channel_delegate_t> channel_delegate_;
     pic::f_int_t parameter_changed_params_;
     pic::f_int_t parameter_changed_midi_cc_;
     pic::f_int_t parameter_changed_midi_behaviour_;

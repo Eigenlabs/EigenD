@@ -29,7 +29,7 @@ namespace midi
 {
     struct MIDILIB_DECLSPEC_CLASS midi_converter_t
     {
-        midi_converter_t(mapping_observer_t &, midi_channel_delegate_t &, piw::clockdomain_ctl_t *, midi_from_belcanto_t &, const std::string &);
+        midi_converter_t(mapping_observer_t *, midi_channel_delegate_t *, piw::clockdomain_ctl_t *, midi_from_belcanto_t *, const std::string &);
         ~midi_converter_t();
 
         piw::clockdomain_ctl_t *clock_domain();

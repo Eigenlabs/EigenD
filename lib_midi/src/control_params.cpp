@@ -49,9 +49,9 @@ namespace midi
             root_->wires_.alternate().erase(path_);
             root_->wires_.exchange();
 
-            piw::tsd_fastcall(__clear,this,0);
             unsubscribe();
             wire_t::disconnect();
+            piw::tsd_fastcall(__clear,this,0);
             root_ = 0;
         }
     }
@@ -115,18 +115,23 @@ namespace midi
 
     void input_root_t::invalidate()
     {
+        piw::root_t::disconnect();
+
         param_wire_map_t::iterator wi;
+
         while((wi=wires_.alternate().begin()) != wires_.alternate().end())
         {
-            wi->second->invalidate();
+            //dtor does invalidate, and invalidate will toss this iterator
+            //wi->invalidate();
             delete wi->second;
         }
 
-        piw::root_t::disconnect();
-
         if(clock_)
         {
-            clocking_delegate_->remove_upstream_clock(clock_);
+            if(clocking_delegate_.isvalid())
+            {
+                clocking_delegate_->remove_upstream_clock(clock_);
+            }
             clock_ = 0;
         }
     }
@@ -149,7 +154,8 @@ namespace midi
         param_wire_map_t::iterator i = wires_.alternate().find(path);
         if(i != wires_.alternate().end())
         {
-            i->second->invalidate();
+            //dtor does invalidate, and invalidate will toss this iterator
+            //i->second->invalidate();
             delete i->second;
         }
 
@@ -166,6 +172,11 @@ namespace midi
 
     param_input_t::param_input_t(params_delegate_t *d, unsigned name): input_root_t(d), params_delegate_(d), control_mapping_(name), current_id_(piw::makenull(0)), current_data_(piw::makenull(0))
     {
+    }
+
+    param_input_t::~param_input_t()
+    {
+        invalidate();
     }
 
     void param_input_t::update_origins()

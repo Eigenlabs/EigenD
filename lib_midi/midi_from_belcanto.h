@@ -36,7 +36,7 @@ namespace midi
 
     typedef pic::functor_t<void(const piw::data_nb_t&)> resend_current_t;
 
-    struct MIDILIB_DECLSPEC_CLASS midi_from_belcanto_t
+    struct MIDILIB_DECLSPEC_CLASS midi_from_belcanto_t: public virtual pic::tracked_t
     {
         midi_from_belcanto_t(const piw::cookie_t &, piw::clockdomain_ctl_t *);
         ~midi_from_belcanto_t();

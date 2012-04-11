@@ -1168,6 +1168,8 @@ void correlator_default_t::release_voices(unsigned long long time)
 void correlator_default_t::shutdown_fast()
 {
     correlator_source_t::shutdown_fast();
+    erase_defaultbyid();
+    current_id_.clear_nb();
     release_voices(piw::tsd_time());
 }
 
@@ -1183,7 +1185,6 @@ int correlator_default_t::__erase(void *self_, void *)
 {
     correlator_default_t *self = (correlator_default_t *)self_;
     self->root_->defaults_[self->signal_].erase(iid_t(self->iid_,self->path_,self->priority_));
-    self->erase_defaultbyid();
     return 0;
 }
 
