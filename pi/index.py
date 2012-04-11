@@ -39,13 +39,16 @@ class Monitor(piw.client):
         r = self.real.add_sync()
         r.setCallback(insync).setErrback(insync)
 
+    def client_closed(self):
+        self.index.member_died(self.servername_fq(),self.cookie(),self)
+        piw.client.client_closed(self)
+
     def close_client(self):
         if self.real is not None:
             try:
                 self.real.close_client()
             except:
                 pass
-        self.index.member_died(self.servername_fq(),self.cookie(),self)
         piw.client.close_client(self)
 
 class Index(piw.index):

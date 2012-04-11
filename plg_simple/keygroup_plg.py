@@ -1131,8 +1131,8 @@ class Agent(agent.Agent):
             self.controller.setlist('rowoffset', [piw.makelong(r,0) if r is not None else piw.makenull(0) for r in rowoffsets])
         else:
             # if the mapping was empty, use the upstream row lengths and no offsets
-            self.controller.setlist('rowlen', [piw.makelong(r,0) for r in self.__upstream_rowlen])
-            self.controller.setlist('rowoffset', [piw.makelong(0,0) for r in self.__upstream_rowlen])
+            self.controller.setlist('rowlen', [piw.makelong(r,0) for r in self.__upstream_rowlen or []])
+            self.controller.setlist('rowoffset', [piw.makelong(0,0) for r in self.__upstream_rowlen or []])
 
         # update the outputs status indexes
         self[1].update_status_indexes()
@@ -1210,8 +1210,8 @@ class Agent(agent.Agent):
             self.controller.setlist('courseoffset', [piw.makefloat(o,0) for o in courseoffsets])
         else:
             # if the mapping was empty, use the upstream courselen
-            self.controller.setlist('courselen', [piw.makelong(c,0) for c in self.__upstream_courselen])
-            self.controller.setlist('courseoffset', [piw.makefloat(0.0,0) for c in self.__upstream_courselen])
+            self.controller.setlist('courselen', [piw.makelong(c,0) for c in self.__upstream_courselen or []])
+            self.controller.setlist('courseoffset', [piw.makefloat(0.0,0) for c in self.__upstream_courselen or []])
 
         # store the mapping description in the state of the agent
         self[34].set_value(logic.render_term(mapping))
