@@ -72,7 +72,7 @@ namespace piw
             void child_add(unsigned char n, bct_server_t *c) { PIC_ASSERT(open()); PIC_ASSERT(bct_server_host_child_add(this,n,c)>=0); }
             void shutdown() { if(open()) bct_server_host_shutdown(this); }
             void advertise(const char *i) { PIC_ASSERT(open()); bct_server_host_advertise(this,i); }
-            void unadvertise(const char *i) { PIC_ASSERT(open()); bct_server_host_advertise(this,i); }
+            void unadvertise(const char *i) { PIC_ASSERT(open()); bct_server_host_unadvertise(this,i); }
             void cancel() { PIC_ASSERT(open()); bct_server_host_cancel(this); }
             void set_clock(bct_clocksink_t *c);
             void clear_clock() { set_clock(0); }
