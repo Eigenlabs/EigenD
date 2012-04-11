@@ -34,7 +34,7 @@ class midi_converter[midi::midi_converter_t]
 
     clockdomain_ctl *clock_domain()
 
-    cookie parameter_input(unsigned)
+    cookie parameter_input_cookie(unsigned)
     void set_title(const stdstr &)
     void set_mapping(const stdstr &)
     stdstr get_mapping()
@@ -98,4 +98,7 @@ class midi_from_belcanto[midi::midi_from_belcanto_t]
     void set_cc(unsigned, unsigned)
     change_nb change_cc()
     void set_omni(bool)
+    void set_velocity_samples(unsigned)
+    void set_velocity_curve(float)
+    void set_velocity_scale(float)
 }

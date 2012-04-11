@@ -72,7 +72,6 @@ namespace midi
         iterator_->reset_all(id.time());
         id_.set_nb(id);
         channel_ = root_->get_active_midi_channel(id);
-        pic::logmsg() << "param_wire_t::event_start seq=" << seq << " id=" << id << " time=" << id.time() << " channel=" << channel_;
         root_->started(this);
         root_->active_.append(this);
         root_->rotating_active_.append(this);
@@ -80,7 +79,6 @@ namespace midi
 
     bool param_wire_t::event_end(unsigned long long t)
     {
-        pic::logmsg() << "param_wire_t::event_end id=" << id_ << " time=" << t << " channel=" << channel_;
         root_->ending(this, t);
 
         iterator_.clear();

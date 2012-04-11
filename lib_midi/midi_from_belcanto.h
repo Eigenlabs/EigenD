@@ -60,6 +60,9 @@ namespace midi
         void set_send_pitchbend(bool);
         void set_send_hires_velocity(bool);
         unsigned get_active_midi_channel(const piw::data_nb_t &);
+        void set_velocity_samples(unsigned);
+        void set_velocity_curve(float);
+        void set_velocity_scale(float);
         piw::clocksink_t *clocksink();
 
         class impl_t;

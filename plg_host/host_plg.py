@@ -329,12 +329,11 @@ class Agent(agent.Agent):
             self.__domain,self.__audio_output.cookie(),self.__midi_output.cookie(),
             utils.statusify(self.__window_state_changed))
         self.parameter_list = inputparameter.List(self.__host,self.__host.clock_domain(),self.verb_container())
-        self.__audio_input = audio.AudioInput(bundles.ScalarInput(self.__host.audio_input(),self.__domain,signals=range(1,65)),1,2,names='channels')
+        self.__audio_input = audio.AudioInput(bundles.ScalarInput(self.__host.audio_input_cookie(),self.__domain,signals=range(1,65)),1,2,names='channels')
         self.__audio_input_channels = audio.AudioChannels(self.__audio_input)
-        self.__velocity_detector = piw.velocitydetect(self.__host.midi_from_belcanto(),1,4)
-        self.__key_input = bundles.VectorInput(self.__velocity_detector.cookie(),self.__domain,signals=(1,2,5))
-        self.__midi_input = bundles.ScalarInput(self.__host.midi_aggregator(),self.__domain,signals=(1,))
-        self.__metronome_input = bundles.ScalarInput(self.__host.metronome_input(),self.__domain,signals=(1,2,3,4))
+        self.__key_input = bundles.VectorInput(self.__host.midi_from_belcanto_cookie(),self.__domain,signals=(1,2,5))
+        self.__midi_input = bundles.ScalarInput(self.__host.midi_aggregator_cookie(),self.__domain,signals=(1,))
+        self.__metronome_input = bundles.ScalarInput(self.__host.metronome_input_cookie(),self.__domain,signals=(1,2,3,4))
         self.__host.set_bypassed(True)
 
         # plugin browser
@@ -456,15 +455,15 @@ class Agent(agent.Agent):
         return piw.trigger(self.__host.change_cc(),utils.makedict_nb({'ctl':piw.makelong_nb(c_val,0),'val':piw.makelong_nb(to_val,0)},0)),None
 
     def __set_velocity_samples(self,samples):
-        self.__velocity_detector.set_samples(samples)
+        self.__host.set_velocity_samples(samples)
         return True
 
     def __set_velocity_curve(self,curve):
-        self.__velocity_detector.set_curve(curve)
+        self.__host.set_velocity_curve(curve)
         return True
 
     def __set_velocity_scale(self,scale):
-        self.__velocity_detector.set_scale(scale)
+        self.__host.set_velocity_scale(scale)
         return True
 
     def __open(self,arg,id):

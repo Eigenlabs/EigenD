@@ -30,6 +30,7 @@
 #include <piw/piw_bundle.h>
 #include <piw/piw_clockclient.h>
 #include <piw/piw_keys.h>
+#include <piw/piw_velocitydetect.h>
 
 #include <lib_midi/midi_gm.h>
 #include <lib_midi/midi_from_belcanto.h>
@@ -50,10 +51,10 @@ using namespace std;
 #define BASE_NOTE 69.0f
 #define BASE_FREQ 440.0f
 
+#define IN_PRESSURE 1
 #define IN_FREQUENCY 2
-#define IN_VELOCITY 4
 #define IN_KEY 5
-#define IN_MASK SIG2(IN_FREQUENCY,IN_VELOCITY)
+#define IN_MASK SIG2(IN_PRESSURE,IN_FREQUENCY)
 
 #define MIDI_FROM_BELCANTO_DEBUG 0
 
@@ -332,6 +333,8 @@ namespace midi
         bool send_notes_;
         bool send_pitchbend_;
         bool send_hires_velocity_;
+
+        piw::velocityconfig_t velocity_config_;
     };
 
 } // namespace midi
@@ -359,13 +362,14 @@ namespace
         void ticked(unsigned long long from, unsigned long long to);
         // create MIDI data from various signal types...
         void send_note(unsigned long long t);
-        void set_velocity(const piw::data_nb_t &d, unsigned long long t);
+        void set_velocity(double velocity, unsigned long long t);
         void set_frequency(const piw::data_nb_t &d, unsigned long long t, bool can_pitchbend);
 
         midi::midi_from_belcanto_t::impl_t *root_;
+        piw::data_t path_;
+        piw::velocitydetector_t detector_;
         piw::xevent_data_buffer_t::iter_t iterator_;
         unsigned channel_;
-        piw::data_t path_;
 
         piw::data_nb_t id_;
 
@@ -378,7 +382,7 @@ namespace
     };
 
     belcanto_note_wire_t::belcanto_note_wire_t(midi::midi_from_belcanto_t::impl_t *root, const piw::event_data_source_t &es):
-        root_(root), path_(es.path()), note_id_(0)
+        root_(root), path_(es.path()), detector_(root->velocity_config_), note_id_(0)
     {
         root_->input_wires_.insert(std::make_pair(path_,this));
         subscribe(es);
@@ -411,8 +415,6 @@ namespace
         id_ = id;
         channel_ = root_->get_channel();
 
-        pic::logmsg() << "belcanto_note_wire_t::event_start seq=" << seq << " id=" << id << " time=" << id.time() << " channel=" << channel_;
-
         piw::data_nb_t dk;
         if(iterator_->latest(IN_KEY,dk,t))
         {
@@ -421,13 +423,9 @@ namespace
 
         root_->channel_list_.register_channel(id_, channel_);
 
-        iterator_->reset(IN_VELOCITY,t);
+        detector_.init();
 
-        piw::data_nb_t df;
-        if(iterator_->latest(IN_FREQUENCY,df,t))
-        {
-            set_frequency(df,t,true);
-        }
+        iterator_->reset_all(t);
 
         root_->active_input_wires_.append(this);
 
@@ -443,6 +441,8 @@ namespace
         {
             root_->resend_current_(id);
         }
+
+        ticked(t,piw::tsd_time());
     }
 
     void belcanto_note_wire_t::ticked(unsigned long long from, unsigned long long to)
@@ -464,15 +464,19 @@ namespace
         {
             root_->time_ = std::max(root_->time_+1,d.time());
 
-            if(s==IN_FREQUENCY)
+            if(!detector_.is_started() && s==IN_PRESSURE)
             {
-                set_frequency(d,root_->time_, can_pitchbend);
+                double velocity;
+                if(detector_.detect(d, &velocity))
+                {
+                    set_velocity(velocity,root_->time_);
+                }
                 continue;
             }
 
-            if(s==IN_VELOCITY)
+            if(s==IN_FREQUENCY)
             {
-                set_velocity(d,root_->time_);
+                set_frequency(d,root_->time_, can_pitchbend);
                 continue;
             }
         }
@@ -501,7 +505,7 @@ namespace
         }
     }
 
-    void belcanto_note_wire_t::set_velocity(const piw::data_nb_t &d, unsigned long long t)
+    void belcanto_note_wire_t::set_velocity(double velocity, unsigned long long t)
     {
 #if MIDI_FROM_BELCANTO_DEBUG>0
         pic::logmsg() << "set_velocity: note_id_=" << note_id_ << " note_vel_=" << note_velocity_ << " note_pitch_=" << note_pitch_;
@@ -514,7 +518,7 @@ namespace
         }
 
         // the range is 0x80 to 0x3fff to ensure a note on velocity 0 (=note off) is not sent
-        note_velocity_ = (0x3fff-0x80)*fabsf(d.as_norm()) + 0x80;
+        note_velocity_ = (0x3fff-0x80)*fabsf(velocity) + 0x80;
 
         if(note_pitch_>0)
         {
@@ -568,8 +572,6 @@ namespace
 
     bool belcanto_note_wire_t::event_end(unsigned long long t)
     {
-        pic::logmsg() << "belcanto_note_wire_t::event_end id=" << id_ << " time=" << t << " channel=" << channel_;
-
 #if MIDI_FROM_BELCANTO_DEBUG>0
         pic::logmsg() << "belcanto_note_wire_t::event_end";
 #endif // MIDI_FROM_BELCANTO_DEBUG>0
@@ -1338,6 +1340,9 @@ namespace midi
     void midi_from_belcanto_t::set_send_pitchbend(bool send) { piw::tsd_fastcall(__set_send_pitchbend,impl_,&send); }
     void midi_from_belcanto_t::set_send_hires_velocity(bool send) { piw::tsd_fastcall(__set_send_hires_velocity,impl_,&send); }
     unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &id) { return piw::tsd_fastcall(__get_channel,impl_,(void *)&id); }
+    void midi_from_belcanto_t::set_velocity_samples(unsigned n) { impl_->velocity_config_.set_samples(n); }
+    void midi_from_belcanto_t::set_velocity_curve(float n) { impl_->velocity_config_.set_curve(n); }
+    void midi_from_belcanto_t::set_velocity_scale(float n) { impl_->velocity_config_.set_scale(n); }
     piw::clocksink_t *midi_from_belcanto_t::clocksink() { return impl_; }
 
 } // namespace midi

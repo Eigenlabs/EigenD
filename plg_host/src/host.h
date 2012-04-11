@@ -116,10 +116,10 @@ namespace host
 
             piw::clockdomain_ctl_t *clock_domain();
 
-            piw::cookie_t metronome_input();
-            piw::cookie_t midi_from_belcanto();
-            piw::cookie_t midi_aggregator();
-            piw::cookie_t audio_input();
+            piw::cookie_t metronome_input_cookie();
+            piw::cookie_t midi_from_belcanto_cookie();
+            piw::cookie_t midi_aggregator_cookie();
+            piw::cookie_t audio_input_cookie();
 
             void set_midi_channel(unsigned);
             void set_min_midi_channel(unsigned);
@@ -131,7 +131,7 @@ namespace host
             void set_cc(unsigned, unsigned);
             piw::change_nb_t change_cc();
 
-            piw::cookie_t parameter_input(unsigned);
+            piw::cookie_t parameter_input_cookie(unsigned);
             void set_mapping(const std::string &);
             std::string get_mapping();
             void parameter_name_changed(unsigned);
@@ -150,6 +150,9 @@ namespace host
             void set_midi_notes(bool);
             void set_midi_pitchbend(bool);
             void set_midi_hires_velocity(bool);
+            void set_velocity_samples(unsigned);
+            void set_velocity_curve(float);
+            void set_velocity_scale(float);
 
             bool open(const plugin_description_t &);
             void close();

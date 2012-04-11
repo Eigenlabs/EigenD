@@ -1437,22 +1437,22 @@ piw::clockdomain_ctl_t *host::plugin_instance_t::clock_domain()
     return impl_->clockdomain_;
 }
 
-piw::cookie_t host::plugin_instance_t::metronome_input()
+piw::cookie_t host::plugin_instance_t::metronome_input_cookie()
 {
     return piw::cookie_t(&impl_->metronome_input_);
 }
 
-piw::cookie_t host::plugin_instance_t::midi_from_belcanto()
+piw::cookie_t host::plugin_instance_t::midi_from_belcanto_cookie()
 {
     return impl_->midi_from_belcanto_->cookie();
 }
 
-piw::cookie_t host::plugin_instance_t::midi_aggregator()
+piw::cookie_t host::plugin_instance_t::midi_aggregator_cookie()
 {
     return impl_->midi_aggregator_->get_output(2);
 }
 
-piw::cookie_t host::plugin_instance_t::audio_input()
+piw::cookie_t host::plugin_instance_t::audio_input_cookie()
 {
     return impl_->audio_input_clone_.cookie();
 }
@@ -1505,7 +1505,7 @@ piw::change_nb_t host::plugin_instance_t::change_cc()
     return impl_->midi_from_belcanto_->change_cc();
 }
 
-piw::cookie_t host::plugin_instance_t::parameter_input(unsigned name)
+piw::cookie_t host::plugin_instance_t::parameter_input_cookie(unsigned name)
 {
     return piw::cookie_t(impl_->param_input_[name-1].get());
 }
@@ -1606,6 +1606,21 @@ void host::plugin_instance_t::set_midi_hires_velocity(bool enabled)
     midi::global_settings_t settings = impl_->mapping_.get_settings();
     settings.send_hires_velocity_= enabled;
     impl_->change_settings(settings);
+}
+
+void host::plugin_instance_t::set_velocity_samples(unsigned n)
+{
+    impl_->midi_from_belcanto_->set_velocity_samples(n);
+}
+
+void host::plugin_instance_t::set_velocity_curve(float n)
+{
+    impl_->midi_from_belcanto_->set_velocity_curve(n);
+}
+
+void host::plugin_instance_t::set_velocity_scale(float n)
+{
+    impl_->midi_from_belcanto_->set_velocity_scale(n);
 }
 
 unsigned host::plugin_instance_t::input_channel_count()

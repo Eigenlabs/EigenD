@@ -523,7 +523,7 @@ namespace midi
         return impl_->clockdomain_;
     }
 
-    piw::cookie_t midi_converter_t::parameter_input(unsigned name)
+    piw::cookie_t midi_converter_t::parameter_input_cookie(unsigned name)
     {
         return piw::cookie_t(impl_->param_input_[name-1].get());
     }

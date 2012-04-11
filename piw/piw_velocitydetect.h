@@ -25,6 +25,39 @@
 namespace piw
 {
     class cookie_t;
+    class velocitydetector_t;
+
+    class PIW_DECLSPEC_CLASS velocityconfig_t
+    {
+        public:
+            velocityconfig_t();
+            ~velocityconfig_t();
+            void set_samples(unsigned);
+            void set_curve(float);
+            void set_scale(float);
+
+            class impl_t;
+
+        private:
+            friend class velocitydetector_t;
+            impl_t *impl_;
+    };
+
+    class PIW_DECLSPEC_CLASS velocitydetector_t
+    {
+        public:
+            velocitydetector_t(const piw::velocityconfig_t &config);
+            ~velocitydetector_t();
+            void init();
+            bool detect(const piw::data_nb_t &d, double *velocity);
+            bool is_started();
+
+            class impl_t;
+
+        private:
+            impl_t *impl_;
+    };
+ 
     class PIW_DECLSPEC_CLASS velocitydetect_t
     {
         public:
@@ -36,6 +69,7 @@ namespace piw
             piw::cookie_t cookie();
 
             class impl_t;
+
         private:
             impl_t *impl_;
     };

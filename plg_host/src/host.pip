@@ -49,10 +49,10 @@ class plugin_instance[host::plugin_instance_t] /gc/
 
     clockdomain_ctl *clock_domain()
 
-    cookie metronome_input()
-    cookie midi_from_belcanto()
-    cookie midi_aggregator()
-    cookie audio_input()
+    cookie metronome_input_cookie()
+    cookie midi_from_belcanto_cookie()
+    cookie midi_aggregator_cookie()
+    cookie audio_input_cookie()
 
     void set_midi_channel(unsigned)
     void set_min_midi_channel(unsigned)
@@ -64,7 +64,7 @@ class plugin_instance[host::plugin_instance_t] /gc/
     void set_cc(unsigned, unsigned)
     change_nb change_cc()
 
-    cookie parameter_input(unsigned)
+    cookie parameter_input_cookie(unsigned)
     void set_mapping(const stdstr &)
     stdstr get_mapping()
     void parameter_name_changed(unsigned)
@@ -80,6 +80,9 @@ class plugin_instance[host::plugin_instance_t] /gc/
     void set_midi_notes(bool)
     void set_midi_pitchbend(bool)
     void set_midi_hires_velocity(bool)
+    void set_velocity_samples(unsigned)
+    void set_velocity_curve(float)
+    void set_velocity_scale(float)
 
     bool open(const plugin_description &)
     void close()

@@ -23,7 +23,7 @@ from pi import action,atom,bundles,domain,errors,const
 
 # The parameter delegate requires the following methods:
 #
-# cookie parameter_input(i)          : which gives access to a cookie for a distinct parameter input
+# cookie parameter_input_cookie(i)   : which gives access to a cookie for a distinct parameter input
 # void parameter_name_changed(i)     : notification that the name of a parameter input has changed
 # void map_param(i,mapping_info)     : which sets up a host automation mapping for a parameter
 # void map_midi(i,mapping_info)      : which sets up a midi mapping for a parameter
@@ -39,7 +39,7 @@ from pi import action,atom,bundles,domain,errors,const
 class Parameter(atom.Atom):
     def __init__(self,k,delegate,clockdomain):
         self.__delegate = delegate
-        self.__input = bundles.VectorInput(self.__delegate.parameter_input(k),clockdomain,signals=(1,))
+        self.__input = bundles.VectorInput(self.__delegate.parameter_input_cookie(k),clockdomain,signals=(1,))
         self.__index = k
         atom.Atom.__init__(self,domain=domain.Aniso(),policy=self.__input.vector_policy(1,False),
                             names='parameter',protocols='input',ordinal=k)

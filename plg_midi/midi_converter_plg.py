@@ -122,12 +122,9 @@ class Agent(agent.Agent):
  
         self.parameter_list = inputparameter.List(self.__midi_converter,self.__midi_converter.clock_domain(),self.verb_container())
 
-        # velocity detector, reads pressure input (signal 1) and generates a note on velocity (signal 4), passes thru all other signals in bundle
-        self.__kvelo = piw.velocitydetect(self.__midi_from_belcanto.cookie(),1,4)
-
         # Inputs for generating keyboard driven MIDI signals
         # MIDI controllers are merged down with signals from keys (driven by pressure)
-        self.__kinpt = bundles.VectorInput(self.__kvelo.cookie(),self.__domain,signals=(1,2,5))
+        self.__kinpt = bundles.VectorInput(self.__midi_from_belcanto.cookie(),self.__domain,signals=(1,2,5))
         self[2] = atom.Atom(names='inputs')
         self[2][1] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.vector_policy(1,False),names='pressure input')
         self[2][2] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.merge_nodefault_policy(2,False),names='frequency input')
@@ -194,15 +191,15 @@ class Agent(agent.Agent):
         return True
 
     def __set_samples(self,x):
-        self.__kvelo.set_samples(x)
+        self.__midi_from_belcanto.set_velocity_samples(x)
         return True
 
     def __set_curve(self,x):
-        self.__kvelo.set_curve(x)
+        self.__midi_from_belcanto.set_velocity_curve(x)
         return True
 
     def __set_scale(self,x):
-        self.__kvelo.set_scale(x)
+        self.__midi_from_belcanto.set_velocity_scale(x)
         return True
 
     def __set_program_change(self,ctx,subj,dummy,val):

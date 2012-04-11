@@ -34,7 +34,7 @@ namespace midi
 
         piw::clockdomain_ctl_t *clock_domain();
 
-        piw::cookie_t parameter_input(unsigned);
+        piw::cookie_t parameter_input_cookie(unsigned);
         void set_mapping(const std::string &);
         void set_title(const std::string &);
         std::string get_mapping();
