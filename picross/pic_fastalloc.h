@@ -85,7 +85,7 @@ namespace pic
             const_pointer address(const_reference x) const { return &x; }
 
             pointer allocate(size_type n, const void* =0) { T *t=static_cast<T*>(nb_malloc(PIC_ALLOC_NB,n*sizeof(T))); return t; }
-            void deallocate(pointer p, size_type) { nb_free(p); }
+            void deallocate(pointer p, size_type) { nb_free(static_cast<void *>(p)); }
 
             void construct(pointer p, const T &val) { ::new(p) T(val); }
             void destroy(pointer p) { p->~T(); }
@@ -118,7 +118,7 @@ namespace pic
             const_pointer address(const_reference x) const { return &x; }
 
             pointer allocate(size_type n, const void* =0) { T *t=static_cast<T*>(nb_malloc(PIC_ALLOC_NB,n*sizeof(T))); return t; }
-            void deallocate(pointer p, size_type) { nb_free(p); }
+            void deallocate(pointer p, size_type) { nb_free(static_cast<void *>(p)); }
 
             void construct(pointer p, const T &val) { ::new(p) T(val); }
             void destroy(pointer p) { p->~T(); }
