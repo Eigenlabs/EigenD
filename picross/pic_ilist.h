@@ -62,7 +62,7 @@ namespace pic
                 if(prev_)
                 {
                     prev_->next_=next_;
-                    next_->prev_=prev_;
+                    if(next_) next_->prev_=prev_;
                     prev_=0;
                     next_=0;
                 }
