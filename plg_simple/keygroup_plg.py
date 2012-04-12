@@ -374,17 +374,21 @@ class OutputList(atom.Atom):
         self.__plumbing = False
 
         for v in self.values():
+            v.enable(False)
             v.unplumb()
 
         yield atom.Atom.load_state(self,state,delegate,phase)
 
         for v in self.values():
-            v.enable(False)
             v.plumb()
-            v.enable(v[23].get_value())
+
+        for v in self.values():
+            enabled = v[23].get_value()
+            v.enable(enabled)
 
         self.__plumbing = True
         self.__outputs_changed()
+        self.update_status_indexes()
 
     def __create(self,i):
         return Output(self,i)
@@ -606,6 +610,9 @@ class Agent(agent.Agent):
         self.outputchoicefunctor.set_gfunctor(self.outputchoice)
         self.kclone.set_output(250,self.outputchoicefunctor.cookie())
         self.kclone.enable(250,False)
+
+    def agent_postload(self,filename):
+        self.status_buffer.send()
 
     def rpc_fetch_sourcekeys(self,arg):
         name = str(arg)
