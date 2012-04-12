@@ -98,8 +98,10 @@ class Index(piw.index):
                 cb.succeeded()
 
     def close_index(self):
+        piw.index.close_index(self)
         for m in self.__members.values():
             m.close_client()
+        self.__members = {}
 
     def index_create(self,name):
         pass
