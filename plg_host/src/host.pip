@@ -104,6 +104,6 @@ class plugin_instance[host::plugin_instance_t] /gc/
     void set_bounds(const data &)
 
     void set_idle_time(float)
-    void disable_idling()
+    void enable_idling(bool)
 }
 

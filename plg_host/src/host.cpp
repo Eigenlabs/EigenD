@@ -485,7 +485,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
             mapping_(*this), plugin_(0), window_(0), audio_buffer_(0,0), num_input_channels_(0), num_output_channels_(0),
             window_state_changed_(window_state), clockdomain_(d), sample_rate_(48000.0), buffer_size_(PLG_CLOCK_BUFFER_SIZE),
             observer_(obs), channel_delegate_(channel_delegate), active_(false),
-            idle_count_(0), idle_time_ticks_(0), idle_time_sec_(10.f),
+            idle_count_(0), idle_time_ticks_(0), idling_enabled_(true), idle_time_sec_(10.f),
             main_delegate_(this),
             settings_functors_(midi::settings_functors_t::init(
                     midi::clearall_t::method(this,&host::plugin_instance_t::impl_t::clear_all),
@@ -970,7 +970,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
         bool any_output = false;
 
-        if(any_input || idle_count_<idle_time_ticks_)
+        if(any_input || !idling_enabled_ || idle_count_<idle_time_ticks_)
         {
             p->processBlock(audio_buffer_, midi_buffer_);
             any_output = output_audio(from,to);
@@ -980,7 +980,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
             }
         }
 
-        if(any_output || any_input)
+        if(any_output || any_input || !idling_enabled_)
         {
             idle_count_ = 0;
             if(!active_)
@@ -989,7 +989,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
                 trigger_slow();
             }
         }
-        else
+        else if(idling_enabled_)
         {
             if(idle_count_<idle_time_ticks_)
             {
@@ -1103,9 +1103,9 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         idle_time_ticks_ = (unsigned)(ceilf(idle_time_sec_*sample_rate_/buffer_size_));
     }
 
-    void disable_idling()
+    void enable_idling(bool b)
     {
-        idle_time_ticks_ = std::numeric_limits<unsigned>::max();
+        idling_enabled_ = b;
     }
 
     void clear_all()
@@ -1172,6 +1172,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     unsigned idle_count_;
     unsigned idle_time_ticks_;
+    bool idling_enabled_;
     float idle_time_sec_;
 
     piw::window_t host_window_;
@@ -1753,9 +1754,9 @@ void host::plugin_instance_t::set_idle_time(float tt)
     impl_->set_idle_time(tt);
 }
 
-void host::plugin_instance_t::disable_idling()
+void host::plugin_instance_t::enable_idling(bool v)
 {
-    impl_->disable_idling();
+    impl_->enable_idling(v);
 }
 
 int host::plugin_instance_t::gc_clear()

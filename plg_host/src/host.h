@@ -174,7 +174,7 @@ namespace host
             void set_bounds(const piw::data_t &);
 
             void set_idle_time(float tt);
-            void disable_idling();
+            void enable_idling(bool v);
 
             int gc_clear();
             int gc_traverse(void *,void *);

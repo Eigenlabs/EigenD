@@ -375,7 +375,8 @@ class Agent(agent.Agent):
         self[8][2] = atom.Atom(domain=domain.BoundedFloat(0.1,10,hints=vel),init=4,names='velocity curve',policy=atom.default_policy(self.__set_velocity_curve))
         self[8][3] = atom.Atom(domain=domain.BoundedFloat(0.1,10,hints=vel),init=4,names='velocity scale',policy=atom.default_policy(self.__set_velocity_scale))
 
-        self[10] = atom.Atom(domain=domain.BoundedFloatOrNull(0,100000),init=None,names='tail time',policy=atom.default_policy(self.__set_tail_time))
+        self[9] = atom.Atom(domain=domain.Bool(),init=True,names='tail time on',policy=atom.default_policy(self.__set_tail_time_enabled))
+        self[10] = atom.Atom(domain=domain.BoundedFloatOrNull(0,100000),init=10,names='tail time',policy=atom.default_policy(self.__set_tail_time))
         self[11] = atom.Atom(domain=domain.BoundedInt(1,16),init=1,names='minimum channel',policy=atom.default_policy(self.set_min_channel))
         self[12] = atom.Atom(domain=domain.BoundedInt(1,16),init=16,names='maximum channel',policy=atom.default_policy(self.set_max_channel))
 
@@ -597,9 +598,15 @@ class Agent(agent.Agent):
         else:
             self.lights.set_status(ord,const.status_inactive)
 
+    def __set_tail_time_enabled(self,v):
+        self[9].set_value(v)
+        self.__host.enable_idling(v)
+        return True
+
     def __set_tail_time(self,tt):
+        self[10].set_value(tt)
         if tt is None:
-            self.__host.disable_idling()
+            self.__set_tail_time_enabled(False)
         else:
             self.__host.set_idle_time(tt)
         return True
