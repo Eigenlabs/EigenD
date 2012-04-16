@@ -943,6 +943,11 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
 
 EigenMainWindow::~EigenMainWindow()
 {
+#ifdef JUCE_MAC
+    MenuBarModel::setMacMainMenu(nullptr,nullptr);
+#endif
+    setMenuBar(nullptr);
+
     browser_.quit();
     commander_.quit();
     scanner_.quit();
