@@ -132,16 +132,16 @@ class Agent(agent.Agent):
         #
         # Create some more outputs for the strip controllers
         #
-        self.strippos1_output = self.osc.create_output("strip position 1",False,1)
+        self.strippos1_output = self.osc.create_output("strip_position_1",False,1)
         self.strippos1_input = bundles.VectorInput(self.strippos1_output, self.domain,signals=(1,))
         self[1][6] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.strippos1_input.vector_policy(1,False), names='strip position input', ordinal=1)
-        self.strippos2_output = self.osc.create_output("strip position 2",False,1)
+        self.strippos2_output = self.osc.create_output("strip_position_2",False,1)
         self.strippos2_input = bundles.VectorInput(self.strippos2_output, self.domain,signals=(1,))
         self[1][7] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.strippos2_input.vector_policy(1,False), names='strip position input', ordinal=2)
-        self.absstrip1_output = self.osc.create_output("absolute strip 1",False,1)
+        self.absstrip1_output = self.osc.create_output("absolute_strip_1",False,1)
         self.absstrip1_input = bundles.VectorInput(self.absstrip1_output, self.domain,signals=(1,))
         self[1][8] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.absstrip1_input.vector_policy(1,False), names='absolute strip input', ordinal=1)
-        self.absstrip2_output = self.osc.create_output("absolute strip 2",False,1)
+        self.absstrip2_output = self.osc.create_output("absolute_strip_2",False,1)
         self.absstrip2_input = bundles.VectorInput(self.absstrip2_output, self.domain,signals=(1,))
         self[1][9] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.absstrip2_input.vector_policy(1,False), names='absolute strip input', ordinal=2)
 
