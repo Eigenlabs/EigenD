@@ -29,7 +29,7 @@ def sc(f):
 class Agent(agent.Agent):
 
     def __init__(self, address, ordinal):
-        agent.Agent.__init__(self, signature=version,names='metronome',container=4,protocols='browse',ordinal=ordinal)
+        agent.Agent.__init__(self, signature=version,names='metronome',container=4,protocols='browse metronome',ordinal=ordinal)
 
         self[1] = atom.Atom(names='outputs')
         self[1][1] = bundles.Output(1,False,names='bar beat output')

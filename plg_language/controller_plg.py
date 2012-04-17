@@ -299,7 +299,7 @@ class Controller0(piw.controller):
 class Agent(agent.Agent):
 
     def __init__(self,address,ordinal):
-        agent.Agent.__init__(self,names='controller',signature=version,ordinal=ordinal)
+        agent.Agent.__init__(self,names='controller',signature=version,ordinal=ordinal,protocols='controller')
 
         self.domain = piw.clockdomain_ctl()
 
