@@ -34,7 +34,7 @@
 
 #include <lib_juce/ejuce.h>
 
-#define THREADS 4 
+#define THREADS 8
 
 typedef pic::lckmap_t<piw::data_t,void *,piw::path_less>::lcktype test_map_t;
 typedef pic::flipflop_t<test_map_t> test_map_flipflop_t;
@@ -92,11 +92,13 @@ class raw_thread_t: pic::thread_t
             pic::nballocator_t *a = pic::nballocator_t::tsd_getnballocator();
             for(;;)
             {
-                void *dealloc_arg;
                 pic::nballocator_t::deallocator_t dealloc;
-                unsigned s=1+random()%4096;
-                void *m1=a->allocator_xmalloc(PIC_ALLOC_NB,s,&dealloc,&dealloc_arg);
-                dealloc(m1,dealloc_arg);
+                void *dealloc_arg;
+
+                unsigned s = 1+random()%4096;
+                void *m = a->allocator_xmalloc(PIC_ALLOC_NB,s,&dealloc,&dealloc_arg);
+
+                dealloc(m,dealloc_arg);
             }
         }
 
@@ -134,7 +136,7 @@ class Test: public ejuce::Application, virtual public pic::tracked_t
 
             for(unsigned i=0; i<THREADS; ++i)
             {
-                stl_thread_t *t = new stl_thread_t(i);
+                raw_thread_t *t = new raw_thread_t(i);
                 t->start();
             }
         }

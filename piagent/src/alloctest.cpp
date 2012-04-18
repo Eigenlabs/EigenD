@@ -22,30 +22,52 @@
 #include <picross/pic_time.h>
 #include <piagent/pia_fastalloc.h>
 
-#define THREADS 16
+#define THREADS 4
 
-void __tester(void *a_)
+class alloc_thread_t: pic::thread_t
 {
-    pia::fastalloc_t *a = (pia::fastalloc_t *)a_;
+    public:
 
-    for(;;)
-    {
-        pia::fastalloc_t::deallocator_t d;
-        unsigned s=1+random()%4096;
-        void *m1=a->allocator_xmalloc(s,&d);
-        d(m1);
-    }
-}
+        alloc_thread_t(unsigned index) : index_(index) {}
+        ~alloc_thread_t() {}
+
+        void start() { run(); }
+
+        void thread_main()
+        {
+            printf("%2u thread main\n", index_);
+
+            pic::nballocator_t *a = pic::nballocator_t::tsd_getnballocator();
+
+            printf("%2u thread starting allocations\n", index_);
+            for(;;)
+            {
+                pic::nballocator_t::deallocator_t dealloc;
+                void *dealloc_arg;
+
+                unsigned s = 1+random()%4096;
+                void *m = a->allocator_xmalloc(PIC_ALLOC_NB,s,&dealloc,&dealloc_arg);
+
+                dealloc(m,dealloc_arg);
+            }
+        }
+
+        void thread_init() { printf("%2u thread init\n", index_); }
+        void thread_term() { printf("%2u thread term\n", index_); }
+
+    private:
+        unsigned index_;
+};
 
 int main()
 {
     pia::fastalloc_t a;
+    pic::nballocator_t::tsd_setnballocator(&a);
 
     for(unsigned i=0; i<THREADS; ++i)
     {
-        pic_thread_t *t = new pic_thread_t;
-        pic_thread_create(t,0,__tester,&a);
-        pic_thread_run(t);
+        alloc_thread_t *t = new alloc_thread_t(i);
+        t->start();
     }
 
     for(;;)
