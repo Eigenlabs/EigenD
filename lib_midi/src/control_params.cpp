@@ -121,8 +121,6 @@ namespace midi
 
         while((wi=wires_.alternate().begin()) != wires_.alternate().end())
         {
-            //dtor does invalidate, and invalidate will toss this iterator
-            //wi->invalidate();
             delete wi->second;
         }
 
@@ -154,8 +152,6 @@ namespace midi
         param_wire_map_t::iterator i = wires_.alternate().find(path);
         if(i != wires_.alternate().end())
         {
-            //dtor does invalidate, and invalidate will toss this iterator
-            //i->second->invalidate();
             delete i->second;
         }
 

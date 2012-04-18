@@ -84,13 +84,18 @@ namespace pic
                 }
             }
 
-            void exchange()
+            void exchange(void **a, void **c)
             {
-                pic_atomic_t *ps=&_state[1-_alternate];
-                pic_atomic_t *as=&_state[_alternate];
+                unsigned alternate = _alternate;
+                pic_atomic_t *ps = &_state[1-alternate];
+                pic_atomic_t *as = &_state[alternate];
                 pic_atomiccas(as, 0, 1);
-                _alternate=1-_alternate;
+                alternate = 1-alternate;
+                _alternate = alternate;
                 while(!pic_atomiccas(ps, 1, 0)) { /* pic_thread_yield(); */ }
+
+                *a = _data[alternate];
+                *c = _data[1-alternate];
             }
 
             void *alternate() { return _data[_alternate]; }
@@ -234,8 +239,9 @@ namespace pic
 
             void exchange()
             {
-                _ff.exchange();
-                alternate()=current();
+                void *a,*c;
+                _ff.exchange(&a,&c);
+                *(X *)(a) = *(const X *)(c);
             }
 
         private:
