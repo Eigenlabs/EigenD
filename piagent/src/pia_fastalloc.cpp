@@ -154,7 +154,7 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
                 {
                     while(free < SLB_WATERMARK)
                     {
-                        //printf("allocating block for queue %u\n",sizes_[PIA_ALLOC_LIMIT-4+i]);
+                        //printf("slab allocating block for queue\n");
                         slb_release(newslb());
                         free++;
                     }
@@ -186,6 +186,11 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
         }
     }
 
+
+    /**
+     * Slab
+     */
+
     void slb_release(slbheader_t *blk)
     {
         if(pic_atomicdec(&blk->refc)>0)
@@ -206,46 +211,6 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
     }
 
     void slb_reserve(slbheader_t *blk)
-    {
-        pic_atomicinc(&blk->refc);
-    }
-
-    void release(blkheader_t *blk)
-    {
-        if(pic_atomicdec(&blk->refc)>0)
-        {
-            return;
-        }
-
-        unsigned fl = blk->freelist;
-
-        if(fl == PIA_ALLOC_LIMIT)
-        {
-            return;
-        }
-
-        if(!pic_atomiccas(&(blk->freelist),fl,PIA_ALLOC_LIMIT))
-        {
-            return;
-        }
-
-        while(1)
-        {
-            blkheader_t *head = queue_[fl];
-            blk->next = head;
-            if(pic_atomicptrcas((void *)&(queue_[fl]), head, blk))
-            {
-                if(fl+4>=PIA_ALLOC_LIMIT)
-                {
-                    pic_atomicinc(&free_[fl+4-PIA_ALLOC_LIMIT]);
-                }
-
-                return;
-            }
-        }
-    }
-
-    void reserve(blkheader_t *blk)
     {
         pic_atomicinc(&blk->refc);
     }
@@ -274,6 +239,92 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
         }
     }
 
+    void *allocator_smalloc()
+    {
+        slbheader_t *ptr;
+        ptr = slb_alloc();
+
+        if(!ptr)
+        {
+            return 0;
+        }
+
+        incref();
+        return (void *)(ptr+1);
+    }
+
+    static void allocator_sfree(void *mem, void *da)
+    {
+		slbheader_t *ptr = ((slbheader_t *)mem)-1;
+        nbimpl_t *a = (nbimpl_t *)da;
+		a->slb_release(ptr);
+        a->decref();
+    }
+
+    slbheader_t *newslb()
+    {
+        slbheader_t *p;
+        unsigned s = PIC_ALLOC_SLABSIZE+sizeof(slbheader_t);
+
+        if(!(p = (slbheader_t *)pic_thread_lck_malloc(s)))
+        {
+            abort();
+        }
+
+        memset(p,0xaa,s);
+        p->refc=1;
+        return p;
+    }
+
+
+    /**
+     * Standard
+     */
+
+    void release(blkheader_t *blk)
+    {
+        // only proceed if the refcount was zero, ensuring that only one thread
+        // performs the release by putting the block back onto the queue
+        if(pic_atomicdec(&blk->refc)>0)
+        {
+            return;
+        }
+
+        unsigned fl = blk->freelist;
+
+        if(fl == PIA_ALLOC_LIMIT)
+        {
+            return;
+        }
+
+        if(!pic_atomiccas(&(blk->freelist),fl,PIA_ALLOC_LIMIT))
+        {
+            return;
+        }
+
+        while(1)
+        {
+            blkheader_t *head = queue_[fl];
+
+            PIC_ASSERT(blk != head);
+            blk->next = head;
+
+            if(pic_atomicptrcas((void *)&(queue_[fl]), head, blk))
+            {
+                // increase the block's refcount so that it becomes available for
+                // allocation again
+                pic_atomicinc(&blk->refc);
+
+                if(fl+4>=PIA_ALLOC_LIMIT)
+                {
+                    pic_atomicinc(&free_[fl+4-PIA_ALLOC_LIMIT]);
+                }
+
+                return;
+            }
+        }
+    }
+
     blkheader_t *alloc(unsigned fl)
     {
         while(1)
@@ -285,19 +336,25 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
                 return 0;
             }
 
-            reserve(head);
-
-            if(pic_atomicptrcas((void *)&(queue_[fl]), head, head->next))
+            // only proceed if the refcount was not zero, which mean that the
+            // block in process of being release but is not put onto the queue
+            // yet
+            if(2==pic_atomicinc(&head->refc))
             {
-                PIC_ASSERT(pic_atomiccas(&(head->freelist),PIA_ALLOC_LIMIT,fl));
-
-                if(fl+4>=PIA_ALLOC_LIMIT)
+                if(pic_atomicptrcas((void *)&(queue_[fl]), head, head->next))
                 {
-                    pic_atomicdec(&free_[fl+4-PIA_ALLOC_LIMIT]);
-                    gate_.open();
-                }
+                    pic_atomicdec(&head->refc);
 
-                return head;
+                    PIC_ASSERT(pic_atomiccas(&(head->freelist),PIA_ALLOC_LIMIT,fl));
+
+                    if(fl+4>=PIA_ALLOC_LIMIT)
+                    {
+                        pic_atomicdec(&free_[fl+4-PIA_ALLOC_LIMIT]);
+                        gate_.open();
+                    }
+
+                    return head;
+                }
             }
 
             release(head);
@@ -324,33 +381,12 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
 
         blk2->refc=1;
         blk2->freelist=i;
+
         blk->freelist=i;
 
         release(blk2);
         return blk;
 	}
-
-    void *allocator_smalloc()
-    {
-        slbheader_t *ptr;
-        ptr = slb_alloc();
-
-        if(!ptr)
-        {
-            return 0;
-        }
-
-        incref();
-        return (void *)(ptr+1);
-    }
-
-    static void allocator_sfree(void *mem, void *da)
-    {
-		slbheader_t *ptr = ((slbheader_t *)mem)-1;
-        nbimpl_t *a = (nbimpl_t *)da;
-		a->slb_release(ptr);
-        a->decref();
-    }
 
 	void *allocator_malloc(size_t size)
 	{
@@ -371,27 +407,13 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
 		return NULL;
 	}
 
-	static void allocator_free(void *mem, void *da)
-	{
-		blkheader_t *ptr = ((blkheader_t *)mem)-1;
-        nbimpl_t *a = (nbimpl_t *)da;
-		a->release(ptr);
-        a->decref();
-	}
-
-    slbheader_t *newslb()
+    static void allocator_free(void *mem, void *da)
     {
-        slbheader_t *p;
-        unsigned s = PIC_ALLOC_SLABSIZE+sizeof(slbheader_t);
-
-        if(!(p = (slbheader_t *)pic_thread_lck_malloc(s)))
-        {
-            abort();
-        }
-
-        memset(p,0xaa,s);
-        p->refc=1;
-        return p;
+        if(NULL == mem) return;
+        blkheader_t *ptr = ((blkheader_t *)mem)-1;
+        nbimpl_t *a = (nbimpl_t *)da;
+        a->release(ptr);
+        a->decref();
     }
 
     blkheader_t *newblock(unsigned fl)
