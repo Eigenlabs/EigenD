@@ -45,7 +45,7 @@ class alloc_thread_t: pic::thread_t
                 pic::nballocator_t::deallocator_t dealloc;
                 void *dealloc_arg;
 
-                unsigned s = 1+random()%4096;
+                unsigned s = 1+rand()%4096;
                 void *m = a->allocator_xmalloc(PIC_ALLOC_NB,s,&dealloc,&dealloc_arg);
 
                 dealloc(m,dealloc_arg);
