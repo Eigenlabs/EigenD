@@ -64,6 +64,8 @@ int main()
     pia::fastalloc_t a;
     pic::nballocator_t::tsd_setnballocator(&a);
 
+    printf("starting threads\n");
+
     for(unsigned i=0; i<THREADS; ++i)
     {
         alloc_thread_t *t = new alloc_thread_t(i);

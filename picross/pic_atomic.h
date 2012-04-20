@@ -321,26 +321,26 @@ inline static uint32_t pic_atomicinc(pic_atomic_t *p)
 {
     //__asm__ __volatile__("lock incl (%0);" :: "r" (p));
     //return *p;
-    return (uint32_t)OSAtomicIncrement32((int32_t *)p);
+    return (uint32_t)OSAtomicIncrement32Barrier((int32_t *)p);
 }
 
 inline static uint32_t pic_atomicdec(pic_atomic_t *p)
 {
     //__asm__ __volatile__("lock decl (%0);" :: "r" (p));
     //return *p;
-    return (uint32_t)OSAtomicDecrement32((int32_t *)p);
+    return (uint32_t)OSAtomicDecrement32Barrier((int32_t *)p);
 }
 
 #else
 
 inline static uint32_t pic_atomicinc(pic_atomic_t *p)
 {
-    return OSAtomicIncrement32((int32_t *)p);
+    return OSAtomicIncrement32Barrier((int32_t *)p);
 }
 
 inline static uint32_t pic_atomicdec(pic_atomic_t *p)
 {
-    return OSAtomicDecrement32((int32_t *)p);
+    return OSAtomicDecrement32Barrier((int32_t *)p);
 }
 
 #endif
