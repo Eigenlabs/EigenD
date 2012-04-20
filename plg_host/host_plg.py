@@ -605,10 +605,7 @@ class Agent(agent.Agent):
 
     def __set_tail_time(self,tt):
         self[10].set_value(tt)
-        if tt is None:
-            self.__set_tail_time_enabled(False)
-        else:
-            self.__host.set_idle_time(tt)
+        self.__host.set_idle_time(tt or 0)
         return True
 
     def on_quit(self):
