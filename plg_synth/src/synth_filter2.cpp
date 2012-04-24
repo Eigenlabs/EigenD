@@ -125,28 +125,31 @@ namespace
 
 void synthfunc_t::synth_process1(float in,float *lp)
 {
-    float x = 4.f*q_*gc_;
+    if(ft_ != 0)
+    {
+        float x = 4.f*q_*gc_;
 
-    // rand injects a tiny amount of noise (like analog filter)
-    // which allows self-oscillation with high resonance (also fixes denormal issue)
-    ya_ = ya_ + ft_*(pic::approx::tanh((in+(((rand()%2)-1)*1e-9)-x*last_)/tv2_)-wa_);
-    wa_ = pic::approx::tanh(ya_/tv2_);
-    yb_ = yb_ + ft_*(wa_-wb_);
-    wb_ = pic::approx::tanh(yb_/tv2_);
-    yc_ = yc_ + ft_*(wb_-wc_);
-    wc_ = pic::approx::tanh(yc_/tv2_);
-    yd_ = limiter_.process(yd_ + ft_*(wc_-pic::approx::tanh(yd_/tv2_)));
+        // rand injects a tiny amount of noise (like analog filter)
+        // which allows self-oscillation with high resonance (also fixes denormal issue)
+        ya_ = ya_ + ft_*(pic::approx::tanh((in+(((rand()%2)-1)*1e-9)-x*last_)/tv2_)-wa_);
+        wa_ = pic::approx::tanh(ya_/tv2_);
+        yb_ = yb_ + ft_*(wa_-wb_);
+        wb_ = pic::approx::tanh(yb_/tv2_);
+        yc_ = yc_ + ft_*(wb_-wc_);
+        wc_ = pic::approx::tanh(yc_/tv2_);
+        yd_ = limiter_.process(yd_ + ft_*(wc_-pic::approx::tanh(yd_/tv2_)));
 
-    last_ = (yd_+ye_)*0.5f;
-    ye_ = yd_;
+        last_ = (yd_+ye_)*0.5f;
+        ye_ = yd_;
 
-    ya_ = ya_ + ft_*(pic::approx::tanh((in-x*last_)/tv2_)-wa_);
-    wa_ = pic::approx::tanh(ya_/tv2_);
-    yb_ = yb_ + ft_*(wa_-wb_);
-    wb_ = pic::approx::tanh(yb_/tv2_);
-    yc_ = yc_ + ft_*(wb_-wc_);
-    wc_ = pic::approx::tanh(yc_/tv2_);
-    yd_ = limiter_.process(yd_ + ft_*(wc_-pic::approx::tanh(yd_/tv2_)));
+        ya_ = ya_ + ft_*(pic::approx::tanh((in-x*last_)/tv2_)-wa_);
+        wa_ = pic::approx::tanh(ya_/tv2_);
+        yb_ = yb_ + ft_*(wa_-wb_);
+        wb_ = pic::approx::tanh(yb_/tv2_);
+        yc_ = yc_ + ft_*(wb_-wc_);
+        wc_ = pic::approx::tanh(yc_/tv2_);
+        yd_ = limiter_.process(yd_ + ft_*(wc_-pic::approx::tanh(yd_/tv2_)));
+    }
 
     last_ = (yd_+ye_)*0.5f;
     ye_ = yd_;
