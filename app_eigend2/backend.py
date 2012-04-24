@@ -274,11 +274,14 @@ class Backend(eigend_native.c2p):
 
         raise RuntimeError('foreground sync job failed')
 
-    def get_default_setup(self,force):
-        if not force and self.opts.noauto:
+    def get_default_setup(self,init):
+        if init and self.opts.noauto:
             return ''
 
-        return agentd.get_default_setup()
+        setup = agentd.get_default_setup()
+        if not init and setup is None:
+            return ''
+        return agentd.get_detected_setup()
 
     def __create_context(self,name):
         logger = self.frontend.make_logger(name)

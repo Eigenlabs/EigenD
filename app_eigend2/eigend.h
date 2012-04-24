@@ -56,7 +56,7 @@ namespace eigend
         virtual std::string get_email() = 0;
         virtual std::string get_username() = 0;
         virtual std::string get_subject() = 0;
-        virtual std::string get_default_setup(bool force) = 0;
+        virtual std::string get_default_setup(bool init) = 0;
         virtual void set_default_setup(const char *) = 0;
         virtual std::string notes_to_words(const std::string &) = 0;
         virtual std::string words_to_notes(const std::string &) = 0;

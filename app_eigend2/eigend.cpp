@@ -616,7 +616,7 @@ void EigenLoadComponent::selected(const piw::term_t &term,bool dbl)
     updateSetupButtons(true,user_);
     updateUpgradeToggle(upgrade_);
 
-    std::string default_setup = mediator_->backend()->get_default_setup(true);
+    std::string default_setup = mediator_->backend()->get_default_setup(false);
     getDefaultToggle()->setToggleState(!default_setup.compare(selected_.as_string()),false);
 
     if(dbl)
@@ -915,7 +915,7 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
 
     backend->initialise(this,scaffold,get_cookie(),get_os());
 
-    std::string setup = backend->get_default_setup(false);
+    std::string setup = backend->get_default_setup(true);
 
     if(setup.length())
     {

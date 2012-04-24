@@ -78,12 +78,66 @@ def natsort_key(s):
 def natcmp(a, b):
     return cmp(natsort_key(a[0]), natsort_key(b[0]))
 
-def probe_alpha():
-    f = picross.f_string()
-    mm_bases = picross.enumerate(0x2139,0x0104,f)
-    em_bases = picross.enumerate(0x2139,0x0002,f)
-    legacy_alphas = picross.enumerate(0xbeca,0x0102,f)
-    return mm_bases!=0 or em_bases!=0 or legacy_alphas!=0
+class ProbeInstrument:
+    def __init__(self):
+        self.__mm_bases = None
+        self.__em_bases = None
+        self.__psus = None
+        self.__legacy_alphas = None
+        self.__instrument = None
+
+    def has_alpha(self):
+        if self.__instrument == 2:
+            return False
+        return self.__mm_bases != 0 or self.__em_bases or self.__psus != 0 or self.__legacy_alphas != 0
+
+    def has_tau(self):
+        return self.__instrument == 2
+
+    def detect(self):
+        self.__init__()
+
+        f = picross.make_string_functor(self.__detect_instrument)
+
+        self.__mm_bases = picross.enumerate(0x2139,0x0104,f)
+        self.__em_bases = picross.enumerate(0x2139,0x0002,f)
+        self.__psus = picross.enumerate(0x2139,0x0003,f)
+        self.__legacy_alphas = picross.enumerate(0xbeca,0x0102,picross.f_string())
+
+    def __detect_instrument(self,usbname):
+        if not self.__instrument and usbname:
+            device = picross.usbdevice(usbname,0)
+            instcfg = device.control_in(0x40|0x80,0xc6,0,0,64)
+            self.__instrument = ord(instcfg[0])
+            device.close()
+
+
+def get_detected_setup():
+    pico_setup = ''
+    alpha_setup = ''
+    tau_setup = ''
+
+    rd = resource.get_release_dir('state')
+    if rd is not None:
+        rs = [os.path.basename(x) for x in glob.glob(os.path.join(rd,'*'))]
+        fs = filter(filter_valid_setup,rs)
+        fs.sort(natcmp,reverse=False)
+
+        for s in fs:
+            if s.startswith('pico') and not pico_setup: pico_setup=os.path.join(rd,s)
+            if s.startswith('alpha') and not alpha_setup: alpha_setup=os.path.join(rd,s)
+            if s.startswith('tau') and not tau_setup: tau_setup=os.path.join(rd,s)
+
+    probe = ProbeInstrument()
+    probe.detect()
+
+    if probe.has_alpha():
+        return alpha_setup
+
+    if probe.has_tau():
+        return tau_setup
+
+    return pico_setup
 
 
 def get_default_setup():
@@ -96,23 +150,7 @@ def get_default_setup():
         if os.path.exists(setup):
             return setup
 
-    pico_setup = ''
-    alpha_setup = ''
-
-    rd = resource.get_release_dir('state')
-    if rd is not None:
-        rs = [os.path.basename(x) for x in glob.glob(os.path.join(rd,'*'))]
-        fs = filter(filter_valid_setup,rs)
-        fs.sort(natcmp,reverse=False)
-
-        for s in fs:
-            if s.startswith('pico') and not pico_setup: pico_setup=os.path.join(rd,s)
-            if s.startswith('alpha') and not alpha_setup: alpha_setup=os.path.join(rd,s)
-
-    if probe_alpha():
-        return alpha_setup
-
-    return pico_setup
+    return None
 
 
 def find_setup(srcname):
