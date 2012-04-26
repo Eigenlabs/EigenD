@@ -75,36 +75,36 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
     volatile bool stop_;
     pic_atomic_t free_[4];
     pic::xgate_t gate_;
-    pic_atomic_t waste_;
+    pic_atomic_t total_;
 
-    void add_waste(unsigned waste)
+    void add_total(unsigned total)
     {
         for(;;)
         {
-            pic_atomic_t ow = waste_;
-            pic_atomic_t nw = ow+waste;
+            pic_atomic_t ow = total_;
+            pic_atomic_t nw = ow+total;
 
-            if(pic_atomiccas(&waste_,ow,nw))
+            if(pic_atomiccas(&total_,ow,nw))
             {
                 break;
             }
         }
     }
 
-    void del_waste(unsigned waste)
+    void del_total(unsigned total)
     {
         for(;;)
         {
-            pic_atomic_t ow = waste_;
+            pic_atomic_t ow = total_;
 
-            if(waste>ow)
+            if(total>ow)
             {
                 abort();
             }
 
-            pic_atomic_t nw = ow-waste;
+            pic_atomic_t nw = ow-total;
 
-            if(pic_atomiccas(&waste_,ow,nw))
+            if(pic_atomiccas(&total_,ow,nw))
             {
                 break;
             }
@@ -137,6 +137,7 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
             }
 
             gate_.pass_and_shut_timed(5000000);
+            printf("Allocator: total allocated = %u\n",total_);
         }
     }
 
@@ -145,6 +146,7 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
         stop_=true;
         gate_.open();
         wait();
+        printf("Destroying Allocator, Total allocated = %u\n",total_);
 	}
 
     void incref()
@@ -191,6 +193,7 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
                     pic_atomicinc(&free_[fl+4-PIA_ALLOC_LIMIT]);
                 }
 
+                del_total(sizes_[fl]);
                 return;
             }
         }
@@ -224,6 +227,7 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
                     gate_.open();
                 }
 
+                add_total(sizes_[fl]);
                 return head;
             }
 
@@ -299,11 +303,12 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
         memset(p,0xaa,s);
         p->refc=1;
         p->freelist=fl;
+        add_total(sizes_[fl]);
 
         return p;
     }
 
-	nbimpl_t(): count_(1), stop_(false), waste_(0)
+	nbimpl_t(): count_(1), stop_(false), total_(0)
 	{
 		unsigned i,j;
 

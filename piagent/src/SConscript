@@ -42,7 +42,7 @@ if env['IS_WINDOWS']:
 
 pia_env.PiSharedLibrary('pia',pia_files,libraries=Split('pic pie'),package='eigend',public=True,locked=True)
 
-#pia_env.PiProgram('alloctest','alloctest.cpp',libraries=Split('pic pie pia'))
+pia_env.PiProgram('alloctest','alloctest.cpp',libraries=Split('pic pie pia'))
 
 binding_env=env.Clone()
 binding_env.PiPipBinding('piagent_native',env.Pipfile('piagent.pip'),libraries=Split('pic pia pie'),package='eigend')

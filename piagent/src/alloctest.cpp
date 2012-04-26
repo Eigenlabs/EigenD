@@ -23,12 +23,14 @@
 #include <piagent/pia_fastalloc.h>
 
 #define THREADS 4
+#define ALLOCATIONS 100000000
+#define REPORT 1000000
 
-class alloc_thread_t: pic::thread_t
+class alloc_thread_t: public pic::thread_t
 {
     public:
 
-        alloc_thread_t(unsigned index) : index_(index) {}
+        alloc_thread_t(unsigned index): pic::thread_t(PIC_THREAD_PRIORITY_REALTIME), index_(index) {}
         ~alloc_thread_t() {}
 
         void start() { run(); }
@@ -40,8 +42,11 @@ class alloc_thread_t: pic::thread_t
             pic::nballocator_t *a = pic::nballocator_t::tsd_getnballocator();
 
             printf("%2u thread starting allocations\n", index_);
-            for(;;)
+            for(unsigned i=0;i<ALLOCATIONS;i++)
             {
+
+                if(i%REPORT==0) printf("thread %2u %u allocations            \n",index_,i);
+
                 pic::nballocator_t::deallocator_t dealloc;
                 void *dealloc_arg;
 
@@ -63,19 +68,24 @@ int main()
 {
     pia::fastalloc_t a;
     pic::nballocator_t::tsd_setnballocator(&a);
+    alloc_thread_t *threads[THREADS];
 
     printf("starting threads\n");
 
     for(unsigned i=0; i<THREADS; ++i)
     {
-        alloc_thread_t *t = new alloc_thread_t(i);
-        t->start();
+        threads[i] = new alloc_thread_t(i);
+        threads[i]->start();
     }
 
-    for(;;)
+    printf("waiting for threads\n");
+
+    for(unsigned i=0; i<THREADS; ++i)
     {
-        pic_microsleep(1000);
+        threads[i]->wait();
+        printf("thread %2u finished\n",i);
     }
 
+    printf("finished\n");
     return 0;
 }
