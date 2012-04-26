@@ -22,7 +22,7 @@
 #include <picross/pic_time.h>
 #include <piagent/pia_fastalloc.h>
 
-#define THREADS 4
+#define THREADS 6
 #define ALLOCATIONS 100000000
 #define REPORT 1000000
 
@@ -30,7 +30,7 @@ class alloc_thread_t: public pic::thread_t
 {
     public:
 
-        alloc_thread_t(unsigned index): pic::thread_t(PIC_THREAD_PRIORITY_NORMAL), index_(index) {}
+        alloc_thread_t(unsigned index): pic::thread_t((index%2==0)?PIC_THREAD_PRIORITY_NORMAL:PIC_THREAD_PRIORITY_REALTIME), index_(index) {}
         ~alloc_thread_t() {}
 
         void start() { run(); }

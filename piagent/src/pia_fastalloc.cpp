@@ -99,6 +99,7 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
 
             if(total>ow)
             {
+                printf("allocator inconsistency\n");
                 abort();
             }
 
@@ -297,6 +298,7 @@ struct pia::fastalloc_t::nbimpl_t: pic::thread_t
 
         if(!(p = (blkheader_t *)pic_thread_lck_malloc(s)))
         {
+            printf("out of memory\n");
             abort();
         }
 
