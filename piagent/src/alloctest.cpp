@@ -30,22 +30,21 @@ class alloc_thread_t: public pic::thread_t
 {
     public:
 
-        alloc_thread_t(unsigned index): pic::thread_t(PIC_THREAD_PRIORITY_REALTIME), index_(index) {}
+        alloc_thread_t(unsigned index): pic::thread_t(PIC_THREAD_PRIORITY_NORMAL), index_(index) {}
         ~alloc_thread_t() {}
 
         void start() { run(); }
 
         void thread_main()
         {
-            printf("%2u thread main\n", index_);
-
+            printf("%2u thread main\n", index_); fflush(stdout);
             pic::nballocator_t *a = pic::nballocator_t::tsd_getnballocator();
+            printf("%2u thread starting allocations\n", index_); fflush(stdout);
 
-            printf("%2u thread starting allocations\n", index_);
             for(unsigned i=0;i<ALLOCATIONS;i++)
             {
 
-                if(i%REPORT==0) printf("thread %2u %u allocations            \n",index_,i);
+                if(i%REPORT==0) { printf("thread %2u %u allocations            \n",index_,i); fflush(stdout); }
 
                 pic::nballocator_t::deallocator_t dealloc;
                 void *dealloc_arg;
@@ -70,7 +69,7 @@ int main()
     pic::nballocator_t::tsd_setnballocator(&a);
     alloc_thread_t *threads[THREADS];
 
-    printf("starting threads\n");
+    printf("starting threads\n"); fflush(stdout);
 
     for(unsigned i=0; i<THREADS; ++i)
     {
@@ -78,12 +77,12 @@ int main()
         threads[i]->start();
     }
 
-    printf("waiting for threads\n");
+    printf("waiting for threads\n"); fflush(stdout);
 
     for(unsigned i=0; i<THREADS; ++i)
     {
         threads[i]->wait();
-        printf("thread %2u finished\n",i);
+        printf("thread %2u finished\n",i); fflush(stdout);
     }
 
     printf("finished\n");
