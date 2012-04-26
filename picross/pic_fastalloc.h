@@ -39,7 +39,6 @@
 #define PIC_ALLOC_NORMAL 0
 #define PIC_ALLOC_LCK 1
 #define PIC_ALLOC_NB 2
-#define PIC_ALLOC_SLB 3
 
 #define PIC_ALLOC_SLABSIZE (4096*15-8)
 
