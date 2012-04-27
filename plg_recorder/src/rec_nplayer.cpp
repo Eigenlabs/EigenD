@@ -175,20 +175,20 @@ struct recorder::nplayer_t::impl_t: piw::root_ctl_t, piw::clocksink_t, virtual p
                 courselen_.clear_nb();
             }
             
-            piw::data_nb_t rowlen = d.as_dict_lookup("rowlen");
-            if(rowlen.is_tuple() && rowlen.as_tuplelen() > 0)
+            piw::data_nb_t columnlen = d.as_dict_lookup("columnlen");
+            if(columnlen.is_tuple() && columnlen.as_tuplelen() > 0)
             {
-                rowlen_.set_nb(rowlen);
+                columnlen_.set_nb(columnlen);
             }
             else
             {
-                rowlen_.clear_nb();
+                columnlen_.clear_nb();
             }
         }
     }
 
     piw::dataholder_nb_t courselen_;
-    piw::dataholder_nb_t rowlen_;
+    piw::dataholder_nb_t columnlen_;
     pic::flipflop_t<bool> valid_;
     pic::ilist_t<kwire_t,ALL> all_;
     pic::ilist_t<kwire_t,INUSE> inuse_;
@@ -214,16 +214,16 @@ void ::kwire_t::ticked(unsigned long long f,unsigned long long t)
         source_start(0,event_,buffer_);
 
         // synthesize the key press of the note signal
-        int row,col;
-        piw::data_nb_t rowlen = nplayer_->courselen_;
-        if(rowlen.is_null())
+        int column,row;
+        piw::data_nb_t columnlen = nplayer_->columnlen_;
+        if(columnlen.is_null())
         {
-            row = 1;
-            col = note_;
+            column = 1;
+            row = note_;
         }
         else
         {
-            piw::key_coordinates(note_,rowlen,&row,&col);
+            piw::key_coordinates(note_,columnlen,&column,&row);
         }
 
         int course,key;
@@ -238,7 +238,7 @@ void ::kwire_t::ticked(unsigned long long f,unsigned long long t)
             piw::key_coordinates(note_,courselen,&course,&key);
         }
 
-        buffer_.add_value(sig_key_,piw::makekey(note_,row,col,note_,course,key,piw::KEY_HARD,time_));
+        buffer_.add_value(sig_key_,piw::makekey(note_,column,row,note_,course,key,piw::KEY_HARD,time_));
     }
 
     while(time_<=t)

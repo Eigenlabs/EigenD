@@ -281,7 +281,11 @@ class Backend(eigend_native.c2p):
         setup = agentd.get_default_setup()
         if not init and setup is None:
             return ''
-        return agentd.get_detected_setup()
+
+        if setup is None:
+            return agentd.get_detected_setup()
+
+        return setup
 
     def __create_context(self,name):
         logger = self.frontend.make_logger(name)

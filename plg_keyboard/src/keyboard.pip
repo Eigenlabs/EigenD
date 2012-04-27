@@ -10,8 +10,8 @@ class alpha2_bundle_legacy[kbd::alpha2_bundle_legacy_t] /gc/
 {
     alpha2_bundle_legacy(const char *,const cookie &,const notify &)
     stdstr name()
-    data get_rowlen()
-    data get_rowoffset()
+    data get_columnlen()
+    data get_columnoffset()
     data get_courselen()
     data get_courseoffset()
     void set_threshold1(float)
@@ -43,8 +43,8 @@ class alpha2_bundle[kbd::alpha2_bundle_t] /gc/
 {
     alpha2_bundle(usbdevice *,const cookie &,const cookie &,const notify &)
     stdstr name()
-    data get_rowlen()
-    data get_rowoffset()
+    data get_columnlen()
+    data get_columnoffset()
     data get_courselen()
     data get_courseoffset()
     void set_threshold1(float)
@@ -94,8 +94,8 @@ class tau_bundle[kbd::tau_bundle_t] /gc/
 {
     tau_bundle(usbdevice *,const cookie &,const notify &)
     stdstr name()
-    data get_rowlen()
-    data get_rowoffset()
+    data get_columnlen()
+    data get_columnoffset()
     data get_courselen()
     data get_courseoffset()
     void set_threshold1(float)

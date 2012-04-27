@@ -41,15 +41,15 @@ class Scroller(atom.Atom):
         self.__scroller = piw.scroller(self.__delegate,0.5,0.5,100)
         atom.Atom.__init__(self,*args,**kwds)
 
-        self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='row', init=None, policy=atom.default_policy(self.__change_row))
-        self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='column', init=None, policy=atom.default_policy(self.__change_column))
+        self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='column', init=None, policy=atom.default_policy(self.__change_column))
+        self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='row', init=None, policy=atom.default_policy(self.__change_row))
         self.__scroller.set_key(False,0,0)
 
-    def __change_row(self,val):
+    def __change_column(self,val):
         self[1].set_value(val)
         self.__scroller.set_key(False,self[1].get_value(),self[2].get_value())
         
-    def __change_column(self,val):
+    def __change_row(self,val):
         self[2].set_value(val)
         self.__scroller.set_key(False,self[1].get_value(),self[2].get_value())
 

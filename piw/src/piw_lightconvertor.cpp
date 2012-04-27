@@ -30,7 +30,7 @@ namespace
 {
     struct receiver_t: piw::ufilterfunc_t, virtual pic::lckobject_t, pic::element_t<0>
     {
-        receiver_t(piw::lightconvertor_t::impl_t *root): impl_(root), color_(0), light_row_(-1), light_col_(-1)
+        receiver_t(piw::lightconvertor_t::impl_t *root): impl_(root), color_(0), light_column_(-1), light_row_(-1)
         {
         }
 
@@ -45,7 +45,7 @@ namespace
 
         piw::lightconvertor_t::impl_t *impl_;
         unsigned color_;
-        int light_row_,light_col_;
+        int light_column_,light_row_;
     };
 
     struct list_t: virtual pic::lckobject_t, virtual pic::atomic_counted_t, pic::nocopy_t
@@ -55,11 +55,11 @@ namespace
 
     struct handler_t
     {
-        handler_t(int r, int c, const piw::change_t &h): row_(r), col_(c), handler_(h), default_(3)
+        handler_t(int column, int row, const piw::change_t &h): column_(column), row_(row), handler_(h), default_(3)
         {
         }
 
-        int row_,col_;
+        int column_,row_;
         piw::change_t handler_;
         unsigned default_;
     };
@@ -82,7 +82,7 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
         return new receiver_t(this);
     }
 
-    void update_input(int r, int c)
+    void update_input(int column, int row)
     {
         pic::lckmap_t<std::pair<int,int>,listref_t>::lcktype::iterator i;
         pic::flipflop_t<std::map<unsigned,handler_t> >::guard_t g(status_handlers_);
@@ -93,7 +93,7 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
 
         for(it=g.value().begin(); it!=g.value().end(); it++)
         {
-            if(it->second.row_==r && it->second.col_==c)
+            if(it->second.column_==column && it->second.row_==row)
             {
                 if(!ds)
                 {
@@ -110,11 +110,11 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
             }
         }
 
-        i = inputs_.find(std::make_pair(r,c));
+        i = inputs_.find(std::make_pair(column,row));
 
         if(i==inputs_.end())
         {
-            output_.set_status(musical_,r,c,0);
+            output_.set_status(musical_,column,row,0);
             return;
         }
 
@@ -177,21 +177,21 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
             case 3: status=BCTSTATUS_UNKNOWN; break;
         }
 
-        output_.set_status(musical_,r,c,status);
+        output_.set_status(musical_,column,row,status);
 
         for(it=g.value().begin(); it!=g.value().end(); it++)
         {
-            if(it->second.row_ == r && it->second.col_ == c)
+            if(it->second.column_ == column && it->second.row_ == row)
             {
                 it->second.handler_(makelong(status,piw::tsd_time()));
             }
         }
     }
 
-    void add_input(receiver_t *receiver, int r, int c)
+    void add_input(receiver_t *receiver, int column, int row)
     {
         std::pair<pic::lckmap_t<std::pair<int,int>,listref_t>::lcktype::iterator,bool> i;
-        i=inputs_.insert(std::make_pair(std::make_pair(r,c),listref_t()));
+        i=inputs_.insert(std::make_pair(std::make_pair(column,row),listref_t()));
 
         if(i.second)
         {
@@ -199,13 +199,13 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
         }
 
         i.first->second->list_.append(receiver);
-        update_input(r,c);
+        update_input(column,row);
     }
 
-    void del_input(receiver_t *receiver, int r, int c)
+    void del_input(receiver_t *receiver, int column, int row)
     {
         pic::lckmap_t<std::pair<int,int>,listref_t>::lcktype::iterator i;
-        i = inputs_.find(std::make_pair(r,c));
+        i = inputs_.find(std::make_pair(column,row));
 
         if(i!=inputs_.end())
         {
@@ -218,29 +218,29 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
     static int update_input__(void *s_, void *r_, void *c_)
     {
         impl_t *self = (impl_t *)s_;
-        int r = (int)r_;
-        int c = (int)c_;
-        self->update_input(r,c);
+        int column = (int)r_;
+        int row = (int)c_;
+        self->update_input(column,row);
         return 0;
     }
 
-    void set_default_color(unsigned i, unsigned c)
+    void set_default_color(unsigned i, unsigned color)
     {
         std::map<unsigned,handler_t>::iterator it;
 
         if((it=status_handlers_.alternate().find(i)) != status_handlers_.alternate().end())
         {
-            it->second.default_ = c;
-            int r = it->second.row_;
-            int c = it->second.col_;
+            it->second.default_ = color;
+            int column = it->second.column_;
+            int row = it->second.row_;
             status_handlers_.exchange();
-            piw::tsd_fastcall3(update_input__,this,(void *)r,(void *)c);
+            piw::tsd_fastcall3(update_input__,this,(void *)column,(void *)row);
         }
     }
 
-    void set_status_handler(unsigned index, int r, int c, change_t f)
+    void set_status_handler(unsigned index, int column, int row, change_t f)
     {
-        status_handlers_.alternate().insert(std::make_pair(index,handler_t(r,c,f)));
+        status_handlers_.alternate().insert(std::make_pair(index,handler_t(column,row,f)));
         status_handlers_.exchange();
     }
 
@@ -250,9 +250,9 @@ struct piw::lightconvertor_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_
         status_handlers_.exchange();
     }
 
-    unsigned char get_status(int r, int c)
+    unsigned char get_status(int column, int row)
     {
-        return output_.get_status(musical_,r,c);
+        return output_.get_status(musical_,column,row);
     }
 
     unsigned long long ufilterctl_thru() { return 0; }
@@ -275,9 +275,9 @@ piw::lightconvertor_t::~lightconvertor_t()
     delete impl_;
 }
 
-void piw::lightconvertor_t::set_status_handler(unsigned index, int r, int c, change_t f)
+void piw::lightconvertor_t::set_status_handler(unsigned index, int column, int row, change_t f)
 {
-    impl_->set_status_handler(index,r,c,f);
+    impl_->set_status_handler(index,column,row,f);
 }
 
 void piw::lightconvertor_t::remove_status_handler(unsigned index)
@@ -285,9 +285,9 @@ void piw::lightconvertor_t::remove_status_handler(unsigned index)
     impl_->remove_status_handler(index);
 }
 
-unsigned char piw::lightconvertor_t::get_status(int r, int c)
+unsigned char piw::lightconvertor_t::get_status(int column, int row)
 {
-    return impl_->get_status(r,c);
+    return impl_->get_status(column,row);
 }
 
 piw::cookie_t piw::lightconvertor_t::cookie()
@@ -299,9 +299,9 @@ void receiver_t::ufilterfunc_changed(piw::ufilterenv_t *, void *)
 {
 }
 
-void piw::lightconvertor_t::set_default_color(unsigned l,unsigned c)
+void piw::lightconvertor_t::set_default_color(unsigned l,unsigned color)
 {
-    impl_->set_default_color(l,c);
+    impl_->set_default_color(l,color);
 }
 
 void receiver_t::ufilterfunc_start(piw::ufilterenv_t *e,const piw::data_nb_t &id)
@@ -314,15 +314,15 @@ void receiver_t::ufilterfunc_start(piw::ufilterenv_t *e,const piw::data_nb_t &id
         color_ = (unsigned)d.as_renorm(0.0,5.0,0.0);
     }
 
-    light_row_ = light_col_ = 0;
+    light_column_ = light_row_ = 0;
 
     if(e->ufilterenv_latest(2,d,id.time()) && d.is_tuple() && d.as_tuplelen()==2 && d.as_tuple_value(0).is_long() && d.as_tuple_value(1).is_long())
     {
-        light_row_ = d.as_tuple_value(0).as_long();
-        light_col_ = d.as_tuple_value(1).as_long();
+        light_column_ = d.as_tuple_value(0).as_long();
+        light_row_ = d.as_tuple_value(1).as_long();
     }
 
-    impl_->add_input(this,light_row_,light_col_);
+    impl_->add_input(this,light_column_,light_row_);
 }
 
 void receiver_t::ufilterfunc_data(piw::ufilterenv_t *,unsigned s,const piw::data_nb_t &d)
@@ -330,32 +330,32 @@ void receiver_t::ufilterfunc_data(piw::ufilterenv_t *,unsigned s,const piw::data
     if(s==1)
     {
         color_ = (unsigned)d.as_renorm(0.0,5.0,0.0);
-        impl_->update_input(light_row_,light_col_);
+        impl_->update_input(light_column_,light_row_);
     }
 
     if(s==2)
     {
-        int r=0,c=0;
+        int column=0,row=0;
 
         if(d.is_tuple() && d.as_tuplelen()==2 && d.as_tuple_value(0).is_long() && d.as_tuple_value(1).is_long())
         {
-            r = d.as_tuple_value(0).as_long();
-            c = d.as_tuple_value(1).as_long();
+            column = d.as_tuple_value(0).as_long();
+            row = d.as_tuple_value(1).as_long();
         }
 
-        if(r != light_row_ || c != light_col_)
+        if(column != light_column_ || row != light_row_)
         {
-            impl_->del_input(this,light_row_,light_col_);
+            impl_->del_input(this,light_column_,light_row_);
 
-            light_row_ = r;
-            light_col_ = c;
+            light_column_ = column;
+            light_row_ = row;
 
-            impl_->add_input(this,light_row_,light_col_);
+            impl_->add_input(this,light_column_,light_row_);
         }
     }
 }
 
 void receiver_t::ufilterfunc_end(piw::ufilterenv_t *, unsigned long long)
 {
-    impl_->del_input(this,light_row_,light_col_);
+    impl_->del_input(this,light_column_,light_row_);
 }

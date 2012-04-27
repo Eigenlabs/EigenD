@@ -24,7 +24,7 @@ import piw
 import threading,sys,socket,fileinput,re
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
-MATCH_PHYSICAL = re.compile('^/row/(\d+)/column/(\d+)$',re.IGNORECASE)
+MATCH_PHYSICAL = re.compile('^/column/(\d+)/row/(\d+)$',re.IGNORECASE)
 MATCH_MUSICAL = re.compile('^/course/(\d+)/key/(\d+)$',re.IGNORECASE)
 MATCH_MAP = re.compile('^\[(?:\[\[\d+,\d+\],\w+\](?:,\[\[\d+,\d+\],\w+\])*)?\]$',re.IGNORECASE)
 MATCH_BITMAP = re.compile('^[RGO \\n\\,\\.]*$',re.IGNORECASE|re.MULTILINE)
@@ -89,19 +89,19 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
 
     def parse_bitmap(self, bitmap):
         result = []
-        row = 1 
-        column = 0
+        column = 1 
+        row = 0
         for c in bitmap.lower():
-            column += 1
+            row += 1
             if c == 'r':
-                result.append([[row,column],'red'])
+                result.append([[column,row],'red'])
             elif c == 'o':
-                result.append([[row,column],'orange'])
+                result.append([[column,row],'orange'])
             elif c == 'g':
-                result.append([[row,column],'green'])
+                result.append([[column,row],'green'])
             elif c == '\n' or c == ',' or c == '.':
-                row += 1
-                column = 0
+                column += 1
+                row = 0
         return result
 
     def do_GET(self):
@@ -151,10 +151,10 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
         if match:
             self.send_response(200)
             self.end_headers()
-            row = int(match.group(1))
-            column = int(match.group(2))
+            column = int(match.group(1))
+            row = int(match.group(2))
             colour = self.rfile.read(int(self.headers['Content-Length']))
-            self.server.agent.set_physical(row,column,colour)
+            self.server.agent.set_physical(column,row,colour)
             return
 
         match = MATCH_MUSICAL.match(self.path)
@@ -193,9 +193,9 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
         if match:
             self.send_response(200)
             self.end_headers()
-            row = int(match.group(1))
-            column = int(match.group(2))
-            self.server.agent.unset_physical(row,column)
+            column = int(match.group(1))
+            row = int(match.group(2))
+            self.server.agent.unset_physical(column,row)
             return
 
         match = MATCH_MUSICAL.match(self.path)
@@ -240,13 +240,13 @@ class Agent(agent.Agent):
         self.add_verb2(1,'clear([],None)', callback=self.__clear)
         self.add_verb2(2,'clear([],None,role(None,[matches([physical])]))', callback=self.__clear_physical)
         self.add_verb2(3,'clear([],None,role(None,[matches([musical])]))', callback=self.__clear_musical)
-        self.add_verb2(4,'set([],None,role(None,[coord(physical,[row],[column])]),role(to,[abstract,matches([red])]))', callback=self.__set_physical)
-        self.add_verb2(5,'set([],None,role(None,[coord(physical,[row],[column])]),role(to,[abstract,matches([green])]))', callback=self.__set_physical)
-        self.add_verb2(6,'set([],None,role(None,[coord(physical,[row],[column])]),role(to,[abstract,matches([orange])]))', callback=self.__set_physical)
+        self.add_verb2(4,'set([],None,role(None,[coord(physical,[column],[row])]),role(to,[abstract,matches([red])]))', callback=self.__set_physical)
+        self.add_verb2(5,'set([],None,role(None,[coord(physical,[column],[row])]),role(to,[abstract,matches([green])]))', callback=self.__set_physical)
+        self.add_verb2(6,'set([],None,role(None,[coord(physical,[column],[row])]),role(to,[abstract,matches([orange])]))', callback=self.__set_physical)
         self.add_verb2(7,'set([],None,role(None,[coord(musical,[course],[key])]),role(to,[abstract,matches([red])]))', callback=self.__set_musical)
         self.add_verb2(8,'set([],None,role(None,[coord(musical,[course],[key])]),role(to,[abstract,matches([green])]))', callback=self.__set_musical)
         self.add_verb2(9,'set([],None,role(None,[coord(musical,[course],[key])]),role(to,[abstract,matches([orange])]))', callback=self.__set_musical)
-        self.add_verb2(10,'set([un],None,role(None,[coord(physical,[row],[column])]))', callback=self.__unset_physical)
+        self.add_verb2(10,'set([un],None,role(None,[coord(physical,[column],[row])]))', callback=self.__unset_physical)
         self.add_verb2(11,'set([un],None,role(None,[coord(musical,[course],[key])]))', callback=self.__unset_musical)
         self.add_verb2(12,'choose([],None,role(None,[matches([physical])]),role(as,[abstract,matches([red])]))',self.__choose_physical)
         self.add_verb2(13,'choose([],None,role(None,[matches([physical])]),role(as,[abstract,matches([green])]))',self.__choose_physical)
@@ -355,13 +355,13 @@ class Agent(agent.Agent):
         self.__update_lights()
 
     def __set_physical(self,subject,key,colour):
-        row,column = action.coord_value(key)
+        column,row = action.coord_value(key)
         colour = action.abstract_string(colour)
-        self.set_physical(row,column,colour)
+        self.set_physical(column,row,colour)
 
-    def set_physical(self,row,column,colour):
-        phys = [x for x in logic.parse_clause(self.get_physical()) if x[0][0] != row or x[0][1] != column]
-        phys.append([[row,column],colour])
+    def set_physical(self,column,row,colour):
+        phys = [x for x in logic.parse_clause(self.get_physical()) if x[0][0] != column or x[0][1] != row]
+        phys.append([[column,row],colour])
         self.set_physical_map(logic.render_term(phys))
 
     def get_musical(self):
@@ -382,11 +382,11 @@ class Agent(agent.Agent):
         self.set_musical_map(logic.render_term(mus))
 
     def __unset_physical(self,subject,key):
-        row,column = action.coord_value(key)
-        self.unset_physical(row,column)
+        column,row = action.coord_value(key)
+        self.unset_physical(column,row)
 
-    def unset_physical(self,row,column):
-        phys = [x for x in logic.parse_clause(self.get_physical()) if x[0][0] != row or x[0][1] != column]
+    def unset_physical(self,column,row):
+        phys = [x for x in logic.parse_clause(self.get_physical()) if x[0][0] != column or x[0][1] != row]
         self.set_physical_map(logic.render_term(phys))
 
     def __unset_musical(self,subject,key):

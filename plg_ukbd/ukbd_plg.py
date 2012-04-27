@@ -90,7 +90,7 @@ class Keyboard(agent.Agent):
         self[9] = atom.Atom(names='controller output',domain=domain.Aniso(),init=self.__controllerinit())
 
     def __controllerinit(self):
-        return utils.makedict({'rowlen':self.keyboard.get_rowlen(),'rowoffset':self.keyboard.get_rowoffset(),'courselen':self.keyboard.get_courselen(),'courseoffset':self.keyboard.get_courseoffset()},0)
+        return utils.makedict({'columnlen':self.keyboard.get_columnlen(),'columnoffset':self.keyboard.get_columnoffset(),'courselen':self.keyboard.get_courselen(),'courseoffset':self.keyboard.get_courseoffset()},0)
 
     def close_server(self):
         atom.Atom.close_server(self)

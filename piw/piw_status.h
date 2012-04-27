@@ -58,27 +58,27 @@ namespace piw
             *o = r;
         }
 
-        statusdata_t(const bool m, const int r, const int c): musical(m), row(r), col(c) {}
+        statusdata_t(const bool m, const int c, const int r): musical(m), column(c), row(r) {}
 
         bool operator==(const statusdata_t &o) const
         {
-            return musical == o.musical && row == o.row && col == o.col;
+            return musical == o.musical && column == o.column && row == o.row;
         }
 
         bool operator<(const statusdata_t &o) const
         {
             if(musical < o.musical) return true;
             if(musical > o.musical) return false;
+            if(column < o.column) return true;
+            if(column > o.column) return false;
             if(row < o.row) return true;
             if(row > o.row) return false;
-            if(col < o.col) return true;
-            if(col > o.col) return false;
             return false;
         }
 
         const bool musical;
+        const int column;
         const int row;
-        const int col;
     };
 
     class PIW_DECLSPEC_CLASS statusbuffer_t
@@ -127,7 +127,7 @@ namespace piw
         public:
             class impl_t;
         public:
-            statusledconvertor_t(unsigned nc, const unsigned *cs);
+            statusledconvertor_t(unsigned, const unsigned *);
             ~statusledconvertor_t();
             void update_leds(piw::data_nb_t &status_data, void *kbd, void (*func_set_led)(void *self, unsigned key, unsigned color));
         private:

@@ -113,17 +113,17 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
         return 1;
     }
 
-    static int set_status__(void *self_, void *musical_, void *row_, void *col_, void *status_)
+    static int set_status__(void *self_, void *musical_, void *column_, void *row_, void *status_)
     {
         impl_t *self = (impl_t *)self_;
         bool musical = *(bool *)musical_;
+        int column = *(int *)column_;
         int row = *(int *)row_;
-        int col = *(int *)col_;
         unsigned char status = *(unsigned char *)status_;
 
         pic::lckmap_t<piw::statusdata_t,unsigned char>::nbtype::iterator i;
 
-        piw::statusdata_t statusdata = piw::statusdata_t(musical,row,col);
+        piw::statusdata_t statusdata = piw::statusdata_t(musical,column,row);
 
         i = self->statusbuffer_.find(statusdata);
 
@@ -167,16 +167,16 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
         return 1;
     }
 
-    static int get_status__(void *self_, void *musical_, void *row_, void *col_)
+    static int get_status__(void *self_, void *musical_, void *column_, void *row_)
     {
         impl_t *self = (impl_t *)self_;
         bool musical = *(bool *)musical_;
+        int column = *(int *)column_;
         int row = *(int *)row_;
-        int col = *(int *)col_;
 
         pic::lckmap_t<piw::statusdata_t,unsigned char>::nbtype::iterator i;
 
-        i = self->statusbuffer_.find(piw::statusdata_t(musical,row,col));
+        i = self->statusbuffer_.find(piw::statusdata_t(musical,column,row));
 
         if(i==self->statusbuffer_.end())
         {
@@ -282,14 +282,14 @@ struct piw::statusbuffer_t::impl_t: piw::event_data_source_real_t, piw::thing_t,
         piw::tsd_fastcall(clear__,this,0);
     }
 
-    void set_status(bool musical, int row, int col, unsigned char status)
+    void set_status(bool musical, int column, int row, unsigned char status)
     {
-        piw::tsd_fastcall5(set_status__,this,&musical,&row,&col,&status);
+        piw::tsd_fastcall5(set_status__,this,&musical,&column,&row,&status);
     }
 
-    unsigned char get_status(bool musical, int row, int col)
+    unsigned char get_status(bool musical, int column, int row)
     {
-        return (unsigned char)piw::tsd_fastcall4(get_status__,this,&musical,&row,&col);
+        return (unsigned char)piw::tsd_fastcall4(get_status__,this,&musical,&column,&row);
     }
 
     void set_blink_time(float time)
@@ -401,14 +401,14 @@ void piw::statusbuffer_t::clear()
     root_->clear();
 }
 
-void piw::statusbuffer_t::set_status(bool musical, int row, int col, unsigned char status)
+void piw::statusbuffer_t::set_status(bool musical, int column, int row, unsigned char status)
 {
-    root_->set_status(musical,row,col,status);
+    root_->set_status(musical,column,row,status);
 }
 
-unsigned char piw::statusbuffer_t::get_status(bool musical, int row, int col)
+unsigned char piw::statusbuffer_t::get_status(bool musical, int column, int row)
 {
-    return root_->get_status(musical,row,col);
+    return root_->get_status(musical,column,row);
 }
 
 void piw::statusbuffer_t::set_blink_time(float time)
@@ -433,8 +433,8 @@ piw::data_nb_t piw::statusbuffer_t::make_statusbuffer(pic::lckmap_t<piw::statusd
 
     for(i=status.begin(); i!=status.end(); i++)
     {
-        piw::statusdata_t::int2c(i->first.row,dp+0);
-        piw::statusdata_t::int2c(i->first.col,dp+2);
+        piw::statusdata_t::int2c(i->first.column,dp+0);
+        piw::statusdata_t::int2c(i->first.row,dp+2);
         piw::statusdata_t::status2c(i->first.musical,i->second,dp+4);
         dp+=5;
     }

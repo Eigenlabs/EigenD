@@ -56,11 +56,11 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
 #if KEYGROUP_MAPPER_DEBUG>0
         pic::logmsg() << "forward_mapping in " << in;
 #endif
-        pic::flipflop_t<mapping_t>::guard_t gp(physical_mapping_);
-        pic::flipflop_t<mapping_t>::guard_t gm(musical_mapping_);
+        pic::flipflop_t<mapping_t>::guard_t guard_phys(physical_mapping_);
+        pic::flipflop_t<mapping_t>::guard_t guard_mus(musical_mapping_);
 
-        if(gp.value().forward.empty() ||
-           gm.value().forward.empty())
+        if(guard_phys.value().forward.empty() ||
+           guard_mus.value().forward.empty())
         {
 #if KEYGROUP_MAPPER_DEBUG>0
             pic::logmsg() << "forward_mapping empty out " << in;
@@ -68,9 +68,9 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
             return in;
         }
 
-        float row,col,course,key;
+        float column,row,course,key;
         piw::hardness_t hardness;
-        if(!piw::decode_key(in,0,&row,&col,0,&course,&key,&hardness))
+        if(!piw::decode_key(in,0,&column,&row,0,&course,&key,&hardness))
         {
 #if KEYGROUP_MAPPER_DEBUG>0
             pic::logmsg() << "forward_mapping not key out " << in;
@@ -78,13 +78,13 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
             return in;
         }
 
-        const coordinate_t coord_phys = coordinate_t(row,col);
+        const coordinate_t coord_phys = coordinate_t(column,row);
         const coordinate_t coord_mus = coordinate_t(course,key);
-        forward_mapping_t::const_iterator ip = gp.value().forward.find(coord_phys);
-        forward_mapping_t::const_iterator im = gm.value().forward.find(coord_mus);
-        if(ip!=gp.value().forward.end() && im!=gm.value().forward.end())
+        forward_mapping_t::const_iterator in_phys = guard_phys.value().forward.find(coord_phys);
+        forward_mapping_t::const_iterator in_mus = guard_mus.value().forward.find(coord_mus);
+        if(in_phys!=guard_phys.value().forward.end() && in_mus!=guard_mus.value().forward.end())
         {
-            piw::data_nb_t result = piw::makekey(ip->second.second,ip->second.first.first,ip->second.first.second,im->second.second,im->second.first.first,im->second.first.second,hardness,in.time());
+            piw::data_nb_t result = piw::makekey(in_phys->second.second,in_phys->second.first.first,in_phys->second.first.second,in_mus->second.second,in_mus->second.first.first,in_mus->second.first.second,hardness,in.time());
 
 #if KEYGROUP_MAPPER_DEBUG>0
             pic::logmsg() << "forward_mapping out " << result;
@@ -103,11 +103,11 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
 #if KEYGROUP_MAPPER_DEBUG>0
         pic::logmsg() << "reverse_mapping in " << in;
 #endif
-        pic::flipflop_t<mapping_t>::guard_t gm(musical_mapping_);
-        pic::flipflop_t<mapping_t>::guard_t gp(physical_mapping_);
+        pic::flipflop_t<mapping_t>::guard_t guard_mus(musical_mapping_);
+        pic::flipflop_t<mapping_t>::guard_t guard_phys(physical_mapping_);
 
-        if(gp.value().reverse.empty() ||
-           gm.value().reverse.empty() ||
+        if(guard_phys.value().reverse.empty() ||
+           guard_mus.value().reverse.empty() ||
            !in.is_blob())
         {
 #if KEYGROUP_MAPPER_DEBUG>0
@@ -124,42 +124,42 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
 
         while(in_size >= 5)
         {
-            int ir = piw::statusdata_t::c2int(&in_buffer[0]);
-            int ic = piw::statusdata_t::c2int(&in_buffer[2]);
-            bool im = in_buffer[4]>>7;
-            unsigned xr = 0;
-            unsigned xc = 0;
+            int in_column = piw::statusdata_t::c2int(&in_buffer[0]);
+            int in_row = piw::statusdata_t::c2int(&in_buffer[2]);
+            bool in_mus = in_buffer[4]>>7;
+            unsigned out_column = 0;
+            unsigned out_row = 0;
 
 #if KEYGROUP_MAPPER_DEBUG>0
-            pic::logmsg() << "reverse_mapping values in " << ir << ", " << ic << ", " << im;
+            pic::logmsg() << "reverse_mapping values in " << in_column << ", " << in_row << ", " << in_mus;
 #endif
-            const coordinate_t coord = coordinate_t(ir,ic);
+            const coordinate_t coord = coordinate_t(in_column,in_row);
 
-            if(im)
+            if(in_mus)
             {
-                reverse_mapping_t::const_iterator im = gm.value().reverse.find(coord);
-                if(im!=gm.value().reverse.end())
+                reverse_mapping_t::const_iterator in_mus = guard_mus.value().reverse.find(coord);
+                if(in_mus!=guard_mus.value().reverse.end())
                 {
-                    xr = im->second.first;
-                    xc = im->second.second;
+                    out_column = in_mus->second.first;
+                    out_row = in_mus->second.second;
                 }
             }
             else
             {
-                reverse_mapping_t::const_iterator ip = gp.value().reverse.find(coord);
-                if(ip!=gp.value().reverse.end())
+                reverse_mapping_t::const_iterator in_phys = guard_phys.value().reverse.find(coord);
+                if(in_phys!=guard_phys.value().reverse.end())
                 {
-                    xr = ip->second.first;
-                    xc = ip->second.second;
+                    out_column = in_phys->second.first;
+                    out_row = in_phys->second.second;
                 }
             }
 
 #if KEYGROUP_MAPPER_DEBUG>0
-            pic::logmsg() << "reverse_mapping values out " << xr << ", " << xc << ", " << im;
+            pic::logmsg() << "reverse_mapping values out " << out_column << ", " << out_row << ", " << in_mus;
 #endif
 
-            piw::statusdata_t::int2c(xr,&out_buffer[0]);
-            piw::statusdata_t::int2c(xc,&out_buffer[2]);
+            piw::statusdata_t::int2c(out_column,&out_buffer[0]);
+            piw::statusdata_t::int2c(out_row,&out_buffer[2]);
             out_buffer[4] = in_buffer[4];
 
             out_buffer+=5;
@@ -214,31 +214,31 @@ void piw::keygroup_mapper_t::clear_physical_mapping()
     impl_->physical_mapping_.alternate().reverse.clear();
 }
 
-void piw::keygroup_mapper_t::set_physical_mapping(int row_in, int column_in, int rel_row_in, int rel_column_in, unsigned sequential_in, int row_out, int column_out, int rel_row_out, int rel_column_out, unsigned sequential_out)
+void piw::keygroup_mapper_t::set_physical_mapping(int column_in, int row_in, int rel_column_in, int rel_row_in, unsigned sequential_in, int column_out, int row_out, int rel_column_out, int rel_row_out, unsigned sequential_out)
 {
 #if KEYGROUP_MAPPER_DEBUG>0
-    pic::logmsg() << "set_physical_mapping in (" << row_in << ","  << column_in << "), rel in  (" << rel_row_in << "," << rel_column_in << "), seq in " << sequential_in << ", out (" << row_out << "," << column_out << "), rel out (" << rel_row_out << "," << rel_column_out << "), seq out " << sequential_out;
+    pic::logmsg() << "set_physical_mapping in (" << column_in << ","  << row_in << "), rel in  (" << rel_column_in << "," << rel_row_in << "), seq in " << sequential_in << ", out (" << column_out << "," << row_out << "), rel out (" << rel_column_out << "," << rel_row_out << "), seq out " << sequential_out;
 #endif
 
-    if(row_in <= 0 || column_in <= 0 || row_out <= 0 || column_out <= 0)
+    if(column_in <= 0 || row_in <= 0 || column_out <= 0 || row_out <= 0)
     {
         return;
     }
 
-    coordinate_t in = coordinate_t(row_in,column_in);
-    coordinate_t out = coordinate_t(row_out,column_out);
+    coordinate_t in = coordinate_t(column_in,row_in);
+    coordinate_t out = coordinate_t(column_out,row_out);
     coord_seq_t out_full = std::make_pair(out,sequential_out);
     impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in,out_full));
     impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out,in));
 
-    if(rel_row_in < 0 && rel_column_in < 0)
+    if(rel_column_in < 0 && rel_row_in < 0)
     {
-        coordinate_t in_rel = coordinate_t(rel_row_in,rel_column_in);
-        coordinate_t in_rel_row = coordinate_t(rel_row_in,column_in);
-        coordinate_t in_rel_column = coordinate_t(row_in,rel_column_in);
+        coordinate_t in_rel = coordinate_t(rel_column_in,rel_row_in);
+        coordinate_t in_rel_column = coordinate_t(rel_column_in,row_in);
+        coordinate_t in_rel_row = coordinate_t(column_in,rel_row_in);
         impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in_rel,out_full));
-        impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in_rel_row,out_full));
         impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in_rel_column,out_full));
+        impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in_rel_row,out_full));
     }
 
     if(sequential_in > 0)
@@ -247,14 +247,14 @@ void piw::keygroup_mapper_t::set_physical_mapping(int row_in, int column_in, int
         impl_->physical_mapping_.alternate().forward.insert(std::make_pair(in_seq,out_full));
     }
 
-    if(rel_row_out < 0 && rel_column_out < 0)
+    if(rel_column_out < 0 && rel_row_out < 0)
     {
-        coordinate_t out_rel = coordinate_t(rel_row_out,rel_column_out);
-        coordinate_t out_rel_row = coordinate_t(rel_row_out,column_out);
-        coordinate_t out_rel_column = coordinate_t(row_out,rel_column_out);
+        coordinate_t out_rel = coordinate_t(rel_column_out,rel_row_out);
+        coordinate_t out_rel_column = coordinate_t(rel_column_out,row_out);
+        coordinate_t out_rel_row = coordinate_t(column_out,rel_row_out);
         impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_rel,in));
-        impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_row,in));
         impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_column,in));
+        impl_->physical_mapping_.alternate().reverse.insert(std::make_pair(out_rel_row,in));
     }
 
     if(sequential_out > 0)
@@ -337,7 +337,7 @@ void piw::keygroup_mapper_t::activate_musical_mapping()
 
 struct piw::modekey_handler_t::impl_t: virtual pic::tracked_t, virtual pic::lckobject_t
 {
-    impl_t() : row_(0), column_(0) {}
+    impl_t() : column_(0), row_(0) {}
 
     ~impl_t()
     {
@@ -346,32 +346,32 @@ struct piw::modekey_handler_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
 
     bool key_filter(const piw::data_nb_t &d)
     {
-        float row,col;
+        float column, row;
         piw::hardness_t hardness;
-        if(row_ && column_ && !upstream_rowlen_.is_empty() && piw::decode_key(d,0,&row,&col,0,0,0,&hardness) && hardness > 0)
+        if(column_ && row_ && !upstream_columnlen_.is_empty() && piw::decode_key(d,0,&column,&row,0,0,0,&hardness) && hardness > 0)
         {
-            piw::data_nb_t geo = upstream_rowlen_.get();
+            piw::data_nb_t geo = upstream_columnlen_.get();
 
             if(geo.is_tuple())
             {
+                int mode_column = column_;
                 int mode_row = row_;
-                int mode_col = column_;
 
 #if KEYGROUP_MAPPER_DEBUG>0
-                pic::logmsg() << "modekey key_filter " << d << " (" << mode_row << "," << mode_col << ")";
+                pic::logmsg() << "modekey key_filter " << d << " (" << mode_column << "," << mode_row << ")";
 #endif
 
-                if(mode_row<0)
+                if(mode_column<0)
                 {
-                    mode_row = geo.as_tuplelen() + mode_row + 1;
+                    mode_column = geo.as_tuplelen() + mode_column + 1;
                 }
 
-                if(mode_col<0 && mode_row<=int(geo.as_tuplelen()))
+                if(mode_row<0 && mode_column<=int(geo.as_tuplelen()))
                 {
-                    mode_col = geo.as_tuple_value(mode_row-1).as_long() + mode_col + 1;
+                    mode_row = geo.as_tuple_value(mode_column-1).as_long() + mode_row + 1;
                 }
 
-                if(int(row)==mode_row && int(col)==mode_col)
+                if(int(column)==mode_column && int(row)==mode_row)
                 {
                     return true;
                 }
@@ -381,15 +381,15 @@ struct piw::modekey_handler_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
         return false;
     }
 
-    void set_modekey(int row, int column)
+    void set_modekey(int column, int row)
     {
-        row_ = row;
         column_ = column;
+        row_ = row;
     }
 
-    int row_;
     int column_;
-    piw::dataholder_nb_t upstream_rowlen_;
+    int row_;
+    piw::dataholder_nb_t upstream_columnlen_;
 };
 
 piw::modekey_handler_t::modekey_handler_t(): impl_(new impl_t)
@@ -407,14 +407,14 @@ piw::d2b_nb_t piw::modekey_handler_t::key_filter()
     return piw::d2b_nb_t::method(impl_,&impl_t::key_filter);
 }
 
-static int __set_modekey(void *i_, void *r_, void *c_)
+static int __set_modekey(void *i_, void *c_, void *r_)
 {
     piw::modekey_handler_t::impl_t *i = (piw::modekey_handler_t::impl_t *)i_;
-    int row = *(int *)r_;
     int column = *(int *)c_;
-    i->set_modekey(row,column);
+    int row = *(int *)r_;
+    i->set_modekey(column,row);
     return 0;
 }
 
-void piw::modekey_handler_t::set_modekey(int row, int column) { piw::tsd_fastcall3(__set_modekey,impl_,&row,&column); }
-void piw::modekey_handler_t::set_upstream_rowlength(const piw::data_t &rowlen) { impl_->upstream_rowlen_.set_normal(rowlen); }
+void piw::modekey_handler_t::set_modekey(int column, int row) { piw::tsd_fastcall3(__set_modekey,impl_,&column,&row); }
+void piw::modekey_handler_t::set_upstream_columnlength(const piw::data_t &columnlen) { impl_->upstream_columnlen_.set_normal(columnlen); }

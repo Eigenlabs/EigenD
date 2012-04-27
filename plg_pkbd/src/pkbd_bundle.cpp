@@ -122,7 +122,7 @@ namespace
         unsigned counter;
         float maxpressure;
         keyboard_t *keyboard;
-        unsigned index_,row_,column_;
+        unsigned index_,column_,row_;
 
         bool active;
         unsigned long long last;
@@ -360,8 +360,8 @@ namespace
         }
     }
 
-    static const unsigned int PICO_ROWCOUNT = 3;
-    static const unsigned int PICO_ROWS[PICO_ROWCOUNT] = {9,9,4};
+    static const unsigned int PICO_COLUMNCOUNT = 3;
+    static const unsigned int PICO_COLUMNS[PICO_COLUMNCOUNT] = {9,9,4};
 
     static const unsigned int PICO_COURSEKEYS = 22;
 
@@ -496,72 +496,72 @@ namespace
 
         void create_kwires()
         {
-            unsigned previous_rowkeys = 0;
+            unsigned previous_colkeys = 0;
+            unsigned column = 1;
             unsigned row = 1;
-            unsigned col = 1;
 
-            unsigned rowcount = get_rowcount();
-            for(unsigned k=1; k <= KEYS && row <= rowcount; k++)
+            unsigned columncount = get_columncount();
+            for(unsigned k=1; k <= KEYS && column <= columncount; k++)
             {
-                unsigned rowkeys = get_rowlen_array()[row-1];
-                if((k-previous_rowkeys) <= rowkeys)
+                unsigned colkeys = get_columnlen_array()[column-1];
+                if((k-previous_colkeys) <= colkeys)
                 {
-                    col = k-previous_rowkeys; 
+                    row = k-previous_colkeys; 
                 }
                 else
                 {
-                    row++;
-                    previous_rowkeys += rowkeys;
-                    col = k-previous_rowkeys; 
+                    column++;
+                    previous_colkeys += colkeys;
+                    row = k-previous_colkeys; 
                 }
-                kwires_[k-1] = std::auto_ptr<kwire_t>(new kwire_t(k,row,col,piw::pathtwo(1,k,0),this));
+                kwires_[k-1] = std::auto_ptr<kwire_t>(new kwire_t(k,column,row,piw::pathtwo(1,k,0),this));
             }
         }
 
-        const unsigned int get_rowcount()
+        const unsigned int get_columncount()
         {
-            return PICO_ROWCOUNT;
+            return PICO_COLUMNCOUNT;
         }
 
-        const unsigned int* get_rowlen_array()
+        const unsigned int* get_columnlen_array()
         {
-            return PICO_ROWS;
+            return PICO_COLUMNS;
         }
 
-        const piw::data_t get_rowlen_tuple()
+        const piw::data_t get_columnlen_tuple()
         {
-            if(!rowlen_.is_null())
+            if(!columnlen_.is_null())
             {
-                return rowlen_;
+                return columnlen_;
             }
 
-            piw::data_t rows = piw::tuplenull(0);
-            for(unsigned i = 0; i < get_rowcount(); ++i)
+            piw::data_t columns = piw::tuplenull(0);
+            for(unsigned i = 0; i < get_columncount(); ++i)
             {
-                rows = piw::tupleadd(rows, piw::makelong(get_rowlen_array()[i],0));
+                columns = piw::tupleadd(columns, piw::makelong(get_columnlen_array()[i],0));
             }
 
-            rowlen_ = rows;
+            columnlen_ = columns;
 
-            return rowlen_;
+            return columnlen_;
         }
 
-        const piw::data_t get_rowoffset_tuple()
+        const piw::data_t get_columnoffset_tuple()
         {
-            if(!rowoffset_.is_null())
+            if(!columnoffset_.is_null())
             {
-                return rowoffset_;
+                return columnoffset_;
             }
 
-            piw::data_t rows = piw::tuplenull(0);
-            for(unsigned i = 0; i < get_rowcount(); ++i)
+            piw::data_t columns = piw::tuplenull(0);
+            for(unsigned i = 0; i < get_columncount(); ++i)
             {
-                rows = piw::tupleadd(rows, piw::makelong(0,0));
+                columns = piw::tupleadd(columns, piw::makelong(0,0));
             }
 
-            rowoffset_ = rows;
+            columnoffset_ = columns;
 
-            return rowoffset_;
+            return columnoffset_;
         }
 
         const unsigned int get_coursecount()
@@ -611,8 +611,8 @@ namespace
         float threshold1,threshold2,roll_axis_window_,yaw_axis_window_;
         bool key_logging_;
         FILE *key_logfile_;
-        piw::data_t rowlen_;
-        piw::data_t rowoffset_;
+        piw::data_t columnlen_;
+        piw::data_t columnoffset_;
         piw::data_t courselen_;
         piw::data_t courseoffset_;
 
@@ -625,7 +625,7 @@ namespace
 
     };
 
-    kwire_t::kwire_t(unsigned i, unsigned r, unsigned c, const piw::data_t &path, keyboard_t *k): piw::event_data_source_real_t(path), counter(0), maxpressure(0), keyboard(k), index_(i), row_(r), column_(c), active(false), last(0), id_(piw::pathone_nb(i,0)),output_(63,PIW_DATAQUEUE_SIZE_NORM),ts_(0ULL)
+    kwire_t::kwire_t(unsigned i, unsigned c, unsigned r, const piw::data_t &path, keyboard_t *k): piw::event_data_source_real_t(path), counter(0), maxpressure(0), keyboard(k), index_(i), column_(c), row_(r), active(false), last(0), id_(piw::pathone_nb(i,0)),output_(63,PIW_DATAQUEUE_SIZE_NORM),ts_(0ULL)
     {
         keyboard->connect_wire(this,source());
     }
@@ -683,7 +683,7 @@ namespace
             if(active)
             {
                 output_ = piw::xevent_data_buffer_t(17,PIW_DATAQUEUE_SIZE_NORM);
-                output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_HARD,t));
+                output_.add_value(5,piw::makekey(index_,column_,row_,index_,1,index_,piw::KEY_HARD,t));
                 source_start(0,id_.restamp(t),output_);
             }
             else
@@ -742,7 +742,7 @@ namespace
             }
 
             output_ = piw::xevent_data_buffer_t(31,PIW_DATAQUEUE_SIZE_NORM);
-            output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_LIGHT,t));
+            output_.add_value(5,piw::makekey(index_,column_,row_,index_,1,index_,piw::KEY_LIGHT,t));
             output_.add_value(2,piw::makefloat_bounded_nb(1.0,0.0,0.0,p/4096.0,t));
             output_.add_value(3,piw::makefloat_bounded_nb(1.0,-1.0,0.0,r2,t));
             output_.add_value(4,piw::makefloat_bounded_nb(1.0,-1.0,0.0,y2,t));
@@ -772,13 +772,13 @@ namespace
 
             if(maxpressure > keyboard->threshold2)
             {
-                output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_HARD,t));
+                output_.add_value(5,piw::makekey(index_,column_,row_,index_,1,index_,piw::KEY_HARD,t));
                 return;
             }
 
             if(maxpressure > keyboard->threshold1)
             {
-                output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_SOFT,t));
+                output_.add_value(5,piw::makekey(index_,column_,row_,index_,1,index_,piw::KEY_SOFT,t));
                 return;
             }
         }
@@ -796,7 +796,7 @@ namespace
 
 struct pkbd::bundle_t::impl_t : virtual pic::tracked_t, piw::thing_t, piw::clockdomain_ctl_t, piw::clocksink_t, pic::safe_worker_t
 {
-    impl_t(const char *n, const piw::cookie_t &c, const pic::notify_t &d, const piw::change_t &a): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), loop_(n,&keyboard_), keyboard_(c,d,a), leds_(PICO_ROWCOUNT,PICO_ROWS)
+    impl_t(const char *n, const piw::cookie_t &c, const pic::notify_t &d, const piw::change_t &a): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), loop_(n,&keyboard_), keyboard_(c,d,a), leds_(PICO_COLUMNCOUNT,PICO_COLUMNS)
     {
         set_source(piw::makestring("*",0));
 
@@ -860,14 +860,14 @@ struct pkbd::bundle_t::impl_t : virtual pic::tracked_t, piw::thing_t, piw::clock
         loop_.poll(t);
     }
 
-    piw::data_t get_rowlen()
+    piw::data_t get_columnlen()
     {
-        return keyboard_.get_rowlen_tuple();
+        return keyboard_.get_columnlen_tuple();
     }
 
-    piw::data_t get_rowoffset()
+    piw::data_t get_columnoffset()
     {
-        return keyboard_.get_rowoffset_tuple();
+        return keyboard_.get_columnoffset_tuple();
     }
 
     piw::data_t get_courselen()
@@ -971,16 +971,16 @@ std::string pkbd::bundle_t::name()
     return _root->loop_.get_name();
 }
 
-piw::data_t pkbd::bundle_t::get_rowlen()
+piw::data_t pkbd::bundle_t::get_columnlen()
 {
     PIC_ASSERT(_root);
-    return _root->get_rowlen();
+    return _root->get_columnlen();
 }
 
-piw::data_t pkbd::bundle_t::get_rowoffset()
+piw::data_t pkbd::bundle_t::get_columnoffset()
 {
     PIC_ASSERT(_root);
-    return _root->get_rowoffset();
+    return _root->get_columnoffset();
 }
 
 piw::data_t pkbd::bundle_t::get_courselen()

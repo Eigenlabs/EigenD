@@ -188,8 +188,8 @@ class Connector(atom.Atom):
         self.control = None
         self.monitor = None
 
-        self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key row',init=0,policy=atom.default_policy(self.__change_key_row),protocols="input explicit")
-        self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key column',init=0,policy=atom.default_policy(self.__change_key_column),protocols="input explicit")
+        self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key column',init=0,policy=atom.default_policy(self.__change_key_column),protocols="input explicit")
+        self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key row',init=0,policy=atom.default_policy(self.__change_key_row),protocols="input explicit")
         self[4] = ConnectorOutput(self)
 
     def monitor_connected(self,proxy):
@@ -206,12 +206,12 @@ class Connector(atom.Atom):
             self[4].get_policy().data_node().clear_source()
         self.disconnect()
 
-    def __change_key_row(self,val):
+    def __change_key_column(self,val):
         self[1].set_value(val)
         self.__update_event_key()
         return False
 
-    def __change_key_column(self,val):
+    def __change_key_row(self,val):
         self[2].set_value(val)
         self.__update_event_key()
         return False

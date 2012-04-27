@@ -42,22 +42,22 @@ namespace piw
      * A key has two completely independent positioning schemes, the physical one
      * and the musical one. These can be used for different purposes and be remapped
      * independently. Each position is a coordinate from two axis, for the physical
-     * position we call these axis the row and column, for the musical position we
+     * position we call these axis the column and row, for the musical position we
      * call these axis the course and the key. Each position also has a sequential
      * number that is unique for this key. This allows for quick identification of
      * the key in either schemes and also to make it more intuitive to handle linear
      * layouts that should naturally flow across the axis in the correct order.
      *
-     * The row, col, course and key parameters can be negative, which indicates that
+     * The column, row, course and key parameters can be negative, which indicates that
      * they're offset from the opposite edge of their bounding geometry. Just as
-     * the number 1 indicates for instance the first column on a particular row,
-     * the number -1 will indicate the last column on that row. Similarly,
-     * the number 2 will indiciate the second column and -2 will indicate the
-     * before last column, and so on.
+     * the number 1 indicates for instance the first row on a particular column,
+     * the number -1 will indicate the last row on that column. Similarly,
+     * the number 2 will indiciate the second row and -2 will indicate the
+     * before last row, and so on.
      *
      * @param pseq      the sequential position in the physical layout
+     * @param column    the column index in the physical layout
      * @param row       the row index in the physical layout
-     * @param col       the column index in the physical layout
      * @param mseq      the sequential position in the musical layout
      * @param course    the course index in the musical layout
      * @param key       the key index in the musical layout
@@ -66,7 +66,7 @@ namespace piw
      *
      * @returns a new data instance with the provided key parameters
      */
-    PIW_DECLSPEC_FUNC(piw::data_nb_t) makekey(unsigned pseq, float row, float col, unsigned mseq, float course, float key, hardness_t hardness, unsigned long long t);
+    PIW_DECLSPEC_FUNC(piw::data_nb_t) makekey(unsigned pseq, float column, float row, unsigned mseq, float course, float key, hardness_t hardness, unsigned long long t);
 
     /**
      * Checks if the provided data contains valid key information.
@@ -97,19 +97,19 @@ namespace piw
      * @returns true if the data was successfully decoded into key information; or
      *          false if the data couldn't be decoded
      */
-    PIW_DECLSPEC_FUNC(bool) decode_key(const piw::data_nb_t &d, unsigned *pseq=0, float *row=0, float *col=0, unsigned *mseq=0, float *course=0, float *key=0, hardness_t *hardness=0);
+    PIW_DECLSPEC_FUNC(bool) decode_key(const piw::data_nb_t &d, unsigned *pseq=0, float *column=0, float *row=0, unsigned *mseq=0, float *course=0, float *key=0, hardness_t *hardness=0);
 
     /**
      * Calculates the sequential position of a key, based on its coordinates.
      *
-     * By using the lengths of the rows (physical) or the courses (musical) and
+     * By using the lengths of the columns (physical) or the courses (musical) and
      * the coordinates of the key position, the sequential position of the key
      * will be calculated.
      *
      * @param lengths  a tuple data instance that contains the lengths of the
-     *                 rows or course as longs
-     * @param x        the first part of the coordinate (row or course)
-     * @param y        the second part of the coordinate (column or key)
+     *                 columns or courses as longs
+     * @param x        the first part of the coordinate (column or course)
+     * @param y        the second part of the coordinate (row or key)
      *
      * @see makekey
      *
@@ -121,17 +121,17 @@ namespace piw
     /**
      * Calculates the coordinates of a key, based on its sequential position.
      *
-     * By using the lengths of the rows (physical) or the courses (musical) and
+     * By using the lengths of the columns (physical) or the courses (musical) and
      * the sequential key position, the coordinate of the key will be calculated.
      *
      *
      * @param lengths  a tuple data instance that contains the lengths of the
-     *                 rows or course as longs
+     *                 columns or courses as longs
      * @param x        a pointer to a variable that will be filled with the first
-     *                 part of the coordinate (row or course), if the coordinate
+     *                 part of the coordinate (column or course), if the coordinate
      *                 can't be calculated the variable will be set to 0
      * @param y        a pointer to a variable that will be filled with the second
-     *                 part of the coordinate (column or key), if the coordinate
+     *                 part of the coordinate (row or key), if the coordinate
      *                 can't be calculated the variable will be set to 0
      *
      * @see makekey

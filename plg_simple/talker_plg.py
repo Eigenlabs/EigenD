@@ -143,10 +143,10 @@ class Key(collection.Collection):
         self.agent.light_convertor.set_status_handler(self.index,0,0,piw.slowchange(utils.changify(self.set_status)))
 
         self.set_internal(247, atom.Atom(domain=domain.BoundedInt(0,3),names='default colour',init=3,policy=atom.default_policy(self.set_color)))
-        self.set_internal(248, atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key row',init=0,policy=atom.default_policy(self.__change_key_row)))
-        self.set_internal(249, atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key column',init=0,policy=atom.default_policy(self.__change_key_column)))
+        self.set_internal(248, atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key column',init=0,policy=atom.default_policy(self.__change_key_column)))
+        self.set_internal(249, atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key row',init=0,policy=atom.default_policy(self.__change_key_row)))
 
-    def __change_key_row(self,val):
+    def __change_key_column(self,val):
         self.agent.light_convertor.remove_status_handler(self.index)
         self.get_internal(248).set_value(val)
         t = utils.maketuple((piw.makelong(self.get_internal(248).get_value(),0),piw.makelong(self.get_internal(249).get_value(),0)), 0)
@@ -156,7 +156,7 @@ class Key(collection.Collection):
         self.agent.light_convertor.set_default_color(self.index,self.get_internal(247).get_value())
         return False
 
-    def __change_key_column(self,val):
+    def __change_key_row(self,val):
         self.agent.light_convertor.remove_status_handler(self.index)
         self.get_internal(249).set_value(val)
         t = utils.maketuple((piw.makelong(self.get_internal(248).get_value(),0),piw.makelong(self.get_internal(249).get_value(),0)), 0)

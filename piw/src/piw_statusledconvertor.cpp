@@ -24,7 +24,7 @@
 #include <picross/pic_fastalloc.h>
 #include <picross/pic_ref.h>
 
-#define MAX_ROWS 10
+#define MAX_COLUMNS 10
 
 namespace
 {
@@ -79,14 +79,14 @@ namespace
 
 struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::lckobject_t
 {
-    impl_t(unsigned num_rows, const unsigned *row_len): num_rows_(num_rows), row_len_(row_len)
+    impl_t(unsigned num_columns, const unsigned *column_len): num_columns_(num_columns), column_len_(column_len)
     {
         num_keys_ = 0;
 
-        for(unsigned i=0;i<num_rows_;i++)
+        for(unsigned i=0;i<num_columns_;i++)
         {
-            row_offset_[i] = num_keys_;
-            num_keys_ += row_len_[i];
+            column_offset_[i] = num_keys_;
+            num_keys_ += column_len_[i];
         }
 
         current_colors_ = (unsigned char *)pic::nb_malloc(PIC_ALLOC_LCK,num_keys_);
@@ -123,16 +123,16 @@ struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::l
         }
         else
         {
-            int tc = row_offset_[num_rows_-1]+row_len_[num_rows_+1];
+            int tc = column_offset_[num_columns_-1]+column_len_[num_columns_+1];
 
             if(x==0 && y==0) return -1;
             if(x==0 && y<=tc) return y-1;
-            if(x<1 || x>(int)num_rows_) return -1;
-            if(x<0) x=num_rows_+x+1;
-            if(y<0) y=row_len_[x-1]+y+1;
-            if(y<1 || y>(int)row_len_[x-1]) return -1;
+            if(x<1 || x>(int)num_columns_) return -1;
+            if(x<0) x=num_columns_+x+1;
+            if(y<0) y=column_len_[x-1]+y+1;
+            if(y<1 || y>(int)column_len_[x-1]) return -1;
 
-            return row_offset_[x-1]+y-1;
+            return column_offset_[x-1]+y-1;
         }
     }
 
@@ -190,16 +190,16 @@ struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::l
 
     unsigned num_keys_;
 
-    unsigned num_rows_;
-    unsigned row_offset_[MAX_ROWS];
-    const unsigned *row_len_;
+    unsigned num_columns_;
+    unsigned column_offset_[MAX_COLUMNS];
+    const unsigned *column_len_;
 
     bool initialized_;
     unsigned char *current_colors_;
     unsigned char *next_status_;
 };
 
-piw::statusledconvertor_t::statusledconvertor_t(unsigned num_rows, const unsigned *row_len): root_(new impl_t(num_rows,row_len))
+piw::statusledconvertor_t::statusledconvertor_t(unsigned num_columns, const unsigned *column_len): root_(new impl_t(num_columns,column_len))
 {
 }
 

@@ -221,8 +221,8 @@ class Output(atom.Atom):
         self[20] = VirtualKey(self.__agent.keygroup_size,self.__agent.key_choice)
 
         self[23] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='enable',protocols='set',container=(None,'output%d'%self.__slot,self.__agent.verb_container()))
-        self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key row', init=None, policy=atom.default_policy(self.__change_key_row))
-        self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key column', init=None, policy=atom.default_policy(self.__change_key_column))
+        self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key column', init=None, policy=atom.default_policy(self.__change_key_column))
+        self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key row', init=None, policy=atom.default_policy(self.__change_key_row))
 
         self[23].add_verb2(1,'set([toggle],~a,role(None,[instance(~self)]))', callback=self.__enable_toggle, status_action=self.__status)
         self[23].add_verb2(2,'set([],~a,role(None,[instance(~s)]))', callback=self.__enable_set, status_action=self.__status)
@@ -240,12 +240,12 @@ class Output(atom.Atom):
 
         self.kpolyctl = piw.polyctl(10,self.koutput.cookie(),False,5)
 
-    def __change_key_row(self,val):
+    def __change_key_column(self,val):
         self[24].set_value(val)
         self.update_status_index()
         return False
 
-    def __change_key_column(self,val):
+    def __change_key_row(self,val):
         self[25].set_value(val)
         self.update_status_index()
         return False
@@ -415,17 +415,17 @@ class OutputList(atom.Atom):
             hardness = v.as_tuple_value(4).as_long()
             if hardness > 0:
                 keynum = v.as_tuple_value(0).as_long()
-                row = int(v.as_tuple_value(1).as_tuple_value(0).as_float())
-                col = int(v.as_tuple_value(1).as_tuple_value(1).as_float())
+                column = int(v.as_tuple_value(1).as_tuple_value(0).as_float())
+                row = int(v.as_tuple_value(1).as_tuple_value(1).as_float())
                 for k,o in self.items():
-                    orow = o[24].get_value()
-                    ocol = o[25].get_value()
+                    ocolumn = o[24].get_value()
+                    orow = o[25].get_value()
 
                     select = False
 
-                    if row == orow and col == ocol:
+                    if column == ocolumn and row == orow:
                         select = True
-                    elif row == 0 and ocol == keynum:
+                    elif column == 0 and orow == keynum:
                         select = True
                     else:
                         okeynum = o.key_sequential()
@@ -553,8 +553,8 @@ class Agent(agent.Agent):
 
         self.modekey_handler = piw.modekey_handler()
         self[23] = atom.Atom(domain=domain.Aniso(), names='mode key input', policy=policy.FastPolicy(self.modepulse,policy.FilterStreamPolicy(self.modekey_handler.key_filter())))
-        self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key row', init=None, policy=atom.default_policy(self.__change_mode_key_row))
-        self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key column', init=None, policy=atom.default_policy(self.__change_mode_key_column))
+        self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key column', init=None, policy=atom.default_policy(self.__change_mode_key_column))
+        self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key row', init=None, policy=atom.default_policy(self.__change_mode_key_row))
         self[27] = atom.Atom(domain=domain.String(), init='[]', names='physical map', protocols='mapper', policy=atom.default_policy(self.__set_physical_key_map))
         self[34] = atom.Atom(domain=domain.String(), init='[]', names='musical map', protocols='mapper', policy=atom.default_policy(self.__set_musical_key_map))
         self[35] = atom.Atom(domain=domain.String(), init='[]', names='course offset', policy=atom.default_policy(self.__set_course_offset))
@@ -572,9 +572,9 @@ class Agent(agent.Agent):
         self.add_verb2(12,'clear([],None,role(None,[matches([musical])]))', callback=self.__musicalclear)
         self.add_verb2(16,'clear([],None,role(None,[mass([course])]))', callback=self.__courseclear)
         self.add_verb2(17,'clear([],None,role(None,[matches([physical])]))', callback=self.__physicalclear)
-        self.add_verb2(18,'clear([],None,role(None,[mass([row])]))', callback=self.__rowclear)
+        self.add_verb2(18,'clear([],None,role(None,[mass([column])]))', callback=self.__columnclear)
 
-        self.add_verb2(13,'add([],None,role(None,[coord(physical,[row],[column])]),role(to,[coord(physical,[row],[column])]))', callback=self.__kadd_physical)
+        self.add_verb2(13,'add([],None,role(None,[coord(physical,[column],[row])]),role(to,[coord(physical,[column],[row])]))', callback=self.__kadd_physical)
         self.add_verb2(14,'add([],None,role(None,[coord(musical,[course],[key])]),role(to,[coord(musical,[course],[key])]))', callback=self.__kadd_musical)
 
         self.add_verb2(15,'choose([],None,role(None,[mass([output])]))', callback=self.__ochoose, status_action=self.__ostatus)
@@ -585,7 +585,7 @@ class Agent(agent.Agent):
 
         self[16] = VirtualCourse(self.controller)
 
-        self.__upstream_rowlen = None
+        self.__upstream_columnlen = None
         self.__upstream_courselen = None
 
         self.cfunctor = piw.functor_backend(1,True)
@@ -618,12 +618,12 @@ class Agent(agent.Agent):
         name = str(arg)
         result = []
 
-        if name == self[27].get_property_string('cname') and self.__upstream_rowlen:
+        if name == self[27].get_property_string('cname') and self.__upstream_columnlen:
             row = 0
-            for rl in self.__upstream_rowlen:
+            for cl in self.__upstream_columnlen:
                 row += 1
-                for col in range(1,rl+1):
-                    result.append((row,col))
+                for column in range(1,cl+1):
+                    result.append((column,row))
         elif name == self[34].get_property_string('cname') and self.__upstream_courselen:
             course = 0
             for cl in self.__upstream_courselen:
@@ -673,12 +673,12 @@ class Agent(agent.Agent):
         self.status_buffer.set_blink_time(float(val))
         return False
 
-    def __change_mode_key_row(self,val):
+    def __change_mode_key_column(self,val):
         self[24].set_value(val)
         self.__update_mode_key()
         return False
 
-    def __change_mode_key_column(self,val):
+    def __change_mode_key_row(self,val):
         self[25].set_value(val)
         self.__update_mode_key()
         return False
@@ -692,19 +692,19 @@ class Agent(agent.Agent):
 
             refresh_mappings = False
 
-            # store the upstream row lengths
-            rl = c.as_dict_lookup('rowlen')
-            new_rl = None
-            if rl.is_tuple():
-                self.modekey_handler.set_upstream_rowlength(rl)
-                new_rl = [ i.as_long() for i in utils.tuple_items(rl) ]
+            # store the upstream column lengths
+            cl = c.as_dict_lookup('columnlen')
+            new_cl = None
+            if cl.is_tuple():
+                self.modekey_handler.set_upstream_columnlength(cl)
+                new_cl = [ i.as_long() for i in utils.tuple_items(cl) ]
             else:
-                self.modekey_handler.set_upstream_rowlength(piw.makenull(0))
+                self.modekey_handler.set_upstream_columnlength(piw.makenull(0))
 
-            if new_rl != self.__upstream_rowlen:
+            if new_cl != self.__upstream_columnlen:
                 refresh_mappings = True
 
-            self.__upstream_rowlen = new_rl
+            self.__upstream_columnlen = new_cl
 
             # store the upstream course lengths
             cl = c.as_dict_lookup('courselen')
@@ -732,8 +732,8 @@ class Agent(agent.Agent):
         except:
             return 0
 
-    def key_sequential(self,row,col):
-        return piw.key_sequential(self.controller.gettuple('rowlen'),row,col)
+    def key_sequential(self,column,row):
+        return piw.key_sequential(self.controller.gettuple('columnlen'),column,row)
 
     def __upstream(self,c):
         size = self.__decode(c)
@@ -837,33 +837,33 @@ class Agent(agent.Agent):
     def __physicalclear(self,subject,name):
         self.__set_physical_mapping(())
 
-    def __rowclear(self,subject,row):
-        if row is None: return
+    def __columnclear(self,subject,column):
+        if column is None: return
 
-        row = int(action.mass_quantity(row))
+        column = int(action.mass_quantity(column))
         physical_mapping = []
 
         for p in self.__current_physical_mapping():
-            if p[1][0] != row:
+            if p[1][0] != column:
                 physical_mapping.append(p)
 
         self.__set_physical_mapping(physical_mapping)
 
     def __kadd_physical(self,subject,kfrom,kto):
-        frow,fcol = action.coord_value(kfrom)
-        trow,tcol = action.coord_value(kto)
+        fcolumn,frow = action.coord_value(kfrom)
+        tcolumn,trow = action.coord_value(kto)
 
         old = self.__current_physical_mapping()
         new = []
 
         for ((fx,fy),(tx,ty)) in old:
-            if fx==frow and fy==fcol:
+            if fx==fcolumn and fy==frow:
                 continue
-            if tx==trow and ty==tcol:
+            if tx==tcolumn and ty==trow:
                 continue
             new.append(((fx,fy),(tx,ty)))
             
-        new.append(((frow,fcol),(trow,tcol)))
+        new.append(((fcolumn,frow),(tcolumn,trow)))
         self.__set_physical_mapping(new)
 
     def __kadd_musical(self,subject,kfrom,kto):
@@ -1001,16 +1001,16 @@ class Agent(agent.Agent):
         
         # build a new physical mapping based on the boundaries
         # of the input coordinates
-        last_in_row = 0
-        physical_out_row = 0
-        physical_out_column = 0 
+        last_in_column = 0
+        physical_out_column = 0
+        physical_out_row = 0 
         for p in sorted(physical_ins):
-            if p[0] != last_in_row:
-                physical_out_row += 1
-                physical_out_column = 0
-                last_in_row = p[0]
-            physical_out_column += 1
-            physical_mapping.append( (p,(physical_out_row,physical_out_column)) )
+            if p[0] != last_in_column:
+                physical_out_column += 1
+                physical_out_row = 0
+                last_in_column = p[0]
+            physical_out_row += 1
+            physical_mapping.append( (p,(physical_out_column,physical_out_row)) )
         
         # activate the new musical mapping
         self.__set_musical_mapping(musical_mapping)
@@ -1079,27 +1079,27 @@ class Agent(agent.Agent):
 
         mapping,reverse_mapping = self.__sanitize_mapping(mapping,'physical')
 
-        # initialize the row offsets
-        rowoffsets = []
-        if self.__upstream_rowlen:
-            for i in self.__upstream_rowlen:
-                rowoffsets.append(None)
+        # initialize the column offsets
+        columnoffsets = []
+        if self.__upstream_columnlen:
+            for i in self.__upstream_columnlen:
+                columnoffsets.append(None)
 
         # iterate over the mapping that's sorted by out key and determine
-        # the row lengths and row offsets
-        rowlengths = dict()
-        max_row = 0
+        # the column lengths and column offsets
+        columnlengths = dict()
+        max_column = 0
         for entry in reverse_mapping:
-            row_in = entry[1][0]
-            col_in = entry[1][1]
-            row_out = entry[0][0]
-            max_row = max(max_row,row_out)
-            if row_out <= len(rowoffsets) and rowoffsets[row_out-1] is None:
-                rowoffsets[row_out-1] = col_in-1
-            if row_out in rowlengths:
-                rowlengths[row_out] += 1
+            column_in = entry[1][0]
+            row_in = entry[1][1]
+            column_out = entry[0][0]
+            max_column = max(max_column,column_out)
+            if column_out <= len(columnoffsets) and columnoffsets[column_out-1] is None:
+                columnoffsets[column_out-1] = row_in-1
+            if column_out in columnlengths:
+                columnlengths[column_out] += 1
             else:
-                rowlengths[row_out] = 1
+                columnlengths[column_out] = 1
 
         # re-iterate over the mapping and calculate the sequential position
         # while adding each entry to the underlying mapper
@@ -1107,39 +1107,39 @@ class Agent(agent.Agent):
         for entry in reverse_mapping:
 
             # calculate the entry's input key data
-            row_in = entry[1][0]
-            col_in = entry[1][1]
+            column_in = entry[1][0]
+            row_in = entry[1][1]
+            column_in_rel = 0
             row_in_rel = 0
-            col_in_rel = 0
             sequential_in = 0
-            if self.__upstream_rowlen and row_in <= len(self.__upstream_rowlen):
-                row_in_rel = row_in - 1 - len(self.__upstream_rowlen)
-                col_in_rel = col_in - 1 - self.__upstream_rowlen[row_in-1]
-                for i in range(1,row_in):
-                    sequential_in += self.__upstream_rowlen[i-1]
-                sequential_in += col_in
+            if self.__upstream_columnlen and column_in <= len(self.__upstream_columnlen):
+                column_in_rel = column_in - 1 - len(self.__upstream_columnlen)
+                row_in_rel = row_in - 1 - self.__upstream_columnlen[column_in-1]
+                for i in range(1,column_in):
+                    sequential_in += self.__upstream_columnlen[i-1]
+                sequential_in += row_in
 
             # calculate the entry's output key data
-            row_out = entry[0][0]
-            col_out = entry[0][1]
-            row_out_rel = row_out - 1 - max_row
-            col_out_rel = col_out - 1 - rowlengths[row_out]
+            column_out = entry[0][0]
+            row_out = entry[0][1]
+            column_out_rel = column_out - 1 - max_column
+            row_out_rel = row_out - 1 - columnlengths[column_out]
             sequential_out = sequential_out + 1
 
             # add the mapping for this entry
-            mapper.set_physical_mapping(row_in,col_in,row_in_rel,col_in_rel,sequential_in,row_out,col_out,row_out_rel,col_out_rel,sequential_out)
+            mapper.set_physical_mapping(column_in,row_in,column_in_rel,row_in_rel,sequential_in,column_out,row_out,column_out_rel,row_out_rel,sequential_out)
 
         # activate the physical mappings
         mapper.activate_physical_mapping()
 
         # adapt the controller stream
         if len(mapping):
-            self.controller.setlist('rowlen', [piw.makelong(r,0) for r in rowlengths.values()])
-            self.controller.setlist('rowoffset', [piw.makelong(r,0) if r is not None else piw.makenull(0) for r in rowoffsets])
+            self.controller.setlist('columnlen', [piw.makelong(r,0) for r in columnlengths.values()])
+            self.controller.setlist('columnoffset', [piw.makelong(r,0) if r is not None else piw.makenull(0) for r in columnoffsets])
         else:
-            # if the mapping was empty, use the upstream row lengths and no offsets
-            self.controller.setlist('rowlen', [piw.makelong(r,0) for r in self.__upstream_rowlen or []])
-            self.controller.setlist('rowoffset', [piw.makelong(0,0) for r in self.__upstream_rowlen or []])
+            # if the mapping was empty, use the upstream column lengths and no offsets
+            self.controller.setlist('columnlen', [piw.makelong(r,0) for r in self.__upstream_columnlen or []])
+            self.controller.setlist('columnoffset', [piw.makelong(0,0) for r in self.__upstream_columnlen or []])
 
         # update the outputs status indexes
         self[1].update_status_indexes()

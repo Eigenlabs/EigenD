@@ -67,14 +67,14 @@ namespace
 
     static bool compare_phys_key(const piw::data_nb_t &k1, const piw::data_nb_t &k2)
     {
-        unsigned k1n; float k1r,k1c;
-        unsigned k2n; float k2r,k2c;
+        unsigned k1n; float k1c,k1r;
+        unsigned k2n; float k2c,k2r;
 
-        if(!piw::decode_key(k1,&k1n,&k1r,&k1c)) return false;
-        if(!piw::decode_key(k2,&k2n,&k2r,&k2c)) return false;
+        if(!piw::decode_key(k1,&k1n,&k1c,&k1r)) return false;
+        if(!piw::decode_key(k2,&k2n,&k2c,&k2r)) return false;
         if(k1n!=k2n) return false;
-        if(k1r!=k2r) return false;
         if(k1c!=k2c) return false;
+        if(k1r!=k2r) return false;
         return true;
     }
 }
@@ -220,23 +220,23 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
         ctlset.clear();
 
         unsigned kn = 0;
-        float kr = 0;
         float kc = 0;
+        float kr = 0;
 
-        if(!piw::decode_key(key,&kn,&kr,&kc)) return;
-        if(kr==0 && kc==0) { return; }
+        if(!piw::decode_key(key,&kn,&kc,&kr)) return;
+        if(kc==0 && kr==0) { return; }
 
-        piw::data_nb_t rowlen;
-        int nr = 0;
+        piw::data_nb_t columnlen;
+        int nc = 0;
 
         if(ctl.is_dict())
         {
-            piw::data_nb_t t=ctl.as_dict_lookup("rowlen");
+            piw::data_nb_t t=ctl.as_dict_lookup("columnlen");
 
             if(t.is_tuple() && t.as_tuplelen()>0)
             {
-                rowlen=t;
-                nr = t.as_tuplelen();
+                columnlen=t;
+                nc = t.as_tuplelen();
             }
         }
 
@@ -258,37 +258,37 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
                 continue;
             }
 
-            int r = g.value().as_tuple_value(0).as_long();
-            int c = g.value().as_tuple_value(1).as_long();
+            int c = g.value().as_tuple_value(0).as_long();
+            int r = g.value().as_tuple_value(1).as_long();
 
-            if(r==0)
+            if(c==0)
             {
-                if(unsigned(c)==kn)
+                if(unsigned(r)==kn)
                 {
                     ctlset.insert((*li)->client_);
                     continue;
                 }
             }
 
-            if(r<0)
-            {
-                if(!nr) continue;
-                r = r+nr+1;
-                if(r<=0 || r>nr) continue;
-            }
-
-            if(r!=kr) continue;
-
             if(c<0)
             {
-                if(!nr) continue;
-                if(r<=0 || r>nr) continue;
-                int nc = rowlen.as_tuple_value(r-1).as_long();
+                if(!nc) continue;
                 c = c+nc+1;
                 if(c<=0 || c>nc) continue;
             }
 
             if(c!=kc) continue;
+
+            if(r<0)
+            {
+                if(!nc) continue;
+                if(c<=0 || c>nc) continue;
+                int nr = columnlen.as_tuple_value(c-1).as_long();
+                r = r+nr+1;
+                if(r<=0 || r>nr) continue;
+            }
+
+            if(r!=kr) continue;
 
             ctlset.insert((*li)->client_);
         }

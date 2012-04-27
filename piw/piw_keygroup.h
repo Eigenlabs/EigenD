@@ -35,8 +35,8 @@ namespace piw
             ~modekey_handler_t();
 
             piw::d2b_nb_t key_filter();
-            void set_modekey(int row, int column);
-            void set_upstream_rowlength(const piw::data_t &rowlen);
+            void set_modekey(int column, int row);
+            void set_upstream_columnlength(const piw::data_t &columnlen);
 
         private:
             impl_t *impl_;
@@ -58,7 +58,7 @@ namespace piw
             void activate_mapping();
 
             void clear_physical_mapping();
-            void set_physical_mapping(int row_in, int column_in, int rel_row_in, int rel_column_in, unsigned sequential_in, int row_out, int column_out, int rel_row_out, int rel_column_out, unsigned sequential_out);
+            void set_physical_mapping(int column_in, int row_in, int rel_column_in, int rel_row_in, unsigned sequential_in, int column_out, int row_out, int rel_column_out, int rel_row_out, unsigned sequential_out);
             void activate_physical_mapping();
 
             void clear_musical_mapping();

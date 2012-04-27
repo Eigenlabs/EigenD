@@ -41,32 +41,32 @@
 
 namespace
 {
-    static bool check_key(const piw::data_nb_t &key, const piw::data_nb_t &ctl, int r, int c)
+    static bool check_key(const piw::data_nb_t &key, const piw::data_nb_t &ctl, int column, int row)
     {
-        if(!r && !c)
+        if(!column && !row)
         {
             return false;
         }
 
-        unsigned kn;
-        float kcf,krf;
+        unsigned kseq;
+        float kcolumnf,krowf;
 
-        if(!piw::decode_key(key,&kn,&krf,&kcf,0,0,0,0))
+        if(!piw::decode_key(key,&kseq,&kcolumnf,&krowf,0,0,0,0))
         {
             return false;
         }
 
-        unsigned kc = unsigned(kcf);
-        unsigned kr = unsigned(krf);
+        unsigned kcolumn = unsigned(kcolumnf);
+        unsigned krow = unsigned(krowf);
 
-        if(r>=0 && c>=0)
+        if(column>=0 && row>=0)
         {
-            if(r==0)
+            if(column==0)
             {
-                return (int(kn)==c);
+                return (int(kseq)==row);
             }
 
-            return (int(kc)==c && int(kr)==r);
+            return (int(krow)==row && int(kcolumn)==column);
         }
 
         if(!ctl.is_dict())
@@ -74,31 +74,31 @@ namespace
             return false;
         }
 
-        piw::data_nb_t t=ctl.as_dict_lookup("rowlen");
+        piw::data_nb_t t=ctl.as_dict_lookup("columnlen");
 
         if(!t.is_tuple() || t.as_tuplelen()==0)
         {
             return false;
         }
 
-        int nr = t.as_tuplelen();
+        int columns = t.as_tuplelen();
 
-        if(r<0)
+        if(column<0)
         {
-            r = t.as_tuplelen()+nr+1;
+            column = columns+column+1;
         }
 
-        if(r==0 || r>nr || r!=int(kr))
+        if(column==0 || column>columns || column!=int(kcolumn))
         {
             return false;
         }
 
-        if(c<0)
+        if(row<0)
         {
-            c = t.as_tuple_value(r-1).as_long()+c+1;
+            row = t.as_tuple_value(column-1).as_long()+row+1;
         }
 
-        if(c != int(kc))
+        if(row != int(krow))
         {
             return false;
         }

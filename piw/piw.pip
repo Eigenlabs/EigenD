@@ -553,7 +553,7 @@ class modekey_handler[piw::modekey_handler_t]
 
     d2b_nb key_filter()
     void set_modekey(int,int)
-    void set_upstream_rowlength(const data &)
+    void set_upstream_columnlength(const data &)
 }
 
 class keygroup_mapper[piw::keygroup_mapper_t]

@@ -130,10 +130,10 @@ namespace
         void set_mic_quality(unsigned q);
         void mic_reset();
 
-        virtual const unsigned int get_rowcount() = 0;
-        virtual const unsigned int* get_rowlen_array() = 0;
-        const piw::data_t get_rowlen_tuple();
-        const piw::data_t get_rowoffset_tuple();
+        virtual const unsigned int get_columncount() = 0;
+        virtual const unsigned int* get_columnlen_array() = 0;
+        const piw::data_t get_columnlen_tuple();
+        const piw::data_t get_columnoffset_tuple();
 
         virtual const unsigned int get_courselen() = 0;
         const piw::data_t get_courselen_tuple();
@@ -165,8 +165,8 @@ namespace
         void (*midi_sink_)(void *,const unsigned char *,unsigned);
         void *midi_sink_ctx_;
         piw::resampler_t resampler_;
-        piw::data_t rowlen_;
-        piw::data_t rowoffset_;
+        piw::data_t columnlen_;
+        piw::data_t columnoffset_;
         piw::data_t courselen_;
         piw::data_t courseoffset_;
     };
@@ -316,7 +316,7 @@ namespace
 
         void update(const blob_t *b);
 
-        unsigned index_,row_,column_;
+        unsigned index_,column_,row_;
         piw::data_nb_t id_;
         keyboard_t *keyboard_;
         float maxpressure_;
@@ -597,40 +597,40 @@ namespace
         resampler_.reset();
     }
 
-    const piw::data_t keyboard_t::get_rowlen_tuple()
+    const piw::data_t keyboard_t::get_columnlen_tuple()
     {
-        if(!rowlen_.is_null())
+        if(!columnlen_.is_null())
         {
-            return rowlen_;
+            return columnlen_;
         }
 
-        piw::data_t rows = piw::tuplenull(0);
-        for(unsigned i = 0; i < get_rowcount(); ++i)
+        piw::data_t columns = piw::tuplenull(0);
+        for(unsigned i = 0; i < get_columncount(); ++i)
         {
-            rows = piw::tupleadd(rows, piw::makelong(get_rowlen_array()[i],0));
+            columns = piw::tupleadd(columns, piw::makelong(get_columnlen_array()[i],0));
         }
 
-        rowlen_ = rows;
+        columnlen_ = columns;
 
-        return rowlen_;
+        return columnlen_;
     }
 
-    const piw::data_t keyboard_t::get_rowoffset_tuple()
+    const piw::data_t keyboard_t::get_columnoffset_tuple()
     {
-        if(!rowoffset_.is_null())
+        if(!columnoffset_.is_null())
         {
-            return rowoffset_;
+            return columnoffset_;
         }
 
-        piw::data_t rows = piw::tuplenull(0);
-        for(unsigned i = 0; i < get_rowcount(); ++i)
+        piw::data_t columns = piw::tuplenull(0);
+        for(unsigned i = 0; i < get_columncount(); ++i)
         {
-            rows = piw::tupleadd(rows, piw::makelong(0,0));
+            columns = piw::tupleadd(columns, piw::makelong(0,0));
         }
 
-        rowoffset_ = rows;
+        columnoffset_ = columns;
 
-        return rowoffset_;
+        return columnoffset_;
     }
 
     const piw::data_t keyboard_t::get_courselen_tuple()
@@ -809,30 +809,30 @@ namespace
 
     void keyboard_t::create_kwires()
     {
-        unsigned previous_rowkeys = 0;
-        unsigned row = 1;
+        unsigned previous_colkeys = 0;
         unsigned col = 1;
+        unsigned row = 1;
         
-        unsigned rowcount = get_rowcount();
-        for(unsigned k=1; k <= kbd_num_keys() && row <= rowcount; k++)
+        unsigned columncount = get_columncount();
+        for(unsigned k=1; k <= kbd_num_keys() && col <= columncount; k++)
         {
-            unsigned rowkeys = get_rowlen_array()[row-1];
-            if((k-previous_rowkeys) <= rowkeys)
+            unsigned colkeys = get_columnlen_array()[col-1];
+            if((k-previous_colkeys) <= colkeys)
             {
-                col = k-previous_rowkeys; 
+                row = k-previous_colkeys; 
             }
             else
             {
-                row++;
-                previous_rowkeys += rowkeys;
-                col = k-previous_rowkeys; 
+                col++;
+                previous_colkeys += colkeys;
+                row = k-previous_colkeys; 
             }
-            kwires_[k-1] = std::auto_ptr<kwire_t>(new kwire_t(k,row,col,piw::pathtwo(1,k,0),this));
+            kwires_[k-1] = std::auto_ptr<kwire_t>(new kwire_t(k,col,row,piw::pathtwo(1,k,0),this));
         }
     }
 
-    static const unsigned int ALPHA_ROWCOUNT = 6;
-    static const unsigned int ALPHA_ROWS[ALPHA_ROWCOUNT] = {24,24,24,24,24,12};
+    static const unsigned int ALPHA_COLUMNCOUNT = 6;
+    static const unsigned int ALPHA_COLUMNS[ALPHA_COLUMNCOUNT] = {24,24,24,24,24,12};
 
     static const unsigned int ALPHA_COURSEKEYS = 132;
 
@@ -883,14 +883,14 @@ namespace
             }
         }
 
-        virtual const unsigned int get_rowcount()
+        virtual const unsigned int get_columncount()
         {
-            return ALPHA_ROWCOUNT;
+            return ALPHA_COLUMNCOUNT;
         }
 
-        virtual const unsigned int* get_rowlen_array()
+        virtual const unsigned int* get_columnlen_array()
         {
-            return ALPHA_ROWS;
+            return ALPHA_COLUMNS;
         }
 
         virtual const unsigned int get_coursecount()
@@ -908,8 +908,8 @@ namespace
         std::auto_ptr<breath_t> breath_;
     };
     
-    static const unsigned int TAU_ROWCOUNT = 7;
-    static const unsigned int TAU_ROWS[TAU_ROWCOUNT] = {16,16,20,20,12,4,4};
+    static const unsigned int TAU_COLUMNCOUNT = 7;
+    static const unsigned int TAU_COLUMNS[TAU_COLUMNCOUNT] = {16,16,20,20,12,4,4};
         
     static const unsigned int TAU_COURSEKEYS = 92;
         
@@ -963,14 +963,14 @@ namespace
                 msg << (alpha2::active_t::keydown(TAU_KBD_KEYS+5+m,map)?"X":"-");
         }
 
-        virtual const unsigned int get_rowcount()
+        virtual const unsigned int get_columncount()
         {
-            return TAU_ROWCOUNT;
+            return TAU_COLUMNCOUNT;
         }
 
-        virtual const unsigned int* get_rowlen_array()
+        virtual const unsigned int* get_columnlen_array()
         {
-            return TAU_ROWS;
+            return TAU_COLUMNS;
         }
 
         virtual const unsigned int get_coursecount()
@@ -987,7 +987,7 @@ namespace
         std::auto_ptr<breath_t> breath1_;
     };
 
-    kwire_t::kwire_t(unsigned i, unsigned r, unsigned c, const piw::data_t &path, keyboard_t *k): piw::event_data_source_real_t(path), index_(i), row_(r), column_(c), id_(piw::pathone_nb(i,0)), keyboard_(k), maxpressure_(0), counter_(0), running_(false), ts_(0), output_(63,PIW_DATAQUEUE_SIZE_NORM),cur_pressure_(0), cur_roll_(0), cur_yaw_(0)
+    kwire_t::kwire_t(unsigned i, unsigned c, unsigned r, const piw::data_t &path, keyboard_t *k): piw::event_data_source_real_t(path), index_(i), column_(c), row_(r), id_(piw::pathone_nb(i,0)), keyboard_(k), maxpressure_(0), counter_(0), running_(false), ts_(0), output_(63,PIW_DATAQUEUE_SIZE_NORM),cur_pressure_(0), cur_roll_(0), cur_yaw_(0)
     {
         k->connect_wire(this,source());
     }
@@ -1046,7 +1046,7 @@ namespace
                 return;
             }
 
-            output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_LIGHT,t));
+            output_.add_value(5,piw::makekey(index_,column_,row_,index_,1,index_,piw::KEY_LIGHT,t));
             output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,p/4096.0,t));
             output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,__clip(r/1024.0,keyboard_->roll_axis_window_),t));
             output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,__clip(y/1024.0,keyboard_->yaw_axis_window_),t));
@@ -1082,13 +1082,13 @@ namespace
 
             if(maxpressure_ > keyboard_->threshold2_)
             {
-                output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_HARD,t));
+                output_.add_value(5,piw::makekey(index_,column_,row_,index_,1,index_,piw::KEY_HARD,t));
                 return;
             }
 
             if(maxpressure_ > keyboard_->threshold1_)
             {
-                output_.add_value(5,piw::makekey(index_,row_,column_,index_,1,index_,piw::KEY_SOFT,t));
+                output_.add_value(5,piw::makekey(index_,column_,row_,index_,1,index_,piw::KEY_SOFT,t));
                 return;
             }
         }
@@ -1571,17 +1571,17 @@ namespace
 
 struct kbd::kbd_impl_t: piw::clockdomain_ctl_t, piw::clocksink_t, piw::thing_t, pic::safe_worker_t, virtual pic::tracked_t, virtual public pic::lckobject_t
 {
-    kbd_impl_t(pic::usbdevice_t *device, const piw::cookie_t &ac, keyboard_t *pkeyboard): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), device_(device), loop_(device,pkeyboard,false), pkeyboard_(pkeyboard), skipped_(false), mic_output_(new mic_output_t(ac, pkeyboard_,&loop_)), headphone_input_(new headphone_input_t(&loop_)), leds_(pkeyboard->get_rowcount(),pkeyboard->get_rowlen_array())
+    kbd_impl_t(pic::usbdevice_t *device, const piw::cookie_t &ac, keyboard_t *pkeyboard): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), device_(device), loop_(device,pkeyboard,false), pkeyboard_(pkeyboard), skipped_(false), mic_output_(new mic_output_t(ac, pkeyboard_,&loop_)), headphone_input_(new headphone_input_t(&loop_)), leds_(pkeyboard->get_columncount(),pkeyboard->get_columnlen_array())
     {
         init();
     }
 
-    kbd_impl_t(pic::usbdevice_t *device, keyboard_t *pkeyboard): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), device_(device), loop_(device,pkeyboard,false), pkeyboard_(pkeyboard), skipped_(false), headphone_input_(new headphone_input_t(&loop_)), leds_(pkeyboard->get_rowcount(),pkeyboard->get_rowlen_array())
+    kbd_impl_t(pic::usbdevice_t *device, keyboard_t *pkeyboard): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), device_(device), loop_(device,pkeyboard,false), pkeyboard_(pkeyboard), skipped_(false), headphone_input_(new headphone_input_t(&loop_)), leds_(pkeyboard->get_columncount(),pkeyboard->get_columnlen_array())
     {
         init();
     }
 
-    kbd_impl_t(const char *name, keyboard_t *pkeyboard): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), device_(new pic::usbdevice_t(name,0)), loop_(device_,pkeyboard,true), pkeyboard_(pkeyboard), skipped_(false), leds_(pkeyboard->get_rowcount(),pkeyboard->get_rowlen_array())
+    kbd_impl_t(const char *name, keyboard_t *pkeyboard): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_NORMAL), device_(new pic::usbdevice_t(name,0)), loop_(device_,pkeyboard,true), pkeyboard_(pkeyboard), skipped_(false), leds_(pkeyboard->get_columncount(),pkeyboard->get_columnlen_array())
     {
         init();
     }
@@ -1617,14 +1617,14 @@ struct kbd::kbd_impl_t: piw::clockdomain_ctl_t, piw::clocksink_t, piw::thing_t, 
         }
     }
 
-    piw::data_t get_rowlen()
+    piw::data_t get_columnlen()
     {
-        return pkeyboard_->get_rowlen_tuple();
+        return pkeyboard_->get_columnlen_tuple();
     }
 
-    piw::data_t get_rowoffset()
+    piw::data_t get_columnoffset()
     {
-        return pkeyboard_->get_rowoffset_tuple();
+        return pkeyboard_->get_columnoffset_tuple();
     }
 
     piw::data_t get_courselen()
@@ -1758,16 +1758,16 @@ std::string kbd::alpha2_bundle_legacy_t::name()
     return _root->loop_.get_name();
 }
 
-piw::data_t kbd::alpha2_bundle_legacy_t::get_rowlen()
+piw::data_t kbd::alpha2_bundle_legacy_t::get_columnlen()
 {
     PIC_ASSERT(_root);
-    return _root->get_rowlen();
+    return _root->get_columnlen();
 }
 
-piw::data_t kbd::alpha2_bundle_legacy_t::get_rowoffset()
+piw::data_t kbd::alpha2_bundle_legacy_t::get_columnoffset()
 {
     PIC_ASSERT(_root);
-    return _root->get_rowoffset();
+    return _root->get_columnoffset();
 }
 
 piw::data_t kbd::alpha2_bundle_legacy_t::get_courselen()
@@ -1955,16 +1955,16 @@ std::string kbd::alpha2_bundle_t::name()
     return _root->loop_.get_name();
 }
 
-piw::data_t kbd::alpha2_bundle_t::get_rowlen()
+piw::data_t kbd::alpha2_bundle_t::get_columnlen()
 {
     PIC_ASSERT(_root);
-    return _root->get_rowlen();
+    return _root->get_columnlen();
 }
 
-piw::data_t kbd::alpha2_bundle_t::get_rowoffset()
+piw::data_t kbd::alpha2_bundle_t::get_columnoffset()
 {
     PIC_ASSERT(_root);
-    return _root->get_rowoffset();
+    return _root->get_columnoffset();
 }
 
 piw::data_t kbd::alpha2_bundle_t::get_courselen()
@@ -2244,16 +2244,16 @@ std::string kbd::tau_bundle_t::name()
     return _root->loop_.get_name();
 }
 
-piw::data_t kbd::tau_bundle_t::get_rowlen()
+piw::data_t kbd::tau_bundle_t::get_columnlen()
 {
     PIC_ASSERT(_root);
-    return _root->get_rowlen();
+    return _root->get_columnlen();
 }
 
-piw::data_t kbd::tau_bundle_t::get_rowoffset()
+piw::data_t kbd::tau_bundle_t::get_columnoffset()
 {
     PIC_ASSERT(_root);
-    return _root->get_rowoffset();
+    return _root->get_columnoffset();
 }
 
 piw::data_t kbd::tau_bundle_t::get_courselen()
