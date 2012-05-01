@@ -488,7 +488,7 @@ class OutputList(atom.Atom):
         return self.__peer.rpc_listinstances(arg)
 
     def rpc_instancename(self,arg):
-        return self.__peer.rpc_instancename(arg)
+        return self.get_property_string('name');
 
     @async.coroutine('internal error')
     def rpc_delinstance(self,arg):
