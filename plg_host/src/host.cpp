@@ -642,14 +642,14 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
             audio_buffer_.setSize(0,0);
             throw;
         }
-        buffer_data_.set(chans);
+        buffer_data_ = chans;
         return true;
     }
 
     void deallocate_buffer()
     {
-        float **chans = buffer_data_.current();
-        buffer_data_.set(0);
+        float **chans = buffer_data_;
+        buffer_data_ = 0;
         pic::logmsg() << "deallocating buffer for " << audio_buffer_.getNumChannels() << " channels of " << buffer_size_ << " samples";
         if(chans)
         {
@@ -1193,7 +1193,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     std::string title_;
 
     juce::AudioSampleBuffer audio_buffer_;
-    pic::flipflop_t<float**> buffer_data_;
+    float** buffer_data_;
 
     unsigned num_input_channels_;
     unsigned num_output_channels_;
