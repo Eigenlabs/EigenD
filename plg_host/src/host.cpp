@@ -482,7 +482,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     impl_t(plugin_observer_t *obs, midi::midi_channel_delegate_t *channel_delegate, piw::clockdomain_ctl_t *d,
         const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, const pic::status_t &window_state): 
             audio_output_cookie_(audio_out), audio_input_(this), midi_input_(this), metronome_input_(this), 
-            mapping_(*this), plugin_(0), window_(0), audio_buffer_(0,0), num_input_channels_(0), num_output_channels_(0),
+            mapping_(*this), plugin_(0), window_(0), audio_buffer_(0,0), buffer_data_(0), num_input_channels_(0), num_output_channels_(0),
             window_state_changed_(window_state), clockdomain_(d), sample_rate_(48000.0), buffer_size_(PLG_CLOCK_BUFFER_SIZE),
             observer_(obs), channel_delegate_(channel_delegate), active_(false),
             idle_count_(0), idle_time_ticks_(0), idling_enabled_(true), idle_time_sec_(10.f),
@@ -545,9 +545,15 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         p->releaseResources();
         sample_rate_ = clockdomain_->get_sample_rate();
         buffer_size_ = clockdomain_->get_buffer_size();
-        allocate_buffer(p);
-        p->prepareToPlay(sample_rate_, buffer_size_);
-        recalc_idle_time();
+        if(allocate_buffer(p))
+        {
+            p->prepareToPlay(sample_rate_, buffer_size_);
+            recalc_idle_time();
+        }
+        else
+        {
+            close();
+        }
     }
     
     juce::AudioPluginInstance *find_plugin(juce::PluginDescription &desc,juce::String &err)
@@ -578,44 +584,80 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         midi_output_.setup(1,PIW_DATAQUEUE_SIZE_NORM);
         sample_rate_ = clockdomain_->get_sample_rate();
         buffer_size_ = clockdomain_->get_buffer_size();
-        allocate_buffer(plg);
-        midi_time_ = 0ULL;
-        plg->setPlayHead(&metronome_input_);
-        plg->prepareToPlay(sample_rate_, buffer_size_);
-        plg->fillInPluginDescription(desc);
-        plugin_.set(plg);
-        observer_->description_changed(d2.to_xml());
+        if(allocate_buffer(plg))
+        {
+            midi_time_ = 0ULL;
+            plg->setPlayHead(&metronome_input_);
+            plg->prepareToPlay(sample_rate_, buffer_size_);
+            plg->fillInPluginDescription(desc);
+            plugin_.set(plg);
+            observer_->description_changed(d2.to_xml());
 
-        piw::tsd_window(&host_window_);
-        pic::logmsg() << "opened " << d.id() << " in channels " << num_input_channels_ << " out channels " << num_output_channels_ << " buf channels " << audio_buffer_.getNumChannels();
-        return true;
+            piw::tsd_window(&host_window_);
+            pic::logmsg() << "opened " << d.id() << " in channels " << num_input_channels_ << " out channels " << num_output_channels_ << " buf channels " << audio_buffer_.getNumChannels();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
-    void allocate_buffer(juce::AudioPluginInstance *plg)
+    bool allocate_buffer(juce::AudioPluginInstance *plg)
     {
         deallocate_buffer();
 
         int buffer_channels = std::max(plg->getNumInputChannels(),plg->getNumOutputChannels());
+        pic::logmsg() << "allocating buffer for " << buffer_channels << " channels of " << buffer_size_ << " samples";
         float **chans = new float*[buffer_channels];
+        for(int i=0; i<buffer_channels; ++i)
+        {
+            chans[i] = 0;
+        }
         try
         {
             for(int i=0; i<buffer_channels; ++i)
+            {
                 chans[i] = (float *)pic_thread_lck_malloc(buffer_size_*sizeof(float));
+                if(!chans[i])
+                {
+                    for(int i=0; i<buffer_channels; ++i)
+                    {
+                        if(chans[i]) pic_thread_lck_free(chans[i],buffer_size_*sizeof(float));
+                    }
+                    delete[] chans;
+                    audio_buffer_.setSize(0,0);
+                    return false;
+                }
+            }
             audio_buffer_.setDataToReferTo(chans,buffer_channels,buffer_size_);
         }
         catch(...)
         {
+            for(int i=0; i<buffer_channels; ++i)
+            {
+                if(chans[i]) pic_thread_lck_free(chans[i],buffer_size_*sizeof(float));
+            }
             delete[] chans;
+            audio_buffer_.setSize(0,0);
             throw;
         }
-        delete[] chans;
+        buffer_data_.set(chans);
+        return true;
     }
 
     void deallocate_buffer()
     {
-        for(int i=0; i<audio_buffer_.getNumChannels(); ++i)
+        float **chans = buffer_data_.current();
+        buffer_data_.set(0);
+        pic::logmsg() << "deallocating buffer for " << audio_buffer_.getNumChannels() << " channels of " << buffer_size_ << " samples";
+        if(chans)
         {
-            pic_thread_lck_free(audio_buffer_.getSampleData(i,0),buffer_size_*sizeof(float));
+            for(int i=0; i<audio_buffer_.getNumChannels(); ++i)
+            {
+                pic_thread_lck_free(chans[i],buffer_size_*sizeof(float));
+            }
+            delete[] chans;
         }
         audio_buffer_.setSize(0,0);
     }
@@ -1151,6 +1193,8 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     std::string title_;
 
     juce::AudioSampleBuffer audio_buffer_;
+    pic::flipflop_t<float**> buffer_data_;
+
     unsigned num_input_channels_;
     unsigned num_output_channels_;
     juce::MidiBuffer midi_buffer_;
