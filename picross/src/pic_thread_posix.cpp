@@ -355,7 +355,7 @@ void pic_set_core_unlimited()
 
 pic::tsd_t pic::thread_t::genctx__;
 
-pic::mutex_t::mutex_t(bool recursive)
+pic::mutex_t::mutex_t(bool recursive, bool inheritance)
 {
     pthread_mutexattr_t a;
     pthread_mutexattr_init(&a);
@@ -368,6 +368,15 @@ pic::mutex_t::mutex_t(bool recursive)
     {
         pthread_mutexattr_settype(&a,PTHREAD_MUTEX_ERRORCHECK_NP);
     }
+
+    if(inheritance)
+    {
+        pthread_mutexattr_setprotocol(&a,PTHREAD_PRIO_INHERIT_NP);
+    }
+    else
+    {
+        pthread_mutexattr_setprotocol(&a,PTHREAD_PRIO_NONE_NP);
+    }
 #endif
 
 #ifdef PI_MACOSX
@@ -378,6 +387,15 @@ pic::mutex_t::mutex_t(bool recursive)
     else
     {
         pthread_mutexattr_settype(&a,PTHREAD_MUTEX_ERRORCHECK);
+    }
+
+    if(inheritance)
+    {
+        pthread_mutexattr_setprotocol(&a,PTHREAD_PRIO_INHERIT);
+    }
+    else
+    {
+        pthread_mutexattr_setprotocol(&a,PTHREAD_PRIO_NONE);
     }
 #endif
 

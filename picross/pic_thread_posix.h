@@ -145,7 +145,7 @@ namespace pic
             };
 
         public:
-            mutex_t(bool recursive = false);
+            mutex_t(bool recursive = false, bool inheritance = false);
             ~mutex_t();
             void lock();
             void unlock();

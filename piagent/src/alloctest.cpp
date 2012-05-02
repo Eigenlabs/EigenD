@@ -24,7 +24,7 @@
 
 #define THREADS 6
 #define ALLOCATIONS 100000000
-#define REPORT 1000000
+#define REPORT 100000
 
 class alloc_thread_t: public pic::thread_t
 {

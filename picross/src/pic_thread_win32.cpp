@@ -495,7 +495,7 @@ bool pic::gate_t::isopen()
     return f_!=0;
 }
 
-pic::mutex_t::mutex_t(bool recursive) { InitializeCriticalSection(&data_); }
+pic::mutex_t::mutex_t(bool recursive,bool inheritance) { InitializeCriticalSection(&data_); }
 pic::mutex_t::~mutex_t() { DeleteCriticalSection(&data_); }
 void pic::mutex_t::lock() { EnterCriticalSection(&data_); }
 void pic::mutex_t::unlock() { LeaveCriticalSection(&data_); }
