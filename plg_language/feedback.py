@@ -24,7 +24,7 @@ from . import language_native
 import piw
 
 class History(node.Server):
-    history = 10
+    history = 50
 
     def __init__(self,callback):
         node.Server.__init__(self,rtransient=True)

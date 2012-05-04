@@ -27,6 +27,9 @@ class SubDelegate(interpreter.Delegate):
     def __init__(self,agent):
         self.__agent = agent
 
+    def user_message(self,err):
+        return self.__agent.user_message(err)
+
     def error_message(self,err):
         return self.__agent.error_message(err)
 

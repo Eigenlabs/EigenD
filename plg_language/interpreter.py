@@ -31,6 +31,8 @@ class Delegate:
         pass
     def error_message(self,err):
         print 'error_message',err
+    def user_message(self,err):
+        print 'user_message',err
 
 def rpcerrorhandler(ei):
     traceback.print_exception(*ei)
@@ -263,6 +265,9 @@ class Interpreter:
                 if 'user_errors' in ar.kwds():
                     for err in ar.kwds()['user_errors']:
                         self.__delegate.error_message(err)
+                if 'user_messages' in ar.kwds():
+                    for err in ar.kwds()['user_messages']:
+                        self.__delegate.user_message(err)
                
                 if klass != 'ahem' and klass != 'hey':
                     self.__context.clear_inner_scope()
@@ -276,6 +281,9 @@ class Interpreter:
                 if 'user_errors' in ar.kwds():
                     for err in ar.kwds()['user_errors']:
                         self.__delegate.error_message(err)
+                if 'user_messages' in ar.kwds():
+                    for err in ar.kwds()['user_messages']:
+                        self.__delegate.user_message(err)
 
                 self.__context.clear_inner_scope()
             yield async.Coroutine.failure(*ar.args(),**ar.kwds())

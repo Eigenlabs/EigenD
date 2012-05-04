@@ -122,6 +122,7 @@ class Agent(agent.Agent):
         self.add_verb2(30,'message([],None,role(None,[abstract]))', self.__message)
         self.add_verb2(150,'execute([],None,role(None,[abstract]))',self.__runscript)
         self.add_verb2(151,'load([],None,role(None,[matches([help])]))',self.__loadhelp)
+        self.add_verb2(152,'identify([],None,role(None,[concrete]))',self.__identify)
 
         self.add_builtins(self.__builtin)
         self.add_builtins(self.__ctxmgr)
@@ -266,6 +267,16 @@ class Agent(agent.Agent):
         ds = logic.render_termlist([logic.make_term(e,m,c) for (e,(m,c)) in d])
         return '%s:%d:%s' % (t,nd,ds)
 
+    def __identify(self,subject,target):
+        ids = action.concrete_objects(target)
+        ids = [self.database.to_database_id(i) for i in ids]
+        print 'identifying',ids
+        rv = []
+        for i in ids:
+            d = self.database.find_full_desc(i)
+            rv.append(action.message_return(d))
+        return rv
+
     @async.coroutine('internal error')
     def rpc_identify(self,arg):
         words = arg.strip().split()
@@ -276,6 +287,7 @@ class Agent(agent.Agent):
 
         (objs,) = r.args()
         ids = objs.concrete_ids()
+        print 'identifying',ids
         rv = []
         for id in ids:
             d = "'%s' %s" % (id,self.database.find_full_desc(id))
@@ -337,6 +349,8 @@ class Agent(agent.Agent):
         class SubDelegate(interpreter.Delegate):
             def error_message(dself,err):
                 return self.error_message(err)
+            def user_message(dself,err):
+                return self.user_message(err)
             def buffer_done(dself,*a,**kw):
                 return 
 
@@ -449,6 +463,10 @@ class Agent(agent.Agent):
                 else:
                     m.extend(w)
         self.__history.message(m,desc,speaker)
+
+    def user_message(self,err):
+        print 'language_plg:user_message',err
+        self.message(['*',err])
 
     def error_message(self,err):
         speaker='' 

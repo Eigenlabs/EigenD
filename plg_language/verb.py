@@ -249,6 +249,7 @@ def run_imperative_co(interp,verb,mods,roles,args,flags,fg,text):
     errs=[]
     nsucceeded = 0
     nerr=0
+    msgs=[]
 
     def result_iter(vs,vf):
         for (id,r) in vs.iteritems():
@@ -285,6 +286,7 @@ def run_imperative_co(interp,verb,mods,roles,args,flags,fg,text):
                 errs.append((r.args,vid))
             elif c=='msg':
                 msg = r.args[0]
+                msgs.append(msg)
                 print 'message',vid,msg
         if err:
             nerr +=1
@@ -304,8 +306,8 @@ def run_imperative_co(interp,verb,mods,roles,args,flags,fg,text):
         print 'sync done'
 
     if nsucceeded:
-        yield async.Coroutine.success('%d verbs failed: %d verbs succeeded' % (nerr,nsucceeded),user_errors=tuple(errs))
+        yield async.Coroutine.success('%d verbs failed: %d verbs succeeded' % (nerr,nsucceeded),user_errors=tuple(errs),user_messages=tuple(msgs))
     elif nerr:
-        yield async.Coroutine.failure('%d verbs failed: %d verbs succeeded' % (nerr,nsucceeded),user_errors=tuple(errs))
+        yield async.Coroutine.failure('%d verbs failed: %d verbs succeeded' % (nerr,nsucceeded),user_errors=tuple(errs),user_messages=tuple(msgs))
 
     yield async.Coroutine.success()
