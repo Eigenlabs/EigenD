@@ -395,16 +395,35 @@ class VirtualScale(atom.Atom):
                     self.update_timestamp()
         return logic.render_term(('',''))
 
+    def resolve_literal(self,name):
+        words = name.split()
+        numbers = []
+
+        for w in words:
+            try: numbers.append(float(w))
+            except: return None
+
+        if len(numbers)<2:
+            return None
+
+        return numbers
+
+
     def resolve_name(self,name):
         if name=='selection' and self.__selected:
              return '[%s]' % self.__ideal(self.__selected)
             
         if name=='activation' and self.__activated_scale:
              return '[%s]' % self.__ideal(self.__activated_scale)
+
+        literal = self.resolve_literal(name)
+        if literal:
+            return '[%s]' % self.__ideal(literal)
             
         for (n,s) in self.values:
             if n==name:
                 return '[%s]' % self.__ideal(s)
+
         return '[]'
 
     def rpc_resolve(self,a):

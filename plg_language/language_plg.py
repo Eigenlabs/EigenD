@@ -273,7 +273,7 @@ class Agent(agent.Agent):
         print 'identifying',ids
         rv = []
         for i in ids:
-            d = self.database.find_full_desc(i)
+            d = self.database.find_full_display_desc(i)
             rv.append(action.message_return(d))
         return rv
 

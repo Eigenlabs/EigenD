@@ -649,7 +649,7 @@ class ConcreteReferent(referent.Referent):
         self.__words = words[:]
 
         if state is not None:
-            self.__state = state
+            self.__state = state[:]
             return
 
         if outer is None:
@@ -681,7 +681,6 @@ class ConcreteReferent(referent.Referent):
             s = (yield ResolvHandler(refine_state(interp.get_database(),word,self.__state)))
             self.__words.append(word)
             self.__state = s
-            print 'after',word,'state:',self.__state
             yield async.Coroutine.success(True)
 
         if self.__state is None:
@@ -718,12 +717,19 @@ class ConcreteReferent(referent.Referent):
 
         yield async.Coroutine.success(ref)
 
+    def reopen(self):
+        if not self.__open:
+            if self.__words:
+                try: n=float(self.__words[-1])
+                except: return False
+            self.__open = True
+        return True
+
     @async.coroutine('internal error')
     def close(self,interp):
         if self.__open:
-            s = self.__state
+            s = self.__state[:]
             self.__open=False
-            self.__state = None
 
             s = (yield ResolvHandler(finalise_state(interp.get_database(),s)))
             s = s+[logic.make_term('abstract',tuple(self.__words))]
@@ -859,6 +865,19 @@ class VarReferent(referent.Referent):
 
 @async.coroutine('internal error')
 def primitive_noun(interp,word):
+    print 'noun input',word
+
+    try: n=float(word)
+    except: n=None
+
+    if n is not None:
+        t = interp.top(ConcreteReferent)
+        if t is not None:
+            if t.reopen():
+                r = t.interpret(interp,'noun',word)
+                yield r
+                yield async.Coroutine.completion(r.status(),*r.args(),**r.kwds())
+
     prefix = [word]
 
     while not interp.empty():
