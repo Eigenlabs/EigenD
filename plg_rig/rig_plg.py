@@ -1,5 +1,5 @@
 
-from pi import agent,atom,domain,utils,bundles,upgrade,paths,audio,async,collection,policy,proxy,node,container,logic,action
+from pi import agent,atom,domain,utils,bundles,upgrade,paths,audio,async,collection,policy,proxy,node,container,logic,action,errors
 from pisession import workspace
 import piw
 from . import rig_version as version,rig_native
@@ -521,8 +521,43 @@ class InnerAgent(agent.Agent):
         self[2] = OutputList(self.__name)
         self[3] = InputList(self.__name)
 
+        constraint = 'or([%s])' % ','.join(['[matches([%s],%s)]' % (m.replace('_',','),m) for m in self.__registry.modules()])
+
         self.add_verb2(1,'create([],None,role(None,[abstract,matches([input])]),option(called,[abstract]))',self.__create_input)
         self.add_verb2(2,'create([],None,role(None,[abstract,matches([output])]),option(called,[abstract]))',self.__create_output)
+        self.add_verb2(3,'create([un],None,role(None,[concrete,issubject(create,[role(by,[cnc(~self)])])]))',callback=self.__uncreateverb)
+        self.add_verb2(4,'create([],None,role(None,[abstract,%s]))' % constraint, callback=self.__createverb)
+
+    def __uncreateverb(self,subject,agents):
+        r = []
+        for a in action.concrete_objects(agents):
+            if not self.__workspace.unload(a,True):
+                r.append(errors.doesnt_exist('agent','un create'))
+
+        return async.success(r)
+
+    def __createverb(self,subject,plugin):
+        plugin = action.abstract_string(plugin)
+        plugin = '_'.join(plugin.split())
+        factory = self.__registry.get_module(plugin)
+
+        if not factory:
+            return async.failure('no such agent')
+
+        class DummyDelegate():
+            def __init__(self):
+                self.errors = []
+            def add_error(self,msg):
+                self.errors.append(msg)
+
+        delegate = DummyDelegate()
+        address = self.__workspace.create(factory,delegate)
+
+        if not address:
+            return [action.error_return(m,plugin,'create',ENG) for m in delegate.errors]
+
+        return action.concrete_return(address)
+
 
     def update_description(self):
         self.__description = self.__outer_agent.get_description(full=True)
@@ -601,6 +636,7 @@ class OuterAgent(agent.Agent):
         self[3].set_output_peer(self.__inner_agent[2])
 
         self.__inner_agent[3].set_output_peer(self[2])
+
 
         self.add_verb2(1,'create([],None,role(None,[abstract,matches([input])]),option(called,[abstract]))',self.__create_input)
         self.add_verb2(2,'create([],None,role(None,[abstract,matches([output])]),option(called,[abstract]))',self.__create_output)
