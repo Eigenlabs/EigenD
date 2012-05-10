@@ -184,7 +184,7 @@ class Event(talker.Talker):
                 self.event.enable()
                 self.event.event_enable()
             self.event.attach(self.scheduler.controller)
-            self.event.set_key(utils.maketuple((piw.makelong(0,0),piw.makelong(self.index,0),piw.makebool(False,0),piw.makebool(False,0)), 0))
+            self.event.set_key(piw.coordinate(0,self.index,False,False))
             self[3].set_value(schema)
             print 'enabling event',id(self.event),'for',s
 
@@ -200,7 +200,7 @@ class Event(talker.Talker):
             self.event.enable()
             self.event.event_enable()
             self.event.attach(self.scheduler.controller)
-            self.event.set_key(utils.maketuple((piw.makelong(0,0),piw.makelong(self.index,0),piw.makebool(False,0),piw.makebool(False,0)), 0))
+            self.event.set_key(piw.coordinate(0,self.index,False,False))
             self[3].set_value(schema.as_string())
             print 'enabling event',id(self.event),'for',s
 
