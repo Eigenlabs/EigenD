@@ -81,8 +81,8 @@ class kplayer[recorder::player_t]
 
 class nplayer[recorder::nplayer_t]
 {
-    nplayer(const cookie &,unsigned,unsigned,unsigned,clockdomain_ctl *)
+    nplayer(const cookie &,const cookie &,unsigned,unsigned,clockdomain_ctl *)
     change play(unsigned,unsigned,unsigned long long)
-    change_nb control()
     clockref *get_clock()
+    void set_size(unsigned)
 }

@@ -33,7 +33,7 @@ namespace
 {
     struct kwire_t : piw::wire_ctl_t, piw::event_data_source_real_t, pic::element_t<ALL>, pic::element_t<INUSE>, virtual pic::lckobject_t
     {
-        kwire_t(recorder::nplayer_t::impl_t *nplayer, unsigned n,unsigned sd, unsigned sk): piw::event_data_source_real_t(piw::pathone(n,0)), nplayer_(nplayer), name_(n), sig_data_(sd), sig_key_(sk), note_(0)
+        kwire_t(recorder::nplayer_t::impl_t *nplayer, unsigned n): piw::event_data_source_real_t(piw::pathone(n,0)), nplayer_(nplayer), name_(n), note_(0)
         {
         }
 
@@ -58,7 +58,7 @@ namespace
             index_ = 0;
             note_ = n;
             event_.set_nb(piw::makenull_nb(0));
-            buffer_ = piw::xevent_data_buffer_t(SIG2(sig_data_,sig_key_),PIW_DATAQUEUE_SIZE_NORM);
+            buffer_ = piw::xevent_data_buffer_t(SIG2(1,2),PIW_DATAQUEUE_SIZE_NORM);
         }
 
         void ticked(unsigned long long f,unsigned long long t);
@@ -69,8 +69,6 @@ namespace
 
         recorder::nplayer_t::impl_t *nplayer_;
         unsigned name_;
-        unsigned sig_data_;
-        unsigned sig_key_;
         piw::dataholder_nb_t event_;
         unsigned long long time_;
         unsigned index_;
@@ -80,16 +78,60 @@ namespace
         float current_;
         piw::xevent_data_buffer_t buffer_;
     };
-}
+
+    struct controller_t: piw::root_ctl_t, piw::wire_ctl_t, piw::event_data_source_real_t, virtual pic::lckobject_t
+    {
+        controller_t(unsigned size, const piw::cookie_t &c): piw::event_data_source_real_t(piw::pathnull(0)), size_(size)
+        {
+            connect(c);
+            connect_wire(this,source());
+
+            buffer_ = piw::xevent_data_buffer_t(SIG1(3),PIW_DATAQUEUE_SIZE_NORM);
+            update_controller(size_);
+            start_slow(piw::pathnull(piw::tsd_time()),buffer_);
+        }
+
+        ~controller_t()
+        {
+            end_slow(piw::tsd_time());
+            source_shutdown();
+            wire_ctl_t::disconnect();
+        }
+
+        void update_controller(unsigned size)
+        {
+            size_ = size;
+
+            piw::data_t d = piw::dictnull(piw::tsd_time());
+            piw::data_t t;
+
+            t = piw::tupleadd(piw::tuplenull(0),piw::makelong(size_,0));
+            d = piw::dictset(d,"columnlen",t);
+            t = piw::tupleadd(piw::tuplenull(0),piw::makelong(0,0));
+            d = piw::dictset(d,"columnoffset",t);
+            t = piw::tupleadd(piw::tuplenull(0),piw::makefloat(0.0,0));
+            d = piw::dictset(d,"courseoffset",t);
+            t = piw::tupleadd(piw::tuplenull(0),piw::makelong(size_,0));
+            d = piw::dictset(d,"courselen",t);
+
+            buffer_.add_value(3,d);
+
+        }
+
+        unsigned size_;
+        piw::xevent_data_buffer_t buffer_;
+    };
+};
 
 struct recorder::nplayer_t::impl_t: piw::root_ctl_t, piw::clocksink_t, virtual pic::lckobject_t, virtual pic::tracked_t
 {
-    impl_t(const piw::cookie_t &c,unsigned poly,unsigned sig_data,unsigned sig_key,piw::clockdomain_ctl_t *d)
+    impl_t(const piw::cookie_t &dc,const piw::cookie_t &cc,unsigned poly,unsigned size,piw::clockdomain_ctl_t *d): controller_(size,cc)
     {
-        connect(c);
+        connect(dc);
+
         for(unsigned i=0; i<poly; ++i)
         {
-            kwire_t *w = new kwire_t(this, i+1,sig_data,sig_key);
+            kwire_t *w = new kwire_t(this,i+1);
             all_.append(w);
             connect_wire(w,w->source());
         }
@@ -105,10 +147,12 @@ struct recorder::nplayer_t::impl_t: piw::root_ctl_t, piw::clocksink_t, virtual p
         tick_disable();
         valid_.set(false);
         kwire_t *w;
+
         while((w=all_.head()))
         {
             delete w;
         }
+
     }
 
     void play(unsigned n,unsigned v,unsigned long long l,unsigned long long t)
@@ -140,6 +184,11 @@ struct recorder::nplayer_t::impl_t: piw::root_ctl_t, piw::clocksink_t, virtual p
         }
     }
 
+    void set_size(unsigned size)
+    {
+        controller_.update_controller(size);
+    }
+
     void clocksink_ticked(unsigned long long f,unsigned long long t)
     {
         pic::flipflop_t<bool>::guard_t g(valid_);
@@ -161,37 +210,10 @@ struct recorder::nplayer_t::impl_t: piw::root_ctl_t, piw::clocksink_t, virtual p
         }
     }
 
-    void control_change(const piw::data_nb_t &d)
-    {
-        if(d.is_dict())
-        {
-            piw::data_nb_t courselen = d.as_dict_lookup("courselen");
-            if(courselen.is_tuple() && courselen.as_tuplelen() > 0)
-            {
-                courselen_.set_nb(courselen);
-            }
-            else
-            {
-                courselen_.clear_nb();
-            }
-            
-            piw::data_nb_t columnlen = d.as_dict_lookup("columnlen");
-            if(columnlen.is_tuple() && columnlen.as_tuplelen() > 0)
-            {
-                columnlen_.set_nb(columnlen);
-            }
-            else
-            {
-                columnlen_.clear_nb();
-            }
-        }
-    }
-
-    piw::dataholder_nb_t courselen_;
-    piw::dataholder_nb_t columnlen_;
     pic::flipflop_t<bool> valid_;
     pic::ilist_t<kwire_t,ALL> all_;
     pic::ilist_t<kwire_t,INUSE> inuse_;
+    controller_t controller_;
 };
 
 void ::kwire_t::ticked(unsigned long long f,unsigned long long t)
@@ -212,39 +234,13 @@ void ::kwire_t::ticked(unsigned long long f,unsigned long long t)
         // create a new event
         event_.set_nb(piw::pathappend_channel_nb(piw::pathone_nb(note_,time_),name_));
         source_start(0,event_,buffer_);
-
-        // synthesize the key press of the note signal
-        int column,row;
-        piw::data_nb_t columnlen = nplayer_->columnlen_;
-        if(columnlen.is_null())
-        {
-            column = 1;
-            row = note_;
-        }
-        else
-        {
-            piw::key_coordinates(note_,columnlen,&column,&row);
-        }
-
-        int course,key;
-        piw::data_nb_t courselen = nplayer_->courselen_;
-        if(courselen.is_null())
-        {
-            course = 1;
-            key = note_;
-        }
-        else
-        {
-            piw::key_coordinates(note_,courselen,&course,&key);
-        }
-
-        buffer_.add_value(sig_key_,piw::makekey(note_,column,row,note_,course,key,piw::KEY_HARD,time_));
+        buffer_.add_value(2,piw::makekey(note_,1,note_,note_,1,note_,piw::KEY_HARD,time_));
     }
 
     while(time_<=t)
     {
         // synthesize the values for the data part of the note signal
-        buffer_.add_value(sig_data_,piw::makefloat_bounded_nb(1.f,0.f,0.f,current_,time_));
+        buffer_.add_value(1,piw::makefloat_bounded_nb(1.f,0.f,0.f,current_,time_));
 
         time_ += RAMP_INTERVAL;
         ++index_;
@@ -298,7 +294,7 @@ namespace
     };
 }
 
-recorder::nplayer_t::nplayer_t(const piw::cookie_t &c,unsigned poly,unsigned sig_data,unsigned sig_key,piw::clockdomain_ctl_t *d) : impl_(new impl_t(c,poly,sig_data,sig_key,d))
+recorder::nplayer_t::nplayer_t(const piw::cookie_t &dc,const piw::cookie_t &cc,unsigned poly,unsigned size,piw::clockdomain_ctl_t *d) : impl_(new impl_t(dc,cc,poly,size,d))
 {
 }
 
@@ -317,7 +313,7 @@ bct_clocksink_t *recorder::nplayer_t::get_clock()
     return impl_;
 }
 
-piw::change_nb_t recorder::nplayer_t::control()
+void recorder::nplayer_t::set_size(unsigned size)
 {
-    return piw::change_nb_t::method(impl_,&recorder::nplayer_t::impl_t::control_change);
+    impl_->set_size(size);
 }
