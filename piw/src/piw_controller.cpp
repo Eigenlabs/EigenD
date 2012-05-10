@@ -67,12 +67,11 @@ namespace
 
     static bool compare_phys_key(const piw::data_nb_t &k1, const piw::data_nb_t &k2)
     {
-        unsigned k1n; float k1c,k1r;
-        unsigned k2n; float k2c,k2r;
+        float k1c,k1r;
+        float k2c,k2r;
 
-        if(!piw::decode_key(k1,&k1n,&k1c,&k1r)) return false;
-        if(!piw::decode_key(k2,&k2n,&k2c,&k2r)) return false;
-        if(k1n!=k2n) return false;
+        if(!piw::decode_key(k1,&k1c,&k1r)) return false;
+        if(!piw::decode_key(k2,&k2c,&k2r)) return false;
         if(k1c!=k2c) return false;
         if(k1r!=k2r) return false;
         return true;
@@ -120,10 +119,10 @@ struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_r
             if(!state_)
             {
                 {
-                    pic::flipflop_t<piw::data_t>::guard_t gk(key_);
-                    if(gk.value().is_tuple())
+                    pic::flipflop_t<piw::coordinate_t>::guard_t gk(key_);
+                    if(gk.value().is_valid())
                     {
-                        buffer_.add_value(2,gk.value().make_nb().restamp(t));
+                        buffer_.add_value(2,gk.value().make_data_nb(t));
                     }
                 }
                 source_start(0,piw::pathone_nb(id_,t),buffer_);
@@ -160,7 +159,7 @@ struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_r
     }
 
 
-    void set_key(const piw::data_t &key)
+    void set_key(const piw::coordinate_t &key)
     {
         key_.set(key);
         piw::tsd_fastcall(reset0__,this,0);
@@ -169,7 +168,7 @@ struct piw::controller_t::ctlsignal_t: piw::wire_ctl_t, piw::event_data_source_r
     unsigned id_;
     piw::xxcontrolled_t *client_;
     unsigned state_,savestate_;
-    pic::flipflop_t<piw::data_t> key_;
+    pic::flipflop_t<piw::coordinate_t> key_;
     piw::xevent_data_buffer_t buffer_;
 };
 
@@ -219,25 +218,16 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
     {
         ctlset.clear();
 
-        unsigned kn = 0;
         float kc = 0;
         float kr = 0;
 
-        if(!piw::decode_key(key,&kn,&kc,&kr)) return;
+        if(!piw::decode_key(key,&kc,&kr)) return;
         if(kc==0 && kr==0) { return; }
 
         piw::data_nb_t columnlen;
-        int nc = 0;
-
         if(ctl.is_dict())
         {
-            piw::data_nb_t t=ctl.as_dict_lookup("columnlen");
-
-            if(t.is_tuple() && t.as_tuplelen()>0)
-            {
-                columnlen=t;
-                nc = t.as_tuplelen();
-            }
+            columnlen = ctl.as_dict_lookup("columnlen");
         }
 
         pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t lg(controllist_);
@@ -251,46 +241,18 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
                 continue;
             }
 
-            pic::flipflop_t<piw::data_t>::guard_t g((*li)->key_);
+            pic::flipflop_t<piw::coordinate_t>::guard_t g((*li)->key_);
 
-            if(!g.value().is_tuple())
+            if(!g.value().is_valid())
             {
                 continue;
             }
 
-            int c = g.value().as_tuple_value(0).as_long();
-            int r = g.value().as_tuple_value(1).as_long();
-
-            if(c==0)
+            piw::coordinate_t key = g.value();
+            if(key.equals(kc,kr,columnlen))
             {
-                if(unsigned(r)==kn)
-                {
-                    ctlset.insert((*li)->client_);
-                    continue;
-                }
+                ctlset.insert((*li)->client_);
             }
-
-            if(c<0)
-            {
-                if(!nc) continue;
-                c = c+nc+1;
-                if(c<=0 || c>nc) continue;
-            }
-
-            if(c!=kc) continue;
-
-            if(r<0)
-            {
-                if(!nc) continue;
-                if(c<=0 || c>nc) continue;
-                int nr = columnlen.as_tuple_value(c-1).as_long();
-                r = r+nr+1;
-                if(r<=0 || r>nr) continue;
-            }
-
-            if(r!=kr) continue;
-
-            ctlset.insert((*li)->client_);
         }
 
     }
@@ -326,9 +288,9 @@ struct piw::controller_t::impl_t: piw::ufilterctl_t, piw::root_ctl_t
         }
     }
 
-    void set_key(unsigned index, const piw::data_t &key)
+    void set_key(unsigned index, const piw::coordinate_t &key)
     {
-        if(!key.is_tuple() || key.as_tuplelen() != 2) return;
+        if(!key.is_valid()) return;
 
         pic::flipflop_t<std::vector<ctlsignal_t *> >::guard_t gc(controllist_);
 
@@ -638,7 +600,7 @@ piw::change_nb_t piw::xxcontrolled_t::sender()
     return xximpl_->sender();
 }
 
-void piw::xxcontrolled_t::set_key(const piw::data_t &key)
+void piw::xxcontrolled_t::set_key(const piw::coordinate_t &key)
 {
     if(controller_)
         controller_->impl_->set_key(index_,key);
@@ -716,7 +678,7 @@ void piw::controlled_t::control_receive(unsigned s,const piw::data_nb_t &value)
 {
     piw::hardness_t h;
 
-    if(s!=1 || !piw::decode_key(value,0,0,0,0,0,0,&h) || h==piw::KEY_LIGHT) return;
+    if(s!=1 || !piw::decode_key(value,0,0,0,0,&h) || h==piw::KEY_LIGHT) return;
 
     if(enabled_)
         disable();
@@ -786,7 +748,7 @@ void piw::fasttrigger_t::control_receive(unsigned s,const piw::data_nb_t &value)
 {
     piw::hardness_t h;
 
-    if(s==1 && piw::decode_key(value,0,0,0,0,0,0,&h) && h!=piw::KEY_LIGHT)
+    if(s==1 && piw::decode_key(value,0,0,0,0,&h) && h!=piw::KEY_LIGHT)
     {
         unsigned long long t = value.time();
         __ping_direct(this,&t);

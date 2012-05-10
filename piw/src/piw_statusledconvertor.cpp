@@ -112,27 +112,36 @@ struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::l
         }
     }
 
-    inline int xy2k(bool musical, int x, int y)
+    inline int xy2k(const piw::statusdata_t &d)
     {
-        if(musical)
+        if(d.musical_)
         {
-            if(x==0 && y==0) return -1;
-            if(y>(int)num_keys_) return -1;
+            if(d.coordinate_.x_!=1) return -1;
+            if(d.coordinate_.y_>(int)num_keys_) return -1;
             
-            return y-1;
+            if(d.coordinate_.endrel_y_) return num_keys_-d.coordinate_.y_;
+            else return d.coordinate_.y_-1;
         }
         else
         {
-            int tc = column_offset_[num_columns_-1]+column_len_[num_columns_+1];
+            int absx = d.coordinate_.x_;
+            int absy = d.coordinate_.y_;
 
-            if(x==0 && y==0) return -1;
-            if(x==0 && y<=tc) return y-1;
-            if(x<1 || x>(int)num_columns_) return -1;
-            if(x<0) x=num_columns_+x+1;
-            if(y<0) y=column_len_[x-1]+y+1;
-            if(y<1 || y>(int)column_len_[x-1]) return -1;
+            int xlen = num_columns_;
+            if(d.coordinate_.endrel_x_)
+            {
+                absx = xlen-absx+1;
+            }
+            if(absx<1 || absx>xlen) return -1;
 
-            return column_offset_[x-1]+y-1;
+            int ylen = column_len_[absx-1];
+            if(d.coordinate_.endrel_y_)
+            {
+                absy = ylen-absy+1;
+            }
+            if(absy<1 || absy>ylen) return -1;
+
+            return column_offset_[absx-1]+absy-1;
         }
     }
 
@@ -145,16 +154,14 @@ struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::l
         unsigned char* rs = ((unsigned char*)data.as_blob());
         unsigned rl = data.as_bloblen();
 
-        while(rl>=5)
+        while(rl>=6)
         {
-            int kx = piw::statusdata_t::c2int(&rs[0]);
-            int ky = piw::statusdata_t::c2int(&rs[2]);
-            unsigned kv = rs[4]&0x7f;
-            bool musical = rs[4]&(1<<7);
+            piw::statusdata_t status = piw::statusdata_t::from_bytes(rs);
 
+            unsigned char kv = status.status_;
             if(kv!=BCTSTATUS_OFF)
             {
-                int kn = xy2k(musical,kx,ky);
+                int kn = xy2k(status);
 
                 if(kn>=0)
                 {
@@ -172,8 +179,8 @@ struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::l
                 }
             }
 
-            rs+=5;
-            rl-=5;
+            rs+=6;
+            rl-=6;
         }
 
         for(unsigned i=0;i<num_keys_;i++)

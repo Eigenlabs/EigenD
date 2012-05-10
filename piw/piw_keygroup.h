@@ -22,6 +22,7 @@
 
 #include "piw_exports.h"
 #include "piw_data.h"
+#include "piw_keys.h"
 
 namespace piw
 {
@@ -35,7 +36,7 @@ namespace piw
             ~modekey_handler_t();
 
             piw::d2b_nb_t key_filter();
-            void set_modekey(int column, int row);
+            void set_modekey(const piw::coordinate_t &key);
             void set_upstream_columnlength(const piw::data_t &columnlen);
 
         private:
@@ -58,11 +59,11 @@ namespace piw
             void activate_mapping();
 
             void clear_physical_mapping();
-            void set_physical_mapping(int column_in, int row_in, int rel_column_in, int rel_row_in, unsigned sequential_in, int column_out, int row_out, int rel_column_out, int rel_row_out, unsigned sequential_out);
+            void set_physical_mapping(int column_in, int row_in, int rel_column_in, int rel_row_in, int column_out, int row_out, int rel_column_out, int rel_row_out);
             void activate_physical_mapping();
 
             void clear_musical_mapping();
-            void set_musical_mapping(int course_in, int key_in, int rel_course_in, int rel_key_in, unsigned sequential_in, int course_out, int key_out, int rel_course_out, int rel_key_out, unsigned sequential_out);
+            void set_musical_mapping(int course_in, int key_in, int rel_course_in, int rel_key_in, int course_out, int key_out, int rel_course_out, int rel_key_out);
             void activate_musical_mapping();
 
         private:

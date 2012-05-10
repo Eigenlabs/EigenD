@@ -347,14 +347,14 @@ namespace
         void event_buffer_reset(unsigned s,unsigned long long t,const piw::dataqueue_t &o,const piw::dataqueue_t &n);
 
         arranger::view_t::impl_t *parent_;
-        unsigned active_;
+        piw::dataholder_nb_t active_;
         vp_signal_t pressure_,roll_,yaw_,key_;
         piw::data_nb_t id_;
     };
 
     struct lwire_t: piw::wire_ctl_t, piw::event_data_source_real_t, virtual pic::lckobject_t, virtual pic::counted_t
     {
-        lwire_t(unsigned id) : piw::event_data_source_real_t(piw::pathone(id,0)),id_(id),colour_(0) {}
+        lwire_t(unsigned id, const piw::coordinate_t &coordinate) : piw::event_data_source_real_t(piw::pathone(id,0)), id_(id), coordinate_(coordinate), colour_(0) {}
         ~lwire_t() {  source_shutdown(); disconnect(); }
 
         void source_ended(unsigned seq)
@@ -377,11 +377,8 @@ namespace
                 {
                     output_ = piw::xevent_data_buffer_t(3,PIW_DATAQUEUE_SIZE_TINY);
                     unsigned long long t = piw::tsd_time();
-                    piw::data_nb_t l = piw::tuplenull_nb(t);
-                    l = piw::tupleadd_nb(l,piw::makelong_nb(0,0));
-                    l = piw::tupleadd_nb(l,piw::makelong_nb(id_,0));
                     output_.add_value(1,piw::makefloat_bounded_nb(5,0,0,c,t));
-                    output_.add_value(2,l);
+                    output_.add_value(2,coordinate_.make_data_nb(t));
                     source_start(0,piw::pathone_nb(id_,t),output_);
                 }
             }
@@ -396,7 +393,8 @@ namespace
             colour_ = c;
         }
 
-        unsigned id_;
+        const unsigned id_;
+        const piw::coordinate_t coordinate_;
         unsigned colour_;
         piw::xevent_data_buffer_t output_;
     };
@@ -437,8 +435,8 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
             piw::data_nb_t v = d.as_dict_lookup("courselen");
             if(v.is_tuple())
             {
-                unsigned keys = decode_courses(v);
-                enqueue_slow_nb(piw::makenull_nb(keys));
+                decode_courses(v);
+                enqueue_slow_nb(v);
             }
         }
     }
@@ -451,24 +449,17 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
 
     void thing_dequeue_slow(const piw::data_t &d)
     {
-        unsigned keys = d.time();
-        unsigned sz = lwires_.alternate().size();
+        lwires_.alternate().clear();
 
-        if(sz==keys)
-            return;
-
-        if(sz>keys)
+        unsigned index = 1;
+        for(unsigned x=0; x<d.as_tuplelen(); ++x)
         {
-            lwires_.alternate().resize(keys);
-        }
-        else
-        {
-            while(sz<keys)
+            for(int y=0; y<d.as_tuple_value(x).as_long(); ++y)
             {
-                pic::ref_t<lwire_t> lw = pic::ref(new lwire_t(sz+1));
+                pic::ref_t<lwire_t> lw = pic::ref(new lwire_t(index,piw::coordinate_t(x+1,y+1)));
                 lwires_.alternate().push_back(lw);
                 connect_wire(lw.ptr(),lw->source());
-                ++sz;
+                ++index;
             }
         }
 
@@ -482,16 +473,16 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
         draw_marker(true);
     }
 
-    unsigned decode_courses(const piw::data_nb_t &courselen)
+    void decode_courses(const piw::data_nb_t &courselen)
     {
-        k2rect_.clear();
         rect2k_.clear();
+
+        pic::lckvector_t<unsigned>::nbtype courses;
 
         unsigned dictlen = courselen.as_tuplelen();
         if(0 == dictlen)
-            return 0;
+            return;
 
-        pic::lckvector_t<unsigned>::nbtype courses;
         courses.reserve(5);
 
         for(unsigned i = 0; i < dictlen; ++i)
@@ -519,7 +510,6 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
                 unsigned k = key+column;
                 colrow_t cr(std::make_pair(column,row));
 
-                k2rect_[k] = cr;
                 rect2k_[cr] = k;
 
                 ++column;
@@ -527,8 +517,6 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
             key += *ci;
             ++row;
         }
-        pic::logmsg() << "size is " << key;
-        return key;
     }
 
     void mode(const piw::data_nb_t &d)
@@ -616,14 +604,14 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
         }
     }
 
-    void key_active(unsigned k,const piw::data_nb_t &d)
+    void key_active(int course, int key, const piw::data_nb_t &d)
     {
-        //pic::logmsg() << "key active " << k << ", " << d;
-        if(k<=control_keys_)
+        //pic::logmsg() << "key active " << course << ", " << key << ", " << d;
+        if(1 == course)
         {
             if(d.is_bool() && d.as_bool())
             {
-                switch(k)
+                switch(key)
                 {
                     case KEY_ARRANGER_ONOFF:
                         playstop_(piw::makebool_nb(!model_->is_playing(),0));
@@ -660,14 +648,14 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
             return;
         }
 
-        pic::lckmap_t<unsigned,colrow_t>::nbtype::const_iterator i;
+        colrow_t k(std::make_pair(key-1,course-2));
+        pic::lckmap_t<colrow_t,unsigned>::nbtype::const_iterator i;
 
-        if((i=k2rect_.find(k))==k2rect_.end())
+        if((i=rect2k_.find(k))==rect2k_.end())
             return;
 
-        colrow_t cr = i->second;
-        pic::logmsg() << "k " << k << " col " << cr.first << " row " << cr.second;
-        seq_active(cr,d);
+        pic::logmsg() << "col " << k.first << " row " << k.second;
+        seq_active(k,d);
     }
 
     void thing_timer_fast()
@@ -676,30 +664,30 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
         light1(KEY_CLEARALL,CLR_OFF);
     }
 
-    void key_data(unsigned k,unsigned s,const piw::data_nb_t &d)
+    void key_data(int course, int key, unsigned s, const piw::data_nb_t &d)
     {
-        //pic::logmsg() << "key data " << k << ", " << s << ", " << d;
-        if(k<=control_keys_)
+        //pic::logmsg() << "key data " << course << ", " << key << ", " << s << ", " << d;
+        if(1 == course)
         {
-            switch(k)
+            switch(key)
             {
                 case KEY_SCROLL_RIGHT:
                 case KEY_SCROLL_LEFT:
                 case KEY_SCROLL_DOWN:
                 case KEY_SCROLL_UP:
-                    ctrl_data(k-1,s,d);
+                    ctrl_data(key-1,s,d);
                     break;
             }
             return;
         }
 
-        pic::lckmap_t<unsigned,colrow_t>::nbtype::const_iterator i;
+        colrow_t k(std::make_pair(key-1,course-2));
+        pic::lckmap_t<colrow_t,unsigned>::nbtype::const_iterator i;
 
-        if((i=k2rect_.find(k))==k2rect_.end())
+        if((i=rect2k_.find(k))==rect2k_.end())
             return;
 
-        colrow_t cr = i->second;
-        seq_data(cr,s,d);
+        seq_data(k,s,d);
     }
 
     void change_mode(unsigned m)
@@ -717,7 +705,7 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
     void playstop_set(const piw::data_nb_t &d)
     {
         pic::logmsg() << "playstop set to " << d.as_bool();
-        light1(5,d.as_bool()?CLR_GREEN:CLR_OFF);
+        light1(KEY_ARRANGER_ONOFF,d.as_bool()?CLR_GREEN:CLR_OFF);
     }
 
     void seq_active(const colrow_t &cr,const piw::data_nb_t &d)
@@ -830,7 +818,6 @@ struct arranger::view_t::impl_t: piw::root_ctl_t, piw::decode_ctl_t, piw::thing_
     scroller_t rpos_;
     scroller_t cpos_;
 
-    pic::lckmap_t<unsigned,colrow_t>::nbtype k2rect_;
     pic::lckmap_t<colrow_t,unsigned>::nbtype rect2k_;
 
     std::auto_ptr<controller_t> modes_[MODES];
@@ -859,7 +846,7 @@ void controller_t::light(const arranger::colrow_t &cr, unsigned z, unsigned colo
         parent_->light(cr);
 }
 
-vp_wire_t::vp_wire_t(arranger::view_t::impl_t *i, const piw::event_data_source_t &es) : parent_(i), active_(0), pressure_(this,1), roll_(this,2), yaw_(this,3), key_(this,5)
+vp_wire_t::vp_wire_t(arranger::view_t::impl_t *i, const piw::event_data_source_t &es) : parent_(i), pressure_(this,1), roll_(this,2), yaw_(this,3), key_(this,5)
 {
     subscribe(es);
 }
@@ -876,7 +863,7 @@ void vp_wire_t::invalidate()
 
 void vp_wire_t::event_start(unsigned seq,const piw::data_nb_t &id,const piw::xevent_data_buffer_t &b)
 {
-    active_ = 0;
+    active_.clear_nb();
     id_ = id;
     key_.send_fast(id,b.signal(SIG_KEY));
     pressure_.send_fast(id,b.signal(SIG_PRESSURE));
@@ -905,8 +892,10 @@ void vp_wire_t::event_buffer_reset(unsigned s,unsigned long long t,const piw::da
 
 bool vp_wire_t::event_end(unsigned long long t)
 {
-    parent_->key_active(active_,piw::makebool_nb(false,t));
-    active_ = 0;
+    float course, key;
+    piw::decode_key(active_.get(),0,0,&course,&key);
+    parent_->key_active(course,key,piw::makebool_nb(false,t));
+    active_.clear_nb();
     id_ = piw::makenull_nb(t);
     return true;
 }
@@ -919,19 +908,20 @@ vp_signal_t::vp_signal_t(vp_wire_t *w, unsigned s): fastdata_t(PLG_FASTDATA_SEND
 
 bool vp_signal_t::fastdata_receive_data(const piw::data_nb_t &d)
 {
+    float course, key;
     if(SIG_KEY == signal_)
     {
-        unsigned active;
         piw::hardness_t hardness = piw::KEY_LIGHT;
-        if(piw::decode_key(d,0,0,0,&active,0,0,&hardness) && hardness != piw::KEY_LIGHT)
+        if(piw::decode_key(d,0,0,&course,&key,&hardness) && hardness != piw::KEY_LIGHT)
         {
-            wire_->active_ = active;
-            wire_->parent_->key_active(wire_->active_,piw::makebool_nb(true,d.time()));
+            wire_->active_.set_nb(d);
+            wire_->parent_->key_active(course,key,piw::makebool_nb(true,d.time()));
         }
     }
-    else if(wire_->active_)
+    else if(!wire_->active_.is_empty())
     {
-        wire_->parent_->key_data(wire_->active_,signal_,d);
+        piw::decode_key(wire_->active_.get(),0,0,&course,&key);
+        wire_->parent_->key_data(course,key,signal_,d);
     }
     return true;
 }

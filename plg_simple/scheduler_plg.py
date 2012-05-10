@@ -184,7 +184,7 @@ class Event(talker.Talker):
                 self.event.enable()
                 self.event.event_enable()
             self.event.attach(self.scheduler.controller)
-            self.event.set_key(utils.maketuple((piw.makelong(0,0),piw.makelong(self.index,0)), 0))
+            self.event.set_key(utils.maketuple((piw.makelong(0,0),piw.makelong(self.index,0),piw.makebool(False,0),piw.makebool(False,0)), 0))
             self[3].set_value(schema)
             print 'enabling event',id(self.event),'for',s
 
@@ -200,7 +200,7 @@ class Event(talker.Talker):
             self.event.enable()
             self.event.event_enable()
             self.event.attach(self.scheduler.controller)
-            self.event.set_key(utils.maketuple((piw.makelong(0,0),piw.makelong(self.index,0)), 0))
+            self.event.set_key(utils.maketuple((piw.makelong(0,0),piw.makelong(self.index,0),piw.makebool(False,0),piw.makebool(False,0)), 0))
             self[3].set_value(schema.as_string())
             print 'enabling event',id(self.event),'for',s
 
@@ -253,18 +253,30 @@ class Agent(agent.Agent):
 
         self[3] = collection.Collection(creator=self.__create,wrecker=self.__wreck,names='event',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst,protocols='hidden-connection')
 
+        self.ctlfunctor = piw.functor_backend(2, False)
+        self.ctlfunctor.set_gfunctor(utils.make_change_nb(piw.slowchange(utils.changify(self.__control_changed))))
+
         self[4] = atom.Atom(names='controller')
+
         self[4][1] = bundles.Output(1,False, names='light output',protocols='revconnect')
         self.light_output = bundles.Splitter(self.domain,self[4][1])
         self.light_convertor = piw.lightconvertor(False,self.light_output.cookie())
         self.light_aggregator = piw.aggregator(self.light_convertor.cookie(),self.domain)
         self.controller = piw.controller(self.light_aggregator.get_output(1),utils.pack_str(1,2))
-        self.activation_input = bundles.VectorInput(self.controller.event_cookie(), self.domain,signals=(1,2))
+
+        self.controller_clone = piw.clone(True)
+        self.controller_clone.set_output(1,self.controller.event_cookie())
+        self.controller_clone.set_output(2,self.ctlfunctor.cookie())
+        self.activation_input = bundles.VectorInput(self.controller_clone.cookie(),self.domain,signals=(1,2))
+
         self[4][2] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.merge_nodefault_policy(2,False),names='controller input',protocols='nostage')
         self[4][3] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.vector_policy(1,False), names='key input',protocols='nostage')
 
         self[5] = EventBrowser(self.__eventlist)
         self[6] = atom.Atom(domain=domain.String(),names='identifier')
+
+    def __control_changed(self,d):
+        print "__control_changed",d
 
     def __eventlist(self):
         return self[3].values()

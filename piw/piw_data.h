@@ -612,6 +612,7 @@ namespace piw
             bool operator==(const dataholder_nb_t &d) const { return d.get()==get(); }
 
             void set_normal(const data_t &d);
+            void clear();
             bool is_empty();
 
             void set_nb(const data_nb_t &d); //fast

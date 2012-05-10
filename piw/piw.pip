@@ -313,6 +313,16 @@ class functor_backend[piw::functor_backend_t] /gc/
     void send_duplicates(bool)
 }
 
+class coordinate[piw::coordinate_t]
+{
+   coordinate(int, int)
+   coordinate(int, int, bool, bool)
+
+   data make_data(unsigned long long)
+   bool is_valid()
+   bool equals(int, int, const data &)
+}
+
 class controller[piw::controller_t]
 {
     controller(const cookie &,const stdstr &)
@@ -329,7 +339,7 @@ class xxcontrolled[piw::xxcontrolled_t]
     void detach()
     int ordinal()
     fastdata *fastdata()
-    void set_key(const data &)
+    void set_key(const coordinate &)
 }
 
 class controlled[piw::controlled_t]: xxcontrolled
@@ -341,7 +351,7 @@ class controlled[piw::controlled_t]: xxcontrolled
     void enable()
     void disable()
     int ordinal()
-    void set_key(const data &)
+    void set_key(const coordinate &)
 }
 
 class fasttrigger[piw::fasttrigger_t]: xxcontrolled
@@ -353,7 +363,7 @@ class fasttrigger[piw::fasttrigger_t]: xxcontrolled
     void ping()
     int ordinal()
     change trigger()
-    void set_key(const data &)
+    void set_key(const coordinate &)
 }
 
 class cookie[piw::cookie_t]
@@ -487,9 +497,9 @@ class lightconvertor[piw::lightconvertor_t]
 {
     lightconvertor(bool, const cookie &)
     cookie cookie()
-    void set_status_handler(unsigned, int, int, change)
+    void set_status_handler(unsigned, const coordinate &, change)
     void remove_status_handler(unsigned)
-    unsigned char get_status(int,int)
+    unsigned char get_status(const coordinate &)
     void set_default_color(unsigned,unsigned);
 }
 
@@ -501,10 +511,11 @@ class statusbuffer[piw::statusbuffer_t] /gc/
     void override(bool)
     void autosend(bool)
     void clear()
-    void set_status(bool,int,int,unsigned char)
-    unsigned char get_status(bool,int,int)
+    void clear_status(bool,const coordinate &)
+    void set_status(bool,const coordinate &,unsigned char)
+    unsigned char get_status(bool,const coordinate &)
     void set_blink_time(float)
-    void set_blink_size(unsigned)
+    void set_blink_geometry(const data &)
     change_nb enabler()
     void enable(unsigned)
     change_nb blinker()
@@ -526,8 +537,8 @@ class lightsource[piw::lightsource_t] /gc/
 class statusmixer[piw::statusmixer_t]
 {
     statusmixer(const cookie &)
-    void autoupdate(bool);
-    void update();
+    void autoupdate(bool)
+    void update()
     cookie cookie()
 }
 
@@ -545,14 +556,14 @@ class controllerdict[piw::controllerdict_t]
 d2d_nb d2d_const[piw::d2d_const](const data &)
 
 bool is_key[piw::is_key](const data &)
-unsigned key_sequential[piw::key_sequential](const data &, int, int)
+unsigned key_sequential[piw::key_sequential](const data &, int, int, bool, bool)
 
 class modekey_handler[piw::modekey_handler_t]
 {
     modekey_handler()
 
     d2b_nb key_filter()
-    void set_modekey(int,int)
+    void set_modekey(const coordinate &)
     void set_upstream_columnlength(const data &)
 }
 
@@ -567,11 +578,11 @@ class keygroup_mapper[piw::keygroup_mapper_t]
     void activate_mapping()
 
     void clear_physical_mapping()
-    void set_physical_mapping(int,int,int,int,unsigned,int,int,int,int,unsigned)
+    void set_physical_mapping(int,int,int,int,int,int,int,int)
     void activate_physical_mapping()
 
     void clear_musical_mapping()
-    void set_musical_mapping(int,int,int,int,int,unsigned,int,int,int,unsigned)
+    void set_musical_mapping(int,int,int,int,int,int,int,int)
     void activate_musical_mapping()
 }
 
@@ -655,7 +666,7 @@ class scroller[piw::scroller_t]
     void enable()
     void disable()
     void set_scheme(unsigned)
-    void set_key(bool,int,int);
+    void set_key(const coordinate &);
 }
 
 class scroller2[piw::scroller2_t]
@@ -664,7 +675,7 @@ class scroller2[piw::scroller2_t]
     cookie cookie()
     void enable()
     void disable()
-    void set_key(bool,int,int);
+    void set_key(const coordinate &);
 }
 
 class splitter_node[piw::splitter_node_t]: server
@@ -1896,7 +1907,7 @@ class selector[piw::selector_t] /gc/
     selector(const cookie &, const change_nb &, const change_nb &, unsigned, bool)
 
     void gate_output(unsigned, const change_nb &, const change_nb &)
-    void gate_status_index(unsigned, unsigned)
+    void gate_status_coordinate(unsigned, const coordinate &)
     change_nb gate_input(unsigned)
     change_nb mode_input()
     void clear_output(unsigned)

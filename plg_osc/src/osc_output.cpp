@@ -311,7 +311,7 @@ void osc_wire_t::send(unsigned long long t)
         {
             float column, row, course, key;
             piw::hardness_t hardness;
-            if(IN_KEY==i && piw::decode_key(d,0,&column,&row,0,&course,&key,&hardness))
+            if(IN_KEY==i && piw::decode_key(d,&column,&row,&course,&key,&hardness))
             {
                 // fake the key number
                 if(output_->fake_key_)

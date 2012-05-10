@@ -24,19 +24,20 @@
 #include "piw_exports.h"
 #include "piw_data.h"
 #include "piw_bundle.h"
+#include "piw_keys.h"
 
 namespace piw
 {
     class PIW_DECLSPEC_CLASS selector_t
     {
         public:
-            selector_t(const cookie_t &light_output, const change_nb_t &lights_selector, const change_nb_t &mode_selector, unsigned name, bool initial);
+            selector_t(const piw::cookie_t &light_output, const piw::change_nb_t &lights_selector, const piw::change_nb_t &mode_selector, unsigned name, bool initial);
             ~selector_t();
 
             change_nb_t mode_input();
             change_nb_t gate_input(unsigned);
-            void gate_output(unsigned, const change_nb_t &gate, const change_nb_t &selected);
-            void gate_status_index(unsigned, unsigned);
+            void gate_output(unsigned, const piw::change_nb_t &gate, const piw::change_nb_t &selected);
+            void gate_status_coordinate(unsigned, const piw::coordinate_t &);
             void clear_output(unsigned);
             void choose(bool);
             void activate(unsigned);

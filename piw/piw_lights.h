@@ -21,6 +21,7 @@
 #define __PIW_LIGHTS__
 #include "piw_exports.h"
 #include "piw_bundle.h"
+#include "piw_keys.h"
 
 namespace piw
 {
@@ -29,7 +30,7 @@ namespace piw
         public:
             class impl_t;
         public:
-            lightsource_t(const piw::change_nb_t &, unsigned, const cookie_t &);
+            lightsource_t(const piw::change_nb_t &, unsigned, const piw::cookie_t &);
             ~lightsource_t();
             void set_size(unsigned lights);
             unsigned get_size();
@@ -50,11 +51,11 @@ namespace piw
         public:
             class impl_t;
         public:
-            lightconvertor_t(bool, const cookie_t &);
+            lightconvertor_t(bool, const piw::cookie_t &);
             ~lightconvertor_t();
-            void set_status_handler(unsigned, int, int, change_t);
+            void set_status_handler(unsigned, const piw::coordinate_t &, piw::change_t);
             void remove_status_handler(unsigned);
-            unsigned char get_status(int, int);
+            unsigned char get_status(const piw::coordinate_t &);
             cookie_t cookie();
             void set_default_color(unsigned index, unsigned color);
         private:

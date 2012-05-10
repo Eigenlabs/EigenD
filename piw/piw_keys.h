@@ -37,16 +37,46 @@ namespace piw
     // normalized values that are larger than 0.5
 
     /**
+     * The maximum number of keys in either direction on either axis.
+     */
+    const int MAX_KEY = 0x7fff;
+
+    /**
+     * Coordinate on the keyboard, used for keys and lights
+     */
+    struct PIW_DECLSPEC_CLASS coordinate_t
+    {
+        coordinate_t();
+        coordinate_t(int, int);
+        coordinate_t(int, int, bool, bool);
+        coordinate_t(const piw::data_nb_t &);
+        coordinate_t(const coordinate_t &);
+
+        bool operator==(const coordinate_t &o) const;
+        bool operator!=(const coordinate_t &o) const;
+        bool operator<(const coordinate_t &o) const;
+        bool operator>(const coordinate_t &o) const;
+
+        piw::data_nb_t make_data_nb(unsigned long long) const;
+        piw::data_t make_data(unsigned long long) const;
+        bool is_valid() const;
+        bool equals(int, int, const piw::data_t &) const;
+        bool equals(int, int, const piw::data_nb_t &) const;
+
+        int x_;
+        int y_;
+        bool endrel_x_;
+        bool endrel_y_;
+    };
+
+    /**
      * Create a new key data structure with the required elements.
      *
      * A key has two completely independent positioning schemes, the physical one
      * and the musical one. These can be used for different purposes and be remapped
      * independently. Each position is a coordinate from two axis, for the physical
      * position we call these axis the column and row, for the musical position we
-     * call these axis the course and the key. Each position also has a sequential
-     * number that is unique for this key. This allows for quick identification of
-     * the key in either schemes and also to make it more intuitive to handle linear
-     * layouts that should naturally flow across the axis in the correct order.
+     * call these axis the course and the key.
      *
      * The column, row, course and key parameters can be negative, which indicates that
      * they're offset from the opposite edge of their bounding geometry. Just as
@@ -55,10 +85,8 @@ namespace piw
      * the number 2 will indiciate the second row and -2 will indicate the
      * before last row, and so on.
      *
-     * @param pseq      the sequential position in the physical layout
      * @param column    the column index in the physical layout
      * @param row       the row index in the physical layout
-     * @param mseq      the sequential position in the musical layout
      * @param course    the course index in the musical layout
      * @param key       the key index in the musical layout
      * @param hardness  the hardness level of the key press
@@ -66,7 +94,7 @@ namespace piw
      *
      * @returns a new data instance with the provided key parameters
      */
-    PIW_DECLSPEC_FUNC(piw::data_nb_t) makekey(unsigned pseq, float column, float row, unsigned mseq, float course, float key, hardness_t hardness, unsigned long long t);
+    PIW_DECLSPEC_FUNC(piw::data_nb_t) makekey(float column, float row, float course, float key, hardness_t hardness, unsigned long long t);
 
     /**
      * Checks if the provided data contains valid key information.
@@ -97,7 +125,7 @@ namespace piw
      * @returns true if the data was successfully decoded into key information; or
      *          false if the data couldn't be decoded
      */
-    PIW_DECLSPEC_FUNC(bool) decode_key(const piw::data_nb_t &d, unsigned *pseq=0, float *column=0, float *row=0, unsigned *mseq=0, float *course=0, float *key=0, hardness_t *hardness=0);
+    PIW_DECLSPEC_FUNC(bool) decode_key(const piw::data_nb_t &d, float *column=0, float *row=0, float *course=0, float *key=0, hardness_t *hardness=0);
 
     /**
      * Calculates the sequential position of a key, based on its coordinates.
@@ -110,13 +138,17 @@ namespace piw
      *                 columns or courses as longs
      * @param x        the first part of the coordinate (column or course)
      * @param y        the second part of the coordinate (row or key)
+     * @param endrel_x a flag indicating whether the x coordinate is specified
+     *                 relative to the opposite end
+     * @param endrel_y a flag indicating whether the y coordinate is specified
+     *                 relative to the opposite end
      *
      * @see makekey
      *
      * @returns the positive sequential position of the key;
      *          or 0 if it couldn't be calculated
      */
-    PIW_DECLSPEC_FUNC(unsigned) key_sequential(const piw::data_t &lengths, int x, int y);
+    PIW_DECLSPEC_FUNC(unsigned) key_sequential(const piw::data_t &lengths, int x, int y, bool endrel_x, bool endrel_y);
 
     /**
      * Calculates the coordinates of a key, based on its sequential position.
@@ -138,5 +170,7 @@ namespace piw
      */
     PIW_DECLSPEC_FUNC(void) key_coordinates(unsigned sequential, const piw::data_nb_t &lengths, int *x, int *y);
 };
+
+PIW_DECLSPEC_FUNC(std::ostream) &operator<<(std::ostream &o, const piw::coordinate_t &c);
 
 #endif

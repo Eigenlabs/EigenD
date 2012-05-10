@@ -18,7 +18,6 @@
 */
 
 #include <lib_midi/control_params.h>
-#include <piw/piw_keys.h>
 
 namespace midi
 {
@@ -270,44 +269,18 @@ namespace midi
         }
     }
 
-    bool param_input_t::is_key_data(const piw::data_nb_t &d)
-    {
-        return piw::decode_key(d);
-    }
-
     bool param_input_t::wiredata_processed(param_wire_t *w, const piw::data_nb_t &d)
     {
-        if(is_key_data(d))
-        {
-            w->ended_ = true;
-            return false;
-        }
-
         return true;
     }
 
     float param_input_t::calculate_param_value(const piw::data_nb_t &id, const piw::data_nb_t &d, const mapping_data_t &mapping, const float origin)
     {
-        if(is_key_data(d))
-        {
-            return origin + mapping.calculate(d.as_tuple_value(0).as_long());
-        }
-
         return origin + mapping.calculate(d.as_norm());
     }
 
     long param_input_t::calculate_midi_value(const piw::data_nb_t &id, const piw::data_nb_t &d, const mapping_data_t &mapping)
     {
-        if(is_key_data(d))
-        {
-            long value = d.as_tuple_value(0).as_long() - 1;
-            if(BITS_7 == mapping.resolution_)
-            {
-                value <<= 7;
-            }
-            return mapping.calculate(value);
-        }
-
         return mapping.calculate(d.as_norm()) * 16383.f;
     }
 

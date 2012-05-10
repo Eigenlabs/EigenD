@@ -21,64 +21,29 @@
 #define __PIW_STATUS__
 #include "piw_exports.h"
 #include "piw_bundle.h"
+#include "piw_keys.h"
 
 namespace piw
 {
     struct PIW_DECLSPEC_CLASS statusdata_t
     {
-        static inline void int2c(int r, unsigned char *o)
-        {
-            long k = r;
+        statusdata_t(bool, const piw::coordinate_t &, unsigned char);
 
-            if(r<0) 
-            {
-                k = (int)0x10000+r;
-            }
+        static statusdata_t from_bytes(unsigned char *);
+        void to_bytes(unsigned char *) const;
 
-            o[0] = ((k>>8)&0xff);
-            o[1] = (k&0xff);
-        }
+        bool operator==(const statusdata_t &) const;
+        bool operator<(const statusdata_t &) const;
+        bool operator>(const statusdata_t &) const;
 
-        static inline int c2int(unsigned char *c)
-        {
-            unsigned long cx = (c[0]<<8) | (c[1]);
+        const bool musical_;
+        const piw::coordinate_t coordinate_;
+        const unsigned char status_;
 
-            if(cx>0x7fff)
-            {
-                return ((long)cx)-0x10000;
-            }
+        private:
 
-            return cx;
-        }
-
-        static inline void status2c(bool m, unsigned char s, unsigned char *o)
-        {
-            unsigned char r = s&0x7f;
-            if(m) r+=(1<<7);
-            *o = r;
-        }
-
-        statusdata_t(const bool m, const int c, const int r): musical(m), column(c), row(r) {}
-
-        bool operator==(const statusdata_t &o) const
-        {
-            return musical == o.musical && column == o.column && row == o.row;
-        }
-
-        bool operator<(const statusdata_t &o) const
-        {
-            if(musical < o.musical) return true;
-            if(musical > o.musical) return false;
-            if(column < o.column) return true;
-            if(column > o.column) return false;
-            if(row < o.row) return true;
-            if(row > o.row) return false;
-            return false;
-        }
-
-        const bool musical;
-        const int column;
-        const int row;
+            static inline void int2c(int, unsigned char *);
+            static inline int c2int(unsigned char *);
     };
 
     class PIW_DECLSPEC_CLASS statusbuffer_t
@@ -86,24 +51,25 @@ namespace piw
         public:
             class impl_t;
         public:
-            statusbuffer_t(const piw::change_nb_t &, unsigned, const cookie_t &);
-            statusbuffer_t(const cookie_t &);
+            statusbuffer_t(const piw::change_nb_t &, unsigned, const piw::cookie_t &);
+            statusbuffer_t(const piw::cookie_t &);
             ~statusbuffer_t();
             void send();
             void override(bool);
             void autosend(bool);
             void clear();
-            void set_status(bool,int,int,unsigned char);
-            unsigned char get_status(bool,int,int);
+            void clear_status(bool, const piw::coordinate_t &);
+            void set_status(bool, const piw::coordinate_t &, unsigned char);
+            unsigned char get_status(bool, const piw::coordinate_t &);
             void set_blink_time(float);
-            void set_blink_size(unsigned);
+            void set_blink_geometry(const piw::data_t &);
             piw::change_nb_t enabler();
             void enable(unsigned);
             piw::change_nb_t blinker();
             int gc_traverse(void *, void *) const;
             int gc_clear();
        public:
-            static piw::data_nb_t make_statusbuffer(pic::lckmap_t<piw::statusdata_t,unsigned char>::nbtype &);
+            static piw::data_nb_t make_statusbuffer(pic::lckset_t<piw::statusdata_t>::nbtype &);
        private:
             impl_t *root_;
     };
@@ -113,7 +79,7 @@ namespace piw
         public:
             class impl_t;
         public:
-            statusmixer_t(const cookie_t &);
+            statusmixer_t(const piw::cookie_t &);
             ~statusmixer_t();
             void autoupdate(bool);
             void update();
@@ -134,5 +100,7 @@ namespace piw
             impl_t *root_;
     };
 };
+
+PIW_DECLSPEC_FUNC(std::ostream) &operator<<(std::ostream &o, const piw::statusdata_t &d);
 
 #endif

@@ -423,7 +423,7 @@ class Agent(agent.Agent):
         mapping = logic.parse_clause(v)
         for m in mapping:
             if 2 == len(m) and 2 == len(m[0]):
-                self.status_buffer.set_status(musical,int(m[0][0]),int(m[0][1]),self.__colour_to_int(m[1]))
+                self.status_buffer.set_status(musical,piw.coordinate(int(m[0][0]),int(m[0][1])),self.__colour_to_int(m[1]))
 
     def __choose_physical(self,subject,key,colour):
         self.__choose_base(False,action.abstract_string(colour))
@@ -443,9 +443,9 @@ class Agent(agent.Agent):
     def __choice(self,v):
         choice = utils.key_to_lists(v)
         if not choice: return
-        if not choice[4]: return
+        if not choice[2]: return
         # remove the hardness so that it's not part of the identity of the choice
-        del choice[4]
+        del choice[2]
 
         # if this choice is the same as the previous one
         # stop choose mode and store the new mapping
@@ -458,10 +458,10 @@ class Agent(agent.Agent):
         if not choice in self.__choices:
             self.__choices.append(choice)
             if self.__choosemusical:
-                key = choice[3]
-            else:
                 key = choice[1]
-            self.status_buffer.set_status(self.__choosemusical,key[0],key[1],self.__colour_to_int(self.__choosecolour))
+            else:
+                key = choice[0]
+            self.status_buffer.set_status(self.__choosemusical,piw.coordinate(key[0],key[1]),self.__colour_to_int(self.__choosecolour))
             self.status_buffer.send()
 
     def __stop_choosing(self):
@@ -476,7 +476,7 @@ class Agent(agent.Agent):
             new = []
             newpos = []
             for choice in self.__choices:
-                pos = (int(choice[3][0]),int(choice[3][1]))
+                pos = (int(choice[1][0]),int(choice[1][1]))
                 newpos.append(pos)
                 new.append([pos,self.__choosecolour])
             existing = [x for x in logic.parse_clause(self.get_musical()) if x[0] not in newpos]
@@ -486,7 +486,7 @@ class Agent(agent.Agent):
             new = []
             newpos = []
             for choice in self.__choices:
-                pos = (int(choice[1][0]),int(choice[1][1]))
+                pos = (int(choice[0][0]),int(choice[0][1]))
                 newpos.append(pos)
                 new.append([pos,self.__choosecolour])
             existing = [x for x in logic.parse_clause(self.get_physical()) if x[0] not in newpos]

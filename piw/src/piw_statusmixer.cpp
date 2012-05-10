@@ -86,16 +86,14 @@ struct piw::statusmixer_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_t, 
             unsigned char* rs = ((unsigned char*)rd.as_blob());
             unsigned rl = rd.as_bloblen();
 
-            while(rl>=5)
+            while(rl>=6)
             {
-                int kr = piw::statusdata_t::c2int(&rs[0]);
-                int kc = piw::statusdata_t::c2int(&rs[2]);
-                bool kmus = rs[4]>>7;
-                unsigned kv = rs[4]&0x7f;
+                piw::statusdata_t status = piw::statusdata_t::from_bytes(rs);
 
+                unsigned char kv = status.status_;
                 if(kv!=BCTSTATUS_OFF)
                 {
-                    unsigned os = output_.get_status(kmus,kr,kc);
+                    unsigned os = output_.get_status(status.musical_,status.coordinate_);
 
                     if(os!=kv)
                     {
@@ -104,12 +102,12 @@ struct piw::statusmixer_t::impl_t: virtual pic::lckobject_t, piw::ufilterctl_t, 
                             kv = BCTSTATUS_MIXED;
                         }
 
-                        output_.set_status(kmus,kr,kc,kv);
+                        output_.set_status(status.musical_,status.coordinate_,kv);
                     }
                 }
 
-                rs+=5;
-                rl-=5;
+                rs+=6;
+                rl-=6;
             }
         }
         

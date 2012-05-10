@@ -89,17 +89,16 @@ struct language::wordrec_t::impl_t: piw::thing_t, piw::decoder_t, piw::decode_ct
 
 unsigned wordrec_wire_t::get_key(const piw::data_nb_t &d, bool &hard)
 {
-    unsigned mn;
     float mc,mr;
     piw::hardness_t h;
 
-    if(!piw::decode_key(d,0,0,0,&mn,&mr,&mc,&h) || h==piw::KEY_LIGHT)
+    if(!piw::decode_key(d,0,0,&mr,&mc,&h) || h==piw::KEY_LIGHT)
     {
         return 0;
     }
 
     hard = (h==piw::KEY_HARD);
-    pic::logmsg() << "k " << mn << ' ' << mr << ' ' << mc << ' ' << hard;
+    pic::logmsg() << "k " << mr << ' ' << mc << ' ' << hard;
 
     if(mr==1 && mc>=1 && mc<=8)
     {

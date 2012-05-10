@@ -43,15 +43,31 @@ class Scroller(atom.Atom):
 
         self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='column', init=None, policy=atom.default_policy(self.__change_column))
         self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='row', init=None, policy=atom.default_policy(self.__change_row))
-        self.__scroller.set_key(False,0,0)
+        self[3] = atom.Atom(domain=domain.Bool(),names='column end relative',init=False,policy=atom.default_policy(self.__change_column_endrel))
+        self[4] = atom.Atom(domain=domain.Bool(),names='row end relative',init=False,policy=atom.default_policy(self.__change_row_endrel))
+        self.__key_changed()
 
     def __change_column(self,val):
         self[1].set_value(val)
-        self.__scroller.set_key(False,self[1].get_value(),self[2].get_value())
+        self.__key_changed()
         
     def __change_row(self,val):
         self[2].set_value(val)
-        self.__scroller.set_key(False,self[1].get_value(),self[2].get_value())
+        self.__key_changed()
+
+    def __change_column_endrel(self,val):
+        self[3].set_value(val)
+        self.__key_changed()
+        
+    def __change_row_endrel(self,val):
+        self[4].set_value(val)
+        self.__key_changed()
+
+    def __make_key_coordinate(self):
+        return piw.coordinate(self[1].get_value(),self[2].get_value(),self[3].get_value(),self[4].get_value())
+
+    def __key_changed(self):
+        self.__scroller.set_key(self.__make_key_coordinate())
 
     def cookie(self):
         return self.__scroller.cookie()
@@ -68,17 +84,33 @@ class Scroller2(atom.Atom):
         self.__scroller = piw.scroller2(utils.changify(callback))
         atom.Atom.__init__(self,*args,**kwds)
 
-        self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='row', init=None, policy=atom.default_policy(self.__change_row))
-        self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='column', init=None, policy=atom.default_policy(self.__change_column))
-        self.__scroller.set_key(False,0,0)
+        self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='column', init=None, policy=atom.default_policy(self.__change_column))
+        self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='row', init=None, policy=atom.default_policy(self.__change_row))
+        self[3] = atom.Atom(domain=domain.Bool(),names='column end relative',init=False,policy=atom.default_policy(self.__change_column_endrel))
+        self[4] = atom.Atom(domain=domain.Bool(),names='row end relative',init=False,policy=atom.default_policy(self.__change_row_endrel))
+        self.__key_changed()
 
-    def __change_row(self,val):
-        self[1].set_value(val)
-        self.__scroller.set_key(False,self[1].get_value(),self[2].get_value())
-        
     def __change_column(self,val):
+        self[1].set_value(val)
+        self.__key_changed()
+        
+    def __change_row(self,val):
         self[2].set_value(val)
-        self.__scroller.set_key(False,self[1].get_value(),self[2].get_value())
+        self.__key_changed()
+
+    def __change_column_endrel(self,val):
+        self[3].set_value(val)
+        self.__key_changed()
+        
+    def __change_row_endrel(self,val):
+        self[4].set_value(val)
+        self.__key_changed()
+
+    def __make_key_coordinate(self):
+        return piw.coordinate(self[1].get_value(),self[2].get_value(),self[3].get_value(),self[4].get_value())
+
+    def __key_changed(self):
+        self.__scroller.set_key(self.__make_key_coordinate())
 
     def cookie(self):
         return self.__scroller.cookie()

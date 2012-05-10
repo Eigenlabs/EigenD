@@ -1046,7 +1046,7 @@ namespace
                 return;
             }
 
-            output_.add_value(5,piw::makekey(index_,column_,row_,index_,1,index_,piw::KEY_LIGHT,t));
+            output_.add_value(5,piw::makekey(column_,row_,1,index_,piw::KEY_LIGHT,t));
             output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,p/4096.0,t));
             output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,__clip(r/1024.0,keyboard_->roll_axis_window_),t));
             output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,__clip(y/1024.0,keyboard_->yaw_axis_window_),t));
@@ -1082,13 +1082,13 @@ namespace
 
             if(maxpressure_ > keyboard_->threshold2_)
             {
-                output_.add_value(5,piw::makekey(index_,column_,row_,index_,1,index_,piw::KEY_HARD,t));
+                output_.add_value(5,piw::makekey(column_,row_,1,index_,piw::KEY_HARD,t));
                 return;
             }
 
             if(maxpressure_ > keyboard_->threshold1_)
             {
-                output_.add_value(5,piw::makekey(index_,column_,row_,index_,1,index_,piw::KEY_SOFT,t));
+                output_.add_value(5,piw::makekey(column_,row_,1,index_,piw::KEY_SOFT,t));
                 return;
             }
         }

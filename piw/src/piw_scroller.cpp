@@ -41,69 +41,20 @@
 
 namespace
 {
-    static bool check_key(const piw::data_nb_t &key, const piw::data_nb_t &ctl, int column, int row)
+    static bool check_key(const piw::data_nb_t &key, const piw::data_nb_t &ctl, const piw::coordinate_t &coordinate)
     {
-        if(!column && !row)
+        if(!coordinate.is_valid())
         {
             return false;
         }
 
-        unsigned kseq;
         float kcolumnf,krowf;
-
-        if(!piw::decode_key(key,&kseq,&kcolumnf,&krowf,0,0,0,0))
+        if(!piw::decode_key(key,&kcolumnf,&krowf))
         {
             return false;
         }
 
-        unsigned kcolumn = unsigned(kcolumnf);
-        unsigned krow = unsigned(krowf);
-
-        if(column>=0 && row>=0)
-        {
-            if(column==0)
-            {
-                return (int(kseq)==row);
-            }
-
-            return (int(krow)==row && int(kcolumn)==column);
-        }
-
-        if(!ctl.is_dict())
-        {
-            return false;
-        }
-
-        piw::data_nb_t t=ctl.as_dict_lookup("columnlen");
-
-        if(!t.is_tuple() || t.as_tuplelen()==0)
-        {
-            return false;
-        }
-
-        int columns = t.as_tuplelen();
-
-        if(column<0)
-        {
-            column = columns+column+1;
-        }
-
-        if(column==0 || column>columns || column!=int(kcolumn))
-        {
-            return false;
-        }
-
-        if(row<0)
-        {
-            row = t.as_tuple_value(column-1).as_long()+row+1;
-        }
-
-        if(row != int(krow))
-        {
-            return false;
-        }
-
-        return true;
+        return coordinate.equals(kcolumnf,krowf,ctl.as_dict_lookup("columnlen"));
     }
 
     struct scroller_wire_t;
@@ -200,7 +151,7 @@ struct piw::scroller_t::impl_t: piw::root_t, piw::clocksink_t, piw::thing_t
     void set_scheme(unsigned int s) { scheme_ = s; }
     void reseth(float h) { hsum_ = h; }
     void resetv(float v) { vsum_ = v; }
-    void set_key(int row, int column) { row_ = row; column_ = column; }
+    void set_key(const piw::coordinate_t &key) { key_ = key; }
     
     piw::clockdomain_ctl_t domain_;
     piw::scrolldelegate_t *delegate_;
@@ -217,8 +168,7 @@ struct piw::scroller_t::impl_t: piw::root_t, piw::clocksink_t, piw::thing_t
     float vsum_;
     unsigned int scheme_;
 
-    int row_;
-    int column_;
+    piw::coordinate_t key_;
 
     std::map<piw::data_t, scroller_wire_t *> wires_;
 };
@@ -239,7 +189,7 @@ struct piw::scroller2_t::impl_t: piw::root_t, piw::clocksink_t, piw::thing_t
     void root_closed() { root_t::disconnect(); root_clock(); }
     void root_opened() { root_clock(); root_latency(); }
     void root_latency() { set_sink_latency(get_latency()); }
-    void set_key(int row, int column) { row_ = row; column_ = column; }
+    void set_key(const piw::coordinate_t &key) { key_ = key; }
 
     piw::clockdomain_ctl_t domain_;
     bct_clocksink_t *up_;
@@ -251,8 +201,7 @@ struct piw::scroller2_t::impl_t: piw::root_t, piw::clocksink_t, piw::thing_t
     unsigned age_;
     unsigned repeat_;
     bool activated_;
-    int row_;
-    int column_;
+    piw::coordinate_t key_;
 };
 
 void scroller_wire_t::ping_tap()
@@ -275,7 +224,7 @@ void scroller_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const p
     b.latest(3,lk,id.time());
     b.latest(4,lc,id.time());
 
-    if(!check_key(lk,lc,impl_->row_,impl_->column_))
+    if(!check_key(lk,lc,impl_->key_))
     {
         return;
     }
@@ -352,7 +301,7 @@ pic::ftable_t &scroller_axis_t::table()
     return wire_->impl_->powtable_;
 }
 
-piw::scroller_t::impl_t::impl_t(piw::scrolldelegate_t *d,float hscale, float vscale, unsigned long interval): root_t(0), delegate_(d), up_(0), hscale_(hscale), vscale_(vscale), powtable_(200), interval_(interval*1000), changed_(false), stamp_(0), hsum_(0), vsum_(0), scheme_(0), row_(0), column_(0)
+piw::scroller_t::impl_t::impl_t(piw::scrolldelegate_t *d,float hscale, float vscale, unsigned long interval): root_t(0), delegate_(d), up_(0), hscale_(hscale), vscale_(vscale), powtable_(200), interval_(interval*1000), changed_(false), stamp_(0), hsum_(0), vsum_(0), scheme_(0)
 {
     domain_.set_source(piw::makestring("*",0));
     domain_.sink(this,"scroller");
@@ -446,9 +395,9 @@ void piw::scroller_t::disable()
     impl_->tick_disable();
 }
 
-void piw::scroller_t::set_key(bool musical, int row, int column)
+void piw::scroller_t::set_key(const piw::coordinate_t &key)
 {
-    impl_->set_key(row,column);
+    impl_->set_key(key);
 }
 
 scroller_wire_t::scroller_wire_t(piw::scroller_t::impl_t *i,const piw::event_data_source_t &es) : path_(es.path()), impl_(i), h_(this,impl_->hscale_,&impl_->hsum_,impl_->scheme_), v_(this,impl_->vscale_,&impl_->vsum_,impl_->scheme_),a_(this,false),t_(0)
@@ -516,9 +465,9 @@ void scroller2_wire_t::invalidate()
     impl_->wires_.erase(path_);
 }
 
-void piw::scroller2_t::set_key(bool musical, int row, int column)
+void piw::scroller2_t::set_key(const piw::coordinate_t &key)
 {
-    impl_->set_key(row,column);
+    impl_->set_key(key);
 }
 
 scroller_activation_t::scroller_activation_t(scroller_wire_t *w,bool act): fastdata_t(PLG_FASTDATA_SENDER),wire_(w),act_(act)
@@ -543,7 +492,7 @@ bool scroller_activation_t::fastdata_receive_data(const piw::data_nb_t &d)
 {
     piw::hardness_t hardness;
 
-    if(piw::decode_key(d,0,0,0,0,0,0,&hardness) && hardness==piw::KEY_SOFT)
+    if(piw::decode_key(d,0,0,0,0,&hardness) && hardness==piw::KEY_SOFT)
     {
         act_=true;
         return false;
@@ -662,7 +611,7 @@ void piw::scroller_t::impl_t::clocksink_ticked(unsigned long long from, unsigned
     }
 }
 
-piw::scroller2_t::impl_t::impl_t(const piw::change_t &s): root_t(0), up_(0), scroll_target_(s), active_(0), row_(0), column_(0)
+piw::scroller2_t::impl_t::impl_t(const piw::change_t &s): root_t(0), up_(0), scroll_target_(s), active_(0)
 {
     domain_.set_source(piw::makestring("*",0));
     domain_.sink(this,"scroller");
@@ -716,7 +665,7 @@ void piw::scroller2_t::impl_t::event_start(scroller2_wire_t *wire, const piw::da
     b.latest(3,lk,id.time());
     b.latest(4,lc,id.time());
 
-    if(!check_key(lk,lc,row_,column_))
+    if(!check_key(lk,lc,key_))
     {
         return;
     }
@@ -777,7 +726,7 @@ void piw::scroller2_t::impl_t::clocksink_ticked(unsigned long long from, unsigne
 
     if(iter_->latest(3,d,to))
     {
-        if(piw::decode_key(d,0,0,0,0,0,0,&hardness) && hardness==KEY_HARD)
+        if(piw::decode_key(d,0,0,0,0,&hardness) && hardness==KEY_HARD)
         {
             activated_ = true;
         }

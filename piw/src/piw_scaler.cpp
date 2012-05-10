@@ -335,7 +335,7 @@ namespace
                 {
                     unsigned scale_size = s->size()-1;
 
-                    pic::lckmap_t<piw::statusdata_t,unsigned char>::nbtype status;
+                    pic::lckset_t<piw::statusdata_t>::nbtype status;
 
                     if(scale_size > 0)
                     {
@@ -349,8 +349,7 @@ namespace
                                 l->offsets(c,key_offset,note_offset);
                                 if(0 == abs(k+int(key_offset+m))%scale_size)
                                 {
-                                    piw::statusdata_t statusdata = piw::statusdata_t(true,c+1,k+1);
-                                    status.insert(std::make_pair(statusdata,1));
+                                    status.insert(piw::statusdata_t(true,piw::coordinate_t(c+1,k+1),1));
                                 }
                             }
                         }
@@ -540,7 +539,7 @@ namespace
         void setkey(const piw::data_nb_t &v)
         {
             float course,key;
-            if(piw::decode_key(v,0,0,0,0,&course,&key))
+            if(piw::decode_key(v,0,0,&course,&key))
             {
                 keycourse_ = course-1.0;
                 keynum_ = key-1.0;
@@ -566,7 +565,7 @@ namespace
             if(e->ufilterenv_latest(SCALER_KEY,d,time_))
             {
                 float course,key;
-                if(piw::decode_key(d,0,0,0,0,&course,&key))
+                if(piw::decode_key(d,0,0,&course,&key))
                 {
                     keycourse_=course-1.0;
                     keynum_=key-1.0;

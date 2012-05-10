@@ -477,7 +477,7 @@ void main_wire_t::event_start(unsigned seq,const piw::data_nb_t &id, const piw::
     if(b.latest(5,key,id.time()))
     {
         float course = 0.0f;
-        if(piw::decode_key(key,0,0,0,0,&course,0))
+        if(piw::decode_key(key,0,0,&course,0))
         {
             kcourse = unsigned(course);
         }

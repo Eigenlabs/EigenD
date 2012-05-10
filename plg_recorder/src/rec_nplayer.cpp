@@ -238,7 +238,7 @@ void ::kwire_t::ticked(unsigned long long f,unsigned long long t)
             piw::key_coordinates(note_,courselen,&course,&key);
         }
 
-        buffer_.add_value(sig_key_,piw::makekey(note_,column,row,note_,course,key,piw::KEY_HARD,time_));
+        buffer_.add_value(sig_key_,piw::makekey(column,row,course,key,piw::KEY_HARD,time_));
     }
 
     while(time_<=t)

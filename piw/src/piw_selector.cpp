@@ -52,7 +52,7 @@ namespace
 
     struct slot_t: virtual public pic::lckobject_t
     {
-        slot_t(): index_(0), state_(false), current_(false)
+        slot_t(): state_(false), current_(false)
         {
         }
 
@@ -91,24 +91,34 @@ namespace
         {
         }
 
-        static int __set_index(void *self_, void *i_)
+        static int __set_coordinate(void *self_, void *b_, void *c_)
         {
             slot_t *self = (slot_t *)self_;
-            unsigned i = *(unsigned *)i_;
+            piw::statusbuffer_t *buffer = (piw::statusbuffer_t *)b_;
 
-            self->index_ = i;
+            unsigned char existing = buffer->get_status(false,self->coordinate_);
+            if(existing)
+            {
+                buffer->clear_status(false, self->coordinate_);
+            }
+
+            self->coordinate_ = *(piw::coordinate_t *)c_;
+            if(existing)
+            {
+                buffer->set_status(false, self->coordinate_,existing);
+            }
 
             return 0;
         }
 
-        void set_index(unsigned i)
+        void set_coordinate(piw::statusbuffer_t *buffer, const piw::coordinate_t c)
         {
-            piw::tsd_fastcall(__set_index,this,(void *)&i);
+            piw::tsd_fastcall3(__set_coordinate,this,(void *)buffer,(void *)&c);
         }
 
         void change_status(piw::statusbuffer_t *buffer, unsigned sel)
         {
-            if(!index_) return;
+            if(!coordinate_.is_valid()) return;
 
             unsigned st(BCTSTATUS_OFF);
 
@@ -117,7 +127,7 @@ namespace
                 st = state_ ? BCTSTATUS_SELECTOR_ON : BCTSTATUS_SELECTOR_OFF;
             }
 
-            buffer->set_status(false,0,index_,st);
+            buffer->set_status(false,coordinate_,st);
         }
 
         int gc_traverse(void *v, void *a) const
@@ -135,7 +145,7 @@ namespace
             return 0;
         }
 
-        unsigned index_;
+        piw::coordinate_t coordinate_;
         bool state_;
         pic::flipflop_functor_t<piw::change_nb_t> gate_;
         pic::flipflop_functor_t<piw::change_nb_t> selected_;
@@ -264,14 +274,15 @@ struct piw::selector_t::impl_t: virtual pic::lckobject_t, virtual pic::tracked_t
         piw::tsd_fastcall4(__set_gate,this,sl,(void *)&f,(void *)&e);
     }
 
-    void gate_status_index(unsigned s, unsigned i)
+    void gate_status_coordinate(unsigned s, const piw::coordinate_t &c)
     {
         pic::lckmap_t<unsigned,slot_t *>::lcktype::iterator si=slots_.alternate().find(s);
 
         if(si!=slots_.alternate().end())
         {
             slot_t *sl = si->second;
-            sl->set_index(i);
+            sl->set_coordinate(&statusbuffer_,c);
+            statusbuffer_.send();
         }
     }
 
@@ -525,9 +536,9 @@ void piw::selector_t::gate_output(unsigned s, const piw::change_nb_t &f, const p
     impl_->gate_output(s,f,e);
 }
 
-void piw::selector_t::gate_status_index(unsigned s, unsigned i)
+void piw::selector_t::gate_status_coordinate(unsigned s, const piw::coordinate_t &c)
 {
-    impl_->gate_status_index(s,i);
+    impl_->gate_status_coordinate(s,c);
 }
 
 void piw::selector_t::clear_output(unsigned s)

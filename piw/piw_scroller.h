@@ -24,6 +24,7 @@
 #include "piw_exports.h"
 #include "piw_bundle.h"
 #include "piw_data.h"
+#include "piw_keys.h"
 
 namespace piw
 {
@@ -48,7 +49,7 @@ namespace piw
             void set_scheme(unsigned);
             void disable();
             void enable();
-            void set_key(bool musical, int row, int col);
+            void set_key(const piw::coordinate_t &);
         private:
             impl_t *impl_;
     };
@@ -63,7 +64,7 @@ namespace piw
             cookie_t cookie();
             void disable();
             void enable();
-            void set_key(bool musical, int row, int col);
+            void set_key(const piw::coordinate_t &);
         private:
             impl_t *impl_;
     };

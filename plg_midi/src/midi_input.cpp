@@ -116,7 +116,7 @@ namespace
         {
             piw::hardness_t hardness = (m==0)?piw::KEY_LIGHT:((m>63)?piw::KEY_HARD:piw::KEY_SOFT);
 
-            piw::data_nb_t d = piw::makekey(id_,1,id_,id_,1,id_,hardness,t);
+            piw::data_nb_t d = piw::makekey(1,id_,1,id_,hardness,t);
 
             if(m)
             {

@@ -1819,6 +1819,11 @@ void piw::dataholder_nb_t::set_normal(const piw::data_t &d)
     piw::tsd_fastcall(set_normal__,this,(void *)d.give_copy(PIC_ALLOC_NB));
 }
 
+void piw::dataholder_nb_t::clear()
+{
+    piw::tsd_fastcall(clear__,this,(void *)0);
+}
+
 void piw::dataholder_nb_t::set_nb(const piw::data_nb_t &d)
 {
     clear_nb();

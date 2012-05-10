@@ -267,12 +267,10 @@ def tuple_items(d):
 def key_to_lists(d):
     if not piw.is_key(d): return None
 
-    physkeynum = d.as_tuple_value(0).as_long()
-    column = d.as_tuple_value(1).as_tuple_value(0).as_float()
-    row = d.as_tuple_value(1).as_tuple_value(1).as_float()
-    muskeynum = d.as_tuple_value(2).as_long()
-    course = d.as_tuple_value(3).as_tuple_value(0).as_float()
-    key = d.as_tuple_value(3).as_tuple_value(1).as_float()
-    hardness = d.as_tuple_value(4).as_long()
+    column = d.as_tuple_value(0).as_tuple_value(0).as_float()
+    row = d.as_tuple_value(0).as_tuple_value(1).as_float()
+    course = d.as_tuple_value(1).as_tuple_value(0).as_float()
+    key = d.as_tuple_value(1).as_tuple_value(1).as_float()
+    hardness = d.as_tuple_value(2).as_long()
 
-    return [physkeynum,[column,row],muskeynum,[course,key],hardness]
+    return [[column,row],[course,key],hardness]

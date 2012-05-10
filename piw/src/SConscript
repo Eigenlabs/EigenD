@@ -38,7 +38,7 @@ piw_files=Split("""
     piw_dataqueue.cpp piw_wavrecorder.cpp piw_consolemixer.cpp piw_ranger.cpp
     piw_termparse.cpp piw_state.cpp piw_strummer.cpp piw_talker.cpp
     piw_lightconvertor.cpp piw_statusbuffer.cpp piw_statusmixer.cpp piw_statusledconvertor.cpp
-	piw_controllerdict.cpp piw_filter.cpp piw_keys.cpp
+	piw_controllerdict.cpp piw_filter.cpp piw_keys.cpp piw_statusdata.cpp
     """)
 
 piw_env=env.Clone()

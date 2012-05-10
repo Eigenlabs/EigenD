@@ -373,7 +373,6 @@ namespace
 
         piw::data_nb_t id_;
 
-        unsigned key_;
         float note_id_;
         unsigned note_velocity_;
         float note_pitch_;
@@ -408,7 +407,6 @@ namespace
         note_velocity_ = 0;
         note_pitch_ = -1.f;
         note_id_ = 0;
-        key_ = 0;
 
         unsigned long long t = id.time();
         last_from_ = t;
@@ -416,10 +414,6 @@ namespace
         channel_ = root_->get_channel();
 
         piw::data_nb_t dk;
-        if(iterator_->latest(IN_KEY,dk,t))
-        {
-            piw::decode_key(dk,0,0,0,&key_,0,0);
-        }
 
         root_->channel_list_.register_channel(id_, channel_);
 

@@ -140,31 +140,45 @@ class Key(collection.Collection):
 
         self.set_private(node.Server(rtransient=True)) # kept in there for backwards compatibility
         self.set_internal(250,atom.Atom(domain=domain.Trigger(),init=False,names='activate',policy=policy.TriggerPolicy(self.__handler),transient=True))
-        self.agent.light_convertor.set_status_handler(self.index,0,0,piw.slowchange(utils.changify(self.set_status)))
 
         self.set_internal(247, atom.Atom(domain=domain.BoundedInt(0,3),names='default colour',init=3,policy=atom.default_policy(self.set_color)))
         self.set_internal(248, atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key column',init=0,policy=atom.default_policy(self.__change_key_column)))
         self.set_internal(249, atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key row',init=0,policy=atom.default_policy(self.__change_key_row)))
+        self.set_internal(245, atom.Atom(domain=domain.Bool(),names='key column end relative',init=False,policy=atom.default_policy(self.__change_key_column_endrel)))
+        self.set_internal(246, atom.Atom(domain=domain.Bool(),names='key row end relative',init=False,policy=atom.default_policy(self.__change_key_row_endrel)))
+
+        self.agent.light_convertor.set_status_handler(self.index,self.__make_key_coordinate(),piw.slowchange(utils.changify(self.set_status)))
 
     def __change_key_column(self,val):
-        self.agent.light_convertor.remove_status_handler(self.index)
         self.get_internal(248).set_value(val)
-        t = utils.maketuple((piw.makelong(self.get_internal(248).get_value(),0),piw.makelong(self.get_internal(249).get_value(),0)), 0)
-        self.__event.set_key(t) 
-        self.key_mapper.set_functor(piw.d2d_const(t))
-        self.agent.light_convertor.set_status_handler(self.index,self.get_internal(248).get_value(),self.get_internal(249).get_value(),piw.slowchange(utils.changify(self.set_status)))
-        self.agent.light_convertor.set_default_color(self.index,self.get_internal(247).get_value())
+        self.__key_changed()
         return False
 
     def __change_key_row(self,val):
-        self.agent.light_convertor.remove_status_handler(self.index)
         self.get_internal(249).set_value(val)
-        t = utils.maketuple((piw.makelong(self.get_internal(248).get_value(),0),piw.makelong(self.get_internal(249).get_value(),0)), 0)
-        self.__event.set_key(t) 
-        self.key_mapper.set_functor(piw.d2d_const(t))
-        self.agent.light_convertor.set_status_handler(self.index,self.get_internal(248).get_value(),self.get_internal(249).get_value(),piw.slowchange(utils.changify(self.set_status)))
-        self.agent.light_convertor.set_default_color(self.index,self.get_internal(247).get_value())
+        self.__key_changed()
         return False
+
+    def __change_key_column_endrel(self,val):
+        self.get_internal(245).set_value(val)
+        self.__key_changed()
+        return False
+
+    def __change_key_row_endrel(self,val):
+        self.get_internal(246).set_value(val)
+        self.__key_changed()
+        return False
+
+    def __make_key_coordinate(self):
+        return piw.coordinate(self.get_internal(248).get_value(),self.get_internal(249).get_value(),self.get_internal(245).get_value(),self.get_internal(246).get_value())
+
+    def __key_changed(self):
+        self.agent.light_convertor.remove_status_handler(self.index)
+        t = self.__make_key_coordinate()
+        self.__event.set_key(t) 
+        self.key_mapper.set_functor(piw.d2d_const(t.make_data(0)))
+        self.agent.light_convertor.set_status_handler(self.index,t,piw.slowchange(utils.changify(self.set_status)))
+        self.agent.light_convertor.set_default_color(self.index,self.get_internal(247).get_value())
 
     def rpc_instancename(self,a):
         return 'action'
@@ -188,13 +202,13 @@ class Key(collection.Collection):
 
     def event_triggered(self,v):
         self.get_internal(250).get_policy().set_status(piw.makelong(0,0))
-        self.set_status(piw.makelong(self.agent.light_convertor.get_status(self.get_internal(248).get_value(),self.get_internal(249).get_value()),piw.tsd_time()))
+        self.set_status(piw.makelong(self.agent.light_convertor.get_status(self.__make_key_coordinate()),piw.tsd_time()))
 
     def set_status(self,v):
         self.get_internal(250).get_policy().set_status(v)
 
     def isinternal(self,k):
-        if k == 247 or k == 248 or k == 249 or k == 250: return True
+        if k == 245 or k == 246 or k == 247 or k == 248 or k == 249 or k == 250: return True
         return atom.Atom.isinternal(self,k)
 
     def set_color(self,c):

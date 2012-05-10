@@ -23,6 +23,7 @@
 #include "piw_exports.h"
 #include <piw/piw_bundle.h>
 #include <piw/piw_fastdata.h>
+#include <piw/piw_keys.h>
 #include <picross/pic_weak.h>
 #include <picross/pic_functor.h>
 
@@ -65,7 +66,7 @@ namespace piw
             void set_light(unsigned index, unsigned value);
             void save_lights();
             void restore_lights();
-            void set_key(const piw::data_t &key);
+            void set_key(const piw::coordinate_t &key);
             fastdata_t *fastdata();
 
             virtual void control_init() {}

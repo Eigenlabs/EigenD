@@ -28,8 +28,8 @@ class Trigger:
         self.__trigger = piw.fasttrigger(3)
         self.__trigger.attach_to(controller.controller,index)
 
-    def set_key(self,d):
-        self.__trigger.set_key(d)
+    def set_key(self,k):
+        self.__trigger.set_key(k)
 
     def detach(self):
         self.__trigger.detach()
@@ -45,8 +45,8 @@ class Toggle:
         self.__toggle = language_native.toggle(t.get_data())
         self.__toggle.attach_to(controller.controller,index)
 
-    def set_key(self,d):
-        self.__toggle.set_key(d)
+    def set_key(self,k):
+        self.__toggle.set_key(k)
 
     def detach(self):
         self.__toggle.detach()
@@ -62,8 +62,8 @@ class UpDown:
         self.__updown = language_native.updown(t.get_data(),t.domain().biginc,t.domain().inc)
         self.__updown.attach_to(controller.controller,index)
 
-    def set_key(self,d):
-        self.__updown.set_key(d)
+    def set_key(self,k):
+        self.__updown.set_key(k)
 
     def detach(self):
         self.__updown.detach()
@@ -88,8 +88,8 @@ class Selector:
 
         self.__selector.attach_to(self.__controller.controller,self.__index)
 
-    def set_key(self,d):
-        self.__selector.set_key(d)
+    def set_key(self,k):
+        self.__selector.set_key(k)
 
     def detach(self):
         self.__selector.detach()
@@ -190,6 +190,8 @@ class Connector(atom.Atom):
 
         self[1] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key column',init=0,policy=atom.default_policy(self.__change_key_column),protocols="input explicit")
         self[2] = atom.Atom(domain=domain.BoundedInt(-32767,32767),names='key row',init=0,policy=atom.default_policy(self.__change_key_row),protocols="input explicit")
+        self[3] = atom.Atom(domain=domain.Bool(),names='key column end relative',init=False,policy=atom.default_policy(self.__change_key_column_endrel),protocols="input explicit")
+        self[5] = atom.Atom(domain=domain.Bool(),names='key row end relative',init=False,policy=atom.default_policy(self.__change_key_row_endrel),protocols="input explicit")
         self[4] = ConnectorOutput(self)
 
     def monitor_connected(self,proxy):
@@ -216,10 +218,19 @@ class Connector(atom.Atom):
         self.__update_event_key()
         return False
 
+    def __change_key_column_endrel(self,val):
+        self[3].set_value(val)
+        self.__update_event_key()
+        return False
+
+    def __change_key_row_endrel(self,val):
+        self[5].set_value(val)
+        self.__update_event_key()
+        return False
+
     def __update_event_key(self):
         if self.control:
-            key = utils.maketuple((piw.makelong(self[1].get_value(),0),piw.makelong(self[2].get_value(),0)), 0)
-            self.control.set_key(key) 
+            self.control.set_key(piw.coordinate(self[1].get_value(),self[2].get_value(),self[3].get_value(),self[5].get_value())) 
 
     def set_controller_clock(self,clock):
         self.get_policy().set_clock(clock)

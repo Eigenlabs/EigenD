@@ -69,7 +69,7 @@ class Controller:
 
     def __change_controller(self,d):
         if d.is_dict():
-            for x in ('courseoffset','courselen'):
+            for x in ('courseoffset','courselen','columnoffset','columnlen'):
                 v = d.as_dict_lookup(x)
                 self.__dict.put_ctl(x,v)
             self.__state.set_data(self.__dict.get_ctl_dict().make_normal())
@@ -223,6 +223,8 @@ class Output(atom.Atom):
         self[23] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.enable),names='enable',protocols='set',container=(None,'output%d'%self.__slot,self.__agent.verb_container()))
         self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key column', init=None, policy=atom.default_policy(self.__change_key_column))
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='key row', init=None, policy=atom.default_policy(self.__change_key_row))
+        self[26] = atom.Atom(domain=domain.Bool(),names='key column end relative',init=False,policy=atom.default_policy(self.__change_key_column_endrel))
+        self[27] = atom.Atom(domain=domain.Bool(),names='key row end relative',init=False,policy=atom.default_policy(self.__change_key_row_endrel))
 
         self[23].add_verb2(1,'set([toggle],~a,role(None,[instance(~self)]))', callback=self.__enable_toggle, status_action=self.__status)
         self[23].add_verb2(2,'set([],~a,role(None,[instance(~s)]))', callback=self.__enable_set, status_action=self.__status)
@@ -247,6 +249,16 @@ class Output(atom.Atom):
 
     def __change_key_row(self,val):
         self[25].set_value(val)
+        self.update_status_index()
+        return False
+
+    def __change_key_column_endrel(self,val):
+        self[26].set_value(val)
+        self.update_status_index()
+        return False
+
+    def __change_key_row_endrel(self,val):
+        self[27].set_value(val)
         self.update_status_index()
         return False
 
@@ -327,13 +339,11 @@ class Output(atom.Atom):
             
             self.__tee = None
     
-    def key_sequential(self):
-        return self.__agent.key_sequential(self[24].get_value(),self[25].get_value())
+    def key_coordinate(self):
+        return piw.coordinate(self[24].get_value(),self[25].get_value(),self[26].get_value(),self[27].get_value())
 
     def update_status_index(self):
-        keynum = self.key_sequential()
-        if keynum:
-            self.__agent.mode_selector.gate_status_index(self.__slot,keynum)
+        self.__agent.mode_selector.gate_status_coordinate(self.__slot,self.key_coordinate())
         
 
 class OutputList(atom.Atom):
@@ -412,27 +422,12 @@ class OutputList(atom.Atom):
 
     def output_selector(self,v):
         if v.is_tuple():
-            hardness = v.as_tuple_value(4).as_long()
+            hardness = v.as_tuple_value(2).as_long()
             if hardness > 0:
-                keynum = v.as_tuple_value(0).as_long()
-                column = int(v.as_tuple_value(1).as_tuple_value(0).as_float())
-                row = int(v.as_tuple_value(1).as_tuple_value(1).as_float())
+                column = int(v.as_tuple_value(0).as_tuple_value(0).as_float())
+                row = int(v.as_tuple_value(0).as_tuple_value(1).as_float())
                 for k,o in self.items():
-                    ocolumn = o[24].get_value()
-                    orow = o[25].get_value()
-
-                    select = False
-
-                    if column == ocolumn and row == orow:
-                        select = True
-                    elif column == 0 and orow == keynum:
-                        select = True
-                    else:
-                        okeynum = o.key_sequential()
-                        if okeynum == keynum:
-                            select = True
-
-                    if select:
+                    if o.key_coordinate().equals(column, row, self.agent.controller.gettuple('columnlen')):
                         self.agent.mode_selector.gate_input(k)(piw.makebool_nb(True,v.time()))
                         break
 
@@ -460,7 +455,11 @@ class OutputList(atom.Atom):
             outputs[0].enable(True)
 
         # update the size of the status output light buffer
-        self.agent.status_lights.set_size(max(self.keys()))
+        k = self.keys();
+        if not len(k):
+            self.agent.status_lights.set_size(0)
+        else:
+            self.agent.status_lights.set_size(max(k))
 
     def update_status_indexes(self):
         for v in self.values():
@@ -555,6 +554,8 @@ class Agent(agent.Agent):
         self[23] = atom.Atom(domain=domain.Aniso(), names='mode key input', policy=policy.FastPolicy(self.modepulse,policy.FilterStreamPolicy(self.modekey_handler.key_filter())))
         self[24] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key column', init=None, policy=atom.default_policy(self.__change_mode_key_column))
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key row', init=None, policy=atom.default_policy(self.__change_mode_key_row))
+        self[26] = atom.Atom(domain=domain.Bool(),names='mode key column end relative',init=False,policy=atom.default_policy(self.__change_mode_key_column_endrel))
+        self[28] = atom.Atom(domain=domain.Bool(),names='mode key row end relative',init=False,policy=atom.default_policy(self.__change_mode_key_row_endrel))
         self[27] = atom.Atom(domain=domain.String(), init='[]', names='physical map', protocols='mapper', policy=atom.default_policy(self.__set_physical_key_map))
         self[34] = atom.Atom(domain=domain.String(), init='[]', names='musical map', protocols='mapper', policy=atom.default_policy(self.__set_musical_key_map))
         self[35] = atom.Atom(domain=domain.String(), init='[]', names='course offset', policy=atom.default_policy(self.__set_course_offset))
@@ -683,8 +684,18 @@ class Agent(agent.Agent):
         self.__update_mode_key()
         return False
 
+    def __change_mode_key_column_endrel(self,val):
+        self[26].set_value(val)
+        self.__update_mode_key()
+        return False
+
+    def __change_mode_key_row_endrel(self,val):
+        self[28].set_value(val)
+        self.__update_mode_key()
+        return False
+
     def __update_mode_key(self):
-        self.modekey_handler.set_modekey(self[24].get_value(), self[25].get_value())
+        self.modekey_handler.set_modekey(piw.coordinate(self[24].get_value(), self[25].get_value(), self[26].get_value(), self[28].get_value()))
 
     def __decode(self,c):
         try:
@@ -722,23 +733,11 @@ class Agent(agent.Agent):
                 self.__set_physical_mapping(self.__current_physical_mapping())
                 self.__set_musical_mapping(self.__current_musical_mapping())
 
-            # calculate the total number of musical keys upstream
-            total_keys = 0
-            if self.__upstream_courselen:
-                for i in self.__upstream_courselen:
-                    total_keys += i
-            return total_keys
-
         except:
             return 0
 
-    def key_sequential(self,column,row):
-        return piw.key_sequential(self.controller.gettuple('columnlen'),column,row)
-
     def __upstream(self,c):
-        size = self.__decode(c)
-        self.status_buffer.set_blink_size(size)
-        self.status_mapper.set_functor(self.mapper.light_filter())
+        self.__decode(c)
 
     def __set_course_semi(self,subject,course,interval):
         (typ,id) = action.crack_ideal(action.arg_objects(course)[0])
@@ -922,11 +921,11 @@ class Agent(agent.Agent):
                     key = (course,i)
                     if key in self.__mappedkeys:
                         if key in self.__coursekeys:
-                            self.status_buffer.set_status(True,course,i,const.status_choose_active)
+                            self.status_buffer.set_status(True,piw.coordinate(course,i),const.status_choose_active)
                         else:
-                            self.status_buffer.set_status(True,course,i,const.status_choose_used)
+                            self.status_buffer.set_status(True,piw.coordinate(course,i),const.status_choose_used)
                     else:
-                        self.status_buffer.set_status(True,course,i,const.status_choose_available)
+                        self.status_buffer.set_status(True,piw.coordinate(course,i),const.status_choose_available)
 
         self.status_buffer.send()
 
@@ -944,9 +943,9 @@ class Agent(agent.Agent):
     def __choice(self,v):
         choice = utils.key_to_lists(v)
         if not choice: return
-        if not choice[4]: return
+        if not choice[2]: return
         # remove the hardness so that it's not part of the identity of the choice
-        del choice[4]
+        del choice[2]
 
         # if this choice is the same as the previous one
         # stop choose mode and store the new mapping
@@ -958,11 +957,11 @@ class Agent(agent.Agent):
         # if this is a new choice, store it and adapt the status leds
         if not choice in self.__choices:
             self.__choices.append(choice)
-            key = choice[3]
+            key = choice[1]
             for ck in self.__coursekeys:
-                self.status_buffer.set_status(True,ck[0],ck[1],const.status_choose_used)
+                self.status_buffer.set_status(True,piw.coordinate(ck[0],ck[1]),const.status_choose_used)
             self.__coursekeys=[]
-            self.status_buffer.set_status(True,key[0],key[1],const.status_choose_active)
+            self.status_buffer.set_status(True,piw.coordinate(key[0],key[1]),const.status_choose_active)
             self.status_buffer.send()
 
     def __unchoose(self,subject):
@@ -995,9 +994,9 @@ class Agent(agent.Agent):
         if not course: course = 1
         key = 1
         for c in self.__choices:
-            musical_mapping.append( ((int(c[3][0]),int(c[3][1])),(course,key)) )
+            musical_mapping.append( ((int(c[1][0]),int(c[1][1])),(course,key)) )
             key += 1
-            physical_ins.add( (int(c[1][0]),int(c[1][1])) )
+            physical_ins.add( (int(c[0][0]),int(c[0][1])) )
         
         # build a new physical mapping based on the boundaries
         # of the input coordinates
@@ -1032,8 +1031,7 @@ class Agent(agent.Agent):
         mapping.sort()
 
         # reverse the mapping so that the target coordinates come first
-        # allowing them to be sorted easy afterwards, which makes
-        # assigning the sequential number trivial
+        # allowing them to be sorted easy afterwards
         # also prune the mapping so that only one of each source coordinate
         # remains
         prev_entry = None
@@ -1101,9 +1099,7 @@ class Agent(agent.Agent):
             else:
                 columnlengths[column_out] = 1
 
-        # re-iterate over the mapping and calculate the sequential position
-        # while adding each entry to the underlying mapper
-        sequential_out = 0
+        # re-iterate over the mapping while adding each entry to the underlying mapper
         for entry in reverse_mapping:
 
             # calculate the entry's input key data
@@ -1111,23 +1107,18 @@ class Agent(agent.Agent):
             row_in = entry[1][1]
             column_in_rel = 0
             row_in_rel = 0
-            sequential_in = 0
             if self.__upstream_columnlen and column_in <= len(self.__upstream_columnlen):
-                column_in_rel = column_in - 1 - len(self.__upstream_columnlen)
-                row_in_rel = row_in - 1 - self.__upstream_columnlen[column_in-1]
-                for i in range(1,column_in):
-                    sequential_in += self.__upstream_columnlen[i-1]
-                sequential_in += row_in
+                column_in_rel = len(self.__upstream_columnlen) + 1 - column_in
+                row_in_rel = self.__upstream_columnlen[column_in-1] + 1 - row_in
 
             # calculate the entry's output key data
             column_out = entry[0][0]
             row_out = entry[0][1]
-            column_out_rel = column_out - 1 - max_column
-            row_out_rel = row_out - 1 - columnlengths[column_out]
-            sequential_out = sequential_out + 1
+            column_out_rel =  max_column + 1 - column_out
+            row_out_rel = columnlengths[column_out] + 1 - row_out
 
             # add the mapping for this entry
-            mapper.set_physical_mapping(column_in,row_in,column_in_rel,row_in_rel,sequential_in,column_out,row_out,column_out_rel,row_out_rel,sequential_out)
+            mapper.set_physical_mapping(column_in,row_in,column_in_rel,row_in_rel,column_out,row_out,column_out_rel,row_out_rel)
 
         # activate the physical mappings
         mapper.activate_physical_mapping()
@@ -1149,6 +1140,8 @@ class Agent(agent.Agent):
 
         self.keymapfilter.enable(1,False)
         self.keymapfilter.enable(1,True)
+
+        self.status_buffer.set_blink_geometry(self.controller.gettuple('columnlen'))
 
     def __set_musical_key_map(self,value):
         mapping = logic.parse_clause(value)
@@ -1173,8 +1166,7 @@ class Agent(agent.Agent):
                 courselengths[course_out] = 1
 
         # iterate over the mapping that's sorted by out key and calculate
-        # the sequential position and the length of each course
-        sequential_out = 0
+        # the length of each course
         for entry in reverse_mapping:
 
             # calculate the entry's input key data
@@ -1182,23 +1174,18 @@ class Agent(agent.Agent):
             key_in = entry[1][1]
             course_in_rel = 0
             key_in_rel = 0
-            sequential_in = 0
             if self.__upstream_courselen and course_in <= len(self.__upstream_courselen):
-                course_in_rel = course_in - 1 - len(self.__upstream_courselen)
-                key_in_rel = key_in - 1 - self.__upstream_courselen[course_in-1]
-                for i in range(1,course_in):
-                    sequential_in += self.__upstream_courselen[i-1]
-                sequential_in += key_in
+                course_in_rel = len(self.__upstream_courselen) + 1 - course_in
+                key_in_rel = self.__upstream_courselen[course_in-1] + 1 - key_in
 
             # calculate the entry's output key data
             course_out = entry[0][0]
             key_out = entry[0][1]
-            course_out_rel = course_out - 1 - max_course
-            key_out_rel = key_out - 1 - courselengths[course_out]
-            sequential_out = sequential_out + 1
+            course_out_rel = max_course + 1 - course_out
+            key_out_rel = courselengths[course_out] + 1 - key_out
 
             # add the mapping for this entry
-            mapper.set_musical_mapping(course_in,key_in,course_in_rel,key_in_rel,sequential_in,course_out,key_out,course_out_rel,key_out_rel,sequential_out)
+            mapper.set_musical_mapping(course_in,key_in,course_in_rel,key_in_rel,course_out,key_out,course_out_rel,key_out_rel)
 
         # activate the musical mappings
         mapper.activate_musical_mapping()
