@@ -32,16 +32,14 @@ class Agent(agent.Agent):
         self[2] = atom.Atom(names='outputs')
         self[2][1] = bundles.Output(1,False,names='pressure output', protocols='')
         self[2][2] = bundles.Output(2,False,names='key output', protocols='')
+        self[2][3] = bundles.Output(3,False,names='controller output', protocols='')
 
-        self.output = bundles.Splitter(self.domain,self[2][1],self[2][2])
-        self.player = recorder_native.nplayer(self.output.cookie(),16,1,2,self.domain)
+        self.data_output = bundles.Splitter(self.domain,self[2][1],self[2][2])
+        self.ctl_output = bundles.Splitter(self.domain,self[2][3])
 
-        self.ctl_fb = piw.functor_backend(1,True)
-        self.ctl_fb.set_functor(piw.pathnull(0),self.player.control())
-        self.ctl_input = bundles.ScalarInput(self.ctl_fb.cookie(),self.domain,signals=(1,))
+        self.player = recorder_native.nplayer(self.data_output.cookie(),self.ctl_output.cookie(),16,100,self.domain)
 
-        self[1] = atom.Atom(names='inputs')
-        self[1][1]=atom.Atom(domain=domain.Aniso(), policy=self.ctl_input.policy(1,False),names='controller input')
+        self[3] = atom.Atom(domain=domain.BoundedInt(1,10000,100), policy=atom.default_policy(self.player.set_size), names="size")
 
         self.add_verb2(1,'play([],None,role(None,[mass([note])]),role(with,[mass([velocity])]))',create_action=self.__playnv,clock=True)
         self.add_verb2(2,'play([],None,role(None,[mass([note])]),role(with,[mass([velocity])]),role(for,[mass([second])]))',create_action=self.__playnvl,clock=True)
