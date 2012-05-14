@@ -744,6 +744,7 @@ class Agent(agent.Agent):
         course = int(id)
         semis = action.mass_quantity(interval)
         self.controller.set_course_semis(int(course),semis)
+        self[35].set_value(logic.render_term(self.controller.get_course_offsets()))
         return action.nosync_return()
 
     def __set_course_int(self,subject,course,interval):
@@ -751,6 +752,7 @@ class Agent(agent.Agent):
         course = int(id)
         ints = action.mass_quantity(interval)
         self.controller.set_course_steps(int(course),ints)
+        self[35].set_value(logic.render_term(self.controller.get_course_offsets()))
         return action.nosync_return()
 
     def __set_course_offset(self,value):
