@@ -729,19 +729,30 @@ int piw::fasttrigger_t::__ping_direct(void *c_, void *v_)
 
     pic::logmsg() << "trigger fired " << t;
     c->send(piw::makebool_nb(true,t));
-    c->start_event(t);
+    c->control_start(t);
     c->send(piw::makebool_nb(false,t+1));
-    c->end_event(t+2);
+    c->control_term(t+2);
 
     return 0;
 }
 
 void piw::fasttrigger_t::control_start(unsigned long long t)
 {
+    if(active_++==0)
+    {
+        start_event(t);
+    }
 }
 
 void piw::fasttrigger_t::control_term(unsigned long long t)
 {
+    if(active_>0)
+    {
+        if(--active_==0)
+        {
+            end_event(t);
+        }
+    }
 }
 
 void piw::fasttrigger_t::control_receive(unsigned s,const piw::data_nb_t &value)
