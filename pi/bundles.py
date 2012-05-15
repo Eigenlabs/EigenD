@@ -475,7 +475,7 @@ class ScalarNoDefaultPolicyImpl(policy.ConnectablePolicyImpl):
         if self.count_connections()==0:
             self.__ctrl = None
 
-    def get_contoller_backend(self,config):
+    def get_controller_backend(self,config):
         return policy.PlumberBackend(self.__input.correlator,self.__stream_policy,self.__signal,policy.Plumber.input_input,-1,config.iid)
 
     def get_data_backend(self,config):
