@@ -131,6 +131,7 @@ namespace piw
             void trigger__(const piw::data_t &d);
             unsigned color_;
             int active_;
+            bool event_;
     };
 };
 

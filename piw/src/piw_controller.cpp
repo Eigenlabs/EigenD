@@ -704,7 +704,7 @@ void piw::controlled_t::disable()
     }
 }
 
-piw::fasttrigger_t::fasttrigger_t(unsigned color): color_(color), active_(0)
+piw::fasttrigger_t::fasttrigger_t(unsigned color): color_(color), active_(0), event_(false)
 {
 }
 
@@ -730,6 +730,11 @@ int piw::fasttrigger_t::__ping_direct(void *c_, void *v_)
     pic::logmsg() << "trigger fired " << t;
     c->send(piw::makebool_nb(true,t));
     c->control_start(t);
+    if(!c->event_)
+    {
+        c->event_ = true;
+        c->start_event(t);
+    }
     c->send(piw::makebool_nb(false,t+1));
     c->control_term(t+2);
 
@@ -738,19 +743,17 @@ int piw::fasttrigger_t::__ping_direct(void *c_, void *v_)
 
 void piw::fasttrigger_t::control_start(unsigned long long t)
 {
-    if(active_++==0)
-    {
-        start_event(t);
-    }
+    active_++;
 }
 
 void piw::fasttrigger_t::control_term(unsigned long long t)
 {
     if(active_>0)
     {
-        if(--active_==0)
+        if(--active_==0 && event_)
         {
             end_event(t);
+            event_ = false;
         }
     }
 }
