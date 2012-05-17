@@ -303,6 +303,7 @@ class HeadphoneInput(audio.AudioInput):
         self[101] = atom.Atom(domain=domain.BoundedInt(0,127,hints=(T('stageinc',1),T('inc',1),T('biginc',5),T('control','updown'))),names='gain',init=70,policy=atom.default_policy(self.__gain))
         self[102] = atom.Atom(domain=domain.BoundedInt(0,4),names='quality',init=0,policy=atom.default_policy(self.__quality))
         self[103] = atom.Atom(domain=domain.Bool(),names='limit',init=True,policy=atom.default_policy(self.__limit))
+        self[103].set_property_string('show_warning','BY CHANGING THE PRESET HEADPHONE LIMIT YOU ABSOLVE EIGENLABS LTD OF ALL LIABILITY FOR ANY HEARING DAMAGE THAT MAY BE CAUSED AS A RESULT OF SUCH ACTIONS')
 
     def server_opened(self):
         audio.AudioInput.server_opened(self)
