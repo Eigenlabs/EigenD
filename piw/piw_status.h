@@ -46,6 +46,8 @@ namespace piw
             static inline int c2int(unsigned char *);
     };
 
+    typedef pic::lckset_t<piw::statusdata_t>::nbtype statusset_t;
+
     class PIW_DECLSPEC_CLASS statusbuffer_t
     {
         public:
@@ -69,7 +71,7 @@ namespace piw
             int gc_traverse(void *, void *) const;
             int gc_clear();
        public:
-            static piw::data_nb_t make_statusbuffer(pic::lckset_t<piw::statusdata_t>::nbtype &);
+            static piw::data_nb_t make_statusbuffer(const statusset_t &);
        private:
             impl_t *root_;
     };
