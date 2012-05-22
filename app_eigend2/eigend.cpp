@@ -271,6 +271,7 @@ class EigenMainWindow: public DocumentWindow, public MenuBarModel, public piw::t
         std::string get_cookie();
         std::string get_os();
         void enable_save_menu(bool active);
+        void do_quit();
 
     private:
         EigenLoadComponent *component_;
@@ -313,6 +314,7 @@ class EigenD : public ejuce::Application, virtual public pic::tracked_t
         void anotherInstanceStarted (const String& commandLine);
         void log(const char *msg);
         void handleWinch(const std::string &msg);
+        void systemRequestedQuit();
 
     private:
         EigenMainWindow *main_window_;
@@ -561,7 +563,7 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
             break;
 
         case commandQuit:
-            backend_->prepare_quit();
+            do_quit();
 //#ifdef JUCE_WINDOWS
 //            TerminateProcess(GetCurrentProcess(),0);
 //#else
@@ -943,6 +945,17 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
 
 EigenMainWindow::~EigenMainWindow()
 {
+    if (status_ != 0) delete status_;
+    if (about_ != 0) delete about_;
+    if (saving_ != 0) delete saving_;
+    if (editing_ != 0) delete editing_;
+    if (bug_ != 0) delete bug_;
+}
+
+void EigenMainWindow::do_quit()
+{
+    backend_->prepare_quit();
+
 #ifdef JUCE_MAC
     MenuBarModel::setMacMainMenu(nullptr,nullptr);
 #endif
@@ -957,12 +970,6 @@ EigenMainWindow::~EigenMainWindow()
     backend_->quit();
 
     cancel_timer_slow();
-
-    if (status_ != 0) delete status_;
-    if (about_ != 0) delete about_;
-    if (saving_ != 0) delete saving_;
-    if (editing_ != 0) delete editing_;
-    if (bug_ != 0) delete bug_;
 }
 
 void EigenMainWindow::getAllCommands (Array <CommandID>& commands)
@@ -1976,9 +1983,17 @@ void EigenD::initialise (const String& commandLine)
 
 }
 
+void EigenD::systemRequestedQuit()
+{
+    if(main_window_ != 0) main_window_->do_quit();
+
+	ejuce::Application::quit();
+}
+
 void EigenD::shutdown()
 {
-    if (main_window_ != 0) delete main_window_;
+    if(main_window_ != 0) delete main_window_;
+    main_window_ = 0;
 
     ejuce::Application::shutdown();
 }

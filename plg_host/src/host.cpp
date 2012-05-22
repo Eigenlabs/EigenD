@@ -765,6 +765,10 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     void close()
     {
+        set_bypassed(true);
+        observer_->description_changed("");
+        host_window_.close_window();
+
         if(window_)
         {
             window_->setVisible(false);
@@ -775,13 +779,9 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
             window_ = 0;
         }
 
-        host_window_.close_window();
-
         juce::AudioPluginInstance *p(plugin_.current());
 
         plugin_.set(0);
-
-        set_bypassed(true);
 
         if(p)
         {
@@ -790,8 +790,6 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         }
 
         deallocate_buffer();
-
-        observer_->description_changed("");
     }
 
     bool input_audio(unsigned long long from,unsigned long long to)

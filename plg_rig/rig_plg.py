@@ -618,6 +618,9 @@ class InnerAgent(agent.Agent):
         self.__workspace.unload_all(destroy)
         self.__workspace.shutdown()
 
+    def on_quit(self):
+        self.__workspace.on_quit()
+
 
 class OuterAgent(agent.Agent):
     def __init__(self,address,ordinal):
@@ -695,6 +698,9 @@ class OuterAgent(agent.Agent):
     def close_server(self):
         agent.Agent.close_server(self)
         self.__inner_agent.close_server();
+
+    def on_quit(self):
+        self.__inner_agent.on_quit()
 
 
 agent.main(OuterAgent,gui=True)
