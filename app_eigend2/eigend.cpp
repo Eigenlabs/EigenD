@@ -1987,7 +1987,7 @@ void EigenD::systemRequestedQuit()
 {
     if(main_window_ != 0) main_window_->do_quit();
 
-	ejuce::Application::quit();
+    ejuce::Application::quit();
 }
 
 void EigenD::shutdown()
