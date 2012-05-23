@@ -19,7 +19,7 @@
 #
 
 from pi import agent,atom,action,bundles,domain,node,upgrade,const
-from . import recorder_version as version,recorder_native
+from . import player_version as version,recorder_native
 
 import piw
 import picross
