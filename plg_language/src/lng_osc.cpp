@@ -340,11 +340,6 @@ widget_t::widget_t(language::oscserver_t::impl_t *impl, const char *name,piw::fa
 
 void widget_t::sender__(void *a1,void *a2,void *a3,void *a4)
 {
-#if OSC_DEBUG==1
-    piw::data_nb_t d = piw::data_nb_t::from_given((bct_data_t)a2);
-    pic::logmsg() << "data =" << d;
-#endif // OSC_DEBUG==1
-    
     widget_t *widget  = (widget_t *)a1;
     widget->current_ = piw::data_t::from_given((bct_data_t)a2).as_denorm();
     language::oscserver_t::impl_t *impl = widget->impl_;
