@@ -34,6 +34,7 @@
 #include <piw/piw_scroller.h>
 #include <piw/piw_scheduler.h>
 #include <piw/piw_controller.h>
+#include <piw/piw_controller2.h>
 #include <piw/piw_backend.h>
 #include <piw/piw_sample.h>
 #include <piw/piw_sampler.h>
@@ -62,7 +63,7 @@
 
 from picross_native[picross/picross.pip] import notify, f_string, f2f, status
 
-class event[piw::event_t]: controlled /gc/
+class event[piw::event_t]: controlled2 /gc/
 {
     event(scheduler *, bool, const change &)
 
@@ -321,6 +322,37 @@ class coordinate[piw::coordinate_t]
    data make_data(unsigned long long)
    bool is_valid()
    bool equals(int, int, const data &)
+}
+
+class controller2[piw::controller2_t]
+{
+    controller2(const cookie &,const stdstr &)
+    cookie event_cookie()
+    cookie controller_cookie()
+    cookie converter_cookie()
+    virtual void controller_clock(clockref *)
+    virtual void controller_latency(unsigned)
+}
+
+class controlled_base2[piw::controlled_base2_t]
+{
+    xcontrolled()
+    void attach(controller2 *)
+    bool attach_to(controller2 *,unsigned)
+    void detach()
+    int ordinal()
+    fastdata *fastdata()
+    void set_key(const coordinate &)
+    void set_sequential_key(int)
+    void set_light(unsigned,unsigned)
+    void set_self_light(unsigned)
+}
+
+class controlled2[piw::controlled2_t]: controlled_base2
+{
+    controlled(bool)
+    void enable()
+    void disable()
 }
 
 class controller[piw::controller_t]

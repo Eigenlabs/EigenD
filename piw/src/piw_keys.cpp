@@ -185,6 +185,11 @@ bool piw::is_key(const piw::data_t &d)
     return piw::decode_key(d.make_nb());
 }
 
+bool piw::decode_key(const piw::data_t &d, float *column, float *row, float *course, float *key, piw::hardness_t *hardness)
+{
+    return piw::decode_key(d.make_nb(),column,row,course,key,hardness);
+}
+
 bool piw::decode_key(const piw::data_nb_t &d, float *column, float *row, float *course, float *key, piw::hardness_t *hardness)
 {
     if(!d.is_tuple() || d.as_tuplelen() != 3)

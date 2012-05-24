@@ -23,7 +23,7 @@ Import('env')
 piw_files=Split("""
     piw_client.cpp piw_clock.cpp piw_address.cpp piw_index.cpp piw_server.cpp
     piw_tsd.cpp piw_canchor.cpp piw_bundle.cpp piw_clone.cpp piw_controller.cpp
-    piw_table.cpp piw_thing.cpp piw_data.cpp piw_output.cpp
+    piw_table.cpp piw_thing.cpp piw_data.cpp piw_output.cpp piw_controller2.cpp
     piw_aggregator.cpp piw_function1.cpp piw_resampler.cpp piw_slowchange.cpp
     piw_pitchbender.cpp piw_function2.cpp piw_fastdata.cpp piw_dumper.cpp
     piw_normalize.cpp piw_logtable.cpp piw_powtable.cpp piw_policy.cpp piw_delay.cpp

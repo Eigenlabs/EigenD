@@ -428,7 +428,7 @@ void piw::statusbuffer_t::set_blink_geometry(const piw::data_t &geometry)
     root_->set_blink_geometry(geometry);
 }
 
-piw::data_nb_t piw::statusbuffer_t::make_statusbuffer(pic::lckset_t<piw::statusdata_t>::nbtype &status)
+piw::data_nb_t piw::statusbuffer_t::make_statusbuffer(const statusset_t &status)
 {
     unsigned char *dp;
     unsigned long long t = piw::tsd_time();
@@ -436,7 +436,7 @@ piw::data_nb_t piw::statusbuffer_t::make_statusbuffer(pic::lckset_t<piw::statusd
 
     piw::data_nb_t result = makeblob_nb(t,s,&dp);
 
-    pic::lckset_t<piw::statusdata_t>::nbtype::iterator i;
+    pic::lckset_t<piw::statusdata_t>::nbtype::const_iterator i;
 
     for(i=status.begin(); i!=status.end(); i++)
     {

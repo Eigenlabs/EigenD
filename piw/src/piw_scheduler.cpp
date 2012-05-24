@@ -1102,7 +1102,7 @@ void piw::event_t::event_enable() { impl_->call_enable(); }
 void piw::event_t::event_disable() { impl_->call_disable(); }
 int piw::event_t::gc_traverse(void *v, void *a) const { return impl_->gc_traverse(v,a); }
 int piw::event_t::gc_clear() { return impl_->gc_clear(); }
-piw::event_t::event_t(scheduler_t *sched,bool e,const piw::change_t &ec): controlled_t(e), impl_(new impl_t(sender(),sched->impl_,sched->impl_->clkcount_,ec)) { } 
+piw::event_t::event_t(scheduler_t *sched,bool e,const piw::change_t &ec): controlled2_t(e), impl_(new impl_t(sender(),sched->impl_,sched->impl_->clkcount_,ec)) { } 
 piw::event_t::~event_t() { delete impl_; } 
 piw::scheduler_t::scheduler_t(unsigned signals): impl_(new impl_t(signals)) { } 
 piw::scheduler_t::~scheduler_t() { delete impl_; } 

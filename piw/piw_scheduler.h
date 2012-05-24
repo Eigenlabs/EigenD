@@ -22,7 +22,7 @@
 #include "piw_exports.h"
 #include <piw/piw_bundle.h>
 #include <piw/piw_data.h>
-#include <piw/piw_controller.h>
+#include <piw/piw_controller2.h>
 
 namespace piw
 {
@@ -46,7 +46,7 @@ namespace piw
             impl_t *impl_;
     };
 
-    class PIW_DECLSPEC_CLASS event_t: public controlled_t
+    class PIW_DECLSPEC_CLASS event_t: public controlled2_t
     {
         public:
             friend class scheduler_t;
