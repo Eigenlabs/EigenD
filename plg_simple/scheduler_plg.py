@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,talker,collection,paths
+from pi import agent,atom,action,domain,bundles,utils,logic,node,async,schedproxy,const,upgrade,policy,talker,collection,paths,const
 from . import scheduler_version as version
 import piw
 from pi.logic.shortcuts import *
@@ -145,11 +145,9 @@ class Event(talker.Talker):
         self.scheduler = scheduler
         self.index = index
         self.event = piw.event(scheduler.scheduler,False,utils.changify(self.__enable_changed))
+        self.event.set_self_light(const.status_selector_off)
 
-        self.key_mapper = piw.function1(True,2,2,piw.data(),scheduler.light_aggregator.get_output(index+1))
-        self.key_mapper.set_functor(piw.d2d_const(utils.maketuple_longs((0,self.index),0)))
-
-        talker.Talker.__init__(self,scheduler.finder,self.event.fastdata(),self.key_mapper.cookie(),names='event',ordinal=index,protocols='remove')
+        talker.Talker.__init__(self,scheduler.finder,self.event.fastdata(),self.scheduler.light_aggregator.get_output(index),names='event',ordinal=index,protocols='remove')
 
         self[3] = atom.Atom(domain=domain.String(), policy=atom.default_policy(self.__change_schema), names='schema')
         self[4] = atom.Atom(domain=domain.Bool(), init=False, policy=atom.default_policy(self.__change_enabled), names='enabled')
@@ -184,7 +182,7 @@ class Event(talker.Talker):
                 self.event.enable()
                 self.event.event_enable()
             self.event.attach(self.scheduler.controller)
-            self.event.set_key(piw.coordinate(0,self.index,False,False))
+            self.event.set_sequential_key(self.index)
             self[3].set_value(schema)
             print 'enabling event',id(self.event),'for',s
 
@@ -200,7 +198,7 @@ class Event(talker.Talker):
             self.event.enable()
             self.event.event_enable()
             self.event.attach(self.scheduler.controller)
-            self.event.set_key(piw.coordinate(0,self.index,False,False))
+            self.event.set_sequential_key(self.index)
             self[3].set_value(schema.as_string())
             print 'enabling event',id(self.event),'for',s
 
@@ -208,13 +206,14 @@ class Event(talker.Talker):
         print 'canceling event',id(self.event)
         self.event.detach()
         self.event.disable()
-        self.scheduler.light_aggregator.clear_output(self.index+1)
+        self.scheduler.light_aggregator.clear_output(self.index)
         return self.clear_phrase()
 
     def __enable_changed(self,d):
         if not d.is_bool():
             return
         print 'setting enabled state to',d
+        self.event.set_self_light(const.status_selector_on if d.as_bool() else const.status_selector_off)
         self[4].set_value(d.as_bool())
 
     def __change_enabled(self,d):
@@ -253,23 +252,17 @@ class Agent(agent.Agent):
 
         self[3] = collection.Collection(creator=self.__create,wrecker=self.__wreck,names='event',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst,protocols='hidden-connection')
 
-        self.ctlfunctor = piw.functor_backend(2, False)
-        self.ctlfunctor.set_gfunctor(utils.make_change_nb(piw.slowchange(utils.changify(self.__control_changed))))
-
         self[4] = atom.Atom(names='controller')
 
         self[4][1] = bundles.Output(1,False, names='light output',protocols='revconnect')
         self.light_output = bundles.Splitter(self.domain,self[4][1])
-        self.light_convertor = piw.lightconvertor(False,self.light_output.cookie())
-        self.light_aggregator = piw.aggregator(self.light_convertor.cookie(),self.domain)
-        self.controller = piw.controller(self.light_aggregator.get_output(1),utils.pack_str(1,2))
+        self.controller = piw.controller2(self.light_output.cookie(),utils.pack_str(1,2))
+        self.light_aggregator = piw.aggregator(self.controller.converter_cookie(),self.domain)
 
-        self.controller_clone = piw.clone(True)
-        self.controller_clone.set_output(1,self.controller.event_cookie())
-        self.controller_clone.set_output(2,self.ctlfunctor.cookie())
-        self.activation_input = bundles.VectorInput(self.controller_clone.cookie(),self.domain,signals=(1,2))
+        self.activation_input = bundles.VectorInput(self.controller.event_cookie(),self.domain,signals=(1,))
+        self.controller_input = bundles.VectorInput(self.controller.controller_cookie(),self.domain,signals=(1,))
 
-        self[4][2] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.merge_nodefault_policy(2,False),names='controller input',protocols='nostage')
+        self[4][2] = atom.Atom(domain=domain.Aniso(),policy=self.controller_input.vector_policy(1,False),names='controller input',protocols='nostage')
         self[4][3] = atom.Atom(domain=domain.Aniso(),policy=self.activation_input.vector_policy(1,False), names='key input',protocols='nostage')
 
         self[5] = EventBrowser(self.__eventlist)

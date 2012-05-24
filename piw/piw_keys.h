@@ -126,6 +126,7 @@ namespace piw
      *          false if the data couldn't be decoded
      */
     PIW_DECLSPEC_FUNC(bool) decode_key(const piw::data_nb_t &d, float *column=0, float *row=0, float *course=0, float *key=0, hardness_t *hardness=0);
+    PIW_DECLSPEC_FUNC(bool) decode_key(const piw::data_t &d, float *column=0, float *row=0, float *course=0, float *key=0, hardness_t *hardness=0);
 
     /**
      * Calculates the sequential position of a key, based on its coordinates.
