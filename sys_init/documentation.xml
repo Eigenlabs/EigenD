@@ -1,4 +1,4 @@
-<documentation date="2011-09-02 17:39:03" version="1.3">
+<documentation date="2012-05-25 12:53:41" version="2.0">
   <agent name="triangle oscillator">
     <tip>The Triangle Oscillator Agent is EigenD's built-in triangle oscillator plug-in</tip>
     <help>The Triangle Oscillator Agent is EigenD's built-in triangle oscillator plug-in. </help>
@@ -98,10 +98,6 @@
   <agent name="scaler">
     <tip>The Scaler applies a scale, tonic and octave to incoming key press information</tip>
     <help>The Scaler applies a scale, tonic and octave to incoming key press information. </help>
-    <port name="curve">
-      <tip>The pitch bend curve parameter can also be set within the Scaler</tip>
-      <help>The pitch bend curve parameter can also be set within the Scaler. There are four available curves: linear, quadratic, cubic and step. This is represented by a number between 1 and 4 - 1 represents linear, 2 represents quadratic, 3 represents cubic and 4 represents step. In basic terms this allows you to apply an adjustment to the pitch bend values with varying degrees of severity. </help>
-    </port>
     <port name="global pitch bend input">
       <tip>The Global Pitch Bend Input receives information from an EigenD controller (often the upstream strip controller output) to control pitch bend on a global basis</tip>
       <help>The Global Pitch Bend Input receives information from an EigenD controller (often the upstream strip controller output) to control pitch bend on a global basis. </help>
@@ -114,9 +110,17 @@
       <tip>The scale note output sends scale note information to downstream Agents</tip>
       <help>The scale note output sends scale note information to downstream Agents. </help>
     </port>
+    <port name="key bend range input">
+      <tip>The Key Bend Range Input determines the amount of pitch bend (in semitones) for the Key Pitch Bend input</tip>
+      <help>The Key Bend Range Input determines the amount of pitch bend (in semitones) for the Key Pitch Bend input. </help>
+    </port>
     <port name="frequency output">
       <tip>The frequency output sends the frequency information produced by the scaler to downstream Agents (e</tip>
       <help>The frequency output sends the frequency information produced by the scaler to downstream Agents (e.g. oscillators). </help>
+    </port>
+    <port name="key pitch bend input">
+      <tip>The Key/Pitch Pitch Bend Input receives information from an EigenD controller (often the upstream roll output) to control pitch bend on a per key basis</tip>
+      <help>The Key/Pitch Pitch Bend Input receives information from an EigenD controller (often the upstream roll output) to control pitch bend on a per key basis. </help>
     </port>
     <port name="yaw output">
       <tip>The yaw output is used to send key yaw information to downstream Agents</tip>
@@ -166,10 +170,6 @@
       <tip>The Global Bend Range Input determines the amount of pitch bend (in semitones) for the Global Pitch Bend Input</tip>
       <help>The Global Bend Range Input determines the amount of pitch bend (in semitones) for the Global Pitch Bend Input. </help>
     </port>
-    <port name="k bend range input">
-      <tip>The K Bend Range Input determines the amount of pitch bend (in semitones) for the K Pitch Bend input</tip>
-      <help>The K Bend Range Input determines the amount of pitch bend (in semitones) for the K Pitch Bend input. </help>
-    </port>
     <port name="tonic input">
       <tip>The tonic input sets the tonic of the scale </tip>
       <help>The tonic input sets the tonic of the scale </help>
@@ -182,9 +182,9 @@
       <tip>The key input receives information from the upstream Keygroup and stringer in order to produce monophonic behaviour</tip>
       <help>The key input receives information from the upstream Keygroup and stringer in order to produce monophonic behaviour. </help>
     </port>
-    <port name="k pitch bend input">
-      <tip>The K Pitch Bend Input receives information from an EigenD controller (often the upstream roll output) to control pitch bend on a per key basis</tip>
-      <help>The K Pitch Bend Input receives information from an EigenD controller (often the upstream roll output) to control pitch bend on a per key basis. </help>
+    <port name="curve">
+      <tip>The pitch bend curve parameter can also be set within the Scaler</tip>
+      <help>The pitch bend curve parameter can also be set within the Scaler. There are four available curves: linear, quadratic, cubic and step. This is represented by a number between 1 and 4 - 1 represents linear, 2 represents quadratic, 3 represents cubic and 4 represents step. In basic terms this allows you to apply an adjustment to the pitch bend values with varying degrees of severity. </help>
     </port>
     <port name="relative octave input">
       <tip>The relative octave input allows you to offset an instrument (in ocatves) from the other instruments in that keygroup</tip>
@@ -245,6 +245,50 @@
     <port name="right audio input">
       <tip>The right audio input receives right channel audio signals from upstream Agents</tip>
       <help>The right audio input receives right channel audio signals from upstream Agents. </help>
+    </port>
+  </agent>
+  <agent name="player">
+    <tip>The Player agent generates key presses on demand. Its output looks like a keygroup, which can be connected to an instrument, and it provides verbs to generate artificial key presses on that output. </tip>
+    <help>The Player agent generates key presses on demand. Its output looks like a keygroup, which can be connected to an instrument, and it provides verbs to generate artificial key presses on that output. 
+
+The keypresses are generated with a simple pressure envelope which varies with the velocity of the key press. More sophisticated envelopes can be generated with the ahdsr agent. 
+
+The generated key presses are adequate to provide velocity information to ahdsr . 
+
+It is used (for example) to play notes from the arranger. 
+
+[[belcanto: controller input]] </help>
+    <port name="controller input">
+      <tip>The Controller input sets the geometry of the key information being generated by the player. If this is connected, the player will translate the notes it generates according to the geometry received on this input. If not connected, the player will generate keypresses in course 1/column 1. </tip>
+      <help>The Controller input sets the geometry of the key information being generated by the player. If this is connected, the player will translate the notes it generates according to the geometry received on this input. If not connected, the player will generate keypresses in course 1/column 1. 
+
+This input will be removed in the near future. The Player will be effectively a virtual keyboard with only one course and one physical row. 
+
+[[belcanto: pressure output]] </help>
+    </port>
+    <port name="key output">
+      <tip>The key output gives the key number of the generated notes. It would normally be connected to the key input of an instrument. Key presses are normally generated in course 1/column 1. </tip>
+      <help>The key output gives the key number of the generated notes. It would normally be connected to the key input of an instrument. Key presses are normally generated in course 1/column 1. 
+
+[[belcanto: note X with velocity X play]] [[belcanto: note X with velocity X for X second play]] 
+
+The 'play' verb is used to generate key presses, given a number and velocity. Optionally, a duration in seconds can be specified. 
+
+The generated note will have a pressure envelope which ramps up to a maximum value which depends on the velocity specified, at a rate which also depends on the velocity. 
+
+Before using the Belcanto examples below, make sure you have the desired Player Agent in the conversation using 
+
+[[belcanto: player X listen]] 
+
+where X is the number of the desired Audio Agent. 
+
+[[belcanto: note 1 with velocity 1 play]] [[belcanto: note 2 0 with velocity 1 0 0 for 0 . 7 5 second play]] </help>
+    </port>
+    <port name="pressure output">
+      <tip>The pressure output carries the pressure envelope of the generated key presses. It would normally be connected to the pressure input of an instrument. </tip>
+      <help>The pressure output carries the pressure envelope of the generated key presses. It would normally be connected to the pressure input of an instrument. 
+
+[[belcanto: key output]] </help>
     </port>
   </agent>
   <agent name="cello oscillator">
@@ -792,8 +836,8 @@
     </port>
   </agent>
   <agent name="recorder">
-    <tip>The Recorder is the EigenD agent which is used to record performance information (e</tip>
-    <help>The Recorder is the EigenD agent which is used to record performance information (e.g. key presses, strip and breath controller information etc). </help>
+    <tip>The Recorder is the EigenD agent which is used to record performance information (for example, key presses, strip and breath controller information etc)</tip>
+    <help>The Recorder is the EigenD agent which is used to record performance information (for example, key presses, strip and breath controller information etc). </help>
     <port name="roll output">
       <tip>The roll output is used to send key roll information to downstream Agents</tip>
       <help>The roll output is used to send key roll information to downstream Agents. </help>
@@ -897,6 +941,192 @@
     <port name="key output">
       <tip>The key output is used to send monophonic key press information to downstream Agents</tip>
       <help>The key output is used to send monophonic key press information to downstream Agents. This is normally passed through a Recorder Agent (into an auxilliary input and out of an auxilliary output) into a Scaler 's key input in general usage within EigenD. </help>
+    </port>
+  </agent>
+  <agent name="illuminator">
+    <tip>Illuminator is an agent that enables the creation of lighting patterns on the Eigenharp keyboard. The positioning of the individual lights using columns, rows, courses or keys is described in the Keygroup section. </tip>
+    <help>Illuminator is an agent that enables the creation of lighting patterns on the Eigenharp keyboard. The positioning of the individual lights using columns, rows, courses or keys is described in the Keygroup section. 
+
+[[belcanto: key input]] 
+
+[[belcanto: musical light map]] 
+
+The light map describes the current lighting pattern, modifying it is more convenient with the verbs that are described below. The format of the musical light map description is as follows: 
+
+Where course and key define the position of the light and colour can be either red, green or orange. 
+
+[[belcanto: physical light map]] 
+
+[[belcanto: light output]] 
+
+[[belcanto: server port]] 
+
+[[belcanto: server start]] 
+
+[[belcanto: server status output]] 
+
+[[belcanto: set]] 
+
+The 'set' verb is used to set a light to a certain colour. 
+
+[[belcanto: un set]] 
+
+The 'un set' verb is used to clear a light. 
+
+[[belcanto: choose]] 
+
+The 'choose' verb is used to use keys to select lights of a certain colour. 
+
+[[belcanto: un choose]] 
+
+The 'un choose' verb is used to cancel choose mode without making any changes to the light map. 
+
+[[belcanto: clear]] 
+
+The 'clear' verb is to clear the whole light pattern from the Illuminator. 
+
+[[belcanto: server start]] 
+
+The 'server start' verb is to start the built-in HTTP server. 
+
+[[belcanto: server stop]] 
+
+The 'server stop' verb is to stop the built-in HTTP server. 
+
+[[belcanto: server toggle start]] 
+
+The 'server toggle start' verb is toggles the built-in HTTP server on or off based on if it's currently running or not. 
+
+Before using the Belcanto commands below, make sure you have the desired Illuminator Agent in the conversation using 
+
+[[belcanto: illuminator X listen]] 
+
+where X is the number of the desired Illuminator Agent. 
+
+The set a physical light to a certain colour, use 
+
+[[belcanto: column X row X-Y to X-Z set]] 
+
+where X is the column number, Y is the row number and Z is the colour: red, green or orange. 
+
+The set a musical light to a certain colour, use 
+
+[[belcanto: course X key X-Y to X-Z set]] 
+
+where X is the course number, Y is the key number and Z is the colour: red, green or orange. 
+
+To clear a physical light, use 
+
+[[belcanto: column X row X-Y un set]] 
+
+where X is the column number, Y is the row number 
+
+To clear a musical light, use 
+
+[[belcanto: course X key X-Y un set]] 
+
+where X is the course number, Y is the key number 
+
+To clear all physical lights, use 
+
+[[belcanto: physical clear]] 
+
+To clear all musical lights, use 
+
+[[belcanto: musical clear]] 
+
+To start choosing physical lights on the keyboard, use 
+
+[[belcanto: physical as X choose]] 
+
+where X is the colour: red, green or orange 
+
+To confirm the selection made in choose mode, tap the last key you pressed a second time. This will exit choose mode and add the selection to the existing light map. 
+
+To start choosing musical lights on the keyboard, use 
+
+[[belcanto: musical as X choose]] 
+
+where X is the colour: red, green or orange 
+
+To confirm the selection made in choose mode, tap the last key you pressed a second time. This will exit choose mode and add the selection to the existing light map. 
+
+To leave choose mode by preserving the current light map and discarding the current selection, use 
+
+[[belcanto: un choose]] 
+
+The Illuminator agent can be controlled remotely over HTTP using a REST architecture . 
+
+Note that this is very low-level and intended for software developers to control Illuminator from the outside world. We provide more user-friendly control methods if you're not interested in building a custom solution. 
+
+In the spirit of REST, use the following HTTP methods: 
+
+Many operating systems ship with command line tools to send HTTP requests, many scripting languages like Python also have easy support for this. 
+
+A popular command line tool for this is called 'curl', we'll use this in the examples below for which we assume that an Illuminator agent has a HTTP server started on port 1024. 
+
+Individual keys can accessed with the following paths: 
+
+Use the DELETE method on the paths above to turn a light of. 
+
+For instance, using curl to turn a light off on column 1 and row 5: 
+
+Use the PUT method on the paths about to change the color of a light, the supported colours are: red, orange and green. 
+
+For instance, using curl to set the light on column 1 and row 5 to green: 
+
+Complete maps can be accessed with these paths: 
+
+The DELETE method clears an entire map. 
+
+For instance, using curl to clear the entire musical map: 
+
+The GET method retrieves a map. 
+
+For instance, using curl to retrieve the physical map: 
+
+The PUT method changes all the lights in a particular map. 
+
+This supports two formats: 
+
+The list format is the same as what can be seen in the 'musical light map' and 'physical light map' ports in Workbench. It's detailed in the beginning of this page. It looks like: 
+
+The bitmap format has columns or courses as lines and rows or keys as characters in the lines. The letters 'R', 'G' and 'O' are used to indicate the colours of lights as red, green or orange. A space indicates that a light is off. 
+
+For instance: 
+
+Is the same as the following list format: 
+
+For instance, using curl on a bash command line, this can be set in one go like this: 
+
+Using a scripting language like Python, this can be done for example like this: </help>
+    <port name="server status output">
+      <tip>Indicates the on/off status of the built-in HTTP server</tip>
+      <help>Indicates the on/off status of the built-in HTTP server. </help>
+    </port>
+    <port name="key input">
+      <tip>The key input is used during choose mode as described below</tip>
+      <help>The key input is used during choose mode as described below. It is typically connected to a Keygroup Output Key Output port. </help>
+    </port>
+    <port name="physical light map">
+      <tip>This Physical Light Map describes the physical lighting pattern, see the Musical Light Map above for more information</tip>
+      <help>This Physical Light Map describes the physical lighting pattern, see the Musical Light Map above for more information. </help>
+    </port>
+    <port name="musical light map">
+      <tip>The Musical Light Map describes the musical lighting pattern</tip>
+      <help>The Musical Light Map describes the musical lighting pattern. Musical and physical positioning is described in the Keygroup section. </help>
+    </port>
+    <port name="server start">
+      <tip>When set to On, starts the built-in HTTP server</tip>
+      <help>When set to On, starts the built-in HTTP server. The server is stopped when set to Off. </help>
+    </port>
+    <port name="light output">
+      <tip>The light output provides the lighting pattern that is active in the Illuminator, this is typically connected to a Light Input port on a Keygroup output, a Keyboard, or other agents that accept light input</tip>
+      <help>The light output provides the lighting pattern that is active in the Illuminator, this is typically connected to a Light Input port on a Keygroup output, a Keyboard, or other agents that accept light input. </help>
+    </port>
+    <port name="server port">
+      <tip>The TCP/IP port number that the built-in HTTP server will use when it's started</tip>
+      <help>The TCP/IP port number that the built-in HTTP server will use when it's started. Note that ports below 1024 are usually only accessible by the operating system so it's best to choose numbers that are higher. Be aware that there's always a possibility for the port to be used by another application. </help>
     </port>
   </agent>
   <agent name="ahdsr">
@@ -1099,6 +1329,74 @@
       <help>The bar beat input is used to indicate to the Scheduler the current beat of the bar when the Metronome is running - as a consequence you have to connect the 'bar beat output' of the Metronome to this input for event scheduling to work correctly. </help>
     </port>
   </agent>
+  <agent name="keygroup">
+    <tip>Keygroups contain a group of keys in a user defined orientation, thus providing a way of dividing and remapping the Eigenharp keyboard and allowing the user complete control over the orientation and direction of notes</tip>
+    <help>Keygroups contain a group of keys in a user defined orientation, thus providing a way of dividing and remapping the Eigenharp keyboard and allowing the user complete control over the orientation and direction of notes. </help>
+    <port name="mode key column">
+      <tip>To determine whether a keygroup's mode key is pressed, the physical key data coming in on the Mode Key Input port will be compared with the values in the Mode Key Column and Mode Key Row ports</tip>
+      <help>To determine whether a keygroup's mode key is pressed, the physical key data coming in on the Mode Key Input port will be compared with the values in the Mode Key Column and Mode Key Row ports. When they correspond, the mode key will activate and the switching behaviour will be available. </help>
+    </port>
+    <port name="breath input">
+      <tip>The breath input is normally used to receive breath controller information from an upstream Agent (either another Keygroup or from the Keyboard Agent) </tip>
+      <help>The breath input is normally used to receive breath controller information from an upstream Agent (either another Keygroup or from the Keyboard Agent) </help>
+    </port>
+    <port name="strip position input">
+      <tip>Strip position inputs are normally used to receive a relative strip controller position from an upstream Agent (either another Keygroup or from the Keyboard Agent)</tip>
+      <help>Strip position inputs are normally used to receive a relative strip controller position from an upstream Agent (either another Keygroup or from the Keyboard Agent). </help>
+    </port>
+    <port name="yaw input">
+      <tip>The yaw input is normally used to receive key yaw signals from upstream and processes them accordingly</tip>
+      <help>The yaw input is normally used to receive key yaw signals from upstream and processes them accordingly. </help>
+    </port>
+    <port name="key input">
+      <tip>The key input is normally used to receive key position and hardness signals from upstream and processes them accordingly</tip>
+      <help>The key input is normally used to receive key position and hardness signals from upstream and processes them accordingly. </help>
+    </port>
+    <port name="pedal input">
+      <tip>The pedal inputs are normally used to receive pedal data from an upstream Agent (either another Keygroup or from the Keyboard Agent</tip>
+      <help>The pedal inputs are normally used to receive pedal data from an upstream Agent (either another Keygroup or from the Keyboard Agent.) </help>
+    </port>
+    <port name="tonic">
+      <tip>Tonic sets the tonic of the keygroup's scale</tip>
+      <help>Tonic sets the tonic of the keygroup's scale. When playing a keygroup that has a tonic set, downstream Scalers automatically adjust their tonic to match that of the keygroup (unless the Scaler's 'override' parameter is set). </help>
+    </port>
+    <port name="absolute strip input">
+      <tip>Absolute strip inputs are normally used to receive an absolute strip controller position from an upstream Agent (either another Keygroup or from the Keyboard Agent)</tip>
+      <help>Absolute strip inputs are normally used to receive an absolute strip controller position from an upstream Agent (either another Keygroup or from the Keyboard Agent). </help>
+    </port>
+    <port name="mode key row">
+      <tip>See the documentation of Mode Key Column above for more information</tip>
+      <help>See the documentation of Mode Key Column above for more information. </help>
+    </port>
+    <port name="mode key input">
+      <tip>A connection is made to the Mode Key Input from the key output of an upstream agent, typically an instrument or another keygroup</tip>
+      <help>A connection is made to the Mode Key Input from the key output of an upstream agent, typically an instrument or another keygroup. A mode key is used to switch between keygroup outputs. The position of the mode key is specified based on the layout of the upstream agent, using the Mode Key Column and Mode Key Row ports. </help>
+    </port>
+    <port name="pressure input">
+      <tip>The pressure input is normally used to receive key pressure signals from upstream and processes them accordingly</tip>
+      <help>The pressure input is normally used to receive key pressure signals from upstream and processes them accordingly. </help>
+    </port>
+    <port name="octave">
+      <tip>Octave sets the keygroup's octave</tip>
+      <help>Octave sets the keygroup's octave. When playing a keygroup that has an octave set, downstream Scalers automatically adjust their octave to match that of the keygroup (unless the Scaler's 'override' parameter is set). </help>
+    </port>
+    <port name="roll input">
+      <tip>The roll input is normally used to receive key roll signals from upstream and processes them accordingly</tip>
+      <help>The roll input is normally used to receive key roll signals from upstream and processes them accordingly. </help>
+    </port>
+    <port name="controller input">
+      <tip>The controller input is used to pass on information that changes infrequently and usually carries configuration data from an upstream Agent, for instance Keygroup octave, tonic, scale, mapping, </tip>
+      <help>The controller input is used to pass on information that changes infrequently and usually carries configuration data from an upstream Agent, for instance Keygroup octave, tonic, scale, mapping, ... </help>
+    </port>
+    <port name="blink">
+      <tip>When the mode key is activated, all the keys of the keygroup blink, this sets the duration for which the lights stay lit in seconds</tip>
+      <help>When the mode key is activated, all the keys of the keygroup blink, this sets the duration for which the lights stay lit in seconds. The default duration is 0.5 seconds. </help>
+    </port>
+    <port name="base note">
+      <tip>The base note is a value (in semitones) between -20 and 20 - the base note determines which note of the scale corresponds to key 1 of the keygroup</tip>
+      <help>The base note is a value (in semitones) between -20 and 20 - the base note determines which note of the scale corresponds to key 1 of the keygroup. </help>
+    </port>
+  </agent>
   <agent name="sawtooth oscillator">
     <tip>The Sawtooth Oscillator Agent is EigenD's built-in sawtooth oscillator plug-in, as used in the Synth instrument in the Alpha Factory Setups</tip>
     <help>The Sawtooth Oscillator Agent is EigenD's built-in sawtooth oscillator plug-in, as used in the Synth instrument in the Alpha Factory Setups. </help>
@@ -1119,64 +1417,228 @@
       <help>The frequency input is used in the main to receive frequency signals from an upstream Agent (normally from the Scaler 's frequency output in this case) to be processed accordingly, but can also be set by the user. </help>
     </port>
   </agent>
-  <agent name="kgroup">
-    <tip>Keygroups contain a group of keys in a user defined orientation, thus providing a way of dividing and remapping the Eigenharp keyboard and allowing the user complete control over the orientation and direction of notes</tip>
-    <help>Keygroups contain a group of keys in a user defined orientation, thus providing a way of dividing and remapping the Eigenharp keyboard and allowing the user complete control over the orientation and direction of notes. </help>
-    <port name="breath input">
-      <tip>The breath input is normally used to receive breath controller information from an upstream Agent (either another Keygroup or from the Keyboard Agent) </tip>
-      <help>The breath input is normally used to receive breath controller information from an upstream Agent (either another Keygroup or from the Keyboard Agent) </help>
+  <agent name="metronome">
+    <tip>The Metronome Agent deals with all aspects of musical tempo and time signature</tip>
+    <help>The Metronome Agent deals with all aspects of musical tempo and time signature. It is connected to all Agents which need tempo and time signature information (e.g. the Recorder ). </help>
+    <port name="midi clock enable">
+      <tip>This input enables MIDI clock in</tip>
+      <help>This input enables MIDI clock in. </help>
     </port>
-    <port name="strip position input">
-      <tip>Strip position inputs are normally used to receive a relative strip controller position from an upstream Agent (either another Keygroup or from the Keyboard Agent)</tip>
-      <help>Strip position inputs are normally used to receive a relative strip controller position from an upstream Agent (either another Keygroup or from the Keyboard Agent). </help>
+    <port name="song beat output">
+      <tip>The song beat output is normally used to send the the song beat (the number of beats since the Metronome started) to downstream Agents (see Recorder ) </tip>
+      <help>The song beat output is normally used to send the the song beat (the number of beats since the Metronome started) to downstream Agents (see Recorder ) </help>
     </port>
-    <port name="yaw input">
-      <tip>The yaw input is normally used to receive key yaw signals from upstream and processes them accordingly</tip>
-      <help>The yaw input is normally used to receive key yaw signals from upstream and processes them accordingly. </help>
+    <port name="tempo input">
+      <tip>The tempo input is normally a value set by the user to determine the tempo of the metronome and everything connected downstream in beats per minute (bpm)</tip>
+      <help>The tempo input is normally a value set by the user to determine the tempo of the metronome and everything connected downstream in beats per minute (bpm). </help>
     </port>
-    <port name="pedal input">
-      <tip>The pedal inputs are normally used to receive pedal data from an upstream Agent (either another Keygroup or from the Keyboard Agent</tip>
-      <help>The pedal inputs are normally used to receive pedal data from an upstream Agent (either another Keygroup or from the Keyboard Agent.) </help>
+    <port name="bar output">
+      <tip>The bar output is normally used to send the bar number to downstream Agents (see Scheduler )</tip>
+      <help>The bar output is normally used to send the bar number to downstream Agents (see Scheduler ). </help>
     </port>
-    <port name="activation input">
-      <tip>The activation input is used in the main to receive activation signals from an upstream Agent (normally anyother Keygroup or from the Keyboard Agent in this case)</tip>
-      <help>The activation input is used in the main to receive activation signals from an upstream Agent (normally anyother Keygroup or from the Keyboard Agent in this case). </help>
+    <port name="beat trigger">
+      <tip>The beat trigger is normally used as part of the 'tap tempo' function of EigenD to adjust the metronome tempo according to the tapping of a key</tip>
+      <help>The beat trigger is normally used as part of the 'tap tempo' function of EigenD to adjust the metronome tempo according to the tapping of a key. </help>
     </port>
-    <port name="tonic">
-      <tip>Tonic sets the tonic of the keygroup's scale</tip>
-      <help>Tonic sets the tonic of the keygroup's scale. When playing a keygroup that has a tonic set, downstream Scalers automatically adjust their tonic to match that of the keygroup (unless the Scaler's 'override' parameter is set). </help>
+    <port name="preroll trigger">
+      <tip>The preroll trigger is normally used to enable or disable the use of the aforementioned 'preroll' parameter on a keypress as part of the 'tap tempo' function of EigenD</tip>
+      <help>The preroll trigger is normally used to enable or disable the use of the aforementioned 'preroll' parameter on a keypress as part of the 'tap tempo' function of EigenD. </help>
     </port>
-    <port name="absolute strip input">
-      <tip>Absolute strip inputs are normally used to receive an absolute strip controller position from an upstream Agent (either another Keygroup or from the Keyboard Agent)</tip>
-      <help>Absolute strip inputs are normally used to receive an absolute strip controller position from an upstream Agent (either another Keygroup or from the Keyboard Agent). </help>
+    <port name="bar beat output">
+      <tip>The bar beat output is normally used to send the current beat of the bar to downstream Agents (see Recorder )</tip>
+      <help>The bar beat output is normally used to send the current beat of the bar to downstream Agents (see Recorder ). </help>
+    </port>
+    <port name="bar trigger">
+      <tip>The bar trigger is normally used as part of the 'tap tempo' function of EigenD to adjust the number of beats per bar according to the tapping of a key</tip>
+      <help>The bar trigger is normally used as part of the 'tap tempo' function of EigenD to adjust the number of beats per bar according to the tapping of a key. </help>
+    </port>
+    <port name="midi clock input">
+      <tip>The MIDI clock input is normally used to receive MIDI clock data from the MIDI input Agent</tip>
+      <help>The MIDI clock input is normally used to receive MIDI clock data from the MIDI input Agent. You need to connect the 'midi clock output' to this input. </help>
+    </port>
+    <port name="midi clock latency">
+      <tip>The MIDI clock latency input is normally used as the value set in milliseconds to adjust the latency of incoming MIDI clock data</tip>
+      <help>The MIDI clock latency input is normally used as the value set in milliseconds to adjust the latency of incoming MIDI clock data. </help>
+    </port>
+    <port name="tempo output">
+      <tip>The tempo output is normally used to send the Metronome tempo to downstream Agents (see Delay ) </tip>
+      <help>The tempo output is normally used to send the Metronome tempo to downstream Agents (see Delay ) </help>
+    </port>
+    <port name="beat flash persistence">
+      <tip>The beat flash persistence sets the period in milliseconds for which the metronome key light will flash to indicate the beats and bars visually</tip>
+      <help>The beat flash persistence sets the period in milliseconds for which the metronome key light will flash to indicate the beats and bars visually. Setting beat flash persistence to 0 will disable the flashing. </help>
+    </port>
+    <port name="preroll">
+      <tip>'Preroll' is normally used as part of the 'tap tempo' functionality to allow you a number of taps on the 'beat trigger' key before any tempo adjustment is made (the number of taps corresponds with the set value of 'preroll'</tip>
+      <help>'Preroll' is normally used as part of the 'tap tempo' functionality to allow you a number of taps on the 'beat trigger' key before any tempo adjustment is made (the number of taps corresponds with the set value of 'preroll'. </help>
+    </port>
+    <port name="beat input">
+      <tip>The beat input is normally a value set by the user to determine the number of beats per bar; the default number is 4</tip>
+      <help>The beat input is normally a value set by the user to determine the number of beats per bar; the default number is 4. </help>
+    </port>
+    <port name="running output">
+      <tip>The running output is normally used to send whether the Metronome is running or not to downstream Agents (see Recorder ) </tip>
+      <help>The running output is normally used to send whether the Metronome is running or not to downstream Agents (see Recorder ) </help>
+    </port>
+    <port name="tempo minimum">
+      <tip>The minimum tempo is normally used as a value set by the user to set the lower bound of the range allowed when controlling the tempo via the 'tap tempo' interface</tip>
+      <help>The minimum tempo is normally used as a value set by the user to set the lower bound of the range allowed when controlling the tempo via the 'tap tempo' interface. </help>
+    </port>
+    <port name="tempo maximum">
+      <tip>The maximum tempo is normally used as a value set by the user to set the upper bound of the range allowed when controlling the tempo via the 'tap tempo' interface</tip>
+      <help>The maximum tempo is normally used as a value set by the user to set the upper bound of the range allowed when controlling the tempo via the 'tap tempo' interface. </help>
+    </port>
+  </agent>
+  <agent name="audio unit">
+    <tip>The Audio Unit agent acts as plug-in host for Audio Unit or VST Instruments and Effects</tip>
+    <help>The Audio Unit agent acts as plug-in host for Audio Unit or VST Instruments and Effects. </help>
+    <port name="maximum channel">
+      <tip>In poly mode (or when the MIDI channel is set to 0) the Audio Unit agent cycles through MIDI channels - Maximum Channel determines the highest MIDI channel to use</tip>
+      <help>In poly mode (or when the MIDI channel is set to 0) the Audio Unit agent cycles through MIDI channels - Maximum Channel determines the highest MIDI channel to use. </help>
+    </port>
+    <port name="velocity scale">
+      <tip>Velocity Scale multiplies the raw values for velocity detection with a constant multiplier</tip>
+      <help>Velocity Scale multiplies the raw values for velocity detection with a constant multiplier. The default multiplier is 4. </help>
+    </port>
+    <port name="minimum channel">
+      <tip>In poly mode (or when the MIDI channel is set to 0) the Audio Unit agent cycles through MIDI channels - Minimum Channel determines the lowest MIDI channel to use</tip>
+      <help>In poly mode (or when the MIDI channel is set to 0) the Audio Unit agent cycles through MIDI channels - Minimum Channel determines the lowest MIDI channel to use. </help>
+    </port>
+    <port name="midi program">
+      <tip>Send a MIDI program change message to the Audio Unit or VST</tip>
+      <help>Send a MIDI program change message to the Audio Unit or VST. </help>
+    </port>
+    <port name="tempo input">
+      <tip>The Tempo Input usually receives tempo information from the Metronome agent in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock - however it can also be a value provided by the user</tip>
+      <help>The Tempo Input usually receives tempo information from the Metronome agent in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock - however it can also be a value provided by the user. </help>
+    </port>
+    <port name="velocity sample">
+      <tip>Velocity Sample determines the number of samples used to calculate the velocity of a note</tip>
+      <help>Velocity Sample determines the number of samples used to calculate the velocity of a note. </help>
+    </port>
+    <port name="parameter">
+      <tip>Audio Units in the EigenD software have a set of generic parameter inputs, Parameter 1 through Parameter 16</tip>
+      <help>Audio Units in the EigenD software have a set of generic parameter inputs, Parameter 1 through Parameter 16. Usually these are receiving information from the various Eigenharp controllers e.g. strip controller, breath controller, key movement. Using the Routing Matrix these can then be routed to the audio unit or VST plugin's parameters. To access the Routing Matrix click on 'Configure' in the top left corner of the plugin's window. </help>
+    </port>
+    <port name="running input">
+      <tip>The running input is used to indicate that the Metronome agent is running - you need to connect the 'running output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock</tip>
+      <help>The running input is used to indicate that the Metronome agent is running - you need to connect the 'running output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock. </help>
+    </port>
+    <port name="midi controller">
+      <tip>Send a MIDI CC message to the Audio Unit or VST</tip>
+      <help>Send a MIDI CC message to the Audio Unit or VST. </help>
+    </port>
+    <port name="song beat input">
+      <tip>The Song Beat Input is used to indicate the current position of the song when the Metronome agent is running - you need to connect the 'song beat output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock</tip>
+      <help>The Song Beat Input is used to indicate the current position of the song when the Metronome agent is running - you need to connect the 'song beat output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock. </help>
+    </port>
+    <port name="midi bank">
+      <tip>Send a MIDI bank change message to the Audio Unit or VST</tip>
+      <help>Send a MIDI bank change message to the Audio Unit or VST. </help>
     </port>
     <port name="pressure input">
-      <tip>The pressure input is normally used to receive key pressure signals from upstream and processes them accordingly</tip>
-      <help>The pressure input is normally used to receive key pressure signals from upstream and processes them accordingly. </help>
+      <tip>The Pressure Input receives key pressure information from upstream agents</tip>
+      <help>The Pressure Input receives key pressure information from upstream agents. </help>
     </port>
-    <port name="octave">
-      <tip>Octave sets the keygroup's octave</tip>
-      <help>Octave sets the keygroup's octave. When playing a keygroup that has an octave set, downstream Scalers automatically adjust their octave to match that of the keygroup (unless the Scaler's 'override' parameter is set). </help>
+    <port name="frequency input">
+      <tip>The Frequency Input receives note frequency information from upstream agents (often the Scaler )</tip>
+      <help>The Frequency Input receives note frequency information from upstream agents (often the Scaler ). </help>
     </port>
-    <port name="roll input">
-      <tip>The roll input is normally used to receive key roll signals from upstream and processes them accordingly</tip>
-      <help>The roll input is normally used to receive key roll signals from upstream and processes them accordingly. </help>
+    <port name="velocity curve">
+      <tip>Velocity Curve determines the curve applied to the input velocity values to calculate an output velocity: 1 is linear, values below 1 produce a concave curve (attenuating the velocity) and values above 1 produce a convex curve (boosting the velocity)</tip>
+      <help>Velocity Curve determines the curve applied to the input velocity values to calculate an output velocity: 1 is linear, values below 1 produce a concave curve (attenuating the velocity) and values above 1 produce a convex curve (boosting the velocity). The default value is 4. </help>
     </port>
-    <port name="controller input">
-      <tip>The controller input is used in most cases to pass information from an upstream Agent such as a Keygroup's courses, octave, scale and tonic</tip>
-      <help>The controller input is used in most cases to pass information from an upstream Agent such as a Keygroup's courses, octave, scale and tonic. </help>
+    <port name="midi channel">
+      <tip>MIDI Channel determines the MIDI channel used for input to the Audio Unit agent - values of 1 to 16 refer to the corresponding MIDI channel, a value of 0 indicates poly mode (or MIDI channel cycling - see Maximum Channel and Minimum Channel below)</tip>
+      <help>MIDI Channel determines the MIDI channel used for input to the Audio Unit agent - values of 1 to 16 refer to the corresponding MIDI channel, a value of 0 indicates poly mode (or MIDI channel cycling - see Maximum Channel and Minimum Channel below). </help>
     </port>
-    <port name="blink">
-      <tip>When the mode key is activated, all the keys of the keygroup blink, this sets the duration for which the lights stay lit in seconds</tip>
-      <help>When the mode key is activated, all the keys of the keygroup blink, this sets the duration for which the lights stay lit in seconds. The default duration is 0.5 seconds. </help>
+    <port name="bar beat input">
+      <tip>The Bar Beat Input is used to indicate the current beat of the bar when the Metronome is running - you need to connect the 'bar beat output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock</tip>
+      <help>The Bar Beat Input is used to indicate the current beat of the bar when the Metronome is running - you need to connect the 'bar beat output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock. </help>
     </port>
-    <port name="base note">
-      <tip>The base note is a value (in semitones) between -20 and 20 - the base note determines which note of the scale corresponds to key 1 of the keygroup</tip>
-      <help>The base note is a value (in semitones) between -20 and 20 - the base note determines which note of the scale corresponds to key 1 of the keygroup. </help>
+    <port name="tail time">
+      <tip>Tail time determines the time (in seconds) before a plugin will become idle once the Audio Unit agent has stopped making any sound</tip>
+      <help>Tail time determines the time (in seconds) before a plugin will become idle once the Audio Unit agent has stopped making any sound. 'Un set' this Port for an infinite tail time - it is un set by default. </help>
     </port>
-    <port name="mode input">
-      <tip>A connection is made to the Mode Input from the activation output of the key that is used as a 'mode key'</tip>
-      <help>A connection is made to the Mode Input from the activation output of the key that is used as a 'mode key'. A mode key is used to switch between keygroup outputs. The mode key is normally a located within an upstream keygroup or keyboard. </help>
+  </agent>
+  <agent name="sampler oscillator">
+    <tip>The Sampler Oscillator is the built-in EigenD sampler plug-in which uses the 'SoundFont' file format</tip>
+    <help>The Sampler Oscillator is the built-in EigenD sampler plug-in which uses the 'SoundFont' file format. In its most common configuration it is combined with the Cycler Agent for polyphony and damping management and also the AHDSR Agent for envelope generation. </help>
+    <port name="fade enable">
+      <tip>Fade enable allows the user to enable or disable a very short cross-fade between samples in the Sampler Oscillator</tip>
+      <help>Fade enable allows the user to enable or disable a very short cross-fade between samples in the Sampler Oscillator. </help>
+    </port>
+    <port name="velocity scale">
+      <tip>Velocity Scale multiplies the raw values for velocity detection with a constant multiplier</tip>
+      <help>Velocity Scale multiplies the raw values for velocity detection with a constant multiplier. The default multiplier is 4. </help>
+    </port>
+    <port name="hold output">
+      <tip>The hold output is used to send 'hold' envelope parameter information to other Agents (normally the AHDSR 's hold input in this case)</tip>
+      <help>The hold output is used to send 'hold' envelope parameter information to other Agents (normally the AHDSR 's hold input in this case). </help>
+    </port>
+    <port name="pressure input">
+      <tip>The pressure input is normally used to receive key pressure signals from upstream Agents (normally the Cycler 's pressure output and processes them accordingly</tip>
+      <help>The pressure input is normally used to receive key pressure signals from upstream Agents (normally the Cycler 's pressure output and processes them accordingly. </help>
+    </port>
+    <port name="transpose">
+      <tip>Transpose is a value (in semitones )set by the user to adjust the output frequency of the Sampler Oscillator, often useful for certain SoundFonts</tip>
+      <help>Transpose is a value (in semitones )set by the user to adjust the output frequency of the Sampler Oscillator, often useful for certain SoundFonts. </help>
+    </port>
+    <port name="release output">
+      <tip>The release output is used to send 'release' envelope parameter information to other Agents (normally the AHDSR 's release input in this case)</tip>
+      <help>The release output is used to send 'release' envelope parameter information to other Agents (normally the AHDSR 's release input in this case). </help>
+    </port>
+    <port name="activation input">
+      <tip>The activation input is used in the main to receive activation signals from an upstream Agent (normally an AHDSR 's activation output in this case)</tip>
+      <help>The activation input is used in the main to receive activation signals from an upstream Agent (normally an AHDSR 's activation output in this case). </help>
+    </port>
+    <port name="decay output">
+      <tip>The decay output is used to send 'decay' envelope parameter information to other Agents (normally the AHDSR 's decay input in this case)</tip>
+      <help>The decay output is used to send 'decay' envelope parameter information to other Agents (normally the AHDSR 's decay input in this case). </help>
+    </port>
+    <port name="velocity sample">
+      <tip>The velocity sample is a value set by the user to determine the number of samples taken to calculate velocity</tip>
+      <help>The velocity sample is a value set by the user to determine the number of samples taken to calculate velocity. </help>
+    </port>
+    <port name="attack output">
+      <tip>The attack output is used to send 'attack' envelope parameter information to other Agents (normally the AHDSR 's attack input in this case)</tip>
+      <help>The attack output is used to send 'attack' envelope parameter information to other Agents (normally the AHDSR 's attack input in this case). </help>
+    </port>
+    <port name="detune input">
+      <tip>The detune input is used to detune the output frequency of the sampler oscillator using a value (in cents)</tip>
+      <help>The detune input is used to detune the output frequency of the sampler oscillator using a value (in cents). </help>
+    </port>
+    <port name="frequency input">
+      <tip>The frequency input (1 and 2) is normally used to receive frequency information from upstream Agents (normally the Cycler 's frequency output in this case)</tip>
+      <help>The frequency input (1 and 2) is normally used to receive frequency information from upstream Agents (normally the Cycler 's frequency output in this case). </help>
+    </port>
+    <port name="velocity curve">
+      <tip>The velocity curve detremines the prevalence of samples in a multi-layered sound</tip>
+      <help>The velocity curve detremines the prevalence of samples in a multi-layered sound. 1 is linear, values below 1 produce a concave curve (attenuating the velocity) and values above 1 produce a convex curve (boosting the velocity). The default value is 4. </help>
+    </port>
+    <port name="sustain output">
+      <tip>The sustain output is used to send 'sustain' envelope parameter information to other Agents (normally the AHDSR 's sustain input in this case)</tip>
+      <help>The sustain output is used to send 'sustain' envelope parameter information to other Agents (normally the AHDSR 's sustain input in this case). </help>
+    </port>
+    <port name="delay output">
+      <tip>The delay output is used to send 'delay' envelope parameter information to other Agents (normally the AHDSR 's delay input in this case)</tip>
+      <help>The delay output is used to send 'delay' envelope parameter information to other Agents (normally the AHDSR 's delay input in this case). </help>
+    </port>
+    <port name="activation output">
+      <tip>The activation output is normally used to send activation information to downstream Agents</tip>
+      <help>The activation output is normally used to send activation information to downstream Agents. </help>
+    </port>
+    <port name="envelope output">
+      <tip>The envelope output is used to send envelope activation information to other Agents (normally the AHDSR 's activation input in this case) </tip>
+      <help>The envelope output is used to send envelope activation information to other Agents (normally the AHDSR 's activation input in this case) </help>
+    </port>
+    <port name="right audio output">
+      <tip>The right audio output is used for sending right channel audio data to downstream Agents (normally a Gain Agent's right audio input in this case)</tip>
+      <help>The right audio output is used for sending right channel audio data to downstream Agents (normally a Gain Agent's right audio input in this case). </help>
+    </port>
+    <port name="left audio output">
+      <tip>The left audio output is used for sending left channel audio data to downstream Agents (normally a Gain Agent's left audio input in this case)</tip>
+      <help>The left audio output is used for sending left channel audio data to downstream Agents (normally a Gain Agent's left audio input in this case). </help>
     </port>
   </agent>
   <agent name="alpha keyboard">
@@ -1297,226 +1759,6 @@
     <port name="pedal output">
       <tip>The pedal outputs are normally used to send pedal data from the Basestation Pro pedal ports to downstream Agents</tip>
       <help>The pedal outputs are normally used to send pedal data from the Basestation Pro pedal ports to downstream Agents. </help>
-    </port>
-  </agent>
-  <agent name="audio unit">
-    <tip>The Audio Unit agent acts as plug-in host for Audio Unit or VST Instruments and Effects</tip>
-    <help>The Audio Unit agent acts as plug-in host for Audio Unit or VST Instruments and Effects. </help>
-    <port name="maximum channel">
-      <tip>In poly mode (or when the MIDI channel is set to 0) the Audio Unit agent cycles through MIDI channels - Maximum Channel determines the highest MIDI channel to use</tip>
-      <help>In poly mode (or when the MIDI channel is set to 0) the Audio Unit agent cycles through MIDI channels - Maximum Channel determines the highest MIDI channel to use. </help>
-    </port>
-    <port name="velocity scale">
-      <tip>Velocity Scale multiplies the raw values for velocity detection with a constant multiplier</tip>
-      <help>Velocity Scale multiplies the raw values for velocity detection with a constant multiplier. The default multiplier is 4. </help>
-    </port>
-    <port name="minimum channel">
-      <tip>In poly mode (or when the MIDI channel is set to 0) the Audio Unit agent cycles through MIDI channels - Minimum Channel determines the lowest MIDI channel to use</tip>
-      <help>In poly mode (or when the MIDI channel is set to 0) the Audio Unit agent cycles through MIDI channels - Minimum Channel determines the lowest MIDI channel to use. </help>
-    </port>
-    <port name="midi program">
-      <tip>Send a MIDI program change message to the Audio Unit or VST</tip>
-      <help>Send a MIDI program change message to the Audio Unit or VST. </help>
-    </port>
-    <port name="tempo input">
-      <tip>The Tempo Input usually receives tempo information from the Metronome agent in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock - however it can also be a value provided by the user</tip>
-      <help>The Tempo Input usually receives tempo information from the Metronome agent in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock - however it can also be a value provided by the user. </help>
-    </port>
-    <port name="velocity sample">
-      <tip>Velocity Sample determines the number of samples used to calculate the velocity of a note</tip>
-      <help>Velocity Sample determines the number of samples used to calculate the velocity of a note. </help>
-    </port>
-    <port name="parameter">
-      <tip>Audio Units in the EigenD software have a set of generic parameter inputs, Parameter 1 through Parameter 16</tip>
-      <help>Audio Units in the EigenD software have a set of generic parameter inputs, Parameter 1 through Parameter 16. Usually these are receiving information from the various Eigenharp controllers e.g. strip controller, breath controller, key movement. Using the Routing Matrix these can then be routed to the audio unit or VST plugin's parameters. To access the Routing Matrix click on 'Configure' in the top left corner of the plugin's window. </help>
-    </port>
-    <port name="running input">
-      <tip>The running input is used to indicate that the Metronome agent is running - you need to connect the 'running output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock</tip>
-      <help>The running input is used to indicate that the Metronome agent is running - you need to connect the 'running output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock. </help>
-    </port>
-    <port name="song beat input">
-      <tip>The Song Beat Input is used to indicate the current position of the song when the Metronome agent is running - you need to connect the 'song beat output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock</tip>
-      <help>The Song Beat Input is used to indicate the current position of the song when the Metronome agent is running - you need to connect the 'song beat output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock. </help>
-    </port>
-    <port name="midi bank">
-      <tip>Send a MIDI bank change message to the Audio Unit or VST</tip>
-      <help>Send a MIDI bank change message to the Audio Unit or VST. </help>
-    </port>
-    <port name="pressure input">
-      <tip>The Pressure Input receives key pressure information from upstream agents</tip>
-      <help>The Pressure Input receives key pressure information from upstream agents. </help>
-    </port>
-    <port name="frequency input">
-      <tip>The Frequency Input receives note frequency information from upstream agents (often the Scaler )</tip>
-      <help>The Frequency Input receives note frequency information from upstream agents (often the Scaler ). </help>
-    </port>
-    <port name="velocity curve">
-      <tip>Velocity Curve determines the curve applied to the input velocity values to calculate an output velocity: 1 is linear, values below 1 produce a concave curve (attenuating the velocity) and values above 1 produce a convex curve (boosting the velocity)</tip>
-      <help>Velocity Curve determines the curve applied to the input velocity values to calculate an output velocity: 1 is linear, values below 1 produce a concave curve (attenuating the velocity) and values above 1 produce a convex curve (boosting the velocity). The default value is 4. </help>
-    </port>
-    <port name="midi channel">
-      <tip>MIDI Channel determines the MIDI channel used for input to the Audio Unit agent - values of 1 to 16 refer to the corresponding MIDI channel, a value of 0 indicates poly mode (or MIDI channel cycling - see Maximum Channel and Minimum Channel below)</tip>
-      <help>MIDI Channel determines the MIDI channel used for input to the Audio Unit agent - values of 1 to 16 refer to the corresponding MIDI channel, a value of 0 indicates poly mode (or MIDI channel cycling - see Maximum Channel and Minimum Channel below). </help>
-    </port>
-    <port name="bar beat input">
-      <tip>The Bar Beat Input is used to indicate the current beat of the bar when the Metronome is running - you need to connect the 'bar beat output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock</tip>
-      <help>The Bar Beat Input is used to indicate the current beat of the bar when the Metronome is running - you need to connect the 'bar beat output' of the Metronome to this input in order to synchronise tempo-based audio unit or VST plugins with EigenD's internal clock. </help>
-    </port>
-    <port name="tail time">
-      <tip>Tail time determines the time (in seconds) before a plugin will become idle once the Audio Unit agent has stopped making any sound</tip>
-      <help>Tail time determines the time (in seconds) before a plugin will become idle once the Audio Unit agent has stopped making any sound. 'Un set' this Port for an infinite tail time - it is un set by default. </help>
-    </port>
-  </agent>
-  <agent name="sampler oscillator">
-    <tip>The Sampler Oscillator is the built-in EigenD sampler plug-in which uses the 'SoundFont' file format</tip>
-    <help>The Sampler Oscillator is the built-in EigenD sampler plug-in which uses the 'SoundFont' file format. In its most common configuration it is combined with the Cycler Agent for polyphony and damping management and also the AHDSR Agent for envelope generation. </help>
-    <port name="fade enable">
-      <tip>Fade enable allows the user to enable or disable a very short cross-fade between samples in the Sampler Oscillator</tip>
-      <help>Fade enable allows the user to enable or disable a very short cross-fade between samples in the Sampler Oscillator. </help>
-    </port>
-    <port name="velocity scale">
-      <tip>Velocity Scale multiplies the raw values for velocity detection with a constant multiplier</tip>
-      <help>Velocity Scale multiplies the raw values for velocity detection with a constant multiplier. The default multiplier is 4. </help>
-    </port>
-    <port name="hold output">
-      <tip>The hold output is used to send 'hold' envelope parameter information to other Agents (normally the AHDSR 's hold input in this case)</tip>
-      <help>The hold output is used to send 'hold' envelope parameter information to other Agents (normally the AHDSR 's hold input in this case). </help>
-    </port>
-    <port name="pressure input">
-      <tip>The pressure input is normally used to receive key pressure signals from upstream Agents (normally the Cycler 's pressure output and processes them accordingly</tip>
-      <help>The pressure input is normally used to receive key pressure signals from upstream Agents (normally the Cycler 's pressure output and processes them accordingly. </help>
-    </port>
-    <port name="transpose">
-      <tip>Transpose is a value (in semitones )set by the user to adjust the output frequency of the Sampler Oscillator, often useful for certain SoundFonts</tip>
-      <help>Transpose is a value (in semitones )set by the user to adjust the output frequency of the Sampler Oscillator, often useful for certain SoundFonts. </help>
-    </port>
-    <port name="release output">
-      <tip>The release output is used to send 'release' envelope parameter information to other Agents (normally the AHDSR 's release input in this case)</tip>
-      <help>The release output is used to send 'release' envelope parameter information to other Agents (normally the AHDSR 's release input in this case). </help>
-    </port>
-    <port name="activation input">
-      <tip>The activation input is used in the main to receive activation signals from an upstream Agent (normally an AHDSR 's activation output in this case)</tip>
-      <help>The activation input is used in the main to receive activation signals from an upstream Agent (normally an AHDSR 's activation output in this case). </help>
-    </port>
-    <port name="decay output">
-      <tip>The decay output is used to send 'decay' envelope parameter information to other Agents (normally the AHDSR 's decay input in this case)</tip>
-      <help>The decay output is used to send 'decay' envelope parameter information to other Agents (normally the AHDSR 's decay input in this case). </help>
-    </port>
-    <port name="velocity sample">
-      <tip>The velocity sample is a value set by the user to determine the number of samples taken to calculate velocity</tip>
-      <help>The velocity sample is a value set by the user to determine the number of samples taken to calculate velocity. </help>
-    </port>
-    <port name="attack output">
-      <tip>The attack output is used to send 'attack' envelope parameter information to other Agents (normally the AHDSR 's attack input in this case)</tip>
-      <help>The attack output is used to send 'attack' envelope parameter information to other Agents (normally the AHDSR 's attack input in this case). </help>
-    </port>
-    <port name="detune input">
-      <tip>The detune input is used to detune the output frequency of the sampler oscillator using a value (in cents)</tip>
-      <help>The detune input is used to detune the output frequency of the sampler oscillator using a value (in cents). </help>
-    </port>
-    <port name="frequency input">
-      <tip>The frequency input (1 and 2) is normally used to receive frequency information from upstream Agents (normally the Cycler 's frequency output in this case)</tip>
-      <help>The frequency input (1 and 2) is normally used to receive frequency information from upstream Agents (normally the Cycler 's frequency output in this case). </help>
-    </port>
-    <port name="velocity curve">
-      <tip>The velocity curve detremines the prevalence of samples in a multi-layered sound</tip>
-      <help>The velocity curve detremines the prevalence of samples in a multi-layered sound. 1 is linear, values below 1 produce a concave curve (attenuating the velocity) and values above 1 produce a convex curve (boosting the velocity). The default value is 4. </help>
-    </port>
-    <port name="sustain output">
-      <tip>The sustain output is used to send 'sustain' envelope parameter information to other Agents (normally the AHDSR 's sustain input in this case)</tip>
-      <help>The sustain output is used to send 'sustain' envelope parameter information to other Agents (normally the AHDSR 's sustain input in this case). </help>
-    </port>
-    <port name="delay output">
-      <tip>The delay output is used to send 'delay' envelope parameter information to other Agents (normally the AHDSR 's delay input in this case)</tip>
-      <help>The delay output is used to send 'delay' envelope parameter information to other Agents (normally the AHDSR 's delay input in this case). </help>
-    </port>
-    <port name="activation output">
-      <tip>The activation output is normally used to send activation information to downstream Agents</tip>
-      <help>The activation output is normally used to send activation information to downstream Agents. </help>
-    </port>
-    <port name="envelope output">
-      <tip>The envelope output is used to send envelope activation information to other Agents (normally the AHDSR 's activation input in this case) </tip>
-      <help>The envelope output is used to send envelope activation information to other Agents (normally the AHDSR 's activation input in this case) </help>
-    </port>
-    <port name="right audio output">
-      <tip>The right audio output is used for sending right channel audio data to downstream Agents (normally a Gain Agent's right audio input in this case)</tip>
-      <help>The right audio output is used for sending right channel audio data to downstream Agents (normally a Gain Agent's right audio input in this case). </help>
-    </port>
-    <port name="left audio output">
-      <tip>The left audio output is used for sending left channel audio data to downstream Agents (normally a Gain Agent's left audio input in this case)</tip>
-      <help>The left audio output is used for sending left channel audio data to downstream Agents (normally a Gain Agent's left audio input in this case). </help>
-    </port>
-  </agent>
-  <agent name="metronome">
-    <tip>The Metronome Agent deals with all aspects of musical tempo and time signature</tip>
-    <help>The Metronome Agent deals with all aspects of musical tempo and time signature. It is connected to all Agents which need tempo and time signature information (e.g. the Recorder ). </help>
-    <port name="midi clock enable">
-      <tip>This input enables MIDI clock in</tip>
-      <help>This input enables MIDI clock in. </help>
-    </port>
-    <port name="song beat output">
-      <tip>The song beat output is normally used to send the the song beat (the number of beats since the Metronome started) to downstream Agents (see Recorder ) </tip>
-      <help>The song beat output is normally used to send the the song beat (the number of beats since the Metronome started) to downstream Agents (see Recorder ) </help>
-    </port>
-    <port name="tempo input">
-      <tip>The tempo input is normally a value set by the user to determine the tempo of the metronome and everything connected downstream in beats per minute (bpm)</tip>
-      <help>The tempo input is normally a value set by the user to determine the tempo of the metronome and everything connected downstream in beats per minute (bpm). </help>
-    </port>
-    <port name="bar output">
-      <tip>The bar output is normally used to send the bar number to downstream Agents (see Scheduler )</tip>
-      <help>The bar output is normally used to send the bar number to downstream Agents (see Scheduler ). </help>
-    </port>
-    <port name="beat trigger">
-      <tip>The beat trigger is normally used as part of the 'tap tempo' function of EigenD to adjust the metronome tempo according to the tapping of a key</tip>
-      <help>The beat trigger is normally used as part of the 'tap tempo' function of EigenD to adjust the metronome tempo according to the tapping of a key. </help>
-    </port>
-    <port name="preroll trigger">
-      <tip>The preroll trigger is normally used to enable or disable the use of the aforementioned 'preroll' parameter on a keypress as part of the 'tap tempo' function of EigenD</tip>
-      <help>The preroll trigger is normally used to enable or disable the use of the aforementioned 'preroll' parameter on a keypress as part of the 'tap tempo' function of EigenD. </help>
-    </port>
-    <port name="bar beat output">
-      <tip>The bar beat output is normally used to send the current beat of the bar to downstream Agents (see Recorder )</tip>
-      <help>The bar beat output is normally used to send the current beat of the bar to downstream Agents (see Recorder ). </help>
-    </port>
-    <port name="bar trigger">
-      <tip>The bar trigger is normally used as part of the 'tap tempo' function of EigenD to adjust the number of beats per bar according to the tapping of a key</tip>
-      <help>The bar trigger is normally used as part of the 'tap tempo' function of EigenD to adjust the number of beats per bar according to the tapping of a key. </help>
-    </port>
-    <port name="midi clock input">
-      <tip>The MIDI clock input is normally used to receive MIDI clock data from the MIDI input Agent</tip>
-      <help>The MIDI clock input is normally used to receive MIDI clock data from the MIDI input Agent. You need to connect the 'midi clock output' to this input. </help>
-    </port>
-    <port name="midi clock latency">
-      <tip>The MIDI clock latency input is normally used as the value set in milliseconds to adjust the latency of incoming MIDI clock data</tip>
-      <help>The MIDI clock latency input is normally used as the value set in milliseconds to adjust the latency of incoming MIDI clock data. </help>
-    </port>
-    <port name="tempo output">
-      <tip>The tempo output is normally used to send the Metronome tempo to downstream Agents (see Delay ) </tip>
-      <help>The tempo output is normally used to send the Metronome tempo to downstream Agents (see Delay ) </help>
-    </port>
-    <port name="beat flash persistence">
-      <tip>The beat flash persistence sets the period in milliseconds for which the metronome key light will flash to indicate the beats and bars visually</tip>
-      <help>The beat flash persistence sets the period in milliseconds for which the metronome key light will flash to indicate the beats and bars visually. Setting beat flash persistence to 0 will disable the flashing. </help>
-    </port>
-    <port name="preroll">
-      <tip>'Preroll' is normally used as part of the 'tap tempo' functionality to allow you a number of taps on the 'beat trigger' key before any tempo adjustment is made (the number of taps corresponds with the set value of 'preroll'</tip>
-      <help>'Preroll' is normally used as part of the 'tap tempo' functionality to allow you a number of taps on the 'beat trigger' key before any tempo adjustment is made (the number of taps corresponds with the set value of 'preroll'. </help>
-    </port>
-    <port name="beat input">
-      <tip>The beat input is normally a value set by the user to determine the number of beats per bar; the default number is 4</tip>
-      <help>The beat input is normally a value set by the user to determine the number of beats per bar; the default number is 4. </help>
-    </port>
-    <port name="running output">
-      <tip>The running output is normally used to send whether the Metronome is running or not to downstream Agents (see Recorder ) </tip>
-      <help>The running output is normally used to send whether the Metronome is running or not to downstream Agents (see Recorder ) </help>
-    </port>
-    <port name="tempo minimum">
-      <tip>The minimum tempo is normally used as a value set by the user to set the lower bound of the range allowed when controlling the tempo via the 'tap tempo' interface</tip>
-      <help>The minimum tempo is normally used as a value set by the user to set the lower bound of the range allowed when controlling the tempo via the 'tap tempo' interface. </help>
-    </port>
-    <port name="tempo maximum">
-      <tip>The maximum tempo is normally used as a value set by the user to set the upper bound of the range allowed when controlling the tempo via the 'tap tempo' interface</tip>
-      <help>The maximum tempo is normally used as a value set by the user to set the upper bound of the range allowed when controlling the tempo via the 'tap tempo' interface. </help>
     </port>
   </agent>
   <agent name="ladder filter">
@@ -1640,10 +1882,12 @@
     </port>
   </agent>
   <agent name="console mixer">
-    <tip>The Console Mixer Agent is a twenty-four channel stereo mixer with an unlimited number of effects sends</tip>
-    <help>Console Mixer Effect Channels are part of the Console Mixer Agent - please read the main article first before continuing. 
+    <tip>[[image:Console-mixer-channel-expanded.png]] </tip>
+    <help>[[image:Console-mixer-fx-channels-expanded.png]] 
 
-The user has the option to create 'effect channels' in the Console Mixer , which can then act as an effect send/return bus within the Console Mixer Agent. 
+Console Mixer Effect Channels are part of the Console Mixer Agent - please read the main article first before continuing. 
+
+The user has the option to create 'effect channels' in the Console Mixer , which can then act as an effect send/return bus within the Console Mixer Agent. You can create them by either clicking on the little '+' button on the effects channel port in Workbench or by using Belcanto as described on the Console Mixer page. Once created they can be deleted by using the little '-' button or by using Belcanto, also as described on the Console Mixer page. 
 
 A Console Mixer Effect Channel has the following Ports: </help>
     <port name="left audio input">
