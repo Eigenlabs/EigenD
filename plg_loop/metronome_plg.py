@@ -57,8 +57,8 @@ class Agent(agent.Agent):
         # self[4] is the verb container
         self[5] = atom.Atom(domain=domain.BoundedFloat(0,1,rest=0,hints=(T('control','trigger'),)),policy=self.tap_input.nodefault_policy(1,policy.ImpulseStreamPolicy()),names='beat trigger',transient=True)
         self[6] = atom.Atom(domain=domain.BoundedFloat(0,1,rest=0,hints=(T('control','trigger'),)),policy=self.tap_input.nodefault_policy(2,policy.ImpulseStreamPolicy()),names='bar trigger',transient=True)
-        self[7] = atom.Atom(domain=domain.BoundedFloat(1,500), init=30, names='tempo minimum', policy=atom.default_policy(self.__set_tempo_lbound))
-        self[8] = atom.Atom(domain=domain.BoundedFloat(1,500), init=500, names='tempo maximum', policy=atom.default_policy(self.__set_tempo_ubound))
+        self[7] = atom.Atom(domain=domain.BoundedFloat(1,500), init=30, names='tap tempo minimum', policy=atom.default_policy(self.__set_tempo_lbound))
+        self[8] = atom.Atom(domain=domain.BoundedFloat(1,500), init=240, names='tap tempo maximum', policy=atom.default_policy(self.__set_tempo_ubound))
         self[9] = atom.Atom(domain=domain.Bool(hints=(T('control','toggle'),)),policy=atom.default_policy(self.__preroll),names='preroll trigger',transient=True)
         self[10] = atom.Atom(domain=domain.BoundedInt(1,32), init=4, names='preroll', policy=atom.default_policy(self.__set_preroll_count))
 

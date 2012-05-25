@@ -1055,22 +1055,18 @@ namespace loop
 
         void set_tempo(float t)
         {
-            // check tempo in set tempo range
-            if(t>=lower_ && t<=upper_)
-            {
-                pic::logmsg() << "set tempo " << t << " from " << tempo_;
+            pic::logmsg() << "set tempo " << t << " from " << tempo_;
 
-                if(t!=tempo_)
-                {
-                    beat_origin_ = last_beat_;
-                    beat_origin_time_ = last_beat_time_;
-                    tempo_=t;
-                    // set the agent tempo atom
-                    tchange_(piw::makefloat(t,0));
-                    // if not running then make sure tempo output is set
-                    if(!(state_==STATE_STARTING || state_==STATE_PLAYING))
-                        tempo_output_->set_tempo(tempo_, piw::tsd_time());
-                }
+            if(t!=tempo_)
+            {
+                beat_origin_ = last_beat_;
+                beat_origin_time_ = last_beat_time_;
+                tempo_=t;
+                // set the agent tempo atom
+                tchange_(piw::makefloat(t,0));
+                // if not running then make sure tempo output is set
+                if(!(state_==STATE_STARTING || state_==STATE_PLAYING))
+                    tempo_output_->set_tempo(tempo_, piw::tsd_time());
             }
         }
 
