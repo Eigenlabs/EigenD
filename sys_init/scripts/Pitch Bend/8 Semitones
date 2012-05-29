@@ -1,5 +1,5 @@
 description
-    Set k pitch bend ranges to 8 semi tones.
+    Set key pitch bend ranges to 8 semi tones.
     This will affect all scalers in the system.
 script
-    all scaler hey all k  range to 8 set
+    all rig all scaler hey all key bend range to 8 set

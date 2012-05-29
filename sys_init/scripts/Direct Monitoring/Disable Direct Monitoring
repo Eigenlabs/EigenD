@@ -3,4 +3,4 @@ description
     Alpha
 script
     keyboard 1 hey loop un set
-	console mixer channel 23 hey headphone enable set
+	console mixer 1 hey mixer channel 13 headphone enable set

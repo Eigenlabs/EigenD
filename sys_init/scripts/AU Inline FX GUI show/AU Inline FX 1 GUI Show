@@ -1,4 +1,4 @@
 description
     Show AU Inline FX 1 (for Sampler 1)
 script
-    audio unit 6 hey show
+    sampler rig 1 effect audio unit 1 hey show

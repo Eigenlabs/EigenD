@@ -5,25 +5,24 @@ description
     This mapping has 2 blocks of 8 keys instead of 4 blocks
     of 4 keys
 
-    This script should be run with pico setups only
+    This script should be run with Pico setups only
 
 script
-    kmapper 2 listen 
-    clear
-    k 12 add
-    k 11 add
-    k 10 add
-    k 9 add
-    k 4 add
-    k 3 add
-    k 2 add
-    k 1 add
-    k 16 add
-    k 15 add
-    k 14 add
-    k 13 add
-    k 8 add
-    k 7 add
-    k 6 add
-    k 5 add
-
+    main keygroup listen 
+    musical clear
+    course 1 key 8 to course 1 key 1 add
+    course 1 key 7 to course 1 key 2 add
+    course 1 key 6 to course 1 key 3 add
+    course 1 key 5 to course 1 key 4 add
+    course 1 key 4 to course 1 key 5 add
+    course 1 key 3 to course 1 key 6 add
+    course 1 key 2 to course 1 key 7 add
+    course 1 key 1 to course 1 key 8 add
+    course 1 key 17 to course 1 key 9 add
+    course 1 key 16 to course 1 key 10 add
+    course 1 key 15 to course 1 key 11 add
+    course 1 key 14 to course 1 key 12 add
+    course 1 key 13 to course 1 key 13 add
+    course 1 key 12 to course 1 key 14 add
+    course 1 key 11 to course 1 key 15 add
+    course 1 key 10 to course 1 key 16 add

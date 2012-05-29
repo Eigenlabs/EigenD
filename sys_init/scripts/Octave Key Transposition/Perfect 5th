@@ -3,10 +3,10 @@ description
     down buttons transpose by a Perfect Fifth
     instead.
 
-    This script should be run with pico setups only
+    This script should be run with Pico setups only
 
 script
-    empty join keygroup 1 listen talker 6 listen
-    all phrase cancel
-    octave by 0.583333333333333333 when 1 up
-    octave by 0.583333333333333333 when 2 down
+    octave talker hey 1 called 1 cancel
+    octave talker hey 2 called 1 cancel
+    octave talker hey " main keygroup hey octave by 0.583333333333333333 up " when 1 called 1 do
+    octave talker hey " main keygroup hey octave by 0.583333333333333333 up " when 2 called 1 do
