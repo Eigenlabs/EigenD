@@ -73,8 +73,8 @@ script
 	arranger 2 hey 23 called 1 cancel
 	arranger 2 hey 24 called 1 cancel
 	
-	player create
-	player create
+	eigend hey player create
+	eigend hey player create
 	
 	player 1 controller output to audio unit rig 4 player controller connect
 	player 1 key output to audio unit rig 4 player key connect
