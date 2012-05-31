@@ -169,6 +169,7 @@ class VariableManager(atom.Atom):
             i = self.find_hole()
             v = Variable(self,i,name,value)
             self[i] = v
+            self.variables[name] = v
         else:
             v.set_value(value)
 
