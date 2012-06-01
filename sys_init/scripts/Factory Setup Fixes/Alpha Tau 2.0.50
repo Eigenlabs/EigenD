@@ -1,0 +1,252 @@
+description
+    This script fixes the recorders and arrangers in the EigenD 2.0.50
+    Alpha and Tau Factory Setups, it also cleans up the internal scaler
+    variables.
+    
+    It can take a long time to complete, please let it run
+    until the status in the EigenBrowser says 'succeeded'.
+    
+script
+	empty join
+	
+	# rename the advanced scale talker to a valid Belcanto name
+	
+	advanced scales talker to advanced scale talker name ify
+
+	# redefine scale talkers using a compound name variable
+	
+	major as scale 1 define
+	harmonic minor as scale 2 define
+	melodic minor as scale 3 define
+	chromatic as scale 4 define
+	blues as scale 5 define
+	pentatonic major as scale 6 define
+	diminished as scale 7 define
+	whole tone as scale 8 define
+	
+	advanced scale talker hey 1 called 1 cancel
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 1 iyot choose when activation ` " empty join scale manager activation scale as scale 1 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 1 called 1 do
+	advanced scale talker hey 2 called 1 cancel
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 2 iyot choose when activation ` " empty join scale manager activation scale as scale 2 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 2 called 1 do
+	advanced scale talker hey 3 called 1 cancel
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 3 iyot choose when activation ` " empty join scale manager activation scale as scale 3 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 3 called 1 do
+	advanced scale talker hey 4 called 1 cancel
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 4 iyot choose when activation ` " empty join scale manager activation scale as scale 4 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 4 called 1 do
+	advanced scale talker hey 5 called 1 cancel
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 5 iyot choose when activation ` " empty join scale manager activation scale as scale 5 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 5 called 1 do
+	advanced scale talker hey 6 called 1 cancel
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 6 iyot choose when activation ` " empty join scale manager activation scale as scale 6 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 6 called 1 do
+	advanced scale talker hey 7 called 1 cancel
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 7 iyot choose when activation ` " empty join scale manager activation scale as scale 7 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 7 called 1 do
+	advanced scale talker hey 8 called 1 cancel
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 8 iyot choose when activation ` " empty join scale manager activation scale as scale 8 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 8 called 1 do
+	
+	global scale talker hey 1 called 2 cancel
+	global scale talker hey " keygroup 1 hey scale to variable scale 1 set " when 1 called 2 do
+	global scale talker hey 2 called 2 cancel
+	global scale talker hey " keygroup 1 hey scale to variable scale 2 set " when 2 called 2 do
+	global scale talker hey 3 called 2 cancel
+	global scale talker hey " keygroup 1 hey scale to variable scale 3 set " when 3 called 2 do
+	global scale talker hey 4 called 2 cancel
+	global scale talker hey " keygroup 1 hey scale to variable scale 4 set " when 4 called 2 do
+	global scale talker hey 5 called 2 cancel
+	global scale talker hey " keygroup 1 hey scale to variable scale 5 set " when 5 called 2 do
+	global scale talker hey 6 called 2 cancel
+	global scale talker hey " keygroup 1 hey scale to variable scale 6 set " when 6 called 2 do
+	global scale talker hey 7 called 2 cancel
+	global scale talker hey " keygroup 1 hey scale to variable scale 7 set " when 7 called 2 do
+	global scale talker hey 8 called 2 cancel
+	global scale talker hey " keygroup 1 hey scale to variable scale 8 set " when 8 called 2 do
+	
+	# redefine recorder talkers using a compound name variable
+	
+	1 bar as recorder bar define
+	
+	sampler recorder talker 1 hey 1 called 1 cancel
+	sampler recorder talker 1 hey " sampler rig 1 recorder hey variable recorder bar record " when 1 called 1 do
+	sampler recorder talker 2 hey 1 called 1 cancel
+	sampler recorder talker 2 hey " sampler rig 2 recorder hey variable recorder bar record " when 1 called 1 do
+	sampler recorder talker 3 hey 1 called 1 cancel
+	sampler recorder talker 3 hey " sampler rig 3 recorder hey variable recorder bar record " when 1 called 1 do
+	sampler recorder talker 4 hey 1 called 1 cancel
+	sampler recorder talker 4 hey " sampler rig 4 recorder hey variable recorder bar record " when 1 called 1 do
+	audio unit recorder talker 1 hey 1 called 1 cancel
+	audio unit recorder talker 1 hey " audio unit rig 1 recorder hey variable recorder bar record " when 1 called 1 do
+	audio unit recorder talker 2 hey 1 called 1 cancel
+	audio unit recorder talker 2 hey " audio unit rig 2 recorder hey variable recorder bar record " when 1 called 1 do
+	audio unit recorder talker 3 hey 1 called 1 cancel
+	audio unit recorder talker 3 hey " audio unit rig 3 recorder hey variable recorder bar record " when 1 called 1 do
+	audio unit recorder talker 4 hey 1 called 1 cancel
+	audio unit recorder talker 4 hey " audio unit rig 4 recorder hey variable recorder bar record " when 1 called 1 do
+	cello recorder talker hey 1 called 1 cancel
+	cello recorder talker hey " cello rig recorder hey variable recorder bar record " when 1 called 1 do
+	clarinet recorder talker hey 1 called 1 cancel
+	clarinet recorder talker hey " clarinet rig recorder hey variable recorder bar record " when 1 called 1 do
+	synth recorder talker hey 1 called 1 cancel
+	synth recorder talker hey " synth rig recorder hey variable recorder bar record " when 1 called 1 do
+	midi recorder talker 1 hey 1 called 1 cancel
+	midi recorder talker 1 hey " midi rig 1 recorder hey variable recorder bar record " when 1 called 1 do
+	midi recorder talker 2 hey 1 called 1 cancel
+	midi recorder talker 2 hey " midi rig 2 recorder hey variable recorder bar record " when 1 called 1 do
+	
+	global time talker hey 1 called 1 cancel
+	global time talker hey ` " 1 bar as recorder bar define all recorder talker hey 1 re do " do ` when 1 called 1 do
+	global time talker hey 2 called 1 cancel
+	global time talker hey ` " 2 bar as recorder bar define all recorder talker hey 1 re do " do ` when 2 called 1 do
+	global time talker hey 3 called 1 cancel
+	global time talker hey ` " 3 bar as recorder bar define all recorder talker hey 1 re do " do ` when 3 called 1 do
+	global time talker hey 4 called 1 cancel
+	global time talker hey ` " 4 bar as recorder bar define all recorder talker hey 1 re do " do ` when 4 called 1 do
+	global time talker hey 5 called 1 cancel
+	global time talker hey ` " 6 bar as recorder bar define all recorder talker hey 1 re do " do ` when 5 called 1 do
+	global time talker hey 6 called 1 cancel
+	global time talker hey ` " 8 bar as recorder bar define all recorder talker hey 1 re do " do ` when 6 called 1 do
+	global time talker hey 7 called 1 cancel
+	global time talker hey ` " 12 bar as recorder bar define all recorder talker hey 1 re do " do ` when 7 called 1 do
+	global time talker hey 8 called 1 cancel
+	global time talker hey ` " 16 bar as recorder bar define all recorder talker hey 1 re do " do ` when 8 called 1 do
+	global time talker hey 9 called 1 cancel
+	global time talker hey ` " 24 bar as recorder bar define all recorder talker hey 1 re do " do ` when 9 called 1 do
+	global time talker hey 10 called 1 cancel
+	global time talker hey ` " 32 bar as recorder bar define all recorder talker hey 1 re do " do ` when 10 called 1 do
+	
+	# remove the current connections to the players that became recorders
+	
+	recorder 1 key output un connect
+	recorder 1 pressure output un connect
+	audio unit rig 4 player controller un connect
+	audio unit rig 4 player key un connect
+	audio unit rig 4 player pressure un connect
+	
+	recorder 2 key output un connect
+	recorder 2 pressure output un connect
+	
+	sampler rig 4 player controller un connect
+	sampler rig 4 player key un connect
+	sampler rig 4 player pressure un connect
+	
+	# remove the players that became recorders
+	
+	recorder 1 un create
+	recorder 2 un create
+	
+	# clear the arranger row actions
+	
+	arranger 1 hey 1 called 1 cancel
+	arranger 1 hey 2 called 1 cancel
+	arranger 1 hey 3 called 1 cancel
+	arranger 1 hey 4 called 1 cancel
+	arranger 1 hey 5 called 1 cancel
+	arranger 1 hey 6 called 1 cancel
+	arranger 1 hey 7 called 1 cancel
+	arranger 1 hey 8 called 1 cancel
+	arranger 1 hey 9 called 1 cancel
+	arranger 1 hey 10 called 1 cancel
+	arranger 1 hey 11 called 1 cancel
+	arranger 1 hey 12 called 1 cancel
+	arranger 1 hey 13 called 1 cancel
+	arranger 1 hey 14 called 1 cancel
+	arranger 1 hey 15 called 1 cancel
+	arranger 1 hey 16 called 1 cancel
+	arranger 1 hey 17 called 1 cancel
+	arranger 1 hey 18 called 1 cancel
+	arranger 1 hey 19 called 1 cancel
+	arranger 1 hey 20 called 1 cancel
+	arranger 1 hey 21 called 1 cancel
+	arranger 1 hey 22 called 1 cancel
+	arranger 1 hey 23 called 1 cancel
+	arranger 1 hey 24 called 1 cancel
+	
+	arranger 2 hey 1 called 1 cancel
+	arranger 2 hey 2 called 1 cancel
+	arranger 2 hey 3 called 1 cancel
+	arranger 2 hey 4 called 1 cancel
+	arranger 2 hey 5 called 1 cancel
+	arranger 2 hey 6 called 1 cancel
+	arranger 2 hey 7 called 1 cancel
+	arranger 2 hey 8 called 1 cancel
+	arranger 2 hey 9 called 1 cancel
+	arranger 2 hey 10 called 1 cancel
+	arranger 2 hey 11 called 1 cancel
+	arranger 2 hey 12 called 1 cancel
+	arranger 2 hey 13 called 1 cancel
+	arranger 2 hey 14 called 1 cancel
+	arranger 2 hey 15 called 1 cancel
+	arranger 2 hey 16 called 1 cancel
+	arranger 2 hey 17 called 1 cancel
+	arranger 2 hey 18 called 1 cancel
+	arranger 2 hey 19 called 1 cancel
+	arranger 2 hey 20 called 1 cancel
+	arranger 2 hey 21 called 1 cancel
+	arranger 2 hey 22 called 1 cancel
+	arranger 2 hey 23 called 1 cancel
+	arranger 2 hey 24 called 1 cancel
+	
+	# create two players
+	
+	eigend hey player create
+	eigend hey player create
+	
+	# connect everything back up
+	
+	player 1 controller output to audio unit rig 4 player controller connect
+	player 1 key output to audio unit rig 4 player key connect
+	player 1 pressure output to audio unit rig 4 player pressure connect
+	
+	player 2 controller output to sampler rig 4 player controller connect
+	player 2 key output to sampler rig 4 player key connect
+	player 2 pressure output to sampler rig 4 player pressure connect
+	
+	# create the arranger row actions
+	
+	arranger 1 hey " player 1 hey note 1 with velocity 110 play " when 1 called 1 do
+	arranger 1 hey " player 1 hey note 2 with velocity 110 play " when 2 called 1 do
+	arranger 1 hey " player 1 hey note 3 with velocity 110 play " when 3 called 1 do
+	arranger 1 hey " player 1 hey note 4 with velocity 110 play " when 4 called 1 do
+	arranger 1 hey " player 1 hey note 5 with velocity 110 play " when 5 called 1 do
+	arranger 1 hey " player 1 hey note 6 with velocity 110 play " when 6 called 1 do
+	arranger 1 hey " player 1 hey note 7 with velocity 110 play " when 7 called 1 do
+	arranger 1 hey " player 1 hey note 8 with velocity 110 play " when 8 called 1 do
+	arranger 1 hey " player 1 hey note 9 with velocity 110 play " when 9 called 1 do
+	arranger 1 hey " player 1 hey note 10 with velocity 110 play " when 10 called 1 do
+	arranger 1 hey " player 1 hey note 11 with velocity 110 play " when 11 called 1 do
+	arranger 1 hey " player 1 hey note 12 with velocity 110 play " when 12 called 1 do
+	arranger 1 hey " player 1 hey note 13 with velocity 110 play " when 13 called 1 do
+	arranger 1 hey " player 1 hey note 14 with velocity 110 play " when 14 called 1 do
+	arranger 1 hey " player 1 hey note 15 with velocity 110 play " when 15 called 1 do
+	arranger 1 hey " player 1 hey note 16 with velocity 110 play " when 16 called 1 do
+	arranger 1 hey " player 1 hey note 17 with velocity 110 play " when 17 called 1 do
+	arranger 1 hey " player 1 hey note 18 with velocity 110 play " when 18 called 1 do
+	arranger 1 hey " player 1 hey note 19 with velocity 110 play " when 19 called 1 do
+	arranger 1 hey " player 1 hey note 20 with velocity 110 play " when 20 called 1 do
+	arranger 1 hey " player 1 hey note 21 with velocity 110 play " when 21 called 1 do
+	arranger 1 hey " player 1 hey note 22 with velocity 110 play " when 22 called 1 do
+	arranger 1 hey " player 1 hey note 23 with velocity 110 play " when 23 called 1 do
+	arranger 1 hey " player 1 hey note 24 with velocity 110 play " when 24 called 1 do
+	
+	arranger 2 hey " player 2 hey note 1 with velocity 110 play " when 1 called 1 do
+	arranger 2 hey " player 2 hey note 2 with velocity 110 play " when 2 called 1 do
+	arranger 2 hey " player 2 hey note 3 with velocity 110 play " when 3 called 1 do
+	arranger 2 hey " player 2 hey note 4 with velocity 110 play " when 4 called 1 do
+	arranger 2 hey " player 2 hey note 5 with velocity 110 play " when 5 called 1 do
+	arranger 2 hey " player 2 hey note 6 with velocity 110 play " when 6 called 1 do
+	arranger 2 hey " player 2 hey note 7 with velocity 110 play " when 7 called 1 do
+	arranger 2 hey " player 2 hey note 8 with velocity 110 play " when 8 called 1 do
+	arranger 2 hey " player 2 hey note 9 with velocity 110 play " when 9 called 1 do
+	arranger 2 hey " player 2 hey note 10 with velocity 110 play " when 10 called 1 do
+	arranger 2 hey " player 2 hey note 11 with velocity 110 play " when 11 called 1 do
+	arranger 2 hey " player 2 hey note 12 with velocity 110 play " when 12 called 1 do
+	arranger 2 hey " player 2 hey note 13 with velocity 110 play " when 13 called 1 do
+	arranger 2 hey " player 2 hey note 14 with velocity 110 play " when 14 called 1 do
+	arranger 2 hey " player 2 hey note 15 with velocity 110 play " when 15 called 1 do
+	arranger 2 hey " player 2 hey note 16 with velocity 110 play " when 16 called 1 do
+	arranger 2 hey " player 2 hey note 17 with velocity 110 play " when 17 called 1 do
+	arranger 2 hey " player 2 hey note 18 with velocity 110 play " when 18 called 1 do
+	arranger 2 hey " player 2 hey note 19 with velocity 110 play " when 19 called 1 do
+	arranger 2 hey " player 2 hey note 20 with velocity 110 play " when 20 called 1 do
+	arranger 2 hey " player 2 hey note 21 with velocity 110 play " when 21 called 1 do
+	arranger 2 hey " player 2 hey note 22 with velocity 110 play " when 22 called 1 do
+	arranger 2 hey " player 2 hey note 23 with velocity 110 play " when 23 called 1 do
+	arranger 2 hey " player 2 hey note 24 with velocity 110 play " when 24 called 1 do
+	
+	empty join
