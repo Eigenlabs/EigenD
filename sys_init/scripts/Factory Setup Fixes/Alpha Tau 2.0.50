@@ -12,6 +12,18 @@ script
 	# rename the advanced scale talker to a valid Belcanto name
 	
 	advanced scales talker to advanced scale talker name ify
+	
+	# remove mode key input that's not needed
+	
+	scale tonic keygroup 1 mode key input un connect
+
+	# clean up existing octave keygroup 1 connections
+	
+	octave keygroup 1 un connect
+	main keygroup keygroup output 1 controller output to octave keygroup 1 controller input connect
+	main keygroup keygroup output 1 key output to octave keygroup 1 key input connect
+	octave talker 1 un connect
+	octave keygroup 1 keygroup output 1 to octave talker 1 connect
 
 	# redefine scale talkers using a compound name variable
 	

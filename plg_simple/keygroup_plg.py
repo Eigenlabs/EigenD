@@ -594,6 +594,13 @@ class Agent(agent.Agent):
         self[17] = atom.Atom(domain=domain.Aniso(), policy=self.cinput.nodefault_policy(1,False),names='controller input')
         self.cfunctor.set_functor(piw.pathnull(0),utils.make_change_nb(piw.slowchange(utils.changify(self.__upstream))))
 
+        self.__upstream_modekey_columnlen = None
+
+        self.cmkfunctor = piw.functor_backend(1,True)
+        self.cmkinput = bundles.ScalarInput(self.cmkfunctor.cookie(),self.domain,signals=(1,))
+        self[37] = atom.Atom(domain=domain.Aniso(), policy=self.cmkinput.nodefault_policy(1,False),names='mode key controller input')
+        self.cmkfunctor.set_functor(piw.pathnull(0),utils.make_change_nb(piw.slowchange(utils.changify(self.__upstream_modekey))))
+
         self[18] = atom.Atom(domain=domain.BoundedFloatOrNull(-1,9,hints=th),init=None,policy=atom.default_policy(self.__change_octave),names='octave')
 
         self[19] = atom.Atom(domain=domain.BoundedFloatOrNull(0,12,hints=th),init=None,policy=atom.default_policy(self.__change_tonic),names='tonic',protocols='bind set',container=(None,'tonic',self.verb_container()))
@@ -697,7 +704,7 @@ class Agent(agent.Agent):
     def __update_mode_key(self):
         self.modekey_handler.set_modekey(piw.coordinate(self[24].get_value(), self[25].get_value(), self[26].get_value(), self[28].get_value()))
 
-    def __decode(self,c):
+    def __upstream(self,c):
         try:
             if not c.is_dict(): return 0
 
@@ -707,10 +714,9 @@ class Agent(agent.Agent):
             cl = c.as_dict_lookup('columnlen')
             new_cl = None
             if cl.is_tuple():
-                self.modekey_handler.set_upstream_columnlength(cl)
                 new_cl = [ i.as_long() for i in utils.tuple_items(cl) ]
-            else:
-                self.modekey_handler.set_upstream_columnlength(piw.makenull(0))
+            if new_cl and not self.__upstream_modekey_columnlen:
+                self.modekey_handler.set_upstream_columnlength(cl)
 
             if new_cl != self.__upstream_columnlen:
                 refresh_mappings = True
@@ -736,8 +742,21 @@ class Agent(agent.Agent):
         except:
             return 0
 
-    def __upstream(self,c):
-        self.__decode(c)
+    def __upstream_modekey(self,c):
+        try:
+            if not c.is_dict(): return 0
+
+            # store the upstream column lengths
+            cl = c.as_dict_lookup('columnlen')
+            new_cl = None
+            if cl.is_tuple():
+                self.modekey_handler.set_upstream_columnlength(cl)
+                new_cl = [ i.as_long() for i in utils.tuple_items(cl) ]
+
+            self.__upstream_modekey_columnlen = new_cl
+
+        except:
+            return 0
 
     def __set_course_semi(self,subject,course,interval):
         (typ,id) = action.crack_ideal(action.arg_objects(course)[0])
