@@ -1,7 +1,6 @@
 description
     This script fixes the recorders and arrangers in the EigenD 2.0.50
-    Alpha and Tau Factory Setups, it also cleans up the internal scaler
-    variables.
+    Tau Factory Setups, it also cleans up the internal scaler variables.
     
     It can take a long time to complete, please let it run
     until the status in the EigenBrowser says 'succeeded'.
@@ -13,15 +12,11 @@ script
 	
 	advanced scales talker to advanced scale talker name ify
 	
-	# remove mode key input that's not needed
-	
-	scale tonic keygroup 1 mode key input un connect
-
 	# clean up existing octave keygroup 1 connections
 	
 	octave keygroup 1 un connect
-	main keygroup keygroup output 1 controller output to octave keygroup 1 controller input connect
-	main keygroup keygroup output 1 key output to octave keygroup 1 key input connect
+	main keygroup split output 1 controller output to octave keygroup 1 controller input connect
+	main keygroup split output 1 key output to octave keygroup 1 key input connect
 	octave talker 1 un connect
 	octave keygroup 1 keygroup output 1 to octave talker 1 connect
 
@@ -37,21 +32,21 @@ script
 	whole tone as scale 8 define
 	
 	advanced scale talker hey 1 called 1 cancel
-	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 1 iyot choose when activation ` " empty join scale manager activation scale as scale 1 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 1 called 1 do
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 1 iyot choose when activation ` " empty join scale manager activation scale as scale 1 define global scale talker hey 1 re do scale talker 1 hey 1 re do scale talker 2 hey 1 re do scale talker 3 hey 1 re do scale talker 4 hey 1 re do scale talker 5 hey 1 re do scale talker 6 hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 1 called 1 do
 	advanced scale talker hey 2 called 1 cancel
-	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 2 iyot choose when activation ` " empty join scale manager activation scale as scale 2 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 2 called 1 do
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 2 iyot choose when activation ` " empty join scale manager activation scale as scale 2 define global scale talker hey 2 re do scale talker 1 hey 2 re do scale talker 2 hey 2 re do scale talker 3 hey 2 re do scale talker 4 hey 2 re do scale talker 5 hey 2 re do scale talker 6 hey 2 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 2 called 1 do
 	advanced scale talker hey 3 called 1 cancel
-	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 3 iyot choose when activation ` " empty join scale manager activation scale as scale 3 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 3 called 1 do
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 3 iyot choose when activation ` " empty join scale manager activation scale as scale 3 define global scale talker hey 3 re do scale talker 1 hey 3 re do scale talker 2 hey 3 re do scale talker 3 hey 3 re do scale talker 4 hey 3 re do scale talker 5 hey 3 re do scale talker 6 hey 3 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 3 called 1 do
 	advanced scale talker hey 4 called 1 cancel
-	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 4 iyot choose when activation ` " empty join scale manager activation scale as scale 4 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 4 called 1 do
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 4 iyot choose when activation ` " empty join scale manager activation scale as scale 4 define global scale talker hey 4 re do scale talker 1 hey 4 re do scale talker 2 hey 4 re do scale talker 3 hey 4 re do scale talker 4 hey 4 re do scale talker 5 hey 4 re do scale talker 6 hey 4 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 4 called 1 do
 	advanced scale talker hey 5 called 1 cancel
-	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 5 iyot choose when activation ` " empty join scale manager activation scale as scale 5 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 5 called 1 do
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 5 iyot choose when activation ` " empty join scale manager activation scale as scale 5 define global scale talker hey 5 re do scale talker 1 hey 5 re do scale talker 2 hey 5 re do scale talker 3 hey 5 re do scale talker 4 hey 5 re do scale talker 5 hey 5 re do scale talker 6 hey 5 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 5 called 1 do
 	advanced scale talker hey 6 called 1 cancel
-	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 6 iyot choose when activation ` " empty join scale manager activation scale as scale 6 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 6 called 1 do
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 6 iyot choose when activation ` " empty join scale manager activation scale as scale 6 define global scale talker hey 6 re do scale talker 1 hey 6 re do scale talker 2 hey 6 re do scale talker 3 hey 6 re do scale talker 4 hey 6 re do scale talker 5 hey 6 re do scale talker 6 hey 6 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 6 called 1 do
 	advanced scale talker hey 7 called 1 cancel
-	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 7 iyot choose when activation ` " empty join scale manager activation scale as scale 7 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 7 called 1 do
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 7 iyot choose when activation ` " empty join scale manager activation scale as scale 7 define global scale talker hey 7 re do scale talker 1 hey 7 re do scale talker 2 hey 7 re do scale talker 3 hey 7 re do scale talker 4 hey 7 re do scale talker 5 hey 7 re do scale talker 6 hey 7 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 7 called 1 do
 	advanced scale talker hey 8 called 1 cancel
-	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 8 iyot choose when activation ` " empty join scale manager activation scale as scale 8 define global scale talker hey 1 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 8 called 1 do
+	advanced scale talker hey ` "  empty join scale manager listen cancel variable scale 8 iyot choose when activation ` " empty join scale manager activation scale as scale 8 define global scale talker hey 8 re do scale talker 1 hey 8 re do scale talker 2 hey 8 re do scale talker 3 hey 8 re do scale talker 4 hey 8 re do scale talker 5 hey 8 re do scale talker 6 hey 8 re do " do ` do eigenbrowser hey scale manager scale browse " do ` when 8 called 1 do
 	
 	global scale talker hey 1 called 2 cancel
 	global scale talker hey " keygroup 1 hey scale to variable scale 1 set " when 1 called 2 do
@@ -70,6 +65,91 @@ script
 	global scale talker hey 8 called 2 cancel
 	global scale talker hey " keygroup 1 hey scale to variable scale 8 set " when 8 called 2 do
 	
+	global scale talker hey 1 called 3 cancel
+	global scale talker hey " keygroup 2 hey scale to variable scale 1 set " when 1 called 3 do
+	global scale talker hey 2 called 3 cancel
+	global scale talker hey " keygroup 2 hey scale to variable scale 2 set " when 2 called 3 do
+	global scale talker hey 3 called 3 cancel
+	global scale talker hey " keygroup 2 hey scale to variable scale 3 set " when 3 called 3 do
+	global scale talker hey 4 called 3 cancel
+	global scale talker hey " keygroup 2 hey scale to variable scale 4 set " when 4 called 3 do
+	global scale talker hey 5 called 3 cancel
+	global scale talker hey " keygroup 2 hey scale to variable scale 5 set " when 5 called 3 do
+	global scale talker hey 6 called 3 cancel
+	global scale talker hey " keygroup 2 hey scale to variable scale 6 set " when 6 called 3 do
+	global scale talker hey 7 called 3 cancel
+	global scale talker hey " keygroup 2 hey scale to variable scale 7 set " when 7 called 3 do
+	global scale talker hey 8 called 3 cancel
+	global scale talker hey " keygroup 2 hey scale to variable scale 8 set " when 8 called 3 do
+	
+	global scale talker hey 1 called 4 cancel
+	global scale talker hey " keygroup 3 hey scale to variable scale 1 set " when 1 called 4 do
+	global scale talker hey 2 called 4 cancel
+	global scale talker hey " keygroup 3 hey scale to variable scale 2 set " when 2 called 4 do
+	global scale talker hey 3 called 4 cancel
+	global scale talker hey " keygroup 3 hey scale to variable scale 3 set " when 3 called 4 do
+	global scale talker hey 4 called 4 cancel
+	global scale talker hey " keygroup 3 hey scale to variable scale 4 set " when 4 called 4 do
+	global scale talker hey 5 called 4 cancel
+	global scale talker hey " keygroup 3 hey scale to variable scale 5 set " when 5 called 4 do
+	global scale talker hey 6 called 4 cancel
+	global scale talker hey " keygroup 3 hey scale to variable scale 6 set " when 6 called 4 do
+	global scale talker hey 7 called 4 cancel
+	global scale talker hey " keygroup 3 hey scale to variable scale 7 set " when 7 called 4 do
+	global scale talker hey 8 called 4 cancel
+	global scale talker hey " keygroup 3 hey scale to variable scale 8 set " when 8 called 4 do
+	
+	global scale talker hey 1 called 5 cancel
+	global scale talker hey " keygroup 4 hey scale to variable scale 1 set " when 1 called 5 do
+	global scale talker hey 2 called 5 cancel
+	global scale talker hey " keygroup 4 hey scale to variable scale 2 set " when 2 called 5 do
+	global scale talker hey 3 called 5 cancel
+	global scale talker hey " keygroup 4 hey scale to variable scale 3 set " when 3 called 5 do
+	global scale talker hey 4 called 5 cancel
+	global scale talker hey " keygroup 4 hey scale to variable scale 4 set " when 4 called 5 do
+	global scale talker hey 5 called 5 cancel
+	global scale talker hey " keygroup 4 hey scale to variable scale 5 set " when 5 called 5 do
+	global scale talker hey 6 called 5 cancel
+	global scale talker hey " keygroup 4 hey scale to variable scale 6 set " when 6 called 5 do
+	global scale talker hey 7 called 5 cancel
+	global scale talker hey " keygroup 4 hey scale to variable scale 7 set " when 7 called 5 do
+	global scale talker hey 8 called 5 cancel
+	global scale talker hey " keygroup 4 hey scale to variable scale 8 set " when 8 called 5 do
+	
+	global scale talker hey 1 called 6 cancel
+	global scale talker hey " keygroup 5 hey scale to variable scale 1 set " when 1 called 6 do
+	global scale talker hey 2 called 6 cancel
+	global scale talker hey " keygroup 5 hey scale to variable scale 2 set " when 2 called 6 do
+	global scale talker hey 3 called 6 cancel
+	global scale talker hey " keygroup 5 hey scale to variable scale 3 set " when 3 called 6 do
+	global scale talker hey 4 called 6 cancel
+	global scale talker hey " keygroup 5 hey scale to variable scale 4 set " when 4 called 6 do
+	global scale talker hey 5 called 6 cancel
+	global scale talker hey " keygroup 5 hey scale to variable scale 5 set " when 5 called 6 do
+	global scale talker hey 6 called 6 cancel
+	global scale talker hey " keygroup 5 hey scale to variable scale 6 set " when 6 called 6 do
+	global scale talker hey 7 called 6 cancel
+	global scale talker hey " keygroup 5 hey scale to variable scale 7 set " when 7 called 6 do
+	global scale talker hey 8 called 6 cancel
+	global scale talker hey " keygroup 5 hey scale to variable scale 8 set " when 8 called 6 do
+	
+	global scale talker hey 1 called 7 cancel
+	global scale talker hey " keygroup 6 hey scale to variable scale 1 set " when 1 called 7 do
+	global scale talker hey 2 called 7 cancel
+	global scale talker hey " keygroup 6 hey scale to variable scale 2 set " when 2 called 7 do
+	global scale talker hey 3 called 7 cancel
+	global scale talker hey " keygroup 6 hey scale to variable scale 3 set " when 3 called 7 do
+	global scale talker hey 4 called 7 cancel
+	global scale talker hey " keygroup 6 hey scale to variable scale 4 set " when 4 called 7 do
+	global scale talker hey 5 called 7 cancel
+	global scale talker hey " keygroup 6 hey scale to variable scale 5 set " when 5 called 7 do
+	global scale talker hey 6 called 7 cancel
+	global scale talker hey " keygroup 6 hey scale to variable scale 6 set " when 6 called 7 do
+	global scale talker hey 7 called 7 cancel
+	global scale talker hey " keygroup 6 hey scale to variable scale 7 set " when 7 called 7 do
+	global scale talker hey 8 called 7 cancel
+	global scale talker hey " keygroup 6 hey scale to variable scale 8 set " when 8 called 7 do
+
 	# redefine recorder talkers using a compound name variable
 	
 	1 bar as recorder bar define
