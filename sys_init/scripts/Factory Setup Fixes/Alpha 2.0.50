@@ -19,6 +19,23 @@ script
 	main keygroup keygroup output 1 key output to octave keygroup 1 key input connect
 	octave talker 1 un connect
 	octave keygroup 1 keygroup output 1 to octave talker 1 connect
+	
+	# add an intermediate scale tonic keygroup to make the old factory setup 1 the same as the current one
+	
+	eigend hey keygroup create
+	it to scale tonic keygroup 1 name ify
+	
+	global scale talker un connect
+	global tonic talker un connect
+	talker keygroup 1 scale tonic output controller output to scale tonic keygroup 1 controller input connect
+	talker keygroup 1 scale tonic output key output to scale tonic keygroup 1 key input connect
+	scale tonic keygroup 1 light output to talker keygroup 1 scale tonic output light input connect
+	
+	scale tonic keygroup 1 hey output 12 create
+	it to global output name ify
+	
+	scale tonic keygroup 1 global output to global scale talker connect	
+	scale tonic keygroup 1 global output to global tonic talker connect	
 
 	# redefine scale talkers using a compound name variable
 	
