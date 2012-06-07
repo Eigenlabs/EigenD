@@ -24,9 +24,18 @@ from . import interpreter,referent
 
 import piw
 
-pri_global = 1
-pri_inner = 3
-pri_outer = 2
+pri_global_rig = 1
+pri_global_agent = 2
+pri_outer_rig = 3
+pri_outer_agent = 4
+pri_outer = 5
+pri_inner = 6
+
+def popset(s):
+    if s:
+        for i in s:
+            return i
+    return None
 
 def disambiguate(db,ids,words,all):
     if all or len(ids)==1:
@@ -64,6 +73,22 @@ def disambiguate_virtual(db,ids,words):
 
     return ids
 
+def get_rig_parts(rigs,oid):
+    todo = set([oid])
+    parts = set()
+    done = set()
+
+    while todo:
+        o = todo.pop()
+        if o in done: continue
+        done.add(o)
+        c = rigs.get_idset(o)
+        todo.update(c)
+        parts.update(c)
+
+    print 'parts',oid,'=',parts
+    return parts
+
 def get_parts(db,ids):
     val = set()
 
@@ -80,7 +105,7 @@ def get_parts(db,ids):
         assoc = assoc_cache.lefts(o)
         for a in assoc:
             val.update(bind_cache.get_idset(a))
-        val.update(host_cache.get_idset(o))
+        val.update(get_rig_parts(host_cache,o))
 
     return val
 
@@ -94,6 +119,7 @@ def refine_state(db,word,istate):
     n = get_number(word)
 
     while istate:
+        print 'refine:',word,istate
         cstate = []
 
         if word=='all':
@@ -133,9 +159,12 @@ def refine_state(db,word,istate):
     yield async.Coroutine.success(ostate)
 
 @async.coroutine('internal error')
-def finalise_state(db,istate):
+def finalise_state(db,istate,all):
     objects = dict()
     max_pri = -1
+    all_objects = set()
+
+    print 'finalise_state',all,istate
 
     for s in istate:
         r = s.flush(db)
@@ -143,13 +172,20 @@ def finalise_state(db,istate):
         if r.status():
             rv = r.args()[0]
             for (pri,olist) in rv:
-                objects.setdefault(pri,[]).extend(olist)
+                oset=set(olist)
+                objects.setdefault(pri,set()).update(oset)
+                all_objects.update(oset)
                 if pri > max_pri: max_pri = pri
                 
+    print 'finalise_state',all,all_objects
+
+    if all:
+        yield async.Coroutine.success(list(all_objects))
+
     if max_pri < 0:
         yield async.Coroutine.success([])
     
-    yield async.Coroutine.success(objects[max_pri])
+    yield async.Coroutine.success(list(objects[max_pri]))
 
 
 def make_state(pri,obj):
@@ -183,6 +219,14 @@ class State_Initial:
     def refine_all(self,db,w):
         return async.success([State_Initial(db,self.__outer,self.__inner,True)],[])
 
+    def partition(self,db,olist):
+        p = {}
+        for o in olist:
+            h = popset(db.get_propcache('host').get_valueset(o))
+            if h:
+                p.setdefault(h,set()).add(o)
+        return p.items()
+
     def refine(self,db,w):
         vids = db.get_propcache('protocol').get_idset('virtual')
         world = db.get_propcache('props').get_idset('agent')
@@ -194,6 +238,8 @@ class State_Initial:
 
         o_world_agent = world.intersection(wids).difference(raids)
         o_outer_agent = self.__outer.intersection(wids).difference(raids)
+        o_world_rig_agent = world.intersection(wids).intersection(raids)
+        o_outer_rig_agent = self.__outer.intersection(wids).intersection(raids)
 
         inner_parts = get_parts(db,self.__inner)
         outer_parts = get_parts(db,self.__outer)
@@ -202,10 +248,18 @@ class State_Initial:
         o_inner_part = inner_parts.intersection(wids)
 
         if o_world_agent:
-            states.append(State_Atom(pri_global,[w],o_world_agent,self.__all))
+            states.append(State_Atom(pri_global_agent,[w],o_world_agent,self.__all))
 
         if o_outer_agent:
-            states.append(State_Atom(pri_outer,[w],o_outer_agent,self.__all))
+            states.append(State_Atom(pri_outer_agent,[w],o_outer_agent,self.__all))
+
+        if o_world_rig_agent:
+            for (k,v) in self.partition(db,o_world_rig_agent):
+                states.append(State_Atom(pri_global_rig,[w],v,self.__all))
+
+        if o_outer_rig_agent:
+            for (k,v) in self.partition(db,o_outer_rig_agent):
+                states.append(State_Atom(pri_outer_rig,[w],v,self.__all))
 
         if o_outer_part:
             states.append(State_Atom(pri_outer,[w],o_outer_part,self.__all))
@@ -526,14 +580,14 @@ class State_Virtual:
             print 'resolution error',r.args()
             yield async.Coroutine.success([])
 
-        s = finalise_state(db,r.args()[0])
+        s = finalise_state(db,r.args()[0],self.__all)
         yield s
 
         if not s.status():
             print 'resolution error',s.args()
             yield async.Coroutine.success([])
 
-        print 'finalisation returns',s.args()
+        print 'finalisation returns',s.args(),'priority',self.__pri
 
         yield async.Coroutine.success([(self.__pri,s.args()[0])])
 
@@ -678,9 +732,11 @@ class ConcreteReferent(referent.Referent):
             yield async.Coroutine.success(False)
 
         if klass == 'noun':
+            print 'before',word,'state=',self.__state
             s = (yield ResolvHandler(refine_state(interp.get_database(),word,self.__state)))
             self.__words.append(word)
             self.__state = s
+            print 'after',word,'state=',s
             yield async.Coroutine.success(True)
 
         if self.__state is None:
@@ -731,7 +787,12 @@ class ConcreteReferent(referent.Referent):
             s = self.__state[:]
             self.__open=False
 
-            s = (yield ResolvHandler(finalise_state(interp.get_database(),s)))
+            all = False
+            if self.__words and self.__words[0]=='all':
+                all = True
+
+            print 'before flush, state=',s
+            s = (yield ResolvHandler(finalise_state(interp.get_database(),s,all)))
             s = s+[logic.make_term('abstract',tuple(self.__words))]
             print 'after flush, state=',s
             self.set_referent(words=self.__words,objects=s)

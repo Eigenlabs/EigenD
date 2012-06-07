@@ -463,11 +463,13 @@ class Agent(agent.Agent):
         self[2] = self.__workspace
 
         constraint = 'or([%s])' % ','.join(['[matches([%s],%s)]' % (m.replace('_',','),m) for m in self.__registry.modules()])
-        self.add_verb2(1,'create([un],None,role(None,[concrete,issubject(create,[role(by,[cnc(~self)])])]))',callback=self.__uncreateverb)
+        self.add_verb2(1,'create([un],None,role(None,[concrete,issubject(create,[role(by,[instance(~self)])])]))',callback=self.__uncreateverb)
         self.add_verb2(2,'create([],None,role(None,[abstract,%s]))' % constraint, callback=self.__createverb)
         self.add_verb2(3,'save([],None,role(None,[abstract]))', self.__saveverb)
         self.add_verb2(4,'load([],None,role(None,[abstract]))', self.__loadverb)
         self.add_verb2(5,'set([],None,role(None,[abstract,matches([startup])]),role(to,[abstract]))', self.__set_startup)
+        self.add_verb2(6,'create([],None,role(None,[abstract,%s]),role(in,[proto(rigouter)]))' % constraint, callback=self.__rigcreateverb)
+        self.add_verb2(7,'create([un],None,role(None,[concrete,issubjectextended(create,by,[role(by,[proto(rigouter)])])]))',callback=self.__riguncreateverb)
 
         piw.tsd_server(self.uid,self)
 
@@ -487,14 +489,6 @@ class Agent(agent.Agent):
         if not self.__workspace.unload(a,True):
             return async.failure('no such agent')
         return async.success(a)
-
-    def __uncreateverb(self,subject,agents):
-        r = []
-        for a in action.concrete_objects(agents):
-            if not self.__workspace.unload(a,True):
-                r.append(errors.doesnt_exist('agent','un create'))
-
-        return async.success(r)
 
     def server_opened(self):
         agent.Agent.server_opened(self)
@@ -537,6 +531,34 @@ class Agent(agent.Agent):
 
         return async.success(address)
 
+    @async.coroutine('internal error')
+    def __rigcreateverb(self,subject,plugin,rig):
+        rig = action.concrete_object(rig)
+        plugin = action.abstract_string(plugin)
+        result = rpc.invoke_rpc(rig,"createagent",plugin);
+        yield result
+        if result.status():
+            yield async.Coroutine.success(logic.parse_clause(result.args()[0]))
+        yield async.Coroutine.failure(*result.args())
+
+
+    @async.coroutine('internal error')
+    def __riguncreateverb(self,subject,agents):
+        results = []
+
+        for a in action.arg_objects(agents):
+            print 'a',a
+            o = action.crack_composite(a,action.crack_concrete)
+            plugin = o[0]
+            rig = o[1]
+            print 'un creating',plugin,'in',rig
+            result = rpc.invoke_rpc(rig,'uncreateagent',logic.render_term((plugin,)))
+            yield result
+            if result.status():
+                results.extend(logic.parse_clause(result.args()[0]))
+
+        yield async.Coroutine.success(results)
+
     def __createverb(self,subject,plugin):
         plugin = action.abstract_string(plugin)
         plugin = '_'.join(plugin.split())
@@ -558,6 +580,14 @@ class Agent(agent.Agent):
             return [action.error_return(m,plugin,'create',ENG) for m in delegate.errors]
 
         return action.concrete_return(address)
+
+    def __uncreateverb(self,subject,agents):
+        r = []
+        for a in action.concrete_objects(agents):
+            if not self.__workspace.unload(a,True):
+                r.append(errors.doesnt_exist('agent','un create'))
+
+        return async.success(r)
 
     @async.coroutine('internal error')
     def save_file(self,path,desc=''):
