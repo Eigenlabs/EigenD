@@ -12,10 +12,6 @@ script
 	
 	advanced scales talker to advanced scale talker name ify
 	
-	# remove mode key input that's not needed
-	
-	scale tonic keygroup 1 mode key input un connect
-
 	# clean up existing octave keygroup 1 connections
 	
 	octave keygroup 1 un connect
