@@ -508,7 +508,7 @@ class OutputList(atom.Atom):
 
 class InnerAgent(agent.Agent):
     def __init__(self,outer_agent):
-        agent.Agent.__init__(self,signature=version,names='rig gateway',ordinal=1)
+        agent.Agent.__init__(self,signature=version,names='gateway',ordinal=1)
 
         self.__description = outer_agent.get_description(full=True)
         print 'inner agent',self.__description
@@ -525,24 +525,25 @@ class InnerAgent(agent.Agent):
 
         self.add_verb2(1,'create([],None,role(None,[abstract,matches([input])]),option(called,[abstract]))',self.__create_input)
         self.add_verb2(2,'create([],None,role(None,[abstract,matches([output])]),option(called,[abstract]))',self.__create_output)
-        self.add_verb2(3,'create([un],None,role(None,[concrete,issubject(create,[role(by,[cnc(~self)])])]))',callback=self.__uncreateverb)
-        self.add_verb2(4,'create([],None,role(None,[abstract,%s]))' % constraint, callback=self.__createverb)
 
-    def __uncreateverb(self,subject,agents):
+    def set_owner(self,a):
+        self.__workspace.set_owner(a)
+
+    def rpc_uncreateagent(self,agents):
         r = []
-        for a in action.concrete_objects(agents):
+        for a in logic.parse_clause(agents):
+            a = paths.to_relative(a,self.__name)
             if not self.__workspace.unload(a,True):
                 r.append(errors.doesnt_exist('agent','un create'))
 
-        return async.success(r)
+        return logic.render_term(r)
 
-    def __createverb(self,subject,plugin):
-        plugin = action.abstract_string(plugin)
+    def rpc_createagent(self,plugin):
         plugin = '_'.join(plugin.split())
         factory = self.__registry.get_module(plugin)
 
         if not factory:
-            return async.failure('no such agent')
+            return logic.render_term(action.error_return('no such agent','create',ENG))
 
         class DummyDelegate():
             def __init__(self):
@@ -554,9 +555,9 @@ class InnerAgent(agent.Agent):
         address = self.__workspace.create(factory,delegate)
 
         if not address:
-            return [action.error_return(m,plugin,'create',ENG) for m in delegate.errors]
+            return logic.render_term([action.error_return(m,plugin,'create',ENG) for m in delegate.errors])
 
-        return action.concrete_return(address)
+        return logic.render_term(action.concrete_return(paths.to_absolute(address,self.__name)))
 
 
     def update_description(self):
@@ -624,7 +625,7 @@ class InnerAgent(agent.Agent):
 
 class OuterAgent(agent.Agent):
     def __init__(self,address,ordinal):
-        agent.Agent.__init__(self,signature=version,names='rig',ordinal=ordinal)
+        agent.Agent.__init__(self,signature=version,names='rig',ordinal=ordinal,protocols='rigouter')
 
         self.file_name = 'rig%d' % ordinal
         self.inner_name = '%s.%s' % (piw.tsd_scope(),self.file_name)
@@ -651,6 +652,12 @@ class OuterAgent(agent.Agent):
         if agent.Agent.property_veto(self,key,value):
             return True
         return key == 'rig'
+
+    def rpc_createagent(self,plugin):
+        return self.__inner_agent.rpc_createagent(plugin)
+
+    def rpc_uncreateagent(self,agents):
+        return self.__inner_agent.rpc_uncreateagent(agents)
 
     def property_change(self,key,value,delegate):
         if key in ['name','ordinal']:
@@ -694,6 +701,7 @@ class OuterAgent(agent.Agent):
     def server_opened(self):
         agent.Agent.server_opened(self)
         piw.tsd_server(paths.to_absolute('<eigend1>',self.inner_name),self.__inner_agent)
+        self.__inner_agent.set_owner("'%s'"%paths.to_absolute(self.id()));
 
     def close_server(self):
         agent.Agent.close_server(self)

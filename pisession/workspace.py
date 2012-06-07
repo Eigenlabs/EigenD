@@ -177,6 +177,7 @@ class AgentLoader:
         self.module = None
         self.agent = None
         self.context = None
+        self.address = None
 
     def __run(self,ctx,func,*args,**kwds):
         current_context = piw.tsd_snapshot()
@@ -219,6 +220,7 @@ class AgentLoader:
             self.module = m
             self.agent = a
             self.context = c
+            self.address = name
             return True
 
         c.kill()
@@ -231,6 +233,7 @@ class AgentLoader:
             self.context = None
             self.agent = None
             self.module = None
+            self.address = None
 
     def on_quit(self):
         if self.context is not None and self.agent is not None:
@@ -276,6 +279,8 @@ class Workspace(atom.Atom):
         self.__load_result = None
         self.__load_errors = None
         self.__load_path = None
+
+        self.__owner = "~a"
 
         self.__dbfile = resource.user_resource_file(resource.global_dir,"%s-%s" % (resource.current_setup,name))
 
@@ -706,9 +711,8 @@ class Workspace(atom.Atom):
         return (self.trunk.get_agent_address(0,address,True),True)
 
 
-    @staticmethod
-    def __relation(address):
-        return 'create(cnc("%s"),role(by,[instance(~a)]))' % address
+    def __relation(self,address):
+        return 'create(cnc("%s"),role(by,[cnc(%s)]))' % (address,self.__owner)
 
     def erase_agent(self,a):
         self.trunk.erase_agent(a)
@@ -766,6 +770,16 @@ class Workspace(atom.Atom):
         return new_signature
 
 
+    def set_owner(self,owner):
+        self.__owner = owner or "~a"
+        print "set owner", self.__owner
+        self.clear_frelation();
+
+        def visitor(v,s):
+            self.add_frelation(self.__relation(v.address))
+
+        self.__meta.visit(visitor)
+
     def __asserted(self,signature,delegate):
         print 'loading',signature,'into enclosure',self.__enclosure
         (address,plugin,version,cversion,ordinal) = signature.args
@@ -775,6 +789,7 @@ class Workspace(atom.Atom):
             delegate.add_error("No plugin for %s version %s" % (plugin,cversion))
             return None
 
+        print 'relation:',self.__relation(address)
         self.add_frelation(self.__relation(address))
         agent = AgentLoader()
         if agent.load(factory.module,self.__name,address,ordinal,self.__enclosure):

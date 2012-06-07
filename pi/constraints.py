@@ -526,6 +526,30 @@ def constraint_ideal_1(db,c,objects):
     yield async.Coroutine.success(matches)
             
 @async.coroutine('internal error')
+def constraint_issubjectextended_3(db,c,objects):
+    verb = c.args[0]   # ie 'create'
+    croles = dict((a.args[0],a.args[1]) for a in c.args[2])  # ie '[role(by,[cnc(~self)])]'
+    rr = c.args[1]
+    matches = []
+
+    for o in objects:
+        print 'issubjectextended',verb,o
+        for r in db.search_key('RROLES',T('db_relation',verb,o,V('RROLES'))):
+            print 'r=',r
+            rroles = dict((a.args[0],a.args[1]) for a in r)
+            cr = (yield resolve_constraints_dict(db,croles,rroles))
+            print 'found',o,croles,rroles,cr.status()
+            if not cr.status() or not cr.args()[0]:
+                continue
+
+            if rr not in cr.args()[1]:
+                continue
+
+            matches.append(T('cmp',(o,)+cr.args()[1][rr]))
+
+    yield async.Coroutine.success(matches)
+
+@async.coroutine('internal error')
 def constraint_issubject_2(db,c,objects):
     verb = c.args[0]   # ie 'create'
     croles = dict((a.args[0],a.args[1]) for a in c.args[1])  # ie '[role(by,[cnc(~self)])]'
@@ -535,10 +559,10 @@ def constraint_issubject_2(db,c,objects):
         print 'issubject',verb,o
         for r in db.search_key('RROLES',T('db_relation',verb,o,V('RROLES'))):
             rroles = dict((a.args[0],a.args[1]) for a in r)
-            cr = (yield resolve_constraints_dict(db,rroles,croles))
-            print 'found',o,croles,rroles,cr.status()
+            cr = (yield resolve_constraints_dict(db,croles,rroles))
             if not cr.status() or not cr.args()[0]:
                 continue
+            print 'found',o,croles,rroles,cr.args()[1]
             matches.append(o)
             break
 

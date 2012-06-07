@@ -394,7 +394,7 @@ Notes            Word           Classification     Synonyms
 2   4   2      : Forward       : Noun              : None
 2   4   3      : Scheduler     : Noun              : None
 2   4   4      : Mute          : Verb              : None
-2   4   5      : Unused        : Unused            : None
+2   4   5      : In            : Role              : None
 2   4   6      : Unused        : Unused            : None
 2   4   7      : Unused        : Unused            : None
 2   4   8      : Unused        : Unused            : None
