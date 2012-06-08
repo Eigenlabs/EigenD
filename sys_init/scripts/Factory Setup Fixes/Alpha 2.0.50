@@ -22,7 +22,7 @@ script
 	
 	# add an intermediate scale tonic keygroup to make the old factory setup 1 the same as the current one
 	
-	eigend hey keygroup create
+	keygroup create
 	it to scale tonic keygroup 1 name ify
 	
 	global scale talker un connect
@@ -265,8 +265,8 @@ script
 	
 	# create two players
 	
-	eigend hey player create
-	eigend hey player create
+	player create
+	player create
 	
 	# connect everything back up
 	

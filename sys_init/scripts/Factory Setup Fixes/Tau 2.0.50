@@ -333,8 +333,8 @@ script
 	
 	# create two players
 	
-	eigend hey player create
-	eigend hey player create
+	player create
+	player create
 	
 	# connect everything back up
 	
