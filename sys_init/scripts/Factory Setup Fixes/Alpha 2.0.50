@@ -206,11 +206,6 @@ script
 	sampler rig 4 player key un connect
 	sampler rig 4 player pressure un connect
 	
-	# remove the players that became recorders
-	
-	recorder 1 un create
-	recorder 2 un create
-	
 	# clear the arranger row actions
 	
 	arranger 1 hey 1 called 1 cancel
@@ -262,6 +257,11 @@ script
 	arranger 2 hey 22 called 1 cancel
 	arranger 2 hey 23 called 1 cancel
 	arranger 2 hey 24 called 1 cancel
+	
+	# remove the players that became recorders
+	
+	recorder 1 un create
+	recorder 2 un create
 	
 	# create two players
 	
