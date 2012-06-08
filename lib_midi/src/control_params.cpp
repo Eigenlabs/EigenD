@@ -18,6 +18,7 @@
 */
 
 #include <lib_midi/control_params.h>
+#include <lib_midi/midi_gm.h>
 
 namespace midi
 {
@@ -472,7 +473,14 @@ namespace midi
             long value;
             if(ending && ic->second.origin_return_)
             {
-                value = 0;
+                if(mid == MIDI_CC_MAX+midi::PITCH_WHEEL)
+                {
+                    value = 0x2000;
+                }
+                else
+                {
+                    value = 0;
+                }
             }
             else
             {
