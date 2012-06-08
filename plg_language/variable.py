@@ -68,6 +68,12 @@ class Variable(bundles.Output):
     def set_value(self,value):
         self.value = value
         self.__update()
+    
+    def get_index(self):
+        return self.__index
+
+    def has_alternatives(self):
+        return len(self.__alternatives) > 0
 
     def find_alternative(self,value):
         for (i,(r,v)) in enumerate(self.__alternatives):
@@ -113,28 +119,8 @@ class VariableManager(atom.Atom):
         self.variables = {}
         atom.Atom.__init__(self,creator = self.__create_variable, wrecker = self.__wreck_variable, container=(None,'variable',agent.verb_container()))
 
-        self.add_verb2(70,'define([],global_name,role(None,[]),role(as,[abstract]))',callback=self.__define_slow,create_action=self.__define_fast,status_action=self.__status)
-        self.add_verb2(71,'run([],global_run,role(None,[abstract]),option(with,[]))',self.__run)
-
-    @async.coroutine('internal error')
-    def __run(self,subject,script,arg):
-        name = action.abstract_string(script)
-        words = self.get_var(name)
-
-        if not words:
-            yield async.Coroutine.success(errors.doesnt_exist('%s does not exist'%name,'run'))
-
-        interp = interpreter.Interpreter(self.agent,self.agent.database, SubDelegate(self.agent))
-
-        print 'doing',words
-        self.agent.register_interpreter(interp)
-
-        try:
-            yield interp.process_block(words.split())
-        finally:
-            self.agent.unregister_interpreter(interp)
-
-        print 'done',words
+        self.add_verb2(70,'define([],global_name,role(None,[]),role(as,[abstract]))',callback=self.__define_slow,create_action=self.__define_fast,destroy_action=self.__destroy_fast,status_action=self.__status)
+        self.add_verb2(72,'define([un],global_name,role(None,[abstract]))',callback=self.__undefine_slow)
 
     def __create_variable(self,index):
         return Variable(self,index)
@@ -184,6 +170,18 @@ class VariableManager(atom.Atom):
         value = logic.render_term(value)
         self.set_var(name,value)
 
+    def __undefine_slow(self,subject,name):
+        name = action.abstract_string(name)
+        v = self.variables.get(name)
+        if v:
+            if v.has_alternatives():
+                return async.success(errors.invalid_value(name,'un define'))
+            del self[v.get_index()]
+            self.update_cache()
+            return async.success()
+        else:
+            return async.success(errors.doesnt_exist(name,'un define'))
+
     def __status(self,subject,value,name):
         n = action.abstract_string(name)
         v = logic.render_term(value)
@@ -200,6 +198,6 @@ class VariableManager(atom.Atom):
 
         return (piw.slowchange(utils.changify(changer)),(var,ind))
 
-    def __undefine_fast(self,ctx,data):
+    def __destroy_fast(self,ctx,data):
         (var,ind) = data
         var.delete_alternative(ind)
