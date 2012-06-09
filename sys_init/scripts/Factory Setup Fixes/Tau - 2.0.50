@@ -1,5 +1,5 @@
 description
-    This script fixes the recorders in the EigenD 2.0.50 Pico Factory
+    This script fixes the recorders in the EigenD 2.0.50 Tau Factory
     Setup, it also cleans up the internal scaler variables.
     
     It can take a long time to complete, please let it run

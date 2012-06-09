@@ -1,0 +1,38 @@
+description
+    This script fixes the internal rig light connections in
+    the EigenD 2.0.52 Alpha Factory 2 setup.
+    
+script
+	empty join
+	
+	# only connect the light output for channel 1 since it's located after a recorder
+	
+	sampler rig 1 gateway light un connect
+	sampler rig 1 scaler 1 light output to sampler rig 1 gateway light from channel 1 connect
+	sampler rig 2 gateway light un connect
+	sampler rig 2 scaler 1 light output to sampler rig 2 gateway light from channel 1 connect
+	sampler rig 3 gateway light un connect
+	sampler rig 3 scaler 1 light output to sampler rig 3 gateway light from channel 1 connect
+	sampler rig 4 gateway light un connect
+	sampler rig 4 scaler 1 light output to sampler rig 4 gateway light from channel 1 connect
+	audio unit rig 1 gateway light un connect
+	audio unit rig 1 scaler 1 light output to audio unit rig 1 gateway light from channel 1 connect
+	audio unit rig 2 gateway light un connect
+	audio unit rig 2 scaler 1 light output to audio unit rig 2 gateway light from channel 1 connect
+	audio unit rig 3 gateway light un connect
+	audio unit rig 3 scaler 1 light output to audio unit rig 3 gateway light from channel 1 connect
+	audio unit rig 4 gateway light un connect
+	audio unit rig 4 scaler 1 light output to audio unit rig 4 gateway light from channel 1 connect
+	cello rig gateway light un connect
+	cello rig scaler 1 light output to cello rig gateway light from channel 1 connect
+	clarinet rig gateway light un connect
+	clarinet rig scaler 1 light output to clarinet rig gateway light from channel 1 connect
+	synth rig gateway light un connect
+	synth rig scaler 1 light output to synth rig gateway light from channel 1 connect
+	midi rig 1 gateway light un connect
+	midi rig 1 scaler 1 light output to midi rig 1 gateway light from channel 1 connect
+	midi rig 2 gateway light un connect
+	midi rig 2 scaler 1 light output to midi rig 2 gateway light from channel 1 connect
+	
+	empty join
+	

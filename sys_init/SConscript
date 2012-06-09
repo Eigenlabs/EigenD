@@ -31,6 +31,7 @@ env.PiResources('Scripts/Factory Setup Fixes','scripts/Factory Setup Fixes/*',pa
 env.PiResources('Scripts/Interpreter','scripts/Interpreter/*',package='eigend')
 env.PiResources('Scripts/Keyboard Layout','scripts/Keyboard Layout/*',package='eigend')
 env.PiResources('Scripts/Keygroup','scripts/Keygroup/*',package='eigend') 
+env.PiResources('Scripts/Lights','scripts/Lights/*',package='eigend')
 env.PiResources('Scripts/Metronome','scripts/Metronome/*',package='eigend') 
 env.PiResources('Scripts/Midi Outputs','scripts/Midi Outputs/*',package='eigend') 
 env.PiResources('Scripts/Octave Key Transposition','scripts/Octave Key Transposition/*',package='eigend')

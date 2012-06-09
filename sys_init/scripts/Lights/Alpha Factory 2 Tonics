@@ -1,0 +1,48 @@
+description
+	This script activates green tonic indicator lights for all
+	the instruments and keygroups of the Alpha Factory 2 setup.
+	
+script
+	empty join
+	
+	sampler rig 1 output light to keygroup 1 sampler output 1 light input from channel 1 connect
+	sampler rig 2 output light to keygroup 1 sampler output 2 light input from channel 1 connect
+	sampler rig 3 output light to keygroup 1 sampler output 3 light input from channel 1 connect
+	sampler rig 4 output light to keygroup 1 sampler output 4 light input from channel 1 connect
+	audio unit rig 1 output light to keygroup 1 audio unit output 1 light input from channel 1 connect
+	audio unit rig 2 output light to keygroup 1 audio unit output 2 light input from channel 1 connect
+	audio unit rig 3 output light to keygroup 1 audio unit output 3 light input from channel 1 connect
+	audio unit rig 4 output light to keygroup 1 audio unit output 4 light input from channel 1 connect
+	clarinet rig output light to keygroup 1 clarinet output light input from channel 1 connect
+	cello rig output light to keygroup 1 cello output light input from channel 1 connect
+	synth rig output light to keygroup 1 synth output light input from channel 1 connect
+	midi rig 1 output light to keygroup 1 midi output 1 light input from channel 1 connect
+	midi rig 2 output light to keygroup 1 midi output 2 light input from channel 1 connect
+	
+	sampler rig 1 output light to keygroup 2 sampler output 1 light input from channel 2 connect
+	sampler rig 2 output light to keygroup 2 sampler output 2 light input from channel 2 connect
+	sampler rig 3 output light to keygroup 2 sampler output 3 light input from channel 2 connect
+	sampler rig 4 output light to keygroup 2 sampler output 4 light input from channel 2 connect
+	audio unit rig 1 output light to keygroup 2 audio unit output 1 light input from channel 2 connect
+	audio unit rig 2 output light to keygroup 2 audio unit output 2 light input from channel 2 connect
+	audio unit rig 3 output light to keygroup 2 audio unit output 3 light input from channel 2 connect
+	audio unit rig 4 output light to keygroup 2 audio unit output 4 light input from channel 2 connect
+	clarinet rig output light to keygroup 2 clarinet output light input from channel 2 connect
+	cello rig output light to keygroup 2 cello output light input from channel 2 connect
+	synth rig output light to keygroup 2 synth output light input from channel 2 connect
+	midi rig 1 output light to keygroup 2 midi output 1 light input from channel 2 connect
+	midi rig 2 output light to keygroup 2 midi output 2 light input from channel 2 connect
+	
+	sampler rig 1 output light to keygroup 3 sampler output 1 light input from channel 3 connect
+	sampler rig 2 output light to keygroup 3 sampler output 2 light input from channel 3 connect
+	sampler rig 3 output light to keygroup 3 sampler output 3 light input from channel 3 connect
+	sampler rig 4 output light to keygroup 3 sampler output 4 light input from channel 3 connect
+	audio unit rig 1 output light to keygroup 3 audio unit output 1 light input from channel 3 connect
+	audio unit rig 2 output light to keygroup 3 audio unit output 2 light input from channel 3 connect
+	audio unit rig 3 output light to keygroup 3 audio unit output 3 light input from channel 3 connect
+	audio unit rig 4 output light to keygroup 3 audio unit output 4 light input from channel 3 connect
+	clarinet rig output light to keygroup 3 clarinet output light input from channel 3 connect
+	cello rig output light to keygroup 3 cello output light input from channel 3 connect
+	synth rig output light to keygroup 3 synth output light input from channel 3 connect
+	midi rig 1 output light to keygroup 3 midi output 1 light input from channel 3 connect
+	midi rig 2 output light to keygroup 3 midi output 2 light input from channel 3 connect

@@ -1,0 +1,161 @@
+description
+	This script activates green tonic indicator lights for all
+	the instruments and keygroups of the Alpha Factory 3 setup.
+	
+script
+	empty join
+	
+	sampler rig 1 output light to keygroup 1 sampler output 1 light input from channel 1 connect
+	sampler rig 2 output light to keygroup 1 sampler output 2 light input from channel 1 connect
+	sampler rig 3 output light to keygroup 1 sampler output 3 light input from channel 1 connect
+	sampler rig 4 output light to keygroup 1 sampler output 4 light input from channel 1 connect
+	audio unit rig 1 output light to keygroup 1 audio unit output 1 light input from channel 1 connect
+	audio unit rig 2 output light to keygroup 1 audio unit output 2 light input from channel 1 connect
+	audio unit rig 3 output light to keygroup 1 audio unit output 3 light input from channel 1 connect
+	audio unit rig 4 output light to keygroup 1 audio unit output 4 light input from channel 1 connect
+	clarinet rig output light to keygroup 1 clarinet output light input from channel 1 connect
+	cello rig output light to keygroup 1 cello output light input from channel 1 connect
+	synth rig output light to keygroup 1 synth output light input from channel 1 connect
+	midi rig 1 output light to keygroup 1 midi output 1 light input from channel 1 connect
+	midi rig 2 output light to keygroup 1 midi output 2 light input from channel 1 connect
+	
+	sampler rig 1 output light to keygroup 2 sampler output 1 light input from channel 2 connect
+	sampler rig 2 output light to keygroup 2 sampler output 2 light input from channel 2 connect
+	sampler rig 3 output light to keygroup 2 sampler output 3 light input from channel 2 connect
+	sampler rig 4 output light to keygroup 2 sampler output 4 light input from channel 2 connect
+	audio unit rig 1 output light to keygroup 2 audio unit output 1 light input from channel 2 connect
+	audio unit rig 2 output light to keygroup 2 audio unit output 2 light input from channel 2 connect
+	audio unit rig 3 output light to keygroup 2 audio unit output 3 light input from channel 2 connect
+	audio unit rig 4 output light to keygroup 2 audio unit output 4 light input from channel 2 connect
+	clarinet rig output light to keygroup 2 clarinet output light input from channel 2 connect
+	cello rig output light to keygroup 2 cello output light input from channel 2 connect
+	synth rig output light to keygroup 2 synth output light input from channel 2 connect
+	midi rig 1 output light to keygroup 2 midi output 1 light input from channel 2 connect
+	midi rig 2 output light to keygroup 2 midi output 2 light input from channel 2 connect
+	
+	sampler rig 1 output light to keygroup 3 sampler output 1 light input from channel 3 connect
+	sampler rig 2 output light to keygroup 3 sampler output 2 light input from channel 3 connect
+	sampler rig 3 output light to keygroup 3 sampler output 3 light input from channel 3 connect
+	sampler rig 4 output light to keygroup 3 sampler output 4 light input from channel 3 connect
+	audio unit rig 1 output light to keygroup 3 audio unit output 1 light input from channel 3 connect
+	audio unit rig 2 output light to keygroup 3 audio unit output 2 light input from channel 3 connect
+	audio unit rig 3 output light to keygroup 3 audio unit output 3 light input from channel 3 connect
+	audio unit rig 4 output light to keygroup 3 audio unit output 4 light input from channel 3 connect
+	clarinet rig output light to keygroup 3 clarinet output light input from channel 3 connect
+	cello rig output light to keygroup 3 cello output light input from channel 3 connect
+	synth rig output light to keygroup 3 synth output light input from channel 3 connect
+	midi rig 1 output light to keygroup 3 midi output 1 light input from channel 3 connect
+	midi rig 2 output light to keygroup 3 midi output 2 light input from channel 3 connect
+	
+	sampler rig 1 output light to keygroup 4 sampler output 1 light input from channel 4 connect
+	sampler rig 2 output light to keygroup 4 sampler output 2 light input from channel 4 connect
+	sampler rig 3 output light to keygroup 4 sampler output 3 light input from channel 4 connect
+	sampler rig 4 output light to keygroup 4 sampler output 4 light input from channel 4 connect
+	audio unit rig 1 output light to keygroup 4 audio unit output 1 light input from channel 4 connect
+	audio unit rig 2 output light to keygroup 4 audio unit output 2 light input from channel 4 connect
+	audio unit rig 3 output light to keygroup 4 audio unit output 3 light input from channel 4 connect
+	audio unit rig 4 output light to keygroup 4 audio unit output 4 light input from channel 4 connect
+	clarinet rig output light to keygroup 4 clarinet output light input from channel 4 connect
+	cello rig output light to keygroup 4 cello output light input from channel 4 connect
+	synth rig output light to keygroup 4 synth output light input from channel 4 connect
+	midi rig 1 output light to keygroup 4 midi output 1 light input from channel 4 connect
+	midi rig 2 output light to keygroup 4 midi output 2 light input from channel 4 connect
+	
+	sampler rig 1 output light to keygroup 5 sampler output 1 light input from channel 5 connect
+	sampler rig 2 output light to keygroup 5 sampler output 2 light input from channel 5 connect
+	sampler rig 3 output light to keygroup 5 sampler output 3 light input from channel 5 connect
+	sampler rig 4 output light to keygroup 5 sampler output 4 light input from channel 5 connect
+	audio unit rig 1 output light to keygroup 5 audio unit output 1 light input from channel 5 connect
+	audio unit rig 2 output light to keygroup 5 audio unit output 2 light input from channel 5 connect
+	audio unit rig 3 output light to keygroup 5 audio unit output 3 light input from channel 5 connect
+	audio unit rig 4 output light to keygroup 5 audio unit output 4 light input from channel 5 connect
+	clarinet rig output light to keygroup 5 clarinet output light input from channel 5 connect
+	cello rig output light to keygroup 5 cello output light input from channel 5 connect
+	synth rig output light to keygroup 5 synth output light input from channel 5 connect
+	midi rig 1 output light to keygroup 5 midi output 1 light input from channel 5 connect
+	midi rig 2 output light to keygroup 5 midi output 2 light input from channel 5 connect
+	
+	sampler rig 1 output light to keygroup 6 sampler output 1 light input from channel 6 connect
+	sampler rig 2 output light to keygroup 6 sampler output 2 light input from channel 6 connect
+	sampler rig 3 output light to keygroup 6 sampler output 3 light input from channel 6 connect
+	sampler rig 4 output light to keygroup 6 sampler output 4 light input from channel 6 connect
+	audio unit rig 1 output light to keygroup 6 audio unit output 1 light input from channel 6 connect
+	audio unit rig 2 output light to keygroup 6 audio unit output 2 light input from channel 6 connect
+	audio unit rig 3 output light to keygroup 6 audio unit output 3 light input from channel 6 connect
+	audio unit rig 4 output light to keygroup 6 audio unit output 4 light input from channel 6 connect
+	clarinet rig output light to keygroup 6 clarinet output light input from channel 6 connect
+	cello rig output light to keygroup 6 cello output light input from channel 6 connect
+	synth rig output light to keygroup 6 synth output light input from channel 6 connect
+	midi rig 1 output light to keygroup 6 midi output 1 light input from channel 6 connect
+	midi rig 2 output light to keygroup 6 midi output 2 light input from channel 6 connect
+	
+	sampler rig 1 output light to keygroup 7 sampler output 1 light input from channel 7 connect
+	sampler rig 2 output light to keygroup 7 sampler output 2 light input from channel 7 connect
+	sampler rig 3 output light to keygroup 7 sampler output 3 light input from channel 7 connect
+	sampler rig 4 output light to keygroup 7 sampler output 4 light input from channel 7 connect
+	audio unit rig 1 output light to keygroup 7 audio unit output 1 light input from channel 7 connect
+	audio unit rig 2 output light to keygroup 7 audio unit output 2 light input from channel 7 connect
+	audio unit rig 3 output light to keygroup 7 audio unit output 3 light input from channel 7 connect
+	audio unit rig 4 output light to keygroup 7 audio unit output 4 light input from channel 7 connect
+	clarinet rig output light to keygroup 7 clarinet output light input from channel 7 connect
+	cello rig output light to keygroup 7 cello output light input from channel 7 connect
+	synth rig output light to keygroup 7 synth output light input from channel 7 connect
+	midi rig 1 output light to keygroup 7 midi output 1 light input from channel 7 connect
+	midi rig 2 output light to keygroup 7 midi output 2 light input from channel 7 connect
+	
+	sampler rig 1 output light to keygroup 8 sampler output 1 light input from channel 8 connect
+	sampler rig 2 output light to keygroup 8 sampler output 2 light input from channel 8 connect
+	sampler rig 3 output light to keygroup 8 sampler output 3 light input from channel 8 connect
+	sampler rig 4 output light to keygroup 8 sampler output 4 light input from channel 8 connect
+	audio unit rig 1 output light to keygroup 8 audio unit output 1 light input from channel 8 connect
+	audio unit rig 2 output light to keygroup 8 audio unit output 2 light input from channel 8 connect
+	audio unit rig 3 output light to keygroup 8 audio unit output 3 light input from channel 8 connect
+	audio unit rig 4 output light to keygroup 8 audio unit output 4 light input from channel 8 connect
+	clarinet rig output light to keygroup 8 clarinet output light input from channel 8 connect
+	cello rig output light to keygroup 8 cello output light input from channel 8 connect
+	synth rig output light to keygroup 8 synth output light input from channel 8 connect
+	midi rig 1 output light to keygroup 8 midi output 1 light input from channel 8 connect
+	midi rig 2 output light to keygroup 8 midi output 2 light input from channel 8 connect
+	
+	sampler rig 1 output light to keygroup 9 sampler output 1 light input from channel 9 connect
+	sampler rig 2 output light to keygroup 9 sampler output 2 light input from channel 9 connect
+	sampler rig 3 output light to keygroup 9 sampler output 3 light input from channel 9 connect
+	sampler rig 4 output light to keygroup 9 sampler output 4 light input from channel 9 connect
+	audio unit rig 1 output light to keygroup 9 audio unit output 1 light input from channel 9 connect
+	audio unit rig 2 output light to keygroup 9 audio unit output 2 light input from channel 9 connect
+	audio unit rig 3 output light to keygroup 9 audio unit output 3 light input from channel 9 connect
+	audio unit rig 4 output light to keygroup 9 audio unit output 4 light input from channel 9 connect
+	clarinet rig output light to keygroup 9 clarinet output light input from channel 9 connect
+	cello rig output light to keygroup 9 cello output light input from channel 9 connect
+	synth rig output light to keygroup 9 synth output light input from channel 9 connect
+	midi rig 1 output light to keygroup 9 midi output 1 light input from channel 9 connect
+	midi rig 2 output light to keygroup 9 midi output 2 light input from channel 9 connect
+	
+	sampler rig 1 output light to keygroup 10 sampler output 1 light input from channel 10 connect
+	sampler rig 2 output light to keygroup 10 sampler output 2 light input from channel 10 connect
+	sampler rig 3 output light to keygroup 10 sampler output 3 light input from channel 10 connect
+	sampler rig 4 output light to keygroup 10 sampler output 4 light input from channel 10 connect
+	audio unit rig 1 output light to keygroup 10 audio unit output 1 light input from channel 10 connect
+	audio unit rig 2 output light to keygroup 10 audio unit output 2 light input from channel 10 connect
+	audio unit rig 3 output light to keygroup 10 audio unit output 3 light input from channel 10 connect
+	audio unit rig 4 output light to keygroup 10 audio unit output 4 light input from channel 10 connect
+	clarinet rig output light to keygroup 10 clarinet output light input from channel 10 connect
+	cello rig output light to keygroup 10 cello output light input from channel 10 connect
+	synth rig output light to keygroup 10 synth output light input from channel 10 connect
+	midi rig 1 output light to keygroup 10 midi output 1 light input from channel 10 connect
+	midi rig 2 output light to keygroup 10 midi output 2 light input from channel 10 connect
+	
+	sampler rig 1 output light to keygroup 11 sampler output 1 light input from channel 11 connect
+	sampler rig 2 output light to keygroup 11 sampler output 2 light input from channel 11 connect
+	sampler rig 3 output light to keygroup 11 sampler output 3 light input from channel 11 connect
+	sampler rig 4 output light to keygroup 11 sampler output 4 light input from channel 11 connect
+	audio unit rig 1 output light to keygroup 11 audio unit output 1 light input from channel 11 connect
+	audio unit rig 2 output light to keygroup 11 audio unit output 2 light input from channel 11 connect
+	audio unit rig 3 output light to keygroup 11 audio unit output 3 light input from channel 11 connect
+	audio unit rig 4 output light to keygroup 11 audio unit output 4 light input from channel 11 connect
+	clarinet rig output light to keygroup 11 clarinet output light input from channel 11 connect
+	cello rig output light to keygroup 11 cello output light input from channel 11 connect
+	synth rig output light to keygroup 11 synth output light input from channel 11 connect
+	midi rig 1 output light to keygroup 11 midi output 1 light input from channel 11 connect
+	midi rig 2 output light to keygroup 11 midi output 2 light input from channel 11 connect
+	
