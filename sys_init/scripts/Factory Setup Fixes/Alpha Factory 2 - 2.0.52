@@ -1,11 +1,71 @@
 description
-    This script fixes the internal rig light connections in
+    This script fixes the internal rig light connections,
+    the arranger players and the recorder length in
     the EigenD 2.0.52 Alpha Factory 2 setup.
     
 script
 	empty join
+
+	# reconnect the player connections by using channels
+
+	audio unit rig 4 player controller un connect
+	audio unit rig 4 player key un connect
+	audio unit rig 4 player pressure un connect
 	
-	# only connect the light output for channel 1 since it's located after a recorder
+	sampler rig 4 player controller un connect
+	sampler rig 4 player key un connect
+	sampler rig 4 player pressure un connect
+	
+	player 1 controller output to audio unit rig 4 player controller into channel 13 connect
+	player 1 key output to audio unit rig 4 player key into channel 13 connect
+	player 1 pressure output to audio unit rig 4 player pressure into channel 13 connect
+	
+	player 2 controller output to sampler rig 4 player controller into channel 14 connect
+	player 2 key output to sampler rig 4 player key into channel 14 connect
+	player 2 pressure output to sampler rig 4 player pressure into channel 14 connect
+	
+	# properly use channels inside the Audio Unit 4 and Sampler 4 rigs so that players are totally separated
+	# from the recorder and its takes
+	
+	sampler rig 4 scaler 1 controller input un connect
+	sampler rig 4 scaler 1 key input un connect
+	sampler rig 4 scaler 1 pressure input un connect
+	sampler rig 4 scaler 1 roll input un connect
+	sampler rig 4 scaler 1 key pitch bend input un connect
+	sampler rig 4 scaler 1 yaw input un connect
+	sampler rig 4 scaler 1 global pitch bend input un connect
+	
+	sampler rig 4 recorder 1 controller output to sampler rig 4 scaler 1 controller input into channel 1 connect
+	sampler rig 4 recorder 1 key output to sampler rig 4 scaler 1 key input into channel 1 connect
+	sampler rig 4 recorder 1 pressure output to sampler rig 4 scaler 1 pressure input into channel 1 connect
+	sampler rig 4 recorder 1 roll output to sampler rig 4 scaler 1 roll input into channel 1 connect
+	sampler rig 4 recorder 1 roll output to sampler rig 4 scaler 1 key pitch bend input into channel 1 connect
+	sampler rig 4 recorder 1 yaw output to sampler rig 4 scaler 1 yaw input into channel 1 connect
+	sampler rig 4 recorder 1 outputs strip position 1 to sampler rig 4 scaler 1 global pitch bend input into channel 1 connect
+	
+	sampler rig 4 gateway 1 player controller to sampler rig 4 scaler 1 controller input into channel 2 connect
+	sampler rig 4 gateway 1 player key to sampler rig 4 scaler 1 key input into channel 2 connect
+	sampler rig 4 gateway 1 player pressure to sampler rig 4 scaler 1 pressure input into channel 2 connect
+	
+	audio unit rig 4 scaler 1 controller input un connect
+	audio unit rig 4 scaler 1 key input un connect
+	audio unit rig 4 scaler 1 pressure input un connect
+	audio unit rig 4 scaler 1 roll input un connect
+	audio unit rig 4 scaler 1 key pitch bend input un connect
+	audio unit rig 4 scaler 1 yaw input un connect
+	
+	audio unit rig 4 recorder 1 controller output to audio unit rig 4 scaler 1 controller input into channel 1 connect
+	audio unit rig 4 recorder 1 key output to audio unit rig 4 scaler 1 key input into channel 1 connect
+	audio unit rig 4 recorder 1 pressure output to audio unit rig 4 scaler 1 pressure input into channel 1 connect
+	audio unit rig 4 recorder 1 roll output to audio unit rig 4 scaler 1 roll input into channel 1 connect
+	audio unit rig 4 recorder 1 roll output to audio unit rig 4 scaler 1 key pitch bend input into channel 1 connect
+	audio unit rig 4 recorder 1 yaw output to audio unit rig 4 scaler 1 yaw input into channel 1 connect
+	
+	audio unit rig 4 gateway 1 player controller to audio unit rig 4 scaler 1 controller input into channel 2 connect
+	audio unit rig 4 gateway 1 player key to audio unit rig 4 scaler 1 key input into channel 2 connect
+	audio unit rig 4 gateway 1 player pressure to audio unit rig 4 scaler 1 pressure input into channel 2 connect
+	
+	# only connect the light output for channel 1.1 since it's located after a recorder
 	
 	sampler rig 1 gateway light un connect
 	sampler rig 1 scaler 1 light output to sampler rig 1 gateway light from channel 1 connect
@@ -14,7 +74,7 @@ script
 	sampler rig 3 gateway light un connect
 	sampler rig 3 scaler 1 light output to sampler rig 3 gateway light from channel 1 connect
 	sampler rig 4 gateway light un connect
-	sampler rig 4 scaler 1 light output to sampler rig 4 gateway light from channel 1 connect
+	sampler rig 4 scaler 1 light output to sampler rig 4 gateway light from channel 1.1 connect
 	audio unit rig 1 gateway light un connect
 	audio unit rig 1 scaler 1 light output to audio unit rig 1 gateway light from channel 1 connect
 	audio unit rig 2 gateway light un connect
@@ -22,7 +82,7 @@ script
 	audio unit rig 3 gateway light un connect
 	audio unit rig 3 scaler 1 light output to audio unit rig 3 gateway light from channel 1 connect
 	audio unit rig 4 gateway light un connect
-	audio unit rig 4 scaler 1 light output to audio unit rig 4 gateway light from channel 1 connect
+	audio unit rig 4 scaler 1 light output to audio unit rig 4 gateway light from channel 1.1 connect
 	cello rig gateway light un connect
 	cello rig scaler 1 light output to cello rig gateway light from channel 1 connect
 	clarinet rig gateway light un connect
@@ -33,6 +93,29 @@ script
 	midi rig 1 scaler 1 light output to midi rig 1 gateway light from channel 1 connect
 	midi rig 2 gateway light un connect
 	midi rig 2 scaler 1 light output to midi rig 2 gateway light from channel 1 connect
+	
+	# fix the recorder talkers so that it takes the newly defined bars when a recording is activated
+	
+	global time talker hey 1 called 1 cancel
+	global time talker hey ` " 1 bar as recorder bar define all recorder talker hey 2 re do " do ` when 1 called 1 do
+	global time talker hey 2 called 1 cancel
+	global time talker hey ` " 2 bar as recorder bar define all recorder talker hey 2 re do " do ` when 2 called 1 do
+	global time talker hey 3 called 1 cancel
+	global time talker hey ` " 3 bar as recorder bar define all recorder talker hey 2 re do " do ` when 3 called 1 do
+	global time talker hey 4 called 1 cancel
+	global time talker hey ` " 4 bar as recorder bar define all recorder talker hey 2 re do " do ` when 4 called 1 do
+	global time talker hey 5 called 1 cancel
+	global time talker hey ` " 6 bar as recorder bar define all recorder talker hey 2 re do " do ` when 5 called 1 do
+	global time talker hey 6 called 1 cancel
+	global time talker hey ` " 8 bar as recorder bar define all recorder talker hey 2 re do " do ` when 6 called 1 do
+	global time talker hey 7 called 1 cancel
+	global time talker hey ` " 12 bar as recorder bar define all recorder talker hey 2 re do " do ` when 7 called 1 do
+	global time talker hey 8 called 1 cancel
+	global time talker hey ` " 16 bar as recorder bar define all recorder talker hey 2 re do " do ` when 8 called 1 do
+	global time talker hey 9 called 1 cancel
+	global time talker hey ` " 24 bar as recorder bar define all recorder talker hey 2 re do " do ` when 9 called 1 do
+	global time talker hey 10 called 1 cancel
+	global time talker hey ` " 32 bar as recorder bar define all recorder talker hey 2 re do " do ` when 10 called 1 do
 	
 	empty join
 	

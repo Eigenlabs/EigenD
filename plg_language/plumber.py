@@ -20,7 +20,7 @@
 from pi.logic.shortcuts import *
 from pi import action,logic,async,domain,utils,resource,rpc,timeout,plumber
 from . import interpreter,noun,imperative,referent
-import traceback
+import re
 
 def find_conn(aproxy,id):
     r = []
@@ -80,14 +80,19 @@ class Plumber:
     @async.coroutine('internal error')
     def verb2_20_connect(self,subject,src,dst,dst_chan,src_chan):
         """
-        connect([],global_connect,role(None,[or([concrete],[composite([descriptor])])]),role(to,[concrete,singular]),option(into,[mass([channel])]),option(from,[mass([channel])]))
+        connect([],global_connect,role(None,[or([concrete],[composite([descriptor])])]),role(to,[concrete,singular]),option(into,[mass([channel])]),option(from,[abstract]))
         """
 
         if dst_chan is not None:
             dst_chan=int(action.mass_quantity(dst_chan))
 
         if src_chan is not None:
-            src_chan=int(action.mass_quantity(src_chan))
+            src_chan = action.abstract_string(src_chan)
+            src_match = re.match('^channel\s+([\d\.]+)$',src_chan,re.IGNORECASE)
+            if src_match:
+                src_chan = src_match.group(1)
+            else:
+                yield async.Coroutine.failure("%s is not valid" % src_chan)
 
         to_descriptor = (action.concrete_object(dst),None)
         to_descriptor = self.database.to_database_term(to_descriptor)
