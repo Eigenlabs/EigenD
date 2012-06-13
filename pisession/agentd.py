@@ -197,7 +197,8 @@ def delete_user_slot(slot):
     rd = resource.user_resource_dir(resource.setup_dir)
     for (sp,sd,sn) in safe_walk(rd):
         for s in sn:
-            if s.startswith(slot):
+            s3 = upgrade.split_setup(s)
+            if s3[1] == slot:
                 os.unlink(os.path.join(rd,s))
 
 
