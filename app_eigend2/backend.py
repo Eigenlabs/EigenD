@@ -361,9 +361,9 @@ class Backend(eigend_native.c2p):
     def get_user_setups(self):
         return agentd.find_user_setups_flat()
 
-    def load_setup(self,setup,user,upgrade):
+    def load_setup(self,setup,user):
         self.set_current_setup(setup,user)
-        self.run_background_async(self.agent.load_file,setup,upgrade)
+        self.run_background_async(self.agent.load_file,setup)
 
     def __alert_dialog(self,klass,label,text):
         self.frontend.alert_dialog(klass,label,text)

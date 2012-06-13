@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  16 Feb 2012 4:57:08pm
+  Creation date:  13 Jun 2012 12:24:57pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_A4A62574__
-#define __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_A4A62574__
+#ifndef __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_5ECD9A23__
+#define __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_5ECD9A23__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -54,7 +54,6 @@ public:
     TextButton *getSaveAsButton() { return saveas_button; }
     TextButton *getEditButton() { return edit_button; }
     TextButton *getDeleteButton() { return delete_button; }
-    ToggleButton *getUpgradeToggle() { return upgrade_toggle; }
     Label *getSetupLabel() { return setup_label; }
     //[/UserMethods]
 
@@ -113,7 +112,6 @@ private:
     //==============================================================================
     TreeView* tree;
     TextButton* load_button;
-    ToggleButton* upgrade_toggle;
     TextEditor* description;
     Label* setup_label;
     TextButton* delete_button;
@@ -149,4 +147,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_A4A62574__
+#endif   // __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_5ECD9A23__

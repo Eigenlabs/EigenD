@@ -258,7 +258,7 @@ class EigenMainWindow: public DocumentWindow, public MenuBarModel, public piw::t
         EigenDialog *info(const String &klass, const String &label, const String &text);
         void ignore_klass(const juce::String &klass);
         bool select_setup(const char *setup);
-        void load_setup(const char *setup, bool user, bool upgrade);
+        void load_setup(const char *setup, bool user);
         void save();
         void save_dialog();
         void save_dialog(const std::string &current);
@@ -394,7 +394,6 @@ class EigenLoadComponent: public LoadDialogComponent, public EigenAlertDelegate
     public:
         EigenLoadComponent(EigenMainWindow *mediator);
         void updateSaveButton(bool enabled);
-        void updateUpgradeToggle(bool enabled);
         void updateSetupButtons(bool term, bool user);
         void selected(const piw::term_t &term, bool dbl);
         void buttonClicked(Button *b);
@@ -415,7 +414,6 @@ class EigenLoadComponent: public LoadDialogComponent, public EigenAlertDelegate
         piw::data_t slot_;
         piw::data_t selected_;
         bool user_;
-        bool upgrade_;
 };
 
 void EigenTreeItem::itemSelectionChanged(bool isNowSelected)
@@ -442,7 +440,6 @@ void EigenTreeItem::itemDoubleClicked(const MouseEvent &)
     else
     {
         view_->updateSetupButtons(false, false);
-        view_->updateUpgradeToggle(false);
     }
 }
 
@@ -599,24 +596,16 @@ void EigenLoadComponent::updateSaveButton(bool enabled)
     getSaveButton()->setEnabled(enabled);
 }
 
-void EigenLoadComponent::updateUpgradeToggle(bool enabled)
-{
-    getUpgradeToggle()->setEnabled(enabled);
-    getUpgradeToggle()->setToggleState(enabled,false);
-}
-
 void EigenLoadComponent::selected(const piw::term_t &term,bool dbl)
 {
     slot_ = term.arg(3).value();
     selected_ = term.arg(4).value();
     user_ = term.arg(6).value().as_bool();
-    upgrade_ = term.arg(5).value().as_bool();
 
     std::string d = mediator_->backend()->get_description(selected_.as_string());
     getLabel()->setText(d.c_str(),false);
 
     updateSetupButtons(true,user_);
-    updateUpgradeToggle(upgrade_);
 
     std::string default_setup = mediator_->backend()->get_default_setup(false);
     getDefaultToggle()->setToggleState(!default_setup.compare(selected_.as_string()),false);
@@ -652,7 +641,7 @@ void EigenLoadComponent::buttonClicked(Button *b)
     {
         if(selected_.is_string())
         {
-            mediator_->load_setup(selected_.as_string(),user_,upgrade_);
+            mediator_->load_setup(selected_.as_string(),user_);
         }
     }
     else if (b==getSaveButton())
@@ -701,7 +690,7 @@ void EigenLoadComponent::cancel_confirm()
     }
 }
 
-EigenLoadComponent::EigenLoadComponent(EigenMainWindow *mediator): mediator_(mediator), confirm_(0), user_(false), upgrade_(false)
+EigenLoadComponent::EigenLoadComponent(EigenMainWindow *mediator): mediator_(mediator), confirm_(0), user_(false)
 {
     setName(T("Load"));
     model_ = new EigenTreeItem(this,mediator_->backend()->get_setups());
@@ -751,11 +740,9 @@ void EigenLoadComponent::clear_selection()
 {
     getDefaultToggle()->setToggleState(false,false);
     updateSetupButtons(false, false);
-    updateUpgradeToggle(false);
     slot_ = piw::data_t();
     selected_ = piw::data_t();
     user_ = false;
-    upgrade_ = false;
 }
 
 void EigenLoadComponent::tree_changed()
@@ -924,7 +911,7 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
         if(select_setup(setup.c_str()))
         {
             pic::printmsg() << "default setup: " << setup;
-            load_setup(setup.c_str(), component_->is_selected_user(), false);
+            load_setup(setup.c_str(), component_->is_selected_user());
         }
     }
 
@@ -1198,9 +1185,9 @@ void EigenMainWindow::set_cpu(unsigned cpu)
     }
 }
 
-void EigenMainWindow::load_setup(const char *setup, bool user, bool upgrade)
+void EigenMainWindow::load_setup(const char *setup, bool user)
 {
-    backend_->load_setup(setup,user,upgrade);
+    backend_->load_setup(setup,user);
     enable_save_menu(user);
 }
 

@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  16 Feb 2012 4:57:08pm
+  Creation date:  13 Jun 2012 12:24:57pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -32,7 +32,6 @@
 LoadDialogComponent::LoadDialogComponent ()
     : tree (0),
       load_button (0),
-      upgrade_toggle (0),
       description (0),
       setup_label (0),
       delete_button (0),
@@ -68,9 +67,6 @@ LoadDialogComponent::LoadDialogComponent ()
     addAndMakeVisible (load_button = new TextButton (L"Load"));
     load_button->addListener (this);
     load_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
-
-    addAndMakeVisible (upgrade_toggle = new ToggleButton (L"Upgrade Setup"));
-    upgrade_toggle->addListener (this);
 
     addAndMakeVisible (description = new TextEditor (L"new text editor"));
     description->setMultiLine (true);
@@ -133,7 +129,6 @@ LoadDialogComponent::LoadDialogComponent ()
     //[UserPreSize]
     default_toggle->setEnabled(false);
     load_button->setEnabled(false);
-    upgrade_toggle->setEnabled(false);
     save_button->setEnabled(false);
     saveas_button->setEnabled(true);
     edit_button->setEnabled(false);
@@ -154,7 +149,6 @@ LoadDialogComponent::~LoadDialogComponent()
 
     deleteAndZero (tree);
     deleteAndZero (load_button);
-    deleteAndZero (upgrade_toggle);
     deleteAndZero (description);
     deleteAndZero (setup_label);
     deleteAndZero (delete_button);
@@ -349,14 +343,13 @@ void LoadDialogComponent::resized()
 {
     tree->setBounds (48, 160, getWidth() - 213, getHeight() - 387);
     load_button->setBounds (getWidth() - 139, 184, 112, 24);
-    upgrade_toggle->setBounds (getWidth() - 139, 200, 112, 40);
     description->setBounds (48, getHeight() - 48 - 75, getWidth() - 96, 75);
     setup_label->setBounds (getWidth() - 184, 115 - ((24) / 2), 150, 24);
-    delete_button->setBounds (getWidth() - 139, 357, 112, 24);
-    edit_button->setBounds (getWidth() - 139, 325, 112, 24);
+    delete_button->setBounds (getWidth() - 139, 325, 112, 24);
+    edit_button->setBounds (getWidth() - 139, 293, 112, 24);
     default_toggle->setBounds (getWidth() - 139, 144, 112, 24);
-    save_button->setBounds (getWidth() - 139, 250, 112, 24);
-    saveas_button->setBounds (getWidth() - 139, 282, 112, 24);
+    save_button->setBounds (getWidth() - 139, 218, 112, 24);
+    saveas_button->setBounds (getWidth() - 139, 250, 112, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -370,11 +363,6 @@ void LoadDialogComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_load_button] -- add your button handler code here..
         //[/UserButtonCode_load_button]
-    }
-    else if (buttonThatWasClicked == upgrade_toggle)
-    {
-        //[UserButtonCode_upgrade_toggle] -- add your button handler code here..
-        //[/UserButtonCode_upgrade_toggle]
     }
     else if (buttonThatWasClicked == delete_button)
     {
@@ -479,9 +467,6 @@ BEGIN_JUCER_METADATA
   <TEXTBUTTON name="Load" id="f494606ca745ecc4" memberName="load_button" virtualName=""
               explicitFocusOrder="0" pos="139R 184 112 24" bgColOff="ffaeaeae"
               buttonText="Load" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
-  <TOGGLEBUTTON name="Upgrade Setup" id="b03920f28771791e" memberName="upgrade_toggle"
-                virtualName="" explicitFocusOrder="0" pos="139R 200 112 40" buttonText="Upgrade Setup"
-                connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
   <TEXTEDITOR name="new text editor" id="7df712598da5c1ba" memberName="description"
               virtualName="" explicitFocusOrder="0" pos="48 48Rr 96M 75" bkgcol="ffffff"
               shadowcol="0" initialText="" multiline="1" retKeyStartsLine="0"
@@ -492,19 +477,19 @@ BEGIN_JUCER_METADATA
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="33"/>
   <TEXTBUTTON name="Delete" id="7d092d6a6e09132" memberName="delete_button"
-              virtualName="" explicitFocusOrder="0" pos="139R 357 112 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="139R 325 112 24" bgColOff="ffaeaeae"
               buttonText="Delete" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Edit" id="b162eeb1f10b4771" memberName="edit_button" virtualName=""
-              explicitFocusOrder="0" pos="139R 325 112 24" bgColOff="ffaeaeae"
+              explicitFocusOrder="0" pos="139R 293 112 24" bgColOff="ffaeaeae"
               buttonText="Edit" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TOGGLEBUTTON name="Default Setup" id="dd0a8f33920b0649" memberName="default_toggle"
                 virtualName="" explicitFocusOrder="0" pos="139R 144 112 24" buttonText="Default Setup"
                 connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
   <TEXTBUTTON name="Save" id="559e1e6b94605a39" memberName="save_button" virtualName=""
-              explicitFocusOrder="0" pos="139R 250 112 24" bgColOff="ffaeaeae"
+              explicitFocusOrder="0" pos="139R 218 112 24" bgColOff="ffaeaeae"
               buttonText="Save" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Save As" id="4d373d2dc1b3cb8" memberName="saveas_button"
-              virtualName="" explicitFocusOrder="0" pos="139R 282 112 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="139R 250 112 24" bgColOff="ffaeaeae"
               buttonText="Save As" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 
