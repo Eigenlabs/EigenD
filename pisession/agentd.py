@@ -595,7 +595,7 @@ class Agent(agent.Agent):
         r = self.__workspace.save_file(path,desc)
         yield r
         if not r.status():
-            yield async.Coroutine.failure('failed to save setup')
+            yield async.Coroutine.failure(*r.args(),**r.kwds())
 
         self.__backend.setups_changed(path)
 

@@ -279,6 +279,7 @@ class Workspace(atom.Atom):
         self.__load_result = None
         self.__load_errors = None
         self.__load_path = None
+        self.__busy = False
 
         self.__owner = "~a"
 
@@ -634,6 +635,11 @@ class Workspace(atom.Atom):
 
     @async.coroutine('internal error')
     def save_file(self,filename,description=''):
+        if self.__busy:
+            yield async.Coroutine.failure('Another save or load is in progress')
+
+        self.__busy = True
+
         yield self.index.sync()
 
         agents = set(all_agents(self.trunk))
@@ -672,6 +678,7 @@ class Workspace(atom.Atom):
 
         upgrade.copy_snap2file(snap,filename,tweaker=save_tweaker)
 
+        self.__busy = False
         yield async.Coroutine.success()
 
     def server_opened(self):

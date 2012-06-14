@@ -2154,7 +2154,7 @@ EigenDialog *EigenMainWindow::info(const String &klass, const String &label, con
     std::string cklass = std::string(klass.getCharPointer());
 
     EigenInfoComponent *c = new EigenInfoComponent(this,klass,label,text);
-    EigenDialog *e = new EigenDialog(this,c,400,300,400,300,2000,2000,this);
+    EigenDialog *e = new EigenDialog(this,c,400,400,400,400,2000,2000,this);
 
     std::map<std::string,EigenDialog *>::iterator i;
 

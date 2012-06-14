@@ -444,6 +444,10 @@ class Backend(eigend_native.c2p):
 
         filename = agentd.user_setup_file(slot,tag)
 
+        def not_done(*args,**kwds):
+            print 'save failed:',args
+            self.info_dialog('Setup Not Saved','Setup Not Saved',"The user setup '"+slot+"' could not be saved\n"+args[1])
+
         def done(*args,**kwds):
             agentd.delete_user_slot(slot)
             self.save_rename(filename,'~',filename)
@@ -464,7 +468,7 @@ class Backend(eigend_native.c2p):
             self.info_dialog('Setup Saved','Setup Saved',"The user setup '"+slot+"' was successfully saved")
 
         r = self.run_background(self.agent.save_file,self.save_tmp(filename,'~'),desc)
-        r.setCallback(done,r).setErrback(done,r)
+        r.setCallback(done,r).setErrback(not_done,r)
         return filename
 
     def edit_setup(self,orig,slot,tag,desc):
