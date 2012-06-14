@@ -119,7 +119,6 @@ struct pi_midi::midi_output_t::impl_t: piw::thing_t, pic::safe_worker_t
             delegate_->sink_added(new_devices[i].hashCode(),std::string(new_devices[i].getCharPointer()));
         }
 
-
         for(int i=0;i<devices_.size();i++)
         {
             if(devices_[i].hashCode()==current_)

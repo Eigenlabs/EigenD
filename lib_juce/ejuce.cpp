@@ -82,6 +82,11 @@ pia::scaffold_gui_t *ejuce::Application::scaffold()
 void ejuce::Application::initialise (const juce::String& commandLine,const pic::f_string_t &l,bool ck,bool rt)
 {
     messages_ = new impl_t(this,l,ck,rt);
+
+    // putting this here ensures that removed or added MIDI devices
+    // are being detected by CoreMIDI on MacOSX
+    juce::MidiInput::getDevices();
+    juce::MidiOutput::getDevices();
 }
 
 void ejuce::Application::shutdown()
