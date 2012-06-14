@@ -754,27 +754,55 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         observer_->description_changed("");
         host_window_.close_window();
 
+        juce::AudioPluginInstance *p(plugin_.current());
+
+        unsigned size_window = sizeof(host_view_t *)/sizeof(unsigned char);
+        unsigned size_plugin = sizeof(juce::AudioPluginInstance *)/sizeof(unsigned char);
+        unsigned size = size_window + size_plugin;
+        unsigned char *c;
+        piw::data_t d = piw::makeblob(piw::tsd_time(),size,&c);
+
+        pic::logmsg() << "enqueue close window=" << (void *)window_ << ", plugin=" << (void *)p;
+        memcpy(c,&window_,size_window);
         if(window_)
         {
             window_->setVisible(false);
             main_delegate_.close();
             mapping_delegate_.close();
             bounds_.reset(new juce::Rectangle<int>(window_->getBounds()));
-            delete window_;
             window_ = 0;
         }
 
-        juce::AudioPluginInstance *p(plugin_.current());
-
         plugin_.set(0);
 
+        memcpy(c+size_window,&p,size_plugin);
         if(p)
         {
             p->releaseResources();
-            delete p;
         }
 
+        enqueue_slow(d);
+
         deallocate_buffer();
+    }
+
+    void thing_dequeue_slow(const piw::data_t &d)
+    {
+        unsigned long long elapsed = piw::tsd_time()-d.time();
+        if (elapsed < 1000000ULL)
+        {
+            enqueue_slow(d);
+        }
+        else
+        {
+            unsigned size_window = sizeof(host_view_t *)/sizeof(unsigned char);
+
+            host_view_t *w = *(host_view_t **)(d.as_blob());
+            juce::AudioPluginInstance *p = *(juce::AudioPluginInstance **)(((unsigned char *)d.as_blob())+size_window);
+            pic::logmsg() << "dequeue slow close elapsed=" << elapsed << ", window=" << (void *)w << ", plugin=" << (void *)p;
+            if(w) delete w;
+            if(p) delete p;
+        }
     }
 
     bool input_audio(unsigned long long from,unsigned long long to)
