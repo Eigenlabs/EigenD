@@ -26,6 +26,7 @@
 #include <lib_pico/pico_active.h>
 #include <lib_pico/pico_usb.h>
 #include <memory>
+#include <iomanip>
 
 #define KEYS 18
 #define MODEKEYS 4
@@ -175,14 +176,27 @@ bool pico::active_t::poll(unsigned long long t)
 
 const char *pico::active_t::get_name()
 {
-    return "ukbd";
+    return _impl->name();
 }
 
 void pico::active_t::set_led(unsigned key, unsigned colour)
 {
     _impl->set_led(key,colour);
 }
+/*
+std::string dec2bin(unsigned n)
+{
+    const size_t size = sizeof(n) * 8;
+    char result[size];
 
+    unsigned index = size;
+    do {
+        result[--index] = '0' + (n & 1);
+    } while (n >>= 1);
+
+    return std::string(result + index, result + size);
+}
+*/
 void pico::active_t::impl_t::set_led(unsigned key, unsigned colour)
 {
     if( key < 18 )
@@ -197,10 +211,18 @@ void pico::active_t::impl_t::set_led(unsigned key, unsigned colour)
        unsigned mode = key % 17;
        unsigned shift = (mode-1)*2;
        unsigned kmask = ~(3<<shift);
-       if(colour==0) colour=3;
-       else if(colour==3) colour=0;
+       unsigned c = colour;
+       if(colour==0) c=3;
+       else if(colour==3) c=0;
        ledmask_ &= kmask;
-       ledmask_ |= (colour<<shift);
+       ledmask_ |= (c<<shift);
+       //std::cout << ">>>>>> set_led ledmask=" << std::setw(8) << std::setfill('0') << dec2bin(ledmask_) << "(" << std::setw(3) << std::setfill('0') << ledmask_ << "), key=" << key << ", colour=" << c << ", mode=" << mode << ", shift=" << shift << ", kmask=" << dec2bin(kmask) << "(" << kmask << "), ocolour=" << colour << std::endl;
+       //std::cout.flush();
+       
+       // sending the mode led data three times as a workaround for some weirdness in the firmware
+       // this is a stop-gap fix until we can improve this at the firmware level, see issue #518
+       control(TYPE_VENDOR,BCTPICO_USBCOMMAND_SETMODELED,ledmask_,key);
+       control(TYPE_VENDOR,BCTPICO_USBCOMMAND_SETMODELED,ledmask_,key);
        control(TYPE_VENDOR,BCTPICO_USBCOMMAND_SETMODELED,ledmask_,key);
     }
 }

@@ -140,8 +140,10 @@ class KeyboardAgent(agent.Agent):
     def download_keyboard(self,usbname):
         firmware = ezload.firmware(ezload.vendor,ezload.product)
         if firmware:
-            print 'loading firmware'
+            print 'loading firmware',firmware
             ezload.download(usbname,firmware)
+        else:
+            print "couldn't find firmware"
 
     def next_keyboard(self):
         i=0
