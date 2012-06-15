@@ -279,7 +279,8 @@ class Workspace(atom.Atom):
         self.__load_result = None
         self.__load_errors = None
         self.__load_path = None
-        self.__busy = False
+        self.__busy = None
+        self.__abort = False
 
         self.__owner = "~a"
 
@@ -393,11 +394,14 @@ class Workspace(atom.Atom):
                 self.__doload()
 
             n = s.get_name()
-            r = f.reload(s,self.__load_path)
-            r.setCallback(ok).setErrback(not_ok)
 
-            if self.__load_result:
-                self.__load_result(None,n)
+            if self.__abort:
+                self.__load_result(False,n,f.address)
+            else:
+                r = f.reload(s,self.__load_path)
+                r.setCallback(ok).setErrback(not_ok)
+                if self.__load_result:
+                    self.__load_result(None,n)
 
             break
 
@@ -409,42 +413,42 @@ class Workspace(atom.Atom):
             yield rpc.invoke_rpc(qa,'postload',path)
 
 
+    def call_load_status(self,*args,**kwds):
+        if self.__abort:
+            self.__backend.load_status("Aborting load",100)
+        else:
+            self.__backend.load_status(*args,**kwds)
+
     @async.coroutine('internal error')
     def load_file(self,path,upgrade_flag = False,post_load = True):
 
-        """
-        cherrypy.config.update({'server.socket_port': 8088})
-        cherrypy.tree.mount(dowser.Root())
-        cherrypy.engine.autoreload.unsubscribe()
-        cherrypy.engine.start()
-        """
-        """
-        print h.heap()
-        print h.heapu()
+        while self.__busy is not None:
+            print 'waiting for current load/save operation to complete'
+            r = async.Deferred()
+            self.__busy.append(r)
+            self.__abort = True
+            self.call_load_status()
+            yield r
 
-        h.setref()
-        """
-
+        self.__busy = []
+        self.__abort = False
         label = upgrade.split_setup(os.path.basename(path))[1]
 
         self.__backend.load_started(label)
         self.__backend.stop_gc()
-        self.__backend.load_status('Preparing',0)
+        self.call_load_status('Preparing',0)
+
+        if self.__abort:
+            yield async.Coroutine.success('aborted')
 
         snapshot = self.__backend.run_foreground_sync(upgrade.prepare_file,path,version.version)
-
-        if upgrade.get_upgrade(snapshot):
-            upgrade_flag = True
-
-        if upgrade_flag:
-            setup_signature = upgrade.get_setup_signature(snapshot)
-            print 'loading from version',snapshot.version(),'in',path,'sig',setup_signature
-        else:
-            print 'loading from version',snapshot.version(),'in',path
-
+        print 'loading from version',snapshot.version(),'in',path
         agents = set(all_agents(snapshot))
 
         for m in self.index.members():
+            if self.__abort:
+                yield async.Coroutine.success('aborted')
+
             ma = m.address
             m.enable_save(False)
             if ma in agents:
@@ -458,100 +462,26 @@ class Workspace(atom.Atom):
         e = r.args()[0]
 
         if post_load:
-            self.__backend.load_status('Final Initialisation',100)
+            self.call_load_status('Final Initialisation',100)
             yield self.post_load(path)
 
-        if upgrade_flag and r.status():
-            self.__backend.load_status('Upgrading',100)
-            r = rpc.invoke_rpc('<interpreter>','upgrade',setup_signature)
-            yield r
-
-        self.__backend.load_status('Cleaning up',100)
+        self.call_load_status('Cleaning up',100)
         yield timeout.Timer(1000)
 
-        """
-        o = gc.collect()
-        if o: print 'gc collected',o
-        o = gc.collect()
-        if o: print 'gc collected',o
-        yield timeout.Timer(1000)
-
-        x=h.heap()
-        print "Total Heap"
-        print "=========="
-        print x
-
-        print "dict"
-        print "===="
-        xd = x[0]
-        print xd.byid
-        print xd.byvia
-        print xd.rp
-        print xd.rp.more
-        print xd.rp.more.more
-        print xd.rp.more.more.more
-        print xd.shpaths
-        print xd.shpaths.more
-        print xd.shpaths.more.more
-        print xd.shpaths.more.more.more
-
-        print "DatabaseProxy"
-        print "===="
-        xp = (x&database.DatabaseProxy)
-        print xp.byid
-        print xp.byvia
-        print xp.rp
-        print xp.rp.more
-        print xp.rp.more.more
-        print xp.rp.more.more.more
-        print xp.shpaths
-        print xp.shpaths.more
-        print xp.shpaths.more.more
-        print xp.shpaths.more.more.more
-
-        print "str"
-        print "==="
-        xs = (x&str)
-        xs_ = xs.byid
-        #for i in range(100):
-        #   print xs_
-        #   xs_ = xs_.more
-        print xs.byvia
-        print xs.rp
-        print xs.rp.more
-        print xs.rp.more.more
-        print xs.rp.more.more.more
-        print xs.shpaths
-        print xs.shpaths.more
-        print xs.shpaths.more.more
-        print xs.shpaths.more.more.more
-
-        print "Term"
-        print "===="
-        xt = (x&Term)
-        print xt.byid
-        print xt.byvia
-        print xt.rp
-        print xt.rp.more
-        print xt.rp.more.more
-        print xt.rp.more.more.more
-        print xt.shpaths
-        print xt.shpaths.more
-        print xt.shpaths.more.more
-        print xt.shpaths.more.more.more
-
-        print "Not reachable from root"
-        print "======================="
-        print h.heapu()
-
-        hpy().heap().stat.dump("/Users/gbevin/Desktop/heap.txt")
-        """ 
         self.__backend.start_gc()
 
         if e:
             self.__backend.load_ended(e)
         else:
             self.__backend.load_ended()
+
+        if self.__busy:
+            busy_copy = self.__busy[:]
+            self.__busy = None
+            for b in busy_copy:
+                b.succeeded()
+        else:
+            self.__busy = None
 
         yield async.Coroutine.completion(r.status(),e)
 
@@ -596,7 +526,7 @@ class Workspace(atom.Atom):
             if not p:
                 r2.succeeded()
             else:
-                self.__backend.load_status(n,100*(total-p)/total)
+                self.call_load_status(n,100*(total-p)/total)
 
         def watchdog(status,*args,**kwds):
             self.__load_result = None
@@ -635,10 +565,10 @@ class Workspace(atom.Atom):
 
     @async.coroutine('internal error')
     def save_file(self,filename,description=''):
-        if self.__busy:
+        if self.__busy is not None:
             yield async.Coroutine.failure('Another save or load is in progress')
 
-        self.__busy = True
+        self.__busy = []
 
         yield self.index.sync()
 
@@ -653,7 +583,6 @@ class Workspace(atom.Atom):
 
 
         yield self.index.sync()
-
         m = [ c.address for c in self.index.members() ]
 
         for i in range(0,self.trunk.agent_count()):
@@ -678,7 +607,12 @@ class Workspace(atom.Atom):
 
         upgrade.copy_snap2file(snap,filename,tweaker=save_tweaker)
 
-        self.__busy = False
+        if self.__busy:
+            busy_copy = self.__busy[:]
+            self.__busy = None
+            for b in busy_copy:
+                b.succeeded()
+
         yield async.Coroutine.success()
 
     def server_opened(self):
