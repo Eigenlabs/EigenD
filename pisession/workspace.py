@@ -612,6 +612,8 @@ class Workspace(atom.Atom):
             self.__busy = None
             for b in busy_copy:
                 b.succeeded()
+        else:
+            self.__busy = None
 
         yield async.Coroutine.success()
 
