@@ -151,7 +151,7 @@ class MidiDelegate(midi_native.midi_input):
 class MidiPort(atom.Atom):
     def __init__(self,cookie,midi_cookie):
         self.__timestamp = piw.tsd_time()
-        self.__midi = MidiDelegate(cookie,midi_cookie,self.__update)
+        self.__midi = MidiDelegate(cookie,midi_cookie,self.__sinks_changed)
 
         atom.Atom.__init__(self,domain=domain.String(),names='midi port',policy=atom.default_policy(self.setport),protocols='virtual browse')
         self.__midi.setport(0)
@@ -195,6 +195,9 @@ class MidiPort(atom.Atom):
                     self.__midi.setport(int(self.__midi.sources[0][0],16))
         self.set_value(port)
         self.__update()
+
+    def __sinks_changed(self):
+        self.setport(self.get_value())
 
     def rpc_displayname(self,arg):
         return 'MIDI input ports'

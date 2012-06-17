@@ -80,7 +80,7 @@ class OutputMidiPort(atom.Atom):
         self.__timestamp = piw.tsd_time()
 
         # output MIDI port
-        self.__midi_port = OutputMidiDelegate(self.__update)
+        self.__midi_port = OutputMidiDelegate(self.__sinks_changed)
         self.__midi_functor = self.__midi_port.get_midi_output_functor()
 
         # merge MIDI channels to output
@@ -116,7 +116,6 @@ class OutputMidiPort(atom.Atom):
         self.__midi_port.set_source('')
         self.__midi_port.set_port(0)
         self.__midi_port.stop()
-        
 
     # set_port: set the chosen midi port
     def set_port(self,port):
@@ -128,6 +127,9 @@ class OutputMidiPort(atom.Atom):
             print 'OutputMidiPort: set port to',port
         self.set_value(port)
         self.__update()
+
+    def __sinks_changed(self):
+        self.set_port(self.get_value())
 
     # ---------------------------------------------------------------------------------------------
     # functions to support selection of port by browsing
