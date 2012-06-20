@@ -197,7 +197,7 @@ class Output(atom.Atom):
         self.__slot = slot
         self.__tee = None
 
-        atom.Atom.__init__(self,names='keygroup output',protocols='remove',ordinal=slot,container=const.verb_node)
+        atom.Atom.__init__(self,names='keygroup output',protocols='remove',container=const.verb_node)
 
         self.light_output = piw.clone(True)
         self.light_input = bundles.VectorInput(self.light_output.cookie(),self.__agent.domain,signals=(1,))
@@ -356,17 +356,24 @@ class OutputList(atom.Atom):
         if self.__plumbing:
             e.unplumb()
 
+    def listinstances(self):
+        return [ self[i].get_property_long('ordinal',0) for i in self ]
+
     def rpc_listinstances(self,arg):
-        return logic.render_termlist(self.keys())
+        i = self.listinstances()
+        return logic.render_termlist(i)
 
     def rpc_instancename(self,a):
         return 'keygroup output'
 
     def rpc_createinstance(self,arg):
-        slot = int(arg)
-        output = self.create(slot)
-        if not output:
+        name = int(arg)
+        outputs = self.listinstances()
+
+        if name in outputs:
             return async.failure('output in use')
+
+        output = self.create(name)
         return output.id()
 
     def rpc_delinstance(self,arg):
@@ -403,16 +410,10 @@ class OutputList(atom.Atom):
     def __create(self,i):
         return Output(self,i)
 
-    def create(self,slot=None):
-        if slot is not None and self.has_key(slot):
-            output = self[slot]
-            if output:
-                return output
-
-        if slot is None:
-            slot = self.find_hole()
-
+    def create(self,ordinal=None):
+        slot = self.find_hole()
         output = Output(self,slot)
+        output.set_ordinal(ordinal)
         output.plumb()
         self[slot] = output
 
