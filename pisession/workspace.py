@@ -193,8 +193,8 @@ class AgentLoader:
             current_context.install()
 
     @utils.nothrow
-    def __load(self,module,context,name,ordinal,enclosure):
-        a = module.main(context.getenv(),name,ordinal,enclosure)
+    def __load(self,module,context,name,ordinal,enclosure,mordinal):
+        a = module.main(context.getenv(),name,ordinal,enclosure,mordinal)
         return a
 
     @utils.nothrow
@@ -210,11 +210,11 @@ class AgentLoader:
             self.context.clear()
 
     @utils.nothrow_ret(False)
-    def load(self,module_name,scope,name,ordinal,enclosure=None):
+    def load(self,module_name,scope,name,ordinal,enclosure=None,mordinal=None):
         self.unload(False)
         m = registry.import_module(module_name)
         c = piw.tsd_subcontext(m.isgui,scope,name)
-        a = self.__run(c,self.__load,m,c,name,ordinal,enclosure)
+        a = self.__run(c,self.__load,m,c,name,ordinal,enclosure,mordinal)
 
         if a:
             self.module = m
@@ -676,34 +676,34 @@ class Workspace(atom.Atom):
         return found[0]
 
     def check_ordinal(self,name,ordinal):
-        found = [False]
-
-        def visitor(v,s):
-            if v.args[1]==name and v.args[4]==ordinal:
-                found[0] = True
-
-        self.__meta.visit(visitor)
-        return found[0]
+        ordinals = self.find_all_ordinals(name)
+        return ordinal in ordinals
 
     def find_all_ordinals(self,name):
         ordinals = []
 
-        def visitor(v,s):
-            if v.args[1]==name:
-                ordinals.append(v.args[4])
+        for i in range(0,self.trunk.agent_count()):
+            a = self.trunk.get_agent_index(i)
+            r = a.get_root().get_data();
+            if(r.is_dict()):
+                slug = r.as_dict_lookup("plugin");
+                if slug.is_string() and slug.as_string()==name:
+                    cordinal = r.as_dict_lookup("cordinal")
+                    mordinal = r.as_dict_lookup("ordinal")
+                    ordinal = 0
+                    if cordinal.is_long(): ordinal=cordinal.as_long();
+                    if mordinal.is_long(): ordinal=mordinal.as_long();
+                    if ordinal: ordinals.append(ordinal)
 
-        self.__meta.visit(visitor)
         return ordinals
 
     def find_new_ordinal(self,name):
-        ordinal = [0]
+        ordinals = self.find_all_ordinals(name)
 
-        def visitor(v,s):
-            if v.args[1]==name:
-                ordinal[0] = max(v.args[4],ordinal[0])
+        if ordinals:
+            return max(ordinals)+1
 
-        self.__meta.visit(visitor)
-        return ordinal[0]+1
+        return 1
 
     def __canonicalise(self,signature):
         (address,plugin,version,cversion,ordinal) = signature.args
@@ -723,9 +723,9 @@ class Workspace(atom.Atom):
 
         self.__meta.visit(visitor)
 
-    def __asserted(self,signature,delegate):
+    def __asserted(self,signature,delegate,mordinal=None):
         print 'loading',signature,'into enclosure',self.__enclosure
-        (address,plugin,version,cversion,ordinal) = signature.args
+        (address,plugin,version,cversion,cordinal) = signature.args
         factory = self.__registry.get_compatible_module(plugin,cversion)
 
         if not factory:
@@ -735,7 +735,7 @@ class Workspace(atom.Atom):
         print 'relation:',self.__relation(address)
         self.add_frelation(self.__relation(address))
         agent = AgentLoader()
-        if agent.load(factory.module,self.__name,address,ordinal,self.__enclosure):
+        if agent.load(factory.module,self.__name,address,cordinal,self.__enclosure,mordinal):
             return agent
 
         delegate.add_error("Problems loading plugin %s" % plugin)
@@ -759,6 +759,24 @@ class Workspace(atom.Atom):
         # call on_quit for all plugins
         self.__meta.visit(lambda v,s: s.on_quit())
 
+    def find_cordinal(self,name,preferred_ordinal):
+        ordinal = [0,False]
+
+        def visitor(v,s):
+            if v.args[1]==name:
+                vordinal = v.args[4]
+                ordinal[0] = max(vordinal,ordinal[0])
+                if vordinal==preferred_ordinal:
+                    ordinal[1]=True
+
+        self.__meta.visit(visitor)
+
+        if ordinal[1]:
+            return ordinal[0]+1
+
+        return preferred_ordinal
+
+
     def create(self,factory,delegate,address=None,ordinal=0):
         if ordinal:
             if self.check_ordinal(factory.name,ordinal):
@@ -767,16 +785,25 @@ class Workspace(atom.Atom):
         else:
             ordinal = self.find_new_ordinal(factory.name)
 
+        cordinal = self.find_cordinal(factory.name,ordinal)
+
         if address:
             if self.check_address(address):
                 delegate.add_error('%s already exists at given address' % (factory.name))
                 return None
         else:
-            address = guid.toguid("%s%d" % (factory.name,ordinal))
+            address = guid.toguid("%s%d" % (factory.name,cordinal))
 
-        print 'assigned ordinal',ordinal,'to',factory.name
-        signature = logic.make_term('a',address,factory.name,factory.version,factory.cversion,ordinal)
-        plugin = self.__meta.assert_state(signature,delegate=delegate)
+
+        print 'assigned cordinal',cordinal,'to',factory.name
+        signature = logic.make_term('a',address,factory.name,factory.version,factory.cversion,cordinal)
+
+        plugin_state = self.__asserted(signature,delegate,ordinal)
+
+        if not plugin_state:
+            return None
+
+        plugin = self.__meta.assert_state(signature,delegate=delegate, state=plugin_state)
 
         if not plugin:
             return None

@@ -63,13 +63,15 @@ def main(klass,upgrader=None,gui=False):
 
     """
 
-    def __main(env,name,ordinal,enclosure):
+    def __main(env,name,ordinal,enclosure,mordinal):
         piw.setenv(env)
         root = klass(name,ordinal)
         piw.tsd_server(name,root)
         root.advertise('<main>')
         if enclosure:
             root.set_enclosure(enclosure)
+        if mordinal:
+            root.set_ordinal(int(mordinal))
         return root
 
     def __unload(env,obj,destroy):
