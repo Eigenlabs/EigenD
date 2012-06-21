@@ -97,7 +97,8 @@ class Endpoint:
         return 0
 
 @async.coroutine('internal error')
-def plumber(db,to_descriptor,from_descriptors,dst_chan=None,src_chan=None):
+def plumber(db,to_descriptor,from_descriptors,dst_chan=None,src_chan=None,check_only=False):
+    print 'plumber connect: checkonly= ',check_only
     assoc_cache = db.get_assoccache()
     partof_cache = db.get_partcache()
     proto_cache = db.get_propcache('protocol')
@@ -195,7 +196,8 @@ def plumber(db,to_descriptor,from_descriptors,dst_chan=None,src_chan=None):
 
     if len(allinputs)==1 and len(alloutputs)==1:
         print 'direct connect'
-        allinputs[0].connect(alloutputs[0],src_chan,dst_chan)
+        if check_only is False:
+            allinputs[0].connect(alloutputs[0],src_chan,dst_chan)
         yield async.Coroutine.success([])
 
     connections = []
@@ -235,7 +237,8 @@ def plumber(db,to_descriptor,from_descriptors,dst_chan=None,src_chan=None):
     if not connections:
         yield async.Coroutine.failure('incompatible')
 
-    for (ostuff,istuff) in connections:
-        istuff.connect(ostuff,src_chan,dst_chan)
+    if check_only is False:
+        for (ostuff,istuff) in connections:
+            istuff.connect(ostuff,src_chan,dst_chan)
 
     yield async.Coroutine.success([])
