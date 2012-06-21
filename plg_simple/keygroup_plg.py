@@ -197,7 +197,8 @@ class Output(atom.Atom):
         self.__slot = slot
         self.__tee = None
 
-        atom.Atom.__init__(self,names='keygroup output',protocols='remove',container=const.verb_node)
+#        atom.Atom.__init__(self,names='keygroup output',protocols='remove',container=const.verb_node)
+        atom.Atom.__init__(self,names='keygroup output',protocols='remove',container=const.verb_node,ordinal=slot)
 
         self.light_output = piw.clone(True)
         self.light_input = bundles.VectorInput(self.light_output.cookie(),self.__agent.domain,signals=(1,))
