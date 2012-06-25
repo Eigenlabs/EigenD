@@ -23,6 +23,7 @@
 
 #include "pic_exports.h"
 #include <string>
+#include <stdio.h>
 
 namespace pic
 {
@@ -39,6 +40,16 @@ namespace pic
     PIC_DECLSPEC_FUNC(char) platform_seperator();
     PIC_DECLSPEC_FUNC(std::string) release();
     PIC_DECLSPEC_FUNC(std::string) username();
+    PIC_DECLSPEC_FUNC(int) mkdir(std::string);
+    PIC_DECLSPEC_FUNC(int) mkdir(const char *);
+    PIC_DECLSPEC_FUNC(int) remove(std::string);
+    PIC_DECLSPEC_FUNC(int) remove(const char *);
+    PIC_DECLSPEC_FUNC(FILE) *fopen(std::string, const char *);
+    PIC_DECLSPEC_FUNC(FILE) *fopen(const char *, const char *);
+    PIC_DECLSPEC_FUNC(int) open(std::string, int);
+    PIC_DECLSPEC_FUNC(int) open(std::string, int, int);
+    PIC_DECLSPEC_FUNC(int) open(const char *, int);
+    PIC_DECLSPEC_FUNC(int) open(const char *, int, int);
 };
 
 #endif

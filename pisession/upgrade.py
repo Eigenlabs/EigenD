@@ -226,8 +226,8 @@ def __copy_trunk(srcfile,dstfile):
     srcdb = state.open_database(srcfile,False)
     srcsnap = srcdb.get_trunk()
 
-    if os.path.exists(dstfile):
-        os.unlink(dstfile)
+    if os.path.exists(resource.WC(dstfile)):
+        os.unlink(resource.WC(dstfile))
 
     dstdb = state.open_database(dstfile,True)
     dstsnap = dstdb.get_trunk()
@@ -250,16 +250,16 @@ def get_tmp_setup():
     i = 0
     while True:
         dbfile = resource.user_resource_file(resource.setup_dir,'tmpsetup%d'%i)
-        if not os.path.exists(dbfile):
+        if not os.path.exists(resource.WC(dbfile)):
             return dbfile
         i=i+1
 
 def clr_tmp_setup():
     dbdir = resource.user_resource_dir(resource.setup_dir)
-    for g in glob.glob(os.path.join(dbdir,'tmpsetup*')):
+    for g in glob.glob(resource.WC(os.path.join(dbdir,'tmpsetup*'))):
         try:
             os.unlink(g)
-            print 'delete',g
+            print 'delete',resource.MB(g)
         except:
             pass
 

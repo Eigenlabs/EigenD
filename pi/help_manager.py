@@ -106,7 +106,7 @@ class HelpManager:
             doc_conn = urllib.urlopen(doc_url)
             doc_text = doc_conn.read()
             doc_conn.close()
-            doc_out = open(doc_file,'w')
+            doc_out = open(resource.WC(doc_file),'w')
             doc_out.write(doc_text)
             doc_out.close()
             print 'loaded documentation'
@@ -125,7 +125,7 @@ class HelpManager:
         release_doc = resource.find_release_resource(resource.help_dir,'documentation.xml')
 
         try:
-            self.load_file(user_doc)
+            self.load_file(resource.WC(user_doc))
             return
         except:
             print user_doc,'invalid'

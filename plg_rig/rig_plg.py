@@ -1,5 +1,5 @@
 
-from pi import agent,atom,domain,utils,bundles,upgrade,paths,audio,async,collection,policy,proxy,node,container,logic,action,errors
+from pi import agent,atom,domain,utils,bundles,upgrade,paths,audio,async,collection,policy,proxy,node,container,logic,action,errors,resource
 from pisession import workspace
 import piw
 from . import rig_version as version,rig_native
@@ -680,7 +680,7 @@ class OuterAgent(agent.Agent):
         yield agent.Agent.load_state(self,state,delegate,phase)
         rig_file = self.rig_file(delegate.path)
         print 'rig load state',phase,rig_file
-        if os.path.exists(rig_file):
+        if os.path.exists(resource.WC(rig_file)):
             print 'loading rig',self.inner_name,'from',rig_file
             r = self.__inner_agent.load(rig_file)
             yield r

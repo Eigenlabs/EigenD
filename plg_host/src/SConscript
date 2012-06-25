@@ -21,7 +21,7 @@
 Import('env')
 
 native_files = Split("""host.cpp""")
-env.PiSharedLibrary('pihost',native_files,libraries=Split('juce pia piw pic pie midilib'),package='eigend',per_agent='plg_host')
+env.PiSharedLibrary('pihost',native_files,libraries=Split('juce ejuce pia piw pic pie midilib'),package='eigend',per_agent='plg_host')
 env.PiPipBinding('host_native','host.pip',libraries=Split('pihost juce pia piw pic pie midilib'),package='eigend',per_agent='plg_host')
 
 scanner_files = Split("scan.cpp")

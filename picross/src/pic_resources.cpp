@@ -28,10 +28,12 @@
 #define RES_PATH_MAX MAX_PATH
 #include <windows.h>
 #include <shlobj.h>
+#include <iostream>
 #else
 #include <dlfcn.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #define RES_SEPERATOR '/'
 #define RES_SEPERATOR_STR "/"
 #define RES_PATH_MAX PATH_MAX
@@ -39,6 +41,7 @@
 
 #include <picross/pic_resources.h>
 #include <string.h>
+#include <fcntl.h>
 
 namespace
 {
@@ -390,5 +393,123 @@ std::string pic::username()
     return getenv("USERNAME");
 #else
     return getenv("USER");
+#endif
+}
+
+int pic::mkdir(std::string dirname)
+{
+    return pic::mkdir(dirname.c_str());
+}
+
+int pic::mkdir(const char *dirname)
+{
+#ifndef PI_WINDOWS
+    return ::mkdir(dirname, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#else
+    int wchars_num = MultiByteToWideChar(CP_UTF8,0,dirname,-1,NULL,0);
+    wchar_t* wstr = new wchar_t[wchars_num];
+    MultiByteToWideChar(CP_UTF8,0,dirname,-1,wstr,wchars_num);
+
+    int result = ::_wmkdir(wstr);
+
+    delete[] wstr;
+
+    return result;
+#endif
+}
+
+int pic::remove(std::string path)
+{
+    return pic::remove(path.c_str());
+}
+
+int pic::remove(const char *path)
+{
+#ifndef PI_WINDOWS
+    return ::remove(path);
+#else
+    int wchars_num = MultiByteToWideChar(CP_UTF8,0,path,-1,NULL,0);
+    wchar_t* wstr = new wchar_t[wchars_num];
+    MultiByteToWideChar(CP_UTF8,0,path,-1,wstr,wchars_num);
+
+    int result = ::_wremove(wstr);
+
+    delete[] wstr;
+
+    return result;
+#endif
+}
+
+FILE *pic::fopen(std::string filename, const char *mode)
+{
+    return pic::fopen(filename.c_str(), mode);
+}
+
+FILE *pic::fopen(const char *filename, const char *mode)
+{
+#ifndef PI_WINDOWS
+    return ::fopen(filename, mode);
+#else
+    int wchars_num1 = MultiByteToWideChar(CP_UTF8,0,filename,-1,NULL,0);
+    wchar_t* wstr1 = new wchar_t[wchars_num1];
+    MultiByteToWideChar(CP_UTF8,0,filename,-1,wstr1,wchars_num1);
+
+    int wchars_num2 = MultiByteToWideChar(CP_UTF8,0,mode,-1,NULL,0);
+    wchar_t* wstr2 = new wchar_t[wchars_num2];
+    MultiByteToWideChar(CP_UTF8,0,mode,-1,wstr2,wchars_num2);
+
+    FILE *file = ::_wfopen(wstr1, wstr2);
+
+    delete[] wstr1;
+    delete[] wstr2;
+
+    return file;
+#endif
+}
+
+int pic::open(std::string filename, int oflags)
+{
+    return pic::open(filename, oflags, 0);
+}
+
+int pic::open(const char *filename, int oflags)
+{
+    return pic::open(filename, oflags, 0);
+}
+
+int pic::open(std::string filename, int oflags, int cflags)
+{
+    return pic::open(filename.c_str(), oflags);
+}
+
+int pic::open(const char *filename, int oflags, int cflags)
+{
+#ifndef PI_WINDOWS
+    if(oflags & O_CREAT)
+    {
+        return ::open(filename, oflags, cflags);
+    }
+    else
+    {
+        return ::open(filename, oflags);
+    }
+#else
+    int wchars_num = MultiByteToWideChar(CP_UTF8,0,filename,-1,NULL,0);
+    wchar_t* wstr = new wchar_t[wchars_num];
+    MultiByteToWideChar(CP_UTF8,0,filename,-1,wstr,wchars_num);
+
+    int result;
+    if(oflags & O_CREAT)
+    {
+        result = ::_wopen(wstr, oflags, cflags);
+    }
+    else
+    {
+        result = ::_wopen(wstr, oflags);
+    }
+
+    delete[] wstr;
+
+    return result;
 #endif
 }

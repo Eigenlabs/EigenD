@@ -91,7 +91,7 @@ class LoopDatabase:
         self.__dbfile = os.path.join(resource.user_resource_dir(resource.loop_dir),'loops.db')
         self.__factorydir = os.path.join(picross.global_resource_dir(),'loop')
         self.__userdir = resource.user_resource_dir(resource.loop_dir,'')
-        e = os.path.exists(self.__dbfile)
+        e = os.path.exists(resource.WC(self.__dbfile))
         if not e:
             self.scan()
         else:
@@ -100,7 +100,7 @@ class LoopDatabase:
 
     def scan(self,mtime1=None,mtime2=None):
         print 'building database...'
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         cx.execute("""create table files (id int primary key,name text,desc text,file text, basename text)""")
         cx.execute("""create table meta (id int,tag text)""")
         cx.execute("""create table modtime (id int, time int)""")
@@ -128,15 +128,15 @@ class LoopDatabase:
 
     def rescan(self):
         print 'rebuild loop database by request'
-        os.remove(self.__dbfile)
+        os.remove(resource.WC(self.__dbfile))
         self.scan()
         self.prime()
 
     def __get_modtime(self,dir):
         mtime = 0
 
-        for (p,d,f) in os.walk(dir):
-            mtime1=int(os.path.getmtime(p))
+        for (p,d,f) in resource.safe_walk(dir):
+            mtime1=int(os.path.getmtime(resource.WC(p)))
             if mtime1 > mtime: mtime=mtime1
 
         return mtime
@@ -147,11 +147,11 @@ class LoopDatabase:
         modtime=self.__modtime()
         if not modtime or (abs(modtime[0][1]-mtime1)>1) or (abs(modtime[1][1]-mtime2)>1):
             print 'LoopDatabase:database needs rebuilding',modtime,mtime1,mtime2
-            os.remove(self.__dbfile)
+            os.remove(resource.WC(self.__dbfile))
             self.scan(mtime1=mtime1,mtime2=mtime2)
 
     def __scandir(self,n,frows,mrows,path):
-        for root,dirs,files in os.walk(path):
+        for root,dirs,files in resource.safe_walk(path):
             for f in files:
                 try:
                     if f.startswith('.') or f.startswith('_'):
@@ -160,7 +160,7 @@ class LoopDatabase:
                     if e.lower()=='.aiff' or e.lower()=='.aif':
                         p = os.path.join(root,f)
                         tags = self.__getmeta(p)
-                        frows.append((n,b,p,f))
+                        frows.append((n,resource.WC(b),resource.WC(p),resource.WC(f)))
                         mrows.extend([(n,t) for t in tags])
                         n = n+1
                         if n%500==0: print '%d loops indexed'%n
@@ -173,7 +173,7 @@ class LoopDatabase:
         return [lf.tag(i) for i in range(0,lf.ntags())]
 
     def __modtime(self):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         tables = cx.execute(qtables()).fetchall()
         for t in tables:
             if 'modtime' in t:
@@ -192,7 +192,7 @@ class LoopDatabase:
             if path[0]==user_cat:
                 return self.enumerate_path(self.__userdir,path[1:])
 
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         nf = cx.execute(qfilecount(path)).fetchone()[0]
         nc = cx.execute(qdircount(path)).fetchone()[0]
 
@@ -205,14 +205,15 @@ class LoopDatabase:
         sdirs = 0
         sfiles = 0
 
-        for f in os.listdir(dir):
+        for f in os.listdir(resource.WC(dir)):
+            f = resource.MB(f)
             ff = os.path.join(dir,f)
 
-            if os.path.isdir(ff):
+            if os.path.isdir(resource.WC(ff)):
                 sdirs += 1
                 continue
 
-            if not os.path.isfile(ff):
+            if not os.path.isfile(resource.WC(ff)):
                 continue
 
             fl = f.lower()
@@ -229,7 +230,7 @@ class LoopDatabase:
 
     def finfo_path(self,root,path):
         dir = os.path.join(root,*path)
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute(qpinfo(dir)).fetchall()
         return r
 
@@ -240,7 +241,7 @@ class LoopDatabase:
             if path[0]==user_cat:
                 return self.cinfo_path(self.__userdir,path[1:])
 
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute(qcinfo(path)).fetchall()
         if len(path)==0:
             r.insert(0,(factory_cat,))
@@ -253,49 +254,49 @@ class LoopDatabase:
                 return self.finfo_path(self.__factorydir,path[1:])
             if path[0]==user_cat:
                 return self.finfo_path(self.__userdir,path[1:])
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute(qfinfo(path)).fetchall()
         return r
 
     def rename(self,id,name):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         c = cx.cursor()
         c.execute("""update files set name=? where id=?""", (str(name),int(id)))
         c.close()
         cx.commit()
 
     def size(self):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         nf = cx.execute("""select count(*) from files""").fetchone()[0]
         return nf
 
     def describe(self,id):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute("""select name,desc from files where id=?""",  (id,)).fetchone()
         name = str(r[0]) if r[0] else None
         desc = str(r[1]) if r[1] else None
         return name,desc
 
     def file(self,id):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute("""select file from files where id=?""",  (id,)).fetchone()
         if r:
             return str(r[0])
 
     def basename(self,id):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute("""select basename from files where id=?""",  (id,)).fetchone()
         if r:
             return str(r[0])
 
     def id(self,name):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute("""select id from files where name=?""",  (name,)).fetchone()
         if r:
             return r[0]
     
     def idforfile(self,filename):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute("""select id from files where file=?""",  (filename,)).fetchone()
 
         if r:
@@ -311,19 +312,19 @@ class LoopDatabase:
 
     
     def idforbasename(self,basename):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute("""select id from files where basename=?""",  (basename,)).fetchone()
         if r:
             return r[0]
     
     def fileforbasename(self,basename):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute("""select file,id from files where basename=?""",  (basename,)).fetchone()
         if r: return r
         return (None,None)
 
     def tags(self,id):
-        cx = sqlite3.connect(self.__dbfile)
+        cx = sqlite3.connect(resource.WC(self.__dbfile))
         r = cx.execute("""select tag from meta where id=?""",  (id,)).fetchall()
         return [str(a[0]) for a in r]
 

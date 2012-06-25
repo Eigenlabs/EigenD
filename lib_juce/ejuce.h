@@ -43,4 +43,10 @@ namespace ejuce
         private:
             impl_t *messages_;
     };
+
+    EJUCE_DECLSPEC_FUNC(juce::File) pathToFile(const std::string &path);
+    EJUCE_DECLSPEC_FUNC(juce::File) pathToFile(const char* path);
+
+    EJUCE_DECLSPEC_FUNC(juce::URL) pathToURL(const std::string &path);
+    EJUCE_DECLSPEC_FUNC(juce::URL) pathToURL(const char* path);
 };

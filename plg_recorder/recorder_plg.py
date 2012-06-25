@@ -83,16 +83,16 @@ class TakeLibrary:
     def write(self,recording,cookie):
         cookie = int(cookie)
         tmppath=os.path.join(resource.get_home_dir(),'tmp')
-        if not os.path.exists(tmppath):
-            os.mkdir(tmppath)
+        if not os.path.exists(resource.WC(tmppath)):
+            os.mkdir(resource.WC(tmppath))
         tmpfilepath=os.path.join(tmppath,self.filename(cookie,'None'))
-        if os.path.exists(tmpfilepath):
-            os.unlink(tmpfilepath)
+        if os.path.exists(resource.WC(tmpfilepath)):
+            os.unlink(resource.WC(tmpfilepath))
         recording.write(tmpfilepath)
         path = self.temp_path(cookie,'None')
         if os.path.exists(path):
             os.unlink(path)
-        os.rename(tmpfilepath,path)
+        os.rename(resource.WC(tmpfilepath),path)
         self.__takes[cookie] = (cookie,self.__describe(cookie,path),'None',path,False)
         self.__observer.library_added(cookie)
     

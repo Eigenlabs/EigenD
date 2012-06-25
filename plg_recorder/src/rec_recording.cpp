@@ -24,6 +24,7 @@
 #include <piw/piw_address.h>
 #include <piembedded/pie_wire.h>
 #include <picross/pic_log.h>
+#include <picross/pic_resources.h>
 #include <pibelcanto/state.h>
 #include <math.h>
 
@@ -140,7 +141,7 @@ void recorder::recording_t::write(const char *filename) const
 {
     FILE *fp;
 
-    if(!(fp=fopen(filename,"wb")))
+    if(!(fp=pic::fopen(filename,"wb")))
     {
         pic::msg() << "can\'t open " << filename << pic::hurl;
     }
@@ -148,7 +149,7 @@ void recorder::recording_t::write(const char *filename) const
     if(!__write(fp,data_))
     {
         fclose(fp);
-        remove(filename);
+        pic::remove(filename);
         pic::msg() << "can\'t write " << filename << pic::hurl;
     }
 
@@ -244,7 +245,7 @@ recorder::recording_t recorder::read(const char *filename)
 {
     FILE *fp;
 
-    if(!(fp=fopen(filename,"rb")))
+    if(!(fp=pic::fopen(filename,"rb")))
     {
         pic::msg() << "can\'t open " << filename << pic::hurl;
     }
@@ -264,7 +265,7 @@ recorder::recording_t recorder::read_meta(const char *filename)
 {
     FILE *fp;
 
-    if(!(fp=fopen(filename,"rb")))
+    if(!(fp=pic::fopen(filename,"rb")))
     {
         pic::msg() << "can\'t open " << filename << pic::hurl;
     }

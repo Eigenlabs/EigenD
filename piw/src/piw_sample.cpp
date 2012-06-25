@@ -23,6 +23,7 @@
 #include <picross/pic_error.h>
 #include <picross/pic_safeq.h>
 #include <picross/pic_power.h>
+#include <picross/pic_resources.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -215,7 +216,7 @@ float piw::sample_t::attenuation() const { return impl_->attenuation_; }
 
 piw::samplearray_t::impl_t::impl_t(const char *filename, unsigned p, unsigned l): pic::safe_worker_t(1000,PIC_THREAD_PRIORITY_HIGH), name(filename), size(l/2), offset(p)
 {
-    fd = fopen(filename,"rb");
+    fd = pic::fopen(filename,"rb");
 
     if(fd<0)
     {

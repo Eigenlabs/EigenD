@@ -23,6 +23,7 @@
 #include <piw/piw_fastdata.h>
 #include <picross/pic_flipflop.h>
 #include <picross/pic_config.h>
+#include <picross/pic_resources.h>
 #include <fstream>
 
 #define SAMPLE_INCR 21
@@ -42,7 +43,7 @@ namespace
             char buffer[128];
             sprintf(buffer,"%s.%u.wav",prefix,ordinal_);
 
-            file_ = fopen(buffer,"wb");
+            file_ = pic::fopen(buffer,"wb");
             __write("RIFF",4);
             __write32(0);  // total length of RIFF chunk, filled in on close
             __write("WAVE",4);

@@ -104,27 +104,29 @@ namespace
     static unsigned get_portbase__()
     {
         int status;
-        status = _mkdir(pic::global_library_dir().c_str());
+        std::string libdir = pic::global_library_dir();
+        status = pic::mkdir(libdir);
         if(status != 0 && errno != EEXIST)
         {
             return PORTBASE_LOCAL;
         }
 
-        std::string pd = pic::global_library_dir()+"\\Global";
+        std::string pd = libdir+"\\Global";
         std::string pf = pd+"\\ports.txt";
-        FILE *fp = fopen(pf.c_str(),"r");
+        FILE *fp = pic::fopen(pf,"r");
 
         if(!fp)
         {
-            status = _mkdir(pd.c_str());
+            status = pic::mkdir(pd);
             if(!status || errno == EEXIST)
             {
-                FILE *fp = fopen(pf.c_str(),"w");
+                FILE *fp = pic::fopen(pf,"w");
                 fprintf(fp,"%u\n",PORTBASE_LOCAL);
                 fclose(fp);
             }
             return PORTBASE_LOCAL;
         }
+
 
         unsigned p;
 

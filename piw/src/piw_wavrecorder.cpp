@@ -22,6 +22,7 @@
 #include <piw/piw_thing.h>
 #include <piw/piw_tsd.h>
 #include <piw/piw_clock.h>
+#include <picross/pic_resources.h>
 
 #define STOPPED  0
 #define STARTUP  1
@@ -118,7 +119,9 @@ namespace
             }
 
             pic::logmsg() << "opening " << filename;
-            file_ = fopen(filename,"wb");
+
+            file_ = pic::fopen(filename,"wb");
+            
             PIC_ASSERT(file_);
             __write("RIFF",4);
             __write32(0);  // total length of RIFF chunk, filled in on close

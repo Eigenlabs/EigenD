@@ -398,12 +398,13 @@ class Backend(eigend_native.c2p):
         root_f = prefix+os.path.basename(root)
         prefix_len = len(prefix)
 
-        for f in os.listdir(root_d):
+        for f in os.listdir(resource.WC(root_d)):
+            f = resource.MB(f)
             if f.startswith(root_f):
                 f2 = os.path.join(root_d,f[prefix_len:])
-                try: os.unlink(f2)
+                try: os.unlink(resource.WC(f2))
                 except: pass
-                os.rename(os.path.join(root_d,f),f2)
+                os.rename(resource.WC(os.path.join(root_d,f)),resource.WC(f2))
 
     def save_tmp(self,root,prefix):
         root_d = os.path.dirname(root)
@@ -489,10 +490,11 @@ class Backend(eigend_native.c2p):
             path_d = os.path.dirname(path)
             path_f = os.path.basename(path)
 
-            for f in os.listdir(orig_d):
+            for f in os.listdir(resource.WC(orig_d)):
+                f = resource.MB(f)
                 if f.startswith(orig_f):
                     f2 = os.path.join(path_d,path_f+f[len(orig_f):])
-                    os.rename(os.path.join(orig_d,f),f2)
+                    os.rename(resource.WC(os.path.join(orig_d,f)),resource.WC(f2))
 
         database = state.open_database(path,True)
         trunk = database.get_trunk()
@@ -520,7 +522,7 @@ class Backend(eigend_native.c2p):
     def __get_email(self):
         filename = resource.user_resource_file(resource.global_dir,resource.user_details,version='')
         try:
-            l = open(filename,'r').readlines()
+            l = open(resource.WC(filename),'r').readlines()
             return l[0].strip(),l[1].strip()
         except:
             return ('','')
@@ -536,7 +538,7 @@ class Backend(eigend_native.c2p):
 
     def file_bug(self,user,email,subj,desc):
         filename = resource.user_resource_file(resource.global_dir,resource.user_details,version='')
-        open(filename,'w').write("%s\n%s\n" % (user.strip(),email.strip()))
+        open(resource.WC(filename),'w').write("%s\n%s\n" % (user.strip(),email.strip()))
         bugs_cli.file_bug(user,email,subj,desc)
 
     def get_setup_slot(self,slot):

@@ -23,11 +23,6 @@ from pisession import registry,upgrade
 from pi.logic.shortcuts import *
 from pi.logic.terms import *
 
-"""
-import cherrypy
-import dowser
-"""
-
 import picross
 import piw
 import sys
@@ -40,10 +35,6 @@ import urllib
 import binascii
 import traceback
 import gc
-
-"""
-from guppy import hpy; h=hpy()
-"""
 
 rpc_chunksize = 1200
 global_registry = None
@@ -286,8 +277,8 @@ class Workspace(atom.Atom):
 
         self.__dbfile = resource.user_resource_file(resource.global_dir,"%s-%s" % (resource.current_setup,name))
 
-        if os.path.exists(self.__dbfile):
-            os.remove(self.__dbfile)
+        if os.path.exists(resource.WC(self.__dbfile)):
+            os.remove(resource.WC(self.__dbfile))
 
         self.database = state.open_database(self.__dbfile,True)
         self.trunk = self.database.get_trunk()
@@ -308,8 +299,8 @@ class Workspace(atom.Atom):
     def shutdown(self):
         self.close_server()
         self.database.close()
-        if os.path.exists(self.__dbfile):
-            os.remove(self.__dbfile)
+        if os.path.exists(resource.WC(self.__dbfile)):
+            os.remove(resource.WC(self.__dbfile))
 
     def listmodules_rpc(self,arg):
         modules = []

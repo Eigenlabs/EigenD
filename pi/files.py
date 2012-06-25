@@ -151,7 +151,7 @@ class FileCache:
         self.__waiters = {}
 
         try:
-            os.makedirs(self.__cache_dir)
+            os.makedirs(pi_resource.WC(self.__cache_dir))
         except:
             pass
 
@@ -195,14 +195,16 @@ class FileCache:
     @async.coroutine('internal error')
     def __getfile(self,cache_file,size,server,cookie,md5):
 
-        if os.path.exists(cache_file) and os.path.getsize(cache_file)==size:
+        cache_file_decoded = resource.WC(cache_file)
+
+        if os.path.exists(cache_file_decoded) and os.path.getsize(cache_file_decoded)==size:
             print 'returning',server,':',cookie,'from cache'
             yield async.Coroutine.success(cache_file)
 
         print 'FileCache.__getfile:downloading',server,':',cookie,'->',cache_file
 
         hash = hashlib.md5()
-        data = file(cache_file,"w")
+        data = file(cache_file_decoded,"w")
         fetched = 0
 
         while True:

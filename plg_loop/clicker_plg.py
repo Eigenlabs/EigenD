@@ -35,7 +35,7 @@ wav_reader = riff.Root('WAVE', riff.List(**{ 'fmt ': riff.Struct('<hHLLHH'), 'da
 
 def fgetsamples(filename):
     print 'loading samples from ',filename
-    f = open(filename,'rb',0)
+    f = open(resource.WC(filename),'rb',0)
     r = wav_reader.read(f)
     print 'sample rate is',r['fmt '][2]
     return loop_native.canonicalise_samples(r['data'],float(r['fmt '][2]))
@@ -51,7 +51,7 @@ def rgetsamples(res):
 def wav_resource(name):
     print 'loading wav resource',name
     uf = resource.user_resource_file(resource.loop_dir,name,version='')
-    if os.path.isfile(uf):
+    if os.path.isfile(resource.WC(uf)):
         return fgetsamples(uf)
     return rgetsamples('plg_loop/%s'%name)
 

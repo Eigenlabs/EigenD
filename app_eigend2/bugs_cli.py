@@ -38,7 +38,7 @@ class HttpError(RuntimeError):
 def file_bug(user,email,subj,desc):
     try:
         zf = resource.get_bugfile()
-        zip = zipfile.ZipFile(zf, 'w')
+        zip = zipfile.ZipFile(resource.WC(zf), 'w')
 
         zip.writestr('description',desc)
         zip.writestr('user',user)
@@ -48,17 +48,18 @@ def file_bug(user,email,subj,desc):
         zip.writestr('bugreport.txt', "From: %s <%s>\n\nSubject: %s\n\n%s\n" % (user,email,subj,desc))
 
         def_state_file = resource.user_resource_file(resource.global_dir,resource.current_setup)
-        for statefile in glob.glob(def_state_file+'*'):
-            zip.write(statefile,os.path.join('Setup',os.path.basename(statefile)),compress_type=zipfile.ZIP_DEFLATED)
+        for statefile in glob.glob(resource.WC(def_state_file+'*')):
+            statefile = resource.MB(statefile)
+            zip.write(resource.WC(statefile),resource.WC(os.path.join('Setup',os.path.basename(statefile))),compress_type=zipfile.ZIP_DEFLATED)
 
         # add the crash reports of today to the bug report
         if resource.is_macosx():
             diag = os.path.expanduser("~/Library/Logs/DiagnosticReports")
             today = datetime.date.today().strftime("_%Y-%m-%d-")
             if os.path.isdir(diag):
-                for crashfile in glob.glob( "%s/eigen*%s*.crash" % (diag, today) ):
+                for crashfile in glob.glob("%s/eigen*%s*.crash" % (diag, today)):
                     zip.write(crashfile,os.path.join("Crash",os.path.basename(crashfile)),compress_type=zipfile.ZIP_DEFLATED)
-                for crashfile in glob.glob( "%s/Workbench*%s*.crash" % (diag, today) ):
+                for crashfile in glob.glob("%s/Workbench*%s*.crash" % (diag, today)):
                     zip.write(crashfile,os.path.join("Crash",os.path.basename(crashfile)),compress_type=zipfile.ZIP_DEFLATED)
         
         #core_files = glob.glob('/cores/*')
@@ -66,10 +67,11 @@ def file_bug(user,email,subj,desc):
         #    zip.write( core_files[0],compress_type=zipfile.ZIP_DEFLATED)
 
         log_folder = resource.user_resource_dir(resource.log_dir)
-        for file in glob.glob( os.path.join(log_folder,"*") ):
-            path,filename = os.path.split( file )
+        for file in glob.glob(resource.WC(os.path.join(log_folder,"*"))):
+            file = resource.MB(file)
+            path,filename = os.path.split(file)
             full_path = os.path.join('Log',filename)
-            zip.write(file, full_path,compress_type=zipfile.ZIP_DEFLATED )    
+            zip.write(resource.WC(file),resource.WC(full_path),compress_type=zipfile.ZIP_DEFLATED )    
         
         zip.close()
     except:
@@ -126,18 +128,19 @@ def get_content_type(filename):
 
 def get_bug():
     dir = resource.user_resource_dir(resource.bugs_dir,version='')
-    bugs = glob.glob(os.path.join(dir,'*.zip'))
-    return bugs[0] if bugs else None
+    print 'checking '+dir
+    bugs = glob.glob(resource.WC(os.path.join(dir,'*.zip')))
+    return resource.MB(bugs[0]) if bugs else None
 
 def send_bug(bug):
-    zip = zipfile.ZipFile(bug, 'r')
+    zip = zipfile.ZipFile(resource.WC(bug), 'r')
     subject = zip.read('subject')
     user = zip.read('user')
     email = zip.read('email')
     description = zip.read('description')
 
     fields = (('subject',subject),('from',email),('description',description))
-    files = (('report','report.zip',open(bug,'rb').read()),)
+    files = (('report','report.zip',open(resource.WC(bug),'rb').read()),)
 
     post_multipart('www.eigenlabs.com','/bugfiler/', fields, files)
 
@@ -150,7 +153,7 @@ def send_one_bug():
     try:
         print 'sending '+bug
         send_bug(bug)
-        os.unlink(bug)
+        os.unlink(resource.WC(bug))
         print 'sent '+bug
         return 1
     except:

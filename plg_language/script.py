@@ -61,7 +61,9 @@ class ScriptManager(atom.Atom):
     def __build_cache(self):
 
         def walker(top_dir,dir_name,fnames):
+            dir_name = resource.MB(dir_name)
             for fname in fnames:
+                fname = resource.MB(fname)
                 full_name = os.path.join(dir_name,fname)
                 x = self.read_script(full_name)
 
@@ -73,20 +75,20 @@ class ScriptManager(atom.Atom):
                 if not rn:
                     continue
 
-                self.__cache[rn] = (full_name,os.path.getmtime(full_name))
+                self.__cache[rn] = (full_name,os.path.getmtime(resource.WC(full_name)))
 
 
         self.__cache = {}
         os.path.walk(self.__factorydir,walker,self.__factorydir)
-        os.path.walk(self.__userdir,walker,self.__userdir)
+        os.path.walk(resource.WC(self.__userdir),walker,resource.WC(self.__userdir))
         print 'rebuilt cache:',len(self.__cache),'named scripts'
 
 
     def read_script(self,filename):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(resource.WC(filename)):
             return None
 
-        f = open(filename,"r")
+        f = open(resource.WC(filename),"r")
 
         description = []
         script = []
@@ -149,7 +151,7 @@ class ScriptManager(atom.Atom):
 
         if x:
             (file_name,file_time) = x
-            if os.path.exists(file_name) and os.path.getmtime(file_name)==file_time:
+            if os.path.exists(resource.WC(file_name)) and os.path.getmtime(resource.WC(file_name))==file_time:
                 return file_name
 
         return None
@@ -260,14 +262,15 @@ class ScriptManager(atom.Atom):
         sdirs = 0
         sfiles = 0
 
-        for f in os.listdir(dir):
+        for f in os.listdir(resource.WC(dir)):
+            f = resource.MB(f)
             ff = os.path.join(dir,f)
 
-            if os.path.isdir(ff):
+            if os.path.isdir(resource.WC(ff)):
                 sdirs += 1
                 continue
 
-            if not os.path.isfile(ff):
+            if not os.path.isfile(resource.WC(ff)):
                 continue
 
             sfiles += 1
@@ -276,13 +279,15 @@ class ScriptManager(atom.Atom):
 
     def __cinfo_path(self,root,path):
         dir = os.path.join(root,*path)
-        files = os.listdir(dir)
-        return [(f,) for f in files if os.path.isdir(os.path.join(dir,f))]
+        files = os.listdir(resource.WC(dir))
+        files = map(resource.MB,files)
+        return [(f,) for f in files if os.path.isdir(resource.WC(os.path.join(dir,f)))]
 
     def __finfo_path(self,root,path):
         dir = os.path.join(root,*path)
-        files = os.listdir(dir)
-        r = [(os.path.join(dir,f),f,'') for f in files if os.path.isfile(os.path.join(dir,f))]
+        files = os.listdir(resource.WC(dir))
+        files = map(resource.MB,files)
+        r = [(os.path.join(dir,f),f,'') for f in files if os.path.isfile(resource.WC(os.path.join(dir,f)))]
         return r
 
     def __finfo0(self,path):

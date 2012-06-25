@@ -25,6 +25,7 @@
 #include <picross/pic_nocopy.h>
 #include <picross/pic_endian.h>
 #include <picross/pic_config.h>
+#include <picross/pic_resources.h>
 
 #include <string.h>
 #include "loop_file.h"
@@ -66,7 +67,8 @@ namespace loop
             if(!justmeta)
                 pic::msg() << "loading loop from " << name_ << pic::log;
 
-            if((fd_ = open(name_, LOOP_OPENFLAGS)) < 0) error("open");
+            fd_ = pic::open(name_, LOOP_OPENFLAGS);
+            if(fd_ < 0) error("open");
 
             try
             {

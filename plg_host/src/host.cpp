@@ -37,12 +37,15 @@
 #include <lib_midi/control_mapper_gui.h>
 #include <lib_midi/control_params.h>
 
+#include <lib_juce/ejuce.h>
+
 #include "juce.h"
 
 struct host::plugin_list_t::impl_t: piw::thing_t
 {
-    impl_t(const std::string &plugins_cache, const pic::notify_t &complete): complete_(complete), plugins_cache_(plugins_cache.c_str())
+    impl_t(const std::string &plugins_cache, const pic::notify_t &complete): complete_(complete)
     {
+        plugins_cache_ = ejuce::pathToFile(plugins_cache);
         juce::AudioPluginFormatManager::getInstance()->addDefaultFormats();
         load();
         piw::tsd_thing(this);

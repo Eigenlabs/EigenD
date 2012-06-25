@@ -28,11 +28,10 @@
 typedef int ssize_t;
 #endif
 
-#include <fcntl.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <picross/pic_log.h>
+#include <picross/pic_resources.h>
 #include "sng_file.h"
 
 #define BLK_SHEADER    2
@@ -123,7 +122,7 @@ namespace
             writeable_ = writeable;
             name_ = filename;
 
-            if((fd_=::open(filename,writeable?(O_RDWR|O_CREAT|O_BINARY):(O_RDONLY|O_BINARY),0666))<0)
+            if((fd_=pic::open(filename,writeable?(O_RDWR|O_CREAT|O_BINARY):(O_RDONLY|O_BINARY),0666))<0)
             {
                 pic::msg() << "Can't open " << filename << pic::hurl;
             }

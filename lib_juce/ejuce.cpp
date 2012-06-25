@@ -102,3 +102,44 @@ void ejuce::Application::handleGone()
 void ejuce::Application::handleWinch(const std::string &message)
 {
 }
+
+juce::File ejuce::pathToFile(const std::string &path)
+{
+    return pathToFile(path.c_str());
+}
+
+juce::File ejuce::pathToFile(const char* path)
+{
+#ifndef PI_WINDOWS
+    return juce::File(path);
+#else
+    int wchars_num = MultiByteToWideChar(CP_UTF8,0,path,-1,NULL,0);
+    wchar_t* wstr = new wchar_t[wchars_num];
+    MultiByteToWideChar(CP_UTF8,0,path,-1,wstr,wchars_num);
+    juce::File result = juce::File(wstr);
+    delete[] wstr;
+    return result;
+#endif
+}
+
+juce::URL ejuce::pathToURL(const std::string &path)
+{
+    return pathToURL(path.c_str());
+}
+
+juce::URL ejuce::pathToURL(const char* path)
+{
+    std::string protocol_path("file://");
+    protocol_path = protocol_path + path;
+#ifndef PI_WINDOWS
+    return juce::URL(protocol_path.c_str());
+#else
+    int wchars_num = MultiByteToWideChar(CP_UTF8,0,protocol_path.c_str(),-1,NULL,0);
+    wchar_t* wstr = new wchar_t[wchars_num];
+    MultiByteToWideChar(CP_UTF8,0,protocol_path.c_str(),-1,wstr,wchars_num);
+    juce::URL result = juce::URL(wstr);
+    delete[] wstr;
+    return result;
+#endif
+}
+

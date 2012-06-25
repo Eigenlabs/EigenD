@@ -544,9 +544,7 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
 
         case commandLibraryDirectory:
             {
-                juce::String libdir(T("file://"));
-                libdir = libdir + pic::global_library_dir().c_str();
-                juce::URL(libdir).launchInDefaultBrowser();
+                ejuce::pathToURL(pic::global_library_dir()).launchInDefaultBrowser();
             }
             break;
 
@@ -862,12 +860,12 @@ void EigenMainWindow::setups_changed(const char *file)
 
 File getPluginsDir()
 {
-    return File(pic::global_library_dir().c_str()).getChildFile("Plugins");
+    return ejuce::pathToFile(pic::global_library_dir()).getChildFile("Plugins");
 }
 
 File getGlobalDir()
 {
-    return File(pic::global_library_dir().c_str()).getChildFile("Global");
+    return ejuce::pathToFile(pic::global_library_dir()).getChildFile("Global");
 }
 
 EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_gui_t *scaffold, eigend::c2p_t *backend, const pic::f_string_t &log):
@@ -1953,7 +1951,7 @@ void EigenD::initialise (const String& commandLine)
 
             if(logfile.length()>0)
             {
-                logfile_ = fopen(logfile.c_str(),"w");
+                logfile_ = pic::fopen(logfile,"w");
             }
 
             main_window_ = new EigenMainWindow(manager,scaffold(),backend,primary_logger);
