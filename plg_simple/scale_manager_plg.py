@@ -301,19 +301,19 @@ class VirtualScale(atom.Atom):
 
     def get_user_mtime(self):
         try:
-            return os.path.getmtime(resource.WC(self.__user))
+            return resource.os_path_getmtime(self.__user)
         except:
             return None
 
     def read_user(self):
-        if not os.path.exists(resource.WC(self.__user)):
+        if not resource.os_path_exists(self.__user):
             print 'no scale file',self.__user
             fr = resource.find_release_resource('scale_manager','User Scales.txt');
             if not fr:
                 print 'no factory scale file',fr
                 return
             print 'copy',fr,self.__user
-            shutil.copyfile(resource.WC(fr),resource.WC(self.__user))
+            resource.shutil_copyfile(fr,self.__user)
 
         cp = ConfigParser.ConfigParser()
         cp.read(resource.WC(self.__user))

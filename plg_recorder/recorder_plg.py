@@ -71,28 +71,28 @@ class TakeLibrary:
         return l
 
     def save(self):
-        for path in glob.glob(self.temp_path('*','*')):
+        for path in resource.glob_glob(self.temp_path('*','*')):
             cookie,desc,name = self.__split(path)
             newpath = os.path.join(self.permdir,os.path.basename(path))
-            if os.path.exists(newpath):
-                os.unlink(newpath)
-            os.rename(path,newpath)
+            if resource.os_path_exists(newpath):
+                resource.os_unlink(newpath)
+            resource.os_rename(path,newpath)
             self.__takes[cookie] = (cookie,desc,name,newpath,True)
         self.__observer.library_changed(0)
 
     def write(self,recording,cookie):
         cookie = int(cookie)
         tmppath=os.path.join(resource.get_home_dir(),'tmp')
-        if not os.path.exists(resource.WC(tmppath)):
-            os.mkdir(resource.WC(tmppath))
+        if not resource.os_path_exists(tmppath):
+            resource.os_mkdir(tmppath)
         tmpfilepath=os.path.join(tmppath,self.filename(cookie,'None'))
-        if os.path.exists(resource.WC(tmpfilepath)):
-            os.unlink(resource.WC(tmpfilepath))
+        if resource.os_path_exists(tmpfilepath):
+            resource.os_unlink(tmpfilepath)
         recording.write(tmpfilepath)
         path = self.temp_path(cookie,'None')
-        if os.path.exists(path):
-            os.unlink(path)
-        os.rename(resource.WC(tmpfilepath),path)
+        if resource.os_path_exists(path):
+            resource.os_unlink(path)
+        resource.os_rename(tmpfilepath,path)
         self.__takes[cookie] = (cookie,self.__describe(cookie,path),'None',path,False)
         self.__observer.library_added(cookie)
     
@@ -103,7 +103,7 @@ class TakeLibrary:
         cookie,desc,oname,path,perm = bits
         newpath = self.perm_path(cookie,name)
         print 'rename',path,'to',newpath
-        os.rename(path,newpath)
+        resource.os_rename(path,newpath)
         self.__takes[cookie] = (cookie,desc,name,newpath,True)
         self.__observer.library_changed(cookie)
 
@@ -117,7 +117,7 @@ class TakeLibrary:
     def delete(self,cookie):
         cookie = int(cookie)
         path = self.cookie2file(cookie)
-        os.unlink(path)
+        resource.os_unlink(path)
         if cookie in self.__takes:
             del self.__takes[cookie]
             self.__observer.library_deleted(cookie)
@@ -143,9 +143,9 @@ class TakeLibrary:
         id = id.replace('<','').replace('>','').replace(':','_').replace('/','_')
         print 'setup',id
         self.__id = id
-        for path in glob.glob(self.temp_path('*','*')):
-            os.remove(path)
-        for path in glob.glob(self.perm_path('*','*')):
+        for path in resource.glob_glob(self.temp_path('*','*')):
+            resource.os_remove(path)
+        for path in resource.glob_glob(self.perm_path('*','*')):
             self.add_file(path)
 
     def name2cookie(self,name):
@@ -839,7 +839,7 @@ class Agent(agent.Agent):
             return async.success(errors.state_error1('scheduler','use'))
 
         path = self.library.cookie2file(arg)
-        if not path or not os.path.exists(path):
+        if not path or not resource.os_path_exists(path):
             thing='take %s' % str(arg)
             return async.success(errors.invalid_thing(thing,'repeat'))
 
@@ -889,7 +889,7 @@ class Agent(agent.Agent):
             return async.success(errors.state_error1('scheduler','use'))
 
         path = self.library.cookie2file(arg)
-        if not path or not os.path.exists(path):
+        if not path or not resource.os_path_exists(path):
             thing='take %s' %str(arg)
             return async.success(errors.invalid_thing(thing,'play'))
         recording = recorder_native.read(path)
@@ -947,7 +947,7 @@ class Agent(agent.Agent):
         path = self.library.cookie2file(id)
         #print 'path is',path
 
-        if path and os.path.exists(path):
+        if path and resource.os_path_exists(path):
             #print 'loading',id,'from',path,'poly',poly
             r = recorder_native.read(path)
             return self.player.load(id,r,poly)

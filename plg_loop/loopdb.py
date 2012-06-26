@@ -91,7 +91,7 @@ class LoopDatabase:
         self.__dbfile = os.path.join(resource.user_resource_dir(resource.loop_dir),'loops.db')
         self.__factorydir = os.path.join(picross.global_resource_dir(),'loop')
         self.__userdir = resource.user_resource_dir(resource.loop_dir,'')
-        e = os.path.exists(resource.WC(self.__dbfile))
+        e = resource.os_path_exists(self.__dbfile)
         if not e:
             self.scan()
         else:
@@ -128,7 +128,7 @@ class LoopDatabase:
 
     def rescan(self):
         print 'rebuild loop database by request'
-        os.remove(resource.WC(self.__dbfile))
+        resource.os_remove(self.__dbfile)
         self.scan()
         self.prime()
 
@@ -136,7 +136,7 @@ class LoopDatabase:
         mtime = 0
 
         for (p,d,f) in resource.safe_walk(dir):
-            mtime1=int(os.path.getmtime(resource.WC(p)))
+            mtime1=int(resource.os_path_getmtime(p))
             if mtime1 > mtime: mtime=mtime1
 
         return mtime
@@ -147,7 +147,7 @@ class LoopDatabase:
         modtime=self.__modtime()
         if not modtime or (abs(modtime[0][1]-mtime1)>1) or (abs(modtime[1][1]-mtime2)>1):
             print 'LoopDatabase:database needs rebuilding',modtime,mtime1,mtime2
-            os.remove(resource.WC(self.__dbfile))
+            resource.os_remove(self.__dbfile)
             self.scan(mtime1=mtime1,mtime2=mtime2)
 
     def __scandir(self,n,frows,mrows,path):
@@ -205,15 +205,14 @@ class LoopDatabase:
         sdirs = 0
         sfiles = 0
 
-        for f in os.listdir(resource.WC(dir)):
-            f = resource.MB(f)
+        for f in resource.os_listdir(dir):
             ff = os.path.join(dir,f)
 
-            if os.path.isdir(resource.WC(ff)):
+            if resource.os_path_isdir(ff):
                 sdirs += 1
                 continue
 
-            if not os.path.isfile(resource.WC(ff)):
+            if not resource.os_path_isfile(ff):
                 continue
 
             fl = f.lower()
@@ -225,8 +224,8 @@ class LoopDatabase:
 
     def cinfo_path(self,root,path):
         dir = os.path.join(root,*path)
-        files = os.listdir(dir)
-        return [(f,) for f in files if os.path.isdir(os.path.join(dir,f))]
+        files = resource.os_listdir(dir)
+        return [(f,) for f in files if resource.os_path_isdir(os.path.join(dir,f))]
 
     def finfo_path(self,root,path):
         dir = os.path.join(root,*path)

@@ -18,7 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+from pi import resource
 import terms
 import tpg
 import urllib
@@ -113,7 +113,7 @@ def _parse(start, input, dict, nosubst):
 def parse_rule(input,subst={},nosubst=False): return _parse('rule',input,subst,nosubst)
 def parse_command(input,subst={},nosubst=False): return _parse('command',input,subst,nosubst)
 def parse_rulelist(input,subst={},nosubst=False): return _parse('rulelist_opt',input,subst,nosubst)
-def parse_rulefile(input,subst={},nosubst=False): return _parse('rulelist_opt',file(input).read(),subst,nosubst)
+def parse_rulefile(input,subst={},nosubst=False): return _parse('rulelist_opt',resource.file_file(input).read(),subst,nosubst)
 
 parse_clause = parse_new.parse_clause
 parse_clauselist = parse_new.parse_clauselist

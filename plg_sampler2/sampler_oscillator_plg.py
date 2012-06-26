@@ -199,7 +199,7 @@ class Sample(atom.Atom):
         return logic.render_term(())
 
     def __scan1(self,pat,f=lambda x:x):
-        g = lambda path: glob.glob(os.path.join(path,pat))
+        g = lambda path: resource.glob_glob(os.path.join(path,pat))
         paths = g(self.reldir) + g(self.userdir)
         b = lambda path: os.path.splitext(os.path.basename(path))[0]
         return map(b,paths), map(f,paths)
@@ -208,7 +208,7 @@ class Sample(atom.Atom):
         files,paths = self.__scan1('*.[sS][fF]2')
         self.__f2p = dict(zip(files,paths))
         self.__files = self.__f2p.keys()
-        names,cookies = self.__scan1('*.name', lambda p: open(p).read().strip())
+        names,cookies = self.__scan1('*.name', lambda p: resource.file_open(p).read().strip())
         self.__n2c = dict(zip(names,cookies))
         self.__c2n = dict(zip(cookies,names))
 
@@ -297,7 +297,7 @@ class Sample(atom.Atom):
 
         n = '%s.name' % n.replace(' ','_')
         path = os.path.join(self.userdir,n)
-        try: os.unlink(path)
+        try: resource.os_unlink(path)
         except: pass
 
         self.__scan()
@@ -307,9 +307,9 @@ class Sample(atom.Atom):
     def rename(self,cookie,name):
         n = '%s.name' % name.replace(' ','_')
         path = os.path.join(self.userdir,n)
-        try: os.unlink(path)
+        try: resource.os_unlink(path)
         except: pass
-        f = open(path,'w')
+        f = resource.file_open(path,'w')
         f.write(cookie)
         f.close()
         self.__update()

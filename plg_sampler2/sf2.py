@@ -19,7 +19,7 @@
 #
 
 import piw
-from pi import riff
+from pi import riff, resource
 from pi.riff import List,Struct,StructList,String,Root
 import math
 import copy
@@ -202,7 +202,7 @@ class ZoneBuilder:
 
 def load_soundfont(file,bk,pre,transpose):
     print 'loading bank',bk,'preset',pre,'from',file
-    f = open(file,'rb',0)
+    f = resource.file_open(file,'rb',0)
     sf = SF2.read(f,name=file)
     f.close()
 
@@ -251,7 +251,7 @@ def __trim(s):
     return s
 
 def sf_info(file):
-    file = open(file,'rb',0)
+    file = resource.file_open(file,'rb',0)
     data = SF2info.read(file)
     file.close()
     for n,p,b in data['pdta']['phdr'][:-1]:

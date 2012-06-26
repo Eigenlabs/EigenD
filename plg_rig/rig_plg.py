@@ -680,7 +680,7 @@ class OuterAgent(agent.Agent):
         yield agent.Agent.load_state(self,state,delegate,phase)
         rig_file = self.rig_file(delegate.path)
         print 'rig load state',phase,rig_file
-        if os.path.exists(resource.WC(rig_file)):
+        if resource.os_path_exists(rig_file):
             print 'loading rig',self.inner_name,'from',rig_file
             r = self.__inner_agent.load(rig_file)
             yield r

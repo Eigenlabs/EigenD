@@ -75,20 +75,20 @@ class ScriptManager(atom.Atom):
                 if not rn:
                     continue
 
-                self.__cache[rn] = (full_name,os.path.getmtime(resource.WC(full_name)))
+                self.__cache[rn] = (full_name,resource.os_path_getmtime(full_name))
 
 
         self.__cache = {}
-        os.path.walk(self.__factorydir,walker,self.__factorydir)
+        os.path.walk(resource.WC(self.__factorydir),walker,resource.WC(self.__factorydir))
         os.path.walk(resource.WC(self.__userdir),walker,resource.WC(self.__userdir))
         print 'rebuilt cache:',len(self.__cache),'named scripts'
 
 
     def read_script(self,filename):
-        if not os.path.isfile(resource.WC(filename)):
+        if not resource.os_path_isfile(filename):
             return None
 
-        f = open(resource.WC(filename),"r")
+        f = resource.file_open(filename,"r")
 
         description = []
         script = []
@@ -151,7 +151,7 @@ class ScriptManager(atom.Atom):
 
         if x:
             (file_name,file_time) = x
-            if os.path.exists(resource.WC(file_name)) and os.path.getmtime(resource.WC(file_name))==file_time:
+            if resource.os_path_exists(file_name) and resource.os_path_getmtime(file_name)==file_time:
                 return file_name
 
         return None
@@ -262,15 +262,14 @@ class ScriptManager(atom.Atom):
         sdirs = 0
         sfiles = 0
 
-        for f in os.listdir(resource.WC(dir)):
-            f = resource.MB(f)
+        for f in resource.os_listdir(dir):
             ff = os.path.join(dir,f)
 
-            if os.path.isdir(resource.WC(ff)):
+            if resource.os_path_isdir(ff):
                 sdirs += 1
                 continue
 
-            if not os.path.isfile(resource.WC(ff)):
+            if not resource.os_path_isfile(ff):
                 continue
 
             sfiles += 1
@@ -279,15 +278,13 @@ class ScriptManager(atom.Atom):
 
     def __cinfo_path(self,root,path):
         dir = os.path.join(root,*path)
-        files = os.listdir(resource.WC(dir))
-        files = map(resource.MB,files)
-        return [(f,) for f in files if os.path.isdir(resource.WC(os.path.join(dir,f)))]
+        files = resource.os_listdir(dir)
+        return [(f,) for f in files if resource.os_path_isdir(os.path.join(dir,f))]
 
     def __finfo_path(self,root,path):
         dir = os.path.join(root,*path)
-        files = os.listdir(resource.WC(dir))
-        files = map(resource.MB,files)
-        r = [(os.path.join(dir,f),f,'') for f in files if os.path.isfile(resource.WC(os.path.join(dir,f)))]
+        files = resource.os_listdir(dir)
+        r = [(os.path.join(dir,f),f,'') for f in files if resource.os_path_isfile(os.path.join(dir,f))]
         return r
 
     def __finfo0(self,path):

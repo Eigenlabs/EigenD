@@ -19,7 +19,7 @@
 #
 
 from pisession import session
-from pi import index,async,timeout,proxy
+from pi import index,async,timeout,proxy,resource
 
 import optparse
 import sys
@@ -90,7 +90,7 @@ def open_script(name):
         return sys.stdin
 
     try:
-        return open(name,"r")
+        return resource.file_open(name,"r")
     except:
         return None
 

@@ -32,7 +32,7 @@ def read_script(filename):
     dirname = os.path.dirname(filename)
 
     print 'started',filename
-    script = open(filename,'r')
+    script = resource.file_open(filename,'r')
 
     for line in script:
         line = line.strip()
@@ -229,7 +229,7 @@ class Agent(agent.Agent):
         text = '\n'.join(rv)
 
         if out:
-            f=open(out,'w')
+            f=resource.file_open(out,'w')
             f.write(text)
             f.close()
             text = out
@@ -515,7 +515,7 @@ class Agent(agent.Agent):
 
     @async.coroutine('internal error')
     def rpc_execfile(self,filename):
-        if not os.path.exists(filename):
+        if not resource.os_path_exists(filename):
             print 'script:',filename,'doesnt exist'
             yield async.Coroutine.success()
 

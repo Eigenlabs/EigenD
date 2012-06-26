@@ -84,20 +84,20 @@ class Registry:
         extra_dir = os.path.join(picross.global_library_dir(),'Global')
         extra = os.path.join(extra_dir,'paths.txt')
 
-        try: os.makedirs(resource.WC(extra_dir))
+        try: resource.os_makedirs(extra_dir)
         except: pass
 
-        if not os.path.exists(resource.WC(extra)):
-            f = open(resource.WC(extra),'w')
+        if not resource.os_path_exists(extra):
+            f = resource.file_open(extra,'w')
             f.write('# add plugin paths here\n')
             f.close()
             return
 
-        paths = open(resource.WC(extra),'r').read()
+        paths = resource.file_open(extra,'r').read()
         for p in paths.splitlines():
             p = p.strip()
             if p.startswith('#'): continue
-            if os.path.exists(resource.WC(p)):
+            if resource.os_path_exists(p):
                 self.add_path(p)
 
     def add_vocab(self,e,m,c):
@@ -204,7 +204,7 @@ class Registry:
     def scan_path(self,directory,klass):
         for p in self.__find_paths(directory):
             try:
-                manifest = open(resource.WC(os.path.join(p,'Manifest')),'r').read()
+                manifest = resource.file_open(os.path.join(p,'Manifest'),'r').read()
                 pkg = os.path.basename(p)
             except:
                 continue

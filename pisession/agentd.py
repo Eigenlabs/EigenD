@@ -113,7 +113,7 @@ def get_detected_setup():
 
     rd = resource.get_release_dir('state')
     if rd is not None:
-        rs = [os.path.basename(x) for x in glob.glob(os.path.join(rd,'*'))]
+        rs = [os.path.basename(x) for x in resource.glob_glob(os.path.join(rd,'*'))]
         fs = filter(filter_valid_setup,rs)
         fs.sort(natcmp,reverse=False)
 
@@ -137,11 +137,11 @@ def get_detected_setup():
 def get_default_setup():
     filename = resource.user_resource_file(resource.global_dir,resource.default_setup)
 
-    if os.path.exists(resource.WC(filename)):
-        setup = open(resource.WC(filename),'r').read()
+    if resource.os_path_exists(filename):
+        setup = resource.file_open(filename,'r').read()
         if ''==setup:
             return ''
-        if os.path.exists(resource.WC(setup)):
+        if resource.os_path_exists(setup):
             return setup
 
     return None
@@ -154,8 +154,8 @@ def find_setup(srcname):
     user_dir = resource.user_resource_dir(resource.setup_dir)
     release_dir = resource.get_release_dir('state')
 
-    user_setups  = [os.path.basename(resource.MB(x)) for x in glob.glob(resource.WC(os.path.join(user_dir,'*')))]
-    factory_setups  = [os.path.basename(x) for x in glob.glob(os.path.join(release_dir,'*'))]
+    user_setups  = [os.path.basename(x) for x in resource.glob_glob(os.path.join(user_dir,'*'))]
+    factory_setups  = [os.path.basename(x) for x in resource.glob_glob(os.path.join(release_dir,'*'))]
 
     for s in user_setups:
         if s == srcname:
@@ -193,7 +193,7 @@ def delete_user_slot(slot):
         for s in sn:
             s3 = upgrade.split_setup(s)
             if s3[1] == slot:
-                os.unlink(resource.WC(os.path.join(rd,s)))
+                resource.os_unlink(os.path.join(rd,s))
 
 
 def get_setup_slot(slot):
@@ -303,7 +303,6 @@ def find_user_setups():
 
     for (sp,sd,sn) in resource.safe_walk(rd):
         for s in filter(filter_valid_setup,sn):
-            s = resource.MB(s)
             s3 = upgrade.split_setup(s)
             m.add_setup(urllib.unquote(s3[0]),s3[1],os.path.join(rd,s),False,True)
 
@@ -390,7 +389,7 @@ def filter_upgradeable_version(v,t,r):
 def upgradeable_old_setups():
     md = resource.user_resource_dir(resource.setup_dir)
 
-    slots = [ upgrade.split_setup(os.path.basename(s))[1] for s in glob.glob(os.path.join(md,'*')) ]
+    slots = [ upgrade.split_setup(os.path.basename(s))[1] for s in resource.glob_glob(os.path.join(md,'*')) ]
 
     releases={}
 
@@ -438,7 +437,7 @@ def copy_old_setup(src,dst,src_ver):
     except:
         traceback.print_exc()
 
-    try: os.unlink(dst)
+    try: resource.os_unlink(dst)
     except: pass
 
 
@@ -658,7 +657,7 @@ def set_default_setup(path):
     try:
         def_state_file = resource.user_resource_file(resource.global_dir,resource.default_setup)
         print 'default file:',def_state_file,path
-        fd = open(resource.WC(def_state_file),'w').write(path)
+        fd = resource.file_open(def_state_file,'w').write(path)
         fd.close()
     except:
         pass
@@ -667,11 +666,11 @@ def set_default_setup(path):
 def upgrade_default_setup():
     filename = resource.user_resource_file(resource.global_dir,resource.default_setup)
 
-    if not os.path.exists(resource.WC(filename)):
+    if not resource.os_path_exists(filename):
         for v in resource.find_installed_versions(filter_upgradeable_version):
             old_filename = resource.user_resource_file(resource.global_dir,resource.default_setup,version=v)
-            if os.path.exists(resource.WC(old_filename)):
-                setup = open(resource.WC(old_filename),'r').read()
+            if resource.os_path_exists(old_filename):
+                setup = resource.file_open(old_filename,'r').read()
                 if ''==setup:
                     set_default_setup('')
                 else:

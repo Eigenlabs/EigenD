@@ -277,8 +277,8 @@ class Workspace(atom.Atom):
 
         self.__dbfile = resource.user_resource_file(resource.global_dir,"%s-%s" % (resource.current_setup,name))
 
-        if os.path.exists(resource.WC(self.__dbfile)):
-            os.remove(resource.WC(self.__dbfile))
+        if resource.os_path_exists(self.__dbfile):
+            resource.os_remove(self.__dbfile)
 
         self.database = state.open_database(self.__dbfile,True)
         self.trunk = self.database.get_trunk()
@@ -299,8 +299,8 @@ class Workspace(atom.Atom):
     def shutdown(self):
         self.close_server()
         self.database.close()
-        if os.path.exists(resource.WC(self.__dbfile)):
-            os.remove(resource.WC(self.__dbfile))
+        if resource.os_path_exists(self.__dbfile):
+            resource.os_remove(self.__dbfile)
 
     def listmodules_rpc(self,arg):
         modules = []

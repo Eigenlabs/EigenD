@@ -191,18 +191,6 @@ def slowchange(c):
 def fastchange(c):
     return piw.fastchange(changify_nb(c))
 
-def gather(dir, f):
-    """
-    Return list of filenames under dir for which the predicate
-    callable f(filename) evaluates to true.
-    """
-    ret = []
-    walkfunc = lambda arg, dir, names: [
-        arg.append(os.path.join(dir, name))
-        for name in names if f(os.path.join(dir, name))]
-    os.path.walk(dir, walkfunc, ret)
-    return ret
-
 def call_locked_callable(snapshot, callable, *args):
     """
     call a callable object in the context of a mainloop lock

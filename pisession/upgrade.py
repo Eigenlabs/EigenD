@@ -142,7 +142,7 @@ def upgrade_trunk(src,dst,tweaker=None):
         dst_db.flush()
         return True
 
-    try: os.unlink(dst)
+    try: resource.os_unlink(dst)
     except: pass
 
     return False
@@ -216,18 +216,18 @@ def backup(file):
 
     for x in xrange(num,100000):
         nn = os.path.join(dir,'%s %d'%(name,x))
-        if not os.path.exists(nn):
+        if not resource.os_path_exists(nn):
             shutil.move(file,nn)
             return
             
-    os.unlink(file)
+    resource.os_unlink(file)
 
 def __copy_trunk(srcfile,dstfile):
     srcdb = state.open_database(srcfile,False)
     srcsnap = srcdb.get_trunk()
 
-    if os.path.exists(resource.WC(dstfile)):
-        os.unlink(resource.WC(dstfile))
+    if resource.os_path_exists(dstfile):
+        resource.os_unlink(dstfile)
 
     dstdb = state.open_database(dstfile,True)
     dstsnap = dstdb.get_trunk()
@@ -250,16 +250,16 @@ def get_tmp_setup():
     i = 0
     while True:
         dbfile = resource.user_resource_file(resource.setup_dir,'tmpsetup%d'%i)
-        if not os.path.exists(resource.WC(dbfile)):
+        if not resource.os_path_exists(dbfile):
             return dbfile
         i=i+1
 
 def clr_tmp_setup():
     dbdir = resource.user_resource_dir(resource.setup_dir)
-    for g in glob.glob(resource.WC(os.path.join(dbdir,'tmpsetup*'))):
+    for g in resource.glob_glob(os.path.join(dbdir,'tmpsetup*')):
         try:
-            os.unlink(g)
-            print 'delete',resource.MB(g)
+            resource.os_unlink(g)
+            print 'delete',g
         except:
             pass
 
@@ -288,7 +288,7 @@ def prepare_file(srcfile,version):
     return snap
 
 def copy_snap2file(srcsnap,dstfile,tweaker=None):
-    try: os.unlink(dstfile)
+    try: resource.os_unlink(dstfile)
     except: pass
     dstdb = state.open_database(dstfile,True)
     dstsnap = dstdb.get_trunk()

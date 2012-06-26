@@ -18,6 +18,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from pi import resource
 import picross
 import sys
 import os
@@ -41,12 +42,12 @@ def find_release_resource(category,name):
     res_root = picross.release_resource_dir()
     reldir = os.path.join(res_root,category)
 
-    if not os.path.exists(reldir):
+    if not resource.os_path_exists(reldir):
         return None
 
     filename = os.path.join(reldir,name)
 
-    if os.path.exists(filename):
+    if resource.os_path_exists(filename):
         return filename
 
     return None
@@ -68,7 +69,7 @@ def ez_poke(ez, addr, data):
     ez.control_out(usb_type_vendor, firmware_load, addr, 0, data)
 
 def download(device, filename):
-    code = open(filename,'r').read()
+    code = resource.file_open(filename,'r').read()
     ez = picross.usbdevice(device, 0)
     ez_reset(ez)
 

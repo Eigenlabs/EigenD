@@ -52,7 +52,7 @@ class WavSample:
 wav_reader = riff.Root('WAVE', riff.List(**{ 'fmt ': riff.Struct('<hHLLHH'), 'data': WavSample() }))
 
 def fgetsamples(filename):
-    f = open(resource.WC(filename),'rb',0)
+    f = resource.file_open(filename,'rb',0)
     r = wav_reader.read(f)
     chans = r['fmt '][1]
     rate = r['fmt '][2]
@@ -72,7 +72,7 @@ def rgetsamples(res):
 def wav_resource(name):
     # this is the impulse response directory
     uf = resource.user_resource_file(resource.impulseresponse_dir,name,version='')
-    if os.path.isfile(resource.WC(uf)):
+    if resource.os_path_isfile(uf):
         return fgetsamples(uf)
     return rgetsamples('plg_convolver/%s'%name)
 
@@ -170,9 +170,8 @@ class ImpulseBrowser(atom.Atom):
        
     # scan1: scan release and user directories for wav files
     def __scan1(self,pat,f=lambda x:x):
-        g = lambda path: glob.glob(resource.WC(os.path.join(path,pat)))
+        g = lambda path: resource.glob_glob(os.path.join(path,pat))
         paths = g(self.reldir) + g(self.userdir)
-        paths = map(resource.MB,paths)
         b = lambda path: os.path.splitext(os.path.basename(path))[0]
         # return filenames without extensions, 
         # and function applied to paths
@@ -188,7 +187,7 @@ class ImpulseBrowser(atom.Atom):
         self.__files = self.__f2p.keys()
         # read .name files whose filenames are belcanto names (phrases) and contents are the 
         # impulse cookies that the belcanto maps to
-        names,cookies = self.__scan1('*.name', lambda p: open(resource.WC(p)).read().strip())
+        names,cookies = self.__scan1('*.name', lambda p: resource.file_open(p).read().strip())
         # remove name from filenames
         names = [name.replace('_',' ') for name in names]
         self.__n2c = dict(zip(names,cookies))
