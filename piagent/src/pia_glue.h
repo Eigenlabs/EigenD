@@ -47,6 +47,7 @@
 
 struct pia_ctx_t;
 struct pia_timer_t;
+struct pia_delete_t;
 
 class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual public pic::lckobject_t
 {
@@ -126,6 +127,8 @@ class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual publi
         void *add_timer(void (*cb)(void *arg), void *arg, unsigned sec);
         void del_timer(void *hnd);
 
+        void defer_delete(bool(*cb)(void*), void *d, unsigned long ms);
+
         void service_ctx(int group);
         void service_fast();
         void service_main();
@@ -134,6 +137,7 @@ class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual publi
         void process_ctx(int grp, unsigned long long now, bool *activity);
         void process_fast(unsigned long long now, unsigned long long *timer, bool *activity);
         void process_main(unsigned long long now, unsigned long long *timer, bool *activity);
+        void process_delete(unsigned long long now, bool *activity);
 
     private:
         friend class pia::context_t::impl_t;
@@ -181,6 +185,8 @@ class pia::manager_t::impl_t: pic::nocopy_t, public pic::logger_t, virtual publi
         pic::mutex_t fast_lock_;
         pic_atomic_t fastactive_;
         pia_data_t user_;
+
+        pic::ilist_t<pia_delete_t> deletes_;
 };
 
 class pia_logguard_t: pic::nocopy_t

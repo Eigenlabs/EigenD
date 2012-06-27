@@ -362,25 +362,6 @@ pia::mallocator_t::~mallocator_t()
 
 void *pia::mallocator_t::allocator_xmalloc(unsigned nb,size_t size, deallocator_t *d, void **da)
 {
-    //std::cout << ">>>>>> malloc " << size << std::endl;
-    
-    //if(size==32888)
-    //if(size==49112)
-    //if(size==52660)
-    /*
-    if(size==1024)
-    {
-        void* callstack[128];
-        int i, frames = backtrace(callstack, 128);
-        char** strs = backtrace_symbols(callstack, frames);
-        for (i = 0; i < frames; ++i) {
-            std::cout << strs[i] << size << std::endl;
-        }
-        free(strs);
-        //abort();
-    }
-    */
-
     *d = demallocator;
     void *ptr = malloc(size);
     PIC_ASSERT(ptr);

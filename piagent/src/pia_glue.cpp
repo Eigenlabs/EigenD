@@ -39,6 +39,13 @@ struct pia_timer_t: pic::element_t<>, virtual pic::lckobject_t
     unsigned bias_;
 };
 
+struct pia_delete_t: pic::element_t<>, virtual pic::lckobject_t
+{
+    bool (*cb_)(void *);
+    void *d_;
+    unsigned long long expiration_;
+};
+
 struct synccaller_t
 {
     int (*cb)(void *, void *,void *, void *);
@@ -114,6 +121,18 @@ void pia::manager_t::impl_t::context_del(pia::context_t::impl_t *ctx)
         auxq_.idle(cpoint_,idle_callback, this, pia_data_t());
     }
 }
+
+void pia::manager_t::impl_t::defer_delete(bool(*cb)(void*), void *d, unsigned long ms)
+{
+    pia_delete_t *del = new pia_delete_t;
+    del->cb_=cb;
+    del->d_=d;
+    del->expiration_=pic_microtime()+ms*1000;
+
+    pia_logguard_t guard(this);
+    deletes_.append(del);
+}
+
 
 void pia::context_t::impl_t::kill()
 {
@@ -754,6 +773,42 @@ void pia::manager_t::impl_t::process_fast(unsigned long long now, unsigned long 
     }
 }
 
+void pia::manager_t::impl_t::process_delete(unsigned long long now, bool *activity)
+{
+    pia_logguard_t guard(this);
+
+    unsigned long long t = pic_microtime();
+
+    pia_delete_t *d = deletes_.head();
+    pia_delete_t *d2;
+    while(d)
+    {
+        *activity = true;
+
+        d2=deletes_.next(d);
+
+        if(d->expiration_ <= t)
+        {
+            bool done = true;
+            try
+            {
+                if(!d->cb_(d->d_))
+                {
+                    done = false;
+                }
+            }
+            CATCHLOG()
+
+            if(done)
+            {
+                delete d;
+            }
+        }
+
+        d=d2;
+    }
+}
+
 void pia::manager_t::impl_t::service_aux()
 {
     if(pic_atomiccas(&auxflag_,0,1))
@@ -1171,12 +1226,17 @@ void pia::manager_t::process_ctx(int grp,unsigned long long now, bool *activity)
     impl_->process_ctx(grp,now,activity);
 }
 
+void pia::manager_t::process_delete(unsigned long long now, bool *activity)
+{
+    impl_->process_delete(now,activity);
+}
+
 bool pia::manager_t::window_state(unsigned w)
 {
     return impl_->window_state(w);
 }
 
-bool  pia::manager_t::global_lock()
+bool pia::manager_t::global_lock()
 {
     return impl_->global_lock();
 }
@@ -1239,7 +1299,8 @@ pia::context_t::impl_t::~impl_t()
     cpoint_->disable();
 }
 
-pia::manager_t::impl_t::impl_t(pia::controller_t *h, pic::nballocator_t *a, network_t *n, const pic::f_string_t &log, const pic::f_string_t &winch,void *winctx): handle_(h), seed_(pic_microtime()), network_(n), allocator_(a), auxq_(a,aux_pinger,this), fastq_(a,fast_pinger,this), mainq_(a,main_pinger,this),
+pia::manager_t::impl_t::impl_t(pia::controller_t *h, pic::nballocator_t *a, network_t *n, const pic::f_string_t &log, const pic::f_string_t &winch,void *winctx):
+    handle_(h), seed_(pic_microtime()), network_(n), allocator_(a), auxq_(a,aux_pinger,this), fastq_(a,fast_pinger,this), mainq_(a,main_pinger,this),
     index_(this), clock_(this), rpc_(this), log_(log), auxflag_(0), auxbusy_(false), winctx_(winctx), winch_(winch), fast_lock_(true), fastactive_(1)
 {
     unsigned char *p = (unsigned char *)&chuff_;

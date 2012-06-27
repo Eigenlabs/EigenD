@@ -395,14 +395,11 @@ class Term(object):
     @staticmethod
     def create_cached(pred, *args):
         hash, bound = term_hash(pred, *args)
-        #print '>>>>>> checking term',hash,pred
         if hash in hash2term_dict:
             term = hash2term_dict[hash]
-            #print '>>>>>> cached term',hash,pred
         else:
             term = Term(pred, hash, bound, *args)
             hash2term_dict[hash] = term
-            #print '>>>>>> created term',len(hash2term_dict),hash,pred,args
         return term
     """
 

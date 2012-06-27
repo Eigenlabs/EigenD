@@ -63,6 +63,7 @@ namespace pia
             void wait();
             bool global_lock();
             void global_unlock();
+            void shutdown();
         public:
             class impl_t;
         private:
@@ -86,6 +87,7 @@ namespace pia
             void global_unlock();
             void fast_pause();
             void fast_resume();
+            void shutdown();
 
         public:
             class impl_t;

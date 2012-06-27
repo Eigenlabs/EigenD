@@ -68,6 +68,7 @@ namespace piw
             void enqueue_slow_nb(const piw::data_nb_t &d) { PIC_ASSERT(open()); bct_thing_host_queue_slow(this,d.give_copy()); }
             void enqueue_fast_hipri(const piw::data_nb_t &d) { PIC_ASSERT(open()); bct_thing_host_queue_fast(this,d.realloc(PIC_ALLOC_NB).lend(),1); }
             void enqueue_fast_lopri(const piw::data_nb_t &d) { PIC_ASSERT(open()); bct_thing_host_queue_fast(this,d.realloc(PIC_ALLOC_NB).lend(),0); }
+            void defer_delete(bool(*cb)(void*), void *d, unsigned long ms) { PIC_ASSERT(open()); bct_thing_host_defer_delete(this,cb,d,ms); }
 
             virtual void close_thing() { if(host_ops) { bct_thing_host_close(this); host_ops=0; } }
             inline bool open() { return host_ops!=0; }

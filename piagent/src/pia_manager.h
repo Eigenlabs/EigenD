@@ -57,6 +57,7 @@ namespace pia
             void process_fast(unsigned long long, unsigned long long *timer, bool *activity);
             void process_main(unsigned long long, unsigned long long *timer, bool *activity);
             void process_ctx(int grp,unsigned long long, bool *activity);
+            void process_delete(unsigned long long, bool *activity);
             unsigned window_count();
             std::string window_title(unsigned);
             void set_window_state(unsigned,bool);

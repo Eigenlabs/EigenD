@@ -161,6 +161,21 @@ namespace
         pic::xgate_t gate_;
     };
 
+    struct deletethread_t: pic::thread_t, pic::counted_t, virtual public pic::lckobject_t
+    {
+        deletethread_t(unsigned pri,pia::manager_t *m);
+        ~deletethread_t();
+
+        void service();
+        void shutdown(bool w);
+        void thread_init();
+        void thread_main();
+
+        pia::manager_t *manager_;
+        pic::xgate_t gate_;
+        volatile bool shutdown_;
+    };
+
     struct mtscaffold_t: pia::controller_t, virtual pic::lckobject_t
     {
         mtscaffold_t(pic::nballocator_t *a, unsigned mt, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck, bool rt);
@@ -174,15 +189,17 @@ namespace
         bool service_isfast();
         void service_gone();
         pic::f_string_t service_context(bool isgui, const char *tag, int *group);
+        void shutdown();
 
         pia::realnet_t network_;
         fastthread_t fast_;
         mainthread_t main_;
         pia::manager_t manager_;
-        bool shutdown_;
         pic::lckvector_t<pic::ref_t<ctxthread_t> >::lcktype context_;
+        deletethread_t delete_;
         unsigned mt_;
         pic::f_string_t logger_;
+        volatile bool shutdown_;
     };
 
     struct guiscaffold_t: pia::controller_t
@@ -198,6 +215,7 @@ namespace
         bool service_isfast();
         void service_gone();
         pic::f_string_t service_context(bool isgui, const char *tag, int *group);
+        void shutdown();
 
         unsigned cpu_usage() { return cpu_usage_; }
 
@@ -212,9 +230,11 @@ namespace
         usage_t usage_;
         fastthread_t fast_;
         ctxthread_t ctx0_;
+        deletethread_t delete_;
         pia::manager_t manager_;
         pingerthread_t pinger_;
         pic::f_string_t logger_;
+        volatile bool shutdown_;
     };
 };
 
@@ -281,6 +301,11 @@ void pia::scaffold_mt_t::global_unlock()
     impl_->scaffold_->manager_.global_unlock();
 }
 
+void pia::scaffold_mt_t::shutdown()
+{
+    impl_->scaffold_->shutdown();
+}
+
 bool pia::scaffold_mt_t::global_lock()
 {
     return impl_->scaffold_->manager_.global_lock();
@@ -331,6 +356,11 @@ void pia::scaffold_gui_t::fast_resume()
 {
     impl_->scaffold_->fast_.start();
     impl_->scaffold_->manager_.fast_resume();
+}
+
+void pia::scaffold_gui_t::shutdown()
+{
+    impl_->scaffold_->shutdown();
 }
 
 void pia::scaffold_gui_t::set_window_state(unsigned w,bool o)
@@ -416,7 +446,10 @@ void fastthread_t::thread_main()
     unsigned u = 0;
     unsigned uc = 0;
 
-    while(!shutdown_)
+    bool a = false;
+    bool shutdown = false;
+    bool shutting_down = false;
+    while(!shutdown)
     {
         unsigned long long next_timer;
         unsigned long long now = pic_microtime();
@@ -424,10 +457,12 @@ void fastthread_t::thread_main()
 
         for(;;)
         {
-            bool a = false;
+            a = false;
             next_timer = now+5000000ULL;
 
+            if(shutdown_) shutting_down = true;
             manager_->process_fast(now,&next_timer,&a);
+            if(shutting_down && !a) shutdown = true;
 
             if(!a) break;
 
@@ -494,19 +529,23 @@ void ctxthread_t::thread_main()
     std::cout << "Started context thread with ID " << pic_current_threadid() << std::endl;
 #endif
 
-    while(!shutdown_)
+    bool a = false;
+    bool shutdown = false;
+    bool shutting_down = false;
+    while(!shutdown)
     {
         for(;;)
         {
-            bool a = false;
+            a = false;
 
+            if(shutdown_) shutting_down = true;
             manager_->process_ctx(group_,pic_microtime(),&a);
+            if(shutting_down && !a) shutdown = true;
 
             if(!a) break;
         }
 
         gate_.pass_and_shut_timed(5000000);
-
     }
 }
 
@@ -541,27 +580,28 @@ void mainthread_t::thread_main()
     std::cout << "Started main thread with ID " << pic_current_threadid() << std::endl;
 #endif
 
+    bool a = false;
+    bool shutdown = false;
+    bool shutting_down = false;
     for(;;)
     {
         unsigned long long next_timer;
         unsigned long long now = pic_microtime();
 
-        if(shutdown_) return;
+        if(shutdown) return;
 
         for(;;)
         {
-            bool a = false;
+            a = false;
             next_timer = now+1000000ULL;
 
-            if(shutdown_) return;
-
+            if(shutdown_) shutting_down = true;
             manager_->process_main(now,&next_timer,&a);
+            if(shutting_down && !a) shutdown = true;
             now = pic_microtime();
 
             if(!a) break;
         }
-
-        if(shutdown_) return;
 
         if(now<next_timer)
         {
@@ -576,7 +616,55 @@ void mainthread_t::thread_main()
     }
 }
 
-mtscaffold_t::mtscaffold_t(pic::nballocator_t *a, unsigned mt, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck,bool rt): network_(a,ck), fast_(rt?PIC_THREAD_PRIORITY_REALTIME:PIC_THREAD_PRIORITY_NORMAL,&manager_), main_(PIC_THREAD_PRIORITY_NORMAL,&manager_,&network_), manager_(this,a,&network_,l,winch), context_(mt), mt_(mt), logger_(l)
+deletethread_t::deletethread_t(unsigned pri,pia::manager_t *m): pic::thread_t(pri), manager_(m), shutdown_(false)
+{
+}
+
+deletethread_t::~deletethread_t()
+{
+    shutdown(true);
+}
+
+void deletethread_t::service()
+{
+    gate_.open();
+}
+
+void deletethread_t::shutdown(bool w)
+{
+    shutdown_ = true;
+    gate_.open();
+    if(w) wait();
+}
+
+void deletethread_t::thread_init()
+{
+
+}
+
+void deletethread_t::thread_main()
+{
+#ifdef DEBUG_DATA_ATOMICITY
+    std::cout << "Started delete thread with ID " << pic_current_threadid() << std::endl;
+#endif
+
+    bool a = false;
+    bool shutdown = false;
+    bool shutting_down = false;
+    while(!shutdown)
+    {
+        a = false;
+
+        if(shutdown_) shutting_down = true;
+        manager_->process_delete(pic_microtime(),&a);
+        if(shutting_down && !a) shutdown = true;
+
+        gate_.pass_and_shut_timed(1000000ULL);
+    }
+}
+
+
+mtscaffold_t::mtscaffold_t(pic::nballocator_t *a, unsigned mt, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck,bool rt): network_(a,ck), fast_(rt?PIC_THREAD_PRIORITY_REALTIME:PIC_THREAD_PRIORITY_NORMAL,&manager_), main_(PIC_THREAD_PRIORITY_NORMAL,&manager_,&network_), manager_(this,a,&network_,l,winch), context_(mt), delete_(PIC_THREAD_PRIORITY_NORMAL,&manager_), mt_(mt), logger_(l), shutdown_(false)
 {
     fast_.run();
 
@@ -585,16 +673,28 @@ mtscaffold_t::mtscaffold_t(pic::nballocator_t *a, unsigned mt, const pic::f_stri
         context_[i] = pic::ref(new ctxthread_t(PIC_THREAD_PRIORITY_NORMAL,0,&manager_));
         context_[i]->run();
     }
+
+    delete_.run();
 }
 
 mtscaffold_t::~mtscaffold_t()
 {
+    shutdown();
+}
+
+void mtscaffold_t::shutdown()
+{
+    if(shutdown_) return;
+
+    shutdown_ = true;
+
     for(unsigned i=0;i<mt_;i++)
     {
         context_[i]->shutdown(true);
     }
 
     fast_.shutdown(true);
+    delete_.shutdown(true);
 }
 
 pia::context_t mtscaffold_t::context(const char *user, const pic::status_t &gone, const pic::f_string_t &log, const char *tag)
@@ -628,17 +728,28 @@ void mtscaffold_t::service_ctx(int group)
 bool mtscaffold_t::service_isfast() { return fast_.isfast(); }
 void mtscaffold_t::service_gone() { main_.shutdown(false); }
 
-guiscaffold_t::guiscaffold_t(pic::nballocator_t *a, const pic::notify_t &s, const pic::notify_t &g, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck, bool rt): gone_(g), network_(a,ck), main_(2,&manager_,&network_), usage_(&cpu_usage_,&gate_), fast_(rt?PIC_THREAD_PRIORITY_REALTIME:PIC_THREAD_PRIORITY_NORMAL,&manager_,&usage_),  ctx0_(PIC_THREAD_PRIORITY_NORMAL,0,&manager_), manager_(this,a,&network_,l,winch), pinger_(PIC_THREAD_PRIORITY_NORMAL,s), logger_(l)
+guiscaffold_t::guiscaffold_t(pic::nballocator_t *a, const pic::notify_t &s, const pic::notify_t &g, const pic::f_string_t &l,const pic::f_string_t &winch,bool ck, bool rt): gone_(g), network_(a,ck), main_(2,&manager_,&network_), usage_(&cpu_usage_,&gate_), fast_(rt?PIC_THREAD_PRIORITY_REALTIME:PIC_THREAD_PRIORITY_NORMAL,&manager_,&usage_), ctx0_(PIC_THREAD_PRIORITY_NORMAL,0,&manager_), delete_(PIC_THREAD_PRIORITY_NORMAL,&manager_), manager_(this,a,&network_,l,winch), pinger_(PIC_THREAD_PRIORITY_NORMAL,s), logger_(l), shutdown_(false)
 {
     cpu_usage_ = 0;
     fast_.run();
     main_.run();
     ctx0_.run();
     pinger_.run();
+    delete_.run();
 }
 
 guiscaffold_t::~guiscaffold_t()
 {
+    shutdown();
+}
+
+void guiscaffold_t::shutdown()
+{
+    if(shutdown_) return;
+
+    shutdown_ = true;
+
+    delete_.shutdown(true);
     ctx0_.shutdown(true);
     main_.shutdown(true);
     fast_.shutdown(true);

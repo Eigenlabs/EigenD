@@ -63,6 +63,8 @@ ejuce::Application::impl_t::impl_t(Application *app,const pic::f_string_t &l,boo
 
 ejuce::Application::impl_t::~impl_t()
 {
+    scaffold_->shutdown();
+
     tracked_invalidate();
 }
 
@@ -92,7 +94,10 @@ void ejuce::Application::initialise (const juce::String& commandLine,const pic::
 void ejuce::Application::shutdown()
 {
     if(messages_)
+    {
         delete messages_;
+        messages_ = 0;
+    }
 }
 
 void ejuce::Application::handleGone()

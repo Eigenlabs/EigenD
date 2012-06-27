@@ -618,6 +618,7 @@ struct bct_thing_host_ops_s
     void (*thing_trigger_slow)(bct_thing_host_ops_t **); /* any thread */
     void (*thing_queue_fast)(bct_thing_host_ops_t **, bct_data_t, int); /* any thread */
     void (*thing_queue_slow)(bct_thing_host_ops_t **, bct_data_t); /* any thread */
+    void (*thing_defer_delete)(bct_thing_host_ops_t **, bool(*)(void*), void *, unsigned long ms); /* any thread */
     int (*thing_timer_fast)(bct_thing_host_ops_t **, unsigned long ms, long us);
     int (*thing_timer_slow)(bct_thing_host_ops_t **, unsigned long ms);
     void (*thing_cancel_timer_fast)(bct_thing_host_ops_t **);
@@ -649,6 +650,7 @@ struct bct_thing_s
 #define bct_thing_host_trigger_slow(bc)          ((*((bc)->host_ops))->thing_trigger_slow)((bc)->host_ops)
 #define bct_thing_host_queue_fast(bc,d,p)        ((*((bc)->host_ops))->thing_queue_fast)((bc)->host_ops,(d),(p))
 #define bct_thing_host_queue_slow(bc,d)          ((*((bc)->host_ops))->thing_queue_slow)((bc)->host_ops,(d))
+#define bct_thing_host_defer_delete(bc,cb,d,ms)  ((*((bc)->host_ops))->thing_defer_delete)((bc)->host_ops,(cb),(d),(ms))
 #define bct_thing_host_timer_fast(bc,ms,us)      ((*((bc)->host_ops))->thing_timer_fast)((bc)->host_ops,(ms),(us))
 #define bct_thing_host_timer_slow(bc,ms)         ((*((bc)->host_ops))->thing_timer_slow)((bc)->host_ops,(ms))
 #define bct_thing_host_cancel_timer_fast(bc)     ((*((bc)->host_ops))->thing_cancel_timer_fast)((bc)->host_ops)

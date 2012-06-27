@@ -276,17 +276,6 @@ bct_data_t allocate_host_raw(pic::nballocator_t *a, unsigned nb, unsigned long l
 
     unsigned char *wh = PTR_WIRE_HDR(r);
 
-/*
-    std::cout << ">>>>>> r = " << (uintptr_t)r << ", " << ((uintptr_t)r)%16 << std::endl;
-    std::cout << ">>>>>> PTR_WIRE_HDR(r) = " << (uintptr_t)PTR_WIRE_HDR(r) << ", " << ((uintptr_t)PTR_WIRE_HDR(r))%16 << std::endl;
-    std::cout << ">>>>>> PTR_WIRE_VECTOR(r) = " << (uintptr_t)PTR_WIRE_VECTOR(r) << ", " << ((uintptr_t)PTR_WIRE_VECTOR(r))%16 << std::endl;
-    std::cout << ">>>>>> PTR_WIRE_SCALAR(r) = " << (uintptr_t)PTR_WIRE_SCALAR(r) << ", " << ((uintptr_t)PTR_WIRE_SCALAR(r))%16 << std::endl;
-    std::cout << ">>>>>> PTR_WIRE_ZERO(r) = " << (uintptr_t)PTR_WIRE_ZERO(r) << ", " << ((uintptr_t)PTR_WIRE_ZERO(r))%16 << std::endl;
-    std::cout << ">>>>>> PTR_HOST_VECTOR(r) = " << (uintptr_t)PTR_HOST_VECTOR(r) << ", " << ((uintptr_t)PTR_HOST_VECTOR(r))%16 << std::endl;
-    std::cout << ">>>>>> PTR_HOST_SCALAR(r) = " << (uintptr_t)PTR_HOST_SCALAR(r) << ", " << ((uintptr_t)PTR_HOST_SCALAR(r))%16 << std::endl;
-    std::cout << ">>>>>> PTR_HOST_ZERO(r) = " << (uintptr_t)PTR_HOST_ZERO(r) << ", " << ((uintptr_t)PTR_HOST_ZERO(r))%16 << std::endl;
-  */  
-
     wh[0]=t;
     pie_setu16(&wh[1],2,sl);
     pie_setu16(&wh[3],2,vl);

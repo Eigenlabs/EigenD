@@ -39,6 +39,7 @@ namespace
         static void api_close(bct_thing_host_ops_t **t_);
         static void api_queue_slow(bct_thing_host_ops_t **t_, bct_data_t d);
         static void api_queue_fast(bct_thing_host_ops_t **t_, bct_data_t d, int p);
+        static void api_defer_delete(bct_thing_host_ops_t **t_, bool(*cb)(void*), void *d, unsigned long ms);
         static void api_trigger_fast(bct_thing_host_ops_t **t_);
         static void api_trigger_slow(bct_thing_host_ops_t **t_);
         static int api_timer_fast(bct_thing_host_ops_t **t_, unsigned long ms, long us);
@@ -62,6 +63,7 @@ namespace
         void close();
         void queue_slow(const pia_data_t & d);
         void queue_fast(const pia_data_nb_t & d, int p);
+        void defer_delete(bool(*cb)(void*), void *d, unsigned long ms);
         void trigger_fast();
         void trigger_slow();
         static int timer_fast(void *, void *, void *, void *);
@@ -275,6 +277,29 @@ void tnode_t::api_queue_fast(bct_thing_host_ops_t **t_, bct_data_t d, int p)
     PIA_CATCHLOG_EREF(t->entity_)
 }
 
+void tnode_t::defer_delete(bool(*cb)(void*), void *d, unsigned long ms)
+{
+    pic::flipflop_t<bool>::guard_t g(open_);
+
+    if(g.value())
+    {
+        entity_->glue()->defer_delete(cb,d,ms);
+    }
+}
+
+void tnode_t::api_defer_delete(bct_thing_host_ops_t **t_, bool(*cb)(void*), void *d, unsigned long ms)
+{
+    tnode_t *t = PIC_STRBASE(tnode_t,t_,host_ops_);
+
+    try
+    {
+        pia_logguard_t guard(t->entity_->glue());
+
+        t->defer_delete(cb,d,ms);
+    }
+    PIA_CATCHLOG_EREF(t->entity_)
+}
+
 void tnode_t::trigger_fast()
 {
     pic::flipflop_t<bool>::guard_t g(open_);
@@ -476,6 +501,7 @@ bct_thing_host_ops_t tnode_t::dispatch__ =
     api_trigger_slow,
     api_queue_fast,
     api_queue_slow,
+    api_defer_delete,
     api_timer_fast,
     api_timer_slow,
     api_cancel_timer_fast,

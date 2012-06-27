@@ -216,8 +216,6 @@ void pico::active_t::impl_t::set_led(unsigned key, unsigned colour)
        else if(colour==3) c=0;
        ledmask_ &= kmask;
        ledmask_ |= (c<<shift);
-       //std::cout << ">>>>>> set_led ledmask=" << std::setw(8) << std::setfill('0') << dec2bin(ledmask_) << "(" << std::setw(3) << std::setfill('0') << ledmask_ << "), key=" << key << ", colour=" << c << ", mode=" << mode << ", shift=" << shift << ", kmask=" << dec2bin(kmask) << "(" << kmask << "), ocolour=" << colour << std::endl;
-       //std::cout.flush();
        
        // sending the mode led data three times as a workaround for some weirdness in the firmware
        // this is a stop-gap fix until we can improve this at the firmware level, see issue #518
