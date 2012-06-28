@@ -41,6 +41,15 @@
 
 #include "juce.h"
 
+#define MESSAGE_DESTROY_GUI
+namespace
+{
+    enum HostMessageTypes 
+    {
+        messageDestroyGUI
+    };
+}
+
 struct host::plugin_list_t::impl_t: piw::thing_t
 {
     impl_t(const std::string &plugins_cache, const pic::notify_t &complete): complete_(complete)
@@ -265,7 +274,6 @@ namespace
         }
     };
 
-
     struct mapping_dialog_t: host_dialog_t
     {
         mapping_dialog_t(host::plugin_instance_t::impl_t *controller);
@@ -289,12 +297,17 @@ namespace
         {
             if(content_)
             {
+                content_->removeComponentListener(this);
+                content_->setVisible(false);
+                removeChildComponent(content_);
                 delete content_;
                 content_ = 0;
             }
 
             if(toolbar_)
             {
+                toolbar_->setVisible(false);
+                removeChildComponent(toolbar_);
                 delete toolbar_;
                 toolbar_ = 0;
             }
@@ -379,6 +392,7 @@ namespace
 
         ~host_view_t()
         {
+            delegate_.close();
             clearContentComponent();
         }
 
@@ -473,7 +487,7 @@ namespace
     };
 }
 
-struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_observer_t, piw::clocksink_t, piw::thing_t, virtual pic::tracked_t
+struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_observer_t, piw::clocksink_t, piw::thing_t, juce::MessageListener, virtual pic::tracked_t
 {
     impl_t(plugin_observer_t *obs, midi::midi_channel_delegate_t *channel_delegate, piw::clockdomain_ctl_t *d,
         const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, const pic::status_t &window_state): 
@@ -482,7 +496,6 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
             window_state_changed_(window_state), clockdomain_(d), sample_rate_(48000.0), buffer_size_(PLG_CLOCK_BUFFER_SIZE),
             observer_(obs), channel_delegate_(channel_delegate), active_(false),
             idle_count_(0), idle_time_ticks_(0), idling_enabled_(true), idle_time_sec_(10.f),
-            main_delegate_(this),
             settings_functors_(midi::settings_functors_t::init(
                     midi::clearall_t::method(this,&host::plugin_instance_t::impl_t::clear_all),
                     midi::get_settings_t::method(this,&host::plugin_instance_t::impl_t::get_settings),
@@ -699,18 +712,39 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         }
     }
 
+    void destroy_gui()
+    {
+        if(window_)
+        {
+            bounds_.reset(new juce::Rectangle<int>(window_->getBounds()));
+            postMessage(new juce::Message(messageDestroyGUI,0,0,window_));
+            mapping_delegate_.close();
+            window_ = 0;
+        }
+    }
+        
+    void handleMessage(const juce::Message &message)
+    {
+        switch(message.intParameter1)
+        {
+            case messageDestroyGUI:
+                if(message.pointerParameter)
+                {
+                    host_view_t *w = (host_view_t *)message.pointerParameter;
+                    w->setVisible(false);
+                    delete w;
+                }
+                break;
+        }
+    }
+
     void hide_gui()
     {
         if(window_)
         {
-            window_->setVisible(false);
-            main_delegate_.close();
-            mapping_delegate_.close();
-            bounds_.reset(new juce::Rectangle<int>(window_->getBounds()));
-            delete window_;
-            window_ = 0;
             host_window_.set_window_state(false);
         }
+        destroy_gui();
         observer_->showing_changed(false);
     }
 
@@ -750,16 +784,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         observer_->description_changed("");
         host_window_.close_window();
 
-        if(window_)
-        {
-            window_->setVisible(false);
-            main_delegate_.close();
-            mapping_delegate_.close();
-            bounds_.reset(new juce::Rectangle<int>(window_->getBounds()));
-            pic::logmsg() << "deferring delete window " << (void *)window_;
-            defer_delete(&host::delete_window,(void *)window_,1000);
-            window_ = 0;
-        }
+        destroy_gui();
 
         juce::AudioPluginInstance *p(plugin_.current());
         plugin_.set(0);
@@ -1201,8 +1226,6 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     piw::window_t host_window_;
     std::auto_ptr<juce::Rectangle<int> > bounds_;
 
-    mainpanel_delegate_t main_delegate_;
-
     midi::settings_functors_t settings_functors_;
     midi::mapping_delegate_t mapping_delegate_;
 
@@ -1245,7 +1268,7 @@ host_view_t::host_view_t(const juce::String &name, Component *content, host::plu
 {
     setResizable(true,true);
     setUsingNativeTitleBar(true);
-    host_panel_t *c = new host_panel_t(content,controller,&controller_->main_delegate_);
+    host_panel_t *c = new host_panel_t(content,controller,&delegate_);
     setContentOwned(c,true);
     if(bounds.get())
     {
@@ -1800,18 +1823,6 @@ int host::plugin_list_t::gc_clear()
 int host::plugin_list_t::gc_traverse(void *a,void *b)
 {
     return impl_->complete_.gc_traverse(a,b);
-}
-
-bool host::delete_window(void *w)
-{
-    JUCE_AUTORELEASEPOOL
-
-    pic::logmsg() << "deleting window " << w;
-    if(w)
-    {
-        delete (host_view_t *)w;
-    }
-    return true;
 }
 
 bool host::delete_plugin(void *p)

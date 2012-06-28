@@ -184,7 +184,6 @@ namespace host
             impl_t *impl_;
     };
 
-    PIHOST_DECLSPEC_FUNC(bool) delete_window(void *);
     PIHOST_DECLSPEC_FUNC(bool) delete_plugin(void *);
 }
 

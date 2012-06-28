@@ -1014,8 +1014,8 @@ void EigenMainWindow::getCommandInfo (const CommandID commandID, ApplicationComm
         if(w<10)
         {
             result.addDefaultKeypress (((char)(w+'0')), ModifierKeys::commandModifier);
-            result.setTicked(scaffold_->window_state(w-1));
         }
+        result.setTicked(scaffold_->window_state(w-1));
         return;
     }
 
