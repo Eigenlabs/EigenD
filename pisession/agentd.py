@@ -321,6 +321,18 @@ def find_example_setups():
     return m
 
 
+def find_experimental_setups():
+    rd = resource.get_release_dir('experimental')
+    m = Menu('Experimental Setups')
+
+    for (sp,sd,sn) in resource.safe_walk(rd):
+        for s in filter(filter_valid_setup,sn):
+            s3 = upgrade.split_setup(s)
+            m.add_setup(urllib.unquote(s3[0]),s3[1],os.path.join(rd,s),False,False)
+
+    return m
+
+
 def find_factory_setups():
     rd = resource.get_release_dir('state')
     m = Menu('Factory Setups')
@@ -357,6 +369,7 @@ def find_all_setups():
         m.add_child(find_user_setups())
         m.add_child(find_factory_setups())
         m.add_child(find_example_setups())
+        m.add_child(find_experimental_setups())
         m.add_child(find_old_setups())
         return m.term()
     except:
