@@ -551,6 +551,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         {
             return;
         }
+        set_bypassed(true);
         p->releaseResources();
         sample_rate_ = clockdomain_->get_sample_rate();
         buffer_size_ = clockdomain_->get_buffer_size();
@@ -558,6 +559,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         {
             p->prepareToPlay(sample_rate_, buffer_size_);
             recalc_idle_time();
+            set_bypassed(false);
         }
         else
         {
@@ -1054,6 +1056,11 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     void set_bypassed(bool b)
     {
+        if(bypassed_ == b)
+        {
+            return;
+        }
+
         if(b)
         {
             tick_disable();
