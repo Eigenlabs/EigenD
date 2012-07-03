@@ -383,7 +383,7 @@ namespace
     };
 
     belcanto_note_wire_t::belcanto_note_wire_t(midi::midi_from_belcanto_t::impl_t *root, const piw::event_data_source_t &es):
-        root_(root), path_(es.path()), detector_(root->velocity_config_), channel_(0), note_id_(0), note_velocity_(0), note_pitch_(-1.f), note_pitchbend_(0.f)
+        root_(root), path_(es.path()), detector_(root->velocity_config_), channel_(0), note_id_(-1.f), note_velocity_(0), note_pitch_(-1.f), note_pitchbend_(0.f)
     {
         root_->input_wires_.insert(std::make_pair(path_,this));
         subscribe(es);
@@ -406,7 +406,7 @@ namespace
 #endif // MIDI_FROM_BELCANTO_DEBUG>0
 
         iterator_ = b.iterator();
-        note_id_ = 0;
+        note_id_ = -1.f;
         note_velocity_ = 0;
         note_pitch_ = -1.f;
         note_pitchbend_ = 0.f;
@@ -520,7 +520,7 @@ namespace
 #endif // MIDI_FROM_BELCANTO_DEBUG>0
 
         // return if a note already started
-        if(note_id_)
+        if(note_id_>=0)
         {
             return;
         }
@@ -528,7 +528,7 @@ namespace
         // the range is 0x80 to 0x3fff to ensure a note on velocity 0 (=note off) is not sent
         note_velocity_ = (0x3fff-0x80)*fabsf(velocity) + 0x80;
 
-        if(note_pitch_>0)
+        if(note_pitch_>=0)
         {
             note_id_ = note_pitch_;
 
@@ -555,7 +555,7 @@ namespace
         if(n>127.f)
             return;
 
-        if(!note_id_)
+        if(note_id_<0)
         {
             // no note started
             note_pitch_ = (floorf(n + 0.5f));//roundf(n);
@@ -591,7 +591,7 @@ namespace
 
         ticked(last_from_,t);
         iterator_.clear();
-        if(note_id_)
+        if(note_id_>=0)
         {
             root_->time_ = std::max(root_->time_+1,t);
             t = root_->time_;
@@ -1002,7 +1002,7 @@ namespace midi
                                     {
                                         if(0 == w->id_.compare_path_beginning(i->id_))
                                         {
-                                            if(w->note_id_!=0)
+                                            if(w->note_id_>=0)
                                             {
                                                 set_poly_aftertouch(global, i->continuous_, channel, w->note_id_, i->value_, time_);
                                             }
