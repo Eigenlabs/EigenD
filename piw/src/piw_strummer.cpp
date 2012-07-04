@@ -18,6 +18,7 @@
 */
 
 #include <piw/piw_strummer.h>
+#include <piw/piw_tsd.h>
 #include <picross/pic_ilist.h>
 #include <cmath>
 
@@ -120,7 +121,8 @@ namespace
         piw::xevent_data_buffer_t buffer_;
 
         bool running_;
-        float high_ctl_, low_ctl_;
+        float high_ctl_;
+        unsigned long long from_;
     };
 
     struct data_wire_t: piw::wire_t, piw::wire_ctl_t, piw::event_data_sink_t, piw::event_data_source_real_t, consumer_t, pic::element_t<1>
@@ -509,8 +511,8 @@ void ctl_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::
         return;
     }
 
+    from_ = id.time();
     high_ctl_ = 0.0;
-    low_ctl_ = 0.0;
     running_ = false;
 
     id_ = id;
@@ -529,16 +531,11 @@ void ctl_wire_t::wire_ticked(unsigned long long f, unsigned long long t)
     unsigned long long i;
     piw::data_nb_t d;
 
-    if(queue.earliest(d,&i,f))
+    if(queue.earliest(d,&i,from_))
     {
         do
         {
             float av = fabs(d.as_norm());
-
-            if(av<low_ctl_)
-            {
-                low_ctl_ = av;
-            }
 
             if(av>high_ctl_)
             {
@@ -574,24 +571,24 @@ void ctl_wire_t::wire_ticked(unsigned long long f, unsigned long long t)
                 {
                     producer_.end_event(d.time());
                     running_ = false;
-                    low_ctl_ = av;
                 }
             }
             else
             {
                 if(d.time() - producer_.last_event_start_ > input_->impl_->trigger_window_ &&
-                   av > input_->impl_->threshold_on_ &&
-                   low_ctl_ <= input_->impl_->threshold_on_)
+                   av > input_->impl_->threshold_on_)
                 {
                     producer_.start_event(d.time(), id_, buffer_);
                     running_ = true;
-                    high_ctl_ = 0.0;
+                    high_ctl_ = av;
                 }
             }
             i++;
         }
         while(queue.read(d,&i,t));
     }
+
+    from_ = f;
 }
 
 void ctl_wire_t::event_buffer_reset(unsigned s, unsigned long long t, const piw::dataqueue_t &o, const piw::dataqueue_t &n)
@@ -707,7 +704,7 @@ void piw::strummer_t::impl_t::root_clock()
 
 piw::strummer_t::impl_t::impl_t(const piw::cookie_t &c, piw::clockdomain_ctl_t *d): piw::root_t(0), clock_(0), ctl_input_(this)
 {
-    d->sink(this,"ucorrelator");
+    d->sink(this,"strummer");
     set_clock(this);
     connect(c);
     tick_enable(true);
