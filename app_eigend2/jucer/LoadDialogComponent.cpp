@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  13 Jun 2012 12:24:57pm
+  Creation date:  5 Jul 2012 5:19:01pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -189,21 +189,9 @@ void LoadDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (L"Choose a Setup:",
-                36, 100, 200, 30,
-                Justification::centredLeft, true);
-
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
     g.drawText (L"Setup Description:",
-                36, getHeight() - 191, 200, 30,
+                44, getHeight() - 203, 200, 30,
                 Justification::centredLeft, true);
-
-    g.setColour (Colours::black);
-    g.setFont (Font (15.0000f, Font::plain));
-    g.drawText (L"Current Setup:",
-                getWidth() - 384, 115 - ((30) / 2), 200, 30,
-                Justification::centredRight, true);
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_backgroundBoxT_png,
@@ -247,17 +235,17 @@ void LoadDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxTl_png,
-                 36, 144, 15, 15,
+                 31, 129, 15, 15,
                  0, 0, cachedImage_innerBoxTl_png.getWidth(), cachedImage_innerBoxTl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxTr_png,
-                 getWidth() - 169, 144, 15, 15,
+                 getWidth() - 169, 129, 15, 15,
                  0, 0, cachedImage_innerBoxTr_png.getWidth(), cachedImage_innerBoxTr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxBl_png,
-                 36, getHeight() - 226, 15, 15,
+                 31, getHeight() - 226, 15, 15,
                  0, 0, cachedImage_innerBoxBl_png.getWidth(), cachedImage_innerBoxBl_png.getHeight());
 
     g.setColour (Colours::black);
@@ -267,73 +255,85 @@ void LoadDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxT_png,
-                 51, 144, getWidth() - 220, 15,
+                 46, 129, getWidth() - 215, 15,
                  0, 0, cachedImage_innerBoxT_png.getWidth(), cachedImage_innerBoxT_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxB_png,
-                 51, getHeight() - 226, getWidth() - 220, 15,
+                 46, getHeight() - 226, getWidth() - 215, 15,
                  0, 0, cachedImage_innerBoxB_png.getWidth(), cachedImage_innerBoxB_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxL_png,
-                 36, 159, 15, getHeight() - 385,
+                 31, 144, 15, getHeight() - 370,
                  0, 0, cachedImage_innerBoxL_png.getWidth(), cachedImage_innerBoxL_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxR_png,
-                 getWidth() - 169, 159, 15, getHeight() - 385,
+                 getWidth() - 169, 144, 15, getHeight() - 370,
                  0, 0, cachedImage_innerBoxR_png.getWidth(), cachedImage_innerBoxR_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxInner_png,
-                 51, 159, getWidth() - 220, getHeight() - 385,
+                 46, 144, getWidth() - 215, getHeight() - 370,
                  0, 0, cachedImage_innerBoxInner_png.getWidth(), cachedImage_innerBoxInner_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxTl_png,
-                 36, getHeight() - 139, 15, 15,
+                 31, getHeight() - 169, 15, 15,
                  0, 0, cachedImage_innerBoxTl_png.getWidth(), cachedImage_innerBoxTl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxTr_png,
-                 getWidth() - 48, getHeight() - 139, 15, 15,
+                 getWidth() - 43, getHeight() - 169, 15, 15,
                  0, 0, cachedImage_innerBoxTr_png.getWidth(), cachedImage_innerBoxTr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxBl_png,
-                 36, getHeight() - 47, 15, 15,
+                 31, getHeight() - 47, 15, 15,
                  0, 0, cachedImage_innerBoxBl_png.getWidth(), cachedImage_innerBoxBl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxBr_png,
-                 getWidth() - 48, getHeight() - 47, 15, 15,
+                 getWidth() - 43, getHeight() - 47, 15, 15,
                  0, 0, cachedImage_innerBoxBr_png.getWidth(), cachedImage_innerBoxBr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxT_png,
-                 51, getHeight() - 139, getWidth() - 99, 15,
+                 46, getHeight() - 169, getWidth() - 89, 15,
                  0, 0, cachedImage_innerBoxT_png.getWidth(), cachedImage_innerBoxT_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxB_png,
-                 51, getHeight() - 47, getWidth() - 99, 15,
+                 46, getHeight() - 47, getWidth() - 89, 15,
                  0, 0, cachedImage_innerBoxB_png.getWidth(), cachedImage_innerBoxB_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxL_png,
-                 36, getHeight() - 124, 15, 77,
+                 31, getHeight() - 154, 15, 107,
                  0, 0, cachedImage_innerBoxL_png.getWidth(), cachedImage_innerBoxL_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxR_png,
-                 getWidth() - 48, getHeight() - 124, 15, 77,
+                 getWidth() - 43, getHeight() - 154, 15, 107,
                  0, 0, cachedImage_innerBoxR_png.getWidth(), cachedImage_innerBoxR_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxInner_png,
-                 51, getHeight() - 124, getWidth() - 99, 77,
+                 46, getHeight() - 154, getWidth() - 89, 107,
                  0, 0, cachedImage_innerBoxInner_png.getWidth(), cachedImage_innerBoxInner_png.getHeight());
+
+    g.setColour (Colours::black);
+    g.setFont (Font (15.0000f, Font::plain));
+    g.drawText (L"Choose a Setup:",
+                44, 95, 200, 30,
+                Justification::centredLeft, true);
+
+    g.setColour (Colours::black);
+    g.setFont (Font (15.0000f, Font::plain));
+    g.drawText (L"Current Setup:",
+                getWidth() - 384, 110 - ((30) / 2), 200, 30,
+                Justification::centredRight, true);
 
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
@@ -341,15 +341,15 @@ void LoadDialogComponent::paint (Graphics& g)
 
 void LoadDialogComponent::resized()
 {
-    tree->setBounds (48, 160, getWidth() - 213, getHeight() - 387);
-    load_button->setBounds (getWidth() - 139, 184, 112, 24);
-    description->setBounds (48, getHeight() - 48 - 75, getWidth() - 96, 75);
-    setup_label->setBounds (getWidth() - 184, 115 - ((24) / 2), 150, 24);
-    delete_button->setBounds (getWidth() - 139, 325, 112, 24);
-    edit_button->setBounds (getWidth() - 139, 293, 112, 24);
-    default_toggle->setBounds (getWidth() - 139, 144, 112, 24);
-    save_button->setBounds (getWidth() - 139, 218, 112, 24);
-    saveas_button->setBounds (getWidth() - 139, 250, 112, 24);
+    tree->setBounds (40, 139, getWidth() - 202, getHeight() - 360);
+    load_button->setBounds (getWidth() - 139, 169, 112, 24);
+    description->setBounds (39, getHeight() - 40 - 120, getWidth() - 76, 120);
+    setup_label->setBounds (getWidth() - 184, 110 - ((24) / 2), 150, 24);
+    delete_button->setBounds (getWidth() - 139, 310, 112, 24);
+    edit_button->setBounds (getWidth() - 139, 278, 112, 24);
+    default_toggle->setBounds (getWidth() - 139, 129, 112, 24);
+    save_button->setBounds (getWidth() - 139, 203, 112, 24);
+    saveas_button->setBounds (getWidth() - 139, 235, 112, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -418,12 +418,8 @@ BEGIN_JUCER_METADATA
           hasStroke="0"/>
     <IMAGE pos="27 99 55M 130M" resource="backgroundBoxInner_png" opacity="1"
            mode="0"/>
-    <TEXT pos="36 100 200 30" fill="solid: ff000000" hasStroke="0" text="Choose a Setup:"
+    <TEXT pos="44 203R 200 30" fill="solid: ff000000" hasStroke="0" text="Setup Description:"
           fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
-    <TEXT pos="36 191R 200 30" fill="solid: ff000000" hasStroke="0" text="Setup Description:"
-          fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
-    <TEXT pos="384R 115c 200 30" fill="solid: ff000000" hasStroke="0" text="Current Setup:"
-          fontname="Default font" fontsize="15" bold="0" italic="0" justification="34"/>
     <IMAGE pos="42 84 85M 15" resource="backgroundBoxT_png" opacity="1"
            mode="0"/>
     <IMAGE pos="42 31R 85M 15" resource="backgroundBoxB_png" opacity="1"
@@ -440,56 +436,60 @@ BEGIN_JUCER_METADATA
            mode="0"/>
     <IMAGE pos="12 84 30 15" resource="backgroundBoxTl_png" opacity="1"
            mode="0"/>
-    <IMAGE pos="36 144 15 15" resource="innerBoxTl_png" opacity="1" mode="0"/>
-    <IMAGE pos="169R 144 15 15" resource="innerBoxTr_png" opacity="1" mode="0"/>
-    <IMAGE pos="36 226R 15 15" resource="innerBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="31 129 15 15" resource="innerBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="169R 129 15 15" resource="innerBoxTr_png" opacity="1" mode="0"/>
+    <IMAGE pos="31 226R 15 15" resource="innerBoxBl_png" opacity="1" mode="0"/>
     <IMAGE pos="169R 226R 15 15" resource="innerBoxBr_png" opacity="1" mode="0"/>
-    <IMAGE pos="51 144 220M 15" resource="innerBoxT_png" opacity="1" mode="0"/>
-    <IMAGE pos="51 226R 220M 15" resource="innerBoxB_png" opacity="1" mode="0"/>
-    <IMAGE pos="36 159 15 385M" resource="innerBoxL_png" opacity="1" mode="0"/>
-    <IMAGE pos="169R 159 15 385M" resource="innerBoxR_png" opacity="1" mode="0"/>
-    <IMAGE pos="51 159 220M 385M" resource="innerBoxInner_png" opacity="1"
+    <IMAGE pos="46 129 215M 15" resource="innerBoxT_png" opacity="1" mode="0"/>
+    <IMAGE pos="46 226R 215M 15" resource="innerBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="31 144 15 370M" resource="innerBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="169R 144 15 370M" resource="innerBoxR_png" opacity="1" mode="0"/>
+    <IMAGE pos="46 144 215M 370M" resource="innerBoxInner_png" opacity="1"
            mode="0"/>
-    <IMAGE pos="36 139R 15 15" resource="innerBoxTl_png" opacity="1" mode="0"/>
-    <IMAGE pos="48R 139R 15 15" resource="innerBoxTr_png" opacity="1" mode="0"/>
-    <IMAGE pos="36 47R 15 15" resource="innerBoxBl_png" opacity="1" mode="0"/>
-    <IMAGE pos="48R 47R 15 15" resource="innerBoxBr_png" opacity="1" mode="0"/>
-    <IMAGE pos="51 139R 99M 15" resource="innerBoxT_png" opacity="1" mode="0"/>
-    <IMAGE pos="51 47R 99M 15" resource="innerBoxB_png" opacity="1" mode="0"/>
-    <IMAGE pos="36 124R 15 77" resource="innerBoxL_png" opacity="1" mode="0"/>
-    <IMAGE pos="48R 124R 15 77" resource="innerBoxR_png" opacity="1" mode="0"/>
-    <IMAGE pos="51 124R 99M 77" resource="innerBoxInner_png" opacity="1"
+    <IMAGE pos="31 169R 15 15" resource="innerBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 169R 15 15" resource="innerBoxTr_png" opacity="1" mode="0"/>
+    <IMAGE pos="31 47R 15 15" resource="innerBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 47R 15 15" resource="innerBoxBr_png" opacity="1" mode="0"/>
+    <IMAGE pos="46 169R 89M 15" resource="innerBoxT_png" opacity="1" mode="0"/>
+    <IMAGE pos="46 47R 89M 15" resource="innerBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="31 154R 15 107" resource="innerBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 154R 15 107" resource="innerBoxR_png" opacity="1" mode="0"/>
+    <IMAGE pos="46 154R 89M 107" resource="innerBoxInner_png" opacity="1"
            mode="0"/>
+    <TEXT pos="44 95 200 30" fill="solid: ff000000" hasStroke="0" text="Choose a Setup:"
+          fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
+    <TEXT pos="384R 110c 200 30" fill="solid: ff000000" hasStroke="0" text="Current Setup:"
+          fontname="Default font" fontsize="15" bold="0" italic="0" justification="34"/>
   </BACKGROUND>
   <TREEVIEW name="new treeview" id="4f6d858bdc6621b9" memberName="tree" virtualName=""
-            explicitFocusOrder="0" pos="48 160 213M 387M" backgroundColour="884b4b"
+            explicitFocusOrder="0" pos="40 139 202M 360M" backgroundColour="884b4b"
             linecol="ff000000" rootVisible="0" openByDefault="0"/>
   <TEXTBUTTON name="Load" id="f494606ca745ecc4" memberName="load_button" virtualName=""
-              explicitFocusOrder="0" pos="139R 184 112 24" bgColOff="ffaeaeae"
+              explicitFocusOrder="0" pos="139R 169 112 24" bgColOff="ffaeaeae"
               buttonText="Load" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTEDITOR name="new text editor" id="7df712598da5c1ba" memberName="description"
-              virtualName="" explicitFocusOrder="0" pos="48 48Rr 96M 75" bkgcol="ffffff"
+              virtualName="" explicitFocusOrder="0" pos="39 40Rr 76M 120" bkgcol="ffffff"
               shadowcol="0" initialText="" multiline="1" retKeyStartsLine="0"
               readonly="1" scrollbars="1" caret="0" popupmenu="0"/>
   <LABEL name="new label" id="b8d270d2898b7b51" memberName="setup_label"
-         virtualName="" explicitFocusOrder="0" pos="184R 115c 150 24"
+         virtualName="" explicitFocusOrder="0" pos="184R 110c 150 24"
          edTextCol="ff000000" edBkgCol="0" labelText="label text" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="33"/>
   <TEXTBUTTON name="Delete" id="7d092d6a6e09132" memberName="delete_button"
-              virtualName="" explicitFocusOrder="0" pos="139R 325 112 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="139R 310 112 24" bgColOff="ffaeaeae"
               buttonText="Delete" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Edit" id="b162eeb1f10b4771" memberName="edit_button" virtualName=""
-              explicitFocusOrder="0" pos="139R 293 112 24" bgColOff="ffaeaeae"
+              explicitFocusOrder="0" pos="139R 278 112 24" bgColOff="ffaeaeae"
               buttonText="Edit" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TOGGLEBUTTON name="Default Setup" id="dd0a8f33920b0649" memberName="default_toggle"
-                virtualName="" explicitFocusOrder="0" pos="139R 144 112 24" buttonText="Default Setup"
+                virtualName="" explicitFocusOrder="0" pos="139R 129 112 24" buttonText="Default Setup"
                 connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
   <TEXTBUTTON name="Save" id="559e1e6b94605a39" memberName="save_button" virtualName=""
-              explicitFocusOrder="0" pos="139R 218 112 24" bgColOff="ffaeaeae"
+              explicitFocusOrder="0" pos="139R 203 112 24" bgColOff="ffaeaeae"
               buttonText="Save" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Save As" id="4d373d2dc1b3cb8" memberName="saveas_button"
-              virtualName="" explicitFocusOrder="0" pos="139R 250 112 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="139R 235 112 24" bgColOff="ffaeaeae"
               buttonText="Save As" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 

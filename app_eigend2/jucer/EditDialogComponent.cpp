@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:51:48pm
+  Creation date:  5 Jul 2012 5:18:59pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -57,7 +57,7 @@ EditDialogComponent::EditDialogComponent ()
       cachedImage_textBoxInner_png (0),
       cachedImage_eigenD_png (0)
 {
-    addAndMakeVisible (description = new TextEditor (T("new text editor")));
+    addAndMakeVisible (description = new TextEditor (L"new text editor"));
     description->setMultiLine (true);
     description->setReturnKeyStartsNewLine (true);
     description->setReadOnly (false);
@@ -70,11 +70,11 @@ EditDialogComponent::EditDialogComponent ()
     description->setColour (TextEditor::shadowColourId, Colour (0x0));
     description->setText (String::empty);
 
-    addAndMakeVisible (save_button = new TextButton (T("Save")));
+    addAndMakeVisible (save_button = new TextButton (L"Save"));
     save_button->addListener (this);
     save_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
-    addAndMakeVisible (summary = new TextEditor (T("new text editor")));
+    addAndMakeVisible (summary = new TextEditor (L"new text editor"));
     summary->setMultiLine (false);
     summary->setReturnKeyStartsNewLine (false);
     summary->setReadOnly (false);
@@ -85,28 +85,28 @@ EditDialogComponent::EditDialogComponent ()
     summary->setColour (TextEditor::shadowColourId, Colour (0x0));
     summary->setText (String::empty);
 
-    addAndMakeVisible (label = new Label (T("new label"),
-                                          T("Short Tag:")));
+    addAndMakeVisible (label = new Label (L"new label",
+                                          L"Short Tag:"));
     label->setFont (Font (15.0000f, Font::plain));
     label->setJustificationType (Justification::centredRight);
     label->setEditable (false, false, false);
     label->setColour (TextEditor::textColourId, Colours::black);
     label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (label2 = new Label (T("new label"),
-                                           T("Long Description:")));
+    addAndMakeVisible (label2 = new Label (L"new label",
+                                           L"Long Description:"));
     label2->setFont (Font (15.0000f, Font::plain));
     label2->setJustificationType (Justification::centredRight);
     label2->setEditable (false, false, false);
     label2->setColour (TextEditor::textColourId, Colours::black);
     label2->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (help_button = new TextButton (T("new button")));
-    help_button->setButtonText (T("About Setups"));
+    addAndMakeVisible (help_button = new TextButton (L"new button"));
+    help_button->setButtonText (L"About Setups");
     help_button->addListener (this);
     help_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
-    addAndMakeVisible (slot = new Label (T("slot"),
+    addAndMakeVisible (slot = new Label (L"slot",
                                          String::empty));
     slot->setFont (Font (19.6000f, Font::plain));
     slot->setJustificationType (Justification::centredLeft);
@@ -139,6 +139,7 @@ EditDialogComponent::EditDialogComponent ()
 
     setSize (600, 400);
 
+
     //[Constructor] You can add your own custom stuff here..
     //[/Constructor]
 }
@@ -155,6 +156,7 @@ EditDialogComponent::~EditDialogComponent()
     deleteAndZero (label2);
     deleteAndZero (help_button);
     deleteAndZero (slot);
+
 
     //[Destructor]. You can add your own custom destruction code here..
     //[/Destructor]
@@ -215,98 +217,98 @@ void EditDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.setFont (Font (19.6000f, Font::plain));
-    g.drawText (T("Edit Setup"),
-                130 - ((140) / 2), 125 - ((30) / 2), 140, 30,
+    g.drawText (L"Edit Setup",
+                106 - ((140) / 2), 123 - ((30) / 2), 140, 30,
                 Justification::centred, true);
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTl_png,
-                 260, 162, 12, 12,
+                 196, 162, 12, 12,
                  0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTr_png,
-                 getWidth() - 141, 162, 12, 12,
+                 getWidth() - 43, 162, 12, 12,
                  0, 0, cachedImage_textBoxTr_png.getWidth(), cachedImage_textBoxTr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBr_png,
-                 getWidth() - 141, 186, 12, 12,
+                 getWidth() - 43, 186, 12, 12,
                  0, 0, cachedImage_textBoxBr_png.getWidth(), cachedImage_textBoxBr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBl_png,
-                 260, 186, 12, 12,
+                 196, 186, 12, 12,
                  0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxL_png,
-                 260, 174, 12, 12,
+                 196, 174, 12, 12,
                  0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxT_png,
-                 272, 162, getWidth() - 413, 12,
+                 208, 162, getWidth() - 251, 12,
                  0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxR_png,
-                 getWidth() - 141, 174, 12, 12,
+                 getWidth() - 43, 174, 12, 12,
                  0, 0, cachedImage_textBoxR_png.getWidth(), cachedImage_textBoxR_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxB_png,
-                 272, 186, getWidth() - 413, 12,
+                 208, 186, getWidth() - 251, 12,
                  0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxInner_png,
-                 272, 174, getWidth() - 413, 12,
+                 204, 170, getWidth() - 243, 20,
                  0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTl_png,
-                 260, 214, 12, 12,
+                 196, 214, 12, 12,
                  0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTr_png,
-                 getWidth() - 141, 214, 12, 12,
+                 getWidth() - 43, 214, 12, 12,
                  0, 0, cachedImage_textBoxTr_png.getWidth(), cachedImage_textBoxTr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBr_png,
-                 getWidth() - 141, getHeight() - 104, 12, 12,
+                 getWidth() - 43, getHeight() - 100, 12, 12,
                  0, 0, cachedImage_textBoxBr_png.getWidth(), cachedImage_textBoxBr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBl_png,
-                 260, getHeight() - 104, 12, 12,
+                 196, getHeight() - 100, 12, 12,
                  0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxL_png,
-                 260, 226, 12, getHeight() - 326,
+                 196, 226, 12, getHeight() - 326,
                  0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxT_png,
-                 272, 214, getWidth() - 413, 12,
+                 208, 214, getWidth() - 251, 12,
                  0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxR_png,
-                 getWidth() - 141, 226, 12, getHeight() - 326,
+                 getWidth() - 43, 226, 12, getHeight() - 326,
                  0, 0, cachedImage_textBoxR_png.getWidth(), cachedImage_textBoxR_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxB_png,
-                 272, getHeight() - 104, getWidth() - 413, 12,
+                 208, getHeight() - 100, getWidth() - 251, 12,
                  0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxInner_png,
-                 272, 226, getWidth() - 413, getHeight() - 326,
+                 204, 223, getWidth() - 243, getHeight() - 320,
                  0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
 
     g.setColour (Colours::black);
@@ -320,13 +322,13 @@ void EditDialogComponent::paint (Graphics& g)
 
 void EditDialogComponent::resized()
 {
-    description->setBounds (280, 224, getWidth() - 424, getHeight() - 325);
+    description->setBounds (208, 224, getWidth() - 250, getHeight() - 325);
     save_button->setBounds ((getWidth() / 2) - ((50) / 2), getHeight() - 67, 50, 24);
-    summary->setBounds (280, 168, getWidth() - 424, 24);
-    label->setBounds (198 - 150, 168, 150, 24);
-    label2->setBounds (198 - 150, 216, 150, 24);
-    help_button->setBounds (getWidth() - 226, 124 - ((24) / 2), 96, 24);
-    slot->setBounds (256, 112, 150, 24);
+    summary->setBounds (208, 168, getWidth() - 250, 24);
+    label->setBounds (182 - 150, 168, 150, 24);
+    label2->setBounds (182 - 150, 216, 150, 24);
+    help_button->setBounds (getWidth() - 127, 124 - ((24) / 2), 96, 24);
+    slot->setBounds (200, 112, 150, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -388,32 +390,32 @@ BEGIN_JUCER_METADATA
            mode="0"/>
     <IMAGE pos="12 31R 30 15" resource="backgroundBoxBl_png" opacity="1"
            mode="0"/>
-    <TEXT pos="130c 125c 140 30" fill="solid: ff000000" hasStroke="0" text="Edit Setup"
+    <TEXT pos="106c 123c 140 30" fill="solid: ff000000" hasStroke="0" text="Edit Setup"
           fontname="Default font" fontsize="19.6" bold="0" italic="0" justification="36"/>
-    <IMAGE pos="260 162 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 162 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 186 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 186 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 174 12 12" resource="textBoxL_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 162 413M 12" resource="textBoxT_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 174 12 12" resource="textBoxR_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 186 413M 12" resource="textBoxB_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 174 413M 12" resource="textBoxInner_png" opacity="1"
+    <IMAGE pos="196 162 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 162 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 186 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
+    <IMAGE pos="196 186 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="196 174 12 12" resource="textBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="208 162 251M 12" resource="textBoxT_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 174 12 12" resource="textBoxR_png" opacity="1" mode="0"/>
+    <IMAGE pos="208 186 251M 12" resource="textBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="204 170 243M 20" resource="textBoxInner_png" opacity="1"
            mode="0"/>
-    <IMAGE pos="260 214 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 214 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 104R 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 104R 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 226 12 326M" resource="textBoxL_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 214 413M 12" resource="textBoxT_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 226 12 326M" resource="textBoxR_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 104R 413M 12" resource="textBoxB_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 226 413M 326M" resource="textBoxInner_png" opacity="1"
+    <IMAGE pos="196 214 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 214 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 100R 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
+    <IMAGE pos="196 100R 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="196 226 12 326M" resource="textBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="208 214 251M 12" resource="textBoxT_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 226 12 326M" resource="textBoxR_png" opacity="1" mode="0"/>
+    <IMAGE pos="208 100R 251M 12" resource="textBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="204 223 243M 320M" resource="textBoxInner_png" opacity="1"
            mode="0"/>
     <IMAGE pos="177R 12 146 60" resource="eigenD_png" opacity="1" mode="0"/>
   </BACKGROUND>
   <TEXTEDITOR name="new text editor" id="b5761399f2e9dcd7" memberName="description"
-              virtualName="" explicitFocusOrder="0" pos="280 224 424M 325M"
+              virtualName="" explicitFocusOrder="0" pos="208 224 250M 325M"
               textcol="ff000000" bkgcol="363636" hilitecol="8c8b8b8b" shadowcol="0"
               initialText="" multiline="1" retKeyStartsLine="1" readonly="0"
               scrollbars="1" caret="1" popupmenu="0"/>
@@ -421,25 +423,25 @@ BEGIN_JUCER_METADATA
               explicitFocusOrder="0" pos="0Cc 67R 50 24" bgColOff="ffaeaeae"
               buttonText="Save" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTEDITOR name="new text editor" id="fb9c84709fca8fae" memberName="summary"
-              virtualName="" explicitFocusOrder="0" pos="280 168 424M 24" hilitecol="8c8a8a8a"
+              virtualName="" explicitFocusOrder="0" pos="208 168 250M 24" hilitecol="8c8a8a8a"
               shadowcol="0" initialText="" multiline="0" retKeyStartsLine="0"
               readonly="0" scrollbars="1" caret="1" popupmenu="1"/>
   <LABEL name="new label" id="5677b737325eee92" memberName="label" virtualName=""
-         explicitFocusOrder="0" pos="198r 168 150 24" edTextCol="ff000000"
+         explicitFocusOrder="0" pos="182r 168 150 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Short Tag:" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15"
          bold="0" italic="0" justification="34"/>
   <LABEL name="new label" id="dad4f1e9843aba4d" memberName="label2" virtualName=""
-         explicitFocusOrder="0" pos="198r 216 150 24" edTextCol="ff000000"
+         explicitFocusOrder="0" pos="182r 216 150 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Long Description:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="34"/>
   <TEXTBUTTON name="new button" id="3ae8cdb38f941043" memberName="help_button"
-              virtualName="" explicitFocusOrder="0" pos="226R 124c 96 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="127R 124c 96 24" bgColOff="ffaeaeae"
               buttonText="About Setups" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <LABEL name="slot" id="6699eaed9863b0b7" memberName="slot" virtualName=""
-         explicitFocusOrder="0" pos="256 112 150 24" edTextCol="ff000000"
+         explicitFocusOrder="0" pos="200 112 150 24" edTextCol="ff000000"
          edBkgCol="0" labelText="" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="19.6"
          bold="0" italic="0" justification="33"/>

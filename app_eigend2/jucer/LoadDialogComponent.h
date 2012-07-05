@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  13 Jun 2012 12:24:57pm
+  Creation date:  5 Jul 2012 5:19:01pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_5ECD9A23__
-#define __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_5ECD9A23__
+#ifndef __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_3857F1A__
+#define __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_3857F1A__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -147,4 +147,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_5ECD9A23__
+#endif   // __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_3857F1A__

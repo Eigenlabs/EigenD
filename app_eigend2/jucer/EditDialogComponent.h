@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:51:48pm
+  Creation date:  5 Jul 2012 5:18:59pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_19BCA9AB__
-#define __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_19BCA9AB__
+#ifndef __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_5759BEAC__
+#define __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_5759BEAC__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -99,6 +99,7 @@ public:
     static const char* eigenD_png;
     static const int eigenD_pngSize;
 
+
     //==============================================================================
     juce_UseDebuggingNewOperator
 
@@ -134,6 +135,7 @@ private:
     Image cachedImage_textBoxInner_png;
     Image cachedImage_eigenD_png;
 
+
     //==============================================================================
     // (prevent copy constructor and operator= being generated..)
     EditDialogComponent (const EditDialogComponent&);
@@ -141,4 +143,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_19BCA9AB__
+#endif   // __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_5759BEAC__

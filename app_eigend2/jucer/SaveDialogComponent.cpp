@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:52:03pm
+  Creation date:  5 Jul 2012 5:18:58pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -68,7 +68,7 @@ SaveDialogComponent::SaveDialogComponent ()
       cachedImage_textBoxInner_png (0),
       cachedImage_eigenD_png (0)
 {
-    addAndMakeVisible (description = new TextEditor (T("new text editor")));
+    addAndMakeVisible (description = new TextEditor (L"new text editor"));
     description->setMultiLine (true);
     description->setReturnKeyStartsNewLine (true);
     description->setReadOnly (false);
@@ -79,13 +79,13 @@ SaveDialogComponent::SaveDialogComponent ()
     description->setColour (TextEditor::backgroundColourId, Colour (0x363636));
     description->setColour (TextEditor::highlightColourId, Colour (0x8c8b8b8b));
     description->setColour (TextEditor::shadowColourId, Colour (0x0));
-    description->setText (T("test text"));
+    description->setText (L"test text");
 
-    addAndMakeVisible (save_button = new TextButton (T("Save")));
+    addAndMakeVisible (save_button = new TextButton (L"Save"));
     save_button->addListener (this);
     save_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
-    addAndMakeVisible (summary = new TextEditor (T("new text editor")));
+    addAndMakeVisible (summary = new TextEditor (L"new text editor"));
     summary->setMultiLine (false);
     summary->setReturnKeyStartsNewLine (false);
     summary->setReadOnly (false);
@@ -96,89 +96,89 @@ SaveDialogComponent::SaveDialogComponent ()
     summary->setColour (TextEditor::shadowColourId, Colour (0x0));
     summary->setText (String::empty);
 
-    addAndMakeVisible (chooser_notes = new ComboBox (T("new combo box")));
+    addAndMakeVisible (chooser_notes = new ComboBox (L"new combo box"));
     chooser_notes->setEditableText (true);
     chooser_notes->setJustificationType (Justification::centredLeft);
     chooser_notes->setTextWhenNothingSelected (String::empty);
-    chooser_notes->setTextWhenNoChoicesAvailable (T("(no choices)"));
+    chooser_notes->setTextWhenNoChoicesAvailable (L"(no choices)");
     chooser_notes->addListener (this);
 
-    addAndMakeVisible (chooser_words = new ComboBox (T("new combo box")));
+    addAndMakeVisible (chooser_words = new ComboBox (L"new combo box"));
     chooser_words->setEditableText (true);
     chooser_words->setJustificationType (Justification::centredLeft);
     chooser_words->setTextWhenNothingSelected (String::empty);
-    chooser_words->setTextWhenNoChoicesAvailable (T("(no choices)"));
+    chooser_words->setTextWhenNoChoicesAvailable (L"(no choices)");
     chooser_words->addListener (this);
 
-    addAndMakeVisible (button_notes = new ToggleButton (T("new toggle button")));
+    addAndMakeVisible (button_notes = new ToggleButton (L"new toggle button"));
     button_notes->setButtonText (String::empty);
     button_notes->setRadioGroupId (1);
     button_notes->addListener (this);
 
-    addAndMakeVisible (button_words = new ToggleButton (T("new toggle button")));
+    addAndMakeVisible (button_words = new ToggleButton (L"new toggle button"));
     button_words->setButtonText (String::empty);
     button_words->setRadioGroupId (1);
     button_words->addListener (this);
 
-    addAndMakeVisible (button_user = new ToggleButton (T("new toggle button")));
+    addAndMakeVisible (button_user = new ToggleButton (L"new toggle button"));
     button_user->setButtonText (String::empty);
     button_user->setRadioGroupId (1);
     button_user->addListener (this);
 
-    addAndMakeVisible (chooser_user = new ComboBox (T("new combo box")));
+    addAndMakeVisible (chooser_user = new ComboBox (L"new combo box"));
     chooser_user->setEditableText (false);
     chooser_user->setJustificationType (Justification::centredLeft);
     chooser_user->setTextWhenNothingSelected (String::empty);
-    chooser_user->setTextWhenNoChoicesAvailable (T("(no choices)"));
+    chooser_user->setTextWhenNoChoicesAvailable (L"(no choices)");
     chooser_user->addListener (this);
 
-    addAndMakeVisible (new_button = new TextButton (T("new button")));
-    new_button->setButtonText (T("New"));
+    addAndMakeVisible (new_button = new TextButton (L"new button"));
+    new_button->setButtonText (L"New");
     new_button->addListener (this);
     new_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
-    addAndMakeVisible (user_label = new Label (T("new label"),
-                                               T("User Setup Number:")));
+    addAndMakeVisible (user_label = new Label (L"new label",
+                                               L"User Setup Number:"));
     user_label->setFont (Font (15.0000f, Font::plain));
     user_label->setJustificationType (Justification::centredRight);
     user_label->setEditable (false, false, false);
     user_label->setColour (TextEditor::textColourId, Colours::black);
     user_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (notes_label = new Label (T("new label"),
-                                                T("Belcanto Name as Notes:")));
+    addAndMakeVisible (notes_label = new Label (L"new label",
+                                                L"Belcanto Name as Notes:"));
     notes_label->setFont (Font (15.0000f, Font::plain));
     notes_label->setJustificationType (Justification::centredRight);
     notes_label->setEditable (false, false, false);
     notes_label->setColour (TextEditor::textColourId, Colours::black);
     notes_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (words_label = new Label (T("new label"),
-                                                T("Belcanto Name as Words:")));
+    addAndMakeVisible (words_label = new Label (L"new label",
+                                                L"Belcanto Name as Words:"));
     words_label->setFont (Font (15.0000f, Font::plain));
     words_label->setJustificationType (Justification::centredRight);
     words_label->setEditable (false, false, false);
     words_label->setColour (TextEditor::textColourId, Colours::black);
     words_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (label = new Label (T("new label"),
-                                          T("Short Tag:")));
+    addAndMakeVisible (label = new Label (L"new label",
+                                          L"Short Tag:"));
     label->setFont (Font (15.0000f, Font::plain));
     label->setJustificationType (Justification::centredRight);
     label->setEditable (false, false, false);
     label->setColour (TextEditor::textColourId, Colours::black);
     label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (label2 = new Label (T("new label"),
-                                           T("Long Description:")));
+    addAndMakeVisible (label2 = new Label (L"new label",
+                                           L"Long Description:"));
     label2->setFont (Font (15.0000f, Font::plain));
     label2->setJustificationType (Justification::centredRight);
     label2->setEditable (false, false, false);
     label2->setColour (TextEditor::textColourId, Colours::black);
     label2->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (error_label = new Label (T("new label"),
-                                                T("The Belcanto Name is invalid.")));
+    addAndMakeVisible (error_label = new Label (L"new label",
+                                                L"The Belcanto Name is invalid."));
     error_label->setFont (Font (15.0000f, Font::plain));
     error_label->setJustificationType (Justification::centredLeft);
     error_label->setEditable (false, false, false);
@@ -186,13 +186,13 @@ SaveDialogComponent::SaveDialogComponent ()
     error_label->setColour (TextEditor::textColourId, Colours::black);
     error_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (help_button = new TextButton (T("new button")));
-    help_button->setButtonText (T("About Setups"));
+    addAndMakeVisible (help_button = new TextButton (L"new button"));
+    help_button->setButtonText (L"About Setups");
     help_button->addListener (this);
     help_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
-    addAndMakeVisible (default_button = new ToggleButton (T("default button")));
-    default_button->setButtonText (T("Make the default setup"));
+    addAndMakeVisible (default_button = new ToggleButton (L"default button"));
+    default_button->setButtonText (L"Make the default setup");
     default_button->addListener (this);
 
     cachedImage_backgroundBoxInner_png = ImageCache::getFromMemory (backgroundBoxInner_png, backgroundBoxInner_pngSize);
@@ -219,6 +219,7 @@ SaveDialogComponent::SaveDialogComponent ()
     //[/UserPreSize]
 
     setSize (600, 600);
+
 
     //[Constructor] You can add your own custom stuff here..
     //[/Constructor]
@@ -247,6 +248,7 @@ SaveDialogComponent::~SaveDialogComponent()
     deleteAndZero (error_label);
     deleteAndZero (help_button);
     deleteAndZero (default_button);
+
 
     //[Destructor]. You can add your own custom destruction code here..
     //[/Destructor]
@@ -307,13 +309,13 @@ void SaveDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.setFont (Font (19.6000f, Font::plain));
-    g.drawText (T("Save Setup"),
-                130 - ((140) / 2), 125 - ((30) / 2), 140, 30,
+    g.drawText (L"Save Setup",
+                106 - ((140) / 2), 123 - ((30) / 2), 140, 30,
                 Justification::centred, true);
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTl_png,
-                 260, 162, 12, 12,
+                 220, 162, 12, 12,
                  0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
 
     g.setColour (Colours::black);
@@ -328,17 +330,17 @@ void SaveDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBl_png,
-                 260, 186, 12, 12,
+                 220, 186, 12, 12,
                  0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxL_png,
-                 260, 174, 12, 12,
+                 220, 174, 12, 12,
                  0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxT_png,
-                 272, 162, 164, 12,
+                 232, 162, 204, 12,
                  0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
 
     g.setColour (Colours::black);
@@ -348,17 +350,17 @@ void SaveDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxB_png,
-                 272, 186, 164, 12,
+                 232, 186, 204, 12,
                  0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxInner_png,
-                 272, 174, 164, 12,
+                 232, 174, 204, 12,
                  0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTl_png,
-                 260, 218, 12, 12,
+                 220, 218, 12, 12,
                  0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
 
     g.setColour (Colours::black);
@@ -373,17 +375,17 @@ void SaveDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBl_png,
-                 260, 242, 12, 12,
+                 220, 242, 12, 12,
                  0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxL_png,
-                 260, 230, 12, 12,
+                 220, 230, 12, 12,
                  0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxT_png,
-                 272, 218, getWidth() - 413, 12,
+                 232, 218, getWidth() - 373, 12,
                  0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
 
     g.setColour (Colours::black);
@@ -393,17 +395,17 @@ void SaveDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxB_png,
-                 272, 242, getWidth() - 413, 12,
+                 232, 242, getWidth() - 373, 12,
                  0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxInner_png,
-                 272, 230, getWidth() - 413, 12,
+                 232, 230, getWidth() - 373, 12,
                  0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTl_png,
-                 260, 274, 12, 12,
+                 220, 274, 12, 12,
                  0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
 
     g.setColour (Colours::black);
@@ -418,17 +420,17 @@ void SaveDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBl_png,
-                 260, 298, 12, 12,
+                 220, 298, 12, 12,
                  0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxL_png,
-                 260, 286, 12, 12,
+                 220, 286, 12, 12,
                  0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxT_png,
-                 272, 274, getWidth() - 413, 12,
+                 232, 274, getWidth() - 373, 12,
                  0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
 
     g.setColour (Colours::black);
@@ -438,102 +440,102 @@ void SaveDialogComponent::paint (Graphics& g)
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxB_png,
-                 272, 298, getWidth() - 413, 12,
+                 232, 298, getWidth() - 373, 12,
                  0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxInner_png,
-                 272, 286, getWidth() - 413, 12,
+                 232, 286, getWidth() - 373, 12,
                  0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTl_png,
-                 260, 354, 12, 12,
+                 196, 354, 12, 12,
                  0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTr_png,
-                 getWidth() - 141, 354, 12, 12,
+                 getWidth() - 43, 354, 12, 12,
                  0, 0, cachedImage_textBoxTr_png.getWidth(), cachedImage_textBoxTr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBr_png,
-                 getWidth() - 141, 378, 12, 12,
+                 getWidth() - 43, 378, 12, 12,
                  0, 0, cachedImage_textBoxBr_png.getWidth(), cachedImage_textBoxBr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBl_png,
-                 260, 378, 12, 12,
+                 196, 378, 12, 12,
                  0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxL_png,
-                 260, 366, 12, 12,
+                 196, 366, 12, 12,
                  0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxT_png,
-                 272, 354, getWidth() - 413, 12,
+                 208, 354, getWidth() - 251, 12,
                  0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxR_png,
-                 getWidth() - 141, 366, 12, 12,
+                 getWidth() - 43, 366, 12, 12,
                  0, 0, cachedImage_textBoxR_png.getWidth(), cachedImage_textBoxR_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxB_png,
-                 272, 378, getWidth() - 413, 12,
+                 208, 378, getWidth() - 251, 12,
                  0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxInner_png,
-                 272, 366, getWidth() - 413, 12,
+                 208, 366, getWidth() - 251, 12,
                  0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTl_png,
-                 260, 406, 12, 12,
+                 196, 406, 12, 12,
                  0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTr_png,
-                 getWidth() - 141, 406, 12, 12,
+                 getWidth() - 43, 406, 12, 12,
                  0, 0, cachedImage_textBoxTr_png.getWidth(), cachedImage_textBoxTr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBr_png,
-                 getWidth() - 141, getHeight() - 144, 12, 12,
+                 getWidth() - 43, getHeight() - 104, 12, 12,
                  0, 0, cachedImage_textBoxBr_png.getWidth(), cachedImage_textBoxBr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxBl_png,
-                 260, getHeight() - 144, 12, 12,
+                 196, getHeight() - 104, 12, 12,
                  0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxL_png,
-                 260, 418, 12, getHeight() - 562,
+                 196, 418, 12, getHeight() - 522,
                  0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxT_png,
-                 272, 406, getWidth() - 413, 12,
+                 208, 406, getWidth() - 251, 12,
                  0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxR_png,
-                 getWidth() - 141, 418, 12, getHeight() - 562,
+                 getWidth() - 43, 418, 12, getHeight() - 522,
                  0, 0, cachedImage_textBoxR_png.getWidth(), cachedImage_textBoxR_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxB_png,
-                 272, getHeight() - 144, getWidth() - 413, 12,
+                 208, getHeight() - 104, getWidth() - 251, 12,
                  0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxInner_png,
-                 272, 418, getWidth() - 413, getHeight() - 562,
+                 208, 418, getWidth() - 251, getHeight() - 522,
                  0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
 
     g.setColour (Colours::black);
@@ -547,24 +549,24 @@ void SaveDialogComponent::paint (Graphics& g)
 
 void SaveDialogComponent::resized()
 {
-    description->setBounds (280, 416, getWidth() - 424, getHeight() - 563);
+    description->setBounds (204, 415, getWidth() - 243, getHeight() - 516);
     save_button->setBounds ((getWidth() / 2) - ((50) / 2), getHeight() - 67, 50, 24);
-    summary->setBounds (280, 360, getWidth() - 424, 24);
-    chooser_notes->setBounds (280, 224, getWidth() - 424, 24);
-    chooser_words->setBounds (280, 280, getWidth() - 424, 24);
-    button_notes->setBounds (224, 224, 18, 24);
-    button_words->setBounds (224, 280, 18, 24);
-    button_user->setBounds (224, 168, 18, 24);
-    chooser_user->setBounds (280, 168, 88, 24);
-    new_button->setBounds (384, 168, 47, 24);
-    user_label->setBounds (198 - 150, 168, 150, 24);
-    notes_label->setBounds (198 - 150, 224, 150, 24);
-    words_label->setBounds (198 - 150, 280, 150, 24);
-    label->setBounds (198 - 150, 360, 150, 24);
-    label2->setBounds (198 - 150, 408, 150, 24);
-    error_label->setBounds (264, 320, 520, 24);
-    help_button->setBounds (getWidth() - 226, 124 - ((24) / 2), 96, 24);
-    default_button->setBounds ((getWidth() / 2) - ((166) / 2), getHeight() - 108, 166, 24);
+    summary->setBounds (204, 362, getWidth() - 243, 20);
+    chooser_notes->setBounds (227, 224, getWidth() - 363, 24);
+    chooser_words->setBounds (227, 280, getWidth() - 363, 24);
+    button_notes->setBounds (196, 224, 18, 24);
+    button_words->setBounds (196, 280, 18, 24);
+    button_user->setBounds (196, 168, 18, 24);
+    chooser_user->setBounds (227, 168, 157, 24);
+    new_button->setBounds (392, 168, 47, 24);
+    user_label->setBounds (182 - 150, 168, 150, 24);
+    notes_label->setBounds (182 - 150, 224, 150, 24);
+    words_label->setBounds (182 - 150, 280, 150, 24);
+    label->setBounds (182 - 150, 360, 150, 24);
+    label2->setBounds (182 - 150, 408, 150, 24);
+    error_label->setBounds (224, 320, 520, 24);
+    help_button->setBounds (getWidth() - 127, 124 - ((24) / 2), 96, 24);
+    default_button->setBounds ((getWidth() / 2) + -49 - 166, getHeight() - 67, 166, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -676,62 +678,62 @@ BEGIN_JUCER_METADATA
            mode="0"/>
     <IMAGE pos="12 31R 30 15" resource="backgroundBoxBl_png" opacity="1"
            mode="0"/>
-    <TEXT pos="130c 125c 140 30" fill="solid: ff000000" hasStroke="0" text="Save Setup"
+    <TEXT pos="106c 123c 140 30" fill="solid: ff000000" hasStroke="0" text="Save Setup"
           fontname="Default font" fontsize="19.6" bold="0" italic="0" justification="36"/>
-    <IMAGE pos="260 162 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="220 162 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
     <IMAGE pos="436 162 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
     <IMAGE pos="436 186 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 186 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 174 12 12" resource="textBoxL_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 162 164 12" resource="textBoxT_png" opacity="1" mode="0"/>
+    <IMAGE pos="220 186 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="220 174 12 12" resource="textBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="232 162 204 12" resource="textBoxT_png" opacity="1" mode="0"/>
     <IMAGE pos="436 174 12 12" resource="textBoxR_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 186 164 12" resource="textBoxB_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 174 164 12" resource="textBoxInner_png" opacity="1"
+    <IMAGE pos="232 186 204 12" resource="textBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="232 174 204 12" resource="textBoxInner_png" opacity="1"
            mode="0"/>
-    <IMAGE pos="260 218 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="220 218 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
     <IMAGE pos="141R 218 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
     <IMAGE pos="141R 242 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 242 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 230 12 12" resource="textBoxL_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 218 413M 12" resource="textBoxT_png" opacity="1" mode="0"/>
+    <IMAGE pos="220 242 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="220 230 12 12" resource="textBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="232 218 373M 12" resource="textBoxT_png" opacity="1" mode="0"/>
     <IMAGE pos="141R 230 12 12" resource="textBoxR_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 242 413M 12" resource="textBoxB_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 230 413M 12" resource="textBoxInner_png" opacity="1"
+    <IMAGE pos="232 242 373M 12" resource="textBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="232 230 373M 12" resource="textBoxInner_png" opacity="1"
            mode="0"/>
-    <IMAGE pos="260 274 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="220 274 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
     <IMAGE pos="141R 274 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
     <IMAGE pos="141R 298 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 298 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 286 12 12" resource="textBoxL_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 274 413M 12" resource="textBoxT_png" opacity="1" mode="0"/>
+    <IMAGE pos="220 298 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="220 286 12 12" resource="textBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="232 274 373M 12" resource="textBoxT_png" opacity="1" mode="0"/>
     <IMAGE pos="141R 286 12 12" resource="textBoxR_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 298 413M 12" resource="textBoxB_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 286 413M 12" resource="textBoxInner_png" opacity="1"
+    <IMAGE pos="232 298 373M 12" resource="textBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="232 286 373M 12" resource="textBoxInner_png" opacity="1"
            mode="0"/>
-    <IMAGE pos="260 354 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 354 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 378 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 378 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 366 12 12" resource="textBoxL_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 354 413M 12" resource="textBoxT_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 366 12 12" resource="textBoxR_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 378 413M 12" resource="textBoxB_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 366 413M 12" resource="textBoxInner_png" opacity="1"
+    <IMAGE pos="196 354 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 354 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 378 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
+    <IMAGE pos="196 378 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="196 366 12 12" resource="textBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="208 354 251M 12" resource="textBoxT_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 366 12 12" resource="textBoxR_png" opacity="1" mode="0"/>
+    <IMAGE pos="208 378 251M 12" resource="textBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="208 366 251M 12" resource="textBoxInner_png" opacity="1"
            mode="0"/>
-    <IMAGE pos="260 406 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 406 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 144R 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 144R 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
-    <IMAGE pos="260 418 12 562M" resource="textBoxL_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 406 413M 12" resource="textBoxT_png" opacity="1" mode="0"/>
-    <IMAGE pos="141R 418 12 562M" resource="textBoxR_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 144R 413M 12" resource="textBoxB_png" opacity="1" mode="0"/>
-    <IMAGE pos="272 418 413M 562M" resource="textBoxInner_png" opacity="1"
+    <IMAGE pos="196 406 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 406 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 104R 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
+    <IMAGE pos="196 104R 12 12" resource="textBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="196 418 12 522M" resource="textBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="208 406 251M 12" resource="textBoxT_png" opacity="1" mode="0"/>
+    <IMAGE pos="43R 418 12 522M" resource="textBoxR_png" opacity="1" mode="0"/>
+    <IMAGE pos="208 104R 251M 12" resource="textBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="208 418 251M 522M" resource="textBoxInner_png" opacity="1"
            mode="0"/>
     <IMAGE pos="177R 12 146 60" resource="eigenD_png" opacity="1" mode="0"/>
   </BACKGROUND>
   <TEXTEDITOR name="new text editor" id="b5761399f2e9dcd7" memberName="description"
-              virtualName="" explicitFocusOrder="0" pos="280 416 424M 563M"
+              virtualName="" explicitFocusOrder="0" pos="204 415 243M 516M"
               textcol="ff000000" bkgcol="363636" hilitecol="8c8b8b8b" shadowcol="0"
               initialText="test text" multiline="1" retKeyStartsLine="1" readonly="0"
               scrollbars="1" caret="1" popupmenu="0"/>
@@ -739,67 +741,68 @@ BEGIN_JUCER_METADATA
               explicitFocusOrder="0" pos="0Cc 67R 50 24" bgColOff="ffaeaeae"
               buttonText="Save" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTEDITOR name="new text editor" id="fb9c84709fca8fae" memberName="summary"
-              virtualName="" explicitFocusOrder="0" pos="280 360 424M 24" hilitecol="8c8a8a8a"
+              virtualName="" explicitFocusOrder="0" pos="204 362 243M 20" hilitecol="8c8a8a8a"
               shadowcol="0" initialText="" multiline="0" retKeyStartsLine="0"
               readonly="0" scrollbars="1" caret="1" popupmenu="1"/>
   <COMBOBOX name="new combo box" id="bb0351bf54c421e7" memberName="chooser_notes"
-            virtualName="" explicitFocusOrder="0" pos="280 224 424M 24" editable="1"
+            virtualName="" explicitFocusOrder="0" pos="227 224 363M 24" editable="1"
             layout="33" items="" textWhenNonSelected="" textWhenNoItems="(no choices)"/>
   <COMBOBOX name="new combo box" id="1c807028fb729c40" memberName="chooser_words"
-            virtualName="" explicitFocusOrder="0" pos="280 280 424M 24" editable="1"
+            virtualName="" explicitFocusOrder="0" pos="227 280 363M 24" editable="1"
             layout="33" items="" textWhenNonSelected="" textWhenNoItems="(no choices)"/>
   <TOGGLEBUTTON name="new toggle button" id="76ef3ce3b69b760c" memberName="button_notes"
-                virtualName="" explicitFocusOrder="0" pos="224 224 18 24" buttonText=""
+                virtualName="" explicitFocusOrder="0" pos="196 224 18 24" buttonText=""
                 connectedEdges="0" needsCallback="1" radioGroupId="1" state="0"/>
   <TOGGLEBUTTON name="new toggle button" id="b66a5d4583b0d483" memberName="button_words"
-                virtualName="" explicitFocusOrder="0" pos="224 280 18 24" buttonText=""
+                virtualName="" explicitFocusOrder="0" pos="196 280 18 24" buttonText=""
                 connectedEdges="0" needsCallback="1" radioGroupId="1" state="0"/>
   <TOGGLEBUTTON name="new toggle button" id="98f39c53e6396ac7" memberName="button_user"
-                virtualName="" explicitFocusOrder="0" pos="224 168 18 24" buttonText=""
+                virtualName="" explicitFocusOrder="0" pos="196 168 18 24" buttonText=""
                 connectedEdges="0" needsCallback="1" radioGroupId="1" state="0"/>
   <COMBOBOX name="new combo box" id="3fbf80cf3f1f69e6" memberName="chooser_user"
-            virtualName="" explicitFocusOrder="0" pos="280 168 88 24" editable="0"
+            virtualName="" explicitFocusOrder="0" pos="227 168 157 24" editable="0"
             layout="33" items="" textWhenNonSelected="" textWhenNoItems="(no choices)"/>
   <TEXTBUTTON name="new button" id="5fffeed609ee1d8" memberName="new_button"
-              virtualName="" explicitFocusOrder="0" pos="384 168 47 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="392 168 47 24" bgColOff="ffaeaeae"
               buttonText="New" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <LABEL name="new label" id="ae7e074b2e0422" memberName="user_label"
-         virtualName="" explicitFocusOrder="0" pos="198r 168 150 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="182r 168 150 24" edTextCol="ff000000"
          edBkgCol="0" labelText="User Setup Number:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="34"/>
   <LABEL name="new label" id="ae10a83c260587b4" memberName="notes_label"
-         virtualName="" explicitFocusOrder="0" pos="198r 224 150 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="182r 224 150 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Belcanto Name as Notes:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="34"/>
   <LABEL name="new label" id="bffad75346a7bfe1" memberName="words_label"
-         virtualName="" explicitFocusOrder="0" pos="198r 280 150 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="182r 280 150 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Belcanto Name as Words:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="34"/>
   <LABEL name="new label" id="5677b737325eee92" memberName="label" virtualName=""
-         explicitFocusOrder="0" pos="198r 360 150 24" edTextCol="ff000000"
+         explicitFocusOrder="0" pos="182r 360 150 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Short Tag:" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15"
          bold="0" italic="0" justification="34"/>
   <LABEL name="new label" id="dad4f1e9843aba4d" memberName="label2" virtualName=""
-         explicitFocusOrder="0" pos="198r 408 150 24" edTextCol="ff000000"
+         explicitFocusOrder="0" pos="182r 408 150 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Long Description:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="34"/>
   <LABEL name="new label" id="4e2968733c625b8c" memberName="error_label"
-         virtualName="" explicitFocusOrder="0" pos="264 320 520 24" textCol="ffff0000"
+         virtualName="" explicitFocusOrder="0" pos="224 320 520 24" textCol="ffff0000"
          edTextCol="ff000000" edBkgCol="0" labelText="The Belcanto Name is invalid."
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
   <TEXTBUTTON name="new button" id="3ae8cdb38f941043" memberName="help_button"
-              virtualName="" explicitFocusOrder="0" pos="226R 124c 96 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="127R 124c 96 24" bgColOff="ffaeaeae"
               buttonText="About Setups" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <TOGGLEBUTTON name="default button" id="574634893fc3f9d2" memberName="default_button"
-                virtualName="" explicitFocusOrder="0" pos="0Cc 108R 166 24" buttonText="Make the default setup"
-                connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
+                virtualName="" explicitFocusOrder="0" pos="-49Cr 67R 166 24"
+                buttonText="Make the default setup" connectedEdges="0" needsCallback="1"
+                radioGroupId="0" state="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
