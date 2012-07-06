@@ -46,7 +46,7 @@ env.PiResources('Help','documentation.xml',package='eigend')
 if env['IS_WINDOWS']:
     env.PiResources('state','states/factory_win/*',package='eigend')
     env.PiResources('example','states/examples_win/*',package='eigend')
-    env.PiResources('experimental','states/experimental_mac/*',package='eigend')
+    env.PiResources('experimental','states/experimental_win/*',package='eigend')
     env.PiReleaseFile('eigend','releasenotes.pdf','Release Notes')
     env.PiReleaseFile('eigend','pico-setup.pdf','Pico Setup Guide')
     env.PiReleaseFile('eigend','alpha-setup.pdf','Alpha Setup Guide')
