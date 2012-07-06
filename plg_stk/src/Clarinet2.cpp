@@ -189,6 +189,8 @@ Clarinet2 :: Clarinet2(StkFloat lowestFrequency) : lowestFrequency_(lowestFreque
     // initial current tube pitch around 440Hz
     delay_current_ = ((sr*(1.0/440.0))/2.0);
     frequency_current_ = 440;
+    delay_target_ = delay_current_;
+    frequency_target_ = frequency_current_;
     delay_step_ = 1;
     frequency_step_ = 1;
     setPitchSweepTime(10);
