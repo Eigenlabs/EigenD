@@ -292,8 +292,12 @@ usbbuf_in_t *usbpipe_in_t::pop_free_queue()
         if(receive_queue_.head() && receive_queue_.head()->completed_)
         {
             buf = receive_queue_.pop_front();
-            stolen_ = true;
-            pic::logmsg() << "stole buffer";
+
+            if(!stolen_)
+            {
+                stolen_ = true;
+                pic::logmsg() << "stealing buffers";
+            }
         }
     }
 
