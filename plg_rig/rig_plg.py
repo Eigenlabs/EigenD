@@ -92,7 +92,7 @@ def RigOutputPolicy(*args,**kwds):
     return policy.PolicyFactory(RigOutputPolicyImpl,*args,**kwds)
 
 class RigOutput(atom.Atom):
-    def __init__(self,master,ordinal,scope):
+    def __init__(self,master,ordinal,scope,outer):
         atom.Atom.__init__(self,ordinal=ordinal,policy=RigOutputPolicy(),protocols='remove')
         self.set_connection_scope(scope)
 
@@ -104,7 +104,7 @@ class RigOutput(atom.Atom):
         self.__clockdom = piw.clockdomain_ctl()
         self.__clockdom.set_source(piw.makestring('*',0))
         self.__clock = piw.clocksink()
-        self.__clockdom.sink(self.__clock,"rig input")
+        self.__clockdom.sink(self.__clock,"%s rig output" % ("outer" if outer else "inner"))
         self.__output = self.get_policy().data_node()
         self.__output.set_clock(self.__clock)
 
@@ -230,9 +230,9 @@ class RigInputPlumber(proxy.AtomProxy):
             self.__connector.set_downstream(clock)
 
     def node_ready(self):
-        self.__output.add_input(self.__iid,self)
         self.__connector = rig_native.connector(self.__ctl,self.__output.get_policy().data_node(),self.__iid,self.__filt)
         self.set_data_clone(self.__connector)
+        self.__output.add_input(self.__iid,self)
 
     def node_removed(self):
         self.__output.del_input(self.__iid)
@@ -342,13 +342,13 @@ def RigInputPolicy(*args,**kwds):
 
 
 class RigInput(atom.Atom):
-    def __init__(self,scope,index,output_peer):
+    def __init__(self,scope,index,output_peer,outer):
         self.__output_peer = output_peer
         self.__index = index
         self.__scope = scope
         self.__monitors = {}
 
-        self.__output_peer[self.__index] = RigOutput(self,ordinal=index,scope=self.__output_peer.scope())
+        self.__output_peer[self.__index] = RigOutput(self,ordinal=index,scope=self.__output_peer.scope(),outer=not outer)
         policy=RigInputPolicy(self.__scope,self.__output_peer[self.__index])
 
         atom.Atom.__init__(self,ordinal=index,domain=domain.Aniso(),policy=policy,protocols='remove')
@@ -402,9 +402,10 @@ class RigInput(atom.Atom):
             self.__setup()
 
 class InputList(collection.Collection):
-    def __init__(self,scope):
+    def __init__(self,scope,outer):
         self.__output_peer = None
         self.__scope = scope
+        self.__outer = outer
         collection.Collection.__init__(self,names='input')
 
     def set_output_peer(self,output_peer):
@@ -428,7 +429,7 @@ class InputList(collection.Collection):
             names = ''
 
         k = self.find_hole()
-        j = RigInput(self.__scope,k,self.__output_peer)
+        j = RigInput(self.__scope,k,self.__output_peer,self.__outer)
         j.set_names(' '.join(names))
         j.set_ordinal(ordinal)
         self[k] = j
@@ -437,7 +438,7 @@ class InputList(collection.Collection):
     @async.coroutine('internal error')
     def instance_create(self,name):
         k = self.find_hole()
-        j = RigInput(self.__scope,k,self.__output_peer)
+        j = RigInput(self.__scope,k,self.__output_peer,self.__outer)
         j.set_ordinal(name)
         self[k] = j
         yield async.Coroutine.success(j)
@@ -449,7 +450,7 @@ class InputList(collection.Collection):
         yield async.Coroutine.success()
 
     def dynamic_create(self,i):
-        return RigInput(self.__scope,i,self.__output_peer)
+        return RigInput(self.__scope,i,self.__output_peer,self.__outer)
 
     def dynamic_destroy(self,i,v):
         v.destroy_input()
@@ -519,7 +520,7 @@ class InnerAgent(agent.Agent):
 
         self[1] = self.__workspace
         self[2] = OutputList(self.__name)
-        self[3] = InputList(self.__name)
+        self[3] = InputList(self.__name,False)
 
         constraint = 'or([%s])' % ','.join(['[matches([%s],%s)]' % (m.replace('_',','),m) for m in self.__registry.modules()])
 
@@ -635,7 +636,7 @@ class OuterAgent(agent.Agent):
         self.set_property_string('rig',self.file_name)
 
         self[2] = OutputList(None)
-        self[3] = InputList(None)
+        self[3] = InputList(None,True)
 
         self[3].set_output_peer(self.__inner_agent[2])
 
