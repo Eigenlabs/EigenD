@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  13 Jul 2012 3:26:59pm
+  Creation date:  13 Jul 2012 6:05:25pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_65696E1C__
-#define __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_65696E1C__
+#ifndef __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_E19B795A__
+#define __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_E19B795A__
 
 //[Headers]     -- You can add your own extra header files here --
 #include <lib_midi/control_mapper_gui.h>
@@ -102,4 +102,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_65696E1C__
+#endif   // __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_E19B795A__

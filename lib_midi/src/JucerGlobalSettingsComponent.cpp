@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  13 Jul 2012 3:26:59pm
+  Creation date:  13 Jul 2012 6:05:25pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -358,8 +358,8 @@ void GlobalSettingsComponent::resized()
     max_channel_label->setBounds (16, 208, 160, 24);
     max_channel->setBounds (176, 208, 56, 24);
     midi_hires_velocity->setBounds (16, 112, 216, 24);
-    pitchbend_up_label->setBounds (16, 240, 224, 24);
-    pitchbend_down_label->setBounds (16, 296, 224, 24);
+    pitchbend_up_label->setBounds (16, 247, 224, 24);
+    pitchbend_down_label->setBounds (16, 303, 224, 24);
     pitchbend_up->setBounds (16, 272, 224, 24);
     pitchbend_down->setBounds (16, 328, 224, 24);
     //[UserResized] Add your own custom resize handling here..
@@ -542,12 +542,12 @@ BEGIN_JUCER_METADATA
                 pos="16 112 216 24" txtcol="ffeeeeee" buttonText="send high resolution velocity"
                 connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
   <LABEL name="pitchbend up label" id="a560c9a5ba59aa86" memberName="pitchbend_up_label"
-         virtualName="" explicitFocusOrder="0" pos="16 240 224 24" textCol="ffeeeeee"
+         virtualName="" explicitFocusOrder="0" pos="16 247 224 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="Pitch bend up range (semis)"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15" bold="0" italic="0" justification="36"/>
   <LABEL name="pitchbend down label" id="c0c5425a49b2d366" memberName="pitchbend_down_label"
-         virtualName="" explicitFocusOrder="0" pos="16 296 224 24" textCol="ffeeeeee"
+         virtualName="" explicitFocusOrder="0" pos="16 303 224 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="Pitch bend down range (semis)"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15" bold="0" italic="0" justification="36"/>
