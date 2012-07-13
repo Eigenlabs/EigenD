@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  13 Jul 2012 6:05:25pm
+  Creation date:  13 Jul 2012 6:13:26pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -296,7 +296,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     //[UserPreSize]
     //[/UserPreSize]
 
-    setSize (256, 400);
+    setSize (256, 410);
 
 
     //[Constructor] You can add your own custom stuff here..
@@ -485,7 +485,7 @@ BEGIN_JUCER_METADATA
                  componentName="GlobalSettings" parentClasses="public Component"
                  constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
                  snapShown="1" overlayOpacity="0.330000013" fixedSize="1" initialWidth="256"
-                 initialHeight="400">
+                 initialHeight="410">
   <BACKGROUND backgroundColour="0"/>
   <GROUPCOMPONENT name="midi group" id="237080525f93b812" memberName="midi_group"
                   virtualName="" explicitFocusOrder="0" pos="8 72 240 296" outlinecol="66eeeeee"
