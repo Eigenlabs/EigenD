@@ -81,6 +81,8 @@ namespace midi
         void clear_midi_cc();
         void clear_midi_behaviour();
         void set_minimum_decimation(float);
+        void set_pitchbend_up(float semis);
+        void set_pitchbend_down(float semis);
         void set_midi_notes(bool);
         void set_midi_pitchbend(bool);
         void set_midi_hires_velocity(bool);
@@ -433,6 +435,8 @@ namespace midi
             midi_from_belcanto_->set_send_pitchbend(settings.send_pitchbend_);
             midi_from_belcanto_->set_send_hires_velocity(settings.send_hires_velocity_);
             midi_from_belcanto_->set_control_interval(settings.minimum_decimation_);
+            midi_from_belcanto_->set_pitchbend_up(settings.pitchbend_semitones_up_);
+            midi_from_belcanto_->set_pitchbend_down(settings.pitchbend_semitones_down_);
         }
     }
 
@@ -453,6 +457,20 @@ namespace midi
     void midi_converter_t::impl_t::clear_midi_behaviour()
     {
         mapping_.clear_midi_behaviour();
+    }
+
+    void midi_converter_t::impl_t::set_pitchbend_up(float semis)
+    {
+        global_settings_t settings = mapping_.get_settings();
+        settings.pitchbend_semitones_up_= semis;
+        mapping_.change_settings(settings);
+    }
+
+    void midi_converter_t::impl_t::set_pitchbend_down(float semis)
+    {
+        global_settings_t settings = mapping_.get_settings();
+        settings.pitchbend_semitones_down_= semis;
+        mapping_.change_settings(settings);
     }
 
     void midi_converter_t::impl_t::set_minimum_decimation(float decimation)
@@ -605,6 +623,16 @@ namespace midi
     mapping_info_t midi_converter_t::get_info_midi(unsigned iparam, unsigned oparam)
     {
         return impl_->get_info_midi(iparam,oparam);
+    }
+
+    void midi_converter_t::set_pitchbend_up(float semis)
+    {
+        impl_->set_pitchbend_up(semis);
+    }
+
+    void midi_converter_t::set_pitchbend_down(float semis)
+    {
+        impl_->set_pitchbend_down(semis);
     }
 
     void midi_converter_t::set_minimum_decimation(float decimation)

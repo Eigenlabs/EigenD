@@ -52,13 +52,15 @@ namespace midi
 
     struct MIDILIB_DECLSPEC_CLASS global_settings_t
     {
-        global_settings_t(): minimum_decimation_(0.f), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false) {};
-        global_settings_t(float minimum_decimation, bool send_notes, bool send_pitchbend, bool send_hires_velocity): minimum_decimation_(minimum_decimation), send_notes_(send_notes), send_pitchbend_(send_pitchbend), send_hires_velocity_(send_hires_velocity)  {};
+        global_settings_t(): minimum_decimation_(0.f), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false), pitchbend_semitones_up_(1.0f), pitchbend_semitones_down_(1.0f) {};
+        global_settings_t(float minimum_decimation, bool send_notes, bool send_pitchbend, bool send_hires_velocity, float pb_up, float pb_down): minimum_decimation_(minimum_decimation), send_notes_(send_notes), send_pitchbend_(send_pitchbend), send_hires_velocity_(send_hires_velocity), pitchbend_semitones_up_(pb_up), pitchbend_semitones_down_(pb_down)  {};
 
         float minimum_decimation_;
         bool send_notes_;
         bool send_pitchbend_;
         bool send_hires_velocity_;
+        float pitchbend_semitones_up_;
+        float pitchbend_semitones_down_;
     };
 
     struct MIDILIB_DECLSPEC_CLASS mapping_data_t

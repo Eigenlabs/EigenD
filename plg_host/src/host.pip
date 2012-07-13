@@ -76,6 +76,8 @@ class plugin_instance[host::plugin_instance_t] /gc/
     bool is_mapped_midi(unsigned, unsigned short)
     mapping_info get_info_param(unsigned, unsigned short)
     mapping_info get_info_midi(unsigned, unsigned short)
+    void set_pitchbend_up(float)
+    void set_pitchbend_down(float)
     void set_minimum_decimation(float)
     void set_midi_notes(bool)
     void set_midi_pitchbend(bool)

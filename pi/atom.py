@@ -471,7 +471,7 @@ class Atom(node.Server):
         self.set_property_string(icon)
 
     def rpc_set_value(self,arg):
-        return self.builtin_set_value(arg)
+        self.builtin_set_value(arg)
 
     def rpc_set_icon(self,arg):
         self.set_icon(arg)

@@ -36,6 +36,8 @@ from pi import action,atom,bundles,domain,errors,const
 # void set_minimum_decimation(float) : which sets the minimum data decimation rate
 # void set_midi_notes(bool)          : which enables or disables midi notes
 # void set_midi_pitchbend(bool)      : which enables or disables midi pitchbend
+# void set_pitchbend_up(float)    : which sets the number of semitones of a full pitch up
+# void set_pitchbend_down(float)  : which sets the number of semitones of a full pitch down
 class Parameter(atom.Atom):
     def __init__(self,k,delegate,clockdomain):
         self.__delegate = delegate
@@ -80,6 +82,8 @@ class List(atom.Atom):
         self.add_verb2(22,'set([un],~a,role(None,[matches([midi,pitch,bend])]))',callback=self.__unset_pitchbend)
         self.add_verb2(23,'set([],~a,role(None,[matches([midi,high,resolution,velocity])]))',callback=self.__set_hires_velocity)
         self.add_verb2(24,'set([un],~a,role(None,[matches([midi,high,resolution,velocity])]))',callback=self.__unset_hires_velocity)
+        self.add_verb2(25,'set([],~a,role(None,[matches([upper,pitch,range])]),role(to,[numeric]))',callback=self.__set_pitch_range_upper)
+        self.add_verb2(26,'set([],~a,role(None,[matches([lower,pitch,range])]),role(to,[numeric]))',callback=self.__set_pitch_range_lower)
         for i in range(1,33):
             self[i] = Parameter(i,delegate,clockdomain)
 
@@ -401,6 +405,22 @@ class List(atom.Atom):
     def __unset_pitchbend(self,a,prop):
         try:
             self.__delegate.set_midi_pitchbend(False)
+        except RuntimeError,e:
+            return e.message
+
+    def __set_pitch_range_upper(self,a,prop,to):
+        try:
+            to_str = action.abstract_string(to)
+            to_val = float(to_str)
+            self.__delegate.set_pitchbend_up(to_val)
+        except RuntimeError,e:
+            return e.message
+
+    def __set_pitch_range_lower(self,a,prop,to):
+        try:
+            to_str = action.abstract_string(to)
+            to_val = float(to_str)
+            self.__delegate.set_pitchbend_down(to_val)
         except RuntimeError,e:
             return e.message
 

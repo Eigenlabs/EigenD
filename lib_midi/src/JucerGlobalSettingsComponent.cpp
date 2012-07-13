@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  13 Sep 2011 9:44:00pm
+  Creation date:  13 Jul 2012 3:26:59pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -61,9 +61,12 @@ void GlobalSettingsComponent::updateComponent(midi::mapping_delegate_t *mapping_
     {
         midi_channel = 17;
     }
+
     active_channel->setSelectedId(midi_channel);
     min_channel->setSelectedId(mapping_delegate->get_min_channel());
     max_channel->setSelectedId(mapping_delegate->get_max_channel());
+    pitchbend_up->setValue((int)settings.pitchbend_semitones_up_,true,true);
+    pitchbend_down->setValue((int)settings.pitchbend_semitones_down_,true,true);
 }
 
 void GlobalSettingsComponent::setFocusOrder()
@@ -80,14 +83,16 @@ void GlobalSettingsComponent::updateSettings()
     bool send_notes = midi_notes->getToggleState();
     bool send_pitchbend = midi_pitchbend->getToggleState();
     bool send_hires_velocity = midi_hires_velocity->getToggleState();
+    unsigned pb_up = pitchbend_up->getValue();
+    unsigned pb_down = pitchbend_down->getValue();
 
-    mapping_delegate_->change_settings(midi::global_settings_t(data_decimation->getValue(), send_notes, send_pitchbend, send_hires_velocity));
+    mapping_delegate_->change_settings(midi::global_settings_t(data_decimation->getValue(), send_notes, send_pitchbend, send_hires_velocity, pb_up, pb_down));
 }
 //[/MiscUserDefs]
 
 //==============================================================================
 GlobalSettingsComponent::GlobalSettingsComponent ()
-    : Component (T("GlobalSettings")),
+    : Component (L"GlobalSettings"),
       midi_group (0),
       ok (0),
       midi_notes (0),
@@ -100,34 +105,38 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
       min_channel (0),
       max_channel_label (0),
       max_channel (0),
-      midi_hires_velocity (0)
+      midi_hires_velocity (0),
+      pitchbend_up_label (0),
+      pitchbend_down_label (0),
+      pitchbend_up (0),
+      pitchbend_down (0)
 {
-    addAndMakeVisible (midi_group = new GroupComponent (T("midi group"),
-                                                        T("MIDI")));
+    addAndMakeVisible (midi_group = new GroupComponent (L"midi group",
+                                                        L"MIDI"));
     midi_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
     midi_group->setColour (GroupComponent::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (ok = new TextButton (T("ok button")));
-    ok->setButtonText (T("Ok"));
+    addAndMakeVisible (ok = new TextButton (L"ok button"));
+    ok->setButtonText (L"Ok");
     ok->addListener (this);
     ok->setColour (TextButton::buttonColourId, Colour (0xffc1c1c1));
 
-    addAndMakeVisible (midi_notes = new ToggleButton (T("midi notes toggle button")));
-    midi_notes->setButtonText (T("send notes"));
+    addAndMakeVisible (midi_notes = new ToggleButton (L"midi notes toggle button"));
+    midi_notes->setButtonText (L"send notes");
     midi_notes->addListener (this);
     midi_notes->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (midi_pitchbend = new ToggleButton (T("midi pitchbend toggle button")));
-    midi_pitchbend->setButtonText (T("send pitchbend"));
+    addAndMakeVisible (midi_pitchbend = new ToggleButton (L"midi pitchbend toggle button"));
+    midi_pitchbend->setButtonText (L"send pitchbend");
     midi_pitchbend->addListener (this);
     midi_pitchbend->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (min_data_decimation_group = new GroupComponent (T("min data decimation group"),
-                                                                       T("Minimum data decimation (in ms)")));
+    addAndMakeVisible (min_data_decimation_group = new GroupComponent (L"min data decimation group",
+                                                                       L"Minimum data decimation (in ms)"));
     min_data_decimation_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
     min_data_decimation_group->setColour (GroupComponent::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (data_decimation = new Slider (T("data decimation slider")));
+    addAndMakeVisible (data_decimation = new Slider (L"data decimation slider"));
     data_decimation->setRange (0, 100, 1);
     data_decimation->setSliderStyle (Slider::LinearBar);
     data_decimation->setTextBoxStyle (Slider::TextBoxLeft, true, 45, 20);
@@ -139,8 +148,8 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     data_decimation->setColour (Slider::textBoxOutlineColourId, Colour (0x66ffffff));
     data_decimation->addListener (this);
 
-    addAndMakeVisible (active_channel_label = new Label (T("active channel label"),
-                                                         T("Active midi channel")));
+    addAndMakeVisible (active_channel_label = new Label (L"active channel label",
+                                                         L"Active midi channel"));
     active_channel_label->setFont (Font (15.0000f, Font::plain));
     active_channel_label->setJustificationType (Justification::centredLeft);
     active_channel_label->setEditable (false, false, false);
@@ -148,32 +157,32 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     active_channel_label->setColour (TextEditor::textColourId, Colours::black);
     active_channel_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (active_channel = new ComboBox (T("active channel combo box")));
+    addAndMakeVisible (active_channel = new ComboBox (L"active channel combo box"));
     active_channel->setEditableText (false);
     active_channel->setJustificationType (Justification::centredRight);
     active_channel->setTextWhenNothingSelected (String::empty);
-    active_channel->setTextWhenNoChoicesAvailable (T("(no choices)"));
-    active_channel->addItem (T("1"), 1);
-    active_channel->addItem (T("2"), 2);
-    active_channel->addItem (T("3"), 3);
-    active_channel->addItem (T("4"), 4);
-    active_channel->addItem (T("5"), 5);
-    active_channel->addItem (T("6"), 6);
-    active_channel->addItem (T("7"), 7);
-    active_channel->addItem (T("8"), 8);
-    active_channel->addItem (T("9"), 9);
-    active_channel->addItem (T("10"), 10);
-    active_channel->addItem (T("11"), 11);
-    active_channel->addItem (T("12"), 12);
-    active_channel->addItem (T("13"), 13);
-    active_channel->addItem (T("14"), 14);
-    active_channel->addItem (T("15"), 15);
-    active_channel->addItem (T("16"), 16);
-    active_channel->addItem (T("Poly"), 17);
+    active_channel->setTextWhenNoChoicesAvailable (L"(no choices)");
+    active_channel->addItem (L"1", 1);
+    active_channel->addItem (L"2", 2);
+    active_channel->addItem (L"3", 3);
+    active_channel->addItem (L"4", 4);
+    active_channel->addItem (L"5", 5);
+    active_channel->addItem (L"6", 6);
+    active_channel->addItem (L"7", 7);
+    active_channel->addItem (L"8", 8);
+    active_channel->addItem (L"9", 9);
+    active_channel->addItem (L"10", 10);
+    active_channel->addItem (L"11", 11);
+    active_channel->addItem (L"12", 12);
+    active_channel->addItem (L"13", 13);
+    active_channel->addItem (L"14", 14);
+    active_channel->addItem (L"15", 15);
+    active_channel->addItem (L"16", 16);
+    active_channel->addItem (L"Poly", 17);
     active_channel->addListener (this);
 
-    addAndMakeVisible (min_channel_label = new Label (T("min channel label"),
-                                                      T("Minimum poly channel")));
+    addAndMakeVisible (min_channel_label = new Label (L"min channel label",
+                                                      L"Minimum poly channel"));
     min_channel_label->setFont (Font (15.0000f, Font::plain));
     min_channel_label->setJustificationType (Justification::centredLeft);
     min_channel_label->setEditable (false, false, false);
@@ -181,31 +190,31 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     min_channel_label->setColour (TextEditor::textColourId, Colours::black);
     min_channel_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (min_channel = new ComboBox (T("min channel combo box")));
+    addAndMakeVisible (min_channel = new ComboBox (L"min channel combo box"));
     min_channel->setEditableText (false);
     min_channel->setJustificationType (Justification::centredRight);
     min_channel->setTextWhenNothingSelected (String::empty);
-    min_channel->setTextWhenNoChoicesAvailable (T("(no choices)"));
-    min_channel->addItem (T("1"), 1);
-    min_channel->addItem (T("2"), 2);
-    min_channel->addItem (T("3"), 3);
-    min_channel->addItem (T("4"), 4);
-    min_channel->addItem (T("5"), 5);
-    min_channel->addItem (T("6"), 6);
-    min_channel->addItem (T("7"), 7);
-    min_channel->addItem (T("8"), 8);
-    min_channel->addItem (T("9"), 9);
-    min_channel->addItem (T("10"), 10);
-    min_channel->addItem (T("11"), 11);
-    min_channel->addItem (T("12"), 12);
-    min_channel->addItem (T("13"), 13);
-    min_channel->addItem (T("14"), 14);
-    min_channel->addItem (T("15"), 15);
-    min_channel->addItem (T("16"), 16);
+    min_channel->setTextWhenNoChoicesAvailable (L"(no choices)");
+    min_channel->addItem (L"1", 1);
+    min_channel->addItem (L"2", 2);
+    min_channel->addItem (L"3", 3);
+    min_channel->addItem (L"4", 4);
+    min_channel->addItem (L"5", 5);
+    min_channel->addItem (L"6", 6);
+    min_channel->addItem (L"7", 7);
+    min_channel->addItem (L"8", 8);
+    min_channel->addItem (L"9", 9);
+    min_channel->addItem (L"10", 10);
+    min_channel->addItem (L"11", 11);
+    min_channel->addItem (L"12", 12);
+    min_channel->addItem (L"13", 13);
+    min_channel->addItem (L"14", 14);
+    min_channel->addItem (L"15", 15);
+    min_channel->addItem (L"16", 16);
     min_channel->addListener (this);
 
-    addAndMakeVisible (max_channel_label = new Label (T("max channel label"),
-                                                      T("Maximum poly channel")));
+    addAndMakeVisible (max_channel_label = new Label (L"max channel label",
+                                                      L"Maximum poly channel"));
     max_channel_label->setFont (Font (15.0000f, Font::plain));
     max_channel_label->setJustificationType (Justification::centredLeft);
     max_channel_label->setEditable (false, false, false);
@@ -213,39 +222,81 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     max_channel_label->setColour (TextEditor::textColourId, Colours::black);
     max_channel_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (max_channel = new ComboBox (T("max channel combo box")));
+    addAndMakeVisible (max_channel = new ComboBox (L"max channel combo box"));
     max_channel->setEditableText (false);
     max_channel->setJustificationType (Justification::centredRight);
     max_channel->setTextWhenNothingSelected (String::empty);
-    max_channel->setTextWhenNoChoicesAvailable (T("(no choices)"));
-    max_channel->addItem (T("1"), 1);
-    max_channel->addItem (T("2"), 2);
-    max_channel->addItem (T("3"), 3);
-    max_channel->addItem (T("4"), 4);
-    max_channel->addItem (T("5"), 5);
-    max_channel->addItem (T("6"), 6);
-    max_channel->addItem (T("7"), 7);
-    max_channel->addItem (T("8"), 8);
-    max_channel->addItem (T("9"), 9);
-    max_channel->addItem (T("10"), 10);
-    max_channel->addItem (T("11"), 11);
-    max_channel->addItem (T("12"), 12);
-    max_channel->addItem (T("13"), 13);
-    max_channel->addItem (T("14"), 14);
-    max_channel->addItem (T("15"), 15);
-    max_channel->addItem (T("16"), 16);
+    max_channel->setTextWhenNoChoicesAvailable (L"(no choices)");
+    max_channel->addItem (L"1", 1);
+    max_channel->addItem (L"2", 2);
+    max_channel->addItem (L"3", 3);
+    max_channel->addItem (L"4", 4);
+    max_channel->addItem (L"5", 5);
+    max_channel->addItem (L"6", 6);
+    max_channel->addItem (L"7", 7);
+    max_channel->addItem (L"8", 8);
+    max_channel->addItem (L"9", 9);
+    max_channel->addItem (L"10", 10);
+    max_channel->addItem (L"11", 11);
+    max_channel->addItem (L"12", 12);
+    max_channel->addItem (L"13", 13);
+    max_channel->addItem (L"14", 14);
+    max_channel->addItem (L"15", 15);
+    max_channel->addItem (L"16", 16);
     max_channel->addListener (this);
 
-    addAndMakeVisible (midi_hires_velocity = new ToggleButton (T("midi hires velocity toggle button")));
-    midi_hires_velocity->setButtonText (T("send high resolution velocity"));
+    addAndMakeVisible (midi_hires_velocity = new ToggleButton (L"midi hires velocity toggle button"));
+    midi_hires_velocity->setButtonText (L"send high resolution velocity");
     midi_hires_velocity->addListener (this);
     midi_hires_velocity->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
+
+    addAndMakeVisible (pitchbend_up_label = new Label (L"pitchbend up label",
+                                                       L"Pitch bend up range (semis)"));
+    pitchbend_up_label->setFont (Font (15.0000f, Font::plain));
+    pitchbend_up_label->setJustificationType (Justification::centred);
+    pitchbend_up_label->setEditable (false, false, false);
+    pitchbend_up_label->setColour (Label::textColourId, Colour (0xffeeeeee));
+    pitchbend_up_label->setColour (TextEditor::textColourId, Colours::black);
+    pitchbend_up_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+
+    addAndMakeVisible (pitchbend_down_label = new Label (L"pitchbend down label",
+                                                         L"Pitch bend down range (semis)"));
+    pitchbend_down_label->setFont (Font (15.0000f, Font::plain));
+    pitchbend_down_label->setJustificationType (Justification::centred);
+    pitchbend_down_label->setEditable (false, false, false);
+    pitchbend_down_label->setColour (Label::textColourId, Colour (0xffeeeeee));
+    pitchbend_down_label->setColour (TextEditor::textColourId, Colours::black);
+    pitchbend_down_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+
+    addAndMakeVisible (pitchbend_up = new Slider (L"pitchbend up slider"));
+    pitchbend_up->setRange (0, 48, 0.1);
+    pitchbend_up->setSliderStyle (Slider::LinearBar);
+    pitchbend_up->setTextBoxStyle (Slider::TextBoxLeft, true, 80, 20);
+    pitchbend_up->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
+    pitchbend_up->setColour (Slider::rotarySliderFillColourId, Colours::azure);
+    pitchbend_up->setColour (Slider::textBoxTextColourId, Colour (0xffeeeeee));
+    pitchbend_up->setColour (Slider::textBoxBackgroundColourId, Colour (0xffffff));
+    pitchbend_up->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
+    pitchbend_up->setColour (Slider::textBoxOutlineColourId, Colour (0x66ffffff));
+    pitchbend_up->addListener (this);
+
+    addAndMakeVisible (pitchbend_down = new Slider (L"pitchbend down slider"));
+    pitchbend_down->setRange (0, 48, 0.1);
+    pitchbend_down->setSliderStyle (Slider::LinearBar);
+    pitchbend_down->setTextBoxStyle (Slider::TextBoxLeft, true, 80, 20);
+    pitchbend_down->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
+    pitchbend_down->setColour (Slider::rotarySliderFillColourId, Colours::azure);
+    pitchbend_down->setColour (Slider::textBoxTextColourId, Colour (0xffeeeeee));
+    pitchbend_down->setColour (Slider::textBoxBackgroundColourId, Colour (0xffffff));
+    pitchbend_down->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
+    pitchbend_down->setColour (Slider::textBoxOutlineColourId, Colour (0x66ffffff));
+    pitchbend_down->addListener (this);
 
 
     //[UserPreSize]
     //[/UserPreSize]
 
-    setSize (256, 290);
+    setSize (256, 400);
 
 
     //[Constructor] You can add your own custom stuff here..
@@ -272,6 +323,10 @@ GlobalSettingsComponent::~GlobalSettingsComponent()
     deleteAndZero (max_channel_label);
     deleteAndZero (max_channel);
     deleteAndZero (midi_hires_velocity);
+    deleteAndZero (pitchbend_up_label);
+    deleteAndZero (pitchbend_down_label);
+    deleteAndZero (pitchbend_up);
+    deleteAndZero (pitchbend_down);
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -290,7 +345,7 @@ void GlobalSettingsComponent::paint (Graphics& g)
 
 void GlobalSettingsComponent::resized()
 {
-    midi_group->setBounds (8, 72, 240, 176);
+    midi_group->setBounds (8, 72, 240, 296);
     ok->setBounds (200, getHeight() - 24, 48, 24);
     midi_notes->setBounds (16, 88, 104, 24);
     midi_pitchbend->setBounds (118, 88, 128, 24);
@@ -303,6 +358,10 @@ void GlobalSettingsComponent::resized()
     max_channel_label->setBounds (16, 208, 160, 24);
     max_channel->setBounds (176, 208, 56, 24);
     midi_hires_velocity->setBounds (16, 112, 216, 24);
+    pitchbend_up_label->setBounds (16, 240, 224, 24);
+    pitchbend_down_label->setBounds (16, 296, 224, 24);
+    pitchbend_up->setBounds (16, 272, 224, 24);
+    pitchbend_down->setBounds (16, 328, 224, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -354,6 +413,18 @@ void GlobalSettingsComponent::sliderValueChanged (Slider* sliderThatWasMoved)
         //[UserSliderCode_data_decimation] -- add your slider handling code here..
         updateSettings();
         //[/UserSliderCode_data_decimation]
+    }
+    else if (sliderThatWasMoved == pitchbend_up)
+    {
+        //[UserSliderCode_pitchbend_up] -- add your slider handling code here..
+        updateSettings();
+        //[/UserSliderCode_pitchbend_up]
+    }
+    else if (sliderThatWasMoved == pitchbend_down)
+    {
+        //[UserSliderCode_pitchbend_down] -- add your slider handling code here..
+        updateSettings();
+        //[/UserSliderCode_pitchbend_down]
     }
 
     //[UsersliderValueChanged_Post]
@@ -414,10 +485,10 @@ BEGIN_JUCER_METADATA
                  componentName="GlobalSettings" parentClasses="public Component"
                  constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
                  snapShown="1" overlayOpacity="0.330000013" fixedSize="1" initialWidth="256"
-                 initialHeight="290">
+                 initialHeight="400">
   <BACKGROUND backgroundColour="0"/>
   <GROUPCOMPONENT name="midi group" id="237080525f93b812" memberName="midi_group"
-                  virtualName="" explicitFocusOrder="0" pos="8 72 240 176" outlinecol="66eeeeee"
+                  virtualName="" explicitFocusOrder="0" pos="8 72 240 296" outlinecol="66eeeeee"
                   textcol="ffeeeeee" title="MIDI"/>
   <TEXTBUTTON name="ok button" id="489abe6be4232158" memberName="ok" virtualName=""
               explicitFocusOrder="0" pos="200 24R 48 24" bgColOff="ffc1c1c1"
@@ -470,6 +541,28 @@ BEGIN_JUCER_METADATA
                 memberName="midi_hires_velocity" virtualName="" explicitFocusOrder="0"
                 pos="16 112 216 24" txtcol="ffeeeeee" buttonText="send high resolution velocity"
                 connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
+  <LABEL name="pitchbend up label" id="a560c9a5ba59aa86" memberName="pitchbend_up_label"
+         virtualName="" explicitFocusOrder="0" pos="16 240 224 24" textCol="ffeeeeee"
+         edTextCol="ff000000" edBkgCol="0" labelText="Pitch bend up range (semis)"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="15" bold="0" italic="0" justification="36"/>
+  <LABEL name="pitchbend down label" id="c0c5425a49b2d366" memberName="pitchbend_down_label"
+         virtualName="" explicitFocusOrder="0" pos="16 296 224 24" textCol="ffeeeeee"
+         edTextCol="ff000000" edBkgCol="0" labelText="Pitch bend down range (semis)"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="15" bold="0" italic="0" justification="36"/>
+  <SLIDER name="pitchbend up slider" id="ad6f6ba17280bd77" memberName="pitchbend_up"
+          virtualName="" explicitFocusOrder="0" pos="16 272 224 24" thumbcol="ff8a8a8a"
+          rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
+          textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
+          max="48" int="0.1" style="LinearBar" textBoxPos="TextBoxLeft"
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
+  <SLIDER name="pitchbend down slider" id="44141a9a8275e444" memberName="pitchbend_down"
+          virtualName="" explicitFocusOrder="0" pos="16 328 224 24" thumbcol="ff8a8a8a"
+          rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
+          textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
+          max="48" int="0.1" style="LinearBar" textBoxPos="TextBoxLeft"
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

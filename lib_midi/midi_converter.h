@@ -48,6 +48,8 @@ namespace midi
         mapping_info_t get_info_param(unsigned, unsigned);
         mapping_info_t get_info_midi(unsigned, unsigned);
         void set_minimum_decimation(float);
+        void set_pitchbend_up(float semis);
+        void set_pitchbend_down(float semis);
         void set_midi_notes(bool);
         void set_midi_pitchbend(bool);
         void set_midi_hires_velocity(bool);

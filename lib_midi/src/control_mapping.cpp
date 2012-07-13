@@ -139,6 +139,9 @@ namespace midi
                 bool send_notes = true;
                 bool send_pitchbend = true;
                 bool send_hires_velocity = false;
+                float pb_up = 1;
+                float pb_down = 1;
+
                 if(t2.arity() >= 3 &&
                     t2.arg(0).value().type()==BCTVTYPE_FLOAT && 
                     t2.arg(1).value().type()==BCTVTYPE_BOOL && 
@@ -153,9 +156,17 @@ namespace midi
                     {
                         send_hires_velocity = t2.arg(3).value().as_bool();
                     }
+
+                    if(t2.arity() >= 6 &&
+                        t2.arg(4).value().type()==BCTVTYPE_FLOAT &&
+                        t2.arg(5).value().type()==BCTVTYPE_FLOAT)
+                    {
+                        pb_up = t2.arg(4).value().as_float();
+                        pb_down = t2.arg(5).value().as_float();
+                    }
                 }
 
-                mapping_.alternate().settings_ = global_settings_t(minimum_decimation, send_notes, send_pitchbend, send_hires_velocity);
+                mapping_.alternate().settings_ = global_settings_t(minimum_decimation, send_notes, send_pitchbend, send_hires_velocity, pb_up,pb_down);
             }
             else
             {
@@ -299,11 +310,13 @@ namespace midi
         }
 
         {
-            piw::term_t t2("s",4);
+            piw::term_t t2("s",6);
             t2.set_arg(0,piw::makefloat(mg.value().settings_.minimum_decimation_));
             t2.set_arg(1,piw::makebool(mg.value().settings_.send_notes_));
             t2.set_arg(2,piw::makebool(mg.value().settings_.send_pitchbend_));
             t2.set_arg(3,piw::makebool(mg.value().settings_.send_hires_velocity_));
+            t2.set_arg(4,piw::makefloat(mg.value().settings_.pitchbend_semitones_up_));
+            t2.set_arg(5,piw::makefloat(mg.value().settings_.pitchbend_semitones_down_));
             t.set_arg(i,t2);
             ++i;
         }

@@ -333,6 +333,8 @@ namespace midi
         bool send_notes_;
         bool send_pitchbend_;
         bool send_hires_velocity_;
+        unsigned pitchbend_semitones_up_;
+        unsigned pitchbend_semitones_down_;
 
         piw::velocityconfig_t velocity_config_;
     };
@@ -569,10 +571,20 @@ namespace
         }
 
         // calculate pitchbend
-        float pb = (1.f+(n-note_pitch_))/2.f;
-        pb = std::max(0.f,pb);
-        pb = std::min(1.f,pb);
-        note_pitchbend_ = pb;
+
+        if(n>=note_pitch_)
+        {
+            float uprange = root_->pitchbend_semitones_up_;
+            float offset = std::min(n-note_pitch_,uprange);
+            note_pitchbend_ = 0.5+(offset/uprange)/2.0;
+        }
+        else
+        {
+            float downrange = root_->pitchbend_semitones_down_;
+            float offset = std::min(note_pitch_-n,downrange);
+            note_pitchbend_ = 0.5-(offset/downrange)/2.0;
+        }
+
 
         // pitch bending - a continuous stream of these MIDI packets is sent
         if(note_velocity_>0)
@@ -637,7 +649,8 @@ namespace midi
         clk_state_(CLKSTATE_IDLE), clk_domain_(clk_domain),
         channel_(1), poly_(false), omni_(false), time_(0ULL),
         resend_current_(midi::resend_current_t::method(this,&midi_from_belcanto_t::impl_t::dummy)),
-        ctrl_interval_(DEFAULT_CTRL_INTERVAL), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false)
+        ctrl_interval_(DEFAULT_CTRL_INTERVAL), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false),
+        pitchbend_semitones_up_(1), pitchbend_semitones_down_(1)
     {
         // one MIDI output channel
         sigmask_=1ULL;
@@ -1309,6 +1322,22 @@ namespace midi
         return 0;
     }
 
+    static int __set_pitchbend_up(void *i_, void *semis_)
+    {
+        midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
+        float semis = *(float *)semis_;
+        i->pitchbend_semitones_up_ = semis;
+        return 0;
+    }
+
+    static int __set_pitchbend_down(void *i_, void *semis_)
+    {
+        midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
+        float semis = *(float *)semis_;
+        i->pitchbend_semitones_down_ = semis;
+        return 0;
+    }
+
     static int __set_send_hires_velocity(void *i_, void *send_)
     {
         midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
@@ -1352,6 +1381,8 @@ namespace midi
     void midi_from_belcanto_t::set_send_notes(bool send) { piw::tsd_fastcall(__set_send_notes,impl_,&send); }
     void midi_from_belcanto_t::set_send_pitchbend(bool send) { piw::tsd_fastcall(__set_send_pitchbend,impl_,&send); }
     void midi_from_belcanto_t::set_send_hires_velocity(bool send) { piw::tsd_fastcall(__set_send_hires_velocity,impl_,&send); }
+    void midi_from_belcanto_t::set_pitchbend_up(float semis) { piw::tsd_fastcall(__set_pitchbend_up,impl_,&semis); }
+    void midi_from_belcanto_t::set_pitchbend_down(float semis) { piw::tsd_fastcall(__set_pitchbend_down,impl_,&semis); }
     unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &id) { return piw::tsd_fastcall(__get_channel,impl_,(void *)&id); }
     void midi_from_belcanto_t::set_velocity_samples(unsigned n) { impl_->velocity_config_.set_samples(n); }
     void midi_from_belcanto_t::set_velocity_curve(float n) { impl_->velocity_config_.set_curve(n); }

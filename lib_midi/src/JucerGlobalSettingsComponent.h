@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  13 Sep 2011 9:44:00pm
+  Creation date:  13 Jul 2012 3:26:59pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_1A20CA6A__
-#define __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_1A20CA6A__
+#ifndef __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_65696E1C__
+#define __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_65696E1C__
 
 //[Headers]     -- You can add your own extra header files here --
 #include <lib_midi/control_mapper_gui.h>
@@ -89,6 +89,10 @@ private:
     Label* max_channel_label;
     ComboBox* max_channel;
     ToggleButton* midi_hires_velocity;
+    Label* pitchbend_up_label;
+    Label* pitchbend_down_label;
+    Slider* pitchbend_up;
+    Slider* pitchbend_down;
 
 
     //==============================================================================
@@ -98,4 +102,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_1A20CA6A__
+#endif   // __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_65696E1C__

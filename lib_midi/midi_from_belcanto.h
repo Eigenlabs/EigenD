@@ -59,6 +59,8 @@ namespace midi
         void set_send_notes(bool);
         void set_send_pitchbend(bool);
         void set_send_hires_velocity(bool);
+        void set_pitchbend_up(float semis);
+        void set_pitchbend_down(float semis);
         unsigned get_active_midi_channel(const piw::data_nb_t &);
         void set_velocity_samples(unsigned);
         void set_velocity_curve(float);

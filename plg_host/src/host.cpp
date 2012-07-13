@@ -1179,6 +1179,8 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         midi_from_belcanto_->set_send_pitchbend(settings.send_pitchbend_);
         midi_from_belcanto_->set_send_hires_velocity(settings.send_hires_velocity_);
         midi_from_belcanto_->set_control_interval(settings.minimum_decimation_);
+        midi_from_belcanto_->set_pitchbend_up(settings.pitchbend_semitones_up_);
+        midi_from_belcanto_->set_pitchbend_down(settings.pitchbend_semitones_down_);
     }
 
     midi::global_settings_t get_settings()
@@ -1633,6 +1635,20 @@ void host::plugin_instance_t::clear_midi_cc()
 void host::plugin_instance_t::clear_midi_behaviour()
 {
     return impl_->mapping_.clear_midi_behaviour();
+}
+
+void host::plugin_instance_t::set_pitchbend_up(float semis)
+{
+    midi::global_settings_t settings = impl_->mapping_.get_settings();
+    settings.pitchbend_semitones_up_= semis;
+    impl_->change_settings(settings);
+}
+
+void host::plugin_instance_t::set_pitchbend_down(float semis)
+{
+    midi::global_settings_t settings = impl_->mapping_.get_settings();
+    settings.pitchbend_semitones_down_= semis;
+    impl_->change_settings(settings);
 }
 
 void host::plugin_instance_t::set_minimum_decimation(float decimation)

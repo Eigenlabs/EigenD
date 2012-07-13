@@ -153,6 +153,8 @@ namespace host
             void set_velocity_samples(unsigned);
             void set_velocity_curve(float);
             void set_velocity_scale(float);
+            void set_pitchbend_up(float semis);
+            void set_pitchbend_down(float semis);
 
             bool open(const plugin_description_t &);
             void close();
