@@ -34,13 +34,21 @@ namespace piw
             strummer_t(const cookie_t &, piw::clockdomain_ctl_t *);
             ~strummer_t();
             cookie_t data_cookie();
-            cookie_t ctl_cookie();
+            cookie_t strum_cookie();
             void enable(bool);
-            void set_key_mix(float);
-            void set_on_threshold(float);
-            void set_off_threshold(float);
-            void set_additional(bool);
             void set_trigger_window(unsigned);
+            void set_strum_breath_scale(float);
+            void set_pressure_scale(float);
+            void set_strum_pressure_scale(float);
+            void set_roll_scale(float);
+            void set_strum_roll_scale(float);
+            void set_yaw_scale(float);
+            void set_strum_yaw_scale(float);
+            void clear_breath_courses();
+            void add_breath_course(int);
+            void clear_key_courses();
+            void add_key_course(int,int,int);
+            void set_strum_note_end(bool);
 
         private:
             impl_t *impl_;
