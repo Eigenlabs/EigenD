@@ -492,7 +492,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     impl_t(plugin_observer_t *obs, midi::midi_channel_delegate_t *channel_delegate, piw::clockdomain_ctl_t *d,
         const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, const pic::status_t &window_state): 
             audio_output_cookie_(audio_out), audio_input_(this), midi_input_(this), metronome_input_(this), 
-            mapping_(*this), plugin_(0), window_(0), audio_buffer_(0,0), buffer_data_(0), num_input_channels_(0), num_output_channels_(0),
+            plugin_(0), window_(0), audio_buffer_(0,0), buffer_data_(0), num_input_channels_(0), num_output_channels_(0),
             window_state_changed_(window_state), clockdomain_(d), sample_rate_(48000.0), buffer_size_(PLG_CLOCK_BUFFER_SIZE),
             observer_(obs), channel_delegate_(channel_delegate), active_(false),
             idle_count_(0), idle_time_ticks_(0), idling_enabled_(true), idle_time_sec_(10.f),
@@ -500,14 +500,14 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
                     midi::clearall_t::method(this,&host::plugin_instance_t::impl_t::clear_all),
                     midi::get_settings_t::method(this,&host::plugin_instance_t::impl_t::get_settings),
                     midi::change_settings_t::method(this,&host::plugin_instance_t::impl_t::change_settings),
-                    midi::set_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::set_midi_channel),
-                    midi::set_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::set_min_channel),
-                    midi::set_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::set_max_channel),
+                    midi::set_channel_t::method(this,&host::plugin_instance_t::impl_t::set_midi_channel),
+                    midi::set_channel_t::method(this,&host::plugin_instance_t::impl_t::set_min_channel),
+                    midi::set_channel_t::method(this,&host::plugin_instance_t::impl_t::set_max_channel),
                     midi::get_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::get_midi_channel),
                     midi::get_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::get_min_channel),
                     midi::get_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::get_max_channel)
                     )),
-            mapping_delegate_(settings_functors_),
+            mapping_(*this, *channel_delegate), mapping_delegate_(settings_functors_),
             midi_aggregator_(0), midi_from_belcanto_(0)
     {
         d->sink(this,"host");
@@ -1173,6 +1173,24 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         mapping_.change_settings(settings);
     }
 
+    void set_midi_channel(unsigned ch)
+    {
+        channel_delegate_->set_midi_channel(ch);
+        mapping_.settings_changed();
+    }
+
+    void set_min_channel(unsigned ch)
+    {
+        channel_delegate_->set_min_channel(ch);
+        mapping_.settings_changed();
+    }
+
+    void set_max_channel(unsigned ch)
+    {
+        channel_delegate_->set_max_channel(ch);
+        mapping_.settings_changed();
+    }
+
     void perform_settings_updates(midi::global_settings_t settings)
     {
         midi_from_belcanto_->set_send_notes(settings.send_notes_);
@@ -1195,8 +1213,6 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     midi_input_t midi_input_;
     metronome_input_t metronome_input_;
     std::auto_ptr<midi::param_input_t> param_input_[32];
-
-    midi::controllers_mapping_t mapping_;
 
     host_output_scalar_t audio_output_;
     host_output_scalar_t midi_output_;
@@ -1236,6 +1252,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     std::auto_ptr<juce::Rectangle<int> > bounds_;
 
     midi::settings_functors_t settings_functors_;
+    midi::controllers_mapping_t mapping_;
     midi::mapping_delegate_t mapping_delegate_;
 
     piw::aggregator_t *midi_aggregator_;
@@ -1517,18 +1534,21 @@ piw::cookie_t host::plugin_instance_t::audio_input_cookie()
 void host::plugin_instance_t::set_midi_channel(unsigned ch)
 {
     impl_->midi_from_belcanto_->set_midi_channel(ch);
+    impl_->mapping_.settings_changed();
     impl_->settings_changed();
 }
 
 void host::plugin_instance_t::set_min_midi_channel(unsigned ch)
 {
     impl_->midi_from_belcanto_->set_min_midi_channel(ch);
+    impl_->mapping_.settings_changed();
     impl_->settings_changed();
 }
 
 void host::plugin_instance_t::set_max_midi_channel(unsigned ch)
 {
     impl_->midi_from_belcanto_->set_max_midi_channel(ch);
+    impl_->mapping_.settings_changed();
     impl_->settings_changed();
 }
 

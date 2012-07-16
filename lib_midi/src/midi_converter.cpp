@@ -77,6 +77,9 @@ namespace midi
         void change_settings(global_settings_t);
         void perform_settings_updates(global_settings_t);
         global_settings_t get_settings();
+        void set_midi_channel(unsigned);
+        void set_min_channel(unsigned);
+        void set_max_channel(unsigned);
         void clear_params();
         void clear_midi_cc();
         void clear_midi_behaviour();
@@ -238,16 +241,15 @@ namespace midi
                 clearall_t::method(this,&midi_converter_t::impl_t::clear_all),
                 get_settings_t::method(this,&midi_converter_t::impl_t::get_settings),
                 change_settings_t::method(this,&midi_converter_t::impl_t::change_settings),
-                set_channel_t::method(channel_delegate,&midi_channel_delegate_t::set_midi_channel),
-                set_channel_t::method(channel_delegate,&midi_channel_delegate_t::set_min_channel),
-                set_channel_t::method(channel_delegate,&midi_channel_delegate_t::set_max_channel),
+                set_channel_t::method(this,&midi_converter_t::impl_t::set_midi_channel),
+                set_channel_t::method(this,&midi_converter_t::impl_t::set_min_channel),
+                set_channel_t::method(this,&midi_converter_t::impl_t::set_max_channel),
                 get_channel_t::method(channel_delegate,&midi_channel_delegate_t::get_midi_channel),
                 get_channel_t::method(channel_delegate,&midi_channel_delegate_t::get_min_channel),
                 get_channel_t::method(channel_delegate,&midi_channel_delegate_t::get_max_channel)
                 )),
         clockdomain_(d), observer_(observer), midi_from_belcanto_(midi_from_belcanto),
-        title_(title), params_(0), mapping_(*this),
-        mapping_delegate_(settings_functors_)
+        title_(title), params_(0), mapping_(*this, *channel_delegate), mapping_delegate_(settings_functors_)
     {
         d->sink(this,"midi converter");
         piw::tsd_thing(this);
@@ -425,6 +427,24 @@ namespace midi
     {
         perform_settings_updates(settings);
         mapping_.change_settings(settings);
+    }
+
+    void midi_converter_t::impl_t::set_midi_channel(unsigned ch)
+    {
+        channel_delegate_->set_midi_channel(ch);
+        mapping_.settings_changed();
+    }
+
+    void midi_converter_t::impl_t::set_min_channel(unsigned ch)
+    {
+        channel_delegate_->set_min_channel(ch);
+        mapping_.settings_changed();
+    }
+
+    void midi_converter_t::impl_t::set_max_channel(unsigned ch)
+    {
+        channel_delegate_->set_max_channel(ch);
+        mapping_.settings_changed();
     }
 
     void midi_converter_t::impl_t::perform_settings_updates(global_settings_t settings)
@@ -660,6 +680,7 @@ namespace midi
         if(impl_->midi_from_belcanto_.isvalid())
         {
             impl_->midi_from_belcanto_->set_midi_channel(ch);
+            impl_->mapping_.settings_changed();
             impl_->settings_changed();
         }
     }
@@ -669,6 +690,7 @@ namespace midi
         if(impl_->midi_from_belcanto_.isvalid())
         {
             impl_->midi_from_belcanto_->set_min_midi_channel(ch);
+            impl_->mapping_.settings_changed();
             impl_->settings_changed();
         }
     }
@@ -678,6 +700,7 @@ namespace midi
         if(impl_->midi_from_belcanto_.isvalid())
         {
             impl_->midi_from_belcanto_->set_max_midi_channel(ch);
+            impl_->mapping_.settings_changed();
             impl_->settings_changed();
         }
     }

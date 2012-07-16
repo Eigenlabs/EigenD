@@ -190,17 +190,23 @@ namespace midi
             void edit_resolution(bool edit) { edit_resolution_ = edit; };
             bool edit_resolution() { return edit_resolution_; }
 
+            void span_poly(bool span) { span_poly_ = span; };
+            bool span_poly() { return span_poly_; }
+
         protected:
             friend class mapper_table_t;
             friend class mapper_midi_cc_table_t;
             friend class mapper_midi_behaviour_table_t;
 
             void draw_text();
+            bool is_spanned();
+            void colour_cell(mapping_info_t &, bool);
 
             mapper_table_t &mapper_;
             bool edit_control_scope_;
             bool edit_fixed_channel_;
             bool edit_resolution_;
+            bool span_poly_;
             juce::Label *label_;
             int iparam_;
             int oparam_;

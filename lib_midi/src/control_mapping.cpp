@@ -324,8 +324,55 @@ namespace midi
         return t.render();
     }
 
+    void controllers_mapping_t::unmap_span_overlaps(unsigned iparam, int oparam)
+    {
+        control_map_t &m = mapping_.alternate().map_params_;
+        int poly_range = midi_.get_max_channel() - midi_.get_min_channel();
+        std::pair<control_map_t::iterator,control_map_t::iterator> i(m.equal_range(iparam));
+        while(i.first!=i.second && i.first!=m.end())
+        {
+            if(i.first->first==iparam &&
+               (i.first->second.oparam_>oparam &&
+                i.first->second.oparam_<=oparam+poly_range))
+            {
+                control_map_t::iterator to_erase = i.first;
+                i.first++;
+                m.erase(to_erase);
+            }
+            else
+            {
+                i.first++;
+            }
+        }
+        mapping_.alternate().serial_++;
+        mapping_.exchange();
+    }
+
     void controllers_mapping_t::map_param(unsigned iparam, mapping_info_t &info)
     {
+        // ensure that this mapping is not overlapping with an
+        // existing per-note span and the midi channel scope
+        if(info.oparam_ > 0 && 0 == midi_.get_midi_channel())
+        {
+            control_map_t &m = mapping_.alternate().map_params_;
+            int poly_range = midi_.get_max_channel()-midi_.get_min_channel();
+            for(int o = info.oparam_-1; o >= 0 && o >= info.oparam_-poly_range; --o)
+            {
+                mapping_info_t poly_info = get_info(m,iparam,o);
+                if(poly_info.is_valid() && PERNOTE_SCOPE == poly_info.scope_)
+                {
+                    return;
+                }
+            }
+        }
+         
+        // ensure that there are no param mappings that overlap
+        // with possible per-note spans and the midi channel scope
+        if(PERNOTE_SCOPE == info.scope_ && 0 == midi_.get_midi_channel())
+        {
+            unmap_span_overlaps(iparam, info.oparam_);
+        }
+
         map(mapping_.alternate().map_params_,iparam,info);
     }
 
@@ -337,7 +384,6 @@ namespace midi
     void controllers_mapping_t::map(control_map_t &m, unsigned iparam, mapping_info_t info)
     {
         std::pair<control_map_t::iterator,control_map_t::iterator> i(m.equal_range(iparam));
-        
         while(i.first!=i.second && i.first!=m.end())
         {
             if(i.first->first==iparam &&
@@ -515,7 +561,40 @@ namespace midi
         mapping_.alternate().serial_++;
         mapping_.exchange();
         listener_.mapping_changed(get_mapping());
+        settings_changed();
+    }
+
+    void controllers_mapping_t::settings_changed()
+    {
+        // ensure that there are no param mappings that overlap
+        // with possible per-note spans and the midi channel scope
+        if(0 == midi_.get_midi_channel())
+        {
+            std::map<unsigned, int> spans;
+
+            control_map_t &m = mapping_.alternate().map_params_;
+            control_map_t::iterator it;
+            for(it=m.begin(); it!=m.end(); it++)
+            {
+                if(it->second.oparam_ >=0 && PERNOTE_SCOPE == it->second.scope_)
+                {
+                    spans.insert(std::make_pair(it->first, it->second.oparam_));
+                }
+            }
+
+            std::map<unsigned, int>::iterator s_it;
+            for(s_it = spans.begin(); s_it != spans.end(); s_it++)
+            {
+                unmap_span_overlaps(s_it->first, s_it->second);
+            }
+
+            mapping_.alternate().serial_++;
+            mapping_.exchange();
+            listener_.mapping_changed(get_mapping());
+        }
+
         listener_.settings_changed();
+        listener_.parameter_changed(1);
     }
 
     controllers_map_range_t controllers_mapping_t::param_mappings(unsigned name)

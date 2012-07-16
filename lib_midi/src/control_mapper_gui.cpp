@@ -679,7 +679,7 @@ namespace midi
      * mapper_cell_editor_t
      */
 
-    mapper_cell_editor_t::mapper_cell_editor_t(mapper_table_t &mapper): mapper_(mapper), edit_control_scope_(true), edit_fixed_channel_(true), edit_resolution_(true), active_popup_(0), cell_popup_(0)
+    mapper_cell_editor_t::mapper_cell_editor_t(mapper_table_t &mapper): mapper_(mapper), edit_control_scope_(true), edit_fixed_channel_(true), edit_resolution_(true), span_poly_(false), active_popup_(0), cell_popup_(0)
     {
         addAndMakeVisible(label_=new juce::Label(juce::String::empty,"0.0"));
         label_->addMouseListener(this,false);
@@ -716,18 +716,8 @@ namespace midi
         draw_text();
     }
 
-    void mapper_cell_editor_t::draw_text()
+    void mapper_cell_editor_t::colour_cell(mapping_info_t &info, bool span)
     {
-        mapping_info_t info = get_info();
-        if(info.is_valid())
-        {
-            label_->setText(juce::String(info.scale_,1),true);
-        }
-        else
-        {
-            label_->setText("",true);
-        }
-
         juce::Colour txt;
         juce::Colour bg;
         if(!info.is_valid())
@@ -746,6 +736,12 @@ namespace midi
             bg = juce::Colours::darkgrey;
         }
 
+        if(span)
+        {
+            txt = txt.darker();
+            bg = bg.darker();
+        }
+
         label_->setColour(juce::Label::textColourId, txt);
         label_->setColour(juce::Label::backgroundColourId, bg);
 
@@ -755,20 +751,91 @@ namespace midi
         }
     }
 
+    bool mapper_cell_editor_t::is_spanned()
+    {
+        if(span_poly_ && oparam_ > 0 && 0 == mapper_.settings_functors_.get_midi_channel_())
+        {
+            int poly_range = mapper_.settings_functors_.get_max_channel_() - mapper_.settings_functors_.get_min_channel_();
+            for(int o = oparam_-1; o >= 0 && o >= oparam_-poly_range; --o)
+            {
+                mapping_info_t poly_info = mapper_.mapping_functors_.get_info_(iparam_,o);
+                if(poly_info.is_valid() && PERNOTE_SCOPE == poly_info.scope_)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    void mapper_cell_editor_t::draw_text()
+    {
+        if(span_poly_ && oparam_ > 0 && 0 == mapper_.settings_functors_.get_midi_channel_())
+        {
+            int poly_range = mapper_.settings_functors_.get_max_channel_()-mapper_.settings_functors_.get_min_channel_();
+            for(int o = oparam_-1; o >= 0 && o >= oparam_-poly_range; --o)
+            {
+                mapping_info_t poly_info = mapper_.mapping_functors_.get_info_(iparam_,o);
+                if(poly_info.is_valid() && PERNOTE_SCOPE == poly_info.scope_)
+                {
+                    int channel = mapper_.settings_functors_.get_min_channel_()+(oparam_-o);
+                    label_->setText(juce::String::formatted("%.1f (ch.%02d)", poly_info.scale_, channel), true);
+                    colour_cell(poly_info, true);
+                    return;
+                }
+            }
+        }
+
+        mapping_info_t info = get_info();
+        if(info.is_valid())
+        {
+            if(span_poly_ && 0 == mapper_.settings_functors_.get_midi_channel_() && PERNOTE_SCOPE == info.scope_)
+            {
+                label_->setText(juce::String::formatted("%.1f (ch.%02d)", info.scale_, mapper_.settings_functors_.get_min_channel_()), true);
+            }
+            else
+            {
+                label_->setText(juce::String(info.scale_,1),true);
+            }
+        }
+        else
+        {
+            label_->setText("",true);
+        }
+
+        colour_cell(info, false);
+    }
+
     void mapper_cell_editor_t::mouseEnter(const juce::MouseEvent &e)
     {
+        if(is_spanned())
+        {
+            return;
+        }
+
         label_->setColour(juce::Label::outlineColourId,juce::Colour(0xffdddddd));
         label_->repaint();
     }
 
     void mapper_cell_editor_t::mouseExit(const juce::MouseEvent &e)
     {
+        if(is_spanned())
+        {
+            return;
+        }
+
         label_->setColour(juce::Label::outlineColourId,juce::Colours::darkgrey);
         label_->repaint();
     }
 
     void mapper_cell_editor_t::mouseUp(const juce::MouseEvent &e)
     {
+        if(is_spanned())
+        {
+            return;
+        }
+
         bool modal = isCurrentlyBlockedByAnotherModalComponent();
         juce::Component::mouseUp(e);
         if(!modal && e.mouseWasClicked() && piw::tsd_time() - mapper_.last_modal_dismissal_ > 500000)
@@ -1010,6 +1077,7 @@ namespace midi
         mapper_cell_editor_t *editor = new mapper_cell_editor_t(*this);
         editor->edit_fixed_channel(false);
         editor->edit_resolution(false);
+        editor->span_poly(true);
         return editor;
     }
 

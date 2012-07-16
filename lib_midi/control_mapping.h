@@ -163,7 +163,7 @@ namespace midi
     class MIDILIB_DECLSPEC_CLASS controllers_mapping_t: public pic::guarded_t, virtual public pic::tracked_t
     {
         public:
-            controllers_mapping_t(mapping_observer_t &l) : listener_(l), acquired_(0) {};
+            controllers_mapping_t(mapping_observer_t &l, midi_channel_delegate_t &m) : listener_(l), midi_(m), acquired_(0) {};
 
             unsigned get_serial();
 
@@ -182,6 +182,7 @@ namespace midi
             void clear_midi_behaviour();
             global_settings_t get_settings();
             void change_settings(global_settings_t);
+            void settings_changed();
 
             controllers_map_range_t param_mappings(unsigned);
             controllers_map_range_t midi_mappings(unsigned);
@@ -199,6 +200,7 @@ namespace midi
             void unmap(control_map_t &, unsigned, unsigned short);
             bool is_mapped(const control_map_t &, unsigned, unsigned short);
             mapping_info_t get_info(const control_map_t &, unsigned, unsigned short);
+            void unmap_span_overlaps(unsigned, int);
 
             void refresh_params_(control_mapping_t &);
             void refresh_origins_(control_mapping_t &, pic::i2f_t &);
@@ -222,6 +224,7 @@ namespace midi
             };
 
             mapping_observer_t &listener_;
+            midi_channel_delegate_t &midi_;
             pic::flipflop_t<mapping_t> mapping_;
             const mapping_t* acquired_;
     };
