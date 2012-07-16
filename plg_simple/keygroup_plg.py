@@ -557,14 +557,14 @@ class Agent(agent.Agent):
         self[25] = atom.Atom(domain=domain.BoundedInt(-32767,32767), names='mode key row', init=None, policy=atom.default_policy(self.__change_mode_key_row))
         self[26] = atom.Atom(domain=domain.Bool(),names='mode key column end relative',init=False,policy=atom.default_policy(self.__change_mode_key_column_endrel))
         self[28] = atom.Atom(domain=domain.Bool(),names='mode key row end relative',init=False,policy=atom.default_policy(self.__change_mode_key_row_endrel))
-        self[27] = atom.Atom(domain=domain.String(), init='[]', names='physical map', protocols='mapper', policy=atom.default_policy(self.__set_physical_key_map))
-        self[34] = atom.Atom(domain=domain.String(), init='[]', names='musical map', protocols='mapper', policy=atom.default_policy(self.__set_musical_key_map))
+        self[27] = atom.Atom(domain=domain.String(), init='[]', names='physical mapping', protocols='mapper', policy=atom.default_policy(self.__set_physical_key_map))
+        self[34] = atom.Atom(domain=domain.String(), init='[]', names='musical mapping', protocols='mapper', policy=atom.default_policy(self.__set_musical_key_map))
         self[35] = atom.Atom(domain=domain.String(), init='[]', names='course offset', policy=atom.default_policy(self.__set_course_offset))
 
         self.add_verb2(3,'set([un],None)',callback=self.__untune)
 
         self.add_verb2(5,'create([],None,role(None,[mass([output])]))',self.__create)
-        self.add_verb2(6,'create([un],None,role(None,[concrete,singular,partof(~(a)#"1")]))', self.__uncreate)
+        self.add_verb2(6,'create([un],None,role(None,[concrete,singular,partof(~(a)#1)]))', self.__uncreate)
         self.add_verb2(7,'choose([],None,role(None,[matches([key])]),option(as,[numeric]))',self.__choose)
         self.add_verb2(11,'choose([un],None)',self.__unchoose)
         

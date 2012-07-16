@@ -474,7 +474,7 @@ class Agent(agent.Agent):
         # verbs
         # verb to create a named effect channel
         self.add_verb2(1,'create([],None,role(None,[abstract,matches([effect])]), option(called,[abstract]))',self.__create_fx_chan)
-        self.add_verb2(2,'create([un],None,role(None,[concrete,singular,partof(~(a)#"4")]))', self.__uncreate_fx_chan)
+        self.add_verb2(2,'create([un],None,role(None,[concrete,singular,partof(~(a)#4)]))', self.__uncreate_fx_chan)
 
         self.__timestamp = piw.tsd_time()
         self.__selected=None

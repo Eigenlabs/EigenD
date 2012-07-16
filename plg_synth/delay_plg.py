@@ -193,7 +193,7 @@ class Agent(agent.Agent):
         self.add_verb2(1,'create([],None,role(None,[matches([tap])]))',self.__create_tap)
         
         # verb to uncreate a tap, tap number is given, #7 is self[7]
-        self.add_verb2(2,'create([un],None,role(None,[partof(~(a)"#7")]))',self.__uncreate_tap)
+        self.add_verb2(2,'create([un],None,role(None,[partof(~(a)#7)]))',self.__uncreate_tap)
 
         # verb to reset delay lines
         self.add_verb2(3, 'clear([],None)', self.__reset_delay_lines)

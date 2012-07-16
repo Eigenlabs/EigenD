@@ -63,8 +63,8 @@ class Agent(agent.Agent):
         self[2][7] = atom.Atom(domain=domain.BoundedFloat(0,10),init=0.0,names='strum roll scale',policy=atom.default_policy(self.strummer.set_strum_roll_scale))
         self[2][8] = atom.Atom(domain=domain.BoundedFloat(0,10),init=1.0,names='yaw scale',policy=atom.default_policy(self.strummer.set_yaw_scale))
         self[2][9] = atom.Atom(domain=domain.BoundedFloat(0,10),init=0.0,names='strum yaw scale',policy=atom.default_policy(self.strummer.set_strum_yaw_scale))
-        self[2][10] = atom.Atom(domain=domain.String(), init='[]', names='breath course map', policy=atom.default_policy(self.__set_breath_course_map))
-        self[2][11] = atom.Atom(domain=domain.String(), init='[]', names='key course map', protocols='keytocourse', policy=atom.default_policy(self.__set_key_course_map))
+        self[2][10] = atom.Atom(domain=domain.String(), init='[]', names='breath course mapping', policy=atom.default_policy(self.__set_breath_course_map))
+        self[2][11] = atom.Atom(domain=domain.String(), init='[]', names='key course mapping', protocols='keytocourse', policy=atom.default_policy(self.__set_key_course_map))
         self[2][12] = atom.Atom(domain=domain.Bool(),init=True,names='strum note end',policy=atom.default_policy(self.strummer.set_strum_note_end))
 
         self.strummer.enable(True)

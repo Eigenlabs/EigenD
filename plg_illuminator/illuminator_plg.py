@@ -17,7 +17,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,atom,const,domain,policy,bundles,logic,action,utils
+from pi import agent,async,atom,collection,const,domain,policy,bundles,logic,action,utils
 from . import illuminator_version as version
 
 import piw
@@ -210,6 +210,82 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
         self.send_response(404)
         self.end_headers()
 
+class LightMap(atom.Atom):
+    def __init__(self,agent,index):
+        atom.Atom.__init__(self,names='light mapping',ordinal=index,protocols='remove')
+
+        self[1] = atom.Atom(domain=domain.String(), init='[]', names='physical light mapping')
+        self[2] = atom.Atom(domain=domain.String(), init='[]', names='musical light mapping')
+
+class StoredLightMaps(collection.Collection):
+    def __init__(self,agent):
+        self.agent = agent
+        self.__timestamp = piw.tsd_time()
+
+        collection.Collection.__init__(self,names="stored mappings",creator=self.__create_lightmap,wrecker=self.__wreck_lightmap,inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
+        self.update()
+
+    def update(self):
+        self.__timestamp = self.__timestamp+1
+        self.set_property_string('timestamp',str(self.__timestamp))
+
+    def new_lightmap(self,index):
+        return LightMap(self.agent, index)
+    
+    def lightmaps_changed(self):
+        pass
+    
+    def __create_lightmap(self,index):
+        return self.new_lightmap(index)
+    
+    def __wreck_lightmap(self,index,node):
+        self.lightmaps_changed()
+
+    def create_lightmap(self,ordinal=None):
+        o = ordinal or self.find_hole()
+        o = int(o)
+        e = self.new_lightmap(o)
+        self[o] = e
+        self.lightmaps_changed()
+        self.agent.update()
+        return e 
+
+    def get_lightmap(self,index):
+        return self.get(index)
+
+    def load(self,oid):
+        for k,v in self.items():
+            if v.id()==oid:
+                self.agent.set_physical_map(v[1].get_value())
+                self.agent.set_musical_map(v[2].get_value())
+                return True
+
+        return False
+
+    def uncreate(self,oid):
+        for k,v in self.items():
+            if v.id()==oid:
+                self.del_lightmap(k)
+                return True
+
+        return False
+
+    def del_lightmap(self,index):
+        v = self[index]
+        del self[index]
+        self.lightmaps_changed()
+        self.agent.update()
+    
+    @async.coroutine('internal error')
+    def __create_inst(self,ordinal=None):
+        e = self.create_lightmap(ordinal)
+        yield async.Coroutine.success(e)
+
+    @async.coroutine('internal error')
+    def __wreck_inst(self,key,inst,ordinal):
+        self.lightmaps_changed()
+        yield async.Coroutine.success()
+
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         agent.Agent.__init__(self, signature=version, names='illuminator', ordinal=ordinal)
@@ -227,8 +303,8 @@ class Agent(agent.Agent):
         self.status_buffer = piw.statusbuffer(self.output.cookie())
         self.status_buffer.autosend(False)
  
-        self[2] = atom.Atom(domain=domain.String(), init='[]', names='physical light map', policy=atom.default_policy(self.__physical_light_map))
-        self[3] = atom.Atom(domain=domain.String(), init='[]', names='musical light map', policy=atom.default_policy(self.__musical_light_map))
+        self[2] = atom.Atom(domain=domain.String(), init='[]', names='physical light mapping', policy=atom.default_policy(self.__physical_light_map))
+        self[3] = atom.Atom(domain=domain.String(), init='[]', names='musical light mapping', policy=atom.default_policy(self.__musical_light_map))
         self[5] = atom.Atom(domain=domain.BoundedIntOrNull(0,65535,0), names='server port', policy=atom.default_policy(self.__server_port))
         self[6] = atom.Atom(domain=domain.Bool(), init=False, names='server start', policy=atom.default_policy(self.__server_start))
 
@@ -236,6 +312,8 @@ class Agent(agent.Agent):
         self.keyinput = bundles.VectorInput(self.keyfunctor.cookie(), self.domain, signals=(1,))
         self[4] = atom.Atom(domain=domain.Aniso(), policy=self.keyinput.vector_policy(1,False), names='key input')
         self.choicefunctor = utils.make_change_nb(piw.slowchange(utils.changify(self.__choice)))
+
+        self[8] = StoredLightMaps(self)
 
         self.add_verb2(1,'clear([],None)', callback=self.__clear)
         self.add_verb2(2,'clear([],None,role(None,[matches([physical])]))', callback=self.__clear_physical)
@@ -258,6 +336,10 @@ class Agent(agent.Agent):
         self.add_verb2(19,'start([],None,role(None,[matches([server])]))',self.__start_server,status_action=self.__status_server)
         self.add_verb2(20,'stop([],None,role(None,[matches([server])]))',self.__stop_server,status_action=self.__status_server)
         self.add_verb2(21,'start([toggle],None,role(None,[matches([server])]))',self.__toggle_server,status_action=self.__status_server)
+        self.add_verb2(22,'load([],None,role(None,[concrete,singular,partof(~(a)#8)]))', self.__load_lightmap)
+        self.add_verb2(23,'delete([],None,role(None,[concrete,singular,partof(~(a)#8)]))', self.__delete_lightmap)
+        self.add_verb2(24,'save([],None,role(None,[abstract]))', self.__save_lightmap)
+        self.add_verb2(25,'save([],None)', self.__save_lightmap)
 
         self.httpServer = None
 
@@ -304,6 +386,36 @@ class Agent(agent.Agent):
 
     def __status_server(self,subj,v):
         return 'dsc(~(s)"#7",None)'
+
+    def __load_lightmap(self,subj,v):
+        a = action.concrete_object(v)
+        if self[8].load(a):
+            return async.success(action.concrete_return(a))
+        return async.success(errors.doesnt_exist('light mapping','load'))
+
+    def __delete_lightmap(self,subj,v):
+        a = action.concrete_object(v)
+        if self[8].uncreate(a):
+            return async.success(action.removed_return(a))
+        return async.success(errors.doesnt_exist('light mapping','delete'))
+
+    def __save_lightmap(self,subj,v=None):
+        lm = self[8].create_lightmap()
+        if lm:
+            if v:
+                names = action.abstract_string(v).split()
+                if names:
+                    try:
+                        ordinal = int(names[-1])
+                        names = names[:-1]
+                    except:
+                        ordinal = 0
+                lm.set_names(' '.join(names))
+                lm.set_ordinal(ordinal)
+            lm[1].set_value(self[2].get_value())
+            lm[2].set_value(self[3].get_value())
+            return async.success(action.concrete_return(lm.id()))
+        return async.success(errors.cant_error('light mapping','save'))
     
     def __update_server_status(self):
         self.server_lights.set_status(1, const.status_active if self[6].get_value() else const.status_inactive)
