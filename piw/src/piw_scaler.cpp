@@ -558,8 +558,8 @@ namespace
             pic::logmsg() << "------- scaler start " << time_;
 #endif // SCALER_DEBUG>0
 
-            keynum_=-1.0;
-            keycourse_=-1.0;
+            keynum_=1;
+            keycourse_=1;
 
             piw::data_nb_t d;
             if(e->ufilterenv_latest(SCALER_KEY,d,time_))
@@ -727,13 +727,6 @@ namespace
 
         void recalculate_note()
         {
-            if(keynum_ < 0 || keycourse_ < 0)
-            {
-                note_=-1.0;
-                note_hz_=0.0;
-                return;
-            }
-
             float t=tonic_,o=octave_,m=mode_;
 
             piw::scaler_controller_t::sref_t s=scale_;
