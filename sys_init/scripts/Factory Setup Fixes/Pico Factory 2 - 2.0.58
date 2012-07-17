@@ -1,0 +1,33 @@
+description
+    This script fixes the strip controllers in the EigenD 2.0.58
+    Pico Factory Setup 2.
+    
+script
+	empty join
+
+	audio unit rig 1 strip position un connect
+	main keygroup keygroup output 1 strip position output 1 to audio unit rig 1 strip position connect
+	audio unit rig 2 strip position un connect
+	main keygroup keygroup output 2 strip position output 1 to audio unit rig 2 strip position connect
+	audio unit rig 3 strip position un connect
+	main keygroup keygroup output 3 strip position output 1 to audio unit rig 3 strip position connect
+	audio unit rig 4 strip position un connect
+	main keygroup keygroup output 4 strip position output 1 to audio unit rig 4 strip position connect
+	
+	midi rig 1 strip position un connect
+	main keygroup keygroup output 5 strip position output 1 to midi rig 1 strip position connect
+	midi rig 2 strip position un connect
+	main keygroup keygroup output 6 strip position output 1 to midi rig 2 strip position connect
+	midi rig 3 strip position un connect
+	main keygroup keygroup output 7 strip position output 1 to midi rig 3 strip position connect
+	midi rig 4 strip position un connect
+	main keygroup keygroup output 8 strip position output 1 to midi rig 4 strip position connect
+	
+	metronome controller strip position input un connect
+	mixer controller strip position input un connect
+	scheduler keygroup strip position input 1 un connect
+	scheduler keygroup strip position input 2 un connect
+	drummer volume controller strip position input un connect
+	
+	empty join
+	
