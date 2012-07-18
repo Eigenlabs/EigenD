@@ -203,6 +203,11 @@ namespace pic
                 return ret;
             }
 
+            bool empty()
+            {
+                return (head_.next_==&head_)?true:false;
+            }
+
         private:
             element_t<N> head_;
     };
@@ -223,6 +228,7 @@ namespace pic
             void remove(E *e) { base_.remove(e); }
             void takeover(ilist_t &l) { base_.takeover(l.base_); }
             E *pop_front() { return static_cast<E *>(base_.pop_front()); }
+            bool empty() { return base_.empty(); }
         private:
             ilistbase_t<N> base_;
     };
