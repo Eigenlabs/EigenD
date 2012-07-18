@@ -29,6 +29,26 @@
 				font-family: sans-serif !important;
 				margin: 2em;
 			}
+			h1 {
+                text-align: center;
+			}
+            table#preview {
+                padding: 6px;
+                margin: 1em auto 2em auto;
+                border: 1px solid white;
+            }
+            table#preview tr {
+                padding: 0;
+                margin: 0;
+            }
+            table#preview td {
+                padding: 0;
+                margin: 0;
+                border: 2px solid black;
+                width: 26px;
+                height: 18px;
+                background: black;
+            }
 			legend {
 				font-size: large;
 			}
@@ -63,7 +83,15 @@
 	<body>
 		<h1>EigenD Illuminator Web Console</h1>
 		
-		<div id="preview"></div>
+		<div>
+			<table id="preview">
+				<tr><td id="1_1"/><td id="1_2"/><td id="1_3"/><td id="1_4"/><td id="1_5"/><td id="1_6"/><td id="1_7"/><td id="1_8"/><td id="1_9"/><td id="1_10"/><td id="1_11"/><td id="1_12"/><td id="1_13"/><td id="1_14"/><td id="1_15"/><td id="1_16"/><td id="1_17"/><td id="1_18"/><td id="1_19"/><td id="1_20"/><td id="1_21"/><td id="1_22"/><td id="1_23"/><td id="1_24"/></tr>
+				<tr><td id="2_1"/><td id="2_2"/><td id="2_3"/><td id="2_4"/><td id="2_5"/><td id="2_6"/><td id="2_7"/><td id="2_8"/><td id="2_9"/><td id="2_10"/><td id="2_11"/><td id="2_12"/><td id="2_13"/><td id="2_14"/><td id="2_15"/><td id="2_16"/><td id="2_17"/><td id="2_18"/><td id="2_19"/><td id="2_20"/><td id="2_21"/><td id="2_22"/><td id="2_23"/><td id="2_24"/></tr>
+				<tr><td id="3_1"/><td id="3_2"/><td id="3_3"/><td id="3_4"/><td id="3_5"/><td id="3_6"/><td id="3_7"/><td id="3_8"/><td id="3_9"/><td id="3_10"/><td id="3_11"/><td id="3_12"/><td id="3_13"/><td id="3_14"/><td id="3_15"/><td id="3_16"/><td id="3_17"/><td id="3_18"/><td id="3_19"/><td id="3_20"/><td id="3_21"/><td id="3_22"/><td id="3_23"/><td id="3_24"/></tr>
+				<tr><td id="4_1"/><td id="4_2"/><td id="4_3"/><td id="4_4"/><td id="4_5"/><td id="4_6"/><td id="4_7"/><td id="4_8"/><td id="4_9"/><td id="4_10"/><td id="4_11"/><td id="4_12"/><td id="4_13"/><td id="4_14"/><td id="4_15"/><td id="4_16"/><td id="4_17"/><td id="4_18"/><td id="4_19"/><td id="4_20"/><td id="4_21"/><td id="4_22"/><td id="4_23"/><td id="4_24"/></tr>
+				<tr><td id="5_1"/><td id="5_2"/><td id="5_3"/><td id="5_4"/><td id="5_5"/><td id="5_6"/><td id="5_7"/><td id="5_8"/><td id="5_9"/><td id="5_10"/><td id="5_11"/><td id="5_12"/><td id="5_13"/><td id="5_14"/><td id="5_15"/><td id="5_16"/><td id="5_17"/><td id="5_18"/><td id="5_19"/><td id="5_20"/><td id="5_21"/><td id="5_22"/><td id="5_23"/><td id="5_24"/></tr>
+			</table>
+		</div>
 		
 		<form id="text">
 			<fieldset>
@@ -132,7 +160,7 @@
 				</div>
 			</fieldset>
 		</form>
-		<p id="legend">Note that for readability, only the Eigenharp Alpha is supported for text scrolling.</p>
+		<p id="legend">For readability, only the Eigenharp Alpha is supported for text scrolling.</p>
 		
 		<script type="text/javascript">
         <![CDATA[
@@ -768,11 +796,19 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 				{
 					var line = ctxt.content[i];
 					line = line.substr(0,ctxt.width);
-					if(!ctxt.flip)
-					{
-						line = line.reverse();
-					}
 					requestcontent[i] = line;
+				}
+
+                // render a preview
+                render_preview(requestcontent);
+
+				// reverse the lines for the Eigenharp coordinates
+                if(!ctxt.flip)
+                {
+                    for(var i=0; i<requestcontent.length; i++)
+                    {
+                        requestcontent[i] = requestcontent[i].reverse();
+					}
 				}
 				
 				// rotate the bitmap around by one position
@@ -805,9 +841,10 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 				$.ajax({
 					type: 'PUT',
 					cache: false,
+					processData: false,
 					url: document.location.protocol+'//'+document.location.host+'/physical',
 					data: requestcontent.join('\n'),
-					success: function(data, textStatus, jqXHR) {
+					success: function() {
 						if(ctxt.repeat)
 						{
 							ctxt.remaining -= 1;
@@ -821,9 +858,50 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 					}
 				});
 			};
+
+            function render_preview(requestcontent)
+            {
+                for(var r=0; r<requestcontent.length; r++)
+                {
+                    var line = requestcontent[r];
+                    for(var c=0; c<line.length; c++)
+                    {
+                        var chr = line.charAt(c);
+                        var colour = 'black';
+                        switch(chr)
+                        {
+                            case 'R':
+                                colour = '#FF1010';
+                                break;
+                            case 'G':
+                                colour = '#4BE000';
+                                break;
+                            case 'O':
+                                colour = '#FF8000';
+                                break;
+                        }
+                        $('#'+String(r+1)+'_'+String(c+1)).css('background-color', colour);
+                    }
+                }
+            };
+
+            function clear_preview()
+            {
+                for(var r=1; r<=5; r++)
+                {
+                    for(var c=1; c<=24; c++)
+                    {
+                        $('#'+r+'_'+c).css('background-color', 'black');
+                    }
+                }
+            };
 			
 			function resume_scroll()
 			{
+				if(illum_scrollactive)
+				{
+					return;
+				}
 				illum_scrollactive = true;
 				scroll();
 			};
@@ -836,11 +914,13 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 			function clear()
 			{
 				stop_scroll();
+				clear_preview();
 				illum_contexts = new Array();
 				$.ajax({
 					type: 'DELETE',
 					cache: false,
-					url: document.location.protocol+'//'+document.location.host+'/physical',
+					processData: false,
+					url: document.location.protocol+'//'+document.location.host+'/physical'
 				});
 			};
 			
@@ -862,24 +942,24 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 		    var illum_contexts = new Array();
 			$(document).ready(function(){
 				$("form#text input[type='submit'][name='now']").click(function() {
-					event.preventDefault();
 					handle_submit(true);
+					return false;
 				});
 				$("form#text input[type='submit'][name='later']").click(function() {
-					event.preventDefault();
 					handle_submit(false);
+					return false;
 				});
 				$("form#text input[type='button'][name='pause']").click(function() {
-					event.preventDefault();
 					stop_scroll();
+					return false;
 				});
 				$("form#text input[type='button'][name='resume']").click(function() {
-					event.preventDefault();
 					resume_scroll();
+					return false;
 				});
 				$("form#text input[type='button'][name='clear']").click(function() {
-					event.preventDefault();
 					clear();
+					return false;
 				});
 			});
         ]]>

@@ -109,10 +109,14 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
                 column += 1
                 row = 0
         return result
+    
+    def send_success(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")                     
+        self.end_headers()
 
     def do_OPTIONS(self):
-        self.send_response(200)
-        self.end_headers()
+        self.send_success()
         return
 
     def do_GET(self):
@@ -137,12 +141,10 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
         if self.path == '/physical':
             content = self.rfile.read(int(self.headers['Content-Length']))
             if MATCH_MAP.match(content):
-                self.send_response(200)
-                self.end_headers()
+                self.send_success()
                 self.server.agent.set_physical_map(content)
             elif MATCH_BITMAP.match(content):
-                self.send_response(200)
-                self.end_headers()
+                self.send_success()
                 self.server.agent.set_physical_map(logic.render_term(self.parse_bitmap(content)))
             else:
                 self.send_response(400)
@@ -152,12 +154,10 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
         if self.path == '/musical':
             content = self.rfile.read(int(self.headers['Content-Length']))
             if MATCH_MAP.match(content):
-                self.send_response(200)
-                self.end_headers()
+                self.send_success()
                 self.server.agent.set_musical_map(content)
             elif MATCH_BITMAP.match(content):
-                self.send_response(200)
-                self.end_headers()
+                self.send_success()
                 self.server.agent.set_musical_map(logic.render_term(self.parse_bitmap(content)))
             else:
                 self.send_response(400)
@@ -166,8 +166,7 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
 
         match = MATCH_PHYSICAL.match(self.path)
         if match:
-            self.send_response(200)
-            self.end_headers()
+            self.send_success()
             column = int(match.group(1))
             row = int(match.group(2))
             colour = self.rfile.read(int(self.headers['Content-Length']))
@@ -176,8 +175,7 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
 
         match = MATCH_MUSICAL.match(self.path)
         if match:
-            self.send_response(200)
-            self.end_headers()
+            self.send_success()
             course = int(match.group(1))
             key = int(match.group(2))
             colour = self.rfile.read(int(self.headers['Content-Length']))
@@ -189,27 +187,23 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
 
     def do_DELETE(self):
         if self.path == '/':
-            self.send_response(200)
-            self.end_headers()
+            self.send_success()
             self.server.agent.clear()
             return
 
         if self.path == '/physical':
-            self.send_response(200)
-            self.end_headers()
+            self.send_success()
             self.server.agent.clear_physical()
             return
 
         if self.path == '/musical':
-            self.send_response(200)
-            self.end_headers()
+            self.send_success()
             self.server.agent.clear_musical()
             return
 
         match = MATCH_PHYSICAL.match(self.path)
         if match:
-            self.send_response(200)
-            self.end_headers()
+            self.send_success()
             column = int(match.group(1))
             row = int(match.group(2))
             self.server.agent.unset_physical(column,row)
@@ -217,8 +211,7 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
 
         match = MATCH_MUSICAL.match(self.path)
         if match:
-            self.send_response(200)
-            self.end_headers()
+            self.send_success()
             course = int(match.group(1))
             key = int(match.group(2))
             self.server.agent.unset_musical(course,key)
