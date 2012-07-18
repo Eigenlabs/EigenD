@@ -33,4 +33,3 @@ env.PiAgent('keygroup','plg_simple','keygroup_plg',cversion='1.0.3',extra=['kgro
 env.PiAgent('scale_manager','plg_simple','scale_manager_plg',cversion='1.0.0')
 env.PiAgent('talker','plg_simple','talker_plg',cversion='1.0.2')
 env.PiAgent('ranger','plg_simple','ranger_plg',cversion='1.0.0')
-env.PiAgent('strummer','plg_simple','strummer_plg',cversion='1.0.0')

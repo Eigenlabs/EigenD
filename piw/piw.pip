@@ -57,7 +57,6 @@
 #include <piw/piw_window.h>
 #include <piw/piw_status.h>
 #include <piw/piw_controllerdict.h>
-#include <piw/piw_strummer.h>
 #include <piw/piw_keys.h>
 >>>
 
@@ -141,27 +140,6 @@ preset create_preset[piw::create_preset]()
 
 class clockref[bct_clocksink_t]
 {
-}
-
-class strummer[piw::strummer_t]
-{
-    strummer(const cookie &, clockdomain_ctl *)
-    cookie data_cookie()
-    cookie strum_cookie()
-    void enable(bool)
-    void set_trigger_window(unsigned)
-    void set_strum_breath_scale(float)
-    void set_pressure_scale(float)
-    void set_strum_pressure_scale(float)
-    void set_roll_scale(float)
-    void set_strum_roll_scale(float)
-    void set_yaw_scale(float)
-    void set_strum_yaw_scale(float)
-    void clear_breath_courses()
-    void add_breath_course(int)
-    void clear_key_courses()
-    void add_key_course(int,int,int)
-    void set_strum_note_end(bool)
 }
 
 class stringer[piw::stringer_t]
