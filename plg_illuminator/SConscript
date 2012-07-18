@@ -21,3 +21,4 @@ Import('master_env')
 
 master_env.PiPythonPackage(per_agent='plg_illuminator', package='eigend')
 master_env.PiAgent('illuminator', 'plg_illuminator', 'illuminator_plg', cversion='1.0.0')
+master_env.PiResources('illuminator', 'illuminator_plg.xhtml', package='eigend')

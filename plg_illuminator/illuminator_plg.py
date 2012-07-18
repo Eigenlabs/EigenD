@@ -17,7 +17,7 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from pi import agent,async,atom,collection,const,domain,policy,bundles,logic,action,utils
+from pi import agent,async,atom,collection,const,domain,policy,bundles,logic,action,utils,resource
 from . import illuminator_version as version
 
 import piw
@@ -81,9 +81,15 @@ class InterruptableHTTPServer(HTTPServer):
         self.server_close()
 
 class IlluminatorRequestHandler(BaseHTTPRequestHandler):
-    def output_get(self, content):
+    def output_get_plain(self, content):
         self.send_response(200)
         self.send_header("Content-Type", "text/plain")                     
+        self.end_headers()
+        self.wfile.write(content)
+
+    def output_get_xhtml(self, content):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/xhtml+xml")                     
         self.end_headers()
         self.wfile.write(content)
 
@@ -104,13 +110,24 @@ class IlluminatorRequestHandler(BaseHTTPRequestHandler):
                 row = 0
         return result
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.end_headers()
+        return
+
     def do_GET(self):
+        if self.path == '/':
+            xhtml = open(resource.find_release_resource('illuminator','illuminator_plg.xhtml'))
+            self.output_get_xhtml(xhtml.read())
+            xhtml.close()
+            return
+
         if self.path == '/physical':
-            self.output_get(self.server.agent.get_physical())
+            self.output_get_plain(self.server.agent.get_physical())
             return
 
         if self.path == '/musical':
-            self.output_get(self.server.agent.get_musical())
+            self.output_get_plain(self.server.agent.get_musical())
             return
 
         self.send_response(404)
