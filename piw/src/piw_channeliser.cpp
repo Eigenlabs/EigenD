@@ -36,7 +36,7 @@ namespace {
 
     struct channeliser_driver_t: piw::event_data_source_real_t, pic::element_t<>, piw::wire_ctl_t
     {
-        channeliser_driver_t(channeliser_voice_t *voice, unsigned index);
+        channeliser_driver_t(channeliser_voice_t *voice, const piw::data_t &path);
         ~channeliser_driver_t();
 
         void claim(channeliser_input_t *owner, const piw::data_t &channel, const piw::data_nb_t &id);
@@ -70,10 +70,10 @@ namespace {
 
     struct channeliser_voice_t: pic::element_t<>, piw::root_t
     {
-        channeliser_voice_t(piw::channeliser_t::impl_t *root, unsigned index, unsigned poly);
+        channeliser_voice_t(piw::channeliser_t::impl_t *root, unsigned index);
         ~channeliser_voice_t();
 
-        void set_event_poly(unsigned poly);
+        void add_driver(const piw::data_t &path);
         void release(channeliser_driver_t *driver);
 
         channeliser_driver_t *claim(channeliser_input_t *owner, const piw::data_t &channel, const piw::data_nb_t &id);
@@ -91,8 +91,7 @@ namespace {
 
         piw::channeliser_t::impl_t *root_;
         piw::data_t channel_;
-        pic::ilist_t<channeliser_driver_t> freelist_;
-        pic::lckvector_t<channeliser_driver_t *>::lcktype drivers_;
+        pic::flipflop_t<pic::lckmap_t<piw::data_t,channeliser_driver_t *>::lcktype> drivers_;
         unsigned refcount_input_,refcount_output_;
         piw::channeliser_t::channel_t *client_;
         pic::lckmap_t<piw::data_t,channeliser_relay_t *>::lcktype children_;
@@ -165,32 +164,30 @@ static int add_to_free_voices__(void *impl_, void *voice_)
 
 void piw::channeliser_t::impl_t::thing_trigger_slow()
 {
+    pic::lckmap_t<piw::data_t,channeliser_input_t *>::lcktype::iterator ci;
+
     while(voices_.size() < poly_)
     {
         unsigned index = voices_.size();
-        channeliser_voice_t *voice = new channeliser_voice_t(this,index,children_.size());
+        channeliser_voice_t *voice = new channeliser_voice_t(this,index);
+
+        for(ci=children_.begin(); ci!=children_.end(); ci++)
+        {
+            voice->add_driver(ci->first);
+        }
+
         voices_.push_back(voice);
         voice->driver_root_.set_clock(clock_);
-
         piw::tsd_fastcall(add_to_free_voices__,this,voice);
     }
 }
 
-static int add_to_free_drivers__(void *impl_, void *driver_)
+void channeliser_voice_t::add_driver(const piw::data_t &path)
 {
-    ((channeliser_voice_t *)impl_)->freelist_.append((channeliser_driver_t *)driver_);
-    return 0;
-}
-
-void channeliser_voice_t::set_event_poly(unsigned poly)
-{
-    while(drivers_.size() < poly)
-    {
-        channeliser_driver_t *driver = new channeliser_driver_t(this,drivers_.size());
-        drivers_.push_back(driver);
-        driver_root_.connect_wire(driver,driver->source());
-        piw::tsd_fastcall(add_to_free_drivers__,this,driver);
-    }
+    channeliser_driver_t *driver = new channeliser_driver_t(this,path);
+    drivers_.alternate().insert(std::make_pair(path,driver));
+    drivers_.exchange();
+    driver_root_.connect_wire(driver,driver->source());
 }
 
 channeliser_driver_t *piw::channeliser_t::impl_t::claim(channeliser_input_t *owner, const piw::data_nb_t &id)
@@ -333,7 +330,7 @@ piw::wire_t *piw::channeliser_t::impl_t::root_wire(const event_data_source_t &es
 
     for(unsigned i=0;i<voices_.size();i++)
     {
-        voices_[i]->set_event_poly(children_.size());
+        voices_[i]->add_driver(es.path());
     }
 
     return w;
@@ -381,7 +378,6 @@ void channeliser_driver_t::source_ended(unsigned seq)
 
 void channeliser_voice_t::release(channeliser_driver_t *driver)
 {
-    freelist_.append(driver);
     input_decref();
 }
 
@@ -421,12 +417,11 @@ channeliser_voice_t::~channeliser_voice_t()
     invalidate();
 }
 
-channeliser_voice_t::channeliser_voice_t(piw::channeliser_t::impl_t *root, unsigned index, unsigned poly): piw::root_t(0), root_(root), refcount_input_(0), refcount_output_(0), index_(index)
+channeliser_voice_t::channeliser_voice_t(piw::channeliser_t::impl_t *root, unsigned index): piw::root_t(0), root_(root), refcount_input_(0), refcount_output_(0), index_(index)
 {
     relay_root_.connect(root_->aggregator_.get_filtered_output(1+index_,piw::null_filter()));
     client_ = root_->delegate_->create_channel(piw::cookie_t(this));
     driver_root_.connect(client_->cookie());
-    set_event_poly(poly);
 }
 
 void piw::channeliser_t::visit_channels(const void *arg)
@@ -533,21 +528,22 @@ void channeliser_voice_t::root_latency()
 
 channeliser_driver_t *channeliser_voice_t::claim(channeliser_input_t *owner, const piw::data_t &channel, const piw::data_nb_t &id)
 {
-    channeliser_driver_t *driver = freelist_.pop_front();
+    pic::lckmap_t<piw::data_t,channeliser_driver_t *>::lcktype::const_iterator di;
+    pic::flipflop_t<pic::lckmap_t<piw::data_t,channeliser_driver_t *>::lcktype>::guard_t g(drivers_);
 
-    if(!driver)
+    if((di=g.value().find(owner->path_)) == g.value().end())
     {
-        pic::logmsg() << "voice " << index_ << " no free drivers";;
         return 0;
     }
 
+    channeliser_driver_t *driver = di->second;
     channel_ = channel;
     driver->claim(owner,channel,id);
     input_incref();
     return driver;
 }
 
-channeliser_driver_t::channeliser_driver_t(channeliser_voice_t *voice, unsigned index): piw::event_data_source_real_t(piw::pathone(index,0)), voice_(voice), owner_(0)
+channeliser_driver_t::channeliser_driver_t(channeliser_voice_t *voice, const piw::data_t &path): piw::event_data_source_real_t(path), voice_(voice), owner_(0)
 {
 }
 
