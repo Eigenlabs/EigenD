@@ -51,8 +51,8 @@ Not properly assigned, in use:
 8   6   4   6  : Lower         : Noun              : None
 8   6   4   7  : Strum         : Noun              : None
 8   6   4   8  : Mapping       : Noun              : None
-8   6   5   1  : Unused        : Unused            : None
-8   6   5   2  : Unused        : Unused            : None
+8   6   5   1  : Courses       : Noun              : None
+8   6   5   2  : Modulation    : Noun              : None
 8   6   5   3  : Unused        : Unused            : None
 8   6   5   4  : Unused        : Unused            : None
 8   6   5   5  : Unused        : Unused            : None

@@ -750,9 +750,9 @@ void guiscaffold_t::shutdown()
     shutdown_ = true;
 
     delete_.shutdown(true);
-    ctx0_.shutdown(true);
-    main_.shutdown(true);
-    fast_.shutdown(true);
+    ctx0_.shutdown(false);
+    main_.shutdown(false);
+    fast_.shutdown(false);
     pinger_.quit();
 }
 
