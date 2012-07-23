@@ -571,20 +571,25 @@ namespace
         }
 
         // calculate pitchbend
-
+        note_pitchbend_ = 0.5;
         if(n>=note_pitch_)
         {
             float uprange = root_->pitchbend_semitones_up_;
-            float offset = std::min(n-note_pitch_,uprange);
-            note_pitchbend_ = 0.5+(offset/uprange)/2.0;
+            if(uprange)
+            {
+                float offset = std::min(n-note_pitch_,uprange);
+                note_pitchbend_ = 0.5+(offset/uprange)/2.0;
+            }
         }
         else
         {
             float downrange = root_->pitchbend_semitones_down_;
-            float offset = std::min(note_pitch_-n,downrange);
-            note_pitchbend_ = 0.5-(offset/downrange)/2.0;
+            if(downrange)
+            {
+                float offset = std::min(note_pitch_-n,downrange);
+                note_pitchbend_ = 0.5-(offset/downrange)/2.0;
+            }
         }
-
 
         // pitch bending - a continuous stream of these MIDI packets is sent
         if(note_velocity_>0)
