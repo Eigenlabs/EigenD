@@ -251,7 +251,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     midi_hires_velocity->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
     addAndMakeVisible (pitchbend_up_label = new Label (L"pitchbend up label",
-                                                       L"Pitch bend up range (semis)"));
+                                                       L"Pitch bend up calibration (semis)"));
     pitchbend_up_label->setFont (Font (15.0000f, Font::plain));
     pitchbend_up_label->setJustificationType (Justification::centred);
     pitchbend_up_label->setEditable (false, false, false);
@@ -260,7 +260,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     pitchbend_up_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
     addAndMakeVisible (pitchbend_down_label = new Label (L"pitchbend down label",
-                                                         L"Pitch bend down range (semis)"));
+                                                         L"Pitch bend down calibration (semis)"));
     pitchbend_down_label->setFont (Font (15.0000f, Font::plain));
     pitchbend_down_label->setJustificationType (Justification::centred);
     pitchbend_down_label->setEditable (false, false, false);
