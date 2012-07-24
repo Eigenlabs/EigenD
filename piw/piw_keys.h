@@ -97,7 +97,32 @@ namespace piw
     PIW_DECLSPEC_FUNC(piw::data_nb_t) makekey(float column, float row, float course, float key, hardness_t hardness, unsigned long long t);
 
     /**
-     * Checks if the provided data contains valid key information.
+     * Create a new key data structure with the with only physical elements.
+     *
+     * @param column    the column index in the physical layout
+     * @param row       the row index in the physical layout
+     * @param hardness  the hardness level of the key press
+     * @param t         the timestamp of the data object
+     *
+     * @returns a new data instance with the provided key parameters
+     */
+    PIW_DECLSPEC_FUNC(piw::data_nb_t) makekey_physical(float column, float row, hardness_t hardness, unsigned long long t);
+
+    /**
+     * Create a new key data structure with the with only musical elements.
+     *
+     * @param course    the course index in the musical layout
+     * @param key       the key index in the musical layout
+     * @param hardness  the hardness level of the key press
+     * @param t         the timestamp of the data object
+     *
+     * @returns a new data instance with the provided key parameters
+     */
+    PIW_DECLSPEC_FUNC(piw::data_nb_t) makekey_musical(float course, float key, hardness_t hardness, unsigned long long t);
+
+    /**
+     * Checks if the provided data contains valid key information for all parts:
+     * musical, physical and hardness.
      *
      * This method merely checks if the structure of the data can be used to extract
      * key information from, it doesn't however check the validity nor the existence.
@@ -118,6 +143,9 @@ namespace piw
      * information that was extracted from the data instance.
      * If they're zero, they will not be filled in. This can be used to extract
      * information selectively.
+     *
+     * The decoding process will succeed if valid data was found for the non zero
+     * parameters.
      *
      * For more information about the purpose of each parameter
      * @see makekey

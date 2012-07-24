@@ -86,7 +86,25 @@ struct piw::keygroup_mapper_t::impl_t: virtual pic::tracked_t, virtual pic::lcko
             piw::data_nb_t result = piw::makekey(in_phys->second.first,in_phys->second.second,in_mus->second.first,in_mus->second.second,hardness,in.time());
 
 #if KEYGROUP_MAPPER_DEBUG>0
-            pic::logmsg() << "forward_mapping out " << result;
+            pic::logmsg() << "forward_mapping full key out " << result;
+#endif
+            return result;
+        }
+        else if(in_phys!=guard_phys.value().forward.end())
+        {
+            piw::data_nb_t result = piw::makekey_physical(in_phys->second.first,in_phys->second.second,hardness,in.time());
+
+#if KEYGROUP_MAPPER_DEBUG>0
+            pic::logmsg() << "forward_mapping physical key out " << result;
+#endif
+            return result;
+        }
+        else if(in_mus!=guard_mus.value().forward.end())
+        {
+            piw::data_nb_t result = piw::makekey_musical(in_mus->second.first,in_mus->second.second,hardness,in.time());
+
+#if KEYGROUP_MAPPER_DEBUG>0
+            pic::logmsg() << "forward_mapping musical key out " << result;
 #endif
             return result;
         }

@@ -893,8 +893,10 @@ void vp_wire_t::event_buffer_reset(unsigned s,unsigned long long t,const piw::da
 bool vp_wire_t::event_end(unsigned long long t)
 {
     float course, key;
-    piw::decode_key(active_.get(),0,0,&course,&key);
-    parent_->key_active(course,key,piw::makebool_nb(false,t));
+    if(piw::decode_key(active_.get(),0,0,&course,&key))
+    {
+        parent_->key_active(course,key,piw::makebool_nb(false,t));
+    }
     active_.clear_nb();
     id_ = piw::makenull_nb(t);
     return true;
@@ -920,8 +922,10 @@ bool vp_signal_t::fastdata_receive_data(const piw::data_nb_t &d)
     }
     else if(!wire_->active_.is_empty())
     {
-        piw::decode_key(wire_->active_.get(),0,0,&course,&key);
-        wire_->parent_->key_data(course,key,signal_,d);
+        if(piw::decode_key(wire_->active_.get(),0,0,&course,&key))
+        {
+            wire_->parent_->key_data(course,key,signal_,d);
+        }
     }
     return true;
 }

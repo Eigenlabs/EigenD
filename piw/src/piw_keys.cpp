@@ -161,7 +161,7 @@ std::ostream &operator<<(std::ostream &o, const piw::coordinate_t &c)
     return o;
 }
 
-piw::data_nb_t piw::makekey(float column, float row,float course, float key, piw::hardness_t hardness, unsigned long long t)
+piw::data_nb_t piw::makekey(float column, float row, float course, float key, piw::hardness_t hardness, unsigned long long t)
 {
     piw::data_nb_t physical_key = piw::tuplenull_nb(t);
     physical_key = piw::tupleadd_nb(physical_key, piw::makefloat_nb(column,t));
@@ -180,9 +180,45 @@ piw::data_nb_t piw::makekey(float column, float row,float course, float key, piw
     return result;
 }
 
+piw::data_nb_t piw::makekey_physical(float column, float row, piw::hardness_t hardness, unsigned long long t)
+{
+    piw::data_nb_t physical_key = piw::tuplenull_nb(t);
+    physical_key = piw::tupleadd_nb(physical_key, piw::makefloat_nb(column,t));
+    physical_key = piw::tupleadd_nb(physical_key, piw::makefloat_nb(row,t));
+
+    piw::data_nb_t musical_key = piw::makenull_nb(t);
+
+    piw::data_nb_t result = piw::tuplenull_nb(t);
+    result = piw::tupleadd_nb(result, physical_key);
+    result = piw::tupleadd_nb(result, musical_key);
+    result = piw::tupleadd_nb(result, piw::makelong_nb(hardness,t));
+    result = piw::tuplenorm_nb(result, float(hardness)/piw::KEY_HARD);
+
+    return result;
+}
+
+piw::data_nb_t piw::makekey_musical(float course, float key, piw::hardness_t hardness, unsigned long long t)
+{
+    piw::data_nb_t physical_key = piw::makenull_nb(t);
+
+    piw::data_nb_t musical_key = piw::tuplenull_nb(t);
+    musical_key = piw::tupleadd_nb(musical_key, piw::makefloat_nb(course,t));
+    musical_key = piw::tupleadd_nb(musical_key, piw::makefloat_nb(key,t));
+
+    piw::data_nb_t result = piw::tuplenull_nb(t);
+    result = piw::tupleadd_nb(result, physical_key);
+    result = piw::tupleadd_nb(result, musical_key);
+    result = piw::tupleadd_nb(result, piw::makelong_nb(hardness,t));
+    result = piw::tuplenorm_nb(result, float(hardness)/piw::KEY_HARD);
+
+    return result;
+}
+
 bool piw::is_key(const piw::data_t &d)
 {
-    return piw::decode_key(d.make_nb());
+    float column, row, course, key;
+    piw::hardness_t hardness;
+    return piw::decode_key(d.make_nb(), &column, &row, &course, &key, &hardness);
 }
 
 bool piw::decode_key(const piw::data_t &d, float *column, float *row, float *course, float *key, piw::hardness_t *hardness)
@@ -201,21 +237,48 @@ bool piw::decode_key(const piw::data_nb_t &d, float *column, float *row, float *
     piw::data_nb_t d_mkey = d.as_tuple_value(1);
     piw::data_nb_t d_hardness = d.as_tuple_value(2);
 
-    if( !d_pkey.is_tuple() || d_pkey.as_tuplelen() != 2 ||
-       !d_mkey.is_tuple() || d_mkey.as_tuplelen() != 2 ||
-       !d_hardness.is_long())
+    if((column || row) && (!d_pkey.is_tuple() || d_pkey.as_tuplelen() != 2) ||
+       (course || key) && (!d_mkey.is_tuple() || d_mkey.as_tuplelen() != 2) ||
+       (hardness && !d_hardness.is_long()))
     {
         return false;
     }
 
-    piw::data_nb_t d_column = d_pkey.as_tuple_value(0);
-    piw::data_nb_t d_row = d_pkey.as_tuple_value(1);
-    piw::data_nb_t d_course = d_mkey.as_tuple_value(0);
-    piw::data_nb_t d_key = d_mkey.as_tuple_value(1);
-    if(!d_column.is_float() || !d_row.is_float() ||
-       !d_course.is_float() || !d_key.is_float())
+    piw::data_nb_t d_column;
+    if(column)
     {
-        return false;
+        d_column = d_pkey.as_tuple_value(0);
+        if(!d_column.is_float())
+        {
+            return false;
+        }
+    }
+    piw::data_nb_t d_row;
+    if(row)
+    {
+        d_row = d_pkey.as_tuple_value(1);
+        if(!d_row.is_float())
+        {
+            return false;
+        }
+    }
+    piw::data_nb_t d_course;
+    if(course)
+    {
+        d_course = d_mkey.as_tuple_value(0);
+        if(!d_course.is_float())
+        {
+            return false;
+        }
+    }
+    piw::data_nb_t d_key;
+    if(key)
+    {
+        d_key = d_mkey.as_tuple_value(1);
+        if(!d_key.is_float())
+        {
+            return false;
+        }
     }
 
     if(column) *column = d_column.as_float();
