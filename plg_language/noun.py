@@ -815,7 +815,7 @@ class QuoteReferent(referent.Referent):
         if not self.__open:
             return async.success(False)
         self.__words.append(word)
-        self.set_referent(words=self.__words,objects=(logic.make_term('abstract',tuple(self.__words)),))
+        self.set_referent(words=self.__words,objects=(logic.make_term('abstract',tuple(self.__words[1:])),))
         self.__open = False
         return async.success(True)
 
