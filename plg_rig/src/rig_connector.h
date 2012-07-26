@@ -34,7 +34,23 @@ namespace rig
             virtual ~output_t();
     };
 
-    class connector_t: public piw::client_t
+    class clockslave_t: public piw::client_t
+    {
+        public:
+            clockslave_t(unsigned client_flags);
+
+            void set_target_clock(bct_clocksink_t *clock);
+            void clear_target_clock() { set_target_clock(0); }
+
+            virtual void client_opened();
+            virtual void client_clock();
+            virtual void close_client();
+
+        private:
+            bct_clocksink_t *clock_;
+    };
+
+    class connector_t: public clockslave_t
     {
         public:
             connector_t(bool ctl, output_t *output,unsigned index, const piw::d2d_nb_t &filter);

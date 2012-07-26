@@ -12,17 +12,17 @@ def name_subst(name,find,repl):
         oname.append(w)
     return ' '.join(oname)
 
-class DataProxy(node.Client):
+class DataProxy(rig_native.clockslave):
     def __init__(self,handler):
         self.__handler = handler
-        node.Client.__init__(self)
+        rig_native.clockslave.__init__(self,0)
 
     def client_opened(self):
-        node.Client.client_opened(self)
+        rig_native.clockslave.client_opened(self)
         self.__handler(self.get_data())
 
     def close_client(self):
-        node.Client.close_client(self)
+        rig_native.clockslave.close_client(self)
 
     def client_data(self,v):
         self.__handler(v)
@@ -223,11 +223,11 @@ class RigInputPlumber(proxy.AtomProxy):
 
     def clear_downstream_clock(self):
         if self.__connector:
-            self.__connector.clear_downstream()
+            self.__connector.clear_target_clock()
 
     def set_downstream_clock(self,clock):
         if self.__connector:
-            self.__connector.set_downstream(clock)
+            self.__connector.set_target_clock(clock)
 
     def node_ready(self):
         self.__connector = rig_native.connector(self.__ctl,self.__output.get_policy().data_node(),self.__iid,self.__filt)
@@ -389,7 +389,7 @@ class RigInput(atom.Atom):
     def add_monitor(self,inp):
         iid = id(inp)
         if iid in self.__monitors:
-            self.__monitors[iid].clear_downstream()
+            self.__monitors[iid].clear_target_clock()
             del self.__monitors[iid]
         self.__monitors[iid] = inp
         self.__setup()
@@ -397,7 +397,7 @@ class RigInput(atom.Atom):
     def del_monitor(self,inp):
         iid = id(inp)
         if iid in self.__monitors:
-            self.__monitors[iid].clear_downstream()
+            self.__monitors[iid].clear_target_clock()
             del self.__monitors[iid]
             self.__setup()
 

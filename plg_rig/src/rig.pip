@@ -2,17 +2,29 @@
 #include "rig_connector.h"
 >>>
 
-from piw[piw/piw.pip] import d2d_nb,client,data,server
+from piw[piw/piw.pip] import d2d_nb,client,data,server,clockref
 
 class output[rig::output_t]: server
 {
     output()
 }
 
-class connector[rig::connector_t]: client /gc/
+class clockslave[rig::clockslave_t]: client
+{
+    clockslave(unsigned);
+
+    void set_target_clock(clockref *);
+    void clear_target_clock();
+
+    virtual void client_opened()
+    virtual void client_clock()
+    virtual void close_client()
+}
+
+class connector[rig::connector_t]: clockslave /gc/
 {
     connector(bool,output *,unsigned,const d2d_nb &)
-    void client_opened()
-    void client_clock()
-    void close_client()
+    virtual void client_opened()
+    virtual void client_clock()
+    virtual void close_client()
 }
