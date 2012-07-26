@@ -399,6 +399,15 @@ def filter_upgradeable_version(v,t,r):
     return True
 
 
+def all_setup_files(dst_file,src_file):
+    sdir = os.path.dirname(src_file)
+    sbase = os.path.basename(src_file)
+    ddir = os.path.dirname(dst_file)
+
+    for sn in os.listdir(sdir):
+        if sn.startswith(sbase):
+            yield os.path.join(ddir,sn),os.path.join(sdir,sn)
+
 def upgradeable_old_setups():
     md = resource.user_resource_dir(resource.setup_dir)
 
@@ -432,7 +441,7 @@ def upgradeable_old_setups():
     return mapping
 
 
-def copy_old_setup(src,dst,src_ver):
+def copy_old_setup(src,dst):
     def tweaker(snap,src_snap):
         old_desc = upgrade.get_description(src_snap)
         old_version = upgrade.get_version(src_snap)
@@ -693,4 +702,5 @@ def upgrade_default_setup():
 def upgrade_old_setups():
     if 0 == find_user_setups().number_of_setups():
         for (dst,src,src_ver) in upgradeable_old_setups():
-            copy_old_setup(src,dst,src_ver)
+            for (dst_file,src_file) in all_setup_files(dst,src):
+                copy_old_setup(src_file,dst_file)
