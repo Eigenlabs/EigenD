@@ -39,6 +39,14 @@ class RigMonitor(proxy.AtomProxy):
         self.__mainanchor.set_client(self)
         self.__mainanchor.set_address_str(address)
 
+    def clear_downstream_clock(self):
+        if self.__connector:
+            self.__connector.clear_target_clock()
+
+    def set_downstream_clock(self,clock):
+        if self.__connector:
+            self.__connector.set_target_clock(clock)
+
     def disconnect(self):
         self.__connector = None
         self.set_data_clone(self.__connector)
@@ -389,7 +397,7 @@ class RigInput(atom.Atom):
     def add_monitor(self,inp):
         iid = id(inp)
         if iid in self.__monitors:
-            self.__monitors[iid].clear_target_clock()
+            self.__monitors[iid].clear_downstream_clock()
             del self.__monitors[iid]
         self.__monitors[iid] = inp
         self.__setup()
@@ -397,7 +405,7 @@ class RigInput(atom.Atom):
     def del_monitor(self,inp):
         iid = id(inp)
         if iid in self.__monitors:
-            self.__monitors[iid].clear_target_clock()
+            self.__monitors[iid].clear_downstream_clock()
             del self.__monitors[iid]
             self.__setup()
 
