@@ -117,7 +117,7 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         self.Replace(CXX='g++-4.2')
         self.Replace(CC='gcc-4.2')
 
-        self.Append(CCFLAGS=Split('-ggdb -Werror -Wall -O4 -fmessage-length=0 -falign-loops=16 -msse3'))
+        self.Append(CCFLAGS=Split('-ggdb -Werror -Wall -Wno-deprecated-declarations -Wno-format -O4 -fmessage-length=0 -falign-loops=16 -msse3'))
 
         self.Replace(PI_DLLENVNAME='DYLD_LIBRARY_PATH')
         self.Replace(IS_MACOSX=os_major)
