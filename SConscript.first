@@ -22,7 +22,7 @@ Import('master_env')
 
 import os.path
 
-release = '2.0.58'
+release = '2.0.60'
 
 status = {
     'windows': 'testing',
