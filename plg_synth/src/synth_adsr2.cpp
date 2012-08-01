@@ -826,6 +826,7 @@ namespace
         phase_t();
 
         void setup_flat(unsigned long samplerate);
+        void setup_delay(unsigned long samplerate);
         void setup_skip();
         void setup_linear(unsigned long samplerate, int sgn, float mn, float mx, float fullscale);
         void setup_damping(unsigned long samplerate, float mn, unsigned long max_ms);
@@ -1112,7 +1113,7 @@ namespace
                 ca =  __vel2amplitude(vel);
             }
 
-            phases_[P_DELAY].setup_flat(sr);
+            phases_[P_DELAY].setup_delay(sr);
             phases_[P_ATTACK].setup_linear(sr,1,-1,ca,ca);
             phases_[P_HOLD].setup_flat(sr);
             phases_[P_DECAY].setup_exp(sr,sustain_*ca);
@@ -1400,6 +1401,18 @@ void phase_t::setup_damping(unsigned long samplerate,  float mn, unsigned long m
         //pic::logmsg() << "setup unbounded decay rel_tc=" << rel_tc << " ms=" << ms << " a=" << a << " b=" << b;
     }
 
+}
+
+static bool process_delay(phase_t *p, float in, float *out, float damp)
+{
+    *out = in;
+    return false;
+}
+
+void phase_t::setup_delay(unsigned long samplerate)
+{
+    samples = (ms!=~0UL) ? (ms*samplerate)/1000UL : ~0UL;
+    process = process_delay;
 }
 
 static bool process_flat(phase_t *p, float in, float *out, float damp)
