@@ -14,6 +14,7 @@ class plugin_description[host::plugin_description_t]
     plugin_description()
     stdstr name()
     stdstr format()
+    stdstr category()
     stdstr manufacturer()
     stdstr id()
     stdstr description()

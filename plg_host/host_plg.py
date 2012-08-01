@@ -178,7 +178,7 @@ class PluginBrowser(atom.Atom):
         if len(path) == 1:
             p = self.__plugin_list.plugins_by_manufacturer.get(path[0])
             if p:
-                return render_list(p,idx,lambda i,t: logic.render_term((plugin_id_escaped(t),t.name(),t.description())))
+                return render_list(p,idx,lambda i,t: logic.render_term((plugin_id_escaped(t),t.name()+' ('+t.format()+' '+t.category()+')',t.description())))
         return logic.render_term(())
 
 

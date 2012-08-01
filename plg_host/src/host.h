@@ -47,10 +47,11 @@ namespace host
 
             std::string name() const         { return std::string(desc_.name.getCharPointer()); }
             std::string format() const       { return std::string(desc_.pluginFormatName.getCharPointer()); }
+            std::string category() const     { return std::string(desc_.category.getCharPointer()); }
             std::string manufacturer() const { return std::string(desc_.manufacturerName.getCharPointer()); }
             std::string version() const      { return std::string(desc_.version.getCharPointer()); }
             std::string id() const           { return std::string(desc_.fileOrIdentifier.getCharPointer()); }
-            std::string description() const  { return name()+" "+format()+" from "+manufacturer(); }
+            std::string description() const  { return name()+" "+format()+" "+category()+" from "+manufacturer(); }
 
             bool from_xml(const std::string &xml)
             {
