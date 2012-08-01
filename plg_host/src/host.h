@@ -51,7 +51,15 @@ namespace host
             std::string manufacturer() const { return std::string(desc_.manufacturerName.getCharPointer()); }
             std::string version() const      { return std::string(desc_.version.getCharPointer()); }
             std::string id() const           { return std::string(desc_.fileOrIdentifier.getCharPointer()); }
-            std::string description() const  { return name()+" "+format()+" "+category()+" from "+manufacturer(); }
+            std::string description() const
+            {
+                std::string cat = category();
+                if(cat.length())
+                {
+                    cat = " "+cat;
+                }
+                return name()+" "+format()+cat+" from "+manufacturer();
+            }
 
             bool from_xml(const std::string &xml)
             {
