@@ -1,4 +1,4 @@
-<documentation date="2012-05-25 12:53:41" version="2.0">
+<documentation date="2012-08-01 14:45:42" version="2.0">
   <agent name="triangle oscillator">
     <tip>The Triangle Oscillator Agent is EigenD's built-in triangle oscillator plug-in</tip>
     <help>The Triangle Oscillator Agent is EigenD's built-in triangle oscillator plug-in. </help>
@@ -1225,6 +1225,26 @@ Using a scripting language like Python, this can be done for example like this: 
       <help>The activation output is normally used to send activation data to downstream Agents. </help>
     </port>
   </agent>
+  <agent name="fingerer">
+    <tip>Fingerer is an Agent that enables the player to take a small incoming group of keys (normally from a Keygroup) and use those to play a wide chromatic range in a monophonic (one note) style</tip>
+    <help>Fingerer is an Agent that enables the player to take a small incoming group of keys (normally from a Keygroup) and use those to play a wide chromatic range in a monophonic (one note) style. This will be a familiar concept to all players of wind instruments and Fingerer comes with a number of predefined fingerings suitable for players who are familiar with traditional woodwind and brass. </help>
+    <port name="threshold">
+      <tip>The value determines the key pressure value that Fingerer takes as a starting point for deciding if a key is pressed</tip>
+      <help>The value determines the key pressure value that Fingerer takes as a starting point for deciding if a key is pressed. Turning it up above zero will simply make the keys less sensitive to light touches. The entire key is taken to go from off to fully depressed between this threshold and the key parameter maximum. </help>
+    </port>
+    <port name="fingering">
+      <tip>The value determines the current fingering that the Fingerer is using</tip>
+      <help>The value determines the current fingering that the Fingerer is using. It must be one of the fingerings defined in either the supplied Factory Fingerings or the user defined User Fingerings file (please see above for this). </help>
+    </port>
+    <port name="activation threshold">
+      <tip>The value set here determines at what value of the incoming breath signal the Fingerer starts a new note on it's output</tip>
+      <help>The value set here determines at what value of the incoming breath signal the Fingerer starts a new note on it's output. This may be raised to make the Fingerer less sensitive to low value breath inputs. </help>
+    </port>
+    <port name="maximum">
+      <tip>The value determines the key pressure value that Fingerer takes as a fully depressed key</tip>
+      <help>The value determines the key pressure value that Fingerer takes as a fully depressed key. Turning it up towards 1.0 will make it progressively harder to finger keys fully but will give greater control while transitioning between fingerings, turning it down will make it easier to achieve a clean full fingering but will make it harder to expressively move from fingering to fingering. Turing it down to a very low value will result in Fingerer behaving like conventional electronic wind instruments equipped with switches instead of Eigenkeys as fingerings will be either on or off with little in between. </help>
+    </port>
+  </agent>
   <agent name="sine oscillator">
     <tip>The Sine Oscillator Agent is EigenD's built-in sine oscillator plug-in</tip>
     <help>The Sine Oscillator Agent is EigenD's built-in sine oscillator plug-in. </help>
@@ -1795,6 +1815,46 @@ Using a scripting language like Python, this can be done for example like this: 
     <port name="bend input">
       <tip>The bend input is used for controlling the filter's cutoff frequency - an upstream EigenD controller (such as the Scaler 's yaw output) is often connected to this input</tip>
       <help>The bend input is used for controlling the filter's cutoff frequency - an upstream EigenD controller (such as the Scaler 's yaw output) is often connected to this input. Adjusting the value of the bend input will modulate the cutoff frequency within the specified 'frequency range'. </help>
+    </port>
+  </agent>
+  <agent name="strummer">
+    <tip>Strummer is an Agent that enables the player to control the envelope of playing keys through breath or other keys</tip>
+    <help>Strummer is an Agent that enables the player to control the envelope of playing keys through breath or other keys. This is similar to hitting a string to play a note that's fingered on a fret or to blowing into a wind instrument to provide the necessary airflow pressure. </help>
+    <port name="strum roll input">
+      <tip>The strum roll input receives key roll signals from upstream agents</tip>
+      <help>The strum roll input receives key roll signals from upstream agents. </help>
+    </port>
+    <port name="strum key input">
+      <tip>The strum key input receives key signals from upstream agents to strum the keys in the courses</tip>
+      <help>The strum key input receives key signals from upstream agents to strum the keys in the courses. </help>
+    </port>
+    <port name="course yaw input">
+      <tip>The course yaw input receives key yaw signals from upstream agents</tip>
+      <help>The course yaw input receives key yaw signals from upstream agents. </help>
+    </port>
+    <port name="strum pressure input">
+      <tip>The strum pressure input receives key pressure signals from upstream agents</tip>
+      <help>The strum pressure input receives key pressure signals from upstream agents. </help>
+    </port>
+    <port name="course pressure input">
+      <tip>The course pressure input receives key pressure signals from upstream agents</tip>
+      <help>The course pressure input receives key pressure signals from upstream agents. </help>
+    </port>
+    <port name="course roll input">
+      <tip>The course roll input receives key roll signals from upstream agents</tip>
+      <help>The course roll input receives key roll signals from upstream agents. </help>
+    </port>
+    <port name="course key input">
+      <tip>The course key input receives key signals from upstream agents to play keys in courses</tip>
+      <help>The course key input receives key signals from upstream agents to play keys in courses. </help>
+    </port>
+    <port name="strum yaw input">
+      <tip>The strum yaw input receives key yaw signals from upstream agents</tip>
+      <help>The strum yaw input receives key yaw signals from upstream agents. </help>
+    </port>
+    <port name="strum breath input">
+      <tip>The strum breath input receives breath signals from upstream agents to strum the keys in the courses that are configured to be modulated by breath</tip>
+      <help>The strum breath input receives breath signals from upstream agents to strum the keys in the courses that are configured to be modulated by breath. </help>
     </port>
   </agent>
   <agent name="shaper">

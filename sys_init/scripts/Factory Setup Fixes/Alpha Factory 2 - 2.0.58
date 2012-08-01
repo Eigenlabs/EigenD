@@ -1,0 +1,31 @@
+description
+    This script fixes the breath damping connections for the sampler instruments
+    in Alpha Factory Setup 2.
+    
+script
+	empty join
+	
+	polyphonic summer in sampler rig 1 create
+	
+	sampler rig 1 polyphonic summer 1 hey channel create
+	sampler rig 1 polyphonic summer 1 hey channel create
+	sampler rig 1 polyphonic summer 1 channel 1 volume input to 1 set
+	sampler rig 1 polyphonic summer 1 channel 2 volume input to 1 set
+	sampler rig 1 breath shaper 1 output to sampler rig 1 polyphonic summer 1 channel 1 audio input connect
+	sampler rig 1 recorder 1 outputs pedal 1 to sampler rig 1 polyphonic summer 1 channel 2 audio input connect
+	
+	sampler rig 1 cycler 1 damper pedal input un connect
+	sampler rig 1 polyphonic summer 1 audio output to sampler rig 1 cycler 1 damper pedal input connect
+	
+	polyphonic summer in sampler rig 4 create
+	
+	sampler rig 4 polyphonic summer 1 hey channel create
+	sampler rig 4 polyphonic summer 1 hey channel create
+	sampler rig 4 polyphonic summer 1 channel 1 volume input to 1 set
+	sampler rig 4 polyphonic summer 1 channel 2 volume input to 1 set
+	sampler rig 4 breath shaper 1 output to sampler rig 4 polyphonic summer 1 channel 1 audio input connect
+	sampler rig 4 recorder 1 outputs pedal 1 to sampler rig 4 polyphonic summer 1 channel 2 audio input connect
+	
+	sampler rig 4 cycler 1 damper pedal input un connect
+	sampler rig 4 polyphonic summer 1 audio output to sampler rig 4 cycler 1 damper pedal input connect
+	
