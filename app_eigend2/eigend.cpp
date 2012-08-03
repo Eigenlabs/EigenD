@@ -1970,15 +1970,19 @@ void EigenD::initialise (const String& commandLine)
 
 void EigenD::systemRequestedQuit()
 {
-    if(main_window_ != 0) main_window_->do_quit();
-
+    if(main_window_ != 0)
+    {
+        main_window_->do_quit();
+        delete main_window_;
+        main_window_ = 0;
+    }
+    juce::MessageManager::getInstance()->runDispatchLoopUntil(500);
+    cleanup();
     ejuce::Application::quit();
 }
 
 void EigenD::shutdown()
 {
-    if(main_window_ != 0) delete main_window_;
-    main_window_ = 0;
 
     ejuce::Application::shutdown();
 }

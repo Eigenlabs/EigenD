@@ -25,6 +25,7 @@ struct ejuce::Application::impl_t: public juce::MessageListener, virtual public 
 {
     impl_t(Application *app,const pic::f_string_t &,bool ck,bool rt);
     ~impl_t();
+    void cleanup();
     void handleMessage(const juce::Message &message);
     void handleGone();
     void handleService();
@@ -63,9 +64,12 @@ ejuce::Application::impl_t::impl_t(Application *app,const pic::f_string_t &l,boo
 
 ejuce::Application::impl_t::~impl_t()
 {
-    scaffold_->shutdown();
-
     tracked_invalidate();
+}
+
+void ejuce::Application::impl_t::cleanup()
+{
+    scaffold_->shutdown();
 }
 
 ejuce::Application::Application(): messages_(0)
@@ -98,6 +102,11 @@ void ejuce::Application::shutdown()
         delete messages_;
         messages_ = 0;
     }
+}
+
+void ejuce::Application::cleanup()
+{
+    messages_->cleanup();
 }
 
 void ejuce::Application::handleGone()

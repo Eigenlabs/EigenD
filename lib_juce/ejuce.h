@@ -35,6 +35,7 @@ namespace ejuce
             Application();
             ~Application();
             void initialise (const juce::String& commandLine,const pic::f_string_t &,bool ck, bool rt);
+            void cleanup();
             void shutdown();
             virtual void handleGone();
             virtual void handleWinch(const std::string &);

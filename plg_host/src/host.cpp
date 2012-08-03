@@ -722,6 +722,10 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
             postMessage(new juce::Message(messageDestroyGUI,0,0,window_));
             mapping_delegate_.close();
             window_ = 0;
+            if(!juce::MessageManager::getInstance()->isThisTheMessageThread())
+            {
+                juce::MessageManager::getInstance()->runDispatchLoopUntil(100);
+            }
         }
     }
         
@@ -782,11 +786,11 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     void close()
     {
+        destroy_gui();
+
         set_bypassed(true);
         observer_->description_changed("");
         host_window_.close_window();
-
-        destroy_gui();
 
         juce::AudioPluginInstance *p(plugin_.current());
         plugin_.set(0);
