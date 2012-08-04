@@ -317,7 +317,7 @@ class EigenD : public ejuce::Application, virtual public pic::tracked_t
         void systemRequestedQuit();
 
     private:
-        EigenMainWindow *main_window_;
+        EigenMainWindow * volatile main_window_;
         epython::PythonInterface *python_;
         pia::context_t context_;
         FILE *logfile_;
@@ -1972,9 +1972,10 @@ void EigenD::systemRequestedQuit()
 {
     if(main_window_ != 0)
     {
-        main_window_->do_quit();
-        delete main_window_;
+        EigenMainWindow *w = main_window_;
         main_window_ = 0;
+        w->do_quit();
+        delete w;
     }
     juce::MessageManager::getInstance()->runDispatchLoopUntil(500);
     cleanup();
@@ -2333,6 +2334,11 @@ void EigenMainWindow::ignore_klass(const juce::String &klass)
 void EigenD::handleWinch(const std::string &msg)
 {
     JUCE_AUTORELEASEPOOL
+
+    if(!main_window_)
+    {
+        return;
+    }
 
     if(msg.length()==0)
     {

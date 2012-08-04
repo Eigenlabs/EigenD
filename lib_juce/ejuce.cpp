@@ -82,6 +82,10 @@ ejuce::Application::~Application()
 
 pia::scaffold_gui_t *ejuce::Application::scaffold()
 {
+    if(!messages_)
+    {
+        return 0;
+    }
     return messages_->scaffold_;
 }
 
@@ -99,13 +103,18 @@ void ejuce::Application::shutdown()
 {
     if(messages_)
     {
-        delete messages_;
+        impl_t *m = messages_;
         messages_ = 0;
+        delete m;
     }
 }
 
 void ejuce::Application::cleanup()
 {
+    if(!messages_)
+    {
+        return;
+    }
     messages_->cleanup();
 }
 
