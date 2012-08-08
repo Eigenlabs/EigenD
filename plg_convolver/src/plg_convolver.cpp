@@ -514,6 +514,8 @@ namespace
                 wet_dry_mix_.set(d.as_renorm(0,1,0));
             }
 
+            env->cfilterenv_reset(4,id.time());
+
             return true;
         }
 
@@ -537,6 +539,11 @@ namespace
                 wet_dry_mix_.set(d.as_renorm(0,1,0));
             }
 
+            // signal gain
+            if(latest(4,d,env,t))
+            {
+                last_gain_.set_nb(d);
+            }
         }
 
         bool cfilterfunc_process(piw::cfilterenv_t *e, unsigned long long f, unsigned long long t,unsigned long sr, unsigned bs)
@@ -597,9 +604,20 @@ namespace
                     //float dry = buffer_in[c][i];
 
                     // copy input buffer to engine
-                    memcpy(inpbuff_[c]+inpoffs_, buffer_in[c], buffer_size_*sizeof(float));
+                    if(last_gain_.get().is_array())
+                    {
+                        const float *signal_gain_in = last_gain_.get().as_array();
+                        pic::vector::vectmul(signal_gain_in,1,buffer_in[c],1,inpbuff_[c]+inpoffs_,1,buffer_size_);
+                        const float gain_scale = 32.f;
+                        pic::vector::vectscalmul(inpbuff_[c]+inpoffs_,1,&gain_scale,inpbuff_[c]+inpoffs_,1,buffer_size_);
+                    }
+                    else
+                    {
+                        memcpy(inpbuff_[c]+inpoffs_, buffer_in[c], buffer_size_*sizeof(float));
+                    }
 
                     // have to clear output buffer before processing
+                    memset(buffer_out[c], 0, buffer_size_ * sizeof (float));
                     memset(outbuff_[c], 0, buffer_size_ * sizeof (float));
 
                 } // channel
@@ -771,6 +789,7 @@ namespace
 
         // input audio buffers
         piw::dataholder_nb_t last_audio_[2];
+        piw::dataholder_nb_t last_gain_;
 
         // engine buffers
         float *inpbuff_[2];
@@ -878,6 +897,7 @@ namespace plg_convolver
         unsigned char b1 = 0;
         unsigned char b2 = 0;
         unsigned char b3 = 0;
+        float reduce_24db = 0.0625;
 
         long n = data.size();
         switch(bitsPerSamp)
@@ -889,7 +909,7 @@ namespace plg_convolver
             {
                 b0 = (unsigned char)data[i];
                 f = (((float)b0)-128.0f)/128.0f;
-                ret->data[i] = f;
+                ret->data[i] = f*reduce_24db;
             }
             break;
         case 16:
@@ -899,9 +919,10 @@ namespace plg_convolver
             {
                 b0 = (unsigned char)data[i];
                 b1 = (unsigned char)data[i+1];
-                short s = (b1<<8)|(b0);
+                int s = (b1<<8)|(b0);
+                if(s>32767) s=s-65536;
                 f = ((float)s)/32768.f;
-                ret->data[i/2] = f;
+                ret->data[i/2] = f*reduce_24db;
             }
             break;
         case 24:
@@ -912,9 +933,10 @@ namespace plg_convolver
                 b0 = (unsigned char)data[i];
                 b1 = (unsigned char)data[i+1];
                 b2 = (unsigned char)data[i+2];
-                int m = (b2<<24)|(b1<<16)|(b0<<8);
-                f = ((float)m)/(8388608.f*256.f);
-                ret->data[i/3] = f;
+                long m = (b2<<16)|(b1<<8)|(b0);
+                if(m>8388607) m=m-16777216;
+                f = ((float)m)/8388608.f;
+                ret->data[i/3] = f*reduce_24db;
             }
             break;
         case 32:
@@ -928,7 +950,7 @@ namespace plg_convolver
                 b3 = (unsigned char)data[i+3];
                 unsigned l = (unsigned)((((unsigned)b3)<<24)|(((unsigned)b2)<<16)|(((unsigned)b1)<<8)|((unsigned)b0));
                 float *fp = (float *)&l;
-                ret->data[i/4] = *fp;
+                ret->data[i/4] = (*fp)*reduce_24db;
             }
             break;
         }

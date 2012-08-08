@@ -102,6 +102,21 @@ namespace pic
 #endif
         }
 
+        inline void vectscalmul(const float *a, unsigned sa, const float *b, float *c, unsigned sc, unsigned n)
+        {
+#ifdef PI_MACOSX
+            vDSP_vsmul((a),(sa),(b),(c),(sc),(n));
+#else
+            while(n>0)
+            {
+                *c = (*a)*(*b);
+                a+=sa;
+                c+=sc;
+                --n;
+            }
+#endif
+        }
+
         inline void vectmuladd(const float *a, unsigned sa, const float *b, const float *c, unsigned sc, float *d, unsigned sd, unsigned n)
         {
 #ifdef PI_MACOSX

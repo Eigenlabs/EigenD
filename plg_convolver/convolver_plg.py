@@ -270,7 +270,7 @@ class Agent(agent.Agent):
         self.convolver = convolver_native.convolver(self.output.cookie(),self.domain)
 
         # input has the correlator and a bundle style output
-        self.input = bundles.ScalarInput(self.convolver.cookie(), self.domain, signals=(1,2,3))
+        self.input = bundles.ScalarInput(self.convolver.cookie(), self.domain, signals=(1,2,3,4))
 
         # self[3] = verb container
 
@@ -283,12 +283,13 @@ class Agent(agent.Agent):
 
         # wet/dry mix
         self[7]=atom.Atom(domain=domain.BoundedFloat(0,1,hints=(T('stageinc',0.01),T('inc',0.01),T('biginc',0.1),T('control','updown'))), init=0.5, names="mix", protocols='input', policy=self.input.merge_policy(3,False))
+        self[11]=atom.Atom(domain=domain.BoundedFloat(0,32,hints=(T('stageinc',0.01),T('inc',0.01),T('biginc',0.1),T('control','updown'))), init=1, names="signal gain", protocols='input', policy=self.input.merge_policy(4,policy.IsoStreamPolicy(1,0,0)))
         # effect enable
         self[8]=atom.Atom(domain=domain.Bool(), init=True, names="enable", protocols='input', policy=atom.default_policy(self.__set_enable))
         # mono processing mode
         self[9]=atom.Atom(domain=domain.Bool(), init=False, names="mono", policy=atom.default_policy(self.__set_mono_processing))
         # enable time, time to fade in and out when enabling in ms
-        self[10] = atom.Atom(names='enable time input', domain=domain.BoundedFloat(0,100000,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=100, policy=atom.default_policy(self.__set_enable_time))
+        self[10]=atom.Atom(names='enable time input', domain=domain.BoundedFloat(0,100000,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=100, policy=atom.default_policy(self.__set_enable_time))
 
         self.__set_enable(self[8].get_value())
         self.__set_mono_processing(self[9].get_value())
