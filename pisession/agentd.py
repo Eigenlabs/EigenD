@@ -24,11 +24,6 @@ from pi.logic.terms import *
 from pisession import registry,upgrade,upgrade_agentd,session,workspace
 from pibelcanto import translate
 
-"""
-import cherrypy
-import dowser
-"""
-
 import picross
 import piw
 import sys
@@ -42,10 +37,6 @@ import urllib
 import binascii
 import traceback
 import gc
-
-"""
-from guppy import hpy; h=hpy()
-"""
 
 blacklisted_versions = ()
 first_upgradeable_version = '2.0.32'
