@@ -72,6 +72,9 @@ def natsort_key(s):
 def natcmp(a, b):
     return cmp(natsort_key(a[0]), natsort_key(b[0]))
 
+def slotcmp(a, b):
+    return cmp(natsort_key(a), natsort_key(b))
+
 class ProbeInstrument:
     def __init__(self):
         self.__mm_bases = None
@@ -262,7 +265,7 @@ class Menu:
 
     def term(self):
         names = self.setups.keys()
-        names.sort()
+        names.sort(slotcmp)
 
         for n in names:
             m = self.get_submenu(n.split())
@@ -274,7 +277,7 @@ class Menu:
             children.add_arg(-1,c.term())
 
         k = self.children2.keys()
-        k.sort()
+        k.sort(slotcmp)
 
         for c in k:
             children.add_arg(-1,self.children2[c].term())
