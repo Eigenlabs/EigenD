@@ -490,7 +490,7 @@ namespace
 
     struct host_messages_t: piw::thing_t, juce::MessageListener
     {
-        host_messages_t()
+        host_messages_t() : always_schedule_messages_(false)
         {
             piw::tsd_thing(this);
         }
@@ -519,27 +519,33 @@ namespace
 
         void destroy_gui(host_view_t *w)
         {
-            if(juce::MessageManager::getInstance()->isThisTheMessageThread())
+            if(!always_schedule_messages_ && juce::MessageManager::getInstance()->isThisTheMessageThread())
             {
                 delete_gui(w);
             }
             else
             {
                 postMessage(new juce::Message(messageDestroyGUI,0,0,w));
-                juce::MessageManager::getInstance()->runDispatchLoopUntil(100);
+                if(!juce::MessageManager::getInstance()->isThisTheMessageThread())
+                {
+                    juce::MessageManager::getInstance()->runDispatchLoopUntil(100);
+                }
             }
         }
 
         void destroy_plugin(juce::AudioPluginInstance *p)
         {
-            if(juce::MessageManager::getInstance()->isThisTheMessageThread())
+            if(!always_schedule_messages_ && juce::MessageManager::getInstance()->isThisTheMessageThread())
             {
                 delete_plugin(p);
             }
             else
             {
                 postMessage(new juce::Message(messageDestroyPlugin,0,0,p));
-                juce::MessageManager::getInstance()->runDispatchLoopUntil(100);
+                if(!juce::MessageManager::getInstance()->isThisTheMessageThread())
+                {
+                    juce::MessageManager::getInstance()->runDispatchLoopUntil(100);
+                }
             }
         }
 
@@ -565,6 +571,19 @@ namespace
         {
             delete this;
         }
+
+        void always_schedule_messages()
+        {
+            always_schedule_messages_ = true;
+        }
+
+        void dont_schedule_messages_unneededly()
+        {
+            always_schedule_messages_ = false;
+        }
+        
+        private:
+            bool always_schedule_messages_;
     };
 }
 
@@ -671,6 +690,15 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
             return false;
         }
 
+        // work around Steinberg Halion 4's broken shutdown procedure
+        if(0 == d.id().compare("AudioUnit:Synths/aumu,hal4,Stbg"))
+        {
+            messages_->always_schedule_messages();
+        }
+        else
+        {
+            messages_->dont_schedule_messages_unneededly();
+        }
         num_input_channels_ = std::min(64,plg->getNumInputChannels());
         num_output_channels_ = std::min(64,plg->getNumOutputChannels());
 
