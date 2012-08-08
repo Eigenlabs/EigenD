@@ -66,6 +66,7 @@ namespace {
 
         channeliser_voice_t *voice_;
         piw::data_t path_;
+        bool active_;
     };
 
     struct channeliser_voice_t: pic::element_t<>, piw::root_t
@@ -289,6 +290,8 @@ void channeliser_input_t::event_start(unsigned seq,const piw::data_nb_t &id, con
         {
             return;
         }
+
+        //pic::logmsg() << "claimed " << driver_->voice_ << " for channel " << driver_->channel_ << " id " << driver_->id_.get();
     }
 
     driver_->event_start(seq,b);
@@ -384,11 +387,13 @@ void channeliser_voice_t::release(channeliser_driver_t *driver)
 void channeliser_voice_t::output_incref()
 {
     refcount_output_++;
+    //pic::logmsg() << "voice " << this << " output_incref incount=" << refcount_input_ << " outcount=" << refcount_output_;
 }
 
 void channeliser_voice_t::output_decref()
 {
     refcount_output_--;
+    //pic::logmsg() << "voice " << this << " output_decref incount=" << refcount_input_ << " outcount=" << refcount_output_;
 
     if(refcount_input_==0 && refcount_output_==0)
     {
@@ -399,11 +404,13 @@ void channeliser_voice_t::output_decref()
 void channeliser_voice_t::input_incref()
 {
     refcount_input_++;
+    //pic::logmsg() << "voice " << this << " input_incref incount=" << refcount_input_ << " outcount=" << refcount_output_;
 }
 
 void channeliser_voice_t::input_decref()
 {
     refcount_input_--;
+    //pic::logmsg() << "voice " << this << " input_decref incount=" << refcount_input_ << " outcount=" << refcount_output_;
 
     if(refcount_input_==0 && refcount_output_==0)
     {
@@ -432,15 +439,22 @@ void piw::channeliser_t::visit_channels(const void *arg)
     }
 }
 
-channeliser_relay_t::channeliser_relay_t ( channeliser_voice_t *voice, const piw::event_data_source_t &es): piw::event_data_source_real_t(es.path()), voice_(voice), path_(es.path())
+channeliser_relay_t::channeliser_relay_t ( channeliser_voice_t *voice, const piw::event_data_source_t &es): piw::event_data_source_real_t(es.path()), voice_(voice), path_(es.path()), active_(false)
 {
     voice_->children_.insert(std::make_pair(path_,this));
 }
 
 bool channeliser_relay_t::event_end ( unsigned long long t )
 {
+    if(!active_)
+    {
+        return true;
+    }
+
     if(source_end(t))
     {
+        //pic::logmsg() << "voice " << voice_ << " relay event_end";
+        active_ = false;
         voice_->output_decref();
         return true;
     }
@@ -450,8 +464,13 @@ bool channeliser_relay_t::event_end ( unsigned long long t )
 
 void channeliser_relay_t::source_ended(unsigned seq)
 {
-    event_ended(seq);
-    voice_->output_decref();
+    if(active_)
+    {
+        event_ended(seq);
+        //pic::logmsg() << "voice " << voice_ << " relay source_ended";
+        active_ = false;
+        voice_->output_decref();
+    }
 }
 
 void channeliser_relay_t::event_buffer_reset ( unsigned sig, unsigned long long t, const piw::dataqueue_t &o, const piw::dataqueue_t &n )
@@ -472,7 +491,13 @@ void channeliser_relay_t::event_start ( unsigned seq, const piw::data_nb_t &id, 
         newid = piw::pathprepend_nb(newid,cp[i]);
     }
 
-    voice_->output_incref();
+    //pic::logmsg() << "voice " << voice_ << " relay event_start";
+
+    if(!active_)
+    {
+        active_ = true;
+        voice_->output_incref();
+    }
 
     source_start(seq,newid,b);
 }
