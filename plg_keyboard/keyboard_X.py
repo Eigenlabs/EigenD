@@ -558,17 +558,24 @@ class KeyboardFactory( agent.Agent ):
         for e in self.__enum:
             e.start()
 
-    def close_server(self):
+    def cleanup(self):
         print 'closing instruments'
         for e in self.__enum:
             try: e.stop()
             except: pass
+        self.__enum = []
         print 'closing base stations'
         for e in self.__base.values():
             try: e.close()
             except: pass
-        self.__base = dict();
+        self.__base = dict()
+
+    def close_server(self):
+        self.cleanup()
         agent.Agent.close_server(self)  
+
+    def on_quit(self):
+        self.cleanup()
 
     def next_keyboard(self):
         i=0

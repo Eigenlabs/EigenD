@@ -159,6 +159,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
     void msg_set_led_raw(unsigned key, unsigned colour);
     void msg_send_midi(const unsigned char *data, unsigned len);
     void msg_set_leds();
+    void clear_leds();
 
     unsigned char read_register(unsigned char addr)
     {
@@ -833,6 +834,7 @@ void alpha2::active_t::start()
 
 void alpha2::active_t::impl_t::stop()
 {
+    clear_leds();
     //pic::logmsg() << " alpha2::active_t::impl_t::stop IN";
     led_pipe_.stop();
     //midi_pipe_.stop();
@@ -928,6 +930,17 @@ void alpha2::active_t::impl_t::msg_set_leds()
     for(unsigned k=0;k<total_keys();k++)
     {
         msg_set_led_raw(k,ledstates_[k]);
+    }
+    led_pipe_.flush();
+}
+
+void alpha2::active_t::impl_t::clear_leds()
+{
+    pic::logmsg() << "clearing lights";
+
+    for(unsigned k=0;k<total_keys();k++)
+    {
+        msg_set_led_raw(k,0);
     }
     led_pipe_.flush();
 }
