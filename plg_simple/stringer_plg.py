@@ -51,10 +51,10 @@ class Agent(agent.Agent):
 
         self[4]=atom.Atom(names='inputs')
         self[4][1]=atom.Atom(domain=domain.Aniso(),policy=self.ctl_input.vector_policy(1,False),names='controller input')
-        self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.data_input.vector_policy(2,False),names='pressure input',protocols='nostage')
+        self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.data_input.merge_policy(2,False),names='pressure input',protocols='nostage')
         self[4][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.data_input.merge_policy(3,False),names='roll input',protocols='nostage')
         self[4][4]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.data_input.merge_policy(4,False),names='yaw input',protocols='nostage')
-        self[4][5]=atom.Atom(domain=domain.Aniso(),policy=self.data_input.merge_policy(5,False), names='key input')
+        self[4][5]=atom.Atom(domain=domain.Aniso(),policy=self.data_input.vector_policy(5,False), names='key input')
 
         # self[5] is the verb container
 
