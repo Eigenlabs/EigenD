@@ -122,6 +122,12 @@ namespace
 
     };
 
+    float dbconv(float db)
+    {
+        if(db == -24.f) return 0;
+        return pow(10, (db/20));
+    };
+
     bool latest(unsigned sig, piw::data_nb_t &d, piw::cfilterenv_t *e, unsigned long long t)
     {
         bool got = false;
@@ -142,7 +148,7 @@ namespace
     struct convolver_cfilterfunc_t : piw::cfilterfunc_t
     {
         convolver_cfilterfunc_t() :
-            conv_engine_(0), wet_dry_mix_(512), fade_gain_(512), mono_(false), sample_rate_(48000), buffer_size_(PLG_CLOCK_BUFFER_SIZE),
+            conv_engine_(0), dry_gain_(512), wet_gain_(512), fade_gain_(512), mono_(false), sample_rate_(48000), buffer_size_(PLG_CLOCK_BUFFER_SIZE),
             imp_resp_(), fade_count_(0), fade_samples_(0), enable_fade_samples_(0), linger_count_(0), linger_num_(1), lingering_(false),
             updating_(false), gain_(1.0f)
         {
@@ -508,13 +514,15 @@ namespace
                 env->cfilterenv_reset(i+1, id.time());
             }
 
-            // get the latest mix to make sure the first one is set
+            // get the latest gains to make sure the first one is set
             if(env->cfilterenv_latest(3,d,id.time()))
             {
-                wet_dry_mix_.set(d.as_renorm(0,1,0));
+                dry_gain_.set(dbconv(d.as_denorm()));
             }
-
-            env->cfilterenv_reset(4,id.time());
+            if(env->cfilterenv_latest(4,d,id.time()))
+            {
+                wet_gain_.set(dbconv(d.as_denorm()));
+            }
 
             return true;
         }
@@ -532,17 +540,14 @@ namespace
                 }
             }
 
-            // wet/dry mix
+            // wet/dry volumes 
             if(latest(3,d,env,t))
             {
-                //pic::logmsg() << "wet/dry " << d;
-                wet_dry_mix_.set(d.as_renorm(0,1,0));
+                dry_gain_.set(dbconv(d.as_denorm()));
             }
-
-            // signal gain
             if(latest(4,d,env,t))
             {
-                last_gain_.set_nb(d);
+                wet_gain_.set(dbconv(d.as_denorm()));
             }
         }
 
@@ -604,17 +609,7 @@ namespace
                     //float dry = buffer_in[c][i];
 
                     // copy input buffer to engine
-                    if(last_gain_.get().is_array())
-                    {
-                        const float *signal_gain_in = last_gain_.get().as_array();
-                        pic::vector::vectmul(signal_gain_in,1,buffer_in[c],1,inpbuff_[c]+inpoffs_,1,buffer_size_);
-                        const float gain_scale = 32.f;
-                        pic::vector::vectscalmul(inpbuff_[c]+inpoffs_,1,&gain_scale,inpbuff_[c]+inpoffs_,1,buffer_size_);
-                    }
-                    else
-                    {
-                        memcpy(inpbuff_[c]+inpoffs_, buffer_in[c], buffer_size_*sizeof(float));
-                    }
+                    memcpy(inpbuff_[c]+inpoffs_, buffer_in[c], buffer_size_*sizeof(float));
 
                     // have to clear output buffer before processing
                     memset(buffer_out[c], 0, buffer_size_ * sizeof (float));
@@ -639,8 +634,7 @@ namespace
 
                     for(unsigned i=0; i<buffer_size_; i++)
                     {
-                        // (1-wet_dry_mix_)*dry + wet_dry_mix_*wet;
-                        buffer_out[c][i] = buffer_in[c][i] + wet_dry_mix_.get() * (fade_gain_.get() * buffer_out[c][i] - buffer_in[c][i]);
+                        buffer_out[c][i] = dry_gain_.get() * buffer_in[c][i] + wet_gain_.get() * fade_gain_.get() * buffer_out[c][i];
                     }
 
                 } // channel
@@ -726,7 +720,7 @@ namespace
                     // copy input to output applying mix level to the input
                     for(unsigned i=0; i<buffer_size_; i++)
                     {
-                        buffer_out[c][i] = (1 - wet_dry_mix_.get() ) * buffer_in[c][i];
+                        buffer_out[c][i] = dry_gain_.get() * buffer_in[c][i];
                     }
                 }
             }
@@ -789,7 +783,6 @@ namespace
 
         // input audio buffers
         piw::dataholder_nb_t last_audio_[2];
-        piw::dataholder_nb_t last_gain_;
 
         // engine buffers
         float *inpbuff_[2];
@@ -802,7 +795,8 @@ namespace
         float silence_[PLG_CLOCK_BUFFER_SIZE];
 
         // global parameters
-        interp_param_t wet_dry_mix_;
+        interp_param_t dry_gain_;
+        interp_param_t wet_gain_;
         interp_param_t fade_gain_;
 
         // global variables
