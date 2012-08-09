@@ -624,14 +624,10 @@ namespace
                 // ------- write to output buffers -------
                 for(unsigned c=0; c<channels; c++)
                 {
-                    // copy output buffer from engine
-                    memcpy(buffer_out[c], outbuff_[c], buffer_size_*sizeof(float));
-
                     for(unsigned i=0; i<buffer_size_; i++)
                     {
-                        buffer_out[c][i] = dry_gain_.get() * buffer_in[c][i] + wet_gain_.get() * fade_gain_.get() * buffer_out[c][i];
+                        buffer_out[c][i] = dry_gain_.get() * buffer_in[c][i] + wet_gain_.get() * fade_gain_.get() * outbuff_[c][i];
                     }
-
                 } // channel
 
                 // copy left to right for mono processing
