@@ -290,8 +290,8 @@ class Agent(agent.Agent):
         self[6]=atom.Atom(domain=domain.BoundedFloat(-1,1), names="right audio input", policy=self.input.nodefault_policy(2,True))
 
         # wet/dry mix
-        self[7]=atom.Atom(domain=domain.BoundedFloat(-24,24,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=0, names="dry gain", protocols='input', policy=self.input.merge_policy(3,False))
-        self[11]=atom.Atom(domain=domain.BoundedFloat(-24,24,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=0, names="wet gain", protocols='input', policy=self.input.merge_policy(4,False))
+        self[7]=atom.Atom(domain=domain.BoundedFloat(-24,24,hints=(T('stageinc',0.1),T('inc',0.1),T('biginc',1),T('control','updown'))), init=0, names="dry gain", protocols='input', policy=self.input.merge_policy(3,False))
+        self[11]=atom.Atom(domain=domain.BoundedFloat(-24,24,hints=(T('stageinc',0.1),T('inc',0.1),T('biginc',1),T('control','updown'))), init=0, names="wet gain", protocols='input', policy=self.input.merge_policy(4,False))
         # effect enable
         self[8]=atom.Atom(domain=domain.Bool(), init=True, names="enable", protocols='input', policy=atom.default_policy(self.__set_enable))
         # mono processing mode
