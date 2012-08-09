@@ -171,33 +171,36 @@ void pia_pnode_t::clearoutstanding(unsigned f)
 
 void pia_pnode_t::transmit_ireq(int original)
 {
-    pia_data_t p = path();
-    unsigned l = pie_stanzalen_req(p.aspathlen(), 0);
-    unsigned char *b = root()->buffer_begin_transmit_slow(l);
-    if(b)
+    if(root()->buffer_enabled())
     {
-        pie_setstanza(b,l,BCTMTYPE_IDNT_REQ,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
+        pia_data_t p = path();
+        unsigned l = pie_stanzalen_req(p.aspathlen(), 0);
+        unsigned char *b = root()->buffer_begin_transmit_slow(l);
+        if(b)
+        {
+            pie_setstanza(b,l,BCTMTYPE_IDNT_REQ,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
+        }
+        root()->buffer_end_transmit_slow();
     }
-    root()->buffer_end_transmit_slow();
 }
 
 void pia_pnode_t::transmit_freq(int original)
 {
-    pia_data_t p = path();
-    unsigned l = pie_stanzalen_req(p.aspathlen(), 0);
-    unsigned char *b = root()->buffer_begin_transmit_slow(l);
-    if(b)
+    if(root()->buffer_enabled())
     {
-        pie_setstanza(b,l,BCTMTYPE_FAST_REQ,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
+        pia_data_t p = path();
+        unsigned l = pie_stanzalen_req(p.aspathlen(), 0);
+        unsigned char *b = root()->buffer_begin_transmit_slow(l);
+        if(b)
+        {
+            pie_setstanza(b,l,BCTMTYPE_FAST_REQ,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
+        }
+        root()->buffer_end_transmit_slow();
     }
-    root()->buffer_end_transmit_slow();
 }
 
 void pia_pnode_t::transmit_treq(int original)
 {
-    pia_data_t p = path();
-    unsigned l = pie_stanzalen_req(p.aspathlen(), 0);
-
     if(original)
     {
         if(!setoutstanding(PIA_OUTSTANDING_TREE))
@@ -206,19 +209,22 @@ void pia_pnode_t::transmit_treq(int original)
         }
     }
 
-    unsigned char *b = root()->buffer_begin_transmit_slow(l);
-    if(b)
+    if(root()->buffer_enabled())
     {
-        pie_setstanza(b,l,BCTMTYPE_TREE_REQ,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
+        pia_data_t p = path();
+        unsigned l = pie_stanzalen_req(p.aspathlen(), 0);
+        unsigned char *b = root()->buffer_begin_transmit_slow(l);
+
+        if(b)
+        {
+            pie_setstanza(b,l,BCTMTYPE_TREE_REQ,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
+        }
+        root()->buffer_end_transmit_slow();
     }
-    root()->buffer_end_transmit_slow();
 }
 
 void pia_pnode_t::transmit_dreq(int original)
 {
-    pia_data_t p = path();
-    unsigned l = pie_stanzalen_req(p.aspathlen(), 0);
-
     if(original)
     {
         if(!setoutstanding(PIA_OUTSTANDING_DATA))
@@ -227,12 +233,14 @@ void pia_pnode_t::transmit_dreq(int original)
         }
     }
 
-    unsigned char *b = root()->buffer_begin_transmit_slow(l);
-    if(b)
+    if(root()->buffer_enabled())
     {
+        pia_data_t p = path();
+        unsigned l = pie_stanzalen_req(p.aspathlen(), 0);
+        unsigned char *b = root()->buffer_begin_transmit_slow(l);
         pie_setstanza(b,l,BCTMTYPE_DATA_REQ,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
+        root()->buffer_end_transmit_slow();
     }
-    root()->buffer_end_transmit_slow();
 }
 
 void pia_pnode_t::retransmit()

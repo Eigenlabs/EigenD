@@ -1076,6 +1076,11 @@ void pia_server_t::close0(bool calladj)
 
     dropclients();
 
+    if(calladj)
+    {
+        server_closing();
+    }
+
     children_t::const_iterator iter;
 
     while((iter=children_.current().begin()) != children_.current().end())

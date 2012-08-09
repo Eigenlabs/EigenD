@@ -62,6 +62,7 @@ class pia_server_t
         virtual ~pia_server_t();
 
         virtual void server_closed() {}
+        virtual void server_closing() {}
         virtual void server_empty() {}
         virtual void server_childgone() {}
         virtual void server_changed(const pia_data_t &) {}

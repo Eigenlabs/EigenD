@@ -107,7 +107,8 @@ class Controller(state.Manager):
 
         if self.__saving:
             self.__saving = False
-            self.__agent.set_checkpoint()
+            version = self.__agent.set_checkpoint()
+            print 'saved final state of',self.address,'as',version
             checkpoint = self.__agent.checkpoint()
             checkpoint.set_type(self.__volatile)
             self.__workspace.set_agent(checkpoint)

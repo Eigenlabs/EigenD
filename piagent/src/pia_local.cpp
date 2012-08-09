@@ -132,6 +132,7 @@ struct pia_lroot_t: pia_buffer_t, pia_lnode_t, pic::element_t<>
     ~pia_lroot_t();
 
     void server_closed(void);
+    void server_closing(void);
 
     void buffer_receive_fast(const unsigned char *msg, unsigned len);
     void buffer_fixup_fast(unsigned char *msg, unsigned len);
@@ -169,14 +170,16 @@ void pia_lnode_t::job_transient_id(void *n_, const pia_data_t & d)
         return;
     }
 
-    pia_data_t path = n->path();
-    l = pie_stanzalen_fevt(path.aspathlen(), d.wirelen(), 0);
-
-    b=n->root()->buffer_begin_transmit_fast(l,false);
-    o=pie_setstanza(b,l,BCTMTYPE_IDNT_EVT,(const unsigned char *)path.aspath(),path.aspathlen(), 0);
-    pie_setdata(b+o,l-o,0,d.wirelen(),d.wiredata());
-    n->root()->buffer_flush_fast();
-    n->root()->buffer_end_transmit_fast();
+    if(n->root()->buffer_enabled())
+    {
+        pia_data_t path = n->path();
+        l = pie_stanzalen_fevt(path.aspathlen(), d.wirelen(), 0);
+        b=n->root()->buffer_begin_transmit_fast(l,false);
+        o=pie_setstanza(b,l,BCTMTYPE_IDNT_EVT,(const unsigned char *)path.aspath(),path.aspathlen(), 0);
+        pie_setdata(b+o,l-o,0,d.wirelen(),d.wiredata());
+        n->root()->buffer_flush_fast();
+        n->root()->buffer_end_transmit_fast();
+    }
 
     return;
 }
@@ -192,14 +195,16 @@ void pia_lnode_t::job_transient_data(void *n_, const pia_data_t & d)
         return;
     }
 
-    pia_data_t path = n->path();
-    l = pie_stanzalen_fevt(path.aspathlen(), d.wirelen(), 0);
-
-    b=n->root()->buffer_begin_transmit_fast(l,false);
-    o=pie_setstanza(b,l,BCTMTYPE_FAST_EVT,(const unsigned char *)path.aspath(),path.aspathlen(), 0);
-    pie_setdata(b+o,l-o,0,d.wirelen(),d.wiredata());
-    n->root()->buffer_flush_fast();
-    n->root()->buffer_end_transmit_fast();
+    if(n->root()->buffer_enabled())
+    {
+        pia_data_t path = n->path();
+        l = pie_stanzalen_fevt(path.aspathlen(), d.wirelen(), 0);
+        b=n->root()->buffer_begin_transmit_fast(l,false);
+        o=pie_setstanza(b,l,BCTMTYPE_FAST_EVT,(const unsigned char *)path.aspath(),path.aspathlen(), 0);
+        pie_setdata(b+o,l-o,0,d.wirelen(),d.wiredata());
+        n->root()->buffer_flush_fast();
+        n->root()->buffer_end_transmit_fast();
+    }
 
     return;
 }
@@ -288,31 +293,37 @@ int pia_lnode_t::format_visitor(void *f_, unsigned char n, pia_server_t *s)
 
 void pia_lnode_t::transmit_tree()
 {
-    unsigned char *b;
-    unsigned l,o,v;
-    struct _formatter f;
-
     if(root()->slowtick_ >= PIA_SLOW_TIMER_SILENCE)
     {
         return;
     }
 
-    pia_data_t p = path();
-    v = visible_children();
-    l = pie_stanzalen_tevt(p.aspathlen(), v, 0);
 
-    b=root()->buffer_begin_transmit_slow(l);
-    o=pie_setstanza(b,l,BCTMTYPE_TREE_EVT,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
-    o+=pie_setevthdr(b+o,l-o,dseq(),nseq(),tseq());
-    root()->buffer_end_transmit_slow();
+    if(root()->buffer_enabled())
+    {
+        unsigned char *b;
+        unsigned l,o,v;
+        struct _formatter f;
 
-    f.msg=b;
-    f.used=o;
-    f.len=l;
-    f.count=0;
+        pia_data_t p = path();
+        v = visible_children();
+        l = pie_stanzalen_tevt(p.aspathlen(), v, 0);
 
-    visit(&f,format_visitor);
-    f.used+=pie_setlastpath(f.msg+f.used,f.len-f.used);
+        b=root()->buffer_begin_transmit_slow(l);
+        o=pie_setstanza(b,l,BCTMTYPE_TREE_EVT,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
+        o+=pie_setevthdr(b+o,l-o,dseq(),nseq(),tseq());
+
+        f.msg=b;
+        f.used=o;
+        f.len=l;
+        f.count=0;
+
+        visit(&f,format_visitor);
+        f.used+=pie_setlastpath(f.msg+f.used,f.len-f.used);
+
+        root()->buffer_end_transmit_slow();
+    }
+
 }
 
 void pia_lnode_t::transmit_fast_id()
@@ -351,15 +362,17 @@ void pia_lnode_t::transmit_data(const pia_data_t &d)
         return;
     }
 
-    pia_data_t p = path();
-    l = pie_stanzalen_devt(p.aspathlen(), d.wirelen(), 0);
+    if(root()->buffer_enabled())
+    {
+        pia_data_t p = path();
+        l = pie_stanzalen_devt(p.aspathlen(), d.wirelen(), 0);
+        b=root()->buffer_begin_transmit_slow(l);
+        o=pie_setstanza(b,l,BCTMTYPE_DATA_EVT,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
+        o+=pie_setevthdr(b+o,l-o,dseq(),nseq(),tseq());
 
-    b=root()->buffer_begin_transmit_slow(l);
-    o=pie_setstanza(b,l,BCTMTYPE_DATA_EVT,(const unsigned char *)p.aspath(),p.aspathlen(), 0);
-    o+=pie_setevthdr(b+o,l-o,dseq(),nseq(),tseq());
-
-    pie_setdata(b+o,l-o,flags(),d.wirelen(),d.wiredata());
-    root()->buffer_end_transmit_slow();
+        pie_setdata(b+o,l-o,flags(),d.wirelen(),d.wiredata());
+        root()->buffer_end_transmit_slow();
+    }
 }
 
 void pia_lroot_t::job_sync(void *r_, const pia_data_t & d)
@@ -951,14 +964,21 @@ void pia_lnode_t::server_closed()
     ongoing();
 }
 
+void pia_lroot_t::server_closing()
+{
+    if(buffer_enabled())
+    {
+        buffer_flush_slow(true);
+        buffer_flush_slow(true);
+        buffer_flush_slow(true);
+        buffer_flush_slow(true);
+        buffer_flush_slow(true);
+        buffer_disable();
+    }
+}
+
 void pia_lroot_t::server_closed()
 {
-    buffer_flush_slow(true);
-    buffer_flush_slow(true);
-    buffer_flush_slow(true);
-    buffer_flush_slow(true);
-    buffer_flush_slow(true);
-    buffer_disable();
     _job_timer.cancel();
     pia_lnode_t::server_closed();
     glue()->killadvertise(this);

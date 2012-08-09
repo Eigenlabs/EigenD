@@ -31,7 +31,7 @@
 
 #define PTRADD(p,o) (((unsigned char *)(p))+(o))
 
-pia_buffer_t::pia_buffer_t(pia::manager_t::impl_t *glue, const pia_data_t &addr, unsigned hlen): header_(hlen), slowloop_(glue->mainq()), slowbuffer_(0), slowused_(hlen), slowactive_(0), slowsocket_(glue->allocator()), fastloop_(glue->mainq()), fastbuffer_(0), fastused_(hlen), fastactive_(0), fastsocket_(glue->allocator()), glue_(glue)
+pia_buffer_t::pia_buffer_t(pia::manager_t::impl_t *glue, const pia_data_t &addr, unsigned hlen): header_(hlen), slowloop_(glue->mainq()), slowbuffer_(0), slowused_(hlen), slowactive_(0), slowsocket_(glue->allocator()), fastloop_(glue->mainq()), fastbuffer_(0), fastused_(hlen), fastactive_(0), fastsocket_(glue->allocator()), glue_(glue), enabled_(false)
 {
     PIC_ASSERT(header_<BCTLINK_MAXPAYLOAD);
 
@@ -54,16 +54,24 @@ pia_buffer_t::~pia_buffer_t()
 
 void pia_buffer_t::buffer_enable()
 {
-    slowsocket_.callback(slowloop_,buffer_receive_slow_thunk,this);
-    fastsocket_.callback(fastloop_,buffer_receive_fast_thunk,this);
+    if(!enabled_)
+    {
+        slowsocket_.callback(slowloop_,buffer_receive_slow_thunk,this);
+        fastsocket_.callback(fastloop_,buffer_receive_fast_thunk,this);
+        enabled_ = true;
+    }
 }
 
 void pia_buffer_t::buffer_disable()
 {
-    slowsocket_.cancel();
-    fastsocket_.cancel();
-    slowjob_transmit_.cancel();
-    fastjob_transmit_.cancel();
+    if(enabled_)
+    {
+        enabled_ = false;
+        slowsocket_.cancel();
+        fastsocket_.cancel();
+        slowjob_transmit_.cancel();
+        fastjob_transmit_.cancel();
+    }
 }
 
 inline void pia_buffer_t::slow_buffer_prepare()
