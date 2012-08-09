@@ -32,6 +32,7 @@ import glob
 import sys
 import piw
 import picross
+import math
 from pi import  action,agent,atom,bundles,domain,files,paths,policy,resource,riff,upgrade,utils,node,logic,index,guid,rpc,async,state,container
 from pi.logic.shortcuts import T
 from . import convolver_version as version, convolver_native
@@ -333,7 +334,19 @@ class Agent(agent.Agent):
         self.convolver.set_enable_time(t)
         return True
 
-agent.main(Agent)
+class Upgrader(upgrade.Upgrader):
+    def upgrade_1_0_0_to_1_0_1(self,tools,address):
+        print 'upgrading convolver',address
+        root = tools.get_root(address)
+        dry_vol = root.get_node(7,254).get_data().as_float()
+        wet_vol = 1-dry_vol
+        dry_db = 20*math.log10(dry_vol)
+        wet_db = 20*math.log10(wet_vol)+24 # we're now automatically reducing by 24 db in the impulse importer
+        print 'dry vol',dry_vol,'dry db',dry_db,'wet vol',wet_vol,'wet db',wet_db
+        root.get_node(7,254).set_data(piw.makefloat_bounded(24,-24,0,dry_db,0))
+        root.ensure_node(11,254).set_data(piw.makefloat_bounded(24,-24,0,wet_db,0))
+
+agent.main(Agent,Upgrader)
 
 # ------------------------------------------------------------------------------------------------------------------
 

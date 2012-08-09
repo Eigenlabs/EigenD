@@ -891,7 +891,7 @@ namespace plg_convolver
         unsigned char b1 = 0;
         unsigned char b2 = 0;
         unsigned char b3 = 0;
-        float reduce_24db = 0.0625;
+        float reduce_24db = 0.063095734448019f;
 
         long n = data.size();
         switch(bitsPerSamp)
