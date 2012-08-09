@@ -36,8 +36,9 @@ class pia_buffer_t: pic::nocopy_t
 
         void buffer_enable();
         void buffer_disable();
+        bool buffer_enabled() { return enabled_; }
 
-        unsigned char *buffer_begin_transmit_fast(unsigned space,bool audoflush);
+        unsigned char *buffer_begin_transmit_fast(unsigned space,bool autoflush);
         void buffer_end_transmit_fast();
         virtual void buffer_receive_fast(const unsigned char *data, unsigned len) = 0;
         virtual void buffer_fixup_fast(unsigned char *data, unsigned len) = 0;
@@ -79,6 +80,7 @@ class pia_buffer_t: pic::nocopy_t
         pia_job_t fastjob_transmit_;
 
         pia::manager_t::impl_t *glue_;
+        bool enabled_;
 };
 
 #endif
