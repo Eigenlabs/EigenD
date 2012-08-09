@@ -122,12 +122,6 @@ namespace
 
     };
 
-    float dbconv(float db)
-    {
-        if(db == -24.f) return 0;
-        return pow(10, (db/20));
-    };
-
     bool latest(unsigned sig, piw::data_nb_t &d, piw::cfilterenv_t *e, unsigned long long t)
     {
         bool got = false;
@@ -147,7 +141,8 @@ namespace
 
     struct convolver_cfilterfunc_t : piw::cfilterfunc_t
     {
-        convolver_cfilterfunc_t() :
+        convolver_cfilterfunc_t(const pic::f2f_t &vol) :
+            volfunc_(vol),
             conv_engine_(0), dry_gain_(512), wet_gain_(512), fade_gain_(512), mono_(false), sample_rate_(48000), buffer_size_(PLG_CLOCK_BUFFER_SIZE),
             imp_resp_(), fade_count_(0), fade_samples_(0), enable_fade_samples_(0), linger_count_(0), linger_num_(1), lingering_(false),
             updating_(false), gain_(1.0f)
@@ -517,11 +512,11 @@ namespace
             // get the latest gains to make sure the first one is set
             if(env->cfilterenv_latest(3,d,id.time()))
             {
-                dry_gain_.set(dbconv(d.as_denorm()));
+                dry_gain_.set(volfunc_(d.as_renorm(-24,24,0)));
             }
             if(env->cfilterenv_latest(4,d,id.time()))
             {
-                wet_gain_.set(dbconv(d.as_denorm()));
+                wet_gain_.set(volfunc_(d.as_renorm(-24,24,0)));
             }
 
             return true;
@@ -543,11 +538,11 @@ namespace
             // wet/dry volumes 
             if(latest(3,d,env,t))
             {
-                dry_gain_.set(dbconv(d.as_denorm()));
+                dry_gain_.set(volfunc_(d.as_renorm(-24,24,0)));
             }
             if(latest(4,d,env,t))
             {
-                wet_gain_.set(dbconv(d.as_denorm()));
+                wet_gain_.set(volfunc_(d.as_renorm(-24,24,0)));
             }
         }
 
@@ -777,6 +772,8 @@ namespace
 //
 //        }
 
+        // volume db table
+        pic::f2f_t volfunc_;
 
         // the convolution engine
         Convlevel *conv_engine_;
@@ -840,7 +837,7 @@ namespace
 
     struct convolver_cfilter_t: piw::cfilterctl_t, piw::cfilter_t, pic::tracked_t
     {
-        convolver_cfilter_t(const piw::cookie_t &o, piw::clockdomain_ctl_t *d) : cfilter_t(this,o,d), convolver_func_(), clockdomain_(d)
+        convolver_cfilter_t(const pic::f2f_t &vol, const piw::cookie_t &o, piw::clockdomain_ctl_t *d) : cfilter_t(this,o,d), convolver_func_(vol), clockdomain_(d)
         {
             d->add_listener(pic::notify_t::method(this,&convolver_cfilter_t::clock_changed));
 
@@ -965,7 +962,7 @@ namespace plg_convolver
     struct convolver_t::impl_t
     {
         // also construct the convolver and tap classes
-        impl_t(const piw::cookie_t &o, piw::clockdomain_ctl_t *d) : convolver_(o,d) {}
+        impl_t(const pic::f2f_t &vol, const piw::cookie_t &o, piw::clockdomain_ctl_t *d) : convolver_(vol,o,d) {}
 
         convolver_cfilter_t convolver_;
     };
@@ -979,7 +976,7 @@ namespace plg_convolver
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     // implement outer class that holds the implementation class
-    convolver_t::convolver_t(const piw::cookie_t &o, piw::clockdomain_ctl_t *d) : impl_(new impl_t(o,d)) {}
+    convolver_t::convolver_t(const pic::f2f_t &vol, const piw::cookie_t &o, piw::clockdomain_ctl_t *d) : impl_(new impl_t(vol,o,d)) {}
     convolver_t::~convolver_t() { delete impl_; }
     void convolver_t::set_impulse_response(samplearray2ref_t &imp_resp) { impl_->convolver_.convolver_func_.set_impulse_response(imp_resp); }
     void convolver_t::set_mono_processing(bool mono) { impl_->convolver_.convolver_func_.set_mono_processing(mono); }

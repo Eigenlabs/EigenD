@@ -4,10 +4,11 @@
 
 
 from piw[piw/piw.pip] import clockdomain_ctl, cookie
+from picross_native[picross/picross.pip] import f2f
 
 class convolver[plg_convolver::convolver_t]
 {
-    convolver(const cookie &,clockdomain_ctl *)
+    convolver(const f2f &, const cookie &, clockdomain_ctl *)
     cookie cookie()
     void set_impulse_response(samplearray2 &)
     void set_mono_processing(bool)

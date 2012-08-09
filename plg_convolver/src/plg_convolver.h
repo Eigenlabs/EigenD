@@ -57,7 +57,7 @@ namespace plg_convolver
     class CONVOLVER_DECLSPEC_CLASS convolver_t : public pic::nocopy_t
     {
         public:
-            convolver_t(const piw::cookie_t &o, piw::clockdomain_ctl_t *d);
+            convolver_t(const pic::f2f_t &vol, const piw::cookie_t &o, piw::clockdomain_ctl_t *d);
             ~convolver_t();
 
             piw::cookie_t cookie();

@@ -37,6 +37,11 @@ from pi import  action,agent,atom,bundles,domain,files,paths,policy,resource,rif
 from pi.logic.shortcuts import T
 from . import convolver_version as version, convolver_native
 
+def volume_function(db):
+    if db==-24: return 0.0
+    sc = pow(10.0,db/20.0)
+    return sc
+
 # ------------------------------------------------------------------------------------------------------------------
 # WavSample class: reads a wav (riff) file (for impulse response)
 #
@@ -260,7 +265,9 @@ class Agent(agent.Agent):
         self.domain = piw.clockdomain_ctl()
 
         # verb container, used by all taps
-        agent.Agent.__init__(self,signature=version,names='convolver',container=3, ordinal=ordinal)
+        agent.Agent.__init__(self,signature=version,names='convolver',container=3,ordinal=ordinal)
+
+        self.vol = piw.make_f2f_table(-24,24,1000,picross.make_f2f_functor(volume_function))
 
         # outputs 
         self[1]=bundles.Output(1,True,names="left audio output")
@@ -268,7 +275,7 @@ class Agent(agent.Agent):
         self.output = bundles.Splitter(self.domain, self[1], self[2])
 
         # the convolver class
-        self.convolver = convolver_native.convolver(self.output.cookie(),self.domain)
+        self.convolver = convolver_native.convolver(self.vol,self.output.cookie(),self.domain)
 
         # input has the correlator and a bundle style output
         self.input = bundles.ScalarInput(self.convolver.cookie(), self.domain, signals=(1,2,3,4))
@@ -283,8 +290,8 @@ class Agent(agent.Agent):
         self[6]=atom.Atom(domain=domain.BoundedFloat(-1,1), names="right audio input", policy=self.input.nodefault_policy(2,True))
 
         # wet/dry mix
-        self[7]=atom.Atom(domain=domain.BoundedFloat(-24,24,hints=(T('stageinc',0.5),T('inc',0.5),T('biginc',3),T('control','updown'))), init=0, names="dry gain", protocols='input', policy=self.input.merge_policy(3,False))
-        self[11]=atom.Atom(domain=domain.BoundedFloat(-24,24,hints=(T('stageinc',0.5),T('inc',0.5),T('biginc',3),T('control','updown'))), init=0, names="wet gain", protocols='input', policy=self.input.merge_policy(4,False))
+        self[7]=atom.Atom(domain=domain.BoundedFloat(-24,24,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=0, names="dry gain", protocols='input', policy=self.input.merge_policy(3,False))
+        self[11]=atom.Atom(domain=domain.BoundedFloat(-24,24,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=0, names="wet gain", protocols='input', policy=self.input.merge_policy(4,False))
         # effect enable
         self[8]=atom.Atom(domain=domain.Bool(), init=True, names="enable", protocols='input', policy=atom.default_policy(self.__set_enable))
         # mono processing mode
