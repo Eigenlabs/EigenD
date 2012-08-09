@@ -485,6 +485,7 @@ namespace
             krange_=1;
             grange_=12;
 
+            valid_key_ = false;
             keynum_=-1.0;
             keycourse_=-1.0;
 
@@ -541,6 +542,7 @@ namespace
             float course,key;
             if(piw::decode_key(v,0,0,&course,&key))
             {
+                valid_key_ = true;
                 keycourse_ = course-1.0;
                 keynum_ = key-1.0;
                 time_ = std::max(time_,v.time());
@@ -558,18 +560,14 @@ namespace
             pic::logmsg() << "------- scaler start " << time_;
 #endif // SCALER_DEBUG>0
 
-            keynum_=1;
-            keycourse_=1;
+            valid_key_ = false;
+            keynum_ = -1.0;
+            keycourse_ = -1.0;
 
             piw::data_nb_t d;
             if(e->ufilterenv_latest(SCALER_KEY,d,time_))
             {
-                float course,key;
-                if(piw::decode_key(d,0,0,&course,&key))
-                {
-                    keycourse_=course-1.0;
-                    keynum_=key-1.0;
-                }
+                setkey(d);
             }
 
             kbend_=0;
@@ -590,7 +588,7 @@ namespace
             if(e->ufilterenv_latest(SCALER_MODIFIER,d,time_)) setmodifier(d);
 
 #if SCALER_DEBUG>0
-            pic::logmsg() << "scaler start key: " << keynum_ << ':' << keycourse_;
+            pic::logmsg() << "scaler start valid: " << valid_key_ << " key: " << keynum_ << ':' << keycourse_;
 #endif // SCALER_DEBUG>0
 
             recalculate_note();
@@ -684,7 +682,7 @@ namespace
             switch(sig)
             {
                 case SCALER_KEY: nc=true; setkey(d); break;
-                case SCALER_OVERRIDE: nc=true;  setoverride(d); break;
+                case SCALER_OVERRIDE: nc=true; setoverride(d); break;
                 case SCALER_GBEND: gc=true; setgbend(d); break;
                 case SCALER_GRANGE: gc=true; setgrange(d); break;
                 case SCALER_KBEND: kc=true; setkbend(d); break;
@@ -727,6 +725,8 @@ namespace
 
         void recalculate_note()
         {
+            if(!valid_key_) return;
+
             float t=tonic_,o=octave_,m=mode_;
 
             piw::scaler_controller_t::sref_t s=scale_;
@@ -775,7 +775,7 @@ namespace
                 offset = key_offset - (ntave*scale_size);
             }
 
-            //pic::logmsg() << "k=" << key_offset << " c=" << keycourse_ << " no=" << note_offset << " ss=" << scale_size << " sr=" << ntave_size << " tave=" << ntave << " offset=" << offset;
+            // pic::logmsg() << "t=" << t << " o=" << o << " k=" << key_offset << " c=" << keycourse_ << " no=" << note_offset << " ss=" << scale_size << " sr=" << ntave_size << " tave=" << ntave << " offset=" << offset << " roctave_=" << roctave_ << " scale interpolate=" << s->interpolate(offset);
 
             note_ = note_offset+t+12.0*(roctave_+o+1.0)+ntave_size*ntave+s->interpolate(offset);
 
@@ -841,6 +841,7 @@ namespace
 
         float krange_,grange_;
 
+        bool valid_key_;
         float keynum_;
         float keycourse_;
 

@@ -735,7 +735,7 @@ namespace
         // frequency
         if(env->cfilterenv_latest(IN_FREQ,d,t))
         {
-            inst_.setFrequency(d.as_denorm());
+            inst_.setFrequency(d.as_renorm_float(BCTUNIT_HZ,0,96000,0));
         }
         else
         {
@@ -890,7 +890,7 @@ namespace
 
                     case IN_FREQ:
                         // frequency
-                        inst_.setFrequency(d.as_denorm());
+                        inst_.setFrequency(d.as_renorm_float(BCTUNIT_HZ,0,96000,0));
                         break;
 
                     case IN_PRESSURE:

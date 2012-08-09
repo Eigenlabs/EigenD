@@ -61,7 +61,7 @@ class Agent(agent.Agent):
 
         self[4]=atom.Atom(names='inputs')
 
-        self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.vector_policy(2,False),names='pressure input',protocols='nostage')
+        self[4][2]=atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.input.merge_policy(2,False),names='pressure input',protocols='nostage')
         self[4][3]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(3,False),names='roll input',protocols='nostage')
         self[4][4]=atom.Atom(domain=domain.BoundedFloat(-1,1),policy=self.input.merge_policy(4,False),names='yaw input',protocols='nostage')
         self[4][22]=atom.Atom(domain=domain.Aniso(), policy=self.input.vector_policy(5,False), names='key input')
