@@ -1929,9 +1929,9 @@ void EigenD::initialise (const String& commandLine)
     if(!lockfile_.lock())
     {
         ModalComponent mc;
-        mc.getTitle()->setText("eigenD Already Running",false);
+        mc.getTitle()->setText("eigenD is already running",false);
         mc.getText()->setText("Another instance of eigenD is already running.  You have to close it before running eigenD again.",false);
-        DialogWindow::showModalDialog("Another Instance Running",&mc,0,Colour(0xffababab),true,false);
+        DialogWindow::showModalDialog("Another eigenD Running",&mc,0,Colour(0xffababab),true,false);
         quit();
         return;
     }
