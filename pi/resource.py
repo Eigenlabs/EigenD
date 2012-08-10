@@ -286,7 +286,7 @@ def clean_current_setup():
 
 class LockFile:
     def __init__(self,name):
-        print 'init lock file'      
+        print 'init lock file',name
         
         filename = lock_file(name)
         self.__file = file_open(filename,'wb')

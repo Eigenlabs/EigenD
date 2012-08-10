@@ -31,6 +31,7 @@ widget_files = Split("""
     jucer/AboutComponent.cpp
     jucer/BugComponent.cpp
     jucer/AlertComponent1.cpp
+    jucer/ModalComponent.cpp
     jucer/AlertComponent2.cpp
     jucer/HelpComponent.cpp
     jucer/InfoComponent.cpp

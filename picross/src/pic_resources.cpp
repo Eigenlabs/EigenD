@@ -34,6 +34,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 #define RES_SEPERATOR '/'
 #define RES_SEPERATOR_STR "/"
 #define RES_PATH_MAX PATH_MAX
@@ -97,6 +98,7 @@ namespace
         WideCharToMultiByte(CP_UTF8,0,dest,-1,buffer,RES_PATH_MAX+1,0,0);
         strcat(buffer,RES_SEPERATOR_STR);
         strcat(buffer,"Eigenlabs");
+        pic::mkdir(buffer);
     }
 
     static void get_pyprefix(char *buffer)
@@ -155,6 +157,7 @@ namespace
     {
         strcpy(buffer,getenv("HOME"));
         strcat(buffer,"/Library/Eigenlabs");
+        pic::mkdir(buffer);
     }
 
     static void get_pyprefix(char *buffer)
@@ -220,6 +223,7 @@ namespace
     {
         strcpy(buffer,getenv("HOME"));
         strcat(buffer,"/.Eigenlabs");
+        pic::mkdir(buffer);
     }
 
     static void get_prefix(char *buffer)
@@ -387,6 +391,19 @@ std::string pic::release()
     return PI_RELEASE;
 }
 
+std::string pic::lockfile(const std::string &name)
+{
+    char buffer[RES_PATH_MAX+1];
+    get_lib(buffer);
+    strcat(buffer,RES_SEPERATOR_STR);
+    strcat(buffer,"Lock");
+    pic::mkdir(buffer);
+    strcat(buffer,RES_SEPERATOR_STR);
+    strcat(buffer,name.c_str());
+    strcat(buffer,".lck");
+    return buffer;
+}
+
 std::string pic::username()
 {
 #ifdef PI_WINDOWS
@@ -513,3 +530,120 @@ int pic::open(const char *filename, int oflags, int cflags)
     return result;
 #endif
 }
+
+#ifndef PI_WINDOWS
+
+struct pic::lockfile_t::impl_t
+{
+    impl_t(const std::string &name): locked_(false)
+    {
+        fd_ = open(name.c_str(),O_RDWR|O_CREAT,0777);
+        printf("open lock file %s %d\n",name.c_str(),fd_);
+    }
+
+    ~impl_t()
+    {
+        if(fd_>=0)
+            close(fd_);
+    }
+
+    bool lock()
+    {
+        if(locked_)
+        {
+            return true;
+        }
+
+        if(fd_ < 0)
+        {
+            return false;
+        }
+
+        if(0==flock(fd_,LOCK_EX|LOCK_NB))
+        {
+            printf("locked lock file\n");
+            locked_ = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    int fd_;
+    bool locked_;
+};
+
+#else
+
+struct pic::lockfile_t::impl_t
+{
+    impl_t(const std::string &name): locked_(false)
+    {
+        int wchars_num = MultiByteToWideChar(CP_UTF8,0,name.c_str(),-1,NULL,0);
+        WCHAR wstr [RES_PATH_MAX+1];
+        MultiByteToWideChar(CP_UTF8,0,name.c_str(),-1,wstr,wchars_num);
+
+        fd_ = CreateFile(wstr,GENERIC_READ|GENERIC_WRITE,FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_ALWAYS,0,NULL);
+    }
+
+    ~impl_t()
+    {
+        if(fd_ != INVALID_HANDLE_VALUE)
+            CloseHandle(fd_);
+    }
+
+    bool lock()
+    {
+        if(locked_)
+        {
+            return true;
+        }
+
+        if(fd_ == INVALID_HANDLE_VALUE)
+        {
+            return false;
+        }
+
+        if(LockFile(fd_,0,0,1,0))
+        {
+            locked_ = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    HANDLE fd_;
+    bool locked_;
+};
+
+#endif
+
+pic::lockfile_t::lockfile_t(const std::string &name): name_(pic::lockfile(name)), impl_(0)
+{
+}
+
+pic::lockfile_t::~lockfile_t()
+{
+    if(impl_) delete impl_;
+}
+
+bool pic::lockfile_t::lock()
+{
+    if(!impl_)
+    {
+        impl_ = new impl_t(name_);
+    }
+
+    return impl_->lock();
+}
+
+void pic::lockfile_t::unlock()
+{
+    if(impl_)
+    {
+        delete impl_;
+        impl_ = 0;
+    }
+}
+

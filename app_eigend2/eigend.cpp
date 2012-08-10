@@ -40,6 +40,7 @@
 #include "jucer/AboutComponent.h"
 #include "jucer/BugComponent.h"
 #include "jucer/AlertComponent1.h"
+#include "jucer/ModalComponent.h"
 #include "jucer/AlertComponent2.h"
 #include "jucer/HelpComponent.h"
 #include "jucer/InfoComponent.h"
@@ -321,6 +322,7 @@ class EigenD : public ejuce::Application, virtual public pic::tracked_t
         epython::PythonInterface *python_;
         pia::context_t context_;
         FILE *logfile_;
+        pic::lockfile_t lockfile_;
 };
 
 class EigenSaveComponent: public SaveDialogComponent, public EigenAlertDelegate, public EigenDialogContent
@@ -1910,7 +1912,7 @@ EigenDialog::~EigenDialog()
     main_->dialog_dead(this);
 }
 
-EigenD::EigenD(): main_window_ (0), python_(0), logfile_(0)
+EigenD::EigenD(): main_window_ (0), python_(0), logfile_(0), lockfile_("EigenD")
 {
 }
 
@@ -1923,6 +1925,16 @@ void EigenD::initialise (const String& commandLine)
     pic_set_interrupt();
     pic_mlock_code();
     pic_init_time();
+
+    if(!lockfile_.lock())
+    {
+        ModalComponent mc;
+        mc.getTitle()->setText("eigenD Already Running",false);
+        mc.getText()->setText("Another instance of eigenD is already running.  You have to close it before running eigenD again.",false);
+        DialogWindow::showModalDialog("Another Instance Running",&mc,0,Colour(0xffababab),true,false);
+        quit();
+        return;
+    }
 
     printf("release root: %s\n",pic::release_root_dir().c_str());
 
@@ -1984,7 +1996,6 @@ void EigenD::systemRequestedQuit()
 
 void EigenD::shutdown()
 {
-
     ejuce::Application::shutdown();
 }
 
@@ -2000,7 +2011,7 @@ const String EigenD::getApplicationVersion()
 
 bool EigenD::moreThanOneInstanceAllowed()
 {
-    return false;
+    return true;
 }
 
 void EigenD::log(const char *msg)

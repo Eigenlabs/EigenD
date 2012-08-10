@@ -50,6 +50,24 @@ namespace pic
     PIC_DECLSPEC_FUNC(int) open(std::string, int, int);
     PIC_DECLSPEC_FUNC(int) open(const char *, int);
     PIC_DECLSPEC_FUNC(int) open(const char *, int, int);
+    PIC_DECLSPEC_FUNC(std::string) lockfile(const std::string &);
+
+    class PIC_DECLSPEC_CLASS lockfile_t
+    {
+        public:
+            class impl_t;
+
+        public:
+            lockfile_t(const std::string &name);
+            ~lockfile_t();
+
+            bool lock();
+            void unlock();
+
+        private:
+            std::string name_;
+            impl_t *impl_;
+    };
 };
 
 #endif
