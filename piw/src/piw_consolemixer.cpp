@@ -692,7 +692,7 @@ namespace
         if(vinput_.latest(d,&nvindex,t) && nvindex!=vindex_)
         {
             vindex_=nvindex;
-            volctl_ = d.as_renorm(0,120,0);
+            volctl_ = d.as_renorm(-70,14,0);
             reset_pan_ = true;
         }
 
@@ -820,7 +820,7 @@ namespace
         if(sendinput_.latest(d,&sendindex_,t))
         {
             sendindex_++;
-            sendctl_ = d.as_renorm(0,120,0);
+            sendctl_ = d.as_renorm(-70,14,0);
 
             *sendgain_ = volfunc_(sendctl_);
 

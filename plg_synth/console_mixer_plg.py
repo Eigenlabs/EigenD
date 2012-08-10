@@ -33,13 +33,10 @@ from pi.logic.shortcuts import T
 from . import console_mixer_version as version,synth_native
 
 num_inputs = 24
-db_range = 70
 
-def volume_function(f):
-    if f<=0.01: return 0.0
-    fn = f/100.0
-    db = db_range*(1.0-fn)
-    sc = pow(10.0,-db/20.0)
+def volume_function(db):
+    if db<=-70: return 0.0
+    sc = pow(10.0,db/20.0)
     return sc
 
 
@@ -88,7 +85,9 @@ class FxSendControls(atom.Atom):
         self[1] = atom.Atom(domain=domain.Bool(), init=False, names='enable', policy=atom.default_policy(self.__set_fx_send_enable))
         # send
         self.send_input = bundles.ScalarInput(cookie,channel.main_agent.clk,signals=(1,))
-        self[2] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='send', policy=self.send_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=self.channel.main_agent.changes_pending), protocols='bind input')
+        self[2] = atom.Atom(domain=domain.BoundedFloat(-70,14,hints=(T('stageinc',0.1),T('inc',1),T('biginc',10),T('control','updown'),T('distribution','tapered'))),
+                init=0, names='send',
+                policy=self.send_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=self.channel.main_agent.changes_pending), protocols='bind input')
         self[3] = atom.Atom(domain=domain.Bool(), init=False, names='prefader', policy=atom.default_policy(self.__set_fx_send_prefader))
 
     def property_veto(self,key,value):
@@ -162,8 +161,12 @@ class FxChannel(atom.Atom):
 
         self.control_input = bundles.ScalarInput(self.aggregator.get_output(1),main_agent.clk,signals=(1,2))        
         self[4] = atom.Atom(names='controls')
-        self[4][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='volume', policy=self.control_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
-        self[4][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('stageinc',0.1),T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
+        self[4][1] = atom.Atom(domain=domain.BoundedFloat(-70,14,hints=(T('stageinc',0.1),T('inc',1),T('biginc',10),T('control','updown'),T('distribution','tapered'))),
+                init=0, names='volume',
+                policy=self.control_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
+        self[4][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('stageinc',0.1),T('inc',0.02),T('biginc',0.2),T('control','updown'))),
+                init=0, names='pan',
+                policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
                 
         # audio return input
         self.return_input = bundles.VectorInput(self.aggregator.get_output(2),main_agent.clk,signals=(1,2))
@@ -333,8 +336,12 @@ class Channel(atom.Atom):
         self[2] = atom.Atom(domain=domain.BoundedFloat(-1,1), init=0, names='right audio input', policy=self.audio_input.vector_policy(2,True), protocols='obm')
 
         self[3] = atom.Atom(names='controls')
-        self[3][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))), init=100, names='volume', policy=self.control_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
-        self[3][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('stageinc',0.1),T('inc',0.02),T('biginc',0.2),T('control','updown'))), init=0, names='pan', policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
+        self[3][1] = atom.Atom(domain=domain.BoundedFloat(-70,14,hints=(T('stageinc',0.1),T('inc',1),T('biginc',10),T('control','updown'),T('distribution','tapered'))),
+                init=0, names='volume',
+                policy=self.control_input.notify_policy(1,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
+        self[3][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('stageinc',0.1),T('inc',0.02),T('biginc',0.2),T('control','updown'))),
+                init=0, names='pan',
+                policy=self.control_input.notify_policy(2,policy.LopassStreamPolicy(1000,0.97),notify=main_agent.changes_pending), protocols='bind input')
 
         # fx send controls
         self[4] = FxSendControlsList()
@@ -439,7 +446,7 @@ class Agent(agent.Agent):
         pan_function = pan_laws[default_pan]
 
         # make vol and pan tables
-        self.vol = piw.make_f2f_table(0,120,1000,picross.make_f2f_functor(volume_function))
+        self.vol = piw.make_f2f_table(-70,14,1000,picross.make_f2f_functor(volume_function))
         self.pan = piw.make_f2f_table(-1,1,1000,picross.make_f2f_functor(pan_function))
 
         self[1] = atom.Atom(names='outputs')
@@ -454,8 +461,8 @@ class Agent(agent.Agent):
         self.master_controls_input = bundles.ScalarInput(self.mixer.master_controls_cookie(),self.clk,signals=(1,2))
 
         self[2] = atom.Atom(names='master')
-        self[2][1] = atom.Atom(domain=domain.BoundedFloat(0,120,hints=(T('stageinc',1),T('inc',1),T('biginc',10),T('control','updown'))),
-                            init=100, names='master volume',
+        self[2][1] = atom.Atom(domain=domain.BoundedFloat(-70,14,hints=(T('stageinc',0.1),T('inc',1),T('biginc',10),T('control','updown'),T('distribution','tapered'))),
+                            init=0, names='master volume',
                             policy=self.master_controls_input.notify_policy(1,policy.LopassStreamPolicy(100,0.97),notify=self.changes_pending))
         self[2][2] = atom.Atom(domain=domain.BoundedFloat(-1,1,hints=(T('stageinc',0.1),T('inc',0.02),T('biginc',0.2),T('control','updown'))),
                             init=0, names='master pan',
@@ -643,6 +650,52 @@ class Agent(agent.Agent):
         return async.failure('Console Mixer: effect channel doesnt exist')
 
 
-agent.main(Agent)
+class Upgrader(upgrade.Upgrader):
+    def vol2db(self,vol):
+        return -70.0*(1.0-(vol/100.0))
+
+    def upgrade_1_0_1_to_1_0_2(self,tools,address):
+        print 'upgrading console mixer',address
+
+        # master volume
+        root = tools.get_root(address)
+        master_vol = root.get_node(2,1,254).get_data().as_float()
+        master_db = self.vol2db(master_vol)
+        root.get_node(2,1,254).set_data(piw.makefloat_bounded(14,-70,0,master_db,0))
+        print 'master vol',master_vol,'db',master_db
+
+        # channel volumes
+        for c in root.get_node(3).iter():
+            chan_node = c.get_node(3,1,254)
+            if chan_node:
+                chan_vol = chan_node.get_data().as_float()
+                chan_db = self.vol2db(chan_vol)
+                chan_node.set_data(piw.makefloat_bounded(14,-70,0,chan_db,0))
+                print 'channel vol',chan_vol,'db',chan_db
+                for s in c.get_node(4).iter():
+                    send_node = s.get_node(2,254)
+                    if send_node:
+                        send_vol = send_node.get_data().as_float()
+                        send_db = self.vol2db(send_vol)
+                        send_node.set_data(piw.makefloat_bounded(14,-70,0,send_db,0))
+                        print 'send vol',send_vol,'db',send_db
+
+        # fx channel volumes
+        for c in root.get_node(4).iter():
+            chan_node = c.get_node(4,1,254)
+            if chan_node:
+                chan_vol = chan_node.get_data().as_float()
+                chan_db = self.vol2db(chan_vol)
+                chan_node.set_data(piw.makefloat_bounded(14,-70,0,chan_db,0))
+                print 'fx channel vol',chan_vol,'db',chan_db
+                for s in c.get_node(5).iter():
+                    send_node = s.get_node(2,254)
+                    if send_node:
+                        send_vol = send_node.get_data().as_float()
+                        send_db = self.vol2db(send_vol)
+                        send_node.set_data(piw.makefloat_bounded(14,-70,0,send_db,0))
+                        print 'fx send vol',send_vol,'db',send_db
+
+agent.main(Agent,Upgrader)
 
 # -------------------------------------------------------------------------------------------------------------------------------------------

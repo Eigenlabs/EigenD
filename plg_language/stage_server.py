@@ -36,6 +36,7 @@ from . import language_native
 import traceback
 import widget
 import socket
+import re
 
 def log_error(func):
     def __f(*args,**kwds):
@@ -185,22 +186,16 @@ class StageXMLRPCFuncs:
                     if 'agent' not in self.__database.get_propcache('props').get_valueset(atom[0]):
 
                         # extract domain
-                        atomDomain = self.__database.find_item(atom[0]).domain()
-                        atomDomainCanonical = atomDomain.canonical()
-                        atomDomainType = atomDomainCanonical[0:atomDomainCanonical.find('(')]
-
                         cache = self.__database.get_propcache('protocol')
                         noStage = 'nostage' in cache.get_valueset(atom[0])
 
-                        isIntegerType = atomDomainType=='bint' or atomDomainType=='bintn'
-                        isFloatType = atomDomainType=='bfloat' or atomDomainType=='bfloatn'
-                        isNumericType = isIntegerType or isFloatType
-                        isSupportedType = (isNumericType or atomDomainType=='bool' or atomDomainType=='trigger') and not noStage
+                        atomDomain = self.__database.find_item(atom[0]).domain()
+                        domainType,isInteger,isFloat,isNumeric,isBool,isTrigger = self.__domainTypes(atomDomain)
 
-                        #print oscPath,atomName,atomDomainCanonical,noStage,isSupportedType
+                        isSupported = (isNumeric or isBool or isTrigger) and not noStage
 
                         # store enabled atom addresses for use by the widget manager
-                        if(isSupportedType):
+                        if(isSupported):
 
                             atomPath = (oscPath+'/'+atomName.replace(' ','_'))
 
@@ -211,37 +206,86 @@ class StageXMLRPCFuncs:
                             xml += 'address="%s" '%atom[0]
                             
                             # indicate if Stage can use this atom value, show in tree as 'enabled'
-                            if(isSupportedType):
+                            if(isSupported):
                                 xml += 'enabled="true" '
                             else:
                                 xml += 'enabled="false" '
                             
                             xml += '>\n'
 
-                            xml += '<domain type="%s" '%atomDomainType
-
-                            # numeric domain range
-                            if isNumericType:
-                                min = atomDomain.min
-                                max = atomDomain.max
-                                xml += 'min="%f" '%min+'max="%f" '%max
-
-                            stageInc=atomDomain.hint('stageinc')
-                            controllerInc=atomDomain.hint('inc')
-                            if stageInc:
-                                xml += 'userStep="%f" '%stageInc
-                            elif controllerInc:
-                                xml += 'userStep="%f" '%controllerInc
-                            elif isIntegerType:
-                                xml += 'userStep="1.0" '
-                            elif isFloatType:
-                                xml += 'userStep="0.01" '
-
-                            xml += '/>\n'
+                            xml += self.__domainXml(atomDomain)
+                            xml += '\n'
 
                             xml += self.__atomHelpXml(atom[0])
 
                             xml += '</atom>'
+
+        return xml
+
+    def __domainType(self,atomDomain):
+        atomDomainCanonical = atomDomain.canonical()
+        return atomDomainCanonical[0:atomDomainCanonical.find('(')]
+
+    def __domainTypes(self,atomDomain):
+        domainType = self.__domainType(atomDomain)
+
+        isInteger = domainType=='bint' or domainType=='bintn'
+        isFloat = domainType=='bfloat' or domainType=='bfloatn'
+        isNumeric = isInteger or isFloat
+        isBool = domainType=='bool'
+        isTrigger = domainType=='trigger'
+
+        return (domainType,isInteger,isFloat,isNumeric,isBool,isTrigger)
+
+    def __domainBounds(self,atomDomain):
+        domainType,isInteger,isFloat,isNumeric,isBool,isTrigger = self.__domainTypes(atomDomain)
+        boundMin = None
+        boundMax = None
+        boundUserMin = None
+        boundUserMax = None
+        boundUserStep = None
+
+        if isNumeric:
+            boundMin = float(atomDomain.min)
+            boundMax = float(atomDomain.max)
+            boundUserMin = boundMin
+            boundUserMax = boundMax
+
+        stageInc = atomDomain.hint('stageinc')
+        controllerInc = atomDomain.hint('inc')
+        if stageInc:
+            boundUserStep = float(stageInc[0])
+        elif controllerInc:
+            boundUserStep = float(controllerInc[0])
+        elif isInteger:
+            boundUserStep = float(1.0)
+        elif isFloat:
+            boundUserStep = float(0.1)
+
+        return (boundMin,boundMax,boundUserMin,boundUserMax,boundUserStep)
+
+    def __domainXml(self,atomDomain):
+        domainType = self.__domainType(atomDomain)
+
+        xml = '<domain type="%s"'%domainType
+
+        boundMin,boundMax,boundUserMin,boundUserMax,boundUserStep = self.__domainBounds(atomDomain)
+        if boundMin is not None:
+            xml += ' min="%g"'%boundMin
+        if boundMax is not None:
+            xml += ' max="%g"'%boundMax
+        if boundUserMin is not None:
+            xml += ' userMin="%g"'%boundUserMin
+        if boundUserMax is not None:
+            xml += ' userMax="%g"'%boundUserMax
+        if boundUserStep is not None:
+            xml += ' userStep="%g"'%boundUserStep
+
+        distribution = atomDomain.hint('distribution')
+        if distribution:
+            xml += ' distribution="%s"'%distribution
+
+        xml += '/>'
 
         return xml
 
@@ -712,6 +756,58 @@ class StageXMLRPCFuncs:
             try:
                 widgets = self.__tabs.get_tab(tabIndex)[1]
                 widgetXML = widgets.get_widget(widgetIndex).getXML()
+
+                widgetDoc = xml.dom.minidom.parseString(widgetXML)
+                widgetNode = widgetDoc.documentElement
+                widgetAddress = widgetNode.getAttribute('address')
+                widgetDomain = widgetNode.getElementsByTagName('domain')[0]
+
+                atom = self.__database.find_item(widgetAddress)
+                if atom:
+                    atomDomain = atom.domain()
+
+                    different = False
+                    widgetDomainType = widgetDomain.getAttribute('type')
+                    if widgetDomainType != self.__domainType(atomDomain):
+                        different = True
+
+                    boundMin,boundMax,boundUserMin,boundUserMax,boundUserStep = self.__domainBounds(atomDomain)
+
+                    if widgetDomain.hasAttribute('min'):
+                        if boundMin is None or round(boundMin,3) != round(float(widgetDomain.getAttribute('min')),3):
+                            different = True
+                    elif boundMin is not None:
+                        different = True
+                    if widgetDomain.hasAttribute('max'):
+                        if boundMax is None or round(boundMax,3) != round(float(widgetDomain.getAttribute('max')),3):
+                            different = True
+                    elif boundMax is not None:
+                        different = True
+                    if widgetDomain.hasAttribute('userMin'):
+                        if boundUserMin is None or round(boundUserMin,3) != round(float(widgetDomain.getAttribute('userMin')),3):
+                            different = True
+                    elif boundUserMin is not None:
+                        different = True
+                    if widgetDomain.hasAttribute('userMax'):
+                        if boundUserMax is None or round(boundUserMax,3) != round(float(widgetDomain.getAttribute('userMax')),3):
+                            different = True
+                    elif boundUserMax is not None:
+                        different = True
+                    # don't check the userStep as this can be changed in Stage
+
+                    atomDistribution = atomDomain.hint('distribution')
+                    if widgetDomain.hasAttribute('distribution'):
+                        if not atomDistribution or str(atomDistribution[0]) != widgetDomain.getAttribute('distribution'):
+                            different = True
+                    elif atomDistribution is not None:
+                        different = True
+
+                    widgetNode.unlink()
+
+                    if different:
+                        regexp = re.compile(r"<domain[^<]+/>", re.DOTALL)
+                        widgetXML = regexp.sub(self.__domainXml(atomDomain), widgetXML, 1)
+                        widgets.get_widget(widgetIndex).set_value(widgetXML)
             finally:
                 piw.tsd_unlock()
         except:
