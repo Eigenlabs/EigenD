@@ -44,7 +44,7 @@ namespace
     // keyboard data struct
     struct blob_t
     {
-        unsigned c,k,v;
+        unsigned cc,key,pc,ch,val;
     };
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -57,6 +57,7 @@ namespace
     {
         keyboard_wire_t(unsigned k): event_data_source_real_t(piw::pathone(k,0)), active_(false), id_(k), min_(0), max_(127), invert_(false), current_(0)
         {
+            output_ = piw::xevent_data_buffer_t(SIG3(1,2,3),PIW_DATAQUEUE_SIZE_TINY);
         }
 
         ~keyboard_wire_t()
@@ -87,16 +88,19 @@ namespace
             {
                 if(!active_)
                 {
-                    output_=piw::xevent_data_buffer_t(3,PIW_DATAQUEUE_SIZE_TINY);
                     output_.add_value(2,d);
                     source_start(0,piw::pathone_nb(id_,t),output_);
-                    //pic::logmsg() << "midi start " << 2 << " " << id_ << " " << d;
+#if MIDI_INPUT_DEBUG
+                    pic::logmsg() << "midi start " << 2 << " " << id_ << " " << d;
+#endif
                     active_=true;
                 }
                 else
                 {
                     output_.add_value(2,d);
-                    //pic::logmsg() << "midi continues " << 2 << " " << id_ << " " << d;
+#if MIDI_INPUT_DEBUG
+                    pic::logmsg() << "midi continues " << 2 << " " << id_ << " " << d;
+#endif
                 }
             }
             else
@@ -105,14 +109,16 @@ namespace
                 {
                     output_.add_value(2,d);
                     source_end(t+1);
-                    //pic::logmsg() << "midi end " << 2 << " " << id_ << " " << d;
+#if MIDI_INPUT_DEBUG
+                    pic::logmsg() << "midi end " << 2 << " " << id_ << " " << d;
+#endif
                     active_=false;
                 }
             }
 
         }
 
-        void sendkey(unsigned m, unsigned long long t)
+        void sendkey(unsigned channel, unsigned m, unsigned long long t)
         {
             piw::hardness_t hardness = (m==0)?piw::KEY_LIGHT:((m>63)?piw::KEY_HARD:piw::KEY_SOFT);
 
@@ -122,16 +128,19 @@ namespace
             {
                 if(!active_)
                 {
-                    output_=piw::xevent_data_buffer_t(3,PIW_DATAQUEUE_SIZE_TINY);
                     output_.add_value(1,d);
                     source_start(0,piw::pathone_nb(id_,t),output_);
-                    //pic::logmsg() << "midi start " << id_ << " " << d;
+#if MIDI_INPUT_DEBUG
+                    pic::logmsg() << "midi start " << id_ << " " << d;
+#endif
                     active_=true;
                 }
                 else
                 {
                     output_.add_value(1,d);
-                    //pic::logmsg() << "midi continues " << 1 << " " << id_ << " " << d;
+#if MIDI_INPUT_DEBUG
+                    pic::logmsg() << "midi continues " << 1 << " " << id_ << " " << d;
+#endif
                 }
             }
             else
@@ -140,11 +149,31 @@ namespace
                 {
                     output_.add_value(1,d);
                     source_end(t+1);
-                    //pic::logmsg() << "midi end " << id_ << " " << d;
+#if MIDI_INPUT_DEBUG
+                    pic::logmsg() << "midi end " << id_ << " " << d;
+#endif
                     active_=false;
                 }
             }
 
+        }
+
+        void sendprogramchange(unsigned channel, unsigned long long t)
+        {
+            piw::data_nb_t d = piw::makekey(1,id_,1,id_,piw::KEY_HARD,t);
+
+            output_.add_value(3,d);
+#if MIDI_INPUT_DEBUG
+            pic::logmsg() << "midi program change " << id_ << " " << d;
+#endif
+            if(!active_)
+            {
+                source_start(0,piw::pathone_nb(id_,t),output_);
+#if MIDI_INPUT_DEBUG
+                pic::logmsg() << "midi start/end " << id_ << " " << d;
+#endif
+                source_end(t+1);
+            }
         }
 
         bool active_;
@@ -174,7 +203,7 @@ namespace
 
             for(unsigned i=0;i<KEYS;i++)
             {
-                wires_[i] = pic::ref(new keyboard_wire_t(i+1));
+                wires_[i] = pic::ref(new keyboard_wire_t(i));
             }
         }
 
@@ -214,44 +243,75 @@ namespace
 
         void decoder_noteon(unsigned channel, unsigned number, unsigned velocity)
         {
-            //pic::logmsg() << "note on " << channel << "," << number << "," << velocity;
+#if MIDI_INPUT_DEBUG
+            pic::logmsg() << "note on " << channel << "," << number << "," << velocity;
+#endif
             unsigned long long t = piw::tsd_time();
-            kbd_enqueue(t,number,velocity);
+            kbd_enqueue(t,channel, number,velocity);
         }
 
         void decoder_noteoff(unsigned channel, unsigned number, unsigned velocity)
         {
-            //pic::logmsg() << "note off " << channel << "," << number << "," << velocity;
-            kbd_enqueue(piw::tsd_time(),number,0);
+#if MIDI_INPUT_DEBUG
+            pic::logmsg() << "note off " << channel << "," << number << "," << velocity;
+#endif
+            kbd_enqueue(piw::tsd_time(),channel, number,0);
         }
 
         void decoder_cc(unsigned channel, unsigned number, unsigned value)
         {
-            //pic::logmsg() << "cc " << channel << "," << number << "," << value;
-            cc_enqueue(piw::tsd_time(),number,value);
+#if MIDI_INPUT_DEBUG
+            pic::logmsg() << "cc " << channel << "," << number << "," << value;
+#endif
+            cc_enqueue(piw::tsd_time(),channel, number,value);
         }
 
-        void kbd_enqueue(unsigned long long t, unsigned key, unsigned val)
+        void decoder_programchange(unsigned channel, unsigned value)
         {
-            // enqueue keyboard data
+#if MIDI_INPUT_DEBUG
+            pic::logmsg() << "program change " << channel << "," << value;
+#endif
+            programchange_enqueue(piw::tsd_time(),channel,value);
+        }
+
+        void kbd_enqueue(unsigned long long t, unsigned channel, unsigned key, unsigned val)
+        {
             blob_t *blob;
             piw::data_nb_t data = piw::makeblob_nb(t,sizeof(blob_t),(unsigned char **)&blob);
 
-            blob->k=(key>0)?key:128;
-            blob->v=val;
-            blob->c=0;
+            blob->ch=channel;
+            blob->key=key+1;
+            blob->val=val;
+            blob->cc=0;
+            blob->pc=0;
 
             enqueue_fast(data);
         }
 
-        void cc_enqueue(unsigned long long t, unsigned cc, unsigned val)
+        void cc_enqueue(unsigned long long t, unsigned channel, unsigned cc, unsigned val)
         {
             blob_t *blob;
             piw::data_nb_t data = piw::makeblob_nb(t,sizeof(blob_t),(unsigned char **)&blob);
 
-            blob->k=0;
-            blob->v=val;
-            blob->c=cc;
+            blob->ch=channel;
+            blob->cc=cc+1;
+            blob->val=val;
+            blob->key=0;
+            blob->pc=0;
+
+            enqueue_fast(data);
+        }
+
+        void programchange_enqueue(unsigned long long t, unsigned channel, unsigned val)
+        {
+            blob_t *blob;
+            piw::data_nb_t data = piw::makeblob_nb(t,sizeof(blob_t),(unsigned char **)&blob);
+
+            blob->ch=channel;
+            blob->pc=1;
+            blob->val=val;
+            blob->key=0;
+            blob->cc=0;
 
             enqueue_fast(data);
         }
@@ -262,19 +322,28 @@ namespace
             {
                 blob_t *blob = (blob_t *)d.as_blob();
 
-                if(blob->k && blob->k < KEYS)
-                    wires_[blob->k-1]->sendkey(blob->v,d.time());
+                if(blob->key && blob->key <= KEYS)
+                {
+                    wires_[blob->key-1]->sendkey(blob->ch,blob->val,d.time());
+                }
 
-                if(blob->c && blob->c < KEYS)
-                    wires_[blob->c]->sendcc(blob->v,d.time());
+                if(blob->cc && blob->cc <= KEYS)
+                {
+                    wires_[blob->cc-1]->sendcc(blob->val,d.time());
+                }
+
+                if(blob->pc && blob->val >= 0 && blob->val < KEYS)
+                {
+                    wires_[blob->val]->sendprogramchange(blob->ch,d.time());
+                }
             }
         }
 
         unsigned current(unsigned cc)
         {
-            if(cc>0 && cc<=KEYS)
+            if(cc>=0 && cc<KEYS)
             {
-                return wires_[cc-1]->current_;
+                return wires_[cc]->current_;
             }
 
             return 0;
@@ -283,11 +352,11 @@ namespace
         // set_trim: set key limits, called from agent
         void set_trim(unsigned cc, float min, float max, bool inv)
         {
-            if(cc>0 && cc<=KEYS)
+            if(cc>=0 && cc<KEYS)
             {
-                wires_[cc-1]->min_=min;
-                wires_[cc-1]->max_=max;
-                wires_[cc-1]->invert_=inv;
+                wires_[cc]->min_=min;
+                wires_[cc]->max_=max;
+                wires_[cc]->invert_=inv;
             }
         }
 
@@ -394,9 +463,9 @@ namespace
         // ------------------------------------------------------------------------------
         void midi_receive(const unsigned char *buffer, unsigned length)
         {
-#if MIDI_INPUT_DEBUG>1
-            pic::logmsg() << "midi_receive l="<<length<<" b="<<(void *)buffer << " d0="<<hex<<(unsigned)buffer[0];
-#endif // MIDI_INPUT_DEBUG>1
+#if MIDI_INPUT_DEBUG
+            pic::logmsg() << "midi_receive l="<<length<<" b="<<(void *)buffer << " d0="<<std::hex<<(unsigned)buffer[0];
+#endif
 
             if(length>3)
             {
@@ -428,18 +497,18 @@ namespace
                 unsigned char *buffer = (unsigned char *)midi_buffer->buffer;
                 unsigned length = midi_buffer->length;
 
-#if MIDI_INPUT_DEBUG>1
-//                pic::logmsg() << "midi dequeue l="<<length<<" b="<<(void *)buffer;
-#endif // MIDI_INPUT_DEBUG>1
+#if MIDI_INPUT_DEBUG
+                pic::logmsg() << "midi dequeue l="<<length<<" b="<<(void *)buffer;
+#endif
 
                 // filter out midi clock messages and send out midi clock output
                 filter_midi_clock(buffer, length, d.time());
 
-#if MIDI_INPUT_DEBUG>1
+#if MIDI_INPUT_DEBUG
                 pic::logmsg() << "midi_input l=" << length << " t=" << d.time();
                 for(unsigned i=0; i<length; i++)
-                    pic::logmsg() << "d"<<i<<"=" << hex << (unsigned)buffer[i];
-#endif // MIDI_INPUT_DEBUG>1
+                    pic::logmsg() << "d"<<i<<"=" << std::hex << (unsigned)buffer[i];
+#endif
 
                 wire_->send_midi(1, buffer, length, d.time());
 

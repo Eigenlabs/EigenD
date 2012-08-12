@@ -55,7 +55,17 @@ void midi::mididecoder_t::decode1(unsigned char b1)
 
 void midi::mididecoder_t::decode2(unsigned char b1,unsigned char b2)
 {
-    decoder_generic2(false,b1,b2);
+    unsigned hi = (b1&0x70)>>4;
+    unsigned lo = (b1&0x0f);
+    bool h = false;
+    switch(hi)
+    {
+        case 4:
+            decoder_programchange(lo,b2);
+            h=true;
+            break;
+    }
+    decoder_generic2(h,b1,b2);
 }
 
 void midi::mididecoder_t::decode3(unsigned char b1,unsigned char b2,unsigned char b3)
@@ -63,7 +73,6 @@ void midi::mididecoder_t::decode3(unsigned char b1,unsigned char b2,unsigned cha
     unsigned hi = (b1&0x70)>>4;
     unsigned lo = (b1&0x0f);
     bool h = false;
-
     switch(hi)
     {
         case 1:

@@ -39,6 +39,7 @@ namespace midi
             virtual void decoder_noteon(unsigned channel, unsigned number, unsigned velocity) {}
             virtual void decoder_noteoff(unsigned channel, unsigned number, unsigned velocity) {}
             virtual void decoder_cc(unsigned channel, unsigned number, unsigned value) {}
+            virtual void decoder_programchange(unsigned channel, unsigned value) {}
             virtual void decoder_pitchbend(unsigned channel, float bend) {}
             virtual void decoder_generic1(bool,unsigned char) {}
             virtual void decoder_generic2(bool,unsigned char,unsigned char) {}

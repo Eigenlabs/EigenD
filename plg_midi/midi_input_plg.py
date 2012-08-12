@@ -37,11 +37,11 @@ class VirtualKey(atom.Atom):
     def rpc_resolve(self,arg):
         (a,o) = logic.parse_clause(arg)
         print 'resolving virtual',arg,(a,o)
-        if not a and o is None: return self.__key(*range(1,129))
+        if not a and o is None: return self.__key(*range(0,128))
         if a==('chosen',) and o is None: return self.__key(*self.choices)
         if a or o is None: return self.__key()
-        o=int(o)+1
-        if o<1 or o>128: return self.__key()
+        o=int(o)
+        if o<0 or o>127: return self.__key()
         return self.__key(o)
 
 
@@ -89,13 +89,14 @@ class VirtualCC(atom.Atom):
         (a,o) = logic.parse_clause(arg)
         a = (' '.join(a)).lower()
         print 'midi cc resolving',a,o
-        if a in self.cdict: return self.__key(self.cdict[a]+1)
+        if a in self.cdict: return self.__key(self.cdict[a])
         a2 = a+' coarse'
-        if a2 in self.cdict: return self.__key(self.cdict[a2]+1)
-        if not a and o is None: return self.__key(*range(1,129))
+        if a2 in self.cdict: return self.__key(self.cdict[a2])
+        if not a and o is None: return self.__key(*range(0,128))
         if a or o is None: return self.__key()
-        o=int(o)+1
-        if o<1 or o>128: return self.__key()
+        o=int(o)
+        if o<0 or o>127: return self.__key()
+        print 'resolved to',self.__key(o)
         return self.__key(o)
 
     def rpc_enumerate(self,a):
@@ -112,7 +113,7 @@ class VirtualCC(atom.Atom):
     def rpc_fideal(self,arg):
         try:
             (path,cookie) = logic.parse_clause(arg)
-            cookie=int(cookie)+1
+            cookie=int(cookie)
         except:
             utils.log_exception()
             return async.failure('invalid cookie')
@@ -281,8 +282,9 @@ class Agent(agent.Agent):
 
         self[1] = bundles.Output(1,False,names='key output')
         self[2] = bundles.Output(2,False,names='continuous controller output')
+        self[8] = bundles.Output(3,False,names='program change output')
 
-        self.output = bundles.Splitter(self.domain,self[1],self[2])
+        self.output = bundles.Splitter(self.domain,self[1],self[2],self[8])
 
         self[6] = bundles.Output(1,False,names='midi output')
         self[7] = bundles.Output(2,False,names='midi clock output')
