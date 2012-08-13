@@ -44,25 +44,6 @@ class VirtualKey(atom.Atom):
         if o<0 or o>127: return self.__key()
         return self.__key(o)
 
-class VirtualProgramChange(atom.Atom):
-    def __init__(self):
-        atom.Atom.__init__(self,names='program change',protocols='virtual')
-        self.choices=[]
-
-    def __key(self,*keys):
-        x = ','.join(['cmp([dsc(~(parent)"#8","%(k)d")])' % dict(k=k) for k in keys])
-        return '[%s]' % x
-
-    def rpc_resolve(self,arg):
-        (a,o) = logic.parse_clause(arg)
-        print 'resolving virtual',arg,(a,o)
-        if not a and o is None: return self.__key(*range(0,128))
-        if a==('chosen',) and o is None: return self.__key(*self.choices)
-        if a or o is None: return self.__key()
-        o=int(o)
-        if o<0 or o>127: return self.__key()
-        return self.__key(o)
-
 class VirtualCC(atom.Atom):
     clist = (
         ('bank select coarse', 0), ('modulation wheel coarse', 1), ('breath controller coarse', 2), ('foot pedal coarse', 4),
@@ -139,6 +120,44 @@ class VirtualCC(atom.Atom):
             if cookie==val:
                 return 'cmp([dsc(~(parent)"#2",%d)])' % val
         return async.failure('invalid cookie')
+
+class VirtualProgramChange(atom.Atom):
+    def __init__(self):
+        atom.Atom.__init__(self,names='program change',protocols='virtual')
+        self.choices=[]
+
+    def __key(self,*keys):
+        x = ','.join(['cmp([dsc(~(parent)"#8","%(k)d")])' % dict(k=k) for k in keys])
+        return '[%s]' % x
+
+    def rpc_resolve(self,arg):
+        (a,o) = logic.parse_clause(arg)
+        print 'resolving virtual',arg,(a,o)
+        if not a and o is None: return self.__key(*range(0,128))
+        if a==('chosen',) and o is None: return self.__key(*self.choices)
+        if a or o is None: return self.__key()
+        o=int(o)
+        if o<0 or o>127: return self.__key()
+        return self.__key(o)
+
+class VirtualTrigger(atom.Atom):
+    def __init__(self):
+        atom.Atom.__init__(self,names='trigger',protocols='virtual')
+        self.choices=[]
+
+    def __key(self,*keys):
+        x = ','.join(['cmp([dsc(~(parent)"#10","%(k)d")])' % dict(k=k) for k in keys])
+        return '[%s]' % x
+
+    def rpc_resolve(self,arg):
+        (a,o) = logic.parse_clause(arg)
+        print 'resolving virtual',arg,(a,o)
+        if not a and o is None: return self.__key(*range(0,128))
+        if a==('chosen',) and o is None: return self.__key(*self.choices)
+        if a or o is None: return self.__key()
+        o=int(o)
+        if o<0 or o>127: return self.__key()
+        return self.__key(o)
 
 class MidiDelegate(midi_native.midi_input):
     def __init__(self,key_cookie,cc_cookie,pc_cookie,trig_cookie,midi_cookie,notify):
@@ -301,7 +320,7 @@ class Agent(agent.Agent):
         self[1] = bundles.Output(1,False,names='key output')
         self[2] = bundles.Output(1,False,names='continuous controller output')
         self[8] = bundles.Output(1,False,names='program change output')
-        self[10] = bundles.Output(1,False,names='continuous controller trigger output')
+        self[10] = bundles.Output(1,False,names='trigger output')
 
         self.key_output = bundles.Splitter(self.domain,self[1])
         self.cc_output = bundles.Splitter(self.domain,self[2])
@@ -315,6 +334,7 @@ class Agent(agent.Agent):
         self[3] = VirtualKey()
         self[4] = VirtualCC()
         self[9] = VirtualProgramChange()
+        self[11] = VirtualTrigger()
         self[5] = MidiPort(self.key_output.cookie(),self.cc_output.cookie(),self.programchange_output.cookie(),self.trigger_output.cookie(),self.midi_output.cookie())
 
         self.add_verb2(2,'choose([],None,role(None,[ideal([~server,midiport]),singular]))',self.__chooseport)
