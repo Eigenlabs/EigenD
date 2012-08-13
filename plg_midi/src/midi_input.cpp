@@ -151,17 +151,6 @@ namespace
             output_.add_value(1,d);
             if(m)
             {
-                /*
-                if(m==max_-min_ && !triggered_)
-                {
-#if MIDI_INPUT_DEBUG
-                    pic::logmsg() << "midi triggered " << 4 << " " << id_ << " " << d;
-#endif
-                    piw::data_nb_t d2 = piw::makekey(1,id_,1,id_,piw::KEY_HARD,t);
-                    output_.add_value(4,d2);
-                    triggered_=true;
-                }
-*/
                 if(!active_)
                 {
                     source_start(0,piw::pathone_nb(id_,t),output_);
