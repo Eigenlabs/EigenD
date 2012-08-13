@@ -35,7 +35,7 @@ class midi_clock[pi_midi::midi_clock_t]
 
 class midi_input[pi_midi::midi_input_t] /gc/
 {
-    midi_input(const cookie &, const cookie &)
+    midi_input(const cookie &, const cookie &, const cookie &, const cookie &, const cookie &)
     bool setport(long)
     long getport()
     unsigned current(unsigned)

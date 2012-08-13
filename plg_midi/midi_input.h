@@ -54,7 +54,7 @@ namespace pi_midi
             class impl_t;
 
         public:
-            midi_input_t(const piw::cookie_t &keyboard_cookie,const piw::cookie_t &midi_cookie);
+            midi_input_t(const piw::cookie_t &key_cookie, const piw::cookie_t &cc_cookie, const piw::cookie_t &programchange_cookie, const piw::cookie_t &trigger_cookie, const piw::cookie_t &midi_cookie);
             virtual ~midi_input_t();
             bool setport(long);
             long getport(void);

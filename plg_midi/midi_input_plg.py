@@ -44,6 +44,24 @@ class VirtualKey(atom.Atom):
         if o<0 or o>127: return self.__key()
         return self.__key(o)
 
+class VirtualProgramChange(atom.Atom):
+    def __init__(self):
+        atom.Atom.__init__(self,names='program change',protocols='virtual')
+        self.choices=[]
+
+    def __key(self,*keys):
+        x = ','.join(['cmp([dsc(~(parent)"#8","%(k)d")])' % dict(k=k) for k in keys])
+        return '[%s]' % x
+
+    def rpc_resolve(self,arg):
+        (a,o) = logic.parse_clause(arg)
+        print 'resolving virtual',arg,(a,o)
+        if not a and o is None: return self.__key(*range(0,128))
+        if a==('chosen',) and o is None: return self.__key(*self.choices)
+        if a or o is None: return self.__key()
+        o=int(o)
+        if o<0 or o>127: return self.__key()
+        return self.__key(o)
 
 class VirtualCC(atom.Atom):
     clist = (
@@ -123,8 +141,8 @@ class VirtualCC(atom.Atom):
         return async.failure('invalid cookie')
 
 class MidiDelegate(midi_native.midi_input):
-    def __init__(self,cookie,midi_cookie,notify):
-        midi_native.midi_input.__init__(self,cookie,midi_cookie)
+    def __init__(self,key_cookie,cc_cookie,pc_cookie,trig_cookie,midi_cookie,notify):
+        midi_native.midi_input.__init__(self,key_cookie,cc_cookie,pc_cookie,trig_cookie,midi_cookie)
         self.sources = []
         self.__notify = notify
 
@@ -150,9 +168,9 @@ class MidiDelegate(midi_native.midi_input):
                 return
 
 class MidiPort(atom.Atom):
-    def __init__(self,cookie,midi_cookie):
+    def __init__(self, key_cookie,cc_cookie,pc_cookie,trig_cookie,midi_cookie):
         self.__timestamp = piw.tsd_time()
-        self.__midi = MidiDelegate(cookie,midi_cookie,self.__sinks_changed)
+        self.__midi = MidiDelegate(key_cookie,cc_cookie,pc_cookie,trig_cookie,midi_cookie,self.__sinks_changed)
 
         atom.Atom.__init__(self,domain=domain.String(),names='midi port',policy=atom.default_policy(self.setport),protocols='virtual browse')
         self.__midi.setport(0)
@@ -281,10 +299,14 @@ class Agent(agent.Agent):
         self.set_private(node.Server(value=piw.makestring('[]',0), change=self.__settrim))
 
         self[1] = bundles.Output(1,False,names='key output')
-        self[2] = bundles.Output(2,False,names='continuous controller output')
-        self[8] = bundles.Output(3,False,names='program change output')
+        self[2] = bundles.Output(1,False,names='continuous controller output')
+        self[8] = bundles.Output(1,False,names='program change output')
+        self[10] = bundles.Output(1,False,names='continuous controller trigger output')
 
-        self.output = bundles.Splitter(self.domain,self[1],self[2],self[8])
+        self.key_output = bundles.Splitter(self.domain,self[1])
+        self.cc_output = bundles.Splitter(self.domain,self[2])
+        self.programchange_output = bundles.Splitter(self.domain,self[8])
+        self.trigger_output = bundles.Splitter(self.domain,self[10])
 
         self[6] = bundles.Output(1,False,names='midi output')
         self[7] = bundles.Output(2,False,names='midi clock output')
@@ -292,7 +314,8 @@ class Agent(agent.Agent):
 
         self[3] = VirtualKey()
         self[4] = VirtualCC()
-        self[5] = MidiPort(self.output.cookie(),self.midi_output.cookie())
+        self[9] = VirtualProgramChange()
+        self[5] = MidiPort(self.key_output.cookie(),self.cc_output.cookie(),self.programchange_output.cookie(),self.trigger_output.cookie(),self.midi_output.cookie())
 
         self.add_verb2(2,'choose([],None,role(None,[ideal([~server,midiport]),singular]))',self.__chooseport)
         self.add_verb2(3,'invert([],None,role(None,[cmpdsc([~(s)"#2"])]))', self.__invert);
