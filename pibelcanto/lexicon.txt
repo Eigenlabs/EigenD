@@ -54,7 +54,7 @@ Not properly assigned, in use:
 8   6   5   1  : Courses       : Noun              : None
 8   6   5   2  : Modulation    : Noun              : None
 8   6   5   3  : Pulloff       : Noun              : None
-8   6   5   4  : Unused        : Unused            : None
+8   6   5   4  : Stored        : Noun              : None
 8   6   5   5  : Unused        : Unused            : None
 8   6   5   6  : Unused        : Unused            : None
 8   6   5   7  : Unused        : Unused            : None

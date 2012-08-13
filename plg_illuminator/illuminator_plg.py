@@ -224,15 +224,21 @@ class LightMap(atom.Atom):
     def __init__(self,agent,index):
         atom.Atom.__init__(self,names='light mapping',ordinal=index,protocols='remove')
 
-        self[1] = atom.Atom(domain=domain.String(), init='[]', names='physical light mapping')
-        self[2] = atom.Atom(domain=domain.String(), init='[]', names='musical light mapping')
+        self[1] = atom.Atom(domain=domain.String(), init='[]', names='physical light mapping', policy=atom.default_policy(self.__physical_light_map))
+        self[2] = atom.Atom(domain=domain.String(), init='[]', names='musical light mapping', policy=atom.default_policy(self.__musical_light_map))
+
+    def __physical_light_map(self,v):
+        self[1].set_value(v)
+
+    def __musical_light_map(self,v):
+        self[2].set_value(v)
 
 class StoredLightMaps(collection.Collection):
     def __init__(self,agent):
         self.agent = agent
         self.__timestamp = piw.tsd_time()
 
-        collection.Collection.__init__(self,names="stored mappings",creator=self.__create_lightmap,wrecker=self.__wreck_lightmap,inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
+        collection.Collection.__init__(self,names="stored",creator=self.__create_lightmap,wrecker=self.__wreck_lightmap,inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst)
         self.update()
 
     def update(self):
@@ -256,6 +262,7 @@ class StoredLightMaps(collection.Collection):
         o = int(o)
         e = self.new_lightmap(o)
         self[o] = e
+        e.set_ordinal(int(o))
         self.lightmaps_changed()
         self.agent.update()
         return e 
@@ -420,7 +427,8 @@ class Agent(agent.Agent):
                         names = names[:-1]
                     except:
                         ordinal = 0
-                lm.set_names(' '.join(names))
+                if len(names) > 0:
+                    lm.set_names(' '.join(names))
                 lm.set_ordinal(ordinal)
             lm[1].set_value(self[2].get_value())
             lm[2].set_value(self[3].get_value())
