@@ -239,14 +239,25 @@ namespace
 
         void sendtrigger(unsigned channel, unsigned value, unsigned long long t)
         {
-            if(127 == value)
+            if(0 == value)
+            {
+                piw::data_nb_t d = piw::makekey(0,id_,0,id_,piw::KEY_HARD,t);
+
+                output_.add_value(1,d);
+                source_start(0,piw::pathone_nb(id_,t),output_);
+#if MIDI_INPUT_DEBUG
+                pic::logmsg() << "midi trigger off " << id_ << " " << d;
+#endif
+                source_end(t+1);
+            }
+            else if(127 == value)
             {
                 piw::data_nb_t d = piw::makekey(1,id_,1,id_,piw::KEY_HARD,t);
 
                 output_.add_value(1,d);
                 source_start(0,piw::pathone_nb(id_,t),output_);
 #if MIDI_INPUT_DEBUG
-                pic::logmsg() << "midi trigger " << id_ << " " << d;
+                pic::logmsg() << "midi trigger on " << id_ << " " << d;
 #endif
                 source_end(t+1);
             }
