@@ -1984,13 +1984,15 @@ void EigenD::systemRequestedQuit()
 {
     if(main_window_ != 0)
     {
-        if(!main_window_->do_quit())
+        EigenMainWindow *w = main_window_;
+        main_window_ = 0;
+
+        if(!w->do_quit())
         {
+            main_window_ = w;
             return;
         }
 
-        EigenMainWindow *w = main_window_;
-        main_window_ = 0;
         delete w;
     }
 
