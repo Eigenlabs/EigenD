@@ -1996,8 +1996,8 @@ void EigenD::systemRequestedQuit()
         delete w;
     }
 
-    cleanup();
     juce::MessageManager::getInstance()->runDispatchLoopUntil(500);
+    cleanup();
     ejuce::Application::quit();
 }
 
