@@ -566,21 +566,26 @@ class Workspace(atom.Atom):
 
         agents = set(all_agents(self.trunk))
 
+        print 'presave pass'
         for m in self.index.members():
             ma = m.address
             if ma in agents:
                 qa = self.index.to_absolute(ma)
+                print 'presave',qa
                 r = rpc.invoke_rpc(qa,'presave',filename)
                 yield r
+                print 'presaved',qa
 
 
+        print 'save syncing'
         yield self.index.sync()
+        print 'save synced'
         m = [ c.address for c in self.index.members() ]
 
+        print 'save parking'
         for i in range(0,self.trunk.agent_count()):
             agent = self.trunk.get_agent_index(i)
             address = agent.get_address()
-
 
             if address in m or agent.get_type()!=0:
                 continue
@@ -590,6 +595,7 @@ class Workspace(atom.Atom):
             checkpoint.set_type(1)
             self.trunk.set_agent(checkpoint)
 
+        print 'save parked'
         cp = self.flush('saved')
         snap = self.database.get_version(cp)
 
@@ -599,6 +605,7 @@ class Workspace(atom.Atom):
 
         upgrade.copy_snap2file(snap,filename,tweaker=save_tweaker)
 
+        print 'save waking busy waiters'
         if self.__busy:
             busy_copy = self.__busy[:]
             self.__busy = None
@@ -607,6 +614,7 @@ class Workspace(atom.Atom):
         else:
             self.__busy = None
 
+        print 'save woke busy waiters'
         yield async.Coroutine.success()
 
     def server_opened(self):
