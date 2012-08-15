@@ -332,17 +332,17 @@ class Backend(eigend_native.c2p):
     def prepare_quit(self):
         self.savcond.acquire()
         try:
-            while self.saving:
-                self.savcond.wait(1)
+            if self.saving:
+                return False
             self.quitting = True
+            return True
         finally:
             self.savcond.release()
 
     def quit(self):
         self.savcond.acquire()
         try:
-            if not self.quitting:
-                self.prepare_quit()
+            self.quitting = True
         finally:
             self.savcond.release()
 

@@ -63,7 +63,7 @@ namespace eigend
         virtual void file_bug(const std::string &u, const std::string &e, const std::string &s, const std::string &d) = 0;
         virtual void upgrade_setups() = 0;
         virtual void quit() = 0;
-        virtual void prepare_quit() = 0;
+        virtual bool prepare_quit() = 0;
     };
 
 }

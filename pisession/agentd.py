@@ -603,11 +603,14 @@ class Agent(agent.Agent):
     @async.coroutine('internal error')
     def save_file(self,path,desc=''):
         r = self.__workspace.save_file(path,desc)
+        print 'calling workspace save'
         yield r
+        print 'called workspace save',r.status()
         if not r.status():
             yield async.Coroutine.failure(*r.args(),**r.kwds())
 
         self.__backend.setups_changed(path)
+        print 'finished agentd save_file'
 
     @async.coroutine('internal error')
     def __saveverb(self,subject,tag):

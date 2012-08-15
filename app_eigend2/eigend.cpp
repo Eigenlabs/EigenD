@@ -272,7 +272,7 @@ class EigenMainWindow: public DocumentWindow, public MenuBarModel, public piw::t
         std::string get_cookie();
         std::string get_os();
         void enable_save_menu(bool active);
-        void do_quit();
+        bool do_quit();
 
     private:
         EigenLoadComponent *component_;
@@ -560,12 +560,7 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
             break;
 
         case commandQuit:
-            do_quit();
-//#ifdef JUCE_WINDOWS
-//            TerminateProcess(GetCurrentProcess(),0);
-//#else
-            JUCEApplication::quit();
-//#endif
+            JUCEApplication::getInstance()->systemRequestedQuit();
             break;
 
         case commandDownload:
@@ -939,9 +934,13 @@ EigenMainWindow::~EigenMainWindow()
     if (bug_ != 0) delete bug_;
 }
 
-void EigenMainWindow::do_quit()
+bool EigenMainWindow::do_quit()
 {
-    backend_->prepare_quit();
+    if(!backend_->prepare_quit())
+    {
+        alert_dialog("Save In Progress","Save In Progress","A save operation is in progress.  Please wait for it to complete before quitting");
+        return false;
+    }
 
 #ifdef JUCE_MAC
     MenuBarModel::setMacMainMenu(nullptr,nullptr);
@@ -957,6 +956,7 @@ void EigenMainWindow::do_quit()
     backend_->quit();
 
     cancel_timer_slow();
+    return true;
 }
 
 void EigenMainWindow::getAllCommands (Array <CommandID>& commands)
@@ -1984,13 +1984,17 @@ void EigenD::systemRequestedQuit()
 {
     if(main_window_ != 0)
     {
+        if(!main_window_->do_quit())
+        {
+            return;
+        }
+
         EigenMainWindow *w = main_window_;
         main_window_ = 0;
-        w->do_quit();
         delete w;
     }
+
     juce::MessageManager::getInstance()->runDispatchLoopUntil(500);
-    cleanup();
     ejuce::Application::quit();
 }
 

@@ -33,7 +33,7 @@ class c2p[eigend::c2p_t]
     virtual stdstr words_to_notes(const stdstr &) = 0
     virtual void file_bug(const stdstr &, const stdstr &, const stdstr &, const stdstr &) = 0
     virtual void upgrade_setups() = 0
-    virtual void prepare_quit() = 0
+    virtual bool prepare_quit() = 0
     virtual void quit() = 0
 
     inline token(self,args)
