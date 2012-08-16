@@ -25,9 +25,9 @@ import os.path
 release = '2.0.62'
 
 status = {
-    'windows': 'testing',
+    'windows': 'stable',
     'linux': 'experimental',
-    'macosx': 'testing'
+    'macosx': 'stable'
 }
 
 tag = '%s-%s' % (release,status[master_env['PI_PLATFORMTYPE']])
