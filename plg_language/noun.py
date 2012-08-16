@@ -548,14 +548,16 @@ class State_Virtual:
     def refine(self,db,w):
         states = []
 
-        if not self.__all:
-            yield async.Coroutine.success([],[])
-
         wids = db.get_propcache('name').get_idset(w)
         refined_ids = self.__ids.intersection(wids)
 
+        print 'refined virtual',w,wids,self.__ids,refined_ids
+
         if refined_ids:
             yield async.Coroutine.success([State_Virtual(self.__pri,self.__words+[w],refined_ids,self.__all)],[])
+
+        if not self.__all:
+            yield async.Coroutine.success([],[])
 
         ids = disambiguate_virtual(db,self.__ids,self.__words)
         r = self.resolve(db,ids,self.__words,None)
