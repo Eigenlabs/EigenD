@@ -821,11 +821,17 @@ int pi_midi::midi_input_t::gc_traverse(void *v, void *a) const
 {
     int r;
     if((r=root_->keyboard.gc_traverse(v,a))!=0) return r;
+    if((r=root_->continouscontrol.gc_traverse(v,a))!=0) return r;
+    if((r=root_->programchange.gc_traverse(v,a))!=0) return r;
+    if((r=root_->trigger.gc_traverse(v,a))!=0) return r;
     return 0;
 }
 
 int pi_midi::midi_input_t::gc_clear()
 {
     root_->keyboard.gc_clear();
+    root_->continouscontrol.gc_clear();
+    root_->programchange.gc_clear();
+    root_->trigger.gc_clear();
     return 0;
 }
