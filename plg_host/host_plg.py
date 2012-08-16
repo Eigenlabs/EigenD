@@ -368,7 +368,6 @@ class Agent(agent.Agent):
         self[6] = atom.Atom(names='controller inputs')
         self[6][1] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.vector_policy(1,False),names='pressure input')
         self[6][2] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.merge_nodefault_policy(2,False),names='frequency input')
-        self[6][3] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.merge_nodefault_policy(5,False),names='key input')
 
         # midi channel 
         self[7] =  atom.Atom(domain=domain.BoundedInt(0,16),init=0,names='midi channel',policy=atom.default_policy(self.set_midi_channel))
@@ -616,5 +615,28 @@ class Agent(agent.Agent):
     def on_quit(self):
         self.__host.close()
 
-agent.main(Agent,gui=True)
+class Upgrader(upgrade.Upgrader):
+    def upgrade_1_0_3_to_1_0_4(self,tools,address):
+        pass
+
+    def phase2_1_0_4(self,tools,address):
+        print 'upgrading host',address
+        root = tools.get_root(address)
+        key_input = root.get_node(6,3)
+        print 'disconnecting key input',key_input.id()
+        conn = key_input.get_master()
+        if not conn: return
+        for c in conn:
+            print 'connection',c
+            upstream_addr,upstream_path = paths.breakid_list(c)
+            upstream_root = tools.get_root(upstream_addr)
+            if not upstream_root: continue
+            upstream = upstream_root.get_node(*upstream_path)
+            upstream_slaves = logic.parse_clauselist(upstream.get_meta_string('slave'))
+            print 'old upstream slaves',upstream_slaves
+            upstream_slaves.remove(key_input.id())
+            print 'new upstream slaves',upstream_slaves
+            upstream.set_meta_string('slave', logic.render_termlist(upstream_slaves))
+
+agent.main(Agent,Upgrader,gui=True)
 
