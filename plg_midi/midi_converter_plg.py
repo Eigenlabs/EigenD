@@ -124,11 +124,10 @@ class Agent(agent.Agent):
 
         # Inputs for generating keyboard driven MIDI signals
         # MIDI controllers are merged down with signals from keys (driven by pressure)
-        self.__kinpt = bundles.VectorInput(self.__midi_from_belcanto.cookie(),self.__domain,signals=(1,2,5))
+        self.__kinpt = bundles.VectorInput(self.__midi_from_belcanto.cookie(),self.__domain,signals=(1,2))
         self[2] = atom.Atom(names='inputs')
         self[2][1] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.vector_policy(1,False),names='pressure input')
         self[2][2] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.merge_nodefault_policy(2,False),names='frequency input')
-        self[2][3] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.merge_nodefault_policy(5,False),names='key input')
 
          # input to set the MIDI channel
         self[3] = atom.Atom(domain=domain.BoundedInt(0,16),init=0,names="midi channel",policy=atom.default_policy(self.set_midi_channel))
@@ -231,5 +230,28 @@ class Agent(agent.Agent):
         self.__midi_converter.set_mapping(mapping)
         return
 
+class Upgrader(upgrade.Upgrader):
+    def upgrade_1_0_3_to_1_0_4(self,tools,address):
+        pass
 
-agent.main(Agent,gui=True)
+    def phase2_1_0_4(self,tools,address):
+        print 'upgrading midi converter',address
+        root = tools.get_root(address)
+        key_input = root.get_node(2,3)
+        print 'disconnecting key input',key_input.id()
+        conn = key_input.get_master()
+        if not conn: return
+        for c in conn:
+            print 'connection',c
+            upstream_addr,upstream_path = paths.breakid_list(c)
+            upstream_root = tools.get_root(upstream_addr)
+            if not upstream_root: continue
+            upstream = upstream_root.get_node(*upstream_path)
+            upstream_slaves = logic.parse_clauselist(upstream.get_meta_string('slave'))
+            print 'old upstream slaves',upstream_slaves
+            upstream_slaves.remove(key_input.id())
+            print 'new upstream slaves',upstream_slaves
+            upstream.set_meta_string('slave', logic.render_termlist(upstream_slaves))
+
+
+agent.main(Agent,Upgrader,gui=True)

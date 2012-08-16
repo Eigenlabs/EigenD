@@ -336,7 +336,7 @@ class Agent(agent.Agent):
         self.parameter_list = inputparameter.List(self.__host,self.__host.clock_domain(),self.verb_container())
         self.__audio_input = audio.AudioInput(bundles.ScalarInput(self.__host.audio_input_cookie(),self.__domain,signals=range(1,65)),1,2,names='channels')
         self.__audio_input_channels = audio.AudioChannels(self.__audio_input)
-        self.__key_input = bundles.VectorInput(self.__host.midi_from_belcanto_cookie(),self.__domain,signals=(1,2,5))
+        self.__key_input = bundles.VectorInput(self.__host.midi_from_belcanto_cookie(),self.__domain,signals=(1,2))
         self.__midi_input = bundles.ScalarInput(self.__host.midi_aggregator_cookie(),self.__domain,signals=(1,))
         self.__metronome_input = bundles.ScalarInput(self.__host.metronome_input_cookie(),self.__domain,signals=(1,2,3,4))
         self.__host.set_bypassed(True)
