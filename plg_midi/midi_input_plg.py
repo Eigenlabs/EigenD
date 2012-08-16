@@ -338,9 +338,9 @@ class Agent(agent.Agent):
         self[5] = MidiPort(self.key_output.cookie(),self.cc_output.cookie(),self.programchange_output.cookie(),self.trigger_output.cookie(),self.midi_output.cookie())
 
         self.add_verb2(2,'choose([],None,role(None,[ideal([~server,midiport]),singular]))',self.__chooseport)
-        self.add_verb2(3,'invert([],None,role(None,[cmpdsc([~(s)"#2"])]))', self.__invert);
-        self.add_verb2(4,'minimise([],None,role(None,[cmpdsc([~(s)"#2"])]),option(to,[numeric]))', self.__setmin);
-        self.add_verb2(5,'maximise([],None,role(None,[cmpdsc([~(s)"#2"])]),option(to,[numeric]))', self.__setmax);
+        self.add_verb2(3,'invert([],None,role(None,[cmpdsc(~(s)"#2")]))', self.__invert);
+        self.add_verb2(4,'minimise([],None,role(None,[cmpdsc(~(s)"#2")]),option(to,[numeric]))', self.__setmin);
+        self.add_verb2(5,'maximise([],None,role(None,[cmpdsc(~(s)"#2")]),option(to,[numeric]))', self.__setmax);
 
         self.set_ordinal(ordinal)
 

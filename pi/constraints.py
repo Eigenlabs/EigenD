@@ -276,6 +276,20 @@ def constraint_descriptor(db,c,objects):
 
     return matches
 
+def constraint_cmpdsc_1(db,c,objects):
+    matches = []
+    req_id = c.args[0]
+
+    for r in objects:
+        if logic.is_pred_arity(r,'cmp',1,1):
+            dsc = r.args[0]
+            if logic.is_list(dsc) and len(dsc)==1:
+                dsc = dsc[0]
+                if logic.is_pred_arity(dsc,'dsc',2,2) and dsc.args[0]==req_id:
+                    matches.append(r)
+
+    return matches
+
 @async.coroutine('internal error')
 def constraint_composite_1(db,c,objects):
     subc = c.args[0]
