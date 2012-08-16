@@ -53,7 +53,6 @@ using namespace std;
 
 #define IN_PRESSURE 1
 #define IN_FREQUENCY 2
-#define IN_KEY 5
 #define IN_MASK SIG2(IN_PRESSURE,IN_FREQUENCY)
 
 #define MIDI_FROM_BELCANTO_DEBUG 0
