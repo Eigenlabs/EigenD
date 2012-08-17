@@ -22,12 +22,12 @@ Import('master_env')
 
 import os.path
 
-release = '2.0.62'
+release = '2.1.0'
 
 status = {
-    'windows': 'stable',
+    'windows': 'experimental',
     'linux': 'experimental',
-    'macosx': 'stable'
+    'macosx': 'experimental'
 }
 
 tag = '%s-%s' % (release,status[master_env['PI_PLATFORMTYPE']])
