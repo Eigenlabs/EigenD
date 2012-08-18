@@ -3,6 +3,7 @@
 #include <plg_midi/midi_output.h>
 #include <plg_midi/midi_clock.h>
 #include <plg_midi/midi_input.h>
+#include <plg_midi/midi_processor.h>
 >>>
 
 from piw[piw/piw.pip] import cookie,data,change_nb,clockdomain_ctl
@@ -46,4 +47,23 @@ class midi_input[pi_midi::midi_input_t] /gc/
     virtual void source_removed(long)
     void run()
     void stop()
+}
+
+class midi_processor[pi_midi::midi_processor_t]
+{
+    midi_gate(const cookie &, clockdomain_ctl *)
+    cookie cookie()
+    void closed(bool)
+    void noteon_enabled(bool)
+    void noteoff_enabled(bool)
+    void polypressure_enabled(bool)
+    void cc_enabled(bool)
+    void programchange_enabled(bool)
+    void channelpressure_enabled(bool)
+    void pitchbend_enabled(bool)
+    void messages_enabled(bool)
+
+    void clear_channel_mapping()
+    void set_channel_mapping(unsigned, unsigned)
+    void activate_channel_mapping()
 }

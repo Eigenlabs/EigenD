@@ -62,7 +62,12 @@ void midi::mididecoder_t::decode2(unsigned char b1,unsigned char b2)
     {
         case 4:
             decoder_programchange(lo,b2);
-            h=true;
+            h = true;
+            break;
+
+        case 5:
+            decoder_channelpressure(lo,b2);
+            h = true;
             break;
     }
     decoder_generic2(h,b1,b2);
@@ -75,6 +80,11 @@ void midi::mididecoder_t::decode3(unsigned char b1,unsigned char b2,unsigned cha
     bool h = false;
     switch(hi)
     {
+        case 0:
+            decoder_noteoff(lo,b2,b3);
+            h = true;
+            break;
+
         case 1:
             if(b3>0)
             {
@@ -82,24 +92,22 @@ void midi::mididecoder_t::decode3(unsigned char b1,unsigned char b2,unsigned cha
                 h=true;
                 break;
             }
-            b3=0x7f;
+            b3 = 0x7f;
 
-        case 0:
-            decoder_noteoff(lo,b2,b3);
-            h=true;
+        case 2:
+            decoder_polypressure(lo,b2,b3);
+            h = true;
             break;
 
         case 3:
             decoder_cc(lo,b2,b3);
-            h=true;
+            h = true;
             break;
 
         case 6:
-            unsigned short p;
-            p=((b3<<7)|(b2));
-            float f = ((float)p)/((float)0x2000);
-            decoder_pitchbend(lo,f-1.0);
-            h=true;
+            unsigned short p=((b3<<7)|(b2));
+            decoder_pitchbend(lo,p);
+            h = true;
             break;
     }
 
@@ -124,7 +132,7 @@ restart:
     {
         case STATUS:
 
-            _state=START;
+            _state = START;
             if(!cmd) decoder_input(_buffer[0]);
             goto restart;
 
@@ -132,36 +140,36 @@ restart:
 
             if(!cmd) { return; }
             start_state(octet);
-            _buffer[0]=octet;
-            if(_state==START) { decode1(octet); }
+            _buffer[0] = octet;
+            if(_state == START) { decode1(octet); }
             return;
 
         case GET1OF1:
 
-            if(cmd) { _state=START; goto restart; }
-            _state=STATUS;
+            if(cmd) { _state = START; goto restart; }
+            _state = STATUS;
             decode2(_buffer[0],octet);
             return;
 
         case GET1OF2:
 
-            if(cmd) { _state=START; goto restart; }
-            _buffer[1]=octet;
-            _state=GET2OF2;
+            if(cmd) { _state = START; goto restart; }
+            _buffer[1] = octet;
+            _state = GET2OF2;
             return;
 
         case GET2OF2:
 
-            if(cmd) { _state=START; goto restart; }
-            _state=STATUS;
+            if(cmd) { _state = START; goto restart; }
+            _state = STATUS;
             decode3(_buffer[0],_buffer[1],octet);
             return;
 
         case GETSYSEX:
 
             if((octet&0xf8) == 0xf8) { decode1(octet); return; }
-            if(octet == 0xf7) { _state=START; return; }
-            if(cmd) { _state=START; goto restart; }
+            if(octet == 0xf7) { _state = START; return; }
+            if(cmd) { _state = START; goto restart; }
             return;
     }
 
