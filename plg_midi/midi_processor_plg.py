@@ -44,7 +44,7 @@ class Agent(agent.Agent):
         self[4][1] = atom.Atom(domain=domain.Bool(), init=True, names='note on enabled', policy=atom.default_policy(self.__noteon_enabled))
         self[4][2] = atom.Atom(domain=domain.Bool(), init=True, names='note off enabled', policy=atom.default_policy(self.__noteoff_enabled))
         self[4][3] = atom.Atom(domain=domain.Bool(), init=True, names='polyphonic pressure enabled', policy=atom.default_policy(self.__polypressure_enabled))
-        self[4][4] = atom.Atom(domain=domain.Bool(), init=True, names='continuous control enabled', policy=atom.default_policy(self.__cc_enabled))
+        self[4][4] = atom.Atom(domain=domain.Bool(), init=True, names='continuous controller enabled', policy=atom.default_policy(self.__cc_enabled))
         self[4][5] = atom.Atom(domain=domain.Bool(), init=True, names='program change enabled', policy=atom.default_policy(self.__programchange_enabled))
         self[4][6] = atom.Atom(domain=domain.Bool(), init=True, names='channel pressure enabled', policy=atom.default_policy(self.__channelpressure_enabled))
         self[4][7] = atom.Atom(domain=domain.Bool(), init=True, names='pitch bend enabled', policy=atom.default_policy(self.__pitchbend_enabled))
@@ -53,9 +53,9 @@ class Agent(agent.Agent):
         self[5] = atom.Atom(names='mapping')
         self[5][1] = atom.Atom(domain=domain.String(), init='[]', names='channel mapping', policy=atom.default_policy(self.__set_channel_map))
 
-        self.add_verb2(1,'clear([],None,role(None,[matches([channel,mapping])]))', callback=self.__clear_channel_map)
-        self.add_verb2(2,'map([],None,role(None,[mass([channel])]),role(to,[numeric]))', callback=self.__map_channel)
-        self.add_verb2(3,'map([un],None,role(None,[mass([channel])]))', callback=self.__unmap_channel)
+        self.add_verb2(1,'clear([],none,role(none,[matches([channel,mapping])]))', callback=self.__clear_channel_map)
+        self.add_verb2(2,'map([],none,role(none,[mass([channel])]),role(to,[numeric]))', callback=self.__map_channel)
+        self.add_verb2(3,'map([un],none,role(none,[mass([channel])]))', callback=self.__unmap_channel)
 
     def __closed(self,v):
         self.midiprocessor.closed(v)
@@ -155,7 +155,6 @@ class Agent(agent.Agent):
         self.midiprocessor.activate_channel_mapping()
 
         self[5][1].set_value(logic.render_term(pruned_mapping))
-        print self.__current_channel_mapping()
 
 agent.main(Agent)
 

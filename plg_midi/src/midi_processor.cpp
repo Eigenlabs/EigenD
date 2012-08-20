@@ -127,7 +127,7 @@ namespace
             else
             {
                 piw::data_nb_t d;
-                if(env->cfilterenv_nextsig(1,d,to))
+                while(env->cfilterenv_nextsig(1,d,to))
                 {
                     if(d.is_blob())
                     {
