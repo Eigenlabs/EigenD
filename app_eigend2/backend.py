@@ -114,6 +114,7 @@ class Backend(eigend_native.c2p):
         self.bgthing = piw.thing()
         self.bgthing.set_slow_trigger_handler(utils.notify(self.bgdequeue))
         self.bgqueue = []
+        self.frontend = None
 
         upgrade.clr_tmp_setup()
 
@@ -148,15 +149,18 @@ class Backend(eigend_native.c2p):
         self.args = args
 
     def __load_started(self,setup):
-        self.frontend.load_started(setup)
+        if self.frontend:
+            self.frontend.load_started(setup)
 
     def __load_ended(self,errors):
-        self.frontend.load_ended()
-        if errors:
-            self.frontend.alert_dialog('Load Problems','Load Problems','\n'.join(errors))
+        if self.frontend:
+            self.frontend.load_ended()
+            if errors:
+                self.frontend.alert_dialog('Load Problems','Load Problems','\n'.join(errors))
 
     def __set_latest_release(self,release):
-        self.frontend.set_latest_release(release)
+        if self.frontend:
+            self.frontend.set_latest_release(release)
 
     def load_started(self,setup):
         self.run_foreground_async(self.__load_started,setup)
@@ -174,7 +178,7 @@ class Backend(eigend_native.c2p):
         finally:
             self.__progress_lock.release()
 
-        if old:
+        if old and self.frontend:
             self.frontend.load_status(*old)
 
     def load_status(self,message,progress):
@@ -288,8 +292,11 @@ class Backend(eigend_native.c2p):
         return setup
 
     def __create_context(self,name):
-        logger = self.frontend.make_logger(name)
-        return self.scaffold.bgcontext(piw.tsd_scope(),utils.statusify(None),logger,name)
+        if self.frontend:
+            logger = self.frontend.make_logger(name)
+            return self.scaffold.bgcontext(piw.tsd_scope(),utils.statusify(None),logger,name)
+        else:
+            return None
 
     @utils.nothrow
     def initialise(self,frontend,scaffold,cookie,info):
@@ -335,6 +342,7 @@ class Backend(eigend_native.c2p):
             if self.saving:
                 return False
             self.quitting = True
+            self.frontend = None
             return True
         finally:
             self.savcond.release()
@@ -366,19 +374,22 @@ class Backend(eigend_native.c2p):
         self.run_background_async(self.agent.load_file,setup)
 
     def __alert_dialog(self,klass,label,text):
-        self.frontend.alert_dialog(klass,label,text)
+        if self.frontend:
+            self.frontend.alert_dialog(klass,label,text)
 
     def alert_dialog(self,klass,label,text):
         self.run_foreground_async(self.__alert_dialog,klass,label,text)
 
     def __info_dialog(self,klass,label,text):
-        self.frontend.info_dialog(klass,label,text)
+        if self.frontend:
+            self.frontend.info_dialog(klass,label,text)
 
     def info_dialog(self,klass,label,text):
         self.run_foreground_async(self.__info_dialog,klass,label,text)
 
     def __setups_changed(self,file):
-        self.frontend.setups_changed(file)
+        if self.frontend:
+            self.frontend.setups_changed(file)
 
     def __set_default_setup(self,path):
         agentd.set_default_setup(path)
