@@ -38,7 +38,7 @@ struct ejuce::Application::impl_t: public juce::MessageListener, virtual public 
 
 void ejuce::Application::impl_t::handleGone()
 {
-    application_->handleGone();
+    if(application_) application_->handleGone();
 }
 
 void ejuce::Application::impl_t::handleService()
@@ -48,12 +48,12 @@ void ejuce::Application::impl_t::handleService()
 
 void ejuce::Application::impl_t::handleMessage(const juce::Message &message)
 {
-    scaffold_->process_ctx();
+    if(scaffold_) scaffold_->process_ctx();
 }
 
 void ejuce::Application::impl_t::handleWinch(const std::string &message)
 {
-    application_->handleWinch(message);
+    if(application_) application_->handleWinch(message);
 }
 
 ejuce::Application::impl_t::impl_t(Application *app,const pic::f_string_t &l,bool ck,bool rt): application_(app)
@@ -64,12 +64,14 @@ ejuce::Application::impl_t::impl_t(Application *app,const pic::f_string_t &l,boo
 
 ejuce::Application::impl_t::~impl_t()
 {
+    application_ = 0;
+    scaffold_ = 0;
     tracked_invalidate();
 }
 
 void ejuce::Application::impl_t::cleanup()
 {
-    scaffold_->shutdown();
+    if(scaffold_) scaffold_->shutdown();
 }
 
 ejuce::Application::Application(): messages_(0)

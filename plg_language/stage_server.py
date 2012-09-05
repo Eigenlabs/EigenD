@@ -1107,7 +1107,7 @@ class Tab(atom.Atom):
         
     def get_session_changes(self):
         index = self.get_property_long('tabIndex')
-        if index != -1:
+        if index != -1 and index in self.__sessionChanges:
             #print 'sessionChange[',index,']=',self.__sessionChanges[index]
             return self.__sessionChanges[index]
         else:
