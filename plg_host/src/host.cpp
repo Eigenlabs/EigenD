@@ -703,10 +703,17 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         return false;
     }
 
-    void set_state(const void *data, int sizeInBytes)
+    juce::AudioPluginInstance *current_plugin()
     {
         pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
-        juce::AudioPluginInstance *p(pg.value());
+        return pg.value();
+    }
+
+    void set_state(const void *data, int sizeInBytes)
+    {
+        juce::AudioPluginInstance *p = current_plugin();
+        // ensuring that for setting the state information the flipflop guard
+        // isn't up, since this can take a long time for certain plugins
         if(p)
         {
             p->setStateInformation(data, sizeInBytes);
