@@ -42,10 +42,12 @@
 #include "juce.h"
 
 #define MESSAGE_DESTROY_GUI
+
 namespace
 {
     enum HostMessageTypes 
     {
+        messageShowGUI,
         messageDestroyGUI,
         messageDestroyPlugin,
         messageDestroyListener
@@ -490,31 +492,16 @@ namespace
 
     struct host_messages_t: piw::thing_t, juce::MessageListener
     {
-        host_messages_t() : always_schedule_messages_(false)
+        host_messages_t(host::plugin_instance_t::impl_t *root) : always_schedule_messages_(false), root_(root)
         {
             piw::tsd_thing(this);
         }
 
-        void handleMessage(const juce::Message &message)
+        void handleMessage(const juce::Message &message);
+
+        void show_gui()
         {
-            switch(message.intParameter1)
-            {
-                case messageDestroyGUI:
-                    if(message.pointerParameter)
-                    {
-                        delete_gui((host_view_t *)message.pointerParameter);
-                    }
-                    break;
-                case messageDestroyPlugin:
-                    if(message.pointerParameter)
-                    {
-                        delete_plugin((juce::AudioPluginInstance *)message.pointerParameter);
-                    }
-                    break;
-                case messageDestroyListener:
-                    delete_instance();
-                    break;
-            }
+            postMessage(new juce::Message(messageShowGUI,0,0,0));
         }
 
         void destroy_gui(host_view_t *w)
@@ -551,6 +538,7 @@ namespace
 
         void destroy_instance()
         {
+            root_ = 0;
             postMessage(new juce::Message(messageDestroyListener,0,0,0));
         }
 
@@ -584,6 +572,7 @@ namespace
         
         private:
             bool always_schedule_messages_;
+            host::plugin_instance_t::impl_t *root_;
     };
 }
 
@@ -591,7 +580,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 {
     impl_t(plugin_observer_t *obs, midi::midi_channel_delegate_t *channel_delegate, piw::clockdomain_ctl_t *d,
         const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, const pic::status_t &window_state): 
-            messages_(new host_messages_t()),
+            messages_(new host_messages_t(this)),
             audio_output_cookie_(audio_out), audio_input_(this), midi_input_(this), metronome_input_(this), 
             plugin_(0), window_(0), audio_buffer_(0,0), buffer_data_(0), num_input_channels_(0), num_output_channels_(0),
             window_state_changed_(window_state), clockdomain_(d), sample_rate_(48000.0), buffer_size_(PLG_CLOCK_BUFFER_SIZE),
@@ -645,27 +634,41 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         if(messages_) messages_->destroy_instance();
     }
 
-    void clock_changed()
+    bool has_plugin()
     {
         pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
-        juce::AudioPluginInstance *p(pg.value());
-        if(!p)
+        return pg.value() != 0;
+    }
+
+    void clock_changed()
+    {
+        if(!has_plugin())
         {
             return;
         }
+
+        juce::MemoryBlock mb;
+        bool state = get_state(mb);
+        bool showing = is_showing();
+        bool bypassed = bypassed_;
+        juce::Rectangle<int> bounds = get_bounds();
+
         set_bypassed(true);
-        p->releaseResources();
-        sample_rate_ = clockdomain_->get_sample_rate();
-        buffer_size_ = clockdomain_->get_buffer_size();
-        if(allocate_buffer(p))
+
+        plugin_description_t d = get_description();
+        if(open(d))
         {
-            p->prepareToPlay(sample_rate_, buffer_size_);
-            recalc_idle_time();
-            set_bypassed(false);
-        }
-        else
-        {
-            close();
+            if(state)
+            {
+                set_state(mb.getData(), mb.getSize());
+            }
+            set_bounds(bounds);
+            if(showing)
+            {
+                messages_->show_gui();
+            }
+            refresh_title();
+            set_bypassed(bypassed);
         }
     }
     
@@ -673,6 +676,41 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     {
         juce::AudioPluginInstance *plg = juce::AudioPluginFormatManager::getInstance()->createPluginInstance(desc,err);
         return plg;
+    }
+
+    plugin_description_t get_description()
+    {
+        pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
+        juce::AudioPluginInstance *p(pg.value());
+
+        plugin_description_t d;
+        if(p)
+        {
+            p->fillInPluginDescription(d.desc_);
+        }
+        return d;
+    }
+
+    bool get_state(juce::MemoryBlock &mb)
+    {
+        pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
+        juce::AudioPluginInstance *p(pg.value());
+        if(p)
+        {
+            p->getStateInformation(mb);
+            return true;
+        }
+        return false;
+    }
+
+    void set_state(const void *data, int sizeInBytes)
+    {
+        pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(plugin_);
+        juce::AudioPluginInstance *p(pg.value());
+        if(p)
+        {
+            p->setStateInformation(data, sizeInBytes);
+        }
     }
 
     bool open(const plugin_description_t &d)
@@ -1356,6 +1394,33 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     midi::midi_from_belcanto_t *midi_from_belcanto_;
 };
 
+void host_messages_t::handleMessage(const juce::Message &message)
+{
+    switch(message.intParameter1)
+    {
+        case messageShowGUI:
+            if(root_)
+            {
+                root_->show_gui();
+            }
+            break;
+        case messageDestroyGUI:
+            if(message.pointerParameter)
+            {
+                delete_gui((host_view_t *)message.pointerParameter);
+            }
+            break;
+        case messageDestroyPlugin:
+            if(message.pointerParameter)
+            {
+                delete_plugin((juce::AudioPluginInstance *)message.pointerParameter);
+            }
+            break;
+        case messageDestroyListener:
+            delete_instance();
+            break;
+    }
+}
 
 void host_view_t::closeButtonPressed()
 {
@@ -1865,25 +1930,14 @@ void host::plugin_instance_t::set_title(const std::string &s)
 
 host::plugin_description_t host::plugin_instance_t::get_description()
 {
-    pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(impl_->plugin_);
-    juce::AudioPluginInstance *p(pg.value());
-
-    host::plugin_description_t d;
-    if(p)
-    {
-        p->fillInPluginDescription(d.desc_);
-    }
-    return d;
+    return impl_->get_description();
 }
 
 piw::data_t host::plugin_instance_t::get_state()
 {
-    pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(impl_->plugin_);
-    juce::AudioPluginInstance *p(pg.value());
-    if(p)
+    juce::MemoryBlock mb;
+    if(impl_->get_state(mb))
     {
-        juce::MemoryBlock mb;
-        p->getStateInformation(mb);
         unsigned char *c;
         piw::data_t d = piw::makeblob(0,mb.getSize(),&c);
         memcpy(c,mb.getData(),mb.getSize());
@@ -1916,12 +1970,7 @@ void host::plugin_instance_t::set_state(const piw::data_t &blob)
         return;
     }
 
-    pic::flipflop_t<juce::AudioPluginInstance *>::guard_t pg(impl_->plugin_);
-    juce::AudioPluginInstance *p(pg.value());
-    if(p)
-    {
-        p->setStateInformation(blob.as_blob(), blob.as_bloblen());
-    }
+    impl_->set_state(blob.as_blob(), blob.as_bloblen());
 }
 
 void host::plugin_instance_t::set_bounds(const piw::data_t &blob)

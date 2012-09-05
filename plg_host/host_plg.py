@@ -585,7 +585,7 @@ class Agent(agent.Agent):
         self.__set_title()
 
     def agent_preload(self,filename):
-        self.agent_presave(filename)
+        self.__host.close()
 
     def agent_postload(self,filename):
         self.__state.apply_state()
