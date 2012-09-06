@@ -112,7 +112,7 @@ namespace midi
 
         pic::weak_t<midi_from_belcanto_t> midi_from_belcanto_;
 
-        const std::string title_;
+        std::string title_;
         piw::window_t params_window_;
         ConverterDialog *params_;
         controllers_mapping_t mapping_;
@@ -273,6 +273,11 @@ namespace midi
 
     void midi_converter_t::impl_t::set_title(const std::string &title)
     {
+        title_ = title;
+        if(params_)
+        {
+            params_->setName(title_.c_str());
+        }
         params_window_.set_window_title(title.c_str());
     }
 
