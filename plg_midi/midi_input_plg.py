@@ -224,6 +224,8 @@ class MidiPort(atom.Atom):
         self.set_property_string('timestamp',str(self.__timestamp))
 
     def setport(self,port):
+        self.set_value(port)
+        self.__update()
         if self.open():
             print 'set port to',port
             if port:
@@ -231,8 +233,6 @@ class MidiPort(atom.Atom):
             else:
                 if len(self.__midi.sources):
                     self.__midi.setport(int(self.__midi.sources[0][0],16))
-        self.set_value(port)
-        self.__update()
 
     def __sinks_changed(self):
         self.setport(self.get_value())
