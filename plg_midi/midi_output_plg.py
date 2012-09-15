@@ -119,14 +119,14 @@ class OutputMidiPort(atom.Atom):
 
     # set_port: set the chosen midi port
     def set_port(self,port):
+        self.set_value(port)
+        self.__update()
         if self.open():
             if port:
                 self.__midi_port.set_port(int(port,16))
             else:
                 self.__midi_port.set_port(0)
             print 'OutputMidiPort: set port to',port
-        self.set_value(port)
-        self.__update()
 
     def __sinks_changed(self):
         self.set_port(self.get_value())
