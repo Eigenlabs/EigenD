@@ -398,7 +398,7 @@ def all_setup_files(dst_file,src_file):
     sbase = os.path.basename(src_file)
     ddir = os.path.dirname(dst_file)
 
-    for sn in os.listdir(sdir):
+    for sn in resource.os_listdir(sdir):
         if sn.startswith(sbase):
             yield os.path.join(ddir,sn),os.path.join(sdir,sn)
 
