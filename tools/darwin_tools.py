@@ -270,7 +270,7 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
             f.write("    <key>CFBundleVersion</key><string>%s</string>\n" % env.subst('$PI_RELEASE') )
             f.write("    <key>LSBackgroundOnly</key>%s\n" % bgs)
             f.write("    <key>LSUIElement</key>%s\n" % di_active )
-            if env['PI_HIRES']:
+            if env.subst('$PI_HIRES'):
                 f.write("    <key>NSHighResolutionCapable</key><true/>\n")
             f.write("</dict>\n")
             f.write("</plist>\n")
