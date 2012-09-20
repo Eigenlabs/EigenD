@@ -63,25 +63,26 @@ namespace
     class EigenScanPrgWindow: public DocumentWindow, public InterprocessConnection, public Timer
     {
         public:
-            EigenScanPrgWindow(EigenScanner *app, const StringArray &skip,bool fullscan,const FileSearchPath &path): DocumentWindow(T("Plugin Scanner"),Colours::black,DocumentWindow::allButtons,true), app_(app), tool_(pic::private_tools_dir(),SCAN_HELPER_NAME), skip_(skip), fullscan_(fullscan),path_(path)
+            EigenScanPrgWindow(EigenScanner *app, const StringArray &skip,bool fullscan,const FileSearchPath &path): DocumentWindow("Plugin Scanner",Colours::black,DocumentWindow::allButtons,true), app_(app), tool_(pic::private_tools_dir(),SCAN_HELPER_NAME), skip_(skip), fullscan_(fullscan),path_(path)
             {
                 component_ = new EigenScanPrgComponent();
                 setContentOwned(component_,true);
-                setSize(400,60);
+                setSize(400,82);
+                setResizeLimits(400,82,400,82);
                 setResizable(false,false);
                 centreWithSize (getWidth(), getHeight());
                 setUsingNativeTitleBar(true);
                 setVisible (true);
                 toFront(true);
 
-                createPipe("EigenScanner");
+                createPipe("EigenScanner", -1);
                 tool_.start();
 
                 num_format_ = get_manager(app_)->getNumFormats();
                 cur_format_ = -1;
                 cur_plugin_ = -1;
 
-                juce::File f(getPluginsDir().getChildFile(T("plugins_cache")));
+                juce::File f(getPluginsDir().getChildFile("plugins_cache"));
 
                 if(f.existsAsFile() && f.getSize()>0)
                 {
@@ -141,7 +142,7 @@ namespace
                     AudioPluginFormat *format = get_manager(app_)->getFormat(cur_format_);
                     FileSearchPath path = format->getDefaultLocationsToSearch();
 
-                    if(format->getName()==T("VST"))
+                    if(format->getName()=="VST")
                     {
                         path = path_;
                     }
@@ -194,7 +195,7 @@ namespace
 
                 String format_name = format->getName();
                 String plugin_name = format->getNameOfPluginFromIdentifier(plugins_[cur_plugin_]);
-                String msg = scan?T("Scanning "):T("Skipping "); msg += format_name;
+                String msg = scan?"Scanning ":"Skipping "; msg += format_name;
                 component_->getPluginLabel()->setText(plugin_name,false);
                 component_->getFormatLabel()->setText(msg,false);
                 float progress = ((float)cur_plugin_)/((float)plugins_.size());
@@ -203,7 +204,7 @@ namespace
 
                 if(scan)
                 {
-                    msg = T("F"); msg+=format->getName(); send(msg.toUTF8()); msg = T("S"); msg+=plugins_[cur_plugin_]; send(msg.toUTF8());
+                    msg = "F"; msg+=format->getName(); send(msg.toUTF8()); msg = "S"; msg+=plugins_[cur_plugin_]; send(msg.toUTF8());
                     state_ = STATE_SCANNING;
                     timeout_ = 10;
                 }
@@ -342,14 +343,14 @@ namespace
 
             void save()
             {
-                juce::File f(getPluginsDir().getChildFile(T("plugins_cache")));
+                juce::File f(getPluginsDir().getChildFile("plugins_cache"));
 
                 std::auto_ptr<juce::XmlElement> el(plugin_list_.createXml());
                 std::cout << "writing " << f.getFullPathName() << std::endl;
                 if(!el->writeToFile(f,juce::String::empty)) std::cout << "oops, failed!" << std::cout;
                 std::cout << "done." << std::endl;
 
-                juce::File b(getPluginsDir().getChildFile(T("bad_plugins")));
+                juce::File b(getPluginsDir().getChildFile("bad_plugins"));
                 std::cout << "writing " << b.getFullPathName() << std::endl;
                 if(!b.replaceWithText (bad_plugins_.joinIntoString ("\n"), true, true)) std::cout << "oops, failed!" << std::cout;
                 std::cout << "done." << std::endl;
@@ -386,7 +387,7 @@ namespace
         public:
             PathModel(EigenScanner *app): font_(12.0)
             {
-                File path_file(getPluginsDir().getChildFile(T("plugin_path")));
+                File path_file(getPluginsDir().getChildFile("plugin_path"));
 
                 if(path_file.exists())
                 {
@@ -408,7 +409,7 @@ namespace
                 {
                     AudioPluginFormat *format = get_manager(app)->getFormat(i);
 
-                    if(format->getName()==T("VST"))
+                    if(format->getName()=="VST")
                     {
                         path_ = format->getDefaultLocationsToSearch();
                         File vstpath = File(String::fromUTF8(pic::global_resource_dir().c_str()));
@@ -421,7 +422,7 @@ namespace
 
             void save()
             {
-                File path_file(getPluginsDir().getChildFile(T("plugin_path")));
+                File path_file(getPluginsDir().getChildFile("plugin_path"));
                 StringArray path;
 
                 for(int i=0;i<path_.getNumPaths();i++)
@@ -479,7 +480,7 @@ namespace
 
                 paths()->setModel(&paths_);
 
-                File bad_file(getPluginsDir().getChildFile(T("bad_plugins")));
+                File bad_file(getPluginsDir().getChildFile("bad_plugins"));
 
                 if(bad_file.exists())
                 {
@@ -492,7 +493,7 @@ namespace
                     bad_file.create();
                 }
 
-                juce::File plugin_file(getPluginsDir().getChildFile(T("plugins_cache")));
+                juce::File plugin_file(getPluginsDir().getChildFile("plugins_cache"));
                 if(!plugin_file.exists())
                 {
                     force_full_scan();
@@ -500,7 +501,7 @@ namespace
 
                 for(int i=0; i<bad_plugins_.size(); ++i)
                 {
-                    if(!bad_plugins_[i].contains(T(" ## ")))
+                    if(!bad_plugins_[i].contains(" ## "))
                     {
                         force_full_scan();
                         break;
@@ -527,7 +528,7 @@ namespace
                 {
                     g.setColour(Colours::black);
                     //g.setFont(font_);
-                    g.drawText(bad_plugins_[row].fromFirstOccurrenceOf(T(" ## "),false,false),2,0,w-4,h,Justification::centredLeft,true);
+                    g.drawText(bad_plugins_[row].fromFirstOccurrenceOf(" ## ",false,false),2,0,w-4,h,Justification::centredLeft,true);
                 }
             }
 
@@ -575,7 +576,7 @@ namespace
     class EigenScanCtlWindow: public DocumentWindow
     {
         public:
-            EigenScanCtlWindow(EigenScanner *app): DocumentWindow(T("Plugin Scanner"),Colours::black,DocumentWindow::allButtons,true), app_(app)
+            EigenScanCtlWindow(EigenScanner *app): DocumentWindow("Plugin Scanner",Colours::black,DocumentWindow::allButtons,true), app_(app)
             {
                 component_ = new EigenScanCtlComponent(app);
                 setContentOwned(component_,true);
@@ -610,7 +611,7 @@ namespace
 
                 if(rowNumber < list_.size())
                 {
-                    name = list_[rowNumber].fromFirstOccurrenceOf(T(" ## "),false,false);
+                    name = list_[rowNumber].fromFirstOccurrenceOf(" ## ",false,false);
                 }
 
                 g.setColour(Colours::black);
@@ -655,7 +656,7 @@ namespace
     class EigenScanCompleteWindow: public DocumentWindow
     {
         public:
-            EigenScanCompleteWindow(bool ok, const StringArray &bad_plugins, const StringArray &good_plugins): DocumentWindow(T("Scan results"),Colours::black,DocumentWindow::allButtons,true)
+            EigenScanCompleteWindow(bool ok, const StringArray &bad_plugins, const StringArray &good_plugins): DocumentWindow("Scan results",Colours::black,DocumentWindow::allButtons,true)
             {
                 component_ = new EigenScanCompleteComponent(ok,good_plugins,bad_plugins);
                 setContentOwned(component_,true);
@@ -690,8 +691,7 @@ class EigenScanner : public juce::JUCEApplication
             pic::to_front();
             LookAndFeel::setDefaultLookAndFeel(new ejuce::EJuceLookandFeel);
 
-            manager_ = AudioPluginFormatManager::getInstance();
-            manager_->addDefaultFormats();
+            manager_.addDefaultFormats();
 
             main_window_ = new EigenScanCtlWindow(this);
             main_window_->toFront(true);
@@ -709,7 +709,7 @@ class EigenScanner : public juce::JUCEApplication
 
         const String getApplicationName()
         {
-            return T("EigenScanner");
+            return "EigenScanner";
         }
 
         const String getApplicationVersion()
@@ -726,7 +726,7 @@ class EigenScanner : public juce::JUCEApplication
         {
         }
 
-        AudioPluginFormatManager *manager() { return manager_; }
+        AudioPluginFormatManager *manager() { return &manager_; }
 
         void start(const StringArray &scan,bool fullscan,const FileSearchPath &path)
         {
@@ -760,7 +760,7 @@ class EigenScanner : public juce::JUCEApplication
         EigenScanCtlWindow *main_window_;
         EigenScanPrgWindow *scan_window_;
         EigenScanCompleteWindow *complete_window_;
-        AudioPluginFormatManager *manager_;
+        AudioPluginFormatManager manager_;
 };
 
 AudioPluginFormatManager *get_manager(EigenScanner *app)
@@ -786,7 +786,7 @@ void EigenScanCtlComponent::buttonClicked (Button* buttonThatWasClicked)
             {
                 if(!rescan_bad_[i])
                 {
-                    String id = bad_plugins_[i].upToFirstOccurrenceOf(T(" ## "),false,false);
+                    String id = bad_plugins_[i].upToFirstOccurrenceOf(" ## ",false,false);
                     pluginsToSkip.add(id);
                 }
             }
@@ -827,7 +827,7 @@ void EigenScanCtlComponent::buttonClicked (Button* buttonThatWasClicked)
 
     if(buttonThatWasClicked==add_button())
     {
-        FileChooser f(T("VST Directory"));
+        FileChooser f("VST Directory");
         bool t = f.browseForDirectory();
 
         if(t)

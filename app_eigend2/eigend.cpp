@@ -103,7 +103,22 @@ class EigenLoadComponent;
 class EigenBugComponent;
 class EigenMainWindow;
 
-#define c2w(t) ((juce_wchar *)(juce::String((t))))
+namespace
+{
+    enum EigenDMessageTypes 
+    {
+        messageEscape,
+        messageConfirm
+    };
+    
+    struct EigenDMessage: juce::Message
+    {
+        EigenDMessage (const int type): type_ (type) {}
+        ~EigenDMessage() {}
+        
+        const int type_;
+    };
+}
 
 enum EigenCommands
 {
@@ -238,7 +253,7 @@ class EigenMainWindow: public DocumentWindow, public MenuBarModel, public piw::t
         void getAllCommands (Array <CommandID>& commands);
         void getCommandInfo (const CommandID commandID, ApplicationCommandInfo& result);
         ApplicationCommandTarget *getNextCommandTarget();
-        const PopupMenu getMenuForIndex (int topLevelMenuIndex, const String& /*menuName*/);
+        PopupMenu getMenuForIndex (int topLevelMenuIndex, const String& /*menuName*/);
         bool perform (const InvocationInfo& info);
         void thing_timer_slow();
         void set_cpu(unsigned cpu);
@@ -251,7 +266,7 @@ class EigenMainWindow: public DocumentWindow, public MenuBarModel, public piw::t
         ApplicationCommandManager *manager() { return manager_; }
         eigend::c2p_t *backend() { return backend_; }
         void init_menu();
-        const StringArray getMenuBarNames();
+        StringArray getMenuBarNames();
         void menuItemSelected  (int menuItemID, int topLevelMenuIndex);
         void setups_changed(const char *file);
         EigenDialog *alert1(const String &klass, const String &label, const String &text, bool left=false);
@@ -484,7 +499,7 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
         case commandAbout:
             if(!about_)
             {
-                about_ = new EigenDialog(this,new EigenAboutComponent(this),300,400,0,0,0,0,this);
+                about_ = new EigenDialog(this,new EigenAboutComponent(this),300,400,300,400,300,400,this);
             }
             break;
 
@@ -565,7 +580,7 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
 
         case commandDownload:
             {
-                URL u(T("http://www.eigenlabs.com/downloads/releases/"));
+                URL u("http://www.eigenlabs.com/downloads/releases/");
                 u.launchInDefaultBrowser();
             }
             break;
@@ -653,7 +668,7 @@ void EigenLoadComponent::buttonClicked(Button *b)
     }
     else if (b==getDeleteButton())
     {
-        juce::String msg = T("This will delete a setup named\n\n");
+        juce::String msg = "This will delete a setup named\n\n";
         msg += slot_.as_string();
         confirm_ = mediator_->alert2("Delete Setup","Delete Setup",msg,this);
     }
@@ -687,7 +702,7 @@ void EigenLoadComponent::cancel_confirm()
 
 EigenLoadComponent::EigenLoadComponent(EigenMainWindow *mediator): mediator_(mediator), confirm_(0), user_(false)
 {
-    setName(T("Load"));
+    setName("Load");
     model_ = new EigenTreeItem(this,mediator_->backend()->get_setups());
     model_->setOpen(true);
     getTreeView()->setMultiSelectEnabled(false);
@@ -716,7 +731,7 @@ bool EigenLoadComponent::select_setup(const char *setup)
     bool rv = model_->select_setup(setup);
     model_->setOpen(true);
 
-    getSetupLabel()->setText(T(""),0);
+    getSetupLabel()->setText("",0);
 
     if(rv)
     {
@@ -793,15 +808,9 @@ std::string EigenMainWindow::get_os()
 {
     String os_name = juce::SystemStats::getOperatingSystemName();
 
-#ifdef JUCE_MAC
-
-    os_name = os_name+T(" 10.")+String(juce::SystemStats::getOSXMinorVersionNumber());
-
-#endif
-
     if(juce::SystemStats::isOperatingSystem64Bit())
     {
-        os_name = os_name+T(" (64)");
+        os_name = os_name+" (64)";
     }
 
     std::string rv = std::string(os_name.getCharPointer());
@@ -866,11 +875,11 @@ File getGlobalDir()
 }
 
 EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_gui_t *scaffold, eigend::c2p_t *backend, const pic::f_string_t &log):
-    DocumentWindow (T("eigenD"), Colours::black, DocumentWindow::allButtons, true),
+    DocumentWindow ("eigenD", Colours::black, DocumentWindow::allButtons, true),
     manager_(mgr), scaffold_(scaffold), backend_(backend), status_(0), saving_(0), editing_(0), about_(0), logger_(log), bug_(0),
     browser_(pic::private_tools_dir(),TOOL_BROWSER), commander_(pic::private_tools_dir(),TOOL_COMMANDER), scanner_(pic::private_tools_dir(),TOOL_SCANNER), 
     workbench_(pic::public_tools_dir(),TOOL_WORKBENCH), stage_(pic::public_tools_dir(),TOOL_STAGE),
-    progress_(0), help_(0), ignores_(getGlobalDir().getChildFile(T("ignores.xml")), PropertiesFile::Options()), save_menu_active_(false)
+    progress_(0), help_(0), ignores_(getGlobalDir().getChildFile("ignores.xml"), PropertiesFile::Options()), save_menu_active_(false)
 {
     backend->upgrade_setups();
 
@@ -883,7 +892,7 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
     setVisible(true);
     pic::to_front();
     toFront(true);
-    component_->getSetupLabel()->setText(T(""),false);
+    component_->getSetupLabel()->setText("",false);
 
     piw::tsd_thing(this);
     timer_slow(500);
@@ -910,7 +919,7 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
         }
     }
 
-    juce::File plugin_file(getPluginsDir().getChildFile(T("plugins_cache")));
+    juce::File plugin_file(getPluginsDir().getChildFile("plugins_cache"));
     if(!plugin_file.exists())
     {
         pic::logmsg() << "starting plugin scan..";
@@ -1005,12 +1014,12 @@ void EigenMainWindow::getAllCommands (Array <CommandID>& commands)
 
 void EigenMainWindow::getCommandInfo (const CommandID commandID, ApplicationCommandInfo& result)
 {
-    const String generalCategory (T("General"));
+    const String generalCategory ("General");
 
     if(commandID>=commandWindow)
     {
         unsigned w = commandID-commandWindow+1;
-        String j = String(T("Plugin Window "));
+        String j = String("Plugin Window ");
         j += String(w);
         result.setInfo (j,j, generalCategory, 0);
         if(w<10)
@@ -1024,87 +1033,87 @@ void EigenMainWindow::getCommandInfo (const CommandID commandID, ApplicationComm
     switch (commandID)
     {
         case commandAbout:
-            result.setInfo (T("About eigenD"), T("Program Information"), generalCategory, 0);
+            result.setInfo ("About eigenD", "Program Information", generalCategory, 0);
             break;
 
         case commandStartStatus:
-            result.setInfo (T("System Usage Meter"), T("System Usage Meter"), generalCategory, 0);
-            result.addDefaultKeypress (T('x'), ModifierKeys::commandModifier);
+            result.setInfo ("System Usage Meter", "System Usage Meter", generalCategory, 0);
+            result.addDefaultKeypress ('x', ModifierKeys::commandModifier);
             result.setTicked(status_ && status_->isVisible());
             break;
 
         case commandStartCommander:
-            result.setInfo (T("EigenCommander"), T("EigenCommander"), generalCategory, 0);
-            result.addDefaultKeypress (T('c'), ModifierKeys::commandModifier);
+            result.setInfo ("EigenCommander", "EigenCommander", generalCategory, 0);
+            result.addDefaultKeypress ('c', ModifierKeys::commandModifier);
             break;
 
         case commandStartBrowser:
-            result.setInfo (T("EigenBrowser"), T("EigenBrowser"), generalCategory, 0);
-            result.addDefaultKeypress (T('b'), ModifierKeys::commandModifier);
+            result.setInfo ("EigenBrowser", "EigenBrowser", generalCategory, 0);
+            result.addDefaultKeypress ('b', ModifierKeys::commandModifier);
             break;
 
         case commandStartWorkbench:
-            result.setInfo (T("Workbench"), T("Workbench"), generalCategory, 0);
-            result.addDefaultKeypress (T('k'), ModifierKeys::commandModifier);
+            result.setInfo ("Workbench", "Workbench", generalCategory, 0);
+            result.addDefaultKeypress ('k', ModifierKeys::commandModifier);
             result.setActive(workbench_.isavailable());
             break;
 
         case commandStartScanner:
-            result.setInfo (T("Plugin Scanner"), T("Plugin Scanner"), generalCategory, 0);
-            //result.addDefaultKeypress (T('S'), ModifierKeys::commandModifier);
+            result.setInfo ("Plugin Scanner", "Plugin Scanner", generalCategory, 0);
+            //result.addDefaultKeypress ('S', ModifierKeys::commandModifier);
             break;
 
         case commandStartStage:
-            result.setInfo (T("Stage"), T("Stage"), generalCategory, 0);
-            result.addDefaultKeypress (T('g'), ModifierKeys::commandModifier);
+            result.setInfo ("Stage", "Stage", generalCategory, 0);
+            result.addDefaultKeypress ('g', ModifierKeys::commandModifier);
             break;
             
         case commandStartBug:
-            result.setInfo (T("Report Bug"), T("Report Bug"), generalCategory, 0);
-            result.addDefaultKeypress (T('u'), ModifierKeys::commandModifier);
+            result.setInfo ("Report Bug", "Report Bug", generalCategory, 0);
+            result.addDefaultKeypress ('u', ModifierKeys::commandModifier);
             break;
 
         case commandStartLoad:
-            result.setInfo (T("Load Setup"), T("Load Setup"), generalCategory, 0);
-            result.addDefaultKeypress (T('l'), ModifierKeys::commandModifier);
+            result.setInfo ("Load Setup", "Load Setup", generalCategory, 0);
+            result.addDefaultKeypress ('l', ModifierKeys::commandModifier);
             break;
 
         case commandStartSave:
-            result.setInfo (T("Save Setup"), T("Save Setup"), generalCategory, 0);
-            result.addDefaultKeypress (T('s'), ModifierKeys::commandModifier);
+            result.setInfo ("Save Setup", "Save Setup", generalCategory, 0);
+            result.addDefaultKeypress ('s', ModifierKeys::commandModifier);
             result.setActive(save_menu_active_);
             break;
 
         case commandStartSaveAs:
-            result.setInfo (T("Save Setup As"), T("Save Setup As"), generalCategory, 0);
-            result.addDefaultKeypress (T('s'), ModifierKeys::commandModifier|ModifierKeys::shiftModifier);
+            result.setInfo ("Save Setup As", "Save Setup As", generalCategory, 0);
+            result.addDefaultKeypress ('s', ModifierKeys::commandModifier|ModifierKeys::shiftModifier);
             break;
 
         case commandLibraryDirectory:
-            result.setInfo (T("Open Library Directory"), T("Open Library Directory"), generalCategory, 0);
+            result.setInfo ("Open Library Directory", "Open Library Directory", generalCategory, 0);
             break;
 
         case commandMainWindow:
-            result.setInfo (T("Load Window"), T("Load Window"), generalCategory, 0);
-            result.addDefaultKeypress (T('w'), ModifierKeys::commandModifier);
+            result.setInfo ("Load Window", "Load Window", generalCategory, 0);
+            result.addDefaultKeypress ('w', ModifierKeys::commandModifier);
             result.setTicked(isVisible());
             break;
 
         case commandQuit:
-            result.setInfo (T("Quit"), T("Quit eigenD"), generalCategory, 0);
-            result.addDefaultKeypress (T('q'), ModifierKeys::commandModifier);
+            result.setInfo ("Quit", "Quit eigenD", generalCategory, 0);
+            result.addDefaultKeypress ('q', ModifierKeys::commandModifier);
             break;
 
         case commandDownload:
             {
-                juce::String v = T("Download "); v += juce::String(new_version_.c_str());
-                result.setInfo (v, T("Download New Version"), generalCategory, 0);
-                result.addDefaultKeypress (T('d'), ModifierKeys::commandModifier);
+                juce::String v = "Download "; v += juce::String(new_version_.c_str());
+                result.setInfo (v, "Download New Version", generalCategory, 0);
+                result.addDefaultKeypress ('d', ModifierKeys::commandModifier);
             }
             break;
 
         case commandResetWarnings:
-            result.setInfo (T("Reset Warnings"), T("Reset Warnings"), generalCategory, 0);
+            result.setInfo ("Reset Warnings", "Reset Warnings", generalCategory, 0);
             break;
     }
 }
@@ -1114,7 +1123,7 @@ ApplicationCommandTarget *EigenMainWindow::getNextCommandTarget()
     return 0;
 }
 
-const PopupMenu EigenMainWindow::getMenuForIndex (int topLevelMenuIndex, const String& /*menuName*/)
+PopupMenu EigenMainWindow::getMenuForIndex (int topLevelMenuIndex, const String& /*menuName*/)
 {
     PopupMenu menu;
 
@@ -1206,12 +1215,12 @@ void EigenMainWindow::load_started(const char *setup)
     }
 
     EigenLoadProgressComponent *c = new EigenLoadProgressComponent();
-    juce::String title = T("Loading ");
+    juce::String title = "Loading ";
     title += setup;
     c->setName(title);
-    c->getMessageLabel()->setText(T(""),false);
+    c->getMessageLabel()->setText("",false);
     c->getProgressSlider()->setValue(0,false,false);
-    progress_ = new EigenDialog(this,c,400,60,0,0,0,0,this);
+    progress_ = new EigenDialog(this,c,400,82,400,82,400,82,this);
     progress_->getPeer()->performAnyPendingRepaintsNow();
 }
 
@@ -1265,16 +1274,16 @@ void EigenMainWindow::init_menu()
 #endif
 }
 
-const StringArray EigenMainWindow::getMenuBarNames()
+StringArray EigenMainWindow::getMenuBarNames()
 {
     if(new_version_.length()>0)
     {
-        const wchar_t* const names[] = { T("File"), T("Window"), T("Tools"), T("Update Available"),0 };
+        const wchar_t* const names[] = { L"File", L"Window", L"Tools", L"Update Available",0 };
         return StringArray ((const wchar_t**) names);
     }
     else
     {
-        const wchar_t* const names[] = { T("File"), T("Window"), T("Tools"), 0 };
+        const wchar_t* const names[] = { L"File", L"Window", L"Tools", 0 };
         return StringArray ((const wchar_t**) names);
     }
 }
@@ -1359,7 +1368,7 @@ juce::String EigenTreeItem::getSlot()
         return term_.arg(3).value().as_string();
     }
 
-    return T("");
+    return "";
 }
 
 void EigenTreeItem::paintItem (Graphics& g, int width, int height)
@@ -1402,17 +1411,13 @@ void EigenTreeItem::itemOpennessChanged (bool isNowOpen)
 
 EigenBugComponent::EigenBugComponent(EigenMainWindow *mediator): mediator_(mediator)
 {
-    setName(T("Bug"));
+    setName("Bug");
     pic::msg_t bug_report;
 
     bug_report << "Explain what happened:\n"
         << "\n\n"
         << "System information:\n"
         << "OS: " << SystemStats::getOperatingSystemName() << " "
-
-#if JUCE_MAC
-        << "10." << SystemStats::getOSXMinorVersionNumber() << ", "
-#endif
         << "64 bit: " << (SystemStats::isOperatingSystem64Bit()?"yes":"no") << "\n"
         << "CPU: " << SystemStats::getCpuVendor() << ", "
         << "Cores: " << SystemStats::getNumCpus() << ", "
@@ -1468,13 +1473,13 @@ unsigned EigenSaveComponent::getUserNumber(const juce::String &tag)
 {
     juce::String tag2 = tag.trim();
 
-    if(!tag2.startsWith(T("user ")))
+    if(!tag2.startsWith("user "))
     {
         return 0;
     }
 
     juce::String tag3 = tag.substring(5).trim();
-    juce::String tag4 = tag3.removeCharacters(T("0123456789"));
+    juce::String tag4 = tag3.removeCharacters("0123456789");
 
     if(tag3.length()==0 || tag4.length()>0)
     {
@@ -1486,7 +1491,7 @@ unsigned EigenSaveComponent::getUserNumber(const juce::String &tag)
 
 EigenSaveComponent::EigenSaveComponent(EigenMainWindow *mediator, const std::string &current): mediator_(mediator), confirm_(0)
 {
-    setName(T("Save"));
+    setName("Save");
     term_ = mediator->backend()->get_user_setups();
     max_ = 0;
     bool c = false;
@@ -1539,7 +1544,7 @@ EigenSaveComponent::EigenSaveComponent(EigenMainWindow *mediator, const std::str
         getWordsLabel()->setEnabled(false);
         getNotesLabel()->setEnabled(false);
         getUserLabel()->setEnabled(true);
-        getDescription()->setText(T(""),false);
+        getDescription()->setText("",false);
     }
     else
     {
@@ -1599,7 +1604,7 @@ void EigenSaveComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
         }
         else
         {
-            getUserChooser()->setText(T(""),true);
+            getUserChooser()->setText("",true);
         }
 
         for(unsigned i=1;i<term_.arity();i++)
@@ -1616,7 +1621,7 @@ void EigenSaveComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
                 }
                 else
                 {
-                    getSummary()->setText(T(""),false);
+                    getSummary()->setText("",false);
                 }
 
                 juce::String d = mediator_->backend()->get_description(term_.arg(i).arg(2).value().as_string()).c_str();
@@ -1699,7 +1704,7 @@ void EigenSaveComponent::buttonClicked (Button* buttonThatWasClicked)
 
     if(buttonThatWasClicked == getNewButton())
     {
-        juce::String slot = juce::String::formatted(T("user %d"),max_);
+        juce::String slot = juce::String::formatted("user %d",max_);
         getUserChooser()->setText(slot,true);
         getWordsChooser()->setText(slot,true);
 
@@ -1741,12 +1746,12 @@ void EigenSaveComponent::buttonClicked (Button* buttonThatWasClicked)
             return;
         }
 
-        juce::String msg = T("This will overwrite an existing setup named\n\n");
+        juce::String msg = "This will overwrite an existing setup named\n\n";
         msg += slot;
 
         if(strcmp(old_setup.c_str(),"none"))
         {
-            msg += T("\n\nand tagged\n\n");
+            msg += "\n\nand tagged\n\n";
             msg += juce::String(old_setup.c_str());
         }
 
@@ -1791,7 +1796,7 @@ EigenEditComponent::EigenEditComponent(EigenMainWindow *mediator, const std::str
             }
             else
             {
-                getSummary()->setText(T(""),false);
+                getSummary()->setText("",false);
             }
 
             break;
@@ -1860,7 +1865,8 @@ EigenDialog::EigenDialog(EigenMainWindow *main,Component *content,int w,int h,in
 
 void EigenDialog::handleMessage (const Message &m)
 {
-    if(m.intParameter1)
+    EigenDMessage *msg = (EigenDMessage *)&m;
+    if(msg->type_ == messageConfirm)
     {
         EigenDialogContent *c = dynamic_cast<EigenDialogContent *>(component_);
 
@@ -1879,7 +1885,7 @@ bool EigenDialog::keyPressed (const KeyPress& key, Component* originatingCompone
 {
     if(key.getKeyCode() == KeyPress::escapeKey)
     {
-        postMessage(new Message(0,0,0,0));
+        postMessage(new EigenDMessage(messageEscape));
         return true;
     }
 
@@ -1889,7 +1895,7 @@ bool EigenDialog::keyPressed (const KeyPress& key, Component* originatingCompone
 
         if(c)
         {
-            postMessage(new Message(1,0,0,0));
+            postMessage(new EigenDMessage(messageConfirm));
         }
     }
 
@@ -2008,7 +2014,7 @@ void EigenD::shutdown()
 
 const String EigenD::getApplicationName()
 {
-    return T("eigenD");
+    return "eigenD";
 }
 
 const String EigenD::getApplicationVersion()
@@ -2041,7 +2047,7 @@ void EigenD::anotherInstanceStarted (const String& commandLine)
 
 EigenStatusComponent::EigenStatusComponent(EigenMainWindow *mediator): mediator_(mediator)
 {
-    setName(T("System Usage Meter"));
+    setName("System Usage Meter");
 }
 
 EigenStatusComponent::~EigenStatusComponent()
@@ -2051,7 +2057,7 @@ EigenStatusComponent::~EigenStatusComponent()
 
 EigenAboutComponent::EigenAboutComponent(EigenMainWindow *mediator): mediator_(mediator)
 {
-    setName(T("About"));
+    setName("About");
 }
 
 EigenAboutComponent::~EigenAboutComponent()
@@ -2339,7 +2345,7 @@ pic::f_string_t EigenLogger::create(const char *prefix, const pic::f_string_t &l
 void EigenLogger::operator()(const char *msg) const
 {
     juce::String buffer(prefix_);
-    buffer += T(": "); buffer+=msg;
+    buffer += ": "; buffer+=msg;
     logger_(std::string(buffer.getCharPointer()).c_str());
 }
 
@@ -2365,14 +2371,14 @@ void EigenD::handleWinch(const std::string &msg)
     }
 
     juce::String jmsg = juce::String::fromUTF8(msg.c_str());
-    int c1 = jmsg.indexOf(0,T(":"));
+    int c1 = jmsg.indexOf(0,":");
 
     if(c1<0)
     {
         return;
     }
 
-    int c2 = jmsg.indexOf(c1+1,T(":"));
+    int c2 = jmsg.indexOf(c1+1,":");
 
     if(c2<0)
     {

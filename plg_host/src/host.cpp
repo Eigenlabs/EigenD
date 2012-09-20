@@ -52,6 +52,15 @@ namespace
         messageDestroyPlugin,
         messageDestroyListener
     };
+    
+    struct HostMessage: juce::Message
+    {
+        HostMessage (const int type, void* const payload): type_ (type), payload_ (payload) {}
+        ~HostMessage() {}
+        
+        const int type_;
+        void* const payload_;
+    };
 }
 
 struct host::plugin_list_t::impl_t: piw::thing_t
@@ -59,7 +68,7 @@ struct host::plugin_list_t::impl_t: piw::thing_t
     impl_t(const std::string &plugins_cache, const pic::notify_t &complete): complete_(complete)
     {
         plugins_cache_ = ejuce::pathToFile(plugins_cache);
-        juce::AudioPluginFormatManager::getInstance()->addDefaultFormats();
+        plugin_formats_.addDefaultFormats();
         load();
         piw::tsd_thing(this);
         timer_slow(5000);
@@ -122,6 +131,7 @@ struct host::plugin_list_t::impl_t: piw::thing_t
         }
     }
 
+    juce::AudioPluginFormatManager plugin_formats_;
     juce::KnownPluginList list_;
     pic::notify_t complete_;
     juce::File plugins_cache_;
@@ -501,7 +511,7 @@ namespace
 
         void show_gui()
         {
-            postMessage(new juce::Message(messageShowGUI,0,0,0));
+            postMessage(new HostMessage(messageShowGUI,0));
         }
 
         void destroy_gui(host_view_t *w)
@@ -512,7 +522,7 @@ namespace
             }
             else
             {
-                postMessage(new juce::Message(messageDestroyGUI,0,0,w));
+                postMessage(new HostMessage(messageDestroyGUI,w));
                 if(!juce::MessageManager::getInstance()->isThisTheMessageThread())
                 {
                     juce::MessageManager::getInstance()->runDispatchLoopUntil(100);
@@ -528,7 +538,7 @@ namespace
             }
             else
             {
-                postMessage(new juce::Message(messageDestroyPlugin,0,0,p));
+                postMessage(new HostMessage(messageDestroyPlugin,p));
                 if(!juce::MessageManager::getInstance()->isThisTheMessageThread())
                 {
                     juce::MessageManager::getInstance()->runDispatchLoopUntil(100);
@@ -539,7 +549,7 @@ namespace
         void destroy_instance()
         {
             root_ = 0;
-            postMessage(new juce::Message(messageDestroyListener,0,0,0));
+            postMessage(new HostMessage(messageDestroyListener,0));
         }
 
         void delete_gui(host_view_t *w)
@@ -603,6 +613,8 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         d->sink(this,"host");
         piw::tsd_thing(this);
         d->add_listener(pic::notify_t::method(this,&impl_t::clock_changed));
+        
+        plugin_formats_.addDefaultFormats();
 
         midi_output_.scalar_connect(midi_out);
 
@@ -674,8 +686,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     
     juce::AudioPluginInstance *find_plugin(juce::PluginDescription &desc,juce::String &err)
     {
-        juce::AudioPluginInstance *plg = juce::AudioPluginFormatManager::getInstance()->createPluginInstance(desc,err);
-        return plg;
+        return plugin_formats_.createPluginInstance(desc,err);
     }
 
     plugin_description_t get_description()
@@ -1346,6 +1357,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         return mapping_.get_settings();
     }
 
+    juce::AudioPluginFormatManager plugin_formats_;
     host_messages_t *messages_;
 
     piw::sclone_t audio_input_clone_;
@@ -1403,7 +1415,8 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
 void host_messages_t::handleMessage(const juce::Message &message)
 {
-    switch(message.intParameter1)
+    HostMessage *msg = (HostMessage *)&message;
+    switch(msg->type_)
     {
         case messageShowGUI:
             if(root_)
@@ -1412,15 +1425,15 @@ void host_messages_t::handleMessage(const juce::Message &message)
             }
             break;
         case messageDestroyGUI:
-            if(message.pointerParameter)
+            if(msg->payload_)
             {
-                delete_gui((host_view_t *)message.pointerParameter);
+                delete_gui((host_view_t *)msg->payload_);
             }
             break;
         case messageDestroyPlugin:
-            if(message.pointerParameter)
+            if(msg->payload_)
             {
-                delete_plugin((juce::AudioPluginInstance *)message.pointerParameter);
+                delete_plugin((juce::AudioPluginInstance *)msg->payload_);
             }
             break;
         case messageDestroyListener:
@@ -1585,9 +1598,9 @@ host_param_tabs_t::host_param_tabs_t(host::plugin_instance_t::impl_t *c) :
 
     addAndMakeVisible (tabs_ = new TabbedComponent(TabbedButtonBar::TabsAtTop));
     tabs_->setTabBarDepth(30);
-    tabs_->addTab(T("Plugin Parameters"), Colours::lightgrey, pt, true);
-    tabs_->addTab(T("MIDI CC Messages"), Colours::lightgrey, ct, true);
-    tabs_->addTab(T("MIDI Behaviour"), Colours::lightgrey, mt, true);
+    tabs_->addTab("Plugin Parameters", Colours::lightgrey, pt, true);
+    tabs_->addTab("MIDI CC Messages", Colours::lightgrey, ct, true);
+    tabs_->addTab("MIDI Behaviour", Colours::lightgrey, mt, true);
     tabs_->setCurrentTabIndex(0);
 
     setBounds(0,0,800,500);

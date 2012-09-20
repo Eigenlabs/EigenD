@@ -154,7 +154,7 @@ class Test: public ejuce::Application, virtual public pic::tracked_t
 
         const juce::String getApplicationName()
         {
-            return T("test");
+            return "test";
         }
 
         const juce::String getApplicationVersion()

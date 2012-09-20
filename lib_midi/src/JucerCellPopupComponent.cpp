@@ -251,7 +251,7 @@ void CellPopupComponent::updateMapping()
 
 //==============================================================================
 CellPopupComponent::CellPopupComponent ()
-    : Component (T("CellPopup")),
+    : Component ("CellPopup"),
       bounds_group (0),
       lo_label (0),
       base_label (0),
@@ -281,13 +281,13 @@ CellPopupComponent::CellPopupComponent ()
       control_scope_channel_number (0),
       bounds_origin_return (0)
 {
-    addAndMakeVisible (bounds_group = new GroupComponent (T("bounds group"),
-                                                          T("Bounds (in %)")));
+    addAndMakeVisible (bounds_group = new GroupComponent ("bounds group",
+                                                          "Bounds (in %)"));
     bounds_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
     bounds_group->setColour (GroupComponent::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (lo_label = new Label (T("lo label"),
-                                             T("Lo:")));
+    addAndMakeVisible (lo_label = new Label ("lo label",
+                                             "Lo:"));
     lo_label->setFont (Font (15.0000f, Font::plain));
     lo_label->setJustificationType (Justification::centredLeft);
     lo_label->setEditable (false, false, false);
@@ -295,8 +295,8 @@ CellPopupComponent::CellPopupComponent ()
     lo_label->setColour (TextEditor::textColourId, Colours::black);
     lo_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (base_label = new Label (T("base label"),
-                                               T("Base:")));
+    addAndMakeVisible (base_label = new Label ("base label",
+                                               "Base:"));
     base_label->setFont (Font (15.0000f, Font::plain));
     base_label->setJustificationType (Justification::centredLeft);
     base_label->setEditable (false, false, false);
@@ -304,17 +304,17 @@ CellPopupComponent::CellPopupComponent ()
     base_label->setColour (TextEditor::textColourId, Colours::black);
     base_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (scale_group = new GroupComponent (T("scale group"),
-                                                         T("Scale factor")));
+    addAndMakeVisible (scale_group = new GroupComponent ("scale group",
+                                                         "Scale factor"));
     scale_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
     scale_group->setColour (GroupComponent::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (control_scope_group = new GroupComponent (T("control scope group"),
-                                                                 T("Control scope")));
+    addAndMakeVisible (control_scope_group = new GroupComponent ("control scope group",
+                                                                 "Control scope"));
     control_scope_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
     control_scope_group->setColour (GroupComponent::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (scale_factor = new Slider (T("scale slider")));
+    addAndMakeVisible (scale_factor = new Slider ("scale slider"));
     scale_factor->setRange (0, 10, 0.1);
     scale_factor->setSliderStyle (Slider::LinearBar);
     scale_factor->setTextBoxStyle (Slider::TextBoxLeft, true, 45, 20);
@@ -326,57 +326,57 @@ CellPopupComponent::CellPopupComponent ()
     scale_factor->setColour (Slider::textBoxOutlineColourId, Colour (0x66ffffff));
     scale_factor->addListener (this);
 
-    addAndMakeVisible (mapping_enabled = new ToggleButton (T("enabled toggle button")));
-    mapping_enabled->setButtonText (T("Enabled"));
+    addAndMakeVisible (mapping_enabled = new ToggleButton ("enabled toggle button"));
+    mapping_enabled->setButtonText ("Enabled");
     mapping_enabled->addListener (this);
     mapping_enabled->setToggleState (true, false);
     mapping_enabled->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (control_scope_global = new ToggleButton (T("global scope toggle button")));
-    control_scope_global->setButtonText (T("Global"));
+    addAndMakeVisible (control_scope_global = new ToggleButton ("global scope toggle button"));
+    control_scope_global->setButtonText ("Global");
     control_scope_global->setRadioGroupId (1);
     control_scope_global->addListener (this);
     control_scope_global->setToggleState (true, false);
     control_scope_global->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (control_scope_pernote = new ToggleButton (T("pernote scope toggle button")));
-    control_scope_pernote->setButtonText (T("Per-note"));
+    addAndMakeVisible (control_scope_pernote = new ToggleButton ("pernote scope toggle button"));
+    control_scope_pernote->setButtonText ("Per-note");
     control_scope_pernote->setRadioGroupId (1);
     control_scope_pernote->addListener (this);
     control_scope_pernote->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (clear_mapping = new TextButton (T("clear mapping button")));
-    clear_mapping->setButtonText (T("Clear"));
+    addAndMakeVisible (clear_mapping = new TextButton ("clear mapping button"));
+    clear_mapping->setButtonText ("Clear");
     clear_mapping->addListener (this);
     clear_mapping->setColour (TextButton::buttonColourId, Colour (0xffc1c1c1));
 
-    addAndMakeVisible (resolution_group = new GroupComponent (T("resolution group"),
-                                                              T("Resolution")));
+    addAndMakeVisible (resolution_group = new GroupComponent ("resolution group",
+                                                              "Resolution"));
     resolution_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
     resolution_group->setColour (GroupComponent::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (resolution_7bit = new ToggleButton (T("7bit resolution toggle button")));
-    resolution_7bit->setButtonText (T("7 bit"));
+    addAndMakeVisible (resolution_7bit = new ToggleButton ("7bit resolution toggle button"));
+    resolution_7bit->setButtonText ("7 bit");
     resolution_7bit->setRadioGroupId (2);
     resolution_7bit->addListener (this);
     resolution_7bit->setToggleState (true, false);
     resolution_7bit->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (resolution_14bit = new ToggleButton (T("14 bit resolution toggle button")));
-    resolution_14bit->setButtonText (T("14 bit"));
+    addAndMakeVisible (resolution_14bit = new ToggleButton ("14 bit resolution toggle button"));
+    resolution_14bit->setButtonText ("14 bit");
     resolution_14bit->setRadioGroupId (2);
     resolution_14bit->addListener (this);
     resolution_14bit->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (secondary_cc = new ComboBox (T("secondary cc combo box")));
+    addAndMakeVisible (secondary_cc = new ComboBox ("secondary cc combo box"));
     secondary_cc->setEditableText (false);
     secondary_cc->setJustificationType (Justification::centredLeft);
     secondary_cc->setTextWhenNothingSelected (String::empty);
-    secondary_cc->setTextWhenNoChoicesAvailable (T("(no choices)"));
+    secondary_cc->setTextWhenNoChoicesAvailable ("(no choices)");
     secondary_cc->addListener (this);
 
-    addAndMakeVisible (lo = new Label (T("lo"),
-                                       T("0")));
+    addAndMakeVisible (lo = new Label ("lo",
+                                       "0"));
     lo->setFont (Font (15.0000f, Font::plain));
     lo->setJustificationType (Justification::centredRight);
     lo->setEditable (false, false, false);
@@ -384,8 +384,8 @@ CellPopupComponent::CellPopupComponent ()
     lo->setColour (TextEditor::textColourId, Colours::black);
     lo->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (base = new Label (T("base"),
-                                         T("0")));
+    addAndMakeVisible (base = new Label ("base",
+                                         "0"));
     base->setFont (Font (15.0000f, Font::plain));
     base->setJustificationType (Justification::centredRight);
     base->setEditable (false, false, false);
@@ -393,8 +393,8 @@ CellPopupComponent::CellPopupComponent ()
     base->setColour (TextEditor::textColourId, Colours::black);
     base->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (hi_label = new Label (T("hi label"),
-                                             T("Hi:")));
+    addAndMakeVisible (hi_label = new Label ("hi label",
+                                             "Hi:"));
     hi_label->setFont (Font (15.0000f, Font::plain));
     hi_label->setJustificationType (Justification::centredLeft);
     hi_label->setEditable (false, false, false);
@@ -402,8 +402,8 @@ CellPopupComponent::CellPopupComponent ()
     hi_label->setColour (TextEditor::textColourId, Colours::black);
     hi_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (hi = new Label (T("hi"),
-                                       T("100")));
+    addAndMakeVisible (hi = new Label ("hi",
+                                       "100"));
     hi->setFont (Font (15.0000f, Font::plain));
     hi->setJustificationType (Justification::centredRight);
     hi->setEditable (false, false, false);
@@ -411,12 +411,12 @@ CellPopupComponent::CellPopupComponent ()
     hi->setColour (TextEditor::textColourId, Colours::black);
     hi->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (ok = new TextButton (T("ok button")));
-    ok->setButtonText (T("Ok"));
+    addAndMakeVisible (ok = new TextButton ("ok button"));
+    ok->setButtonText ("Ok");
     ok->addListener (this);
     ok->setColour (TextButton::buttonColourId, Colour (0xffc1c1c1));
 
-    addAndMakeVisible (boundslo = new Slider (T("boundslo dial")));
+    addAndMakeVisible (boundslo = new Slider ("boundslo dial"));
     boundslo->setRange (0, 100, 1);
     boundslo->setSliderStyle (Slider::Rotary);
     boundslo->setTextBoxStyle (Slider::NoTextBox, true, 45, 14);
@@ -430,7 +430,7 @@ CellPopupComponent::CellPopupComponent ()
     boundslo->setColour (Slider::textBoxOutlineColourId, Colour (0x0));
     boundslo->addListener (this);
 
-    addAndMakeVisible (boundsbase = new Slider (T("boundsbase dial")));
+    addAndMakeVisible (boundsbase = new Slider ("boundsbase dial"));
     boundsbase->setRange (0, 100, 1);
     boundsbase->setSliderStyle (Slider::Rotary);
     boundsbase->setTextBoxStyle (Slider::NoTextBox, true, 45, 14);
@@ -443,7 +443,7 @@ CellPopupComponent::CellPopupComponent ()
     boundsbase->setColour (Slider::textBoxOutlineColourId, Colour (0x0));
     boundsbase->addListener (this);
 
-    addAndMakeVisible (boundshi = new Slider (T("boundshi dial")));
+    addAndMakeVisible (boundshi = new Slider ("boundshi dial"));
     boundshi->setRange (0, 100, 1);
     boundshi->setSliderStyle (Slider::Rotary);
     boundshi->setTextBoxStyle (Slider::NoTextBox, true, 45, 14);
@@ -456,17 +456,17 @@ CellPopupComponent::CellPopupComponent ()
     boundshi->setColour (Slider::textBoxOutlineColourId, Colour (0x0));
     boundshi->addListener (this);
 
-    addAndMakeVisible (scale_factor_invert = new ToggleButton (T("scale factor invert toggle button")));
-    scale_factor_invert->setButtonText (T("Invert"));
+    addAndMakeVisible (scale_factor_invert = new ToggleButton ("scale factor invert toggle button"));
+    scale_factor_invert->setButtonText ("Invert");
     scale_factor_invert->addListener (this);
     scale_factor_invert->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (data_decimation_group = new GroupComponent (T("data decimation group"),
-                                                                   T("Data decimation (in ms)")));
+    addAndMakeVisible (data_decimation_group = new GroupComponent ("data decimation group",
+                                                                   "Data decimation (in ms)"));
     data_decimation_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
     data_decimation_group->setColour (GroupComponent::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (data_decimation = new Slider (T("data decimation slider")));
+    addAndMakeVisible (data_decimation = new Slider ("data decimation slider"));
     data_decimation->setRange (0, 100, 1);
     data_decimation->setSliderStyle (Slider::LinearBar);
     data_decimation->setTextBoxStyle (Slider::TextBoxLeft, true, 45, 20);
@@ -478,37 +478,37 @@ CellPopupComponent::CellPopupComponent ()
     data_decimation->setColour (Slider::textBoxOutlineColourId, Colour (0x66ffffff));
     data_decimation->addListener (this);
 
-    addAndMakeVisible (control_scope_channel = new ToggleButton (T("channel scope toggle button")));
-    control_scope_channel->setButtonText (T("Fixed channel"));
+    addAndMakeVisible (control_scope_channel = new ToggleButton ("channel scope toggle button"));
+    control_scope_channel->setButtonText ("Fixed channel");
     control_scope_channel->setRadioGroupId (1);
     control_scope_channel->addListener (this);
     control_scope_channel->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
-    addAndMakeVisible (control_scope_channel_number = new ComboBox (T("fixed channel combo box")));
+    addAndMakeVisible (control_scope_channel_number = new ComboBox ("fixed channel combo box"));
     control_scope_channel_number->setEditableText (false);
     control_scope_channel_number->setJustificationType (Justification::centredRight);
     control_scope_channel_number->setTextWhenNothingSelected (String::empty);
-    control_scope_channel_number->setTextWhenNoChoicesAvailable (T("(no choices)"));
-    control_scope_channel_number->addItem (T("1"), 1);
-    control_scope_channel_number->addItem (T("2"), 2);
-    control_scope_channel_number->addItem (T("3"), 3);
-    control_scope_channel_number->addItem (T("4"), 4);
-    control_scope_channel_number->addItem (T("5"), 5);
-    control_scope_channel_number->addItem (T("6"), 6);
-    control_scope_channel_number->addItem (T("7"), 7);
-    control_scope_channel_number->addItem (T("8"), 8);
-    control_scope_channel_number->addItem (T("9"), 9);
-    control_scope_channel_number->addItem (T("10"), 10);
-    control_scope_channel_number->addItem (T("11"), 11);
-    control_scope_channel_number->addItem (T("12"), 12);
-    control_scope_channel_number->addItem (T("13"), 13);
-    control_scope_channel_number->addItem (T("14"), 14);
-    control_scope_channel_number->addItem (T("15"), 15);
-    control_scope_channel_number->addItem (T("16"), 16);
+    control_scope_channel_number->setTextWhenNoChoicesAvailable ("(no choices)");
+    control_scope_channel_number->addItem ("1", 1);
+    control_scope_channel_number->addItem ("2", 2);
+    control_scope_channel_number->addItem ("3", 3);
+    control_scope_channel_number->addItem ("4", 4);
+    control_scope_channel_number->addItem ("5", 5);
+    control_scope_channel_number->addItem ("6", 6);
+    control_scope_channel_number->addItem ("7", 7);
+    control_scope_channel_number->addItem ("8", 8);
+    control_scope_channel_number->addItem ("9", 9);
+    control_scope_channel_number->addItem ("10", 10);
+    control_scope_channel_number->addItem ("11", 11);
+    control_scope_channel_number->addItem ("12", 12);
+    control_scope_channel_number->addItem ("13", 13);
+    control_scope_channel_number->addItem ("14", 14);
+    control_scope_channel_number->addItem ("15", 15);
+    control_scope_channel_number->addItem ("16", 16);
     control_scope_channel_number->addListener (this);
 
-    addAndMakeVisible (bounds_origin_return = new ToggleButton (T("bounds return to origin")));
-    bounds_origin_return->setButtonText (T("Always return to origin"));
+    addAndMakeVisible (bounds_origin_return = new ToggleButton ("bounds return to origin"));
+    bounds_origin_return->setButtonText ("Always return to origin");
     bounds_origin_return->addListener (this);
     bounds_origin_return->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 

@@ -267,8 +267,8 @@ namespace midi
         public:
             mapper_tablelistbox_t(const juce::String &, juce::TableListBoxModel *);
             
-            void mouseWheelMove(const juce::MouseEvent &, float, float);
-            void delegatedMouseWheelMove(const juce::MouseEvent &, float, float);
+            void mouseWheelMove(const juce::MouseEvent &, const juce::MouseWheelDetails &);
+            void delegatedMouseWheelMove(const juce::MouseEvent &, const juce::MouseWheelDetails &);
     };
 
     class MIDILIB_DECLSPEC_CLASS mapper_table_t: public juce::Component, public juce::Button::Listener, public virtual pic::tracked_t
@@ -283,7 +283,7 @@ namespace midi
             void column_changed(int);
             int calculate_width(int);
 
-            void mouseWheelMove(const juce::MouseEvent &, float, float);
+            void mouseWheelMove(const juce::MouseEvent &, const juce::MouseWheelDetails &);
 
             void buttonClicked(juce::Button* button);
 

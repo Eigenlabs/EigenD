@@ -157,8 +157,8 @@ namespace midi
 
             addAndMakeVisible(content_ = new juce::TabbedComponent(juce::TabbedButtonBar::TabsAtTop));
             content_->setTabBarDepth(30);
-            content_->addTab(T("MIDI CC Messages"), juce::Colours::lightgrey, ct, true);
-            content_->addTab(T("MIDI Behaviour"), juce::Colours::lightgrey, mt, true);
+            content_->addTab("MIDI CC Messages", juce::Colours::lightgrey, ct, true);
+            content_->addTab("MIDI Behaviour", juce::Colours::lightgrey, mt, true);
             content_->setCurrentTabIndex(0);
             content_->addComponentListener(this);
 

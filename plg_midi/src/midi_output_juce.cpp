@@ -33,7 +33,7 @@
 
 struct pi_midi::midi_output_t::impl_t: piw::thing_t, pic::safe_worker_t
 {
-    impl_t(pi_midi::midi_output_t *delegate_output): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_HIGH), current_(-1), delegate_(delegate_output),output_(0),virtual_output_(0),running_(false), null_device_name_(T(NULL_DEVICE))
+    impl_t(pi_midi::midi_output_t *delegate_output): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_HIGH), current_(-1), delegate_(delegate_output),output_(0),virtual_output_(0),running_(false), null_device_name_(NULL_DEVICE)
     {
         piw::tsd_thing(this);
     }

@@ -30,11 +30,10 @@ namespace
     class Scanner: public juce::InterprocessConnection
     {
         public:
-            Scanner(): manager_(0), format_(0)
+            Scanner(): format_(0)
             {
-                manager_ = AudioPluginFormatManager::getInstance();
-                manager_->addDefaultFormats();
-                connectToPipe("EigenScanner");
+                manager_.addDefaultFormats();
+                connectToPipe("EigenScanner", -1);
                 send("B");
             }
 
@@ -57,9 +56,9 @@ namespace
 
                     format_ = 0;
 
-                    for(int i=0;i<manager_->getNumFormats();i++)
+                    for(int i=0;i<manager_.getNumFormats();i++)
                     {
-                        AudioPluginFormat *f = manager_->getFormat(i);
+                        AudioPluginFormat *f = manager_.getFormat(i);
 
                         if(msg==f->getName())
                         {
@@ -92,7 +91,7 @@ namespace
                         if(found.size()>0)
                         {
                             std::auto_ptr<juce::XmlElement> el(found[0]->createXml());
-                            msg = T("1"); msg+= el->createDocument(juce::String::empty); send(msg.toUTF8());
+                            msg = "1"; msg+= el->createDocument(juce::String::empty); send(msg.toUTF8());
                             return;
                         }
                     }
@@ -107,7 +106,7 @@ namespace
             }
 
         private:
-            AudioPluginFormatManager *manager_;
+            AudioPluginFormatManager manager_;
             AudioPluginFormat *format_;
     };
 };
@@ -135,7 +134,7 @@ class EigenScanner : public juce::JUCEApplication
 
         const String getApplicationName()
         {
-            return T("EigenScanner0");
+            return "EigenScanner0";
         }
 
         const String getApplicationVersion()

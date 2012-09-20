@@ -30,7 +30,7 @@
 
 //==============================================================================
 PopupDialogComponent::PopupDialogComponent ()
-    : Component (T("PopupDialog"))
+    : Component ("PopupDialog")
 {
 
     //[UserPreSize]

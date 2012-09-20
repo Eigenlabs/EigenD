@@ -239,12 +239,12 @@ namespace midi
             PopupDialogWindow(modal_dialog_listener_t *listener, String name)
                 : DialogWindow(name, Colour(0x00), true, true), listener_(listener), title_bg_label_(0), title_label_(0), close_button_(0)
             {
-                addChildComponent(title_bg_label_ = new Label(T("title label background"), T("")));
+                addChildComponent(title_bg_label_ = new Label("title label background", ""));
                 title_bg_label_->setVisible(true);
                 title_bg_label_->setEditable(false, false, false);
                 title_bg_label_->setColour(Label::backgroundColourId, Colour (0xcc666666));
 
-                addChildComponent(title_label_ = new Label(T("title label"), name));
+                addChildComponent(title_label_ = new Label("title label", name));
                 title_label_->setAlwaysOnTop(true);
                 title_label_->setVisible(true);
                 title_label_->setFont (Font (13.0000f, Font::plain));
@@ -256,7 +256,7 @@ namespace midi
                 addChildComponent(close_button_ = createTabBarCloseButton());
                 close_button_->setAlwaysOnTop(true);
                 close_button_->setTriggeredOnMouseDown(true);
-                close_button_->setTooltip(T("Close popup"));
+                close_button_->setTooltip("Close popup");
                 close_button_->setVisible(true);
                 close_button_->addListener(this);
 
@@ -307,7 +307,7 @@ namespace midi
                 overImage.addAndMakeVisible (ellipse.createCopy());
                 overImage.addAndMakeVisible (dp.createCopy());
 
-                DrawableButton* db = new DrawableButton (T("closePopup"), DrawableButton::ImageFitted);
+                DrawableButton* db = new DrawableButton ("closePopup", DrawableButton::ImageFitted);
                 db->setImages (&normalImage, &overImage, 0);
                 return db;
             }
@@ -383,7 +383,7 @@ namespace midi
                 closeButtonPressed();
             }
 
-            virtual const BorderSize<int> getBorderThickness()
+            virtual BorderSize<int> getBorderThickness()
             {
                 // return null border size for no border
                 return BorderSize<int>();
@@ -959,16 +959,16 @@ namespace midi
 
     mapper_tablelistbox_t::mapper_tablelistbox_t(const juce::String &componentName, juce::TableListBoxModel *model) : juce::TableListBox(componentName, model) { }
 
-    void mapper_tablelistbox_t::mouseWheelMove(const juce::MouseEvent &, float, float)
+    void mapper_tablelistbox_t::mouseWheelMove(const juce::MouseEvent &, const juce::MouseWheelDetails &d)
     {
         // always receive the mouseWheelMove event from the containing mapper_table_t component, which will call delegatedMouseWheelMove
     }
 
-    void mapper_tablelistbox_t::delegatedMouseWheelMove(const MouseEvent& e, float wheelIncrementX, float wheelIncrementY)
+    void mapper_tablelistbox_t::delegatedMouseWheelMove(const MouseEvent& e, const juce::MouseWheelDetails &d)
     {
-        if(wheelIncrementX != 0 || wheelIncrementY != 0)
+        if(d.deltaX != 0 || d.deltaY != 0)
         {
-            juce::TableListBox::mouseWheelMove(e, wheelIncrementX, wheelIncrementY);
+            juce::TableListBox::mouseWheelMove(e, d);
         }
     }
 
@@ -1002,8 +1002,8 @@ namespace midi
             table_mapping_->getHeader().addColumn(name,i,std::max(80,font_.getStringWidth(name)+20),80,200,juce::TableHeaderComponent::visible|juce::TableHeaderComponent::resizable);
         }
 
-        addAndMakeVisible(clear_tab_ = new ClearTabButton(T("clear tab button")));
-        clear_tab_->setButtonText(T("Clear matrix"));
+        addAndMakeVisible(clear_tab_ = new ClearTabButton("clear tab button"));
+        clear_tab_->setButtonText("Clear matrix");
         clear_tab_->addListener(this);
 
         setBounds(0,0,600,400);
@@ -1095,11 +1095,11 @@ namespace midi
         return font_.getStringWidth(str)+20;
     }
 
-    void mapper_table_t::mouseWheelMove(const juce::MouseEvent &e, float wheelIncrementX, float wheelIncrementY)
+    void mapper_table_t::mouseWheelMove(const juce::MouseEvent &e, const juce::MouseWheelDetails &d)
     {
-        if(wheelIncrementX != 0 || wheelIncrementY != 0)
+        if(d.deltaX != 0 || d.deltaY != 0)
         {
-            table_mapping_->delegatedMouseWheelMove(e, wheelIncrementX, wheelIncrementY);
+            table_mapping_->delegatedMouseWheelMove(e, d);
         }
     }
 

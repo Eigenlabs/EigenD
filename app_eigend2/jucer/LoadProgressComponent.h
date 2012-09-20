@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:52:00pm
+  Creation date:  18 Sep 2012 6:56:36pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_CA1A4964__
-#define __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_CA1A4964__
+#ifndef __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_EFF3296__
+#define __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_EFF3296__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -74,6 +74,7 @@ public:
     static const char* textBoxInner_png;
     static const int textBoxInner_pngSize;
 
+
     //==============================================================================
     juce_UseDebuggingNewOperator
 
@@ -94,6 +95,7 @@ private:
     Image cachedImage_textBoxT_png;
     Image cachedImage_textBoxInner_png;
 
+
     //==============================================================================
     // (prevent copy constructor and operator= being generated..)
     LoadProgressComponent (const LoadProgressComponent&);
@@ -101,4 +103,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_CA1A4964__
+#endif   // __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_EFF3296__

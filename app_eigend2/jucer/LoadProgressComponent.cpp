@@ -42,15 +42,15 @@ LoadProgressComponent::LoadProgressComponent ()
       cachedImage_textBoxT_png (0),
       cachedImage_textBoxInner_png (0)
 {
-    addAndMakeVisible (progress_slider = new Slider (T("new slider")));
+    addAndMakeVisible (progress_slider = new Slider ("new slider"));
     progress_slider->setRange (0, 100, 1);
     progress_slider->setSliderStyle (Slider::LinearBar);
     progress_slider->setTextBoxStyle (Slider::TextBoxLeft, true, 80, 12);
     progress_slider->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
     progress_slider->addListener (this);
 
-    addAndMakeVisible (message_label = new Label (T("message_label"),
-                                                  T("label text")));
+    addAndMakeVisible (message_label = new Label ("message_label",
+                                                  "label text"));
     message_label->setFont (Font (15.0000f, Font::plain));
     message_label->setJustificationType (Justification::centredBottom);
     message_label->setEditable (false, false, false);

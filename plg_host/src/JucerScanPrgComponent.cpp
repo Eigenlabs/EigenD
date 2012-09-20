@@ -43,14 +43,14 @@ JucerScanPrgComponent::JucerScanPrgComponent ()
       cachedImage_textBoxT_png (0),
       cachedImage_textBoxInner_png (0)
 {
-    addAndMakeVisible (slider = new Slider (T("new slider")));
+    addAndMakeVisible (slider = new Slider ("new slider"));
     slider->setRange (0, 1, 0);
     slider->setSliderStyle (Slider::LinearBar);
     slider->setTextBoxStyle (Slider::NoTextBox, true, 80, 20);
     slider->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
     slider->addListener (this);
 
-    addAndMakeVisible (plugin_label = new Label (T("new label"),
+    addAndMakeVisible (plugin_label = new Label ("new label",
                                                  String::empty));
     plugin_label->setFont (Font (15.0000f, Font::plain));
     plugin_label->setJustificationType (Justification::centredLeft);
@@ -58,7 +58,7 @@ JucerScanPrgComponent::JucerScanPrgComponent ()
     plugin_label->setColour (TextEditor::textColourId, Colours::black);
     plugin_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
-    addAndMakeVisible (format_label = new Label (T("new label"),
+    addAndMakeVisible (format_label = new Label ("new label",
                                                  String::empty));
     format_label->setFont (Font (15.0000f, Font::plain));
     format_label->setJustificationType (Justification::centredRight);

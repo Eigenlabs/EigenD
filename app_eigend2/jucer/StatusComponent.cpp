@@ -32,7 +32,7 @@
 StatusComponent::StatusComponent ()
     : cpu_meter (0)
 {
-    addAndMakeVisible (cpu_meter = new Slider (T("new slider")));
+    addAndMakeVisible (cpu_meter = new Slider ("new slider"));
     cpu_meter->setRange (0, 100, 1);
     cpu_meter->setSliderStyle (Slider::LinearBar);
     cpu_meter->setTextBoxStyle (Slider::TextBoxLeft, true, 80, 20);

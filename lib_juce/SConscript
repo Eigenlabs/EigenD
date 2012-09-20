@@ -25,22 +25,64 @@ juce_env = env.Clone()
 me = env.Dir('.').abspath
 
 if env['IS_WINDOWS']:
-    juce_files = Split('juce_LibrarySource.cpp')
-    juce_env.Append(CCFLAGS='-DWINDOWS=1 -DJUCE_DLL -DJUCE_DLL_BUILD -DNDEBUG=1 /arch:SSE')
+    juce_files = Split("""
+            modules/juce_audio_basics/juce_audio_basics.cpp
+            modules/juce_audio_devices/juce_audio_devices.cpp
+            modules/juce_audio_formats/juce_audio_formats.cpp
+            modules/juce_audio_processors/juce_audio_processors.cpp
+            modules/juce_audio_utils/juce_audio_utils.cpp
+            modules/juce_core/juce_core.cpp
+            modules/juce_cryptography/juce_cryptography.cpp
+            modules/juce_data_structures/juce_data_structures.cpp
+            modules/juce_events/juce_events.cpp
+            modules/juce_graphics/juce_graphics.cpp
+            modules/juce_gui_basics/juce_gui_basics.cpp
+            modules/juce_gui_extra/juce_gui_extra.cpp
+        """)
+    juce_env.Append(CCFLAGS='/D "WINDOWS=1" /D "_LIB" /D "WIN32" /D "_WINDOWS" /D "NDEBUG" /D "JUCE_DLL_BUILD=1" /arch:SSE')
+    juce_env.Append(LINKFLAGS="/nodefaultlib:libcmt.lib")
+    juce_env.Append(LINKFLAGS='WS2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib')
+    juce_env.Append(LINKFLAGS='advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib')
+    juce_env.Append(LINKFLAGS='odbccp32.lib wininet.lib shlwapi.lib version.lib imm32.lib winmm.lib ')
 
 if env['IS_LINUX']:
-    juce_files = Split('juce_LibrarySource.cpp')
-    juce_env.Append(CCFLAGS='-Wno-unused-but-set-variable -Wno-strict-overflow -Wno-multichar -Wno-reorder -Wno-sign-compare -DLINUX=1 -DNDEBUG=1 -DJUCE_DLL_BUILD -DJUCE_DLL')
+    juce_files = Split("""
+            modules/juce_audio_basics/juce_audio_basics.cpp
+            modules/juce_audio_devices/juce_audio_devices.cpp
+            modules/juce_audio_formats/juce_audio_formats.cpp
+            modules/juce_audio_processors/juce_audio_processors.cpp
+            modules/juce_audio_utils/juce_audio_utils.cpp
+            modules/juce_core/juce_core.cpp
+            modules/juce_cryptography/juce_cryptography.cpp
+            modules/juce_data_structures/juce_data_structures.cpp
+            modules/juce_events/juce_events.cpp
+            modules/juce_graphics/juce_graphics.cpp
+            modules/juce_gui_basics/juce_gui_basics.cpp
+            modules/juce_gui_extra/juce_gui_extra.cpp
+        """)
+    juce_env.Append(CCFLAGS='-Wno-sign-compare -DLINUX=1 -DNDEBUG -DJUCE_DLL_BUILD')
     juce_env.Append(CPPPATH='/usr/include/freetype2')
     juce_env.Append(LIBS=Split('X11 freetype Xext asound'))
 
 if env['IS_MACOSX']:
-    juce_files = Split('juce_LibrarySource.mm')
-    juce_env.Append(CCFLAGS='-Wno-deprecated-declarations -Wno-sign-compare -Wno-reorder -Wno-unused-function -Wno-uninitialized -DJUCE_DLL -DJUCE_DLL_BUILD')
+    juce_files = Split("""
+            modules/juce_audio_basics/juce_audio_basics.mm
+            modules/juce_audio_devices/juce_audio_devices.mm
+            modules/juce_audio_formats/juce_audio_formats.mm
+            modules/juce_audio_processors/juce_audio_processors.mm
+            modules/juce_audio_utils/juce_audio_utils.mm
+            modules/juce_core/juce_core.mm
+            modules/juce_cryptography/juce_cryptography.mm
+            modules/juce_data_structures/juce_data_structures.mm
+            modules/juce_events/juce_events.mm
+            modules/juce_graphics/juce_graphics.mm
+            modules/juce_gui_basics/juce_gui_basics.mm
+            modules/juce_gui_extra/juce_gui_extra.mm
+        """)
+    juce_env.Append(CCFLAGS='-Wno-sign-compare -DNDEBUG -DJUCE_DLL_BUILD')
     juce_env.Append(LINKFLAGS='-framework CoreAudio -framework CoreMIDI -framework AudioUnit -framework IOKit')
     juce_env.Append(LINKFLAGS='-framework Cocoa -framework Carbon -framework AppKit -framework QuartzCore')
     juce_env.Append(LINKFLAGS='-framework CoreFoundation -framework CoreAudioKit -framework AudioToolbox')
-    juce_env.Append(LINKFLAGS='-framework WebKit -framework OpenGL -framework DiscRecording')
 
 juce_env.Append(CPPPATH=me)
 juce_env.PiSharedLibrary('juce',juce_files,package='eigend')

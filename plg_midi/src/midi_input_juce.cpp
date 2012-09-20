@@ -45,7 +45,7 @@ using namespace std;
 
 struct pi_midi::midi_input_port_t::impl_t: piw::thing_t, juce::MidiInputCallback
 {
-    impl_t(pi_midi::midi_input_port_t *d,const piw::change_nb_t &r): current_(-1), receiver_(r), delegate_(d), input_(0), virtual_input_(0), running_(false), null_device_name_(T(NULL_DEVICE))
+    impl_t(pi_midi::midi_input_port_t *d,const piw::change_nb_t &r): current_(-1), receiver_(r), delegate_(d), input_(0), virtual_input_(0), running_(false), null_device_name_(NULL_DEVICE)
     {
         snapshot_.save();
         piw::tsd_thing(this);
