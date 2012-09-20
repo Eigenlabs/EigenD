@@ -134,20 +134,17 @@ def refine_state(db,word,istate):
             istate = cstate
             continue
 
-        if n is None:
+        if n is not None:
             for s in istate:
-                r = s.refine(db,word)
+                r = s.refine_number(db,word)
                 if r.status() is None: yield r
                 if r.status():
                     (o,c) = r.args()
                     ostate.extend(o)
                     cstate.extend(c)
 
-            istate=cstate
-            continue
-
         for s in istate:
-            r = s.refine_number(db,word)
+            r = s.refine(db,word)
             if r.status() is None: yield r
             if r.status():
                 (o,c) = r.args()
