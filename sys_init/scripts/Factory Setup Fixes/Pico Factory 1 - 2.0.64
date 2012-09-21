@@ -1,0 +1,68 @@
+description
+    This script fixes browse talkers in the EigenD 2.0.64
+    Pico Factory Setup 1.
+    
+script
+    empty join
+    
+    drummer talker hey 1 called 1 cancel
+    drummer talker hey ' " eigenbrowser , drummer 1 voice 1 browse " do ' when 1 called 1 do
+    drummer talker hey 2 called 1 cancel
+    drummer talker hey ' " eigenbrowser , drummer 1 voice 2 browse " do ' when 2 called 1 do
+    drummer talker hey 3 called 1 cancel
+    drummer talker hey ' " eigenbrowser , drummer 1 voice 3 browse " do ' when 3 called 1 do
+    drummer talker hey 4 called 1 cancel
+    drummer talker hey ' " eigenbrowser , drummer 1 voice 4 browse " do ' when 4 called 1 do
+    drummer talker hey 5 called 1 cancel
+    drummer talker hey ' " eigenbrowser , drummer 1 voice 5 browse " do ' when 5 called 1 do
+    drummer talker hey 6 called 1 cancel
+    drummer talker hey ' " eigenbrowser , drummer 1 voice 6 browse " do ' when 6 called 1 do
+    
+    mixer talker hey 1 called 1 cancel
+    mixer talker hey ' " eigenbrowser , console mixer browse " do ' when 1 called 1 do
+    mixer talker hey 2 called 1 cancel
+    mixer talker hey ' " eigenbrowser , effect audio unit 1 plugin browse " do ' when 2 called 1 do
+    mixer talker hey 4 called 1 cancel
+    mixer talker hey ' " eigenbrowser , effect audio unit 2 plugin browse " do ' when 4 called 1 do
+    
+    effect talker hey 1 called 1 cancel
+    effect talker hey ' " eigenbrowser , sampler rig 1 effect audio unit plugin browse " do ' when 1 called 1 do
+    effect talker hey 2 called 1 cancel
+    effect talker hey ' " eigenbrowser , sampler rig 2 effect audio unit plugin browse " do ' when 2 called 1 do
+    effect talker hey 3 called 1 cancel
+    effect talker hey ' " eigenbrowser , sampler rig 3 effect audio unit plugin browse " do ' when 3 called 1 do
+    effect talker hey 4 called 1 cancel
+    effect talker hey ' " eigenbrowser , audio unit rig 1 effect audio unit plugin browse " do ' when 4 called 1 do
+    effect talker hey 5 called 1 cancel
+    effect talker hey ' " eigenbrowser , audio unit rig 2 effect audio unit plugin browse " do ' when 5 called 1 do
+    effect talker hey 6 called 1 cancel
+    effect talker hey ' " eigenbrowser , cello rig 1 effect audio unit plugin browse " do ' when 6 called 1 do
+    effect talker hey 7 called 1 cancel
+    effect talker hey ' " eigenbrowser , clarinet rig 1 effect audio unit plugin browse " do ' when 7 called 1 do
+    
+    sampler rig 1 talker hey 1 called 1 cancel
+    sampler rig 1 talker hey ' " eigenbrowser , sampler rig 1 sampler oscillator sample browse " do ' when 1 called 1 do
+    sampler rig 2 talker hey 1 called 1 cancel
+    sampler rig 2 talker hey ' " eigenbrowser , sampler rig 2 sampler oscillator sample browse " do ' when 1 called 1 do
+    sampler rig 3 talker hey 1 called 1 cancel
+    sampler rig 3 talker hey ' " eigenbrowser , sampler rig 3 sampler oscillator sample browse " do ' when 1 called 1 do
+    
+    drummer talker 2 hey 1 called 1 cancel
+    drummer talker 2 hey ' " eigenbrowser , drummer 1 browse " do ' when 1 called 1 do
+    drummer talker 2 hey 2 called 1 cancel
+    drummer talker 2 hey ' " eigenbrowser , metronome 1 browse " do ' when 2 called 1 do
+    
+    audio unit rig 1 talker hey 1 called 1 cancel
+    audio unit rig 1 talker hey ' " eigenbrowser , audio unit rig 1 instrument audio unit plugin browse " do ' when 1 called 1 do
+    audio unit rig 1 talker hey 2 called 1 cancel
+    audio unit rig 1 talker hey ' audio unit rig 1 instrument audio unit hey toggle show ' when 2 called 1 do
+    
+    audio unit rig 2 talker hey 1 called 1 cancel
+    audio unit rig 2 talker hey ' " eigenbrowser , audio unit rig 1 instrument audio unit plugin browse " do ' when 1 called 1 do
+    audio unit rig 2 talker hey 2 called 1 cancel
+    audio unit rig 2 talker hey ' audio unit rig 2 instrument audio unit hey toggle show ' when 2 called 1 do
+    
+    cello rig talker hey 1 called 1 cancel	
+    cello rig talker hey ' " eigenbrowser , cello rig 1 convolver impulse browse " do ' when 1 called 1 do
+    
+    empty join
