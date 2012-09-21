@@ -52,7 +52,7 @@ public:
         ImageOnButtonBackground,    /**< Draws the button as a standard rounded-rectangle button with the image on top.
                                          Note that if you use this style, the colour IDs that control the button colour are
                                          TextButton::buttonColourId and TextButton::buttonOnColourId. */
-        ImageStretched              /**< The button will stretch the images to fit inside it. */
+        ImageStretched              /**< Fills the button with a stretched version of the image. */
     };
 
     //==============================================================================

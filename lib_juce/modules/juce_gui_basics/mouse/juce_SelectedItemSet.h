@@ -43,7 +43,7 @@
     @see SelectableObject
 */
 template <class SelectableItemType>
-class  SelectedItemSet   : public ChangeBroadcaster
+class SelectedItemSet   : public ChangeBroadcaster
 {
 public:
     //==============================================================================

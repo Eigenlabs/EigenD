@@ -23,6 +23,23 @@
   ==============================================================================
 */
 
+struct CustomMouseCursorInfo
+{
+    CustomMouseCursorInfo (const Image& im, int hsX, int hsY) noexcept
+        : image (im), hotspot (hsX, hsY), scaleFactor (1.0f)
+    {}
+
+    CustomMouseCursorInfo (const Image& im, const Point<int>& hs, float scale) noexcept
+        : image (im), hotspot (hs), scaleFactor (scale)
+    {}
+
+    void* create() const;
+
+    Image image;
+    const Point<int> hotspot;
+    float scaleFactor;
+};
+
 class MouseCursor::SharedCursorHandle
 {
 public:
@@ -34,8 +51,8 @@ public:
     {
     }
 
-    SharedCursorHandle (const Image& image, const int hotSpotX, const int hotSpotY, const float scale)
-        : handle (createMouseCursorFromImage (image, hotSpotX, hotSpotY, scale)),
+    SharedCursorHandle (const Image& image, const Point<int>& hotSpot, const float scaleFactor)
+        : handle (CustomMouseCursorInfo (image, hotSpot, scaleFactor).create()),
           refCount (1),
           standardType (MouseCursor::NormalCursor),
           isStandard (false)
@@ -119,8 +136,13 @@ MouseCursor::MouseCursor (const StandardCursorType type)
 {
 }
 
-MouseCursor::MouseCursor (const Image& image, const int hotSpotX, const int hotSpotY, const float scale)
-    : cursorHandle (new SharedCursorHandle (image, hotSpotX, hotSpotY, scale))
+MouseCursor::MouseCursor (const Image& image, const int hotSpotX, const int hotSpotY)
+    : cursorHandle (new SharedCursorHandle (image, Point<int> (hotSpotX, hotSpotY), 1.0f))
+{
+}
+
+MouseCursor::MouseCursor (const Image& image, const int hotSpotX, const int hotSpotY, float scaleFactor)
+    : cursorHandle (new SharedCursorHandle (image, Point<int> (hotSpotX, hotSpotY), scaleFactor))
 {
 }
 
