@@ -111,9 +111,8 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         unix_tools.PiUnixEnvironment.__init__(self,platform,'usr/pi','Library/Eigenlabs',python='/usr/pi/bin/python')
         os_major=uname()[2].split('.')[0]
         self.Append(LIBS=Split('dl m pthread'))
-
-        self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\"'))
-        self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate -Wl,-rpath,@executable_path/'))
+        self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\" -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk'))
+        self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate -Wl,-rpath,@executable_path/ -no_compact_linkedit -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk'))
         self.Replace(CXX='g++-4.2')
         self.Replace(CC='gcc-4.2')
 
