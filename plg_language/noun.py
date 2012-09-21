@@ -37,6 +37,10 @@ def popset(s):
             return i
     return None
 
+def get_number(s):
+    try: return int(s)
+    except: return None
+
 def disambiguate(db,ids,words,all):
     if all or len(ids)==1:
         return ids
@@ -47,10 +51,47 @@ def disambiguate(db,ids,words,all):
     awsi = aws.union(('input',))
     awsa = aws.union(('agent',))
 
+    print 'disambiguate',words
+
     for o in ids:
         iws = name_cache.get_valueset(o)
         if iws == aws or iws == awsi or iws == awsa:
             exact.add(o)
+
+    if exact:
+        return exact
+
+    return ids
+
+def disambiguate_no_ordinal(db,ids,words,all):
+    if all or len(ids)==1:
+        return ids
+
+    exact = set()
+    name_cache = db.get_propcache('name')
+    aws = frozenset(words)
+    awsi = aws.union(('input',))
+    awsa = aws.union(('agent',))
+
+    print 'disambiguate (no ordinal)',words
+
+    for o in ids:
+        iws = name_cache.get_valueset(o)
+        if iws == aws or iws == awsi or iws == awsa:
+            exact.add(o)
+
+
+    ord_cache  = db.get_propcache('ordinal')
+    aws = frozenset()
+    exacto = set()
+
+    for o in exact:
+        iws = ord_cache.get_valueset(o)
+        if iws == aws:
+            exacto.add(o)
+
+    if exacto:
+        return exacto
 
     if exact:
         return exact
@@ -108,10 +149,6 @@ def get_parts(db,ids):
         val.update(get_rig_parts(host_cache,o))
 
     return val
-
-def get_number(s):
-    try: return int(s)
-    except: return None
 
 @async.coroutine('internal error')
 def refine_state(db,word,istate):
@@ -332,7 +369,7 @@ class State_Atom:
 
     def flush(self,db):
         print 'pre-dis',self.__ids
-        ids = disambiguate(db,self.__ids,self.__words,self.__all)
+        ids = disambiguate_no_ordinal(db,self.__ids,self.__words,self.__all)
         print 'post-dis',ids
 
         if not self.__all and len(ids)!=1:
