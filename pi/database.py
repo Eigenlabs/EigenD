@@ -520,6 +520,12 @@ class Lexicon:
 
         return w
 
+    def is_valid_belcanto(self,e):
+        x=self.__base_forward.get(e)
+        if x: return x
+        x=self.__forward.get(e)
+        if x: return x
+
     def expand_to_music(self,w):
         if w.startswith('!'):
             return [w]
