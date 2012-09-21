@@ -125,7 +125,7 @@ const String quotedString (const String& s)
         }
     }
 
-    return "L\"" + replaceCEscapeChars (s) + "\"";
+    return "\"" + replaceCEscapeChars (s) + "\"";
 }
 
 const String replaceStringTranslations (String s, JucerDocument* document)
