@@ -172,7 +172,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         if not self.shared.release:
             raise RuntimeError('PiRelease not called')
 
-        print "building release",self.subst('$PI_RELEASE')
+        print "building release",self.subst('$PI_RELEASE'),'compatible with',self.subst('$PI_COMPATIBLE')
 
         for (k,v) in self.shared.agent_groups.items():
             self.__build_manifest(k,v[0],v[1],v[2])
@@ -332,6 +332,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         self.Replace(IS_BIGENDIAN=False)
 
         self.Replace(PI_RELEASE=lambda target,source,env,for_signature: self.shared.release)
+        self.Replace(PI_COMPATIBLE=lambda target,source,env,for_signature: self.shared.compatible)
         self.Replace(PI_COLLECTION=lambda target,source,env,for_signature: self.shared.collection)
         self.Replace(PI_ORGANISATION=lambda target,source,env,for_signature: self.shared.organisation)
 
@@ -582,11 +583,12 @@ class PiGenericEnvironment(SCons.Environment.Environment):
         runroot = join(env['RESRUNDIR'],section)
         env.Install(runroot,res)
 
-    def PiRelease(self,collection,release,organisation=None):
+    def PiRelease(self,collection,release,compatible,organisation=None):
         if self.shared.release:
             return False
         c = collection or 'release'
         self.shared.release=release
+        self.shared.compatible=compatible
         self.shared.collection=c
         self.shared.organisation=organisation or 'Eigenlabs'
         return True
@@ -662,7 +664,8 @@ class PiGenericEnvironment(SCons.Environment.Environment):
             return repr(repr(s)[1:-1])[1:-1]
 
         subst=dict(
-               release=self.subst('$PI_RELEASE'),
+               release = self.subst('$PI_RELEASE'),
+               compatible = self.subst('$PI_COMPATIBLE'),
                platform = self['PI_PLATFORM'],
                resrundir = escape(self.Dir(self['RESRUNDIR']).abspath),
                binrundir = escape(self.Dir(self['BINRUNDIR']).abspath),
