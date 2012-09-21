@@ -23,6 +23,7 @@ Import('master_env')
 import os.path
 
 release = '2.0.64'
+compatible = '2.0'
 
 status = {
     'windows': 'stable',
@@ -31,10 +32,11 @@ status = {
 }
 
 tag = '%s-%s' % (release,status[master_env['PI_PLATFORMTYPE']])
+compatible_tag = '%s-%s' % (compatible,status[master_env['PI_PLATFORMTYPE']])
 
 master_env.Prepend(CPPPATH=[master_env.Dir('.').srcnode().abspath])
 master_env.Prepend(CPPPATH=[os.path.join(master_env.Dir('.').srcnode().abspath,'steinberg')])
-master_env.PiRelease('release',tag)
+master_env.PiRelease('release',tag,compatible_tag)
 master_env.PiPackageDescription('eigend',desc='EigenD Application',groups=('app',))
 master_env.PiPackageDescription('eigend-build',desc='EigenD Build System',groups=('bld',))
 master_env.PiBuildSystem(package='eigend-build')

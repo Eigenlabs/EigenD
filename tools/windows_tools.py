@@ -680,8 +680,8 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
         stagesource = etc_env.Install(etc_env.subst('$ETCSTAGEDIR'),name)
         self.shared.shortcuts.setdefault(package,[]).append((bigname,'etc\\%s\\%s' % (package,name)))
 
-    def PiExternalRelease(self,version,organisation):
-        if not self.PiRelease('contrib',version,organisation):
+    def PiExternalRelease(self,version,compatible,organisation):
+        if not self.PiRelease('contrib',compatible,compatible,organisation):
             return
 
         root = os.environ.get('ProgramFiles(x86)')
