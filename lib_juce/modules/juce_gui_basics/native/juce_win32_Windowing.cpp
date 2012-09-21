@@ -3144,6 +3144,12 @@ void* MouseCursor::createMouseCursorFromImage (const Image& image, int hotspotX,
         hotspotY = (hotspotY * maxH) / image.getHeight();
     }
 
+    if (scale != 1.f)
+    {
+        im = im.rescaled(im.getWidth()/scale, im.getHeight()/scale, Graphics::lowResamplingQuality);
+    }
+
+
     return IconConverters::createHICONFromImage (im, FALSE, hotspotX, hotspotY);
 }
 
