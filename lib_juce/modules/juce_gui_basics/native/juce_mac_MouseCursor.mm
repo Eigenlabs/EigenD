@@ -67,7 +67,7 @@ namespace MouseCursorHelpers
         Image im (pngFormat.decodeImage (buf));
 
         if (im.isValid())
-            return createFromImage (im, hx * im.getWidth(), hy * im.getHeight(), false);
+            return createFromImage (im, hx * im.getWidth(), hy * im.getHeight(), 1.f);
 
         jassertfalse;
         return nullptr;
