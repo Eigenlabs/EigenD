@@ -237,6 +237,15 @@ private:
     [UIView setAnimationsEnabled: NO]; // disable this because it goes the wrong way and looks like crap.
 }
 
+- (BOOL)shouldAutorotate
+{
+    JuceUIView* juceView = (JuceUIView*) [self view];
+    jassert (juceView != nil && juceView->owner != nullptr);
+    juceView->owner->displayRotated();
+    [UIView setAnimationsEnabled: YES];
+    
+    return YES;
+}
 @end
 
 @implementation JuceUIView
@@ -417,7 +426,7 @@ UIViewComponentPeer::UIViewComponentPeer (Component& comp, const int windowStyle
 
         view.frame = CGRectMake (0, 0, r.size.width, r.size.height);
 
-        [window setRootViewController: controller];
+        //[window setRootViewController: controller];
         [window addSubview: view];
 
         window.hidden = view.hidden;
