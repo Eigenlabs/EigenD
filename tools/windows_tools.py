@@ -30,6 +30,7 @@ import SCons.Environment
 import generic_tools
 import shutil
 import _winreg
+import re
 
 from os.path import join,isdir
 from os import listdir
@@ -170,6 +171,8 @@ class PiWindowsEnvironment(generic_tools.PiGenericEnvironment):
 
     def make_wxs(self,name,filename,package):
         version = self.subst('$PI_RELEASE').split('-')[0]
+        if re.match("^\\d+\\.\\d+$", version):
+            version = version+".0"
         print 'wsx for collection',name,'containing',package
         meta = self.shared.package_descriptions[package]
 
