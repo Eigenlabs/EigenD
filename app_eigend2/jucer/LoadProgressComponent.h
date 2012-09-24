@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  18 Sep 2012 6:56:36pm
+  Creation date:  24 Sep 2012 8:48:50pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_EFF3296__
-#define __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_EFF3296__
+#ifndef __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_3CE3D4AC__
+#define __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_3CE3D4AC__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -75,9 +75,6 @@ public:
     static const int textBoxInner_pngSize;
 
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
-
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     //[/UserVariables]
@@ -97,10 +94,8 @@ private:
 
 
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    LoadProgressComponent (const LoadProgressComponent&);
-    const LoadProgressComponent& operator= (const LoadProgressComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LoadProgressComponent);
 };
 
 
-#endif   // __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_EFF3296__
+#endif   // __JUCER_HEADER_LOADPROGRESSCOMPONENT_LOADPROGRESSCOMPONENT_3CE3D4AC__

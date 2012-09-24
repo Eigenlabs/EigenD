@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:50:37pm
+  Creation date:  24 Sep 2012 8:48:49pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_JUCERSCANPRGCOMPONENT_JUCERSCANPRGCOMPONENT_CE1D0DE5__
-#define __JUCER_HEADER_JUCERSCANPRGCOMPONENT_JUCERSCANPRGCOMPONENT_CE1D0DE5__
+#ifndef __JUCER_HEADER_JUCERSCANPRGCOMPONENT_JUCERSCANPRGCOMPONENT_3CB4C5E3__
+#define __JUCER_HEADER_JUCERSCANPRGCOMPONENT_JUCERSCANPRGCOMPONENT_3CB4C5E3__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -75,8 +75,6 @@ public:
     static const char* textBoxTr_png;
     static const int textBoxTr_pngSize;
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
@@ -96,11 +94,10 @@ private:
     Image cachedImage_textBoxT_png;
     Image cachedImage_textBoxInner_png;
 
+
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    JucerScanPrgComponent (const JucerScanPrgComponent&);
-    const JucerScanPrgComponent& operator= (const JucerScanPrgComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucerScanPrgComponent);
 };
 
 
-#endif   // __JUCER_HEADER_JUCERSCANPRGCOMPONENT_JUCERSCANPRGCOMPONENT_CE1D0DE5__
+#endif   // __JUCER_HEADER_JUCERSCANPRGCOMPONENT_JUCERSCANPRGCOMPONENT_3CB4C5E3__

@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  24 Sep 2012 6:40:24pm
+  Creation date:  24 Sep 2012 8:48:50pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_SAVEDIALOGCOMPONENT_SAVEDIALOGCOMPONENT_B6CED949__
-#define __JUCER_HEADER_SAVEDIALOGCOMPONENT_SAVEDIALOGCOMPONENT_B6CED949__
+#ifndef __JUCER_HEADER_SAVEDIALOGCOMPONENT_SAVEDIALOGCOMPONENT_D25CE4D5__
+#define __JUCER_HEADER_SAVEDIALOGCOMPONENT_SAVEDIALOGCOMPONENT_D25CE4D5__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -160,4 +160,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_SAVEDIALOGCOMPONENT_SAVEDIALOGCOMPONENT_B6CED949__
+#endif   // __JUCER_HEADER_SAVEDIALOGCOMPONENT_SAVEDIALOGCOMPONENT_D25CE4D5__
