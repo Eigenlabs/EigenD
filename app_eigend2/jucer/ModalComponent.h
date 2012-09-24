@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  10 Aug 2012 3:24:50pm
+  Creation date:  24 Sep 2012 6:39:01pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_MODALCOMPONENT_MODALCOMPONENT_886F0A6A__
-#define __JUCER_HEADER_MODALCOMPONENT_MODALCOMPONENT_886F0A6A__
+#ifndef __JUCER_HEADER_MODALCOMPONENT_MODALCOMPONENT_EB195AFA__
+#define __JUCER_HEADER_MODALCOMPONENT_MODALCOMPONENT_EB195AFA__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -78,9 +78,6 @@ public:
     static const int eigenD_pngSize;
 
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
-
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     //[/UserVariables]
@@ -102,10 +99,8 @@ private:
 
 
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    ModalComponent (const ModalComponent&);
-    const ModalComponent& operator= (const ModalComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModalComponent);
 };
 
 
-#endif   // __JUCER_HEADER_MODALCOMPONENT_MODALCOMPONENT_886F0A6A__
+#endif   // __JUCER_HEADER_MODALCOMPONENT_MODALCOMPONENT_EB195AFA__

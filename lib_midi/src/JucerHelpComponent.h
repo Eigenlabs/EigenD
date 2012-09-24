@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:50:25pm
+  Creation date:  24 Sep 2012 6:41:25pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_HELPCOMPONENT_JUCERHELPCOMPONENT_37452131__
-#define __JUCER_HEADER_HELPCOMPONENT_JUCERHELPCOMPONENT_37452131__
+#ifndef __JUCER_HEADER_HELPCOMPONENT_JUCERHELPCOMPONENT_58F251F__
+#define __JUCER_HEADER_HELPCOMPONENT_JUCERHELPCOMPONENT_58F251F__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -77,8 +77,6 @@ public:
     static const char* eigenD_png;
     static const int eigenD_pngSize;
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
@@ -99,11 +97,10 @@ private:
     Image cachedImage_backgroundBoxBl_png;
     Image cachedImage_eigenD_png;
 
+
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    HelpComponent (const HelpComponent&);
-    const HelpComponent& operator= (const HelpComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HelpComponent);
 };
 
 
-#endif   // __JUCER_HEADER_HELPCOMPONENT_JUCERHELPCOMPONENT_37452131__
+#endif   // __JUCER_HEADER_HELPCOMPONENT_JUCERHELPCOMPONENT_58F251F__

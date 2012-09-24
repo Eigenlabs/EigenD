@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  18 Sep 2012 7:23:16pm
+  Creation date:  24 Sep 2012 6:26:54pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_63976770__
-#define __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_63976770__
+#ifndef __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_3C5F478E__
+#define __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_3C5F478E__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -102,9 +102,6 @@ public:
     static const int eigenD_pngSize;
 
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
-
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     //[/UserVariables]
@@ -141,10 +138,8 @@ private:
 
 
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    LoadDialogComponent (const LoadDialogComponent&);
-    const LoadDialogComponent& operator= (const LoadDialogComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LoadDialogComponent);
 };
 
 
-#endif   // __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_63976770__
+#endif   // __JUCER_HEADER_LOADDIALOGCOMPONENT_LOADDIALOGCOMPONENT_3C5F478E__

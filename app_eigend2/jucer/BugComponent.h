@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  27 Jul 2011 5:10:12pm
+  Creation date:  24 Sep 2012 6:35:44pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_BUGCOMPONENT_BUGCOMPONENT_C92882CD__
-#define __JUCER_HEADER_BUGCOMPONENT_BUGCOMPONENT_C92882CD__
+#ifndef __JUCER_HEADER_BUGCOMPONENT_BUGCOMPONENT_802CE839__
+#define __JUCER_HEADER_BUGCOMPONENT_BUGCOMPONENT_802CE839__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -97,9 +97,6 @@ public:
     static const int eigenD_pngSize;
 
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
-
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     //[/UserVariables]
@@ -132,10 +129,8 @@ private:
 
 
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    BugComponent (const BugComponent&);
-    const BugComponent& operator= (const BugComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BugComponent);
 };
 
 
-#endif   // __JUCER_HEADER_BUGCOMPONENT_BUGCOMPONENT_C92882CD__
+#endif   // __JUCER_HEADER_BUGCOMPONENT_BUGCOMPONENT_802CE839__

@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:51:01pm
+  Creation date:  24 Sep 2012 6:42:56pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_485A3137__
-#define __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_485A3137__
+#ifndef __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_DB6952F2__
+#define __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_DB6952F2__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -100,8 +100,6 @@ public:
     static const char* eigenD_png;
     static const int eigenD_pngSize;
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
@@ -138,11 +136,10 @@ private:
     Image cachedImage_innerBoxInner_png;
     Image cachedImage_innerBoxT_png;
 
+
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    JucerScanCtlComponent (const JucerScanCtlComponent&);
-    const JucerScanCtlComponent& operator= (const JucerScanCtlComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucerScanCtlComponent);
 };
 
 
-#endif   // __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_485A3137__
+#endif   // __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_DB6952F2__

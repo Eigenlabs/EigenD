@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  5 Jul 2012 5:18:59pm
+  Creation date:  24 Sep 2012 6:37:22pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_5759BEAC__
-#define __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_5759BEAC__
+#ifndef __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_64985558__
+#define __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_64985558__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -100,9 +100,6 @@ public:
     static const int eigenD_pngSize;
 
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
-
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     //[/UserVariables]
@@ -137,10 +134,8 @@ private:
 
 
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    EditDialogComponent (const EditDialogComponent&);
-    const EditDialogComponent& operator= (const EditDialogComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EditDialogComponent);
 };
 
 
-#endif   // __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_5759BEAC__
+#endif   // __JUCER_HEADER_EDITDIALOGCOMPONENT_EDITDIALOGCOMPONENT_64985558__

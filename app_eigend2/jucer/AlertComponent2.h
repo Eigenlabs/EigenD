@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:51:36pm
+  Creation date:  24 Sep 2012 6:35:44pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_ALERTCOMPONENT_ALERTCOMPONENT_146495D8__
-#define __JUCER_HEADER_ALERTCOMPONENT_ALERTCOMPONENT_146495D8__
+#ifndef __JUCER_HEADER_ALERTCOMPONENT_ALERTCOMPONENT_C8B655__
+#define __JUCER_HEADER_ALERTCOMPONENT_ALERTCOMPONENT_C8B655__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -79,8 +79,6 @@ public:
     static const char* eigenD_png;
     static const int eigenD_pngSize;
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
@@ -103,11 +101,10 @@ private:
     Image cachedImage_backgroundBoxBl_png;
     Image cachedImage_eigenD_png;
 
+
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    AlertComponent2 (const AlertComponent2&);
-    const AlertComponent2& operator= (const AlertComponent2&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AlertComponent2);
 };
 
 
-#endif   // __JUCER_HEADER_ALERTCOMPONENT_ALERTCOMPONENT_146495D8__
+#endif   // __JUCER_HEADER_ALERTCOMPONENT_ALERTCOMPONENT_C8B655__
