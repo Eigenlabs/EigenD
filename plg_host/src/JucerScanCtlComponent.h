@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  24 Sep 2012 6:42:56pm
+  Creation date:  24 Sep 2012 8:22:30pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_DB6952F2__
-#define __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_DB6952F2__
+#ifndef __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_8A8552EB__
+#define __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_8A8552EB__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -126,15 +126,15 @@ private:
     Image cachedImage_eigenD_png;
     Image cachedImage_backgroundBoxTl_png;
     Image cachedImage_backgroundBoxTr_png;
-    Image cachedImage_innerBoxTl_png;
-    Image cachedImage_innerBoxTr_png;
-    Image cachedImage_innerBoxBl_png;
     Image cachedImage_innerBoxBr_png;
-    Image cachedImage_innerBoxB_png;
     Image cachedImage_innerBoxL_png;
     Image cachedImage_innerBoxR_png;
     Image cachedImage_innerBoxInner_png;
+    Image cachedImage_innerBoxTl_png;
     Image cachedImage_innerBoxT_png;
+    Image cachedImage_innerBoxTr_png;
+    Image cachedImage_innerBoxBl_png;
+    Image cachedImage_innerBoxB_png;
 
 
     //==============================================================================
@@ -142,4 +142,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_DB6952F2__
+#endif   // __JUCER_HEADER_JUCERSCANCTLCOMPONENT_JUCERSCANCTLCOMPONENT_8A8552EB__

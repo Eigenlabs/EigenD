@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  24 Sep 2012 6:42:56pm
+  Creation date:  24 Sep 2012 8:22:30pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -50,15 +50,15 @@ JucerScanCtlComponent::JucerScanCtlComponent ()
       cachedImage_eigenD_png (0),
       cachedImage_backgroundBoxTl_png (0),
       cachedImage_backgroundBoxTr_png (0),
-      cachedImage_innerBoxTl_png (0),
-      cachedImage_innerBoxTr_png (0),
-      cachedImage_innerBoxBl_png (0),
       cachedImage_innerBoxBr_png (0),
-      cachedImage_innerBoxB_png (0),
       cachedImage_innerBoxL_png (0),
       cachedImage_innerBoxR_png (0),
       cachedImage_innerBoxInner_png (0),
-      cachedImage_innerBoxT_png (0)
+      cachedImage_innerBoxTl_png (0),
+      cachedImage_innerBoxT_png (0),
+      cachedImage_innerBoxTr_png (0),
+      cachedImage_innerBoxBl_png (0),
+      cachedImage_innerBoxB_png (0)
 {
     addAndMakeVisible (component = new TableListBox ("table",0));
     component->setName ("new component");
@@ -124,15 +124,15 @@ JucerScanCtlComponent::JucerScanCtlComponent ()
     cachedImage_eigenD_png = ImageCache::getFromMemory (eigenD_png, eigenD_pngSize);
     cachedImage_backgroundBoxTl_png = ImageCache::getFromMemory (backgroundBoxTl_png, backgroundBoxTl_pngSize);
     cachedImage_backgroundBoxTr_png = ImageCache::getFromMemory (backgroundBoxTr_png, backgroundBoxTr_pngSize);
-    cachedImage_innerBoxTl_png = ImageCache::getFromMemory (innerBoxTl_png, innerBoxTl_pngSize);
-    cachedImage_innerBoxTr_png = ImageCache::getFromMemory (innerBoxTr_png, innerBoxTr_pngSize);
-    cachedImage_innerBoxBl_png = ImageCache::getFromMemory (innerBoxBl_png, innerBoxBl_pngSize);
     cachedImage_innerBoxBr_png = ImageCache::getFromMemory (innerBoxBr_png, innerBoxBr_pngSize);
-    cachedImage_innerBoxB_png = ImageCache::getFromMemory (innerBoxB_png, innerBoxB_pngSize);
     cachedImage_innerBoxL_png = ImageCache::getFromMemory (innerBoxL_png, innerBoxL_pngSize);
     cachedImage_innerBoxR_png = ImageCache::getFromMemory (innerBoxR_png, innerBoxR_pngSize);
     cachedImage_innerBoxInner_png = ImageCache::getFromMemory (innerBoxInner_png, innerBoxInner_pngSize);
+    cachedImage_innerBoxTl_png = ImageCache::getFromMemory (innerBoxTl_png, innerBoxTl_pngSize);
     cachedImage_innerBoxT_png = ImageCache::getFromMemory (innerBoxT_png, innerBoxT_pngSize);
+    cachedImage_innerBoxTr_png = ImageCache::getFromMemory (innerBoxTr_png, innerBoxTr_pngSize);
+    cachedImage_innerBoxBl_png = ImageCache::getFromMemory (innerBoxBl_png, innerBoxBl_pngSize);
+    cachedImage_innerBoxB_png = ImageCache::getFromMemory (innerBoxB_png, innerBoxB_pngSize);
 
     //[UserPreSize]
     //[/UserPreSize]
@@ -224,93 +224,93 @@ void JucerScanCtlComponent::paint (Graphics& g)
                  0, 0, cachedImage_backgroundBoxTr_png.getWidth(), cachedImage_backgroundBoxTr_png.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxTl_png,
-                 56, 352, 15, 9,
-                 0, 0, cachedImage_innerBoxTl_png.getWidth(), cachedImage_innerBoxTl_png.getHeight());
-
-    g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxTr_png,
-                 getWidth() - 63, 352, 15, 9,
-                 0, 0, cachedImage_innerBoxTr_png.getWidth(), cachedImage_innerBoxTr_png.getHeight());
-
-    g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxBl_png,
-                 56, getHeight() - 82, 15, 9,
-                 0, 0, cachedImage_innerBoxBl_png.getWidth(), cachedImage_innerBoxBl_png.getHeight());
-
-    g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxBr_png,
-                 getWidth() - 63, getHeight() - 82, 15, 9,
+                 getWidth() - 175, 265, 15, 15,
                  0, 0, cachedImage_innerBoxBr_png.getWidth(), cachedImage_innerBoxBr_png.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxB_png,
-                 71, getHeight() - 82, getWidth() - 134, 9,
-                 0, 0, cachedImage_innerBoxB_png.getWidth(), cachedImage_innerBoxB_png.getHeight());
-
-    g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxL_png,
-                 56, 361, 15, getHeight() - 443,
+                 56, 183, 15, 82,
                  0, 0, cachedImage_innerBoxL_png.getWidth(), cachedImage_innerBoxL_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxR_png,
-                 getWidth() - 63, 361, 15, getHeight() - 443,
+                 getWidth() - 175, 183, 15, 82,
                  0, 0, cachedImage_innerBoxR_png.getWidth(), cachedImage_innerBoxR_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxInner_png,
-                 71, 361, getWidth() - 134, getHeight() - 443,
+                 71, 183, getWidth() - 246, 82,
                  0, 0, cachedImage_innerBoxInner_png.getWidth(), cachedImage_innerBoxInner_png.getHeight());
 
     g.setColour (Colours::black);
+    g.drawImage (cachedImage_innerBoxTl_png,
+                 56, 168, 15, 15,
+                 0, 0, cachedImage_innerBoxTl_png.getWidth(), cachedImage_innerBoxTl_png.getHeight());
+
+    g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxT_png,
-                 71, 352, getWidth() - 134, 9,
+                 71, 168, getWidth() - 246, 15,
                  0, 0, cachedImage_innerBoxT_png.getWidth(), cachedImage_innerBoxT_png.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxTl_png,
-                 56, 168, 12, 4,
-                 0, 0, cachedImage_innerBoxTl_png.getWidth(), cachedImage_innerBoxTl_png.getHeight());
-
-    g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxTr_png,
-                 getWidth() - 172, 168, 12, 4,
+                 getWidth() - 175, 168, 15, 15,
                  0, 0, cachedImage_innerBoxTr_png.getWidth(), cachedImage_innerBoxTr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxBl_png,
-                 56, getHeight() - 424, 12, 4,
+                 56, 265, 15, 15,
                  0, 0, cachedImage_innerBoxBl_png.getWidth(), cachedImage_innerBoxBl_png.getHeight());
 
     g.setColour (Colours::black);
+    g.drawImage (cachedImage_innerBoxB_png,
+                 71, 265, getWidth() - 246, 15,
+                 0, 0, cachedImage_innerBoxB_png.getWidth(), cachedImage_innerBoxB_png.getHeight());
+
+    g.setColour (Colours::black);
+    g.drawImage (cachedImage_innerBoxInner_png,
+                 71, 367, getWidth() - 134, getHeight() - 455,
+                 0, 0, cachedImage_innerBoxInner_png.getWidth(), cachedImage_innerBoxInner_png.getHeight());
+
+    g.setColour (Colours::black);
+    g.drawImage (cachedImage_innerBoxTr_png,
+                 getWidth() - 63, 352, 15, 15,
+                 0, 0, cachedImage_innerBoxTr_png.getWidth(), cachedImage_innerBoxTr_png.getHeight());
+
+    g.setColour (Colours::black);
+    g.drawImage (cachedImage_innerBoxR_png,
+                 getWidth() - 63, 367, 15, getHeight() - 455,
+                 0, 0, cachedImage_innerBoxR_png.getWidth(), cachedImage_innerBoxR_png.getHeight());
+
+    g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxBr_png,
-                 getWidth() - 172, getHeight() - 424, 12, 4,
+                 getWidth() - 63, getHeight() - 88, 15, 15,
                  0, 0, cachedImage_innerBoxBr_png.getWidth(), cachedImage_innerBoxBr_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxB_png,
-                 68, getHeight() - 424, getWidth() - 240, 4,
+                 71, getHeight() - 88, getWidth() - 134, 15,
                  0, 0, cachedImage_innerBoxB_png.getWidth(), cachedImage_innerBoxB_png.getHeight());
 
     g.setColour (Colours::black);
+    g.drawImage (cachedImage_innerBoxBl_png,
+                 56, getHeight() - 88, 15, 15,
+                 0, 0, cachedImage_innerBoxBl_png.getWidth(), cachedImage_innerBoxBl_png.getHeight());
+
+    g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxL_png,
-                 56, 172, 12, getHeight() - 596,
+                 56, 367, 15, getHeight() - 455,
                  0, 0, cachedImage_innerBoxL_png.getWidth(), cachedImage_innerBoxL_png.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxR_png,
-                 getWidth() - 172, 172, 12, getHeight() - 596,
-                 0, 0, cachedImage_innerBoxR_png.getWidth(), cachedImage_innerBoxR_png.getHeight());
-
-    g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxInner_png,
-                 68, 172, getWidth() - 240, getHeight() - 596,
-                 0, 0, cachedImage_innerBoxInner_png.getWidth(), cachedImage_innerBoxInner_png.getHeight());
+    g.drawImage (cachedImage_innerBoxTl_png,
+                 56, 352, 15, 15,
+                 0, 0, cachedImage_innerBoxTl_png.getWidth(), cachedImage_innerBoxTl_png.getHeight());
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_innerBoxT_png,
-                 68, 168, getWidth() - 240, 4,
+                 71, 352, getWidth() - 134, 15,
                  0, 0, cachedImage_innerBoxT_png.getWidth(), cachedImage_innerBoxT_png.getHeight());
 
     //[UserPaint] Add your own custom painting code here..
@@ -319,16 +319,16 @@ void JucerScanCtlComponent::paint (Graphics& g)
 
 void JucerScanCtlComponent::resized()
 {
-    component->setBounds (64, 368, getWidth() - 120, getHeight() - 448);
+    component->setBounds (70, 366, getWidth() - 130, getHeight() - 454);
     label->setBounds (40, 96, 536, 24);
-    textButton->setBounds (408, 640, 80, 24);
-    textButton2->setBounds (504, 640, 80, 24);
-    toggleButton->setBounds (56, 640, 136, 24);
+    textButton->setBounds (getWidth() - 232, getHeight() - 60, 80, 24);
+    textButton2->setBounds (getWidth() - 136, getHeight() - 60, 80, 24);
+    toggleButton->setBounds (56, getHeight() - 60, 136, 24);
     label2->setBounds (48, 315, 376, 24);
     label3->setBounds (48, 135, 376, 24);
-    add_text_button->setBounds (512, 168, 71, 24);
-    del_text_button->setBounds (512, 208, 71, 24);
-    path_box->setBounds (72, 184, 392, 80);
+    add_text_button->setBounds (getWidth() - 128, 168, 71, 24);
+    del_text_button->setBounds (getWidth() - 128, 208, 71, 24);
+    path_box->setBounds (70, 182, getWidth() - 242, 84);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -406,33 +406,29 @@ BEGIN_JUCER_METADATA
            mode="0"/>
     <IMAGE pos="43R 84 30 15" resource="backgroundBoxTr_png" opacity="1"
            mode="0"/>
-    <GROUP>
-      <IMAGE pos="56 352 15 9" resource="innerBoxTl_png" opacity="1" mode="0"/>
-      <IMAGE pos="63R 352 15 9" resource="innerBoxTr_png" opacity="1" mode="0"/>
-      <IMAGE pos="56 82R 15 9" resource="innerBoxBl_png" opacity="1" mode="0"/>
-      <IMAGE pos="63R 82R 15 9" resource="innerBoxBr_png" opacity="1" mode="0"/>
-      <IMAGE pos="71 82R 134M 9" resource="innerBoxB_png" opacity="1" mode="0"/>
-      <IMAGE pos="56 361 15 443M" resource="innerBoxL_png" opacity="1" mode="0"/>
-      <IMAGE pos="63R 361 15 443M" resource="innerBoxR_png" opacity="1" mode="0"/>
-      <IMAGE pos="71 361 134M 443M" resource="innerBoxInner_png" opacity="1"
-             mode="0"/>
-      <IMAGE pos="71 352 134M 9" resource="innerBoxT_png" opacity="1" mode="0"/>
-    </GROUP>
-    <GROUP>
-      <IMAGE pos="56 168 12 4" resource="innerBoxTl_png" opacity="1" mode="0"/>
-      <IMAGE pos="172R 168 12 4" resource="innerBoxTr_png" opacity="1" mode="0"/>
-      <IMAGE pos="56 424R 12 4" resource="innerBoxBl_png" opacity="1" mode="0"/>
-      <IMAGE pos="172R 424R 12 4" resource="innerBoxBr_png" opacity="1" mode="0"/>
-      <IMAGE pos="68 424R 240M 4" resource="innerBoxB_png" opacity="1" mode="0"/>
-      <IMAGE pos="56 172 12 596M" resource="innerBoxL_png" opacity="1" mode="0"/>
-      <IMAGE pos="172R 172 12 596M" resource="innerBoxR_png" opacity="1" mode="0"/>
-      <IMAGE pos="68 172 240M 596M" resource="innerBoxInner_png" opacity="1"
-             mode="0"/>
-      <IMAGE pos="68 168 240M 4" resource="innerBoxT_png" opacity="1" mode="0"/>
-    </GROUP>
+    <IMAGE pos="175R 265 15 15" resource="innerBoxBr_png" opacity="1" mode="0"/>
+    <IMAGE pos="56 183 15 82" resource="innerBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="175R 183 15 82" resource="innerBoxR_png" opacity="1" mode="0"/>
+    <IMAGE pos="71 183 246M 82" resource="innerBoxInner_png" opacity="1"
+           mode="0"/>
+    <IMAGE pos="56 168 15 15" resource="innerBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="71 168 246M 15" resource="innerBoxT_png" opacity="1" mode="0"/>
+    <IMAGE pos="175R 168 15 15" resource="innerBoxTr_png" opacity="1" mode="0"/>
+    <IMAGE pos="56 265 15 15" resource="innerBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="71 265 246M 15" resource="innerBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="71 367 134M 455M" resource="innerBoxInner_png" opacity="1"
+           mode="0"/>
+    <IMAGE pos="63R 352 15 15" resource="innerBoxTr_png" opacity="1" mode="0"/>
+    <IMAGE pos="63R 367 15 455M" resource="innerBoxR_png" opacity="1" mode="0"/>
+    <IMAGE pos="63R 88R 15 15" resource="innerBoxBr_png" opacity="1" mode="0"/>
+    <IMAGE pos="71 88R 134M 15" resource="innerBoxB_png" opacity="1" mode="0"/>
+    <IMAGE pos="56 88R 15 15" resource="innerBoxBl_png" opacity="1" mode="0"/>
+    <IMAGE pos="56 367 15 455M" resource="innerBoxL_png" opacity="1" mode="0"/>
+    <IMAGE pos="56 352 15 15" resource="innerBoxTl_png" opacity="1" mode="0"/>
+    <IMAGE pos="71 352 134M 15" resource="innerBoxT_png" opacity="1" mode="0"/>
   </BACKGROUND>
   <GENERICCOMPONENT name="new component" id="1a73d1f864256d21" memberName="component"
-                    virtualName="" explicitFocusOrder="0" pos="64 368 120M 448M"
+                    virtualName="" explicitFocusOrder="0" pos="70 366 130M 454M"
                     class="TableListBox" params="&quot;table&quot;,0"/>
   <LABEL name="new label" id="92ab364da97e6c42" memberName="label" virtualName=""
          explicitFocusOrder="0" pos="40 96 536 24" edTextCol="ff000000"
@@ -440,13 +436,13 @@ BEGIN_JUCER_METADATA
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15" bold="0" italic="0" justification="9"/>
   <TEXTBUTTON name="new button" id="73831e733dd22993" memberName="textButton"
-              virtualName="" explicitFocusOrder="0" pos="408 640 80 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="232R 60R 80 24" bgColOff="ffaeaeae"
               buttonText="Cancel" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="new button" id="24c0060f8840b8e3" memberName="textButton2"
-              virtualName="" explicitFocusOrder="0" pos="504 640 80 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="136R 60R 80 24" bgColOff="ffaeaeae"
               buttonText="Scan" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TOGGLEBUTTON name="new toggle button" id="db8d82320283c8d3" memberName="toggleButton"
-                virtualName="" explicitFocusOrder="0" pos="56 640 136 24" buttonText="Perform Full Scan"
+                virtualName="" explicitFocusOrder="0" pos="56 60R 136 24" buttonText="Perform Full Scan"
                 connectedEdges="0" needsCallback="1" radioGroupId="0" state="0"/>
   <LABEL name="new label" id="95b39ebb511eab10" memberName="label2" virtualName=""
          explicitFocusOrder="0" pos="48 315 376 24" edTextCol="ff000000"
@@ -459,13 +455,13 @@ BEGIN_JUCER_METADATA
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="33"/>
   <TEXTBUTTON name="new button" id="6da2bc573994fec2" memberName="add_text_button"
-              virtualName="" explicitFocusOrder="0" pos="512 168 71 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="128R 168 71 24" bgColOff="ffaeaeae"
               buttonText="Add" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="new button" id="f6862fed6446f891" memberName="del_text_button"
-              virtualName="" explicitFocusOrder="0" pos="512 208 71 24" bgColOff="ffaeaeae"
+              virtualName="" explicitFocusOrder="0" pos="128R 208 71 24" bgColOff="ffaeaeae"
               buttonText="Remove" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <GENERICCOMPONENT name="new component" id="e1c06dd9bd6005e1" memberName="path_box"
-                    virtualName="" explicitFocusOrder="0" pos="72 184 392 80" class="ListBox"
+                    virtualName="" explicitFocusOrder="0" pos="70 182 242M 84" class="ListBox"
                     params=""/>
 </JUCER_COMPONENT>
 
@@ -704,116 +700,225 @@ static const unsigned char resource_JucerScanCtlComponent_backgroundBoxTr_png[] 
 const char* JucerScanCtlComponent::backgroundBoxTr_png = (const char*) resource_JucerScanCtlComponent_backgroundBoxTr_png;
 const int JucerScanCtlComponent::backgroundBoxTr_pngSize = 1411;
 
-// JUCER_RESOURCE: innerBoxB_png, 292, "../../app_eigend2/jucer/InnerBoxB.png"
-static const unsigned char resource_JucerScanCtlComponent_innerBoxB_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,15,0,0,0,15,8,6,0,0,0,59,214,149,74,0,0,0,9,112,72,89,115,0,0,11,19,0,
-0,11,19,1,0,154,156,24,0,0,0,151,116,69,88,116,67,111,109,109,101,110,116,0,99,72,82,77,32,99,104,117,110,107,108,101,110,32,51,50,32,105,103,110,111,114,101,100,58,13,65,83,67,73,73,58,32,46,46,122,37,
-46,46,195,132,195,137,46,46,203,152,203,135,46,46,195,132,195,136,46,46,117,48,46,46,195,141,96,46,46,58,195,178,46,46,46,111,13,72,69,88,58,32,48,48,48,48,55,65,50,53,48,48,48,48,56,48,56,51,48,48,48,
-48,70,57,70,70,48,48,48,48,56,48,69,57,48,48,48,48,55,53,51,48,48,48,48,48,69,65,54,48,48,48,48,48,51,65,57,56,48,48,48,48,49,55,54,70,163,246,141,123,0,0,0,51,73,68,65,84,120,156,98,248,254,253,251,127,
-114,49,195,168,230,81,205,131,88,243,151,47,95,254,147,139,25,222,191,127,255,159,92,204,240,252,249,243,255,228,98,0,0,0,0,255,255,3,0,150,147,102,211,150,251,224,206,0,0,0,0,73,69,78,68,174,66,96,130,
-0,0};
+// JUCER_RESOURCE: innerBoxB_png, 1031, "../../app_eigend2/jucer/InnerBoxB.png"
+static const unsigned char resource_JucerScanCtlComponent_innerBoxB_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,30,0,0,0,30,8,2,0,0,0,180,82,57,245,0,0,0,25,116,69,88,116,83,111,102,
+116,119,97,114,101,0,65,100,111,98,101,32,73,109,97,103,101,82,101,97,100,121,113,201,101,60,0,0,3,102,105,84,88,116,88,77,76,58,99,111,109,46,97,100,111,98,101,46,120,109,112,0,0,0,0,0,60,63,120,112,
+97,99,107,101,116,32,98,101,103,105,110,61,34,239,187,191,34,32,105,100,61,34,87,53,77,48,77,112,67,101,104,105,72,122,114,101,83,122,78,84,99,122,107,99,57,100,34,63,62,32,60,120,58,120,109,112,109,101,
+116,97,32,120,109,108,110,115,58,120,61,34,97,100,111,98,101,58,110,115,58,109,101,116,97,47,34,32,120,58,120,109,112,116,107,61,34,65,100,111,98,101,32,88,77,80,32,67,111,114,101,32,53,46,48,45,99,48,
+54,48,32,54,49,46,49,51,52,55,55,55,44,32,50,48,49,48,47,48,50,47,49,50,45,49,55,58,51,50,58,48,48,32,32,32,32,32,32,32,32,34,62,32,60,114,100,102,58,82,68,70,32,120,109,108,110,115,58,114,100,102,61,
+34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,49,57,57,57,47,48,50,47,50,50,45,114,100,102,45,115,121,110,116,97,120,45,110,115,35,34,62,32,60,114,100,102,58,68,101,115,99,114,105,
+112,116,105,111,110,32,114,100,102,58,97,98,111,117,116,61,34,34,32,120,109,108,110,115,58,120,109,112,77,77,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,
+49,46,48,47,109,109,47,34,32,120,109,108,110,115,58,115,116,82,101,102,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,115,84,121,112,101,47,82,101,
+115,111,117,114,99,101,82,101,102,35,34,32,120,109,108,110,115,58,120,109,112,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,34,32,120,109,112,77,
+77,58,79,114,105,103,105,110,97,108,68,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,48,50,56,48,49,49,55,52,48,55,50,48,54,56,49,49,56,55,49,70,68,57,53,48,49,57,50,49,55,55,51,
+55,34,32,120,109,112,77,77,58,68,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,68,53,48,52,67,48,66,56,70,69,56,67,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,
+32,120,109,112,77,77,58,73,110,115,116,97,110,99,101,73,68,61,34,120,109,112,46,105,105,100,58,68,53,48,52,67,48,66,55,70,69,56,67,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,32,120,
+109,112,58,67,114,101,97,116,111,114,84,111,111,108,61,34,65,100,111,98,101,32,80,104,111,116,111,115,104,111,112,32,67,83,53,32,77,97,99,105,110,116,111,115,104,34,62,32,60,120,109,112,77,77,58,68,101,
+114,105,118,101,100,70,114,111,109,32,115,116,82,101,102,58,105,110,115,116,97,110,99,101,73,68,61,34,120,109,112,46,105,105,100,58,48,50,56,48,49,49,55,52,48,55,50,48,54,56,49,49,56,55,49,70,68,57,53,
+48,49,57,50,49,55,55,51,55,34,32,115,116,82,101,102,58,100,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,48,50,56,48,49,49,55,52,48,55,50,48,54,56,49,49,56,55,49,70,68,57,53,48,
+49,57,50,49,55,55,51,55,34,47,62,32,60,47,114,100,102,58,68,101,115,99,114,105,112,116,105,111,110,62,32,60,47,114,100,102,58,82,68,70,62,32,60,47,120,58,120,109,112,109,101,116,97,62,32,60,63,120,112,
+97,99,107,101,116,32,101,110,100,61,34,114,34,63,62,82,30,129,139,0,0,0,55,73,68,65,84,120,218,236,208,49,17,0,48,12,195,192,180,87,254,124,189,216,153,11,32,153,36,0,63,232,72,170,153,110,141,5,13,13,
+13,13,13,13,253,247,146,64,47,209,182,25,178,67,183,0,3,0,138,14,27,28,26,167,249,78,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
 
 const char* JucerScanCtlComponent::innerBoxB_png = (const char*) resource_JucerScanCtlComponent_innerBoxB_png;
-const int JucerScanCtlComponent::innerBoxB_pngSize = 292;
+const int JucerScanCtlComponent::innerBoxB_pngSize = 1031;
 
-// JUCER_RESOURCE: innerBoxBl_png, 548, "../../app_eigend2/jucer/InnerBoxBL.png"
-static const unsigned char resource_JucerScanCtlComponent_innerBoxBl_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,15,0,0,0,15,8,6,0,0,0,59,214,149,74,0,0,0,9,112,72,89,115,0,0,11,19,0,
-0,11,19,1,0,154,156,24,0,0,0,151,116,69,88,116,67,111,109,109,101,110,116,0,99,72,82,77,32,99,104,117,110,107,108,101,110,32,51,50,32,105,103,110,111,114,101,100,58,13,65,83,67,73,73,58,32,46,46,122,37,
-46,46,195,132,195,137,46,46,203,152,203,135,46,46,195,132,195,136,46,46,117,48,46,46,195,141,96,46,46,58,195,178,46,46,46,111,13,72,69,88,58,32,48,48,48,48,55,65,50,53,48,48,48,48,56,48,56,51,48,48,48,
-48,70,57,70,70,48,48,48,48,56,48,69,57,48,48,48,48,55,53,51,48,48,48,48,48,69,65,54,48,48,48,48,48,51,65,57,56,48,48,48,48,49,55,54,70,163,246,141,123,0,0,1,51,73,68,65,84,120,156,212,146,91,106,131,80,
-24,132,133,64,183,210,13,21,10,221,74,215,208,101,20,186,10,9,81,9,222,18,147,96,20,77,32,94,80,68,77,188,37,161,79,211,243,31,208,151,180,152,60,246,97,30,191,57,51,243,31,65,81,20,44,151,75,236,118,
-59,164,105,138,211,233,132,174,235,112,189,94,71,37,252,83,88,150,101,44,22,139,1,62,30,143,15,193,21,193,190,239,35,73,146,199,96,73,146,92,211,52,225,121,30,135,203,178,68,219,182,184,92,46,227,240,
-108,54,251,212,117,29,174,235,34,142,99,20,69,129,166,105,238,131,167,211,233,155,170,170,176,109,27,65,16,32,203,50,212,117,141,243,249,60,14,139,162,248,52,159,207,253,213,106,133,253,126,63,140,118,
-79,116,1,224,189,95,13,195,128,227,56,8,195,144,191,94,85,21,31,142,12,254,50,225,48,137,189,254,97,89,22,95,157,186,231,121,206,13,40,1,85,248,205,100,128,217,112,19,214,253,125,179,217,124,211,205,201,
-128,18,80,5,218,128,70,36,35,74,211,107,128,123,105,154,246,188,94,175,85,58,29,13,72,231,35,19,186,2,157,145,204,72,244,19,111,96,214,95,96,9,38,172,194,203,118,187,253,98,41,140,195,225,128,40,138,184,
-17,13,218,235,7,0,0,255,255,3,0,117,78,55,159,207,157,119,196,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
+// JUCER_RESOURCE: innerBoxBl_png, 1322, "../../app_eigend2/jucer/InnerBoxBL.png"
+static const unsigned char resource_JucerScanCtlComponent_innerBoxBl_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,30,0,0,0,30,8,6,0,0,0,59,48,174,162,0,0,0,25,116,69,88,116,83,111,102,
+116,119,97,114,101,0,65,100,111,98,101,32,73,109,97,103,101,82,101,97,100,121,113,201,101,60,0,0,3,34,105,84,88,116,88,77,76,58,99,111,109,46,97,100,111,98,101,46,120,109,112,0,0,0,0,0,60,63,120,112,97,
+99,107,101,116,32,98,101,103,105,110,61,34,239,187,191,34,32,105,100,61,34,87,53,77,48,77,112,67,101,104,105,72,122,114,101,83,122,78,84,99,122,107,99,57,100,34,63,62,32,60,120,58,120,109,112,109,101,
+116,97,32,120,109,108,110,115,58,120,61,34,97,100,111,98,101,58,110,115,58,109,101,116,97,47,34,32,120,58,120,109,112,116,107,61,34,65,100,111,98,101,32,88,77,80,32,67,111,114,101,32,53,46,48,45,99,48,
+54,48,32,54,49,46,49,51,52,55,55,55,44,32,50,48,49,48,47,48,50,47,49,50,45,49,55,58,51,50,58,48,48,32,32,32,32,32,32,32,32,34,62,32,60,114,100,102,58,82,68,70,32,120,109,108,110,115,58,114,100,102,61,
+34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,49,57,57,57,47,48,50,47,50,50,45,114,100,102,45,115,121,110,116,97,120,45,110,115,35,34,62,32,60,114,100,102,58,68,101,115,99,114,105,
+112,116,105,111,110,32,114,100,102,58,97,98,111,117,116,61,34,34,32,120,109,108,110,115,58,120,109,112,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,
+48,47,34,32,120,109,108,110,115,58,120,109,112,77,77,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,109,109,47,34,32,120,109,108,110,115,58,115,
+116,82,101,102,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,115,84,121,112,101,47,82,101,115,111,117,114,99,101,82,101,102,35,34,32,120,109,112,
+58,67,114,101,97,116,111,114,84,111,111,108,61,34,65,100,111,98,101,32,80,104,111,116,111,115,104,111,112,32,67,83,53,32,77,97,99,105,110,116,111,115,104,34,32,120,109,112,77,77,58,73,110,115,116,97,110,
+99,101,73,68,61,34,120,109,112,46,105,105,100,58,52,54,50,69,68,65,55,56,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,32,120,109,112,77,77,58,68,111,99,117,109,101,110,116,
+73,68,61,34,120,109,112,46,100,105,100,58,52,54,50,69,68,65,55,57,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,62,32,60,120,109,112,77,77,58,68,101,114,105,118,101,100,70,
+114,111,109,32,115,116,82,101,102,58,105,110,115,116,97,110,99,101,73,68,61,34,120,109,112,46,105,105,100,58,68,53,48,52,67,48,66,57,70,69,56,67,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,
+70,34,32,115,116,82,101,102,58,100,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,68,53,48,52,67,48,66,65,70,69,56,67,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,
+34,47,62,32,60,47,114,100,102,58,68,101,115,99,114,105,112,116,105,111,110,62,32,60,47,114,100,102,58,82,68,70,62,32,60,47,120,58,120,109,112,109,101,116,97,62,32,60,63,120,112,97,99,107,101,116,32,101,
+110,100,61,34,114,34,63,62,181,222,114,193,0,0,1,158,73,68,65,84,120,218,236,150,223,109,131,48,16,198,177,249,243,204,8,44,128,196,6,205,8,217,160,237,8,29,165,19,116,132,118,131,168,3,32,229,9,33,33,
+68,16,226,129,37,160,190,40,23,93,174,7,165,128,213,135,198,210,197,78,2,254,221,247,157,109,89,165,105,58,104,173,29,215,117,29,223,247,207,17,4,129,227,121,222,245,59,252,7,161,148,186,198,218,166,157,
+63,106,119,240,29,252,15,193,195,48,220,244,86,192,182,32,34,152,159,66,18,212,70,34,122,202,98,155,202,61,233,220,69,40,133,243,68,214,158,215,160,248,68,39,225,42,109,41,135,26,31,249,143,125,223,127,
+91,108,155,175,106,3,254,68,197,146,181,144,4,183,126,139,68,0,252,49,86,95,9,186,213,106,215,113,28,67,141,143,188,206,8,181,166,248,252,161,245,43,183,155,43,199,160,192,53,9,40,124,49,203,178,202,116,
+17,94,131,224,234,3,129,99,188,254,64,192,51,16,152,236,146,235,144,38,251,242,133,170,166,10,169,98,73,253,18,251,21,125,56,207,243,119,3,223,67,2,84,161,20,168,152,43,159,123,192,120,55,242,181,126,
+6,187,205,75,137,84,103,126,203,4,40,253,157,66,127,82,175,248,3,69,81,36,230,197,131,25,134,88,111,172,233,88,157,177,151,148,207,6,67,43,203,50,49,221,193,76,16,82,168,52,230,224,185,112,53,102,73,85,
+85,0,127,3,219,57,132,130,57,84,90,225,82,18,106,170,22,117,93,135,23,248,158,130,199,198,124,107,77,169,86,115,182,64,211,52,59,51,9,36,16,81,107,231,88,61,6,87,191,217,123,109,219,62,25,200,163,153,
+108,135,16,201,234,81,123,233,202,95,114,228,117,93,23,93,246,251,3,172,1,116,98,174,90,104,95,2,12,0,21,249,65,31,156,76,137,157,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
 
 const char* JucerScanCtlComponent::innerBoxBl_png = (const char*) resource_JucerScanCtlComponent_innerBoxBl_png;
-const int JucerScanCtlComponent::innerBoxBl_pngSize = 548;
+const int JucerScanCtlComponent::innerBoxBl_pngSize = 1322;
 
-// JUCER_RESOURCE: innerBoxBr_png, 448, "../../app_eigend2/jucer/InnerBoxBR.png"
-static const unsigned char resource_JucerScanCtlComponent_innerBoxBr_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,15,0,0,0,15,8,6,0,0,0,59,214,149,74,0,0,0,9,112,72,89,115,0,0,11,19,0,
-0,11,19,1,0,154,156,24,0,0,0,151,116,69,88,116,67,111,109,109,101,110,116,0,99,72,82,77,32,99,104,117,110,107,108,101,110,32,51,50,32,105,103,110,111,114,101,100,58,13,65,83,67,73,73,58,32,46,46,122,37,
-46,46,195,132,195,137,46,46,203,152,203,135,46,46,195,132,195,136,46,46,117,48,46,46,195,141,96,46,46,58,195,178,46,46,46,111,13,72,69,88,58,32,48,48,48,48,55,65,50,53,48,48,48,48,56,48,56,51,48,48,48,
-48,70,57,70,70,48,48,48,48,56,48,69,57,48,48,48,48,55,53,51,48,48,48,48,48,69,65,54,48,48,48,48,48,51,65,57,56,48,48,48,48,49,55,54,70,163,246,141,123,0,0,0,207,73,68,65,84,120,156,228,210,59,10,194,64,
-16,6,224,129,128,135,241,60,130,224,85,60,131,199,176,242,24,169,22,44,82,133,20,65,2,9,89,242,126,108,146,197,106,220,95,72,42,35,174,150,22,127,249,237,60,118,72,107,205,182,25,134,129,155,166,97,250,
-51,92,215,245,79,88,89,227,105,154,88,41,197,85,85,5,95,225,190,239,185,44,203,179,53,30,199,145,187,174,227,60,207,15,86,120,110,217,204,123,147,82,110,62,194,64,8,22,213,182,45,103,89,182,103,102,122,
-139,103,132,86,81,17,176,40,138,19,224,19,227,181,181,0,96,57,152,209,180,122,55,21,143,73,146,56,11,198,165,188,10,142,192,124,7,182,138,54,69,154,166,219,25,45,216,12,206,43,185,26,112,137,227,120,23,
-69,145,19,134,33,249,190,79,158,231,145,16,130,92,215,165,7,0,0,0,255,255,3,0,114,215,77,107,154,3,251,42,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
+// JUCER_RESOURCE: innerBoxBr_png, 1208, "../../app_eigend2/jucer/InnerBoxBR.png"
+static const unsigned char resource_JucerScanCtlComponent_innerBoxBr_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,30,0,0,0,30,8,6,0,0,0,59,48,174,162,0,0,0,25,116,69,88,116,83,111,102,
+116,119,97,114,101,0,65,100,111,98,101,32,73,109,97,103,101,82,101,97,100,121,113,201,101,60,0,0,3,34,105,84,88,116,88,77,76,58,99,111,109,46,97,100,111,98,101,46,120,109,112,0,0,0,0,0,60,63,120,112,97,
+99,107,101,116,32,98,101,103,105,110,61,34,239,187,191,34,32,105,100,61,34,87,53,77,48,77,112,67,101,104,105,72,122,114,101,83,122,78,84,99,122,107,99,57,100,34,63,62,32,60,120,58,120,109,112,109,101,
+116,97,32,120,109,108,110,115,58,120,61,34,97,100,111,98,101,58,110,115,58,109,101,116,97,47,34,32,120,58,120,109,112,116,107,61,34,65,100,111,98,101,32,88,77,80,32,67,111,114,101,32,53,46,48,45,99,48,
+54,48,32,54,49,46,49,51,52,55,55,55,44,32,50,48,49,48,47,48,50,47,49,50,45,49,55,58,51,50,58,48,48,32,32,32,32,32,32,32,32,34,62,32,60,114,100,102,58,82,68,70,32,120,109,108,110,115,58,114,100,102,61,
+34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,49,57,57,57,47,48,50,47,50,50,45,114,100,102,45,115,121,110,116,97,120,45,110,115,35,34,62,32,60,114,100,102,58,68,101,115,99,114,105,
+112,116,105,111,110,32,114,100,102,58,97,98,111,117,116,61,34,34,32,120,109,108,110,115,58,120,109,112,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,
+48,47,34,32,120,109,108,110,115,58,120,109,112,77,77,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,109,109,47,34,32,120,109,108,110,115,58,115,
+116,82,101,102,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,115,84,121,112,101,47,82,101,115,111,117,114,99,101,82,101,102,35,34,32,120,109,112,
+58,67,114,101,97,116,111,114,84,111,111,108,61,34,65,100,111,98,101,32,80,104,111,116,111,115,104,111,112,32,67,83,53,32,77,97,99,105,110,116,111,115,104,34,32,120,109,112,77,77,58,73,110,115,116,97,110,
+99,101,73,68,61,34,120,109,112,46,105,105,100,58,52,54,50,69,68,65,55,67,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,32,120,109,112,77,77,58,68,111,99,117,109,101,110,116,
+73,68,61,34,120,109,112,46,100,105,100,58,52,54,50,69,68,65,55,68,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,62,32,60,120,109,112,77,77,58,68,101,114,105,118,101,100,70,
+114,111,109,32,115,116,82,101,102,58,105,110,115,116,97,110,99,101,73,68,61,34,120,109,112,46,105,105,100,58,52,54,50,69,68,65,55,65,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,
+70,34,32,115,116,82,101,102,58,100,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,52,54,50,69,68,65,55,66,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,
+34,47,62,32,60,47,114,100,102,58,68,101,115,99,114,105,112,116,105,111,110,62,32,60,47,114,100,102,58,82,68,70,62,32,60,47,120,58,120,109,112,109,101,116,97,62,32,60,63,120,112,97,99,107,101,116,32,101,
+110,100,61,34,114,34,63,62,188,71,37,152,0,0,1,44,73,68,65,84,120,218,236,86,203,13,131,48,12,109,34,22,97,20,70,97,132,142,210,13,218,13,24,1,54,96,132,140,192,149,11,212,65,78,101,140,147,38,45,31,33,
+97,41,138,157,24,158,127,216,168,190,239,199,219,10,164,148,10,238,156,244,237,32,186,128,47,224,11,248,28,192,190,230,113,126,143,185,103,33,79,55,241,56,6,208,81,182,71,126,41,63,142,211,76,50,217,222,
+97,198,251,86,111,225,85,132,33,141,250,117,30,75,160,210,12,246,0,231,122,235,34,18,168,133,231,141,94,43,167,62,99,176,152,40,61,38,253,148,80,75,47,143,253,213,193,59,3,43,255,251,59,150,64,4,15,233,
+221,253,136,150,89,105,173,171,15,176,181,48,100,101,130,55,51,158,233,182,176,202,89,231,114,10,84,49,148,75,171,39,241,1,185,179,160,224,109,39,2,167,228,213,61,195,121,1,188,3,185,0,185,93,12,9,23,
+22,186,134,97,152,22,63,163,187,20,94,198,91,176,2,247,229,144,176,47,242,133,152,123,195,239,120,135,34,103,21,240,37,134,89,158,78,62,171,125,134,208,239,85,48,204,96,17,213,223,138,50,42,199,14,144,
+130,49,192,26,206,95,32,63,121,36,162,60,78,40,34,131,185,107,108,88,81,78,234,227,111,1,6,0,34,24,205,23,156,48,191,33,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
 
 const char* JucerScanCtlComponent::innerBoxBr_png = (const char*) resource_JucerScanCtlComponent_innerBoxBr_png;
-const int JucerScanCtlComponent::innerBoxBr_pngSize = 448;
+const int JucerScanCtlComponent::innerBoxBr_pngSize = 1208;
 
-// JUCER_RESOURCE: innerBoxInner_png, 272, "../../app_eigend2/jucer/InnerBoxInner.png"
-static const unsigned char resource_JucerScanCtlComponent_innerBoxInner_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,15,0,0,0,15,8,6,0,0,0,59,214,149,74,0,0,0,9,112,72,89,115,0,0,11,19,
-0,0,11,19,1,0,154,156,24,0,0,0,151,116,69,88,116,67,111,109,109,101,110,116,0,99,72,82,77,32,99,104,117,110,107,108,101,110,32,51,50,32,105,103,110,111,114,101,100,58,13,65,83,67,73,73,58,32,46,46,122,
-37,46,46,195,132,195,137,46,46,203,152,203,135,46,46,195,132,195,136,46,46,117,48,46,46,195,141,96,46,46,58,195,178,46,46,46,111,13,72,69,88,58,32,48,48,48,48,55,65,50,53,48,48,48,48,56,48,56,51,48,48,
-48,48,70,57,70,70,48,48,48,48,56,48,69,57,48,48,48,48,55,53,51,48,48,48,48,48,69,65,54,48,48,48,48,48,51,65,57,56,48,48,48,48,49,55,54,70,163,246,141,123,0,0,0,31,73,68,65,84,120,156,98,248,254,253,251,
-127,114,49,195,168,230,81,205,163,154,169,172,25,0,0,0,255,255,3,0,191,225,107,146,12,78,209,219,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
+// JUCER_RESOURCE: innerBoxInner_png, 951, "../../app_eigend2/jucer/InnerBoxInner.png"
+static const unsigned char resource_JucerScanCtlComponent_innerBoxInner_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,30,0,0,0,30,8,2,0,0,0,180,82,57,245,0,0,0,25,116,69,88,116,83,111,
+102,116,119,97,114,101,0,65,100,111,98,101,32,73,109,97,103,101,82,101,97,100,121,113,201,101,60,0,0,3,34,105,84,88,116,88,77,76,58,99,111,109,46,97,100,111,98,101,46,120,109,112,0,0,0,0,0,60,63,120,112,
+97,99,107,101,116,32,98,101,103,105,110,61,34,239,187,191,34,32,105,100,61,34,87,53,77,48,77,112,67,101,104,105,72,122,114,101,83,122,78,84,99,122,107,99,57,100,34,63,62,32,60,120,58,120,109,112,109,101,
+116,97,32,120,109,108,110,115,58,120,61,34,97,100,111,98,101,58,110,115,58,109,101,116,97,47,34,32,120,58,120,109,112,116,107,61,34,65,100,111,98,101,32,88,77,80,32,67,111,114,101,32,53,46,48,45,99,48,
+54,48,32,54,49,46,49,51,52,55,55,55,44,32,50,48,49,48,47,48,50,47,49,50,45,49,55,58,51,50,58,48,48,32,32,32,32,32,32,32,32,34,62,32,60,114,100,102,58,82,68,70,32,120,109,108,110,115,58,114,100,102,61,
+34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,49,57,57,57,47,48,50,47,50,50,45,114,100,102,45,115,121,110,116,97,120,45,110,115,35,34,62,32,60,114,100,102,58,68,101,115,99,114,105,
+112,116,105,111,110,32,114,100,102,58,97,98,111,117,116,61,34,34,32,120,109,108,110,115,58,120,109,112,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,
+48,47,34,32,120,109,108,110,115,58,120,109,112,77,77,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,109,109,47,34,32,120,109,108,110,115,58,115,
+116,82,101,102,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,115,84,121,112,101,47,82,101,115,111,117,114,99,101,82,101,102,35,34,32,120,109,112,
+58,67,114,101,97,116,111,114,84,111,111,108,61,34,65,100,111,98,101,32,80,104,111,116,111,115,104,111,112,32,67,83,53,32,77,97,99,105,110,116,111,115,104,34,32,120,109,112,77,77,58,73,110,115,116,97,110,
+99,101,73,68,61,34,120,109,112,46,105,105,100,58,52,54,50,69,68,65,56,48,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,32,120,109,112,77,77,58,68,111,99,117,109,101,110,116,
+73,68,61,34,120,109,112,46,100,105,100,58,52,54,50,69,68,65,56,49,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,62,32,60,120,109,112,77,77,58,68,101,114,105,118,101,100,70,
+114,111,109,32,115,116,82,101,102,58,105,110,115,116,97,110,99,101,73,68,61,34,120,109,112,46,105,105,100,58,52,54,50,69,68,65,55,69,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,
+70,34,32,115,116,82,101,102,58,100,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,52,54,50,69,68,65,55,70,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,
+34,47,62,32,60,47,114,100,102,58,68,101,115,99,114,105,112,116,105,111,110,62,32,60,47,114,100,102,58,82,68,70,62,32,60,47,120,58,120,109,112,109,101,116,97,62,32,60,63,120,112,97,99,107,101,116,32,101,
+110,100,61,34,114,34,63,62,12,71,194,222,0,0,0,43,73,68,65,84,120,218,236,204,49,17,0,0,8,4,32,181,127,225,223,76,225,226,65,0,58,73,221,152,58,163,86,171,213,106,181,90,173,254,95,175,0,3,0,100,174,3,
+39,171,113,64,65,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
 
 const char* JucerScanCtlComponent::innerBoxInner_png = (const char*) resource_JucerScanCtlComponent_innerBoxInner_png;
-const int JucerScanCtlComponent::innerBoxInner_pngSize = 272;
+const int JucerScanCtlComponent::innerBoxInner_pngSize = 951;
 
-// JUCER_RESOURCE: innerBoxL_png, 298, "../../app_eigend2/jucer/InnerBoxL.png"
-static const unsigned char resource_JucerScanCtlComponent_innerBoxL_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,15,0,0,0,15,8,6,0,0,0,59,214,149,74,0,0,0,9,112,72,89,115,0,0,11,19,0,
-0,11,19,1,0,154,156,24,0,0,0,151,116,69,88,116,67,111,109,109,101,110,116,0,99,72,82,77,32,99,104,117,110,107,108,101,110,32,51,50,32,105,103,110,111,114,101,100,58,13,65,83,67,73,73,58,32,46,46,122,37,
-46,46,195,132,195,137,46,46,203,152,203,135,46,46,195,132,195,136,46,46,117,48,46,46,195,141,96,46,46,58,195,178,46,46,46,111,13,72,69,88,58,32,48,48,48,48,55,65,50,53,48,48,48,48,56,48,56,51,48,48,48,
-48,70,57,70,70,48,48,48,48,56,48,69,57,48,48,48,48,55,53,51,48,48,48,48,48,69,65,54,48,48,48,48,48,51,65,57,56,48,48,48,48,49,55,54,70,163,246,141,123,0,0,0,57,73,68,65,84,120,156,98,56,122,244,232,255,
-243,231,207,255,191,115,231,206,255,231,207,159,255,127,255,254,253,255,47,95,190,252,255,254,253,59,65,204,48,170,121,84,243,168,102,42,107,6,0,0,0,255,255,3,0,52,36,82,66,236,158,243,63,0,0,0,0,73,69,
-78,68,174,66,96,130,0,0};
+// JUCER_RESOURCE: innerBoxL_png, 970, "../../app_eigend2/jucer/InnerBoxL.png"
+static const unsigned char resource_JucerScanCtlComponent_innerBoxL_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,30,0,0,0,30,8,2,0,0,0,180,82,57,245,0,0,0,25,116,69,88,116,83,111,102,
+116,119,97,114,101,0,65,100,111,98,101,32,73,109,97,103,101,82,101,97,100,121,113,201,101,60,0,0,3,34,105,84,88,116,88,77,76,58,99,111,109,46,97,100,111,98,101,46,120,109,112,0,0,0,0,0,60,63,120,112,97,
+99,107,101,116,32,98,101,103,105,110,61,34,239,187,191,34,32,105,100,61,34,87,53,77,48,77,112,67,101,104,105,72,122,114,101,83,122,78,84,99,122,107,99,57,100,34,63,62,32,60,120,58,120,109,112,109,101,
+116,97,32,120,109,108,110,115,58,120,61,34,97,100,111,98,101,58,110,115,58,109,101,116,97,47,34,32,120,58,120,109,112,116,107,61,34,65,100,111,98,101,32,88,77,80,32,67,111,114,101,32,53,46,48,45,99,48,
+54,48,32,54,49,46,49,51,52,55,55,55,44,32,50,48,49,48,47,48,50,47,49,50,45,49,55,58,51,50,58,48,48,32,32,32,32,32,32,32,32,34,62,32,60,114,100,102,58,82,68,70,32,120,109,108,110,115,58,114,100,102,61,
+34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,49,57,57,57,47,48,50,47,50,50,45,114,100,102,45,115,121,110,116,97,120,45,110,115,35,34,62,32,60,114,100,102,58,68,101,115,99,114,105,
+112,116,105,111,110,32,114,100,102,58,97,98,111,117,116,61,34,34,32,120,109,108,110,115,58,120,109,112,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,
+48,47,34,32,120,109,108,110,115,58,120,109,112,77,77,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,109,109,47,34,32,120,109,108,110,115,58,115,
+116,82,101,102,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,115,84,121,112,101,47,82,101,115,111,117,114,99,101,82,101,102,35,34,32,120,109,112,
+58,67,114,101,97,116,111,114,84,111,111,108,61,34,65,100,111,98,101,32,80,104,111,116,111,115,104,111,112,32,67,83,53,32,77,97,99,105,110,116,111,115,104,34,32,120,109,112,77,77,58,73,110,115,116,97,110,
+99,101,73,68,61,34,120,109,112,46,105,105,100,58,57,69,50,70,54,70,67,55,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,32,120,109,112,77,77,58,68,111,99,117,109,101,110,116,
+73,68,61,34,120,109,112,46,100,105,100,58,57,69,50,70,54,70,67,56,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,62,32,60,120,109,112,77,77,58,68,101,114,105,118,101,100,70,
+114,111,109,32,115,116,82,101,102,58,105,110,115,116,97,110,99,101,73,68,61,34,120,109,112,46,105,105,100,58,52,54,50,69,68,65,56,50,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,
+70,34,32,115,116,82,101,102,58,100,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,57,69,50,70,54,70,67,54,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,
+34,47,62,32,60,47,114,100,102,58,68,101,115,99,114,105,112,116,105,111,110,62,32,60,47,114,100,102,58,82,68,70,62,32,60,47,120,58,120,109,112,109,101,116,97,62,32,60,63,120,112,97,99,107,101,116,32,101,
+110,100,61,34,114,34,63,62,82,172,199,164,0,0,0,62,73,68,65,84,120,218,236,204,177,13,0,32,8,5,81,249,32,251,47,198,78,38,24,7,176,176,49,119,213,85,207,170,74,146,187,207,46,51,35,98,191,119,118,26,151,
+105,60,11,26,26,26,26,26,26,26,26,250,127,122,9,48,0,91,93,3,39,221,167,221,199,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
 
 const char* JucerScanCtlComponent::innerBoxL_png = (const char*) resource_JucerScanCtlComponent_innerBoxL_png;
-const int JucerScanCtlComponent::innerBoxL_pngSize = 298;
+const int JucerScanCtlComponent::innerBoxL_pngSize = 970;
 
-// JUCER_RESOURCE: innerBoxR_png, 281, "../../app_eigend2/jucer/InnerBoxR.png"
-static const unsigned char resource_JucerScanCtlComponent_innerBoxR_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,15,0,0,0,15,8,6,0,0,0,59,214,149,74,0,0,0,9,112,72,89,115,0,0,11,19,0,
-0,11,19,1,0,154,156,24,0,0,0,151,116,69,88,116,67,111,109,109,101,110,116,0,99,72,82,77,32,99,104,117,110,107,108,101,110,32,51,50,32,105,103,110,111,114,101,100,58,13,65,83,67,73,73,58,32,46,46,122,37,
-46,46,195,132,195,137,46,46,203,152,203,135,46,46,195,132,195,136,46,46,117,48,46,46,195,141,96,46,46,58,195,178,46,46,46,111,13,72,69,88,58,32,48,48,48,48,55,65,50,53,48,48,48,48,56,48,56,51,48,48,48,
-48,70,57,70,70,48,48,48,48,56,48,69,57,48,48,48,48,55,53,51,48,48,48,48,48,69,65,54,48,48,48,48,48,51,65,57,56,48,48,48,48,49,55,54,70,163,246,141,123,0,0,0,40,73,68,65,84,120,156,98,248,254,253,251,127,
-82,241,151,47,95,254,191,127,255,254,63,195,168,230,81,205,163,154,169,172,25,0,0,0,255,255,3,0,126,38,105,163,103,155,98,81,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
+// JUCER_RESOURCE: innerBoxR_png, 958, "../../app_eigend2/jucer/InnerBoxR.png"
+static const unsigned char resource_JucerScanCtlComponent_innerBoxR_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,30,0,0,0,30,8,2,0,0,0,180,82,57,245,0,0,0,25,116,69,88,116,83,111,102,
+116,119,97,114,101,0,65,100,111,98,101,32,73,109,97,103,101,82,101,97,100,121,113,201,101,60,0,0,3,34,105,84,88,116,88,77,76,58,99,111,109,46,97,100,111,98,101,46,120,109,112,0,0,0,0,0,60,63,120,112,97,
+99,107,101,116,32,98,101,103,105,110,61,34,239,187,191,34,32,105,100,61,34,87,53,77,48,77,112,67,101,104,105,72,122,114,101,83,122,78,84,99,122,107,99,57,100,34,63,62,32,60,120,58,120,109,112,109,101,
+116,97,32,120,109,108,110,115,58,120,61,34,97,100,111,98,101,58,110,115,58,109,101,116,97,47,34,32,120,58,120,109,112,116,107,61,34,65,100,111,98,101,32,88,77,80,32,67,111,114,101,32,53,46,48,45,99,48,
+54,48,32,54,49,46,49,51,52,55,55,55,44,32,50,48,49,48,47,48,50,47,49,50,45,49,55,58,51,50,58,48,48,32,32,32,32,32,32,32,32,34,62,32,60,114,100,102,58,82,68,70,32,120,109,108,110,115,58,114,100,102,61,
+34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,49,57,57,57,47,48,50,47,50,50,45,114,100,102,45,115,121,110,116,97,120,45,110,115,35,34,62,32,60,114,100,102,58,68,101,115,99,114,105,
+112,116,105,111,110,32,114,100,102,58,97,98,111,117,116,61,34,34,32,120,109,108,110,115,58,120,109,112,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,
+48,47,34,32,120,109,108,110,115,58,120,109,112,77,77,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,109,109,47,34,32,120,109,108,110,115,58,115,
+116,82,101,102,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,115,84,121,112,101,47,82,101,115,111,117,114,99,101,82,101,102,35,34,32,120,109,112,
+58,67,114,101,97,116,111,114,84,111,111,108,61,34,65,100,111,98,101,32,80,104,111,116,111,115,104,111,112,32,67,83,53,32,77,97,99,105,110,116,111,115,104,34,32,120,109,112,77,77,58,73,110,115,116,97,110,
+99,101,73,68,61,34,120,109,112,46,105,105,100,58,57,69,50,70,54,70,67,66,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,32,120,109,112,77,77,58,68,111,99,117,109,101,110,116,
+73,68,61,34,120,109,112,46,100,105,100,58,57,69,50,70,54,70,67,67,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,62,32,60,120,109,112,77,77,58,68,101,114,105,118,101,100,70,
+114,111,109,32,115,116,82,101,102,58,105,110,115,116,97,110,99,101,73,68,61,34,120,109,112,46,105,105,100,58,57,69,50,70,54,70,67,57,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,
+70,34,32,115,116,82,101,102,58,100,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,57,69,50,70,54,70,67,65,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,
+34,47,62,32,60,47,114,100,102,58,68,101,115,99,114,105,112,116,105,111,110,62,32,60,47,114,100,102,58,82,68,70,62,32,60,47,120,58,120,109,112,109,101,116,97,62,32,60,63,120,112,97,99,107,101,116,32,101,
+110,100,61,34,114,34,63,62,233,69,86,204,0,0,0,50,73,68,65,84,120,218,236,204,161,17,0,0,8,195,64,202,254,11,215,97,17,24,4,134,75,68,228,203,118,236,147,52,190,151,113,22,52,52,52,52,52,52,52,52,244,
+127,186,4,24,0,225,154,3,51,104,217,15,61,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
 
 const char* JucerScanCtlComponent::innerBoxR_png = (const char*) resource_JucerScanCtlComponent_innerBoxR_png;
-const int JucerScanCtlComponent::innerBoxR_pngSize = 281;
+const int JucerScanCtlComponent::innerBoxR_pngSize = 958;
 
-// JUCER_RESOURCE: innerBoxT_png, 301, "../../app_eigend2/jucer/InnerBoxT.png"
-static const unsigned char resource_JucerScanCtlComponent_innerBoxT_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,15,0,0,0,15,8,6,0,0,0,59,214,149,74,0,0,0,9,112,72,89,115,0,0,11,19,0,
-0,11,19,1,0,154,156,24,0,0,0,151,116,69,88,116,67,111,109,109,101,110,116,0,99,72,82,77,32,99,104,117,110,107,108,101,110,32,51,50,32,105,103,110,111,114,101,100,58,13,65,83,67,73,73,58,32,46,46,122,37,
-46,46,195,132,195,137,46,46,203,152,203,135,46,46,195,132,195,136,46,46,117,48,46,46,195,141,96,46,46,58,195,178,46,46,46,111,13,72,69,88,58,32,48,48,48,48,55,65,50,53,48,48,48,48,56,48,56,51,48,48,48,
-48,70,57,70,70,48,48,48,48,56,48,69,57,48,48,48,48,55,53,51,48,48,48,48,48,69,65,54,48,48,48,48,48,51,65,57,56,48,48,48,48,49,55,54,70,163,246,141,123,0,0,0,60,73,68,65,84,120,156,236,203,161,13,0,64,
-8,3,192,238,191,28,11,224,145,53,36,149,253,17,62,169,70,156,60,84,149,83,232,110,167,48,51,78,129,164,83,216,93,167,32,201,169,203,151,191,30,0,0,0,255,255,3,0,152,47,91,12,243,218,47,22,0,0,0,0,73,69,
-78,68,174,66,96,130,0,0};
+// JUCER_RESOURCE: innerBoxT_png, 972, "../../app_eigend2/jucer/InnerBoxT.png"
+static const unsigned char resource_JucerScanCtlComponent_innerBoxT_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,30,0,0,0,30,8,2,0,0,0,180,82,57,245,0,0,0,25,116,69,88,116,83,111,102,
+116,119,97,114,101,0,65,100,111,98,101,32,73,109,97,103,101,82,101,97,100,121,113,201,101,60,0,0,3,34,105,84,88,116,88,77,76,58,99,111,109,46,97,100,111,98,101,46,120,109,112,0,0,0,0,0,60,63,120,112,97,
+99,107,101,116,32,98,101,103,105,110,61,34,239,187,191,34,32,105,100,61,34,87,53,77,48,77,112,67,101,104,105,72,122,114,101,83,122,78,84,99,122,107,99,57,100,34,63,62,32,60,120,58,120,109,112,109,101,
+116,97,32,120,109,108,110,115,58,120,61,34,97,100,111,98,101,58,110,115,58,109,101,116,97,47,34,32,120,58,120,109,112,116,107,61,34,65,100,111,98,101,32,88,77,80,32,67,111,114,101,32,53,46,48,45,99,48,
+54,48,32,54,49,46,49,51,52,55,55,55,44,32,50,48,49,48,47,48,50,47,49,50,45,49,55,58,51,50,58,48,48,32,32,32,32,32,32,32,32,34,62,32,60,114,100,102,58,82,68,70,32,120,109,108,110,115,58,114,100,102,61,
+34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,49,57,57,57,47,48,50,47,50,50,45,114,100,102,45,115,121,110,116,97,120,45,110,115,35,34,62,32,60,114,100,102,58,68,101,115,99,114,105,
+112,116,105,111,110,32,114,100,102,58,97,98,111,117,116,61,34,34,32,120,109,108,110,115,58,120,109,112,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,
+48,47,34,32,120,109,108,110,115,58,120,109,112,77,77,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,109,109,47,34,32,120,109,108,110,115,58,115,
+116,82,101,102,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,115,84,121,112,101,47,82,101,115,111,117,114,99,101,82,101,102,35,34,32,120,109,112,
+58,67,114,101,97,116,111,114,84,111,111,108,61,34,65,100,111,98,101,32,80,104,111,116,111,115,104,111,112,32,67,83,53,32,77,97,99,105,110,116,111,115,104,34,32,120,109,112,77,77,58,73,110,115,116,97,110,
+99,101,73,68,61,34,120,109,112,46,105,105,100,58,57,69,50,70,54,70,67,70,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,32,120,109,112,77,77,58,68,111,99,117,109,101,110,116,
+73,68,61,34,120,109,112,46,100,105,100,58,57,69,50,70,54,70,68,48,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,62,32,60,120,109,112,77,77,58,68,101,114,105,118,101,100,70,
+114,111,109,32,115,116,82,101,102,58,105,110,115,116,97,110,99,101,73,68,61,34,120,109,112,46,105,105,100,58,57,69,50,70,54,70,67,68,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,
+70,34,32,115,116,82,101,102,58,100,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,57,69,50,70,54,70,67,69,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,
+34,47,62,32,60,47,114,100,102,58,68,101,115,99,114,105,112,116,105,111,110,62,32,60,47,114,100,102,58,82,68,70,62,32,60,47,120,58,120,109,112,109,101,116,97,62,32,60,63,120,112,97,99,107,101,116,32,101,
+110,100,61,34,114,34,63,62,90,114,10,222,0,0,0,64,73,68,65,84,120,218,236,211,49,13,0,48,16,66,209,114,212,191,66,196,244,198,26,96,32,225,11,120,3,9,144,116,60,93,0,46,154,100,233,159,222,2,233,204,173,
+103,38,240,50,145,180,107,232,210,165,75,151,46,29,67,63,1,6,0,122,2,3,63,215,133,214,189,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
 
 const char* JucerScanCtlComponent::innerBoxT_png = (const char*) resource_JucerScanCtlComponent_innerBoxT_png;
-const int JucerScanCtlComponent::innerBoxT_pngSize = 301;
+const int JucerScanCtlComponent::innerBoxT_pngSize = 972;
 
-// JUCER_RESOURCE: innerBoxTl_png, 607, "../../app_eigend2/jucer/InnerBoxTL.png"
-static const unsigned char resource_JucerScanCtlComponent_innerBoxTl_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,15,0,0,0,15,8,6,0,0,0,59,214,149,74,0,0,0,9,112,72,89,115,0,0,11,19,0,
-0,11,19,1,0,154,156,24,0,0,0,151,116,69,88,116,67,111,109,109,101,110,116,0,99,72,82,77,32,99,104,117,110,107,108,101,110,32,51,50,32,105,103,110,111,114,101,100,58,13,65,83,67,73,73,58,32,46,46,122,37,
-46,46,195,132,195,137,46,46,203,152,203,135,46,46,195,132,195,136,46,46,117,48,46,46,195,141,96,46,46,58,195,178,46,46,46,111,13,72,69,88,58,32,48,48,48,48,55,65,50,53,48,48,48,48,56,48,56,51,48,48,48,
-48,70,57,70,70,48,48,48,48,56,48,69,57,48,48,48,48,55,53,51,48,48,48,48,48,69,65,54,48,48,48,48,48,51,65,57,56,48,48,48,48,49,55,54,70,163,246,141,123,0,0,1,110,73,68,65,84,120,156,188,146,73,110,194,
-80,16,68,145,34,229,42,57,79,86,145,114,140,28,35,247,224,16,22,51,6,44,131,1,3,50,88,24,36,6,27,196,108,38,179,137,84,113,117,132,149,144,1,86,89,212,238,191,95,221,85,29,3,16,187,84,34,145,184,203,100,
-50,143,249,124,62,94,42,149,12,93,215,223,42,149,10,170,213,42,106,181,154,168,94,175,127,7,83,169,212,67,46,151,211,53,77,3,1,211,52,97,89,22,108,219,70,183,219,133,227,56,232,245,122,162,75,240,69,85,
-213,32,116,18,168,221,110,203,163,193,96,128,241,120,12,207,243,48,153,76,48,157,78,69,159,193,215,16,68,185,92,70,179,217,20,151,225,112,40,143,103,179,25,150,203,37,86,171,21,214,235,181,104,179,217,
-124,128,201,100,242,41,220,15,116,108,181,90,226,230,186,174,64,124,232,251,62,118,187,29,246,251,61,14,135,67,164,152,162,40,247,97,56,46,119,228,168,220,137,224,98,177,16,136,192,241,120,68,16,4,162,
-211,233,20,137,174,207,28,215,48,12,116,58,29,140,70,35,113,36,200,223,127,130,34,56,157,78,199,233,218,104,52,208,239,247,37,8,142,74,199,223,160,8,206,102,179,54,119,101,29,12,104,62,159,99,187,221,
-202,168,127,129,2,135,65,249,236,147,61,114,87,166,202,112,174,185,10,204,125,121,57,172,134,181,176,142,91,70,22,184,80,40,200,185,49,101,194,220,151,65,93,3,191,192,236,246,28,214,205,112,177,88,148,
-35,63,195,188,156,127,129,223,1,0,0,255,255,3,0,2,100,43,234,136,147,167,24,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
+// JUCER_RESOURCE: innerBoxTl_png, 1308, "../../app_eigend2/jucer/InnerBoxTL.png"
+static const unsigned char resource_JucerScanCtlComponent_innerBoxTl_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,30,0,0,0,30,8,6,0,0,0,59,48,174,162,0,0,0,25,116,69,88,116,83,111,102,
+116,119,97,114,101,0,65,100,111,98,101,32,73,109,97,103,101,82,101,97,100,121,113,201,101,60,0,0,3,34,105,84,88,116,88,77,76,58,99,111,109,46,97,100,111,98,101,46,120,109,112,0,0,0,0,0,60,63,120,112,97,
+99,107,101,116,32,98,101,103,105,110,61,34,239,187,191,34,32,105,100,61,34,87,53,77,48,77,112,67,101,104,105,72,122,114,101,83,122,78,84,99,122,107,99,57,100,34,63,62,32,60,120,58,120,109,112,109,101,
+116,97,32,120,109,108,110,115,58,120,61,34,97,100,111,98,101,58,110,115,58,109,101,116,97,47,34,32,120,58,120,109,112,116,107,61,34,65,100,111,98,101,32,88,77,80,32,67,111,114,101,32,53,46,48,45,99,48,
+54,48,32,54,49,46,49,51,52,55,55,55,44,32,50,48,49,48,47,48,50,47,49,50,45,49,55,58,51,50,58,48,48,32,32,32,32,32,32,32,32,34,62,32,60,114,100,102,58,82,68,70,32,120,109,108,110,115,58,114,100,102,61,
+34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,49,57,57,57,47,48,50,47,50,50,45,114,100,102,45,115,121,110,116,97,120,45,110,115,35,34,62,32,60,114,100,102,58,68,101,115,99,114,105,
+112,116,105,111,110,32,114,100,102,58,97,98,111,117,116,61,34,34,32,120,109,108,110,115,58,120,109,112,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,
+48,47,34,32,120,109,108,110,115,58,120,109,112,77,77,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,109,109,47,34,32,120,109,108,110,115,58,115,
+116,82,101,102,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,115,84,121,112,101,47,82,101,115,111,117,114,99,101,82,101,102,35,34,32,120,109,112,
+58,67,114,101,97,116,111,114,84,111,111,108,61,34,65,100,111,98,101,32,80,104,111,116,111,115,104,111,112,32,67,83,53,32,77,97,99,105,110,116,111,115,104,34,32,120,109,112,77,77,58,73,110,115,116,97,110,
+99,101,73,68,61,34,120,109,112,46,105,105,100,58,68,48,68,68,67,51,55,48,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,32,120,109,112,77,77,58,68,111,99,117,109,101,110,116,
+73,68,61,34,120,109,112,46,100,105,100,58,68,48,68,68,67,51,55,49,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,62,32,60,120,109,112,77,77,58,68,101,114,105,118,101,100,70,
+114,111,109,32,115,116,82,101,102,58,105,110,115,116,97,110,99,101,73,68,61,34,120,109,112,46,105,105,100,58,68,48,68,68,67,51,54,69,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,
+70,34,32,115,116,82,101,102,58,100,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,68,48,68,68,67,51,54,70,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,
+34,47,62,32,60,47,114,100,102,58,68,101,115,99,114,105,112,116,105,111,110,62,32,60,47,114,100,102,58,82,68,70,62,32,60,47,120,58,120,109,112,109,101,116,97,62,32,60,63,120,112,97,99,107,101,116,32,101,
+110,100,61,34,114,34,63,62,29,136,18,156,0,0,1,144,73,68,65,84,120,218,236,150,221,109,132,48,12,199,33,124,60,51,2,35,176,65,111,4,54,104,55,232,40,29,225,70,184,17,110,0,16,32,132,120,237,38,80,187,
+58,75,206,39,73,185,220,83,45,229,156,32,200,239,254,182,113,72,247,125,79,66,109,93,215,58,77,211,22,166,111,224,27,24,184,78,112,160,145,87,231,220,210,16,240,178,44,31,224,222,97,179,11,129,112,8,33,
+18,19,216,6,245,6,207,243,124,1,119,229,202,8,134,158,131,125,225,78,240,52,77,213,3,216,114,160,105,112,240,41,197,227,56,54,15,104,163,2,179,44,147,230,60,2,106,110,131,20,15,195,128,208,59,60,84,209,
+166,8,32,32,205,9,234,202,179,13,174,129,17,10,215,36,104,158,231,18,140,255,9,87,168,37,144,114,77,2,3,180,130,245,8,211,223,34,34,0,129,209,227,80,195,29,170,22,45,231,139,109,219,174,8,85,243,201,161,
+38,197,174,162,58,204,113,223,247,216,16,110,60,167,4,43,138,66,82,125,86,173,170,248,139,110,182,41,229,138,109,106,143,128,146,98,80,139,29,9,195,172,41,37,181,106,168,109,80,95,48,41,254,196,31,83,
+110,93,213,108,123,87,189,20,119,93,87,131,255,54,169,45,203,82,203,49,87,235,219,151,109,138,91,122,144,55,3,222,44,92,133,20,10,36,19,120,180,241,77,76,144,103,67,9,220,240,106,54,29,4,106,87,58,3,228,
+224,218,118,182,158,125,101,142,192,90,248,66,142,183,63,131,77,213,137,42,185,178,88,161,214,32,42,48,134,9,19,36,54,84,83,108,237,50,49,114,124,244,169,18,171,192,132,207,215,66,212,28,191,218,196,171,
+149,6,21,215,63,248,25,246,35,192,0,66,67,85,146,57,122,208,132,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
 
 const char* JucerScanCtlComponent::innerBoxTl_png = (const char*) resource_JucerScanCtlComponent_innerBoxTl_png;
-const int JucerScanCtlComponent::innerBoxTl_pngSize = 607;
+const int JucerScanCtlComponent::innerBoxTl_pngSize = 1308;
 
-// JUCER_RESOURCE: innerBoxTr_png, 490, "../../app_eigend2/jucer/InnerBoxTR.png"
-static const unsigned char resource_JucerScanCtlComponent_innerBoxTr_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,15,0,0,0,15,8,6,0,0,0,59,214,149,74,0,0,0,9,112,72,89,115,0,0,11,19,0,
-0,11,19,1,0,154,156,24,0,0,0,151,116,69,88,116,67,111,109,109,101,110,116,0,99,72,82,77,32,99,104,117,110,107,108,101,110,32,51,50,32,105,103,110,111,114,101,100,58,13,65,83,67,73,73,58,32,46,46,122,37,
-46,46,195,132,195,137,46,46,203,152,203,135,46,46,195,132,195,136,46,46,117,48,46,46,195,141,96,46,46,58,195,178,46,46,46,111,13,72,69,88,58,32,48,48,48,48,55,65,50,53,48,48,48,48,56,48,56,51,48,48,48,
-48,70,57,70,70,48,48,48,48,56,48,69,57,48,48,48,48,55,53,51,48,48,48,48,48,69,65,54,48,48,48,48,48,51,65,57,56,48,48,48,48,49,55,54,70,163,246,141,123,0,0,0,249,73,68,65,84,120,156,196,146,73,106,132,
-80,20,69,133,64,109,37,235,201,40,80,203,200,50,178,143,90,140,24,155,137,34,42,133,189,40,246,45,129,192,45,239,31,132,196,84,133,88,147,12,206,240,220,127,223,123,95,210,117,29,91,52,77,251,88,121,83,
-85,245,164,40,202,147,44,203,15,0,164,45,146,231,121,184,134,235,186,112,28,7,182,109,195,52,77,217,48,140,199,31,114,150,101,184,70,154,166,72,146,4,81,20,193,247,125,6,206,150,101,189,124,147,155,166,
-193,150,186,174,5,85,85,161,44,75,228,121,46,194,130,32,96,155,215,79,121,28,71,220,98,24,6,244,125,143,182,109,69,24,67,226,56,102,139,103,33,47,203,130,91,204,243,44,152,166,73,4,49,164,40,10,6,172,
-43,113,15,191,202,219,16,182,97,0,27,132,97,120,252,147,252,53,132,13,56,194,186,212,211,46,153,112,132,174,235,88,255,188,91,230,235,92,226,122,133,247,187,100,86,231,25,119,203,132,139,227,220,119,203,
-252,76,255,39,95,0,0,0,255,255,3,0,114,14,69,91,18,254,252,79,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
+// JUCER_RESOURCE: innerBoxTr_png, 1249, "../../app_eigend2/jucer/InnerBoxTR.png"
+static const unsigned char resource_JucerScanCtlComponent_innerBoxTr_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,30,0,0,0,30,8,6,0,0,0,59,48,174,162,0,0,0,25,116,69,88,116,83,111,102,
+116,119,97,114,101,0,65,100,111,98,101,32,73,109,97,103,101,82,101,97,100,121,113,201,101,60,0,0,3,34,105,84,88,116,88,77,76,58,99,111,109,46,97,100,111,98,101,46,120,109,112,0,0,0,0,0,60,63,120,112,97,
+99,107,101,116,32,98,101,103,105,110,61,34,239,187,191,34,32,105,100,61,34,87,53,77,48,77,112,67,101,104,105,72,122,114,101,83,122,78,84,99,122,107,99,57,100,34,63,62,32,60,120,58,120,109,112,109,101,
+116,97,32,120,109,108,110,115,58,120,61,34,97,100,111,98,101,58,110,115,58,109,101,116,97,47,34,32,120,58,120,109,112,116,107,61,34,65,100,111,98,101,32,88,77,80,32,67,111,114,101,32,53,46,48,45,99,48,
+54,48,32,54,49,46,49,51,52,55,55,55,44,32,50,48,49,48,47,48,50,47,49,50,45,49,55,58,51,50,58,48,48,32,32,32,32,32,32,32,32,34,62,32,60,114,100,102,58,82,68,70,32,120,109,108,110,115,58,114,100,102,61,
+34,104,116,116,112,58,47,47,119,119,119,46,119,51,46,111,114,103,47,49,57,57,57,47,48,50,47,50,50,45,114,100,102,45,115,121,110,116,97,120,45,110,115,35,34,62,32,60,114,100,102,58,68,101,115,99,114,105,
+112,116,105,111,110,32,114,100,102,58,97,98,111,117,116,61,34,34,32,120,109,108,110,115,58,120,109,112,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,
+48,47,34,32,120,109,108,110,115,58,120,109,112,77,77,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,109,109,47,34,32,120,109,108,110,115,58,115,
+116,82,101,102,61,34,104,116,116,112,58,47,47,110,115,46,97,100,111,98,101,46,99,111,109,47,120,97,112,47,49,46,48,47,115,84,121,112,101,47,82,101,115,111,117,114,99,101,82,101,102,35,34,32,120,109,112,
+58,67,114,101,97,116,111,114,84,111,111,108,61,34,65,100,111,98,101,32,80,104,111,116,111,115,104,111,112,32,67,83,53,32,77,97,99,105,110,116,111,115,104,34,32,120,109,112,77,77,58,73,110,115,116,97,110,
+99,101,73,68,61,34,120,109,112,46,105,105,100,58,68,48,68,68,67,51,55,52,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,32,120,109,112,77,77,58,68,111,99,117,109,101,110,116,
+73,68,61,34,120,109,112,46,100,105,100,58,68,48,68,68,67,51,55,53,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,34,62,32,60,120,109,112,77,77,58,68,101,114,105,118,101,100,70,
+114,111,109,32,115,116,82,101,102,58,105,110,115,116,97,110,99,101,73,68,61,34,120,109,112,46,105,105,100,58,68,48,68,68,67,51,55,50,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,
+70,34,32,115,116,82,101,102,58,100,111,99,117,109,101,110,116,73,68,61,34,120,109,112,46,100,105,100,58,68,48,68,68,67,51,55,51,70,69,56,68,49,49,69,49,66,70,53,51,70,49,48,52,51,57,51,67,68,65,57,70,
+34,47,62,32,60,47,114,100,102,58,68,101,115,99,114,105,112,116,105,111,110,62,32,60,47,114,100,102,58,82,68,70,62,32,60,47,120,58,120,109,112,109,101,116,97,62,32,60,63,120,112,97,99,107,101,116,32,101,
+110,100,61,34,114,34,63,62,184,16,215,105,0,0,1,85,73,68,65,84,120,218,236,148,219,109,131,48,20,134,141,241,3,151,151,142,224,110,192,6,77,54,32,27,164,19,116,148,142,144,21,216,32,234,6,25,0,169,140,
+144,23,64,130,7,242,27,145,200,165,199,24,165,224,72,85,142,244,235,248,38,127,231,28,95,188,60,207,59,102,48,207,243,126,249,65,5,116,130,190,160,140,115,94,64,253,156,242,148,162,40,250,177,55,159,90,
+172,129,198,125,9,165,208,39,246,248,238,186,238,8,237,33,102,210,216,184,239,251,70,176,154,163,230,175,1,104,85,216,160,121,80,65,64,155,57,96,161,54,182,149,154,26,31,151,127,104,75,184,35,148,65,239,
+208,249,46,48,5,215,251,227,182,22,64,10,39,7,248,137,218,87,192,152,205,76,153,91,2,73,134,236,183,20,124,22,120,110,16,196,186,23,120,18,110,45,181,13,76,157,31,1,63,148,101,185,141,227,248,124,55,216,
+102,84,32,170,236,10,142,230,238,54,86,85,85,183,54,88,203,126,23,134,97,214,247,235,186,94,20,108,10,98,0,23,65,16,188,222,126,174,191,202,244,235,17,159,142,108,154,102,191,24,120,234,147,33,214,126,
+244,151,107,169,178,206,125,102,176,164,109,91,41,214,58,95,61,16,226,194,165,98,109,168,161,26,111,156,61,198,18,177,102,182,19,231,46,31,149,49,227,46,46,151,83,176,205,132,11,8,245,180,156,103,124,
+13,130,187,204,86,31,251,127,183,250,9,126,130,47,2,12,0,239,146,113,98,115,191,7,186,0,0,0,0,73,69,78,68,174,66,96,130,0,0};
 
 const char* JucerScanCtlComponent::innerBoxTr_png = (const char*) resource_JucerScanCtlComponent_innerBoxTr_png;
-const int JucerScanCtlComponent::innerBoxTr_pngSize = 490;
+const int JucerScanCtlComponent::innerBoxTr_pngSize = 1249;
 
 // JUCER_RESOURCE: eigenD_png, 3575, "eigenD@2x.png"
 static const unsigned char resource_JucerScanCtlComponent_eigenD_png[] = { 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,1,36,0,0,0,120,8,2,0,0,0,212,160,24,131,0,0,0,25,116,69,88,116,83,111,102,116,
