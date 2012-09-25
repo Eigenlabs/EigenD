@@ -565,8 +565,16 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
 
         case commandDownload:
             {
-                URL u(T("http://www.eigenlabs.com/downloads/releases/"));
-                u.launchInDefaultBrowser();
+                if(workbench_.isavailable())
+                {
+                    URL u("http://www.eigenlabs.com/downloads/latest/pro/");
+                    u.launchInDefaultBrowser();
+                }
+                else
+                {
+                    URL u("http://www.eigenlabs.com/downloads/latest/std/");
+                    u.launchInDefaultBrowser();
+                }
             }
             break;
 
