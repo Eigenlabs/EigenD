@@ -499,7 +499,7 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
         case commandAbout:
             if(!about_)
             {
-                about_ = new EigenDialog(this,new EigenAboutComponent(this),300,400,300,400,300,400,this);
+                about_ = new EigenDialog(this,new EigenAboutComponent(this),300,400,0,0,0,0,this);
             }
             break;
 
@@ -1220,7 +1220,7 @@ void EigenMainWindow::load_started(const char *setup)
     c->setName(title);
     c->getMessageLabel()->setText("",false);
     c->getProgressSlider()->setValue(0,false,false);
-    progress_ = new EigenDialog(this,c,400,82,400,82,400,82,this);
+    progress_ = new EigenDialog(this,c,400,90,0,0,0,0,this);
     progress_->getPeer()->performAnyPendingRepaintsNow();
 }
 
@@ -1838,8 +1838,22 @@ bool EigenMainWindow::select_setup(const char *setup)
 EigenDialog::EigenDialog(EigenMainWindow *main,Component *content,int w,int h,int mw,int mh,int xw,int xh,Component *position): DocumentWindow(content->getName(), Colours::black, DocumentWindow::closeButton, true), main_(main), component_(content)
 {
     setContentOwned(content, true);
-    setSize(w,h);
 
+    setUsingNativeTitleBar(true);
+
+    setSize(w,h);
+    
+    if(mw>0)
+    {
+        setResizeLimits(mw, mh, xw, xh);
+        setResizable (true, true);
+    }
+    else
+    {
+        setResizeLimits(1,1,w,h);
+        setResizable (false, false);
+    }
+    
     if(position)
     {
         centreAroundComponent (position, getWidth(), getHeight());
@@ -1849,16 +1863,8 @@ EigenDialog::EigenDialog(EigenMainWindow *main,Component *content,int w,int h,in
         setCentrePosition (160,80);
     }
 
-    setUsingNativeTitleBar(true);
     setVisible (true);
     toFront(true);
-
-    if(mw>0)
-    {
-        setResizeLimits(mw,mh,xw,xh);
-        setResizable (true, true);
-    }
-
     addKeyListener(this);
 
 }

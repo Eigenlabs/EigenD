@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  24 Sep 2012 8:48:50pm
+  Creation date:  25 Sep 2012 9:07:02am
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -103,7 +103,7 @@ void LoadProgressComponent::paint (Graphics& g)
                                        Colour (0xff6c6c6c),
                                        (float) ((getWidth() / 2)), (float) (getHeight()),
                                        false));
-    g.fillRect (-3, -2, 403, 106);
+    g.fillRect (0, 0, proportionOfWidth (1.0000f), proportionOfHeight (1.0000f));
 
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTl_png,
@@ -156,8 +156,8 @@ void LoadProgressComponent::paint (Graphics& g)
 
 void LoadProgressComponent::resized()
 {
-    progress_slider->setBounds (32, 28, 336, 19);
-    message_label->setBounds (32, 9, 336, 15);
+    progress_slider->setBounds (32, (getHeight() / 2) + -2, getWidth() - 64, 19);
+    message_label->setBounds (32, (getHeight() / 2) + -6 - 15, getWidth() - 64, 15);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -196,7 +196,7 @@ BEGIN_JUCER_METADATA
                  snapPixels="3" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
                  fixedSize="1" initialWidth="400" initialHeight="60">
   <BACKGROUND backgroundColour="ffffffff">
-    <RECT pos="-3 -2 403 106" fill="linear: 0C 0, 0C 0R, 0=ff000000, 1=ff6c6c6c"
+    <RECT pos="0 0 100% 100%" fill="linear: 0C 0, 0C 0R, 0=ff000000, 1=ff6c6c6c"
           hasStroke="0"/>
     <IMAGE pos="4 4 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
     <IMAGE pos="16R 4 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
@@ -209,11 +209,11 @@ BEGIN_JUCER_METADATA
     <IMAGE pos="16 16 32M 32M" resource="textBoxInner_png" opacity="1" mode="0"/>
   </BACKGROUND>
   <SLIDER name="new slider" id="9b89265549376ef5" memberName="progress_slider"
-          virtualName="" explicitFocusOrder="0" pos="32 28 336 19" thumbcol="ff8a8a8a"
+          virtualName="" explicitFocusOrder="0" pos="32 -2C 64M 19" thumbcol="ff8a8a8a"
           min="0" max="100" int="1" style="LinearBar" textBoxPos="TextBoxLeft"
           textBoxEditable="0" textBoxWidth="80" textBoxHeight="12" skewFactor="1"/>
   <LABEL name="message_label" id="2c350388f0cc1ad6" memberName="message_label"
-         virtualName="" explicitFocusOrder="0" pos="32 9 336 15" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="32 -6Cr 64M 15" edTextCol="ff000000"
          edBkgCol="0" labelText="label text" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15"
          bold="0" italic="0" justification="20"/>

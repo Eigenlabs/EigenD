@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  24 Sep 2012 8:48:49pm
+  Creation date:  25 Sep 2012 9:41:31am
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -55,6 +55,7 @@ JucerScanPrgComponent::JucerScanPrgComponent ()
     plugin_label->setFont (Font (15.0000f, Font::plain));
     plugin_label->setJustificationType (Justification::centredLeft);
     plugin_label->setEditable (false, false, false);
+    plugin_label->setColour (Label::backgroundColourId, Colour (0xffffff));
     plugin_label->setColour (TextEditor::textColourId, Colours::black);
     plugin_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
@@ -159,9 +160,9 @@ void JucerScanPrgComponent::paint (Graphics& g)
 
 void JucerScanPrgComponent::resized()
 {
-    slider->setBounds (32, 28, getWidth() - 64, 19);
-    plugin_label->setBounds ((getWidth() / 2) + 7, 8, (proportionOfWidth (0.4500f)) - 0, 15);
-    format_label->setBounds ((getWidth() / 2) + -7 - proportionOfWidth (0.4500f), 8, proportionOfWidth (0.4500f), 15);
+    slider->setBounds (32, (getHeight() / 2) + -2, getWidth() - 64, 19);
+    plugin_label->setBounds (144, (getHeight() / 2) + -7 - 15, getWidth() - 179, 15);
+    format_label->setBounds (136 - 104, (getHeight() / 2) + -7 - 15, 104, 15);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -211,19 +212,19 @@ BEGIN_JUCER_METADATA
     <IMAGE pos="16 16 32M 32M" resource="textBoxInner_png" opacity="1" mode="0"/>
   </BACKGROUND>
   <SLIDER name="new slider" id="9d47438cfc1647a6" memberName="slider" virtualName=""
-          explicitFocusOrder="0" pos="32 28 64M 19" thumbcol="ff8a8a8a"
+          explicitFocusOrder="0" pos="32 -2C 64M 19" thumbcol="ff8a8a8a"
           min="0" max="1" int="0" style="LinearBar" textBoxPos="NoTextBox"
           textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
   <LABEL name="new label" id="d01b8b9697256ad7" memberName="plugin_label"
-         virtualName="" explicitFocusOrder="0" pos="7C 8 0M 15" posRelativeW="ab07c4089d4398cb"
+         virtualName="" explicitFocusOrder="0" pos="144 -7Cr 179M 15"
+         bkgCol="ffffff" edTextCol="ff000000" edBkgCol="0" labelText=""
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
+  <LABEL name="new label" id="ab07c4089d4398cb" memberName="format_label"
+         virtualName="" explicitFocusOrder="0" pos="136r -7Cr 104 15"
          edTextCol="ff000000" edBkgCol="0" labelText="" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="15" bold="0" italic="0" justification="33"/>
-  <LABEL name="new label" id="ab07c4089d4398cb" memberName="format_label"
-         virtualName="" explicitFocusOrder="0" pos="-7Cr 8 45% 15" edTextCol="ff000000"
-         edBkgCol="0" labelText="" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15"
-         bold="0" italic="0" justification="34"/>
+         fontsize="15" bold="0" italic="0" justification="34"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

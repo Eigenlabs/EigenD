@@ -67,12 +67,12 @@ namespace
             {
                 component_ = new EigenScanPrgComponent();
                 setContentOwned(component_,true);
-                setSize(400,82);
-                setResizeLimits(400,82,400,82);
+                setUsingNativeTitleBar(true);
+                setSize(400,90);
+                setResizeLimits(1,1,400,90);
                 setResizable(false,false);
                 centreWithSize (getWidth(), getHeight());
-                setUsingNativeTitleBar(true);
-                setVisible (true);
+                setVisible(true);
                 toFront(true);
 
                 createPipe("EigenScanner", -1);
