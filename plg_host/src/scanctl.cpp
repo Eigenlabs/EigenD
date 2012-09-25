@@ -63,7 +63,7 @@ namespace
     class EigenScanPrgWindow: public DocumentWindow, public InterprocessConnection, public Timer
     {
         public:
-            EigenScanPrgWindow(EigenScanner *app, const StringArray &skip,bool fullscan,const FileSearchPath &path): DocumentWindow("Plugin Scanner",Colours::black,DocumentWindow::allButtons,true), app_(app), tool_(pic::private_tools_dir(),SCAN_HELPER_NAME), skip_(skip), fullscan_(fullscan),path_(path)
+            EigenScanPrgWindow(EigenScanner *app, const StringArray &skip,bool fullscan,const FileSearchPath &path): DocumentWindow("Plugin Scanner",Colours::black,DocumentWindow::minimiseButton,true), app_(app), tool_(pic::private_tools_dir(),SCAN_HELPER_NAME), skip_(skip), fullscan_(fullscan),path_(path)
             {
                 component_ = new EigenScanPrgComponent();
                 setContentOwned(component_,true);
@@ -576,7 +576,7 @@ namespace
     class EigenScanCtlWindow: public DocumentWindow
     {
         public:
-            EigenScanCtlWindow(EigenScanner *app): DocumentWindow("Plugin Scanner",Colours::black,DocumentWindow::allButtons,true), app_(app)
+            EigenScanCtlWindow(EigenScanner *app): DocumentWindow("Plugin Scanner",Colours::black,DocumentWindow::minimiseButton|DocumentWindow::closeButton,true), app_(app)
             {
                 component_ = new EigenScanCtlComponent(app);
                 setContentOwned(component_,true);
@@ -587,6 +587,11 @@ namespace
                 setResizeLimits(600,500,2000,2000);
                 setVisible (true);
                 toFront(true);
+            }
+            
+            void closeButtonPressed()
+            {
+                JUCEApplication::quit();
             }
 
             EigenScanner *app() { return app_; }
@@ -647,6 +652,11 @@ namespace
                 good_list_box()->setModel(&good_model_);
                 failed_list_box()->setModel(&bad_model_);
             }
+            
+            void closeButtonPressed()
+            {
+                JUCEApplication::quit();
+            }
 
             void buttonClicked(Button *) { JUCEApplication::quit(); }
 
@@ -656,7 +666,7 @@ namespace
     class EigenScanCompleteWindow: public DocumentWindow
     {
         public:
-            EigenScanCompleteWindow(bool ok, const StringArray &bad_plugins, const StringArray &good_plugins): DocumentWindow("Scan results",Colours::black,DocumentWindow::allButtons,true)
+            EigenScanCompleteWindow(bool ok, const StringArray &bad_plugins, const StringArray &good_plugins): DocumentWindow("Scan results",Colours::black,DocumentWindow::minimiseButton|DocumentWindow::closeButton,true)
             {
                 component_ = new EigenScanCompleteComponent(ok,good_plugins,bad_plugins);
                 setContentOwned(component_,true);
@@ -667,7 +677,11 @@ namespace
                 setVisible (true);
                 toFront(true);
             }
-
+            
+            void closeButtonPressed()
+            {
+                delete this;
+            }
 
         private:
             EigenScanCompleteComponent *component_;
@@ -752,6 +766,7 @@ class EigenScanner : public juce::JUCEApplication
                 StringArray gp = scan_window_->getGoodPlugins();
                 delete scan_window_;
                 scan_window_ = 0;
+                if(complete_window_) delete complete_window_;
                 complete_window_ = new EigenScanCompleteWindow(ok,bp,gp);
             }
         }
@@ -768,7 +783,7 @@ AudioPluginFormatManager *get_manager(EigenScanner *app)
     return app->manager();
 }
 
-void EigenScanCtlComponent::buttonClicked (Button* buttonThatWasClicked)
+void EigenScanCtlComponent::buttonClicked(Button* buttonThatWasClicked)
 {
     if(buttonThatWasClicked==cancel_button())
     {

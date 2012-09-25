@@ -233,7 +233,7 @@ class EigenLogger
 class EigenDialog: public DocumentWindow, public KeyListener, public MessageListener
 {
     public:
-        EigenDialog(EigenMainWindow *main,Component *content,int,int,int,int,int,int,Component *position = 0);
+        EigenDialog(EigenMainWindow *main, Component *content, int, int, int, int, int, int, Component *position = 0, int buttons = DocumentWindow::closeButton|DocumentWindow::minimiseButton);
         void closeButtonPressed();
         ~EigenDialog();
         bool keyPressed (const KeyPress& key, Component* originatingComponent);
@@ -1220,7 +1220,7 @@ void EigenMainWindow::load_started(const char *setup)
     c->setName(title);
     c->getMessageLabel()->setText("",false);
     c->getProgressSlider()->setValue(0,false,false);
-    progress_ = new EigenDialog(this,c,400,90,0,0,0,0,this);
+    progress_ = new EigenDialog(this,c,400,90,0,0,0,0,this,DocumentWindow::minimiseButton);
     progress_->getPeer()->performAnyPendingRepaintsNow();
 }
 
@@ -1835,7 +1835,7 @@ bool EigenMainWindow::select_setup(const char *setup)
     return component_->select_setup(setup);
 }
 
-EigenDialog::EigenDialog(EigenMainWindow *main,Component *content,int w,int h,int mw,int mh,int xw,int xh,Component *position): DocumentWindow(content->getName(), Colours::black, DocumentWindow::closeButton, true), main_(main), component_(content)
+EigenDialog::EigenDialog(EigenMainWindow *main, Component *content, int w, int h, int mw, int mh, int xw, int xh, Component *position, int buttons): DocumentWindow(content->getName(), Colours::black, buttons, true), main_(main), component_(content)
 {
     setContentOwned(content, true);
 
