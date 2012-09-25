@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  25 Sep 2012 9:41:31am
+  Creation date:  25 Sep 2012 9:49:43am
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -109,6 +109,13 @@ void JucerScanPrgComponent::paint (Graphics& g)
 
     g.fillAll (Colours::black);
 
+    g.setGradientFill (ColourGradient (Colours::black,
+                                       (float) ((getWidth() / 2)), 0.0f,
+                                       Colour (0xff6c6c6c),
+                                       (float) ((getWidth() / 2)), (float) (getHeight()),
+                                       false));
+    g.fillRect (0, 0, proportionOfWidth (1.0000f), proportionOfHeight (1.0000f));
+
     g.setColour (Colours::black);
     g.drawImage (cachedImage_textBoxTl_png,
                  4, 4, 12, 12,
@@ -201,6 +208,8 @@ BEGIN_JUCER_METADATA
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
                  fixedSize="1" initialWidth="400" initialHeight="60">
   <BACKGROUND backgroundColour="ff000000">
+    <RECT pos="0 0 100% 100%" fill="linear: 0C 0, 0C 0R, 0=ff000000, 1=ff6c6c6c"
+          hasStroke="0"/>
     <IMAGE pos="4 4 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
     <IMAGE pos="16R 4 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
     <IMAGE pos="16R 16R 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>

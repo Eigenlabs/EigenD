@@ -95,7 +95,7 @@ namespace
                 }
 
                 state_ = STATE_STARTING;
-                timeout_ = 5;
+                timeout_ = 10;
                 startTimer(1000);
             }
 
