@@ -529,18 +529,24 @@ namespace
         // the range is 0x80 to 0x3fff to ensure a note on velocity 0 (=note off) is not sent
         note_velocity_ = (0x3fff-0x80)*fabsf(velocity) + 0x80;
 
+        bool sendnote = false;
         if(note_pitch_>=0)
         {
             note_id_ = note_pitch_;
 
-            send_note(t);
+            sendnote = true;
         }
 
         if(note_pitchbend_!=0.f)
         {
+            send_pitchbend(t);
+        }
+
+        if(sendnote)
+        {
             root_->time_ = std::max(root_->time_+1,t++);
             t = root_->time_;
-            send_pitchbend(t);
+            send_note(t);
         }
     }
 
@@ -556,6 +562,7 @@ namespace
         if(n>127.f)
             return;
 
+        bool sendnote = false;
         if(note_id_<0)
         {
             // no note started
@@ -565,7 +572,7 @@ namespace
             {
                 note_id_ = note_pitch_;
 
-                send_note(t);
+                sendnote = true;
             }
         }
 
@@ -590,12 +597,16 @@ namespace
             }
         }
 
-        // pitch bending - a continuous stream of these MIDI packets is sent
         if(note_velocity_>0)
+        {
+            send_pitchbend(t);
+        }
+
+        if(sendnote)
         {
             root_->time_ = std::max(root_->time_+1,t++);
             t = root_->time_;
-            send_pitchbend(t);
+            send_note(t);
         }
     }
 
