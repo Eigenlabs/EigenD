@@ -623,6 +623,7 @@ public:
     /** @internal */
     void setTemporaryUnderlining (const Array <Range<int> >&);
 
+    class UniformTextSection;
 protected:
     //==============================================================================
     /** Scrolls the minimum distance needed to get the caret into view. */
@@ -643,7 +644,6 @@ protected:
 private:
     //==============================================================================
     class Iterator;
-    class UniformTextSection;
     class TextHolderComponent;
     class InsertAction;
     class RemoveAction;
