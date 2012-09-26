@@ -551,10 +551,10 @@ public:
     /** @internal */
     void startDragAndDrop (const MouseEvent&, const var& dragDescription, bool allowDraggingToOtherWindows);
 
-    class ListViewport;
-    class RowComponent;
 private:
     //==============================================================================
+    JUCE_PUBLIC_IN_DLL_BUILD(class ListViewport);
+    JUCE_PUBLIC_IN_DLL_BUILD(class RowComponent);
     friend class ListViewport;
     friend class TableListBox;
     ListBoxModel* model;

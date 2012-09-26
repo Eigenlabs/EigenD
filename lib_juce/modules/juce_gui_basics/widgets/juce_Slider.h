@@ -779,7 +779,6 @@ public:
         textBoxOutlineColourId      = 0x1001700   /**< The colour to use for a border around the text-editor box. */
     };
 
-    class Pimpl;
 protected:
     //==============================================================================
     /** @internal */
@@ -814,6 +813,7 @@ protected:
 
 private:
     //==============================================================================
+    JUCE_PUBLIC_IN_DLL_BUILD(class Pimpl);
     friend class Pimpl;
     friend class ScopedPointer<Pimpl>;
     ScopedPointer<Pimpl> pimpl;
