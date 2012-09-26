@@ -28,25 +28,47 @@
 //==============================================================================
 namespace MouseCursorHelpers
 {
-    static NSImage* createNSImage (const Image& image)
+    static NSImage* createImage (CGImageRef imageRef, int width, int height, float scaleFactor)
     {
         JUCE_AUTORELEASEPOOL
-
-        NSImage* im = [[NSImage alloc] init];
-        [im setSize: NSMakeSize (image.getWidth(), image.getHeight())];
-        [im lockFocus];
-
-        CGColorSpaceRef colourSpace = CGColorSpaceCreateDeviceRGB();
-        CGImageRef imageRef = juce_createCoreGraphicsImage (image, false, colourSpace, false);
-        CGColorSpaceRelease (colourSpace);
-
+        /*
+        NSBitmapImageRep* rep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
+                                                                        pixelsWide:width
+                                                                        pixelsHigh:height
+                                                                     bitsPerSample:8
+                                                                   samplesPerPixel:4
+                                                                          hasAlpha:YES
+                                                                          isPlanar:NO
+                                                                    colorSpaceName:NSCalibratedRGBColorSpace
+                                                                      bitmapFormat:0
+                                                                       bytesPerRow:(4 * width)
+                                                                      bitsPerPixel:32];
+        [NSGraphicsContext saveGraphicsState];
+        [NSGraphicsContext setCurrentContext:[NSGraphicsContext
+                                              graphicsContextWithBitmapImageRep:rep]];
+        
         CGContextRef cg = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
-        CGContextDrawImage (cg, convertToCGRect (image.getBounds()), imageRef);
-
+        CGRect drawRect = CGRectMake(0, 0, width, height);
+        CGContextDrawImage (cg, drawRect, imageRef);
         CGImageRelease (imageRef);
-        [im unlockFocus];
+        
+        [NSGraphicsContext restoreGraphicsState];
 
-        return im;
+        NSSize sizeScaled = NSMakeSize (width/scaleFactor, height/scaleFactor);
+        NSImage* im = [[NSImage alloc] initWithSize: sizeScaled];
+        [im addRepresentation: rep];
+        [rep setSize: sizeScaled];
+        [im recache];*/
+        return [[NSImage alloc] initWithCGImage:imageRef size:NSMakeSize (width/scaleFactor, height/scaleFactor)];
+    }
+
+    static NSImage* createNSImage (const Image& image, float scaleFactor)
+    {
+        CGColorSpaceRef colourSpace = CGColorSpaceCreateDeviceRGB();
+        CGImageRef imageRef = juce_createCoreGraphicsImage (image, false, colourSpace, true);
+        CGColorSpaceRelease (colourSpace);
+        
+        return createImage(imageRef, image.getWidth(), image.getHeight(), scaleFactor);
     }
 
     static void* fromWebKitFile (const char* filename, float hx, float hy)
@@ -68,7 +90,7 @@ namespace MouseCursorHelpers
 
 void* CustomMouseCursorInfo::create() const
 {
-    NSImage* im = MouseCursorHelpers::createNSImage (image);
+    NSImage* im = MouseCursorHelpers::createNSImage (image, scaleFactor);
     NSCursor* c = [[NSCursor alloc] initWithImage: im
                                           hotSpot: NSMakePoint (hotspot.x, hotspot.y)];
     [im release];
