@@ -66,6 +66,12 @@
  #define __cdecl
 #endif
 
+#ifdef __clang__
+ #pragma clang diagnostic push
+ #pragma clang diagnostic ignored "-Wconversion"
+ #pragma clang diagnostic ignored "-Wshadow"
+#endif
+
 // VSTSDK V2.4 includes..
 #include <public.sdk/source/vst2.x/audioeffectx.h>
 #include <public.sdk/source/vst2.x/aeffeditor.h>
@@ -74,6 +80,10 @@
 
 #if ! VST_2_4_EXTENSIONS
  #error "It looks like you're trying to include an out-of-date VSTSDK version - make sure you have at least version 2.4"
+#endif
+
+#ifdef __clang__
+ #pragma clang diagnostic pop
 #endif
 
 //==============================================================================
@@ -1467,17 +1477,23 @@ namespace
     }
 }
 
+#if ! JUCE_WINDOWS
+ #define JUCE_EXPORTED_FUNCTION extern "C" __attribute__ ((visibility("default")))
+#endif
+
 //==============================================================================
 // Mac startup code..
 #if JUCE_MAC
 
-    extern "C" __attribute__ ((visibility("default"))) AEffect* VSTPluginMain (audioMasterCallback audioMaster)
+    JUCE_EXPORTED_FUNCTION AEffect* VSTPluginMain (audioMasterCallback audioMaster);
+    JUCE_EXPORTED_FUNCTION AEffect* VSTPluginMain (audioMasterCallback audioMaster)
     {
         initialiseMac();
         return pluginEntryPoint (audioMaster);
     }
 
-    extern "C" __attribute__ ((visibility("default"))) AEffect* main_macho (audioMasterCallback audioMaster)
+    JUCE_EXPORTED_FUNCTION AEffect* main_macho (audioMasterCallback audioMaster);
+    JUCE_EXPORTED_FUNCTION AEffect* main_macho (audioMasterCallback audioMaster)
     {
         initialiseMac();
         return pluginEntryPoint (audioMaster);
@@ -1487,15 +1503,15 @@ namespace
 // Linux startup code..
 #elif JUCE_LINUX
 
-    extern "C" __attribute__ ((visibility("default"))) AEffect* VSTPluginMain (audioMasterCallback audioMaster)
+    JUCE_EXPORTED_FUNCTION AEffect* VSTPluginMain (audioMasterCallback audioMaster);
+    JUCE_EXPORTED_FUNCTION AEffect* VSTPluginMain (audioMasterCallback audioMaster)
     {
         SharedMessageThread::getInstance();
         return pluginEntryPoint (audioMaster);
     }
 
-    extern "C" __attribute__ ((visibility("default"))) AEffect* main_plugin (audioMasterCallback audioMaster) asm ("main");
-
-    extern "C" __attribute__ ((visibility("default"))) AEffect* main_plugin (audioMasterCallback audioMaster)
+    JUCE_EXPORTED_FUNCTION AEffect* main_plugin (audioMasterCallback audioMaster) asm ("main");
+    JUCE_EXPORTED_FUNCTION AEffect* main_plugin (audioMasterCallback audioMaster)
     {
         return VSTPluginMain (audioMaster);
     }
@@ -1519,18 +1535,6 @@ namespace
         return (int) pluginEntryPoint (audioMaster);
     }
    #endif
-
-   #if JucePlugin_Build_RTAS
-    BOOL WINAPI DllMainVST (HINSTANCE instance, DWORD dwReason, LPVOID)
-   #else
-    extern "C" BOOL WINAPI DllMain (HINSTANCE instance, DWORD dwReason, LPVOID)
-   #endif
-    {
-        if (dwReason == DLL_PROCESS_ATTACH)
-            Process::setCurrentModuleInstanceHandle (instance);
-
-        return TRUE;
-    }
 #endif
 
 #endif

@@ -50,18 +50,6 @@
 #include "AAX_CEffectGUI.h"
 #include "AAX_IViewContainer.h"
 
-#if JUCE_WINDOWS
-static HINSTANCE moduleInstance = 0;
-
-extern "C" BOOL WINAPI DllMain (HINSTANCE instance, DWORD selector, LPVOID)
-{
-    if (selector == DLL_PROCESS_ATTACH)
-        moduleInstance = instance;
-
-    return true;
-}
-#endif
-
 using juce::Component;
 
 //==============================================================================
@@ -140,10 +128,6 @@ struct AAXClasses
     private:
         static void initialise()
         {
-           #if JUCE_WINDOWS
-            Process::setCurrentModuleInstanceHandle (moduleInstance);
-           #endif
-
             initialiseJuce_GUI();
         }
 

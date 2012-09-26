@@ -46,8 +46,8 @@ inline void deleteAndZero (Type& pointer)                           { delete poi
     This can be useful to avoid casting pointers to a char* and back when you want to move them by
     a specific number of bytes,
 */
-template <typename Type>
-inline Type* addBytesToPointer (Type* pointer, int bytes) noexcept  { return (Type*) (((char*) pointer) + bytes); }
+template <typename Type, typename IntegerType>
+inline Type* addBytesToPointer (Type* pointer, IntegerType bytes) noexcept  { return (Type*) (((char*) pointer) + bytes); }
 
 /** A handy function which returns the difference between any two pointers, in bytes.
     The address of the second pointer is subtracted from the first, and the difference in bytes is returned.
@@ -92,12 +92,12 @@ inline Type* createCopyIfNotNull (const Type* pointer)     { return pointer != n
    avoiding problems when an object is created in one module and passed across to another where it is deleted.
    By piggy-backing on the JUCE_LEAK_DETECTOR macro, these allocators can be injected into most juce classes.
 */
-#if JUCE_MSVC && (defined (JUCE_DLL) || defined (JUCE_DLL_BUILD)) && ! DOXYGEN
+#if JUCE_MSVC && defined (JUCE_DLL) && ! DOXYGEN
  extern JUCE_API void* juceDLL_malloc (size_t);
  extern JUCE_API void  juceDLL_free (void*);
 
  #define JUCE_LEAK_DETECTOR(OwnerClass)  public:\
-    static void* operator new (size_t sz)           { return juce::juceDLL_malloc ((int) sz); } \
+    static void* operator new (size_t sz)           { return juce::juceDLL_malloc (sz); } \
     static void* operator new (size_t, void* p)     { return p; } \
     static void operator delete (void* p)           { juce::juceDLL_free (p); } \
     static void operator delete (void*, void*)      {}

@@ -68,9 +68,9 @@ public:
     void paint (Graphics& g);
    #endif
 
-    class Pimpl;
 private:
     //==============================================================================
+    class Pimpl;
     ScopedPointer<Pimpl> pimpl;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SystemTrayIconComponent);
