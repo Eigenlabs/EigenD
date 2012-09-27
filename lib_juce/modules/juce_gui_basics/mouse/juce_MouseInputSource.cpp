@@ -23,7 +23,7 @@
   ==============================================================================
 */
 
-class MouseInputSourceInternal   : public AsyncUpdater
+class MouseInputSourceInternal   : private AsyncUpdater
 {
 public:
     //==============================================================================
@@ -480,7 +480,7 @@ private:
                || mouseDowns[0].position.getDistanceFrom (screenPos) >= 4;
     }
 
-    JUCE_DECLARE_NON_COPYABLE (MouseInputSourceInternal);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MouseInputSourceInternal);
 };
 
 //==============================================================================
