@@ -1618,7 +1618,7 @@ int host_param_table_t::get_parameter_count()
         return parameter_count_;
     }
 
-    p->refreshParameterListFromPlugin();
+    p->refreshParameterList();
     int count = p->getNumParameters();
     parameter_count_ = count;
     last_parameter_check_ = now;

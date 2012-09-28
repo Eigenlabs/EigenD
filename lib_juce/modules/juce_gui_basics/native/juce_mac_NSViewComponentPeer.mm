@@ -159,8 +159,10 @@ public:
     {
         [notificationCenter removeObserver: view];
         setOwner (view, nullptr);
+
         if ([view superview] != nil)
             [view removeFromSuperview];
+
         [view release];
 
         if (! isSharedWindow)

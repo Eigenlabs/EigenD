@@ -38,7 +38,7 @@ class IntrojucerApp   : public JUCEApplication
 {
 public:
     //==============================================================================
-    IntrojucerApp() {}
+    IntrojucerApp() :  isRunningCommandLine (false) {}
     ~IntrojucerApp() {}
 
     //==============================================================================
@@ -46,7 +46,6 @@ public:
     {
         LookAndFeel::setDefaultLookAndFeel (&lookAndFeel);
         settings = new StoredSettings();
-        settings->initialise();
 
         if (commandLine.isNotEmpty())
         {
@@ -54,6 +53,7 @@ public:
 
             if (appReturnCode != commandLineNotPerformed)
             {
+                isRunningCommandLine = true;
                 setApplicationReturnValue (appReturnCode);
                 quit();
                 return;
@@ -119,7 +119,8 @@ public:
 
         LookAndFeel::setDefaultLookAndFeel (nullptr);
 
-        Logger::writeToLog ("Shutdown");
+        if (! isRunningCommandLine)
+            Logger::writeToLog ("Shutdown");
 
         deleteLogger();
     }
@@ -546,6 +547,8 @@ public:
     ScopedPointer<Component> appearanceEditorWindow, utf8Window;
 
     ScopedPointer<FileLogger> logger;
+
+    bool isRunningCommandLine;
 
 private:
     class AsyncQuitRetrier  : private Timer

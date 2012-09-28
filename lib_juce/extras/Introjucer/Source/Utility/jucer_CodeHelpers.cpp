@@ -343,27 +343,22 @@ namespace CodeHelpers
         const char* t = s.toUTF8();
         unsigned int hash = 0;
         while (*t != 0)
-            hash = hashMultiplier * hash + *t++;
+            hash = hashMultiplier * hash + (unsigned int) *t++;
 
         return hash;
     }
 
     static int findBestHashMultiplier (const StringArray& strings)
     {
-        StringArray allStrings;
-
-        for (int i = strings.size(); --i >= 0;)
-            allStrings.addTokens (strings[i], "|", "");
-
         int v = 31;
 
         for (;;)
         {
             SortedSet <unsigned int> hashes;
             bool collision = false;
-            for (int i = allStrings.size(); --i >= 0;)
+            for (int i = strings.size(); --i >= 0;)
             {
-                const unsigned int hash = calculateHash (allStrings[i], v);
+                const unsigned int hash = calculateHash (strings[i], v);
                 if (hashes.contains (hash))
                 {
                     collision = true;
@@ -392,25 +387,15 @@ namespace CodeHelpers
         out << indent << "unsigned int hash = 0;" << newLine
             << indent << "if (" << utf8PointerVariable << " != 0)" << newLine
             << indent << "    while (*" << utf8PointerVariable << " != 0)" << newLine
-            << indent << "        hash = " << hashMultiplier << " * hash + *" << utf8PointerVariable << "++;" << newLine
+            << indent << "        hash = " << hashMultiplier << " * hash + (unsigned int) *" << utf8PointerVariable << "++;" << newLine
             << newLine
             << indent << "switch (hash)" << newLine
             << indent << "{" << newLine;
 
         for (int i = 0; i < strings.size(); ++i)
         {
-            StringArray matchingStrings;
-            matchingStrings.addTokens (strings[i], "|", "");
-
-            for (int j = 0; j < matchingStrings.size(); ++j)
-            {
-                out << indent << "    case 0x" << hexString8Digits (calculateHash (matchingStrings[j], hashMultiplier)) << ":";
-
-                if (j < matchingStrings.size() - 1)
-                    out << newLine;
-            }
-
-            out << "  " << codeToExecute[i] << newLine;
+            out << indent << "    case 0x" << hexString8Digits (calculateHash (strings[i], hashMultiplier))
+                << ":  " << codeToExecute[i] << newLine;
         }
 
         out << indent << "    default: break;" << newLine
