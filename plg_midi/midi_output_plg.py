@@ -27,6 +27,7 @@
 import os
 import picross
 import piw
+import midilib_native
 from pi import atom,bundles,domain,agent,logic,utils,node,action,async,upgrade
 from . import midi_output_version as version,midi_native
 
@@ -40,9 +41,9 @@ from . import midi_output_version as version,midi_native
 # actually implements the native midi_delegate_t struct so that the native
 # MIDI output can update the list of MIDI outputs
 # TODO: define a general MIDI delegate in plg_midi, move from macosx_native
-class OutputMidiDelegate(midi_native.midi_output_port):
+class OutputMidiDelegate(midilib_native.midi_output_port):
     def __init__(self,notify):
-        midi_native.midi_output_port.__init__(self)
+        midilib_native.midi_output_port.__init__(self)
         self.sinks = []
         self.__notify = notify
 
