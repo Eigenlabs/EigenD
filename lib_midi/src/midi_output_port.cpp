@@ -26,14 +26,14 @@
 #include <picross/pic_time.h>
 #include <picross/pic_log.h>
 #include <picross/pic_safeq.h>
-#include <plg_midi/midi_output.h>
+#include <lib_midi/midi_output_port.h>
 #include <lib_juce/juce.h>
 
 #define NULL_DEVICE "Null Device"
 
-struct pi_midi::midi_output_t::impl_t: piw::thing_t, pic::safe_worker_t
+struct midi::midi_output_port_t::impl_t: piw::thing_t, pic::safe_worker_t
 {
-    impl_t(pi_midi::midi_output_t *delegate_output): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_HIGH), current_(-1), delegate_(delegate_output),output_(0),virtual_output_(0),running_(false), null_device_name_(NULL_DEVICE)
+    impl_t(midi::midi_output_port_t *delegate_output): pic::safe_worker_t(10,PIC_THREAD_PRIORITY_HIGH), current_(-1), delegate_(delegate_output),output_(0),virtual_output_(0),running_(false), null_device_name_(NULL_DEVICE)
     {
         piw::tsd_thing(this);
     }
@@ -225,14 +225,14 @@ struct pi_midi::midi_output_t::impl_t: piw::thing_t, pic::safe_worker_t
     int current_;
     juce::StringArray devices_;
     juce::String virtual_name_;
-    pi_midi::midi_output_t *delegate_;
+    midi::midi_output_port_t *delegate_;
     juce::MidiOutput *output_;
     juce::MidiOutput *virtual_output_;
     bool running_;
     juce::String null_device_name_;
 };
 
-namespace pi_midi
+namespace midi
 {
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // midi output interface class
@@ -240,44 +240,44 @@ namespace pi_midi
     //
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    midi_output_t::midi_output_t(): impl_(new impl_t(this))
+    midi_output_port_t::midi_output_port_t(): impl_(new impl_t(this))
     {
     }
 
-    long midi_output_t::get_port(void)
+    long midi_output_port_t::get_port(void)
     {
         return impl_->get_port();
     }
 
-    bool midi_output_t::set_port(long uid)
+    bool midi_output_port_t::set_port(long uid)
     {
         return impl_->set_port(uid);
     }
 
-    void midi_output_t::run()
+    void midi_output_port_t::run()
     {
         impl_->run();
     }
 
-    void midi_output_t::stop()
+    void midi_output_port_t::stop()
     {
         impl_->stop();
     }
 
-    midi_output_t::~midi_output_t()
+    midi_output_port_t::~midi_output_port_t()
     {
         stop();
         delete impl_;
     }
 
-    piw::change_nb_t midi_output_t::get_midi_output_functor()
+    piw::change_nb_t midi_output_port_t::get_midi_output_functor()
     {
-        return piw::change_nb_t::method(impl_, &midi_output_t::impl_t::output);
+        return piw::change_nb_t::method(impl_, &midi_output_port_t::impl_t::output);
     }
 
-    void midi_output_t::set_source(const std::string &name)
+    void midi_output_port_t::set_source(const std::string &name)
     {
         impl_->set_source(name);
     }
 
-} // namespace pi_midi
+} // namespace midi

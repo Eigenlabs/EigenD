@@ -21,7 +21,8 @@
 Import('env')
 
 midilib_files=Split("""
-	midi_decoder.cpp midi_from_belcanto.cpp 
+	midi_decoder.cpp midi_from_belcanto.cpp midi_input_port.cpp
+	midi_output_port.cpp
 	control_mapper_gui.cpp midi_converter.cpp control_mapping.cpp
     control_params.cpp JucerPopupDialogComponent.cpp
     JucerCellPopupComponent.cpp JucerGlobalSettingsComponent.cpp JucerHelpComponent.cpp

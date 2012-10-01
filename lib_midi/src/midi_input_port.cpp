@@ -27,7 +27,7 @@
 #include <picross/pic_log.h>
 #include <picross/pic_config.h>
 
-#include <plg_midi/midi_input.h>
+#include <lib_midi/midi_input_port.h>
 
 #include <lib_juce/juce.h>
 
@@ -43,9 +43,9 @@ using namespace std;
 #define KBD_LATENCY 5000
 #define NULL_DEVICE "Null Device"
 
-struct pi_midi::midi_input_port_t::impl_t: piw::thing_t, juce::MidiInputCallback
+struct midi::midi_input_port_t::impl_t: piw::thing_t, juce::MidiInputCallback
 {
-    impl_t(pi_midi::midi_input_port_t *d,const piw::change_nb_t &r): current_(-1), receiver_(r), delegate_(d), input_(0), virtual_input_(0), running_(false), null_device_name_(NULL_DEVICE)
+    impl_t(midi::midi_input_port_t *d,const piw::change_nb_t &r): current_(-1), receiver_(r), delegate_(d), input_(0), virtual_input_(0), running_(false), null_device_name_(NULL_DEVICE)
     {
         snapshot_.save();
         piw::tsd_thing(this);
@@ -108,7 +108,7 @@ struct pi_midi::midi_input_port_t::impl_t: piw::thing_t, juce::MidiInputCallback
         CATCHLOG()
     }
 
-    bool setport(int uid)
+    bool set_port(int uid)
     {
         if(input_)
         {
@@ -121,7 +121,7 @@ struct pi_midi::midi_input_port_t::impl_t: piw::thing_t, juce::MidiInputCallback
         return true;
     }
 
-    long getport()
+    long get_port()
     {
         return current_;
     }
@@ -239,7 +239,7 @@ struct pi_midi::midi_input_port_t::impl_t: piw::thing_t, juce::MidiInputCallback
     int current_;
     juce::StringArray devices_;
     piw::change_nb_t receiver_;
-    pi_midi::midi_input_port_t *delegate_;
+    midi::midi_input_port_t *delegate_;
     juce::MidiInput *input_;
     juce::MidiInput *virtual_input_;
     juce::String virtual_name_;
@@ -248,10 +248,10 @@ struct pi_midi::midi_input_port_t::impl_t: piw::thing_t, juce::MidiInputCallback
     juce::String null_device_name_;
 };
 
-pi_midi::midi_input_port_t::midi_input_port_t(const piw::change_nb_t &sink) { impl_ = new impl_t(this,sink); }
-pi_midi::midi_input_port_t::~midi_input_port_t() { stop(); delete impl_; }
-bool pi_midi::midi_input_port_t::setport(long port) { return impl_->setport(port); }
-long pi_midi::midi_input_port_t::getport(void) { return impl_->getport(); }
-void pi_midi::midi_input_port_t::set_destination(const std::string &name) { impl_->set_destination(name); }
-void pi_midi::midi_input_port_t::run() { return impl_->run(); }
-void pi_midi::midi_input_port_t::stop() { return impl_->stop(); }
+midi::midi_input_port_t::midi_input_port_t(const piw::change_nb_t &sink) { impl_ = new impl_t(this,sink); }
+midi::midi_input_port_t::~midi_input_port_t() { stop(); delete impl_; }
+bool midi::midi_input_port_t::set_port(long port) { return impl_->set_port(port); }
+long midi::midi_input_port_t::get_port(void) { return impl_->get_port(); }
+void midi::midi_input_port_t::set_destination(const std::string &name) { impl_->set_destination(name); }
+void midi::midi_input_port_t::run() { return impl_->run(); }
+void midi::midi_input_port_t::stop() { return impl_->stop(); }

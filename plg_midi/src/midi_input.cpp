@@ -29,6 +29,7 @@
 #include <picross/pic_config.h>
 
 #include <lib_midi/midi_decoder.h>
+#include <lib_midi/midi_input_port.h>
 
 #include <plg_midi/midi_input.h>
 
@@ -712,7 +713,7 @@ namespace
 //
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-struct pi_midi::midi_input_t::impl_t: pic::tracked_t, midi_input_port_t
+struct pi_midi::midi_input_t::impl_t: pic::tracked_t, midi::midi_input_port_t
 {
     impl_t(pi_midi::midi_input_t *d, const piw::cookie_t &key_cookie, const piw::cookie_t &cc_cookie, const piw::cookie_t &pc_cookie, const piw::cookie_t &trig_cookie, const piw::cookie_t &midi_cookie): midi_input_port_t(piw::change_nb_t::method(this,&impl_t::receive__)), delegate_(d)
     {
@@ -796,14 +797,14 @@ void pi_midi::midi_input_t::set_trim(unsigned cc, float min, float max, bool inv
     root_->continouscontrol.set_trim(cc,min,max,invert);
 }
 
-long pi_midi::midi_input_t::getport(void)
+long pi_midi::midi_input_t::get_port(void)
 {
-    return root_->getport();
+    return root_->get_port();
 }
 
-bool pi_midi::midi_input_t::setport(long uid)
+bool pi_midi::midi_input_t::set_port(long uid)
 {
-    return root_->setport(uid);
+    return root_->set_port(uid);
 }
 
 void pi_midi::midi_input_t::set_destination(const std::string &name)

@@ -191,8 +191,8 @@ class MidiPort(atom.Atom):
         self.__timestamp = piw.tsd_time()
         self.__midi = MidiDelegate(key_cookie,cc_cookie,pc_cookie,trig_cookie,midi_cookie,self.__sinks_changed)
 
-        atom.Atom.__init__(self,domain=domain.String(),names='midi port',policy=atom.default_policy(self.setport),protocols='virtual browse')
-        self.__midi.setport(0)
+        atom.Atom.__init__(self,domain=domain.String(),names='midi port',policy=atom.default_policy(self.set_port),protocols='virtual browse')
+        self.__midi.set_port(0)
         self.__midi.set_destination('')
         self.__selected=None
         self.__update()
@@ -207,35 +207,35 @@ class MidiPort(atom.Atom):
         atom.Atom.server_opened(self)
         self.__midi.set_destination('Eigenlabs %d' % self.__index)
         self.__midi.run()
-        self.setport(self.get_value())
+        self.set_port(self.get_value())
 
     def close_server(self):
         atom.Atom.close_server(self)
         self.__midi.set_destination('')
-        self.__midi.setport(0)
+        self.__midi.set_port(0)
         self.__midi.stop()
 
     def __update(self):
         if not self.get_value() and len(self.__midi.sources):
             port = self.__midi.sources[0][0]
-            self.__midi.setport(int(port,16))
+            self.__midi.set_port(int(port,16))
 
         self.__timestamp = self.__timestamp+1
         self.set_property_string('timestamp',str(self.__timestamp))
 
-    def setport(self,port):
+    def set_port(self,port):
         self.set_value(port)
         self.__update()
         if self.open():
             print 'set port to',port
             if port:
-                self.__midi.setport(int(port,16))
+                self.__midi.set_port(int(port,16))
             else:
                 if len(self.__midi.sources):
-                    self.__midi.setport(int(self.__midi.sources[0][0],16))
+                    self.__midi.set_port(int(self.__midi.sources[0][0],16))
 
     def __sinks_changed(self):
-        self.setport(self.get_value())
+        self.set_port(self.get_value())
 
     def rpc_displayname(self,arg):
         return 'MIDI input ports'
@@ -249,7 +249,7 @@ class MidiPort(atom.Atom):
         (path,selected)=logic.parse_clause(arg)
         print 'MidiPort:activated',selected    
         port=selected
-        self.setport(port)
+        self.set_port(port)
         return logic.render_term(('',''))
     
     def clear_trim(self):
@@ -287,7 +287,7 @@ class MidiPort(atom.Atom):
         return async.failure('invalid cookie')
 
     def rpc_current(self,arg):
-        current = self.__midi.getport()
+        current = self.__midi.get_port()
         if current==0:
             return '[]'
         return '[["%x",[]]]' % current
@@ -445,7 +445,7 @@ class Agent(agent.Agent):
         print action.arg_objects(arg)[0]
         (type,thing) = action.crack_ideal(action.arg_objects(arg)[0])
         print type,thing
-        self[5].setport(thing)
+        self[5].set_port(thing)
 
 
 agent.main(Agent,gui=True)

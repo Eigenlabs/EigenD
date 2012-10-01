@@ -21,8 +21,7 @@
 Import('env')
 
 plg_files=Split(""" 
-    midi_merge_output.cpp midi_input.cpp midi_clock.cpp
-    midi_output_juce.cpp midi_input_juce.cpp midi_processor.cpp
+    midi_merge_output.cpp midi_input.cpp midi_clock.cpp midi_processor.cpp
 """)
 
 plg_libs=Split("""

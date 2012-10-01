@@ -17,28 +17,30 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MAC_MIDI_OUTPUT_H_
-#define MAC_MIDI_OUTPUT_H_
+#ifndef __MIDI_INPUT_PORT_H__
+#define __MIDI_INPUT_PORT_H__
 
-#include <piw/piw_data.h>
-#include <pimidi_exports.h>
+#include <piw/piw_bundle.h>
+#include <midilib_exports.h>
 
-namespace pi_midi
+namespace midi
 {
-    class PIMIDI_DECLSPEC_CLASS midi_output_t
+    class MIDILIB_DECLSPEC_CLASS midi_input_port_t
     {
         public:
             class impl_t;
 
         public:
-            midi_output_t();
-            virtual ~midi_output_t();
+            midi_input_port_t(const piw::change_nb_t &sink);
+            virtual ~midi_input_port_t();
+
             bool set_port(long);
             long get_port(void);
-            piw::change_nb_t get_midi_output_functor();
-            void set_source(const std::string &name);
-            virtual void sink_added(long uid, const std::string &name) {}
-            virtual void sink_removed(long uid) {}
+
+            void set_destination(const std::string &name);
+            virtual void source_added(long uid, const std::string &name) {}
+            virtual void source_removed(long uid) {}
+
             void run();
             void stop();
 
@@ -47,5 +49,4 @@ namespace pi_midi
     };
 };
 
-
-#endif /* MAC_MIDI_OUTPUT_H_ */
+#endif /* __MIDI_INPUT_PORT_H__ */
