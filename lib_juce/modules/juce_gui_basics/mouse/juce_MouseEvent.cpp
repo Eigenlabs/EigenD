@@ -39,9 +39,9 @@ MouseEvent::MouseEvent (MouseInputSource& source_,
       eventComponent (eventComponent_),
       originalComponent (originator),
       eventTime (eventTime_),
+      mouseDownTime (mouseDownTime_),
       source (source_),
       mouseDownPos (mouseDownPos_),
-      mouseDownTime (mouseDownTime_),
       numberOfClicks ((uint8) numberOfClicks_),
       wasMovedSinceMouseDown ((uint8) (mouseWasDragged ? 1 : 0))
 {
