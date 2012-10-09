@@ -424,7 +424,8 @@ class InputList(collection.Collection):
         return self.__scope
 
     def create_input(self,name):
-        names = name.split()
+        names = name.split() if name else None
+        ordinal = None
 
         if names:
             try:
@@ -433,8 +434,9 @@ class InputList(collection.Collection):
             except:
                 ordinal = None
         else:
-            ordinal = self.freeinstance()
             names = ''
+        if not ordinal:
+            ordinal = self.freeinstance()
 
         k = self.find_hole()
         j = RigInput(self.__scope,k,self.__output_peer,self.__outer)
@@ -575,11 +577,11 @@ class InnerAgent(agent.Agent):
         self.__workspace.set_enclosure(self.__description)
 
     def __create_input(self,subject,dummy,name):
-        name = action.abstract_string(name)
+        name = action.abstract_string(name) if name else None
         self[3].create_input(name)
 
     def __create_output(self,subject,dummy,name):
-        name = action.abstract_string(name)
+        name = action.abstract_string(name) if name else None
         self.__outer_agent[3].create_input(name)
 
     def save(self,filename):
@@ -677,11 +679,11 @@ class OuterAgent(agent.Agent):
         agent.Agent.unload(self,destroy)
 
     def __create_input(self,subject,dummy,name):
-        name = action.abstract_string(name)
+        name = action.abstract_string(name) if name else None
         self[3].create_input(name)
 
     def __create_output(self,subject,dummy,name):
-        name = action.abstract_string(name)
+        name = action.abstract_string(name) if name else None
         self.__inner_agent[3].create_input(name)
 
     @async.coroutine('internal error')

@@ -1,0 +1,38 @@
+description
+	This script activates green tonic indicator lights for all
+	the instruments of the Pico Factory 2 setup.
+	
+script
+	empty join
+        
+    audio unit rig 1 gateway hey input called light 1 create
+    audio unit rig 1 scaler 1 light output to audio unit rig 1 gateway light 1 connect
+    audio unit rig 1 light 1 to main keygroup keygroup output 1 light input connect
+    
+    audio unit rig 2 gateway hey input called light 1 create
+    audio unit rig 2 scaler 1 light output to audio unit rig 2 gateway light 1 connect
+    audio unit rig 2 light 1 to main keygroup keygroup output 2 light input connect
+    
+    audio unit rig 3 gateway hey input called light 1 create
+    audio unit rig 3 scaler 1 light output to audio unit rig 3 gateway light 1 connect
+    audio unit rig 3 light 1 to main keygroup keygroup output 3 light input connect
+    
+    audio unit rig 4 gateway hey input called light 1 create
+    audio unit rig 4 scaler 1 light output to audio unit rig 4 gateway light 1 connect
+    audio unit rig 4 light 1 to main keygroup keygroup output 4 light input connect
+    
+    midi rig 1 gateway hey input called light 1 create
+    midi rig 1 scaler 1 light output to midi rig 1 gateway light 1 connect
+    midi rig 1 light 1 to main keygroup keygroup output 5 light input connect
+    
+    midi rig 2 gateway hey input called light 1 create
+    midi rig 2 scaler 1 light output to midi rig 2 gateway light 1 connect
+    midi rig 2 light 1 to main keygroup keygroup output 6 light input connect
+    
+    midi rig 3 gateway hey input called light 1 create
+    midi rig 3 scaler 1 light output to midi rig 3 gateway light 1 connect
+    midi rig 3 light 1 to main keygroup keygroup output 7 light input connect
+    
+    midi rig 4 gateway hey input called light 1 create
+    midi rig 4 scaler 1 light output to midi rig 4 gateway light 1 connect
+    midi rig 4 light 1 to main keygroup keygroup output 8 light input connect
