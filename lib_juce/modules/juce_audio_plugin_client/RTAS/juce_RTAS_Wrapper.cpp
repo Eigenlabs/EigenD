@@ -156,7 +156,9 @@ public:
     {
         asyncUpdater = new InternalAsyncUpdater (*this);
         juceFilter = createPluginFilter();
-        jassert (juceFilter != 0);
+        jassert (juceFilter != nullptr);
+
+        juceFilter->wrapperType = AudioProcessor::wrapperType_RTAS;
 
         AddChunk (juceChunkType, "Juce Audio Plugin Data");
 
@@ -943,6 +945,10 @@ public:
 
            #if ! JucePlugin_RTASDisableBypass
             type->AddGestalt (pluginGestalt_CanBypass);
+           #endif
+
+           #if JucePlugin_RTASDisableMultiMono
+            type->AddGestalt (pluginGestalt_DoesntSupportMultiMono);
            #endif
 
             type->AddGestalt (pluginGestalt_SupportsVariableQuanta);
