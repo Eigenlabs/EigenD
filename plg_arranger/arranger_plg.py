@@ -433,8 +433,11 @@ class Agent(agent.Agent):
             del self[5][row]
             yield async.Coroutine.success()
 
-    def __clear_verb(self,subj):
+    def __clear_verb(self,subj=None):
         self.view.clear_events()
+
+    def agent_preload(self,filename):
+        self.__clear_verb()
 
     def update(self):
         pass
