@@ -507,7 +507,7 @@ namespace
 
         void setmodifier(const piw::data_nb_t &v)
         {
-            modifier_=v.as_renorm_float(BCTUNIT_STEPS,-10,10,0);
+            modifier_=v.as_renorm_float(BCTUNIT_STEPS,-96,96,0);
             time_ = std::max(time_,v.time());
             //pic::logmsg() << "kbend = " << kbend_ << " time " << time_;
         }
