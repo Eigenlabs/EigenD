@@ -1227,7 +1227,7 @@ void EigenMainWindow::load_started(const char *setup)
     title += setup;
     c->setName(title);
     c->getMessageLabel()->setText("",false);
-    c->getProgressSlider()->setValue(0,false,false);
+    c->getProgressSlider()->setValue(0,dontSendNotification);
     progress_ = new EigenDialog(this,c,400,90,0,0,0,0,this,DocumentWindow::minimiseButton);
     progress_->getPeer()->performAnyPendingRepaintsNow();
 }
@@ -1240,7 +1240,7 @@ void EigenMainWindow::load_status(const char *msg,unsigned progress)
     {
         LoadProgressComponent *c = (LoadProgressComponent *)(progress_->getContentComponent());
         c->getMessageLabel()->setText(msg,false);
-        c->getProgressSlider()->setValue(progress,false,false);
+        c->getProgressSlider()->setValue(progress,dontSendNotification);
         progress_->getPeer()->performAnyPendingRepaintsNow();
     }
 

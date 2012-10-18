@@ -70,9 +70,12 @@ namespace AudioUnitFormatHelpers
         return String (s, 4);
     }
 
-    OSType stringToOSType (const String& s1)
+    OSType stringToOSType (String s)
     {
-        const String s (s1 + "    ");
+        if (s.trim().length() >= 4) // (to avoid trimming leading spaces)
+            s = s.trim();
+
+        s += "    ";
 
         return (((OSType) (unsigned char) s[0]) << 24)
              | (((OSType) (unsigned char) s[1]) << 16)
@@ -155,13 +158,12 @@ namespace AudioUnitFormatHelpers
 
             StringArray tokens;
             tokens.addTokens (s, ",", String::empty);
-            tokens.trim();
             tokens.removeEmptyStrings();
 
             if (tokens.size() == 3)
             {
-                desc.componentType = stringToOSType (tokens[0]);
-                desc.componentSubType = stringToOSType (tokens[1]);
+                desc.componentType         = stringToOSType (tokens[0]);
+                desc.componentSubType      = stringToOSType (tokens[1]);
                 desc.componentManufacturer = stringToOSType (tokens[2]);
 
                 if (ComponentRecord* comp = FindNextComponent (0, &desc))
@@ -303,7 +305,7 @@ public:
                     audioUnit = (AudioUnit) OpenComponent (comp);
 
                     wantsMidiMessages = componentDesc.componentType == kAudioUnitType_MusicDevice
-                        || componentDesc.componentType == kAudioUnitType_MusicEffect;
+                                     || componentDesc.componentType == kAudioUnitType_MusicEffect;
                 }
             }
 
@@ -323,7 +325,9 @@ public:
 
         if (audioUnit != 0)
         {
-            AudioUnitUninitialize (audioUnit);
+            if (prepared)
+                releaseResources();
+
             CloseComponent (audioUnit);
             audioUnit = 0;
         }
@@ -450,6 +454,7 @@ public:
             wasPlaying = false;
 
             prepared = (AudioUnitInitialize (audioUnit) == noErr);
+            jassert (prepared);
         }
     }
 
@@ -1153,7 +1158,7 @@ private:
                 return result;
             }
         }
-        
+
         return false;
     }
 
@@ -1165,9 +1170,9 @@ class AudioUnitPluginWindowCocoa    : public AudioProcessorEditor,
                                       public Timer
 {
 public:
-    AudioUnitPluginWindowCocoa (AudioUnitPluginInstance& plugin_, const bool createGenericViewIfNeeded)
-        : AudioProcessorEditor (&plugin_),
-          plugin (plugin_)
+    AudioUnitPluginWindowCocoa (AudioUnitPluginInstance& p, const bool createGenericViewIfNeeded)
+        : AudioProcessorEditor (&p),
+          plugin (p)
     {
         addAndMakeVisible (&wrapper);
 
@@ -1180,15 +1185,13 @@ public:
 
     ~AudioUnitPluginWindowCocoa()
     {
-        const bool wasValid = isValid();
-
-        // NB: making the wrapper invisible before removing it causes
-        // strange internal crashes in some Apple AUs.
-        removeChildComponent (&wrapper);
-        wrapper.setView (nil);
-
-        if (wasValid)
+        if (isValid())
+        {
+            wrapper.setVisible (false);
+            removeChildComponent (&wrapper);
+            wrapper.setView (nil);
             plugin.editorBeingDeleted (this);
+        }
     }
 
     bool isValid() const        { return wrapper.getView() != nil; }
@@ -1262,7 +1265,7 @@ private:
             }
         }
 
-        if (createGenericViewIfNeeded && (pluginView == 0))
+        if (createGenericViewIfNeeded && (pluginView == nil))
         {
             {
                 // This forces CoreAudio.component to be loaded, otherwise the AUGenericView will assert

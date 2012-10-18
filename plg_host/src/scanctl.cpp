@@ -199,7 +199,7 @@ namespace
                 component_->getPluginLabel()->setText(plugin_name,false);
                 component_->getFormatLabel()->setText(msg,false);
                 float progress = ((float)cur_plugin_)/((float)plugins_.size());
-                component_->getProgressBar()->setValue(progress,true);
+                component_->getProgressBar()->setValue(progress,sendNotificationAsync);
                 component_->getPeer()->performAnyPendingRepaintsNow();
 
                 if(scan)

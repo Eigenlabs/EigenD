@@ -96,17 +96,17 @@ void CellPopupComponent::updateComponent(midi::mapper_cell_editor_t *cell_editor
     if(info.scale_<0)
     {
         scale_factor_invert->setToggleState(true,false);
-        scale_factor->setValue(info.scale_*-1.0, true, true);
+        scale_factor->setValue(info.scale_*-1.0, sendNotificationSync);
     }
     else
     {
         scale_factor_invert->setToggleState(false,false);
-        scale_factor->setValue(info.scale_, true, true);
+        scale_factor->setValue(info.scale_, sendNotificationSync);
     }
 
-    boundshi->setValue(info.hi_*100, true, true);
-    boundsbase->setValue(info.base_*100, true);
-    boundslo->setValue(info.lo_*100, true, true);
+    boundshi->setValue(info.hi_*100, sendNotificationSync);
+    boundsbase->setValue(info.base_*100, sendNotificationSync);
+    boundslo->setValue(info.lo_*100, sendNotificationSync);
 
     bounds_origin_return->setToggleState(info.origin_return_, false);
 
@@ -118,7 +118,7 @@ void CellPopupComponent::updateComponent(midi::mapper_cell_editor_t *cell_editor
     {
         data_decimation->setColour (Slider::textBoxTextColourId, Colour (0xffeeeeee));
     }
-    data_decimation->setValue(info.decimation_, true, true);
+    data_decimation->setValue(info.decimation_, sendNotificationSync);
 
     mapping_enabled->setToggleState(info.enabled_, false);
 

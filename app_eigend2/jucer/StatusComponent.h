@@ -56,7 +56,7 @@ public:
         if(cpu > 60) colour=Colours::red;
 
         cpu_meter->setColour (Slider::thumbColourId,colour);
-        cpu_meter->setValue((float)cpu,false);
+        cpu_meter->setValue((float)cpu,dontSendNotification);
         getPeer()->performAnyPendingRepaintsNow();
     }
 

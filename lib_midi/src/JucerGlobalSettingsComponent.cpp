@@ -51,7 +51,7 @@ void GlobalSettingsComponent::updateComponent(midi::mapping_delegate_t *mapping_
 
     midi::global_settings_t settings = mapping_delegate->get_settings();
 
-    data_decimation->setValue(settings.minimum_decimation_, true, true);
+    data_decimation->setValue(settings.minimum_decimation_, sendNotificationSync);
     midi_notes->setToggleState(settings.send_notes_, false);
     midi_pitchbend->setToggleState(settings.send_pitchbend_, false);
     midi_hires_velocity->setToggleState(settings.send_hires_velocity_, false);
@@ -65,8 +65,8 @@ void GlobalSettingsComponent::updateComponent(midi::mapping_delegate_t *mapping_
     active_channel->setSelectedId(midi_channel);
     min_channel->setSelectedId(mapping_delegate->get_min_channel());
     max_channel->setSelectedId(mapping_delegate->get_max_channel());
-    pitchbend_up->setValue((int)settings.pitchbend_semitones_up_,true,true);
-    pitchbend_down->setValue((int)settings.pitchbend_semitones_down_,true,true);
+    pitchbend_up->setValue((int)settings.pitchbend_semitones_up_,sendNotificationSync);
+    pitchbend_down->setValue((int)settings.pitchbend_semitones_down_,sendNotificationSync);
 }
 
 void GlobalSettingsComponent::setFocusOrder()
