@@ -40,6 +40,8 @@ namespace language
             void startup();
             void shutdown();
             void send(const char *name,float v);
+            void send_blob(const char *,const unsigned char *, unsigned);
+            void send_string(const char *,const char *);
             void set_connected(unsigned index, bool is_connected);
         
         private:

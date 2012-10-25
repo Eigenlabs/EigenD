@@ -39,7 +39,6 @@ namespace
 
         static void sender__(void *a1,void *a2,void *a3,void *a4);
         static int method1__(const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data);
-        static int method2__(const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data);
         static int method3__(const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data);
 
         language::oscserver_t::impl_t *impl_;
@@ -49,7 +48,7 @@ namespace
         lo_method method2_;
         lo_method method3_;
         piw::dataqueue_t queue_;
-        float current_;
+        piw::data_t current_;
         bool is_connected_;
     };
 
@@ -96,6 +95,9 @@ struct language::oscserver_t::impl_t: pic::thread_t
     void del_widget(unsigned);
     void add_recipient(lo_address);
     void send(const char *name,float v);
+    void send_blob(const char *name,const unsigned char *v, unsigned s);
+    void send_string(const char *name,const char *v);
+    void send_any(const char *name,const piw::data_t &d);
     void set_connected(unsigned index, bool is_connected);
 
     bool stop_;
@@ -129,6 +131,16 @@ unsigned language::oscserver_t::add_widget(const char *name, piw::fastdata_t *da
 void language::oscserver_t::del_widget(unsigned index)
 {
     impl_->del_widget(index);
+}
+
+void language::oscserver_t::send_string(const char *name,const char *value)
+{
+    impl_->send_string(name,value);
+}
+
+void language::oscserver_t::send_blob(const char *name,const unsigned char *value, unsigned size)
+{
+    impl_->send_blob(name,value,size);
 }
 
 void language::oscserver_t::send(const char *name,float v)
@@ -278,39 +290,70 @@ void language::oscserver_t::impl_t::prune()
 int widget_t::method1__(const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data)
 {
     widget_t *widget = (widget_t *)user_data;
-    float f = argv[0]->f;
-    float m = fabs(f);
+    language::oscserver_t::impl_t *impl = widget->impl_;
+
+    if(argc!=1)
+    {
+        impl->add_recipient(lo_message_get_source(msg));
+        impl->send_any(widget->name_,widget->current_);
+
+        // send whether connected or not
+        std::string name_str(widget->name_);
+        name_str+="/connected";
+        impl->update_.lock();
+        impl->send(name_str.c_str(), widget->is_connected_?1.0:0.0);
+        impl->update_.unlock();
+        return 0;
+    }
+
+    impl->add_recipient(lo_message_get_source(msg));
+
+    piw::data_t d;
     unsigned long long t = piw::tsd_time();
 
-    piw::data_nb_t d = piw::makefloat_bounded_units_nb(BCTUNIT_GLOBAL,m,-m,0,f,t+1);
-#if OSC_DEBUG==1
-    pic::logmsg() << "osc receiver " << path << " " << f << "->" << d << ' ' << d.units();
-#endif // OSC_DEBUG==1
-    
-    widget->queue_.write_slow(d);
-    widget->impl_->add_recipient(lo_message_get_source(msg));
-
-    if(widget->current_==f)
+    if(types[0]=='f')
     {
-        widget->impl_->send(widget->name_,widget->current_);
+        float f = argv[0]->f;
+        float m = fabs(f);
+
+        try
+        {
+            d = piw::makefloat_bounded_units(BCTUNIT_GLOBAL,m,-m,0,f,t+1);
+        }
+        catch(...)
+        {
+            pic::logmsg() << "caught exception " << -m << ':' << f << ':' << m;
+        }
+
+    }
+    else if(types[0]=='b')
+    {
+        unsigned char *bdata;
+        lo_blob b = argv[0];
+        void *bd = lo_blob_dataptr(b);
+        unsigned bs = lo_blob_datasize(b);
+
+        d = piw::makeblob(t,bs,&bdata);
+        memcpy(bdata,bd,bs);
+    }
+    else if(types[0]=='s')
+    {
+        char *str = &(argv[0]->s);
+        d = piw::makestring(str,t);
     }
     
-    return 0;
-}
+    widget->queue_.write_slow(d);
 
-int widget_t::method2__(const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data)
-{
-    widget_t *widget = (widget_t *)user_data;
-    language::oscserver_t::impl_t *impl = widget->impl_;
-    impl->add_recipient(lo_message_get_source(msg));
-    impl->send(widget->name_,widget->current_);
+    if(widget->current_==d)
+    {
+        impl->send_any(widget->name_,widget->current_);
+    }
 
-    // send whether connected or not
-    std::string name_str(widget->name_);
-    name_str+="/connected";
-    impl->update_.lock();
-    impl->send(name_str.c_str(), widget->is_connected_?1.0:0.0);
-    impl->update_.unlock();
+
+#if OSC_DEBUG==1
+    pic::logmsg() << "osc receiver " << path << "->" << d << ' ' << d.units();
+#endif // OSC_DEBUG==1
+
     return 0;
 }
 
@@ -325,14 +368,12 @@ int widget_t::method3__(const char *path, const char *types, lo_arg **argv, int 
 widget_t::widget_t(language::oscserver_t::impl_t *impl, const char *name,piw::fastdata_t *f,piw::fastdata_t *f2): 
     impl_(impl), name_(strdup(name)), receiver_(PLG_FASTDATA_SENDER), is_connected_(false)
 {
-    current_=0;
     piw::tsd_fastdata(this);
     set_upstream(f);
     enable(true,true,false);
     piw::tsd_fastdata(&receiver_);
     f2->set_upstream(&receiver_);
-    method1_ = lo_server_add_method(impl_->receiver_,name,"f",method1__,this);
-    method2_ = lo_server_add_method(impl_->receiver_,name,"",method2__,this);
+    method1_ = lo_server_add_method(impl_->receiver_,name,0,method1__,this);
     method3_ = lo_server_add_method(impl_->receiver_,"/ping","",method3__,this);
     queue_ = piw::tsd_dataqueue(16);
     receiver_.send_slow(piw::pathnull(piw::tsd_time()),queue_);
@@ -341,9 +382,9 @@ widget_t::widget_t(language::oscserver_t::impl_t *impl, const char *name,piw::fa
 void widget_t::sender__(void *a1,void *a2,void *a3,void *a4)
 {
     widget_t *widget  = (widget_t *)a1;
-    widget->current_ = piw::data_t::from_given((bct_data_t)a2).as_denorm();
+    widget->current_ = piw::data_t::from_given((bct_data_t)a2);
     language::oscserver_t::impl_t *impl = widget->impl_;
-    impl->send(widget->name_,widget->current_);
+    impl->send_any(widget->name_,widget->current_);
 #if OSC_DEBUG==1
     pic::logmsg() << "sent queued data " << widget->name_ << " " << widget->current_;
 #endif // OSC_DEBUG==1
@@ -380,8 +421,7 @@ widget_t::~widget_t()
     receiver_.send_slow(piw::makenull(piw::tsd_time()),piw::dataqueue_t());
     receiver_.close_fastdata();
     close_fastdata();
-    lo_server_del_method(impl_->receiver_,name_,"f",method1__,this);
-    lo_server_del_method(impl_->receiver_,name_,"",method2__,this);
+    lo_server_del_method(impl_->receiver_,name_,0,method1__,this);
     lo_server_del_method(impl_->receiver_,"/ping","",method3__,this);
     free((void *)name_);
 }
@@ -486,6 +526,56 @@ void language::oscserver_t::impl_t::add_recipient(lo_address a)
         recipients_.push_back(b);
     }
 
+}
+
+void language::oscserver_t::impl_t::send_any(const char *name,const piw::data_t &d)
+{
+    if(d.is_float() || d.is_bool() || d.is_long() || d.is_null())
+    {
+        send(name,d.as_denorm());
+        return;
+    }
+
+    if(d.is_string())
+    {
+        send_string(name,(const char *)d.as_string());
+        return;
+    }
+
+    if(d.is_blob())
+    {
+        send_blob(name,(const unsigned char *)d.as_blob(),d.as_bloblen());
+        return;
+    }
+
+}
+
+void language::oscserver_t::impl_t::send_string(const char *name,const char *value)
+{
+    // send widget value to all recipients (Stage clients)
+    for(unsigned i=0;i<recipients_.size();i++)
+    {
+        if(!recipients_[i])
+        {
+            continue;
+        }
+
+        lo_send_from(recipients_[i]->address_,receiver_,LO_TT_IMMEDIATE,name,"s",value);
+    }
+}
+
+void language::oscserver_t::impl_t::send_blob(const char *name,const unsigned char *value, unsigned size)
+{
+    // send widget value to all recipients (Stage clients)
+    for(unsigned i=0;i<recipients_.size();i++)
+    {
+        if(!recipients_[i])
+        {
+            continue;
+        }
+
+        lo_send_from(recipients_[i]->address_,receiver_,LO_TT_IMMEDIATE,name,"b",lo_blob_new(size,value));
+    }
 }
 
 void language::oscserver_t::impl_t::send(const char *name,float v)

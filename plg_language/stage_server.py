@@ -29,9 +29,10 @@ from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 import sys
 import xml.dom.pulldom
 import xml.dom.minidom
+from xml.sax.saxutils import quoteattr
 import threading
 import piw
-from pi import agent,atom,domain,errors,action,bundles,async,utils,resource,logic,node,upgrade,const,paths
+from pi import agent,atom,domain,errors,action,bundles,async,utils,resource,logic,node,upgrade,const,paths,rpc
 from . import language_native
 import traceback
 import widget
@@ -189,10 +190,20 @@ class StageXMLRPCFuncs:
                         cache = self.__database.get_propcache('protocol')
                         noStage = 'nostage' in cache.get_valueset(atom[0])
 
-                        atomDomain = self.__database.find_item(atom[0]).domain()
+                        atomProxy = self.__database.find_item(atom[0])
+                        atomDomain = atomProxy.domain()
+                        atomProtocols = atomProxy.protocols()
                         domainType,isInteger,isFloat,isNumeric,isBool,isTrigger = self.__domainTypes(atomDomain)
+                        isCustom = False
 
-                        isSupported = (isNumeric or isBool or isTrigger) and not noStage
+                        print 'atom protocols',atomProtocols
+                        for p in atomProtocols:
+                            if p.startswith('widget-'):
+                                domainType = 'custom-'+p[7:]
+                                isCustom = True
+                                break;
+
+                        isSupported = (isNumeric or isBool or isTrigger or isCustom) and not noStage
 
                         # store enabled atom addresses for use by the widget manager
                         if(isSupported):
@@ -210,7 +221,8 @@ class StageXMLRPCFuncs:
                                 xml += 'enabled="true" '
                             else:
                                 xml += 'enabled="false" '
-                            
+
+                            xml += 'widget="%s"' % domainType
                             xml += '>\n'
 
                             xml += self.__domainXml(atomDomain)
@@ -239,6 +251,7 @@ class StageXMLRPCFuncs:
 
     def __domainBounds(self,atomDomain):
         domainType,isInteger,isFloat,isNumeric,isBool,isTrigger = self.__domainTypes(atomDomain)
+
         boundMin = None
         boundMax = None
         boundUserMin = None
@@ -253,6 +266,7 @@ class StageXMLRPCFuncs:
 
         stageInc = atomDomain.hint('stageinc')
         controllerInc = atomDomain.hint('inc')
+
         if stageInc:
             boundUserStep = float(stageInc[0])
         elif controllerInc:
@@ -270,6 +284,7 @@ class StageXMLRPCFuncs:
         xml = '<domain type="%s"'%domainType
 
         boundMin,boundMax,boundUserMin,boundUserMax,boundUserStep = self.__domainBounds(atomDomain)
+
         if boundMin is not None:
             xml += ' min="%g"'%boundMin
         if boundMax is not None:
@@ -285,7 +300,10 @@ class StageXMLRPCFuncs:
         if distribution:
             xml += ' distribution="%s"'%distribution
 
+        xml += ' full=%s' % quoteattr(atomDomain.canonical());
         xml += '/>'
+
+        print "dmain xml=",xml
 
         return xml
 
@@ -748,6 +766,44 @@ class StageXMLRPCFuncs:
         return widgetXML
                 
                                 
+    def widgetRpc(self, tabIndex, widgetIndex, rpcMethod, rpcArg):
+        print 'rpc widget',widgetIndex,'from tab',tabIndex,'method',rpcMethod,'arg',rpcArg
+
+        piw.tsd_lock()
+
+        try:
+            widgets = self.__tabs.get_tab(tabIndex)[1]
+            widgetXML = widgets.get_widget(widgetIndex).getXML()
+            widgetDoc = xml.dom.minidom.parseString(widgetXML)
+            widgetNode = widgetDoc.documentElement
+            widgetAddress = widgetNode.getAttribute('address')
+            print 'rpc',rpcMethod,'to',widgetAddress,'with',rpcArg
+            r = rpc.invoke_rpc(widgetAddress,rpcMethod,rpcArg);
+        except:
+            piw.tsd_unlock()
+            traceback.print_exc(limit=None)
+            return ''
+
+        args = [None,None,None]
+        e = threading.Event()
+        e.clear()
+
+        def finished(returnstatus,*returnargs,**returnkwds):
+            args[0] = returnstatus
+            args[1] = returnargs
+            args[2] = returnkwds
+            e.set()
+
+        r.setCallback(finished,True).setErrback(finished,False)
+        piw.tsd_unlock()
+        e.wait()
+
+        try:
+            return args[1][0]
+        except:
+            return ''
+        
+
     def getWidget(self, tabIndex, widgetIndex):
         print 'get widget',widgetIndex,'from tab',tabIndex
         # get widget xml

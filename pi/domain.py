@@ -481,6 +481,23 @@ class Null(Domain):
     def up_by(self,val,inc):   return None
     def down_by(self,val,inc): return None
 
+class Blob(Domain):
+    def __init__(self,hints=()):
+        Domain.__init__(self,hints)
+    def data2value(self,d):
+        return d
+    def value2data(self,v,t=0L):
+        if isinstance(v,piw.data_base): return v
+        raise ValueError('value %s inappropriate' % v)
+    def canonical(self):
+        return 'blob(%s)' % logic.render_term(self.hints)
+    def default(self):
+        return piw.makelong(0,0)
+    def up(self,val):          return val
+    def down(self,val):        return val
+    def up_by(self,val,inc):   return val
+    def down_by(self,val,inc): return val
+
 class Aniso(Domain):
     def __init__(self,hints=()):
         Domain.__init__(self,hints)
@@ -527,7 +544,7 @@ class Iso(Domain):
     def iso(self):
         return True
 
-__traits=dict(null=Null,bint=BoundedInt,bintn=BoundedIntOrNull,bfloat=BoundedFloat,bfloatn=BoundedFloatOrNull,string=String,bool=Bool,trigger=Trigger,enum=Enum,enumn=EnumOrNull,enums=StringEnum,aniso=Aniso,iso=Iso)
+__traits=dict(null=Null,blob=Blob,bint=BoundedInt,bintn=BoundedIntOrNull,bfloat=BoundedFloat,bfloatn=BoundedFloatOrNull,string=String,bool=Bool,trigger=Trigger,enum=Enum,enumn=EnumOrNull,enums=StringEnum,aniso=Aniso,iso=Iso)
 
 def traits(domain):
     """
