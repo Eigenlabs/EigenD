@@ -126,6 +126,7 @@ def shutil_copyfile(src,dst):
     shutil.copyfile(WC(src),WC(dst))
 
 bugs_dir='Bugs'
+conductor_dir='Conductor'
 global_dir='Global'
 help_dir='Help'
 impulseresponse_dir='ImpulseResponse'

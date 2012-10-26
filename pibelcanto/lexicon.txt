@@ -59,7 +59,7 @@ Not properly assigned, in use:
 8   6   5   6  : Wet           : Noun              : None
 8   6   5   7  : Closed        : Noun              : None
 8   6   5   8  : Processor     : Noun              : None
-8   6   6   1  : Unused        : Unused            : None
+8   6   6   1  : Conductor     : Noun              : None
 8   6   6   2  : Unused        : Unused            : None
 8   6   6   3  : Unused        : Unused            : None
 8   6   6   4  : Unused        : Unused            : None
