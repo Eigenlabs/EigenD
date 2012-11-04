@@ -281,7 +281,7 @@ public:
         filter->addListener (this);
 
         cEffect.flags |= effFlagsHasEditor;
-        cEffect.version = (long) (JucePlugin_VersionCode);
+        cEffect.version = convertHexVersionToDecimal (JucePlugin_VersionCode);
 
         setUniqueID ((int) (JucePlugin_VSTUniqueID));
 
@@ -368,7 +368,7 @@ public:
     }
 
     bool getProductString (char* text)  { return getEffectName (text); }
-    VstInt32 getVendorVersion()         { return JucePlugin_VersionCode; }
+    VstInt32 getVendorVersion()         { return (VstInt32) convertHexVersionToDecimal (JucePlugin_VersionCode); }
     VstPlugCategory getPlugCategory()   { return JucePlugin_VSTCategory; }
     bool keysRequired()                 { return (JucePlugin_EditorRequiresKeyboardFocus) != 0; }
 
@@ -1380,6 +1380,14 @@ private:
    #else
     HWND hostWindow;
    #endif
+
+    static inline long convertHexVersionToDecimal (const unsigned int hexVersion)
+    {
+        return (long) (((hexVersion >> 24) & 0xff) * 1000
+                     + ((hexVersion >> 16) & 0xff) * 100
+                     + ((hexVersion >> 8)  & 0xff) * 10
+                     + (hexVersion & 0xff));
+    }
 
     //==============================================================================
    #if JUCE_WINDOWS

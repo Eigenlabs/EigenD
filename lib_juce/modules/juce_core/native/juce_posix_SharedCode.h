@@ -528,9 +528,7 @@ Result FileOutputStream::truncate()
 //==============================================================================
 String SystemStats::getEnvironmentVariable (const String& name, const String& defaultValue)
 {
-    const char* s = ::getenv (name.toUTF8());
-
-    if (s != nullptr)
+    if (const char* s = ::getenv (name.toUTF8()))
         return String::fromUTF8 (s);
 
     return defaultValue;
@@ -1042,6 +1040,10 @@ public:
     int read (void* const dest, const int numBytes)
     {
         jassert (dest != nullptr);
+
+        #ifdef fdopen
+         #error // the zlib headers define this function as NULL!
+        #endif
 
         if (readHandle == 0 && childPID != 0)
             readHandle = fdopen (pipeHandle, "r");
