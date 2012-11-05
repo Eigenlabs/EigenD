@@ -839,21 +839,15 @@ class StageXMLRPCFuncs:
                             different = True
                     elif boundMax is not None:
                         different = True
-                    if widgetDomain.hasAttribute('userMin'):
-                        if boundUserMin is None or round(boundUserMin,3) != round(float(widgetDomain.getAttribute('userMin')),3):
-                            different = True
-                    elif boundUserMin is not None:
-                        different = True
-                    if widgetDomain.hasAttribute('userMax'):
-                        if boundUserMax is None or round(boundUserMax,3) != round(float(widgetDomain.getAttribute('userMax')),3):
-                            different = True
-                    elif boundUserMax is not None:
-                        different = True
-                    # don't check the userStep as this can be changed in Stage
+                    # don't check the userMin, userStep and userMax as this can be changed in Stage
 
                     atomDistribution = atomDomain.hint('distribution')
                     if widgetDomain.hasAttribute('distribution'):
-                        if not atomDistribution or str(atomDistribution[0]) != widgetDomain.getAttribute('distribution'):
+                        # linear is the default
+                        distribution = 'linear'
+                        if atomDistribution:
+                            distribution = str(atomDistribution[0])
+                        if distribution != widgetDomain.getAttribute('distribution'):
                             different = True
                     elif atomDistribution is not None:
                         different = True
