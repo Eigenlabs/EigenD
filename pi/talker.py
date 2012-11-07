@@ -74,7 +74,6 @@ class Talker(atom.Atom):
         self.__domain = piw.clockdomain_ctl()
         self.__domain.set_source(piw.makestring('*',0))
         self.__loading = False
-        self.__phrase_lock = Lock()
         self.__active_phrase_operation = False
         self.__pending_set_phrase = None 
         self.__pending_clear_phrase = False 
@@ -115,39 +114,27 @@ class Talker(atom.Atom):
         return paths.to_absolute(self[2].id())
 
     def clear_phrase(self):
-        self.__phrase_lock.acquire()
-        try:
-            self.__pending_set_phrase = None
-            self.__pending_clear_phrase = True
-            self.__pending_redo = False
-        finally:
-            self.__phrase_lock.release()
+        self.__pending_set_phrase = None
+        self.__pending_clear_phrase = True
+        self.__pending_redo = False
 
         self.__handle_phrase_operations()
 
     def redo(self):
-        self.__phrase_lock.acquire()
-        try:
-            self.__pending_set_phrase = None
-            self.__pending_clear_phrase = False 
-            self.__pending_redo = True 
-        finally:
-            self.__phrase_lock.release()
+        self.__pending_set_phrase = None
+        self.__pending_clear_phrase = False 
+        self.__pending_redo = True 
 
         self.__handle_phrase_operations()
 
     def set_phrase(self,v):
-        self.__phrase_lock.acquire()
-        try:
-            if v:
-                self.__pending_set_phrase = v
-                self.__pending_clear_phrase = False
-            else:
-                self.__pending_set_phrase = None
-                self.__pending_clear_phrase = True
-            self.__pending_redo = False
-        finally:
-            self.__phrase_lock.release()
+        if v:
+            self.__pending_set_phrase = v
+            self.__pending_clear_phrase = False
+        else:
+            self.__pending_set_phrase = None
+            self.__pending_clear_phrase = True
+        self.__pending_redo = False
 
         self.__handle_phrase_operations()
 
@@ -155,45 +142,37 @@ class Talker(atom.Atom):
         self.__running.remove(r)
         print 'running:',self.__running
 
-        self.__phrase_lock.acquire()
-        try:
-            self.__active_phrase_operation = False 
-        finally:
-            self.__phrase_lock.release()
+        self.__active_phrase_operation = False 
 
         self.__handle_phrase_operations()
 
     def __handle_phrase_operations(self):
-        self.__phrase_lock.acquire()
-        try:
-            if self.__active_phrase_operation:
-                return
+        if self.__active_phrase_operation:
+            return
 
-            self.__active_phrase_operation = True 
+        self.__active_phrase_operation = True 
 
-            phrase_to_set = self.__pending_set_phrase
-            phrase_to_clear = self.__pending_clear_phrase
-            phrase_redo = self.__pending_redo
+        phrase_to_set = self.__pending_set_phrase
+        phrase_to_clear = self.__pending_clear_phrase
+        phrase_redo = self.__pending_redo
 
-            self.__pending_set_phrase = None
-            self.__pending_clear_phrase = False
-            self.__pending_redo = False
+        self.__pending_set_phrase = None
+        self.__pending_clear_phrase = False
+        self.__pending_redo = False
 
-            r = None
-            if phrase_to_set is not None:
-                r = self.__set_phrase(phrase_to_set)
-            elif phrase_to_clear:
-                r = self.__clear_phrase()
-            elif phrase_redo:
-                r = self.__set_phrase(self.get_value())
-            
-            if r:
-                self.__running.append(r)
-                r.setCallback(self.__phrase_done,r).setErrback(self.__phrase_done,r)
-            else:
-                self.__active_phrase_operation = False 
-        finally:
-            self.__phrase_lock.release()
+        r = None
+        if phrase_to_set is not None:
+            r = self.__set_phrase(phrase_to_set)
+        elif phrase_to_clear:
+            r = self.__clear_phrase()
+        elif phrase_redo:
+            r = self.__set_phrase(self.get_value())
+        
+        if r:
+            self.__running.append(r)
+            r.setCallback(self.__phrase_done,r).setErrback(self.__phrase_done,r)
+        else:
+            self.__active_phrase_operation = False 
 
     @async.coroutine('internal error')
     def __clear_phrase(self):
