@@ -109,11 +109,6 @@ class Event(talker.Talker):
 
         talker.Talker.__init__(self,self.__key.agent.finder,fast,cookie,names='event',ordinal=index,protocols='remove')
 
-    @async.coroutine('internal error')
-    def redo(self):
-        old_phrase = self.get_value()
-        yield self.set_phrase(old_phrase)
-
     def detach_event(self):
         self.__key.key_aggregator.clear_output(self.__index)
 
