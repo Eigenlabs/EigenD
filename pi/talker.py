@@ -21,6 +21,7 @@
 
 from pi import index,proxy,atom,domain,policy,bundles,async,logic,rpc,paths
 import piw
+from threading import Lock,ThreadError
 
 class FinderProxy(proxy.AtomProxy):
     def __init__(self,finder,name):
@@ -73,6 +74,11 @@ class Talker(atom.Atom):
         self.__domain = piw.clockdomain_ctl()
         self.__domain.set_source(piw.makestring('*',0))
         self.__loading = False
+        self.__phrase_lock = Lock()
+        self.__active_phrase_operation = False
+        self.__pending_set_phrase = None 
+        self.__pending_clear_phrase = False 
+        self.__pending_redo = False 
 
         if status_cookie:
             self.status_input = bundles.VectorInput(status_cookie,self.__domain,signals=(1,))
@@ -80,20 +86,15 @@ class Talker(atom.Atom):
         self[2] = atom.Atom(domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),names='trigger output', protocols='hidden-connection')
         self[2].get_policy().set_source(trigger)
 
+        # prevent running coroutines from being garbage collected
         self.__running = []
-
-    def __done(self,r,*a,**kw):
-        self.__running.remove(r)
-        print 'running:',self.__running
 
     def __change(self,v):
         if self.__loading:
             self.set_value(v)
             return
 
-        r = self.set_phrase(v)
-        self.__running.append(r)
-        r.setCallback(self.__done,r).setErrback(self.__done,r)
+        self.set_phrase(v)
 
     @async.coroutine('internal error')
     def load_state(self,state,delegate,phase):
@@ -107,8 +108,95 @@ class Talker(atom.Atom):
         yield result
         yield async.Coroutine.success()
 
-    @async.coroutine('internal error')
+    def make_connection(self,index,dsc):
+        return logic.make_term('conn',index,1,dsc.args[0],dsc.args[1],None)
+
+    def trigger_id(self):
+        return paths.to_absolute(self[2].id())
+
     def clear_phrase(self):
+        self.__phrase_lock.acquire()
+        try:
+            self.__pending_set_phrase = None
+            self.__pending_clear_phrase = True
+            self.__pending_redo = False
+        finally:
+            self.__phrase_lock.release()
+
+        self.__handle_phrase_operations()
+
+    def redo(self):
+        self.__phrase_lock.acquire()
+        try:
+            self.__pending_set_phrase = None
+            self.__pending_clear_phrase = False 
+            self.__pending_redo = True 
+        finally:
+            self.__phrase_lock.release()
+
+        self.__handle_phrase_operations()
+
+    def set_phrase(self,v):
+        self.__phrase_lock.acquire()
+        try:
+            if v:
+                self.__pending_set_phrase = v
+                self.__pending_clear_phrase = False
+            else:
+                self.__pending_set_phrase = None
+                self.__pending_clear_phrase = True
+            self.__pending_redo = False
+        finally:
+            self.__phrase_lock.release()
+
+        self.__handle_phrase_operations()
+
+    def __phrase_done(self,r,*a,**kw):
+        self.__running.remove(r)
+        print 'running:',self.__running
+
+        self.__phrase_lock.acquire()
+        try:
+            self.__active_phrase_operation = False 
+        finally:
+            self.__phrase_lock.release()
+
+        self.__handle_phrase_operations()
+
+    def __handle_phrase_operations(self):
+        self.__phrase_lock.acquire()
+        try:
+            if self.__active_phrase_operation:
+                return
+
+            self.__active_phrase_operation = True 
+
+            phrase_to_set = self.__pending_set_phrase
+            phrase_to_clear = self.__pending_clear_phrase
+            phrase_redo = self.__pending_redo
+
+            self.__pending_set_phrase = None
+            self.__pending_clear_phrase = False
+            self.__pending_redo = False
+
+            r = None
+            if phrase_to_set is not None:
+                r = self.__set_phrase(phrase_to_set)
+            elif phrase_to_clear:
+                r = self.__clear_phrase()
+            elif phrase_redo:
+                r = self.__set_phrase(self.get_value())
+            
+            if r:
+                self.__running.append(r)
+                r.setCallback(self.__phrase_done,r).setErrback(self.__phrase_done,r)
+            else:
+                self.__active_phrase_operation = False 
+        finally:
+            self.__phrase_lock.release()
+
+    @async.coroutine('internal error')
+    def __clear_phrase(self):
         interp = self.get_property_string('interpreter')
         actions = self.get_property_string('actions')
 
@@ -125,25 +213,16 @@ class Talker(atom.Atom):
         if self.has_key(1):
             self[1].clear_connections()
 
-    def make_connection(self,index,dsc):
-        return logic.make_term('conn',index,1,dsc.args[0],dsc.args[1],None)
-
-    def trigger_id(self):
-        return paths.to_absolute(self[2].id())
-
     @async.coroutine('internal error')
-    def set_phrase(self,v):
-        interp = self.__finder.fetch()
-
-        result = self.clear_phrase()
-
+    def __set_phrase(self,v):
+        result = self.__clear_phrase()
         yield result
 
-        if not v:
-            yield async.Coroutine.success()
-
+        interp = self.__finder.fetch()
         if not interp:
             yield async.Coroutine.failure('no interpreter')
+
+        print 'set phrase',interp,v
 
         actions = logic.render_term(logic.make_term('phrase',self[2].id(),v))
         result = rpc.invoke_rpc(interp,'create_action',actions)
