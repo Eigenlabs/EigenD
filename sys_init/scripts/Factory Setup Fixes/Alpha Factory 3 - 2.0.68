@@ -1,0 +1,114 @@
+description
+    This script fixes an inconsistent state that recorders could have gotten
+    into using EigenD 2. It requires EigenD 2.0.70 to run and the setup should
+    either have been based on Alpha Factory Setup 3 of EigenD 2.0.64 or all other
+    factory setup fix scripts should have been applied beforehand.
+    
+script
+    empty join
+    
+    sampler rig 1 recorder 1 hey from sampler recorder talker 1 cancel
+    sampler rig 2 recorder 1 hey from sampler recorder talker 2 cancel
+    sampler rig 3 recorder 1 hey from sampler recorder talker 3 cancel
+    sampler rig 4 recorder 1 hey from sampler recorder talker 4 cancel
+    audio unit rig 1 recorder 1 hey from audio unit recorder talker 1 cancel
+    audio unit rig 2 recorder 1 hey from audio unit recorder talker 2 cancel
+    audio unit rig 3 recorder 1 hey from audio unit recorder talker 3 cancel
+    audio unit rig 4 recorder 1 hey from audio unit recorder talker 4 cancel
+    cello rig recorder 1 hey from cello recorder talker cancel
+    clarinet rig recorder 1 hey from clarinet recorder talker cancel
+    synth rig recorder 1 hey from synth recorder talker cancel
+    midi rig 1 recorder 1 hey from midi recorder talker 1 cancel
+    midi rig 2 recorder 1 hey from midi recorder talker 2 cancel
+    
+    sampler recorder talker 1 hey 1 called 1 cancel
+    sampler recorder talker 1 hey 1 called 2 cancel
+    sampler recorder talker 1 hey 2 called 1 cancel
+    sampler recorder talker 2 hey 1 called 1 cancel
+    sampler recorder talker 2 hey 1 called 2 cancel
+    sampler recorder talker 2 hey 2 called 1 cancel
+    sampler recorder talker 3 hey 1 called 1 cancel
+    sampler recorder talker 3 hey 1 called 2 cancel
+    sampler recorder talker 3 hey 2 called 1 cancel
+    sampler recorder talker 4 hey 1 called 1 cancel
+    sampler recorder talker 4 hey 1 called 2 cancel
+    sampler recorder talker 4 hey 2 called 1 cancel
+    audio unit recorder talker 1 hey 1 called 1 cancel
+    audio unit recorder talker 1 hey 1 called 2 cancel
+    audio unit recorder talker 1 hey 2 called 1 cancel
+    audio unit recorder talker 2 hey 1 called 1 cancel
+    audio unit recorder talker 2 hey 1 called 2 cancel
+    audio unit recorder talker 2 hey 2 called 1 cancel
+    audio unit recorder talker 3 hey 1 called 1 cancel
+    audio unit recorder talker 3 hey 1 called 2 cancel
+    audio unit recorder talker 3 hey 2 called 1 cancel
+    audio unit recorder talker 4 hey 1 called 1 cancel
+    audio unit recorder talker 4 hey 1 called 2 cancel
+    audio unit recorder talker 4 hey 2 called 1 cancel
+    cello recorder talker hey 1 called 1 cancel
+    cello recorder talker hey 1 called 2 cancel
+    cello recorder talker hey 2 called 1 cancel
+    clarinet recorder talker hey 1 called 1 cancel
+    clarinet recorder talker hey 1 called 2 cancel
+    clarinet recorder talker hey 2 called 1 cancel
+    synth recorder talker hey 1 called 1 cancel
+    synth recorder talker hey 1 called 2 cancel
+    synth recorder talker hey 2 called 1 cancel
+    midi recorder talker 1 hey 1 called 1 cancel
+    midi recorder talker 1 hey 1 called 2 cancel
+    midi recorder talker 1 hey 2 called 1 cancel
+    midi recorder talker 2 hey 1 called 1 cancel
+    midi recorder talker 2 hey 1 called 2 cancel
+    midi recorder talker 2 hey 2 called 1 cancel
+    
+    sampler recorder talker 1 hey " sampler rig 1 recorder hey un play " when 1 called 1 do
+    sampler recorder talker 1 hey " sampler rig 1 recorder hey cancel " when 1 called 2 do
+    sampler recorder talker 1 hey " sampler rig 1 recorder hey variable recorder bar record " when 2 called 1 do
+    
+    sampler recorder talker 2 hey " sampler rig 2 recorder hey un play " when 1 called 1 do
+    sampler recorder talker 2 hey " sampler rig 2 recorder hey cancel " when 1 called 2 do
+    sampler recorder talker 2 hey " sampler rig 2 recorder hey variable recorder bar record " when 2 called 1 do
+    
+    sampler recorder talker 3 hey " sampler rig 3 recorder hey un play " when 1 called 1 do
+    sampler recorder talker 3 hey " sampler rig 3 recorder hey cancel " when 1 called 2 do
+    sampler recorder talker 3 hey " sampler rig 3 recorder hey variable recorder bar record " when 2 called 1 do
+    
+    sampler recorder talker 4 hey " sampler rig 4 recorder hey un play " when 1 called 1 do
+    sampler recorder talker 4 hey " sampler rig 4 recorder hey cancel " when 1 called 2 do
+    sampler recorder talker 4 hey " sampler rig 4 recorder hey variable recorder bar record " when 2 called 1 do
+    
+    audio unit recorder talker 1 hey " audio unit rig 1 recorder hey un play " when 1 called 1 do
+    audio unit recorder talker 1 hey " audio unit rig 1 recorder hey cancel " when 1 called 2 do
+    audio unit recorder talker 1 hey " audio unit rig 1 recorder hey variable recorder bar record " when 2 called 1 do
+    
+    audio unit recorder talker 2 hey " audio unit rig 2 recorder hey un play " when 1 called 1 do
+    audio unit recorder talker 2 hey " audio unit rig 2 recorder hey cancel " when 1 called 2 do
+    audio unit recorder talker 2 hey " audio unit rig 2 recorder hey variable recorder bar record " when 2 called 1 do
+    
+    audio unit recorder talker 3 hey " audio unit rig 3 recorder hey un play " when 1 called 1 do
+    audio unit recorder talker 3 hey " audio unit rig 3 recorder hey cancel " when 1 called 2 do
+    audio unit recorder talker 3 hey " audio unit rig 3 recorder hey variable recorder bar record " when 2 called 1 do
+    
+    audio unit recorder talker 4 hey " audio unit rig 4 recorder hey un play " when 1 called 1 do
+    audio unit recorder talker 4 hey " audio unit rig 4 recorder hey cancel " when 1 called 2 do
+    audio unit recorder talker 4 hey " audio unit rig 4 recorder hey variable recorder bar record " when 2 called 1 do
+    
+    cello recorder talker hey " cello rig recorder hey un play " when 1 called 1 do
+    cello recorder talker hey " cello rig recorder hey cancel " when 1 called 2 do
+    cello recorder talker hey " cello rig recorder hey variable recorder bar record " when 2 called 1 do
+    
+    clarinet recorder talker hey " clarinet rig recorder hey un play " when 1 called 1 do
+    clarinet recorder talker hey " clarinet rig recorder hey cancel " when 1 called 2 do
+    clarinet recorder talker hey " clarinet rig recorder hey variable recorder bar record " when 2 called 1 do
+    
+    synth recorder talker hey " synth rig recorder hey un play " when 1 called 1 do
+    synth recorder talker hey " synth rig recorder hey cancel " when 1 called 2 do
+    synth recorder talker hey " synth rig recorder hey variable recorder bar record " when 2 called 1 do
+    
+    midi recorder talker 1 hey " midi rig 1 recorder hey un play " when 1 called 1 do
+    midi recorder talker 1 hey " midi rig 1 recorder hey cancel " when 1 called 2 do
+    midi recorder talker 1 hey " midi rig 1 recorder hey variable recorder bar record " when 2 called 1 do
+    
+    midi recorder talker 2 hey " midi rig 2 recorder hey un play " when 1 called 1 do
+    midi recorder talker 2 hey " midi rig 2 recorder hey cancel " when 1 called 2 do
+    midi recorder talker 2 hey " midi rig 2 recorder hey variable recorder bar record " when 2 called 1 do

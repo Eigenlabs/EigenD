@@ -258,11 +258,11 @@ class Agent(agent.Agent):
     def __init__(self, address, ordinal):
         agent.Agent.__init__(self,signature=version,names='talker',ordinal=ordinal,protocols='talker')
 
-        self.add_verb2(2,'do([],None,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
-        self.add_verb2(8,'cancel([],None,role(None,[singular,numeric]),option(called,[singular,numeric]))', self.__cancel_verb)
-        self.add_verb2(5,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]))', self.__color_verb)
-        self.add_verb2(6,'colour([],None,role(None,[singular,numeric]),role(to,[singular,numeric]),role(from,[singular,numeric]))', self.__all_color_verb)
-        self.add_verb2(9,'do([re],None,role(None,[singular,numeric]))', self.__redo_k_verb)
+        self.add_verb2(2,'do([],None,role(None,[abstract]),role(when,[numeric]),option(called,[numeric]))', self.__do_verb)
+        self.add_verb2(8,'cancel([],None,role(None,[numeric]),option(called,[numeric]))', self.__cancel_verb)
+        self.add_verb2(5,'colour([],None,role(None,[numeric]),role(to,[numeric]))', self.__color_verb)
+        self.add_verb2(6,'colour([],None,role(None,[numeric]),role(to,[numeric]),role(from,[numeric]))', self.__all_color_verb)
+        self.add_verb2(9,'do([re],None,role(None,[numeric]))', self.__redo_k_verb)
         self.add_verb2(10,'do([re],None)', self.__redo_all_verb)
 
         self.domain = piw.clockdomain_ctl()

@@ -1,0 +1,39 @@
+description
+    This script fixes an inconsistent state that recorders could have gotten
+    into using EigenD 2. It requires EigenD 2.0.70 to run and the setup should
+    either have been based on Pico Factory Setup 2 of EigenD 2.0.64 or all other
+    factory setup fix scripts should have been applied beforehand.
+    
+script
+    empty join
+    
+    audio unit rig 1 recorder 1 hey from recorder talker cancel
+    audio unit rig 2 recorder 1 hey from recorder talker cancel
+    audio unit rig 3 recorder 1 hey from recorder talker cancel
+    audio unit rig 4 recorder 1 hey from recorder talker cancel
+    midi rig 1 recorder 1 hey from recorder talker cancel
+    midi rig 2 recorder 1 hey from recorder talker cancel
+    midi rig 3 recorder 1 hey from recorder talker cancel
+    midi rig 4 recorder 1 hey from recorder talker cancel
+    
+    recorder talker hey 1 called 1 cancel
+    recorder talker hey 2 called 1 cancel
+    recorder talker hey 3 called 1 cancel
+    recorder talker hey 4 called 1 cancel
+    recorder talker hey 5 called 1 cancel
+    recorder talker hey 6 called 1 cancel
+    recorder talker hey 7 called 1 cancel
+    recorder talker hey 8 called 1 cancel
+    recorder talker hey 9 called 1 cancel
+    recorder talker hey 10 called 1 cancel
+    
+    recorder talker hey " audio unit rig 1 recorder hey variable recorder bar record " when 1 called 1 do
+    recorder talker hey " audio unit rig 2 recorder hey variable recorder bar record " when 2 called 1 do
+    recorder talker hey " audio unit rig 3 recorder hey variable recorder bar record " when 3 called 1 do
+    recorder talker hey " audio unit rig 4 recorder hey variable recorder bar record " when 4 called 1 do
+    recorder talker hey " midi rig 1 recorder hey variable recorder bar record " when 5 called 1 do
+    recorder talker hey " midi rig 2 recorder hey variable recorder bar record " when 6 called 1 do
+    recorder talker hey " midi rig 3 recorder hey variable recorder bar record " when 7 called 1 do
+    recorder talker hey " midi rig 4 recorder hey variable recorder bar record " when 8 called 1 do
+    recorder talker hey " all rig recorder hey un play " when 9 called 1 do
+    recorder talker hey " all rig recorder hey cancel " when 10 called 1 do
