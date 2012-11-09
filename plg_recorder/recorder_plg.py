@@ -559,6 +559,7 @@ class Agent(agent.Agent):
         self.add_verb2(19,'repeat([toggle],None,role(None,%(x)s),%(o)s)'%c,callback=self.__tog_repeat,**a)
 
         self.add_verb2(20,'cancel([],None)',self.__cancel)
+        self.add_verb2(21,'cancel([],None,role(from,[concrete,proto(talker),singular]))',self.__cancel_from)
 
         self[4] = TakeBrowser(self)
         self.library = TakeLibrary(self)
@@ -675,6 +676,20 @@ class Agent(agent.Agent):
 
     def __cancel(self,*args):
         self.recorder.abort()
+        return action.nosync_return()
+
+    def __cancel_from(self,subj,fr):
+        talker = action.concrete_object(fr)
+        
+        for k,v in list(self[3].items()):
+            masterids = set([x.args[2] for x in v.get_property_termlist('master')])
+            for m in masterids:
+                s = paths.id2server(m)
+                if s == talker:
+                    print 'canceling',k,v.args,v.get_property_termlist('master')
+                    v.rpc_cancel(None)
+                    del self[3][k]
+                    break
         return action.nosync_return()
 
     def __unplay_auto(self):

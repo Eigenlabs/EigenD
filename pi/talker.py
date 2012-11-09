@@ -21,7 +21,6 @@
 
 from pi import index,proxy,atom,domain,policy,bundles,async,logic,rpc,paths
 import piw
-from threading import Lock,ThreadError
 
 class FinderProxy(proxy.AtomProxy):
     def __init__(self,finder,name):
