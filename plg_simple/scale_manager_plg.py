@@ -104,7 +104,7 @@ class Agent(agent.Agent):
         self[2]=VirtualScale(self[3].activate)
 
         self.add_verb2(4,'do([],None,role(None,[abstract]),role(when,[abstract,matches(["activation"])]),option(using,[instance(~server)]))', self.__do_verb)
-        self.add_verb2(1,'cancel([],None,option(None,[singular,numeric]))', self.__cancel_verb)
+        self.add_verb2(1,'cancel([],None,option(None,[numeric]))', self.__cancel_verb)
         self.add_verb2(5,'choose([],None,role(None,[ideal([None,scale]),singular]))',self.__choose_verb)
 
     def __choose_verb(self,subject,scale):

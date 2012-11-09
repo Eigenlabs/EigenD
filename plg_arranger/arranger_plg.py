@@ -352,9 +352,9 @@ class Agent(agent.Agent):
 
         self.add_verb2(1,'play([],None)',create_action=self.__play,clock=True)
         self.add_verb2(2,'play([un],None)',create_action=self.__unplay,clock=True)
-        self.add_verb2(3,'cancel([],None,role(None,[numeric,singular]),option(called,[singular,numeric]))',self.__cancel_verb)
+        self.add_verb2(3,'cancel([],None,role(None,[numeric]),option(called,[numeric]))',self.__cancel_verb)
         self.add_verb2(4,'clear([],None)',self.__clear_verb)
-        self.add_verb2(5,'do([],None,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
+        self.add_verb2(5,'do([],None,role(None,[abstract]),role(when,[numeric]),option(called,[numeric]))', self.__do_verb)
         self.model.playstop_set(piw.make_change_nb(utils.slowchange(self.__play_set)))
 
     def __play(self,*args):

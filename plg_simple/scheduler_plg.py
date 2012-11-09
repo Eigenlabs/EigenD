@@ -232,10 +232,10 @@ class Agent(agent.Agent):
 
         c = dict(c=schedproxy.get_constraints())
 
-        self.add_verb2(1,'do([],None,role(None,[abstract]),role(at,%(c)s),option(until,%(c)s),option(every,%(c)s),option(called,[singular,numeric]))'%c, lambda s,t,a,u,e,c: self.__do_verb(s,t,tsm(a),tsm(u),tsm(e),c))
-        self.add_verb2(2,'do([],None,role(None,[abstract]),role(until,%(c)s),option(every,%(c)s),option(called,[singular,numeric]))'%c, lambda s,t,u,e,c: self.__do_verb(s,t,{},tsm(u),tsm(e),c))
-        self.add_verb2(3,'do([],None,role(None,[abstract]),role(every,%(c)s),option(called,[singular,numeric]))'%c, lambda s,t,e,c: self.__do_verb(s,t,{},{},tsm(e),c))
-        self.add_verb2(4,'cancel([],None,role(None,[singular,numeric]))', self.__verb_cancel)
+        self.add_verb2(1,'do([],None,role(None,[abstract]),role(at,%(c)s),option(until,%(c)s),option(every,%(c)s),option(called,[numeric]))'%c, lambda s,t,a,u,e,c: self.__do_verb(s,t,tsm(a),tsm(u),tsm(e),c))
+        self.add_verb2(2,'do([],None,role(None,[abstract]),role(until,%(c)s),option(every,%(c)s),option(called,[numeric]))'%c, lambda s,t,u,e,c: self.__do_verb(s,t,{},tsm(u),tsm(e),c))
+        self.add_verb2(3,'do([],None,role(None,[abstract]),role(every,%(c)s),option(called,[numeric]))'%c, lambda s,t,e,c: self.__do_verb(s,t,{},{},tsm(e),c))
+        self.add_verb2(4,'cancel([],None,role(None,[numeric]))', self.__verb_cancel)
 
         self.domain = piw.clockdomain_ctl()
         self.domain.set_source(piw.makestring('*',0))
