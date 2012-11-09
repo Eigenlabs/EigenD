@@ -256,7 +256,7 @@ class Key(collection.Collection):
 
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
-        agent.Agent.__init__(self,signature=version,names='talker',ordinal=ordinal)
+        agent.Agent.__init__(self,signature=version,names='talker',ordinal=ordinal,protocols='talker')
 
         self.add_verb2(2,'do([],None,role(None,[abstract]),role(when,[singular,numeric]),option(called,[singular,numeric]))', self.__do_verb)
         self.add_verb2(8,'cancel([],None,role(None,[singular,numeric]),option(called,[singular,numeric]))', self.__cancel_verb)
