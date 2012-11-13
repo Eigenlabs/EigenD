@@ -54,7 +54,7 @@
     If you're not interested in VSTs, you can disable them by setting the
     JUCE_PLUGINHOST_VST flag to 0.
 */
-#include <pluginterfaces/vst2.x/aeffectx.h>
+#include "pluginterfaces/vst2.x/aeffectx.h"
 
 #if JUCE_MSVC
  #pragma warning (pop)
@@ -1857,7 +1857,7 @@ private:
 
         if (v != 0)
         {
-            int versionBits[4];
+            int versionBits[32];
             int n = 0;
 
             while (v != 0)
@@ -1867,6 +1867,9 @@ private:
             }
 
             s << 'V';
+
+            while (n > 1 && versionBits [n - 1] == 0)
+                --n;
 
             while (n > 0)
             {
@@ -2876,13 +2879,19 @@ FileSearchPath VSTPluginFormat::getDefaultLocationsToSearch()
 {
    #if JUCE_MAC
     return FileSearchPath ("~/Library/Audio/Plug-Ins/VST;/Library/Audio/Plug-Ins/VST");
+   #elif JUCE_LINUX
+    return FileSearchPath ("/usr/lib/vst");
    #elif JUCE_WINDOWS
     const String programFiles (File::getSpecialLocation (File::globalApplicationsDirectory).getFullPathName());
 
-    return FileSearchPath (WindowsRegistry::getValue ("HKLM\\Software\\VST\\VSTPluginsPath",
-                                                      programFiles + "\\Steinberg\\VstPlugins"));
-   #elif JUCE_LINUX
-    return FileSearchPath ("/usr/lib/vst");
+    FileSearchPath paths;
+    paths.add (WindowsRegistry::getValue ("HKLM\\Software\\VST\\VSTPluginsPath",
+                                          programFiles + "\\Steinberg\\VstPlugins"));
+    paths.removeNonExistentPaths();
+
+    paths.add (WindowsRegistry::getValue ("HKLM\\Software\\VST\\VSTPluginsPath",
+                                          programFiles + "\\VstPlugins"));
+    return paths;
    #endif
 }
 
