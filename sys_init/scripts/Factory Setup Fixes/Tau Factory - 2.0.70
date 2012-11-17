@@ -1,0 +1,113 @@
+description
+    This script fixes the scale talkers in the EigenD 2.0.70 Tau Factory
+    Setup,.
+    
+script
+	empty join
+	
+	# redefine non global scale talkers using a compound name variable
+	
+	scale talker 1 hey 1 called 2 cancel
+	scale talker 1 hey " keygroup 1 hey scale to variable scale 1 set " when 1 called 2 do
+	scale talker 1 hey 2 called 2 cancel
+	scale talker 1 hey " keygroup 1 hey scale to variable scale 2 set " when 2 called 2 do
+	scale talker 1 hey 3 called 2 cancel
+	scale talker 1 hey " keygroup 1 hey scale to variable scale 3 set " when 3 called 2 do
+	scale talker 1 hey 4 called 2 cancel
+	scale talker 1 hey " keygroup 1 hey scale to variable scale 4 set " when 4 called 2 do
+	scale talker 1 hey 5 called 2 cancel
+	scale talker 1 hey " keygroup 1 hey scale to variable scale 5 set " when 5 called 2 do
+	scale talker 1 hey 6 called 2 cancel
+	scale talker 1 hey " keygroup 1 hey scale to variable scale 6 set " when 6 called 2 do
+	scale talker 1 hey 7 called 2 cancel
+	scale talker 1 hey " keygroup 1 hey scale to variable scale 7 set " when 7 called 2 do
+	scale talker 1 hey 8 called 2 cancel
+	scale talker 1 hey " keygroup 1 hey scale to variable scale 8 set " when 8 called 2 do
+	
+	scale talker 2 hey 1 called 2 cancel
+	scale talker 2 hey " keygroup 2 hey scale to variable scale 1 set " when 1 called 2 do
+	scale talker 2 hey 2 called 2 cancel
+	scale talker 2 hey " keygroup 2 hey scale to variable scale 2 set " when 2 called 2 do
+	scale talker 2 hey 3 called 2 cancel
+	scale talker 2 hey " keygroup 2 hey scale to variable scale 3 set " when 3 called 2 do
+	scale talker 2 hey 4 called 2 cancel
+	scale talker 2 hey " keygroup 2 hey scale to variable scale 4 set " when 4 called 2 do
+	scale talker 2 hey 5 called 2 cancel
+	scale talker 2 hey " keygroup 2 hey scale to variable scale 5 set " when 5 called 2 do
+	scale talker 2 hey 6 called 2 cancel
+	scale talker 2 hey " keygroup 2 hey scale to variable scale 6 set " when 6 called 2 do
+	scale talker 2 hey 7 called 2 cancel
+	scale talker 2 hey " keygroup 2 hey scale to variable scale 7 set " when 7 called 2 do
+	scale talker 2 hey 8 called 2 cancel
+	scale talker 2 hey " keygroup 2 hey scale to variable scale 8 set " when 8 called 2 do
+	
+	scale talker 3 hey 1 called 2 cancel
+	scale talker 3 hey " keygroup 3 hey scale to variable scale 1 set " when 1 called 2 do
+	scale talker 3 hey 2 called 2 cancel
+	scale talker 3 hey " keygroup 3 hey scale to variable scale 2 set " when 2 called 2 do
+	scale talker 3 hey 3 called 2 cancel
+	scale talker 3 hey " keygroup 3 hey scale to variable scale 3 set " when 3 called 2 do
+	scale talker 3 hey 4 called 2 cancel
+	scale talker 3 hey " keygroup 3 hey scale to variable scale 4 set " when 4 called 2 do
+	scale talker 3 hey 5 called 2 cancel
+	scale talker 3 hey " keygroup 3 hey scale to variable scale 5 set " when 5 called 2 do
+	scale talker 3 hey 6 called 2 cancel
+	scale talker 3 hey " keygroup 3 hey scale to variable scale 6 set " when 6 called 2 do
+	scale talker 3 hey 7 called 2 cancel
+	scale talker 3 hey " keygroup 3 hey scale to variable scale 7 set " when 7 called 2 do
+	scale talker 3 hey 8 called 2 cancel
+	scale talker 3 hey " keygroup 3 hey scale to variable scale 8 set " when 8 called 2 do
+	
+	scale talker 4 hey 1 called 2 cancel
+	scale talker 4 hey " keygroup 4 hey scale to variable scale 1 set " when 1 called 2 do
+	scale talker 4 hey 2 called 2 cancel
+	scale talker 4 hey " keygroup 4 hey scale to variable scale 2 set " when 2 called 2 do
+	scale talker 4 hey 3 called 2 cancel
+	scale talker 4 hey " keygroup 4 hey scale to variable scale 3 set " when 3 called 2 do
+	scale talker 4 hey 4 called 2 cancel
+	scale talker 4 hey " keygroup 4 hey scale to variable scale 4 set " when 4 called 2 do
+	scale talker 4 hey 5 called 2 cancel
+	scale talker 4 hey " keygroup 4 hey scale to variable scale 5 set " when 5 called 2 do
+	scale talker 4 hey 6 called 2 cancel
+	scale talker 4 hey " keygroup 4 hey scale to variable scale 6 set " when 6 called 2 do
+	scale talker 4 hey 7 called 2 cancel
+	scale talker 4 hey " keygroup 4 hey scale to variable scale 7 set " when 7 called 2 do
+	scale talker 4 hey 8 called 2 cancel
+	scale talker 4 hey " keygroup 4 hey scale to variable scale 8 set " when 8 called 2 do
+	
+	scale talker 5 hey 1 called 2 cancel
+	scale talker 5 hey " keygroup 5 hey scale to variable scale 1 set " when 1 called 2 do
+	scale talker 5 hey 2 called 2 cancel
+	scale talker 5 hey " keygroup 5 hey scale to variable scale 2 set " when 2 called 2 do
+	scale talker 5 hey 3 called 2 cancel
+	scale talker 5 hey " keygroup 5 hey scale to variable scale 3 set " when 3 called 2 do
+	scale talker 5 hey 4 called 2 cancel
+	scale talker 5 hey " keygroup 5 hey scale to variable scale 4 set " when 4 called 2 do
+	scale talker 5 hey 5 called 2 cancel
+	scale talker 5 hey " keygroup 5 hey scale to variable scale 5 set " when 5 called 2 do
+	scale talker 5 hey 6 called 2 cancel
+	scale talker 5 hey " keygroup 5 hey scale to variable scale 6 set " when 6 called 2 do
+	scale talker 5 hey 7 called 2 cancel
+	scale talker 5 hey " keygroup 5 hey scale to variable scale 7 set " when 7 called 2 do
+	scale talker 5 hey 8 called 2 cancel
+	scale talker 5 hey " keygroup 5 hey scale to variable scale 8 set " when 8 called 2 do
+	
+	scale talker 6 hey 1 called 2 cancel
+	scale talker 6 hey " keygroup 6 hey scale to variable scale 1 set " when 1 called 2 do
+	scale talker 6 hey 2 called 2 cancel
+	scale talker 6 hey " keygroup 6 hey scale to variable scale 2 set " when 2 called 2 do
+	scale talker 6 hey 3 called 2 cancel
+	scale talker 6 hey " keygroup 6 hey scale to variable scale 3 set " when 3 called 2 do
+	scale talker 6 hey 4 called 2 cancel
+	scale talker 6 hey " keygroup 6 hey scale to variable scale 4 set " when 4 called 2 do
+	scale talker 6 hey 5 called 2 cancel
+	scale talker 6 hey " keygroup 6 hey scale to variable scale 5 set " when 5 called 2 do
+	scale talker 6 hey 6 called 2 cancel
+	scale talker 6 hey " keygroup 6 hey scale to variable scale 6 set " when 6 called 2 do
+	scale talker 6 hey 7 called 2 cancel
+	scale talker 6 hey " keygroup 6 hey scale to variable scale 7 set " when 7 called 2 do
+	scale talker 6 hey 8 called 2 cancel
+	scale talker 6 hey " keygroup 6 hey scale to variable scale 8 set " when 8 called 2 do
+	
+	empty join
+	
