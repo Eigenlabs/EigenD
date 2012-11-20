@@ -1,6 +1,6 @@
 description
-    This script fixes the scale talkers in the EigenD 2.0.70 Tau Factory
-    Setup,.
+    This script fixes some scale and tonic talkers in the EigenD 2.0.70 Tau
+    Factory Setup.
     
 script
 	empty join
@@ -109,5 +109,16 @@ script
 	scale talker 6 hey 8 called 2 cancel
 	scale talker 6 hey " keygroup 6 hey scale to variable scale 8 set " when 8 called 2 do
 	
+	# redefine the global tonic talker for the note a
+	
+	global tonic talker hey 10 called 4 cancel
+	global tonic hey " keygroup 3 hey tonic to notea set " when 10 called 4 do
+	global tonic talker hey 10 called 5 cancel
+	global tonic hey " keygroup 4 hey tonic to notea set " when 10 called 5 do
+	global tonic talker hey 10 called 6 cancel
+	global tonic hey " keygroup 5 hey tonic to notea set " when 10 called 6 do
+	global tonic talker hey 10 called 7 cancel
+	global tonic hey " keygroup 6 hey tonic to notea set " when 10 called 7 do
+
 	empty join
 	
