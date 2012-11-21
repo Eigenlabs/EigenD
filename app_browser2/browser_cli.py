@@ -25,7 +25,7 @@ import random
 import optparse
 import sys
 
-from pi import atom,action,node,domain,logic,bundles,resource,version,agent,utils
+from pi import atom,action,node,domain,logic,bundles,resource,version,agent,utils,paths
 from pisession import gui,session
 from pi.logic.shortcuts import T
 from pigui import fonts,language,scroller
@@ -70,6 +70,7 @@ class ViewManager(agent.Agent):
         self.add_verb2(1,'browse([],None,role(None,[or([proto(browse)],[proto(oldbrowse)]),singular]))',callback=self.__do_browse)
         self.add_verb2(2,'minimise([],None)',callback=self.__minimise)
         self.add_verb2(3,'maximise([],None)',callback=self.__maximise)
+        self.add_verb2(4,'cancel([],None,role(from,[concrete,proto(talker),singular]))',self.__cancel_from)
         
         self.font=wx.SystemSettings_GetFont(wx.SYS_DEFAULT_GUI_FONT)
         self.font.SetPointSize(fonts.DEFAULT_PTS)
@@ -97,6 +98,20 @@ class ViewManager(agent.Agent):
         self[25].enable()
         self[26].enable()
         self[27].enable()
+
+    def __cancel_from(self,subj,fr):
+        talker = action.concrete_object(fr)
+        
+        for k,v in list(self[252].items()):
+            masterids = set([x.args[2] for x in v.get_property_termlist('master')])
+            print v.id(),'masters',masterids,' talker (',talker,')'
+            for m in masterids:
+                s = paths.id2server(m)
+                if s == talker:
+                    print 'canceling',k,v.args,v.get_property_termlist('master')
+                    v.rpc_cancel(None)
+                    break
+        return action.nosync_return()
 
     def __do_browse(self,subject,*args):
         print '__do_browse',args

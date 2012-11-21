@@ -216,10 +216,17 @@ namespace midi
 
     void param_input_t::ended(param_wire_t *w)
     {
-        end_with_origins(w, (w==active_.head()));
+        cleanup_wire(w);
 
         w->ended_ = true;
         w->processed_data_ = false;
+    }
+
+    void param_input_t::cleanup_wire(param_wire_t *w)
+    {
+        end_with_origins(w, (w==active_.head()));
+        cleanup_params(w->get_id());
+        cleanup_midi(w->get_id());
     }
 
     void param_input_t::end_with_origins(param_wire_t *w, bool first_wire)
@@ -437,13 +444,10 @@ namespace midi
             if(value>1) value = 1;
 
             unsigned long long current_time = piw::tsd_time();
-            if(!ending &&
-               ip->second.decimation_ &&
-               ip->second.last_processed_ + (ip->second.decimation_*1000 ) > current_time)
+            if(!ending && !ip->second.valid_for_processing(id, current_time))
             {
                 continue;
             }
-            ip->second.last_processed_ = current_time;
 
             if(PERNOTE_SCOPE==ip->second.scope_ && channel > 0)
             {
@@ -512,16 +516,37 @@ namespace midi
             }
 
             unsigned long long current_time = piw::tsd_time();
-            if(!ending &&
-               ic->second.decimation_ &&
-               ic->second.last_processed_ + (ic->second.decimation_*1000 ) > current_time)
+            if(!ending && !ic->second.valid_for_processing(id, current_time))
             {
                 continue;
             }
-            ic->second.last_processed_ = current_time;
 
             // make sure that the value in the ending state is not send as continuous
             midi.push_back(midi_data_t(d.time(), mid, lid, value, ic->second.scope_, ic->second.channel_, channel, id, !ending && continuous));
+        }
+    }
+
+    void param_input_t::cleanup_params(const piw::data_nb_t &id)
+    {
+        nb_param_map_t::iterator ip,bp,ep;
+        bp = control_mapping_.params().begin();
+        ep = control_mapping_.params().end();
+
+        for(ip=bp; ip!=ep; ++ip)
+        {
+            ip->second.done_processing(id);
+        }
+    }
+
+    void param_input_t::cleanup_midi(const piw::data_nb_t &id)
+    {
+        nb_midi_map_t::iterator ic,bc,ec;
+        bc = control_mapping_.midi().begin();
+        ec = control_mapping_.midi().end();
+
+        for(ic=bc; ic!=ec; ++ic)
+        {
+            ic->second.done_processing(id);
         }
     }
 

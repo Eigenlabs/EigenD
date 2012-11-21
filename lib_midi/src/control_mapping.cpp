@@ -26,8 +26,118 @@
 namespace midi
 {
     /*
+     * decimation_handler_t
+     */
+
+    class decimation_handler_t
+    {
+        public:
+            decimation_handler_t() {};
+            virtual ~decimation_handler_t() {};
+
+            virtual bool valid_for_processing(const mapping_data_t &data, const piw::data_nb_t &id, unsigned long long current_time) = 0;
+            virtual void done_processing(const piw::data_nb_t &id) = 0;
+            virtual decimation_handler_t* new_instance() = 0;
+    };
+}
+
+namespace
+{
+    /*
+     * global_decimation_handler_t
+     */
+
+    class global_decimation_handler_t: public midi::decimation_handler_t
+    {
+        public:
+            global_decimation_handler_t() : last_processed_(0) {};
+
+            bool valid_for_processing(const midi::mapping_data_t &data, const piw::data_nb_t &id, unsigned long long current_time)
+            {
+                if(!data.decimation_)
+                {
+                    return true;
+                }
+
+                if(last_processed_ + (data.decimation_*1000) > current_time)
+                {
+                    return false;
+                }
+
+                last_processed_ = current_time;
+                return true;
+            }
+
+            void done_processing(const piw::data_nb_t &id)
+            {
+            }
+
+            decimation_handler_t* new_instance()
+            {
+                return new global_decimation_handler_t();
+            }
+
+        private:
+            unsigned long long last_processed_;
+    };
+
+    /*
+     * perid_decimation_handler_t
+     */
+
+    typedef pic::lckmap_t<piw::data_nb_t,unsigned long long>::nbtype nb_lastprocessed_map_t;
+
+    class perid_decimation_handler_t: public midi::decimation_handler_t
+    {
+        public:
+            bool valid_for_processing(const midi::mapping_data_t &data, const piw::data_nb_t &id, unsigned long long current_time)
+            {
+                if(!data.decimation_)
+                {
+                    return true;
+                }
+
+                nb_lastprocessed_map_t::iterator il;
+                il = last_processed_.find(id);
+                if(il == last_processed_.end())
+                {
+                    last_processed_.insert(std::make_pair(id, current_time));
+                }
+                else
+                {
+                    unsigned long long last = il->second;
+                    if(last + (data.decimation_*1000) > current_time)
+                    {
+                        return false;
+                    }
+                    
+                    il->second = current_time;
+                }
+
+                return true;
+            }
+
+            void done_processing(const piw::data_nb_t &id)
+            {
+                last_processed_.erase(id);
+            }
+
+            decimation_handler_t* new_instance()
+            {
+                return new perid_decimation_handler_t();
+            }
+
+        private:
+            nb_lastprocessed_map_t last_processed_;
+    };
+}
+
+namespace midi
+{
+    /*
      * mapping_data_t
      */
+
     float mapping_data_t::calculate(float norm_data) const
     {
         float d = norm_data;
@@ -49,6 +159,37 @@ namespace midi
         float v = d*scale_;
         return v*lo_*(v<0) + base_ + v*hi_*(v>0);
     }
+
+    /*
+     * mapping_wrapper_t
+     */
+
+    mapping_wrapper_t::mapping_wrapper_t(bool decimate_per_id, float scale, float lo, float base, float hi, bool origin_return,
+            float decimation, unsigned scope, unsigned channel, unsigned resolution, int secondary,
+            unsigned curve): mapping_data_t(scale, lo, base, hi, origin_return, decimation, scope, channel,
+                resolution, secondary, curve),
+            decimation_handler_(decimate_per_id ? (decimation_handler_t *)new perid_decimation_handler_t() : (decimation_handler_t *)new global_decimation_handler_t())
+    {
+    };
+
+    mapping_wrapper_t::mapping_wrapper_t(const mapping_wrapper_t &o): mapping_data_t(o), decimation_handler_(o.decimation_handler_->new_instance())
+    {
+    };
+
+    mapping_wrapper_t::~mapping_wrapper_t()
+    {
+        delete decimation_handler_;
+    };
+
+    bool mapping_wrapper_t::valid_for_processing(const piw::data_nb_t &id, unsigned long long current_time)
+    {
+        return decimation_handler_->valid_for_processing(*this, id, current_time);
+    };
+
+    void mapping_wrapper_t::done_processing(const piw::data_nb_t &id)
+    {
+        decimation_handler_->done_processing(id);
+    };
 
     /*
      * mapping_info_t
@@ -686,7 +827,7 @@ namespace midi
             if(ip.first->second.is_valid() && ip.first->second.enabled_)
             {
                 mapping.params_.insert(std::make_pair(ip.first->second.oparam_, 
-                    mapping_wrapper_t(ip.first->second.scale_, ip.first->second.lo_, ip.first->second.base_,
+                    mapping_wrapper_t(false, ip.first->second.scale_, ip.first->second.lo_, ip.first->second.base_,
                         ip.first->second.hi_, ip.first->second.origin_return_, std::max(acquired_->settings_.minimum_decimation_,ip.first->second.decimation_),
                         ip.first->second.scope_, ip.first->second.channel_, ip.first->second.resolution_,
                         ip.first->second.secondary_cc_, ip.first->second.curve_)));
@@ -706,8 +847,15 @@ namespace midi
         {
             if(ic.first->second.is_valid() && ic.first->second.enabled_)
             {
-                mapping.midi_.insert(std::make_pair(ic.first->second.oparam_,
-                    mapping_wrapper_t(ic.first->second.scale_, ic.first->second.lo_, ic.first->second.base_,
+                bool decimate_per_id = false;
+                unsigned oparam = ic.first->second.oparam_;
+                if(oparam == MIDI_CC_MAX + POLY_AFTERTOUCH)
+                {
+                    decimate_per_id = true;
+                }
+
+                mapping.midi_.insert(std::make_pair(oparam,
+                    mapping_wrapper_t(decimate_per_id, ic.first->second.scale_, ic.first->second.lo_, ic.first->second.base_,
                         ic.first->second.hi_, ic.first->second.origin_return_, std::max(acquired_->settings_.minimum_decimation_,ic.first->second.decimation_),
                         ic.first->second.scope_, ic.first->second.channel_, ic.first->second.resolution_,
                         ic.first->second.secondary_cc_, ic.first->second.curve_)));
