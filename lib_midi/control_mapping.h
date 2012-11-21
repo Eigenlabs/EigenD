@@ -83,11 +83,20 @@ namespace midi
         const unsigned curve_; 
     };
 
-    struct MIDILIB_DECLSPEC_CLASS mapping_wrapper_t: public mapping_data_t
-    {
-        mapping_wrapper_t(float scale, float lo, float base, float hi, bool origin_return, float decimation, unsigned scope, unsigned channel, unsigned resolution, int secondary, unsigned curve): mapping_data_t(scale, lo, base, hi, origin_return, decimation, scope, channel, resolution, secondary, curve), last_processed_(0) {};
+    class MIDILIB_DECLSPEC_CLASS decimation_handler_t;
 
-        unsigned long long last_processed_;
+    class MIDILIB_DECLSPEC_CLASS mapping_wrapper_t: public mapping_data_t
+    {
+        public:
+            mapping_wrapper_t(bool decimate_per_id, float scale, float lo, float base, float hi, bool origin_return, float decimation, unsigned scope, unsigned channel, unsigned resolution, int secondary, unsigned curve);
+            mapping_wrapper_t(const mapping_wrapper_t &o);
+            ~mapping_wrapper_t();
+
+            bool valid_for_processing(const piw::data_nb_t &id, unsigned long long current_time);
+            void done_processing(const piw::data_nb_t &id);
+
+        private:
+            decimation_handler_t * const decimation_handler_;
     };
 
     class MIDILIB_DECLSPEC_CLASS midi_channel_delegate_t: public virtual pic::tracked_t
