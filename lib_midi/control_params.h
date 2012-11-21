@@ -130,6 +130,9 @@ namespace midi
             bool process_wire_data(param_wire_t *, pic::lckvector_t<param_data_t>::nbtype &, pic::lckvector_t<midi_data_t>::nbtype &, bool, bool);
             void process_params(pic::lckvector_t<param_data_t>::nbtype &, unsigned, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool);
             void process_midi(pic::lckvector_t<midi_data_t>::nbtype &, unsigned, const piw::data_nb_t &, const piw::data_nb_t &, bool, bool, bool);
+            void cleanup_wire(param_wire_t *);
+            void cleanup_params(const piw::data_nb_t &);
+            void cleanup_midi(const piw::data_nb_t &);
             void end_with_origins(param_wire_t *w, bool);
             pic::weak_t<params_delegate_t> params_delegate_;
             control_mapping_t control_mapping_;
