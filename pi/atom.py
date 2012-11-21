@@ -812,7 +812,9 @@ class FastEvent(Bool):
         return True
 
     def clear(self):
+
         if self.index>0:
+            self.clear_connections()
 
             data = self.data
             ctx = self.ctx
