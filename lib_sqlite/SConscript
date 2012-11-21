@@ -21,4 +21,5 @@
 Import('env')
 
 sqlite_env = env.Clone()
-sqlite_env.PiSharedLibrary('pisqlite',Split('sqlite3.c'),package='eigend')
+sqlite_env.Append(CPPDEFINES=['SQLITE_ENABLE_COLUMN_METADATA','SQLITE_ENABLE_RTREE'])
+sqlite_env.PiSharedLibrary('pisqlite',Split('sqlite3.c'),package='eigend',deffile='sqlite3.def')
