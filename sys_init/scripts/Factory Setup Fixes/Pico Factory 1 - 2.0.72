@@ -1,0 +1,14 @@
+description
+    This script fixes an inconsistent state in the browser that makes it
+    exhibit odd behaviour when browsing to the audio and midi ports.
+
+    The Browser must be running when you run this script.
+    
+    It requires EigenD 2.0.72 to run and the setup should
+    either have been based on Pico Factory Setup 1 of EigenD 2.0.64 or all other
+    factory setup fix scripts should have been applied beforehand.
+    
+script
+    empty join
+    eigenbrowser hey from midi rig talker cancel
+    
