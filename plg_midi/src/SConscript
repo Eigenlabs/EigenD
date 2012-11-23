@@ -25,7 +25,7 @@ plg_files=Split("""
 """)
 
 plg_libs=Split("""
-    pic piw pie pia juce midilib
+    pic piw pie pia pijuce midilib
 """)
 
 env.PiSharedLibrary('pimidi',plg_files,libraries=plg_libs,package='eigend',per_agent='plg_midi')

@@ -37,7 +37,7 @@ widget_files = Split("""
     jucer/InfoComponent.cpp
 """)
 
-widget_libs = Split('pic pia piw pie ejuce epython juce')
+widget_libs = Split('pic pia piw pie ejuce epython pijuce')
 
 echo_files = Split('echo.cpp')
 echo_libs = Split('pic pia piw pie')
@@ -48,7 +48,7 @@ env.Append(PI_HIRES=True)
 
 env.PiGuiProgram('eigend',widget_files,libraries=widget_libs,appname='EigenD',package='eigend')
 env.PiProgram('echod',echo_files,libraries=echo_libs,package='eigend',gui=True)
-#env.PiProgram('stlalloctest',Split('stlalloctest.cpp'),libraries=Split('pic pia piw pie ejuce juce'),package='eigend',gui=True)
+#env.PiProgram('stlalloctest',Split('stlalloctest.cpp'),libraries=Split('pic pia piw pie ejuce pijuce'),package='eigend',gui=True)
 env.PiPythonwWrapper('eigenbugreporter','app_eigend2','bugs_cli','cli',appname='EigenBugReporter',usegil=True,private=True,di=False,package='eigend')
 env.PiPipBinding('eigend_native','eigend.pip',libraries=widget_libs,package='eigend')
 env.PiPythonPackage(package='eigend')

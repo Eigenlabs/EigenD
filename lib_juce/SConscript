@@ -85,11 +85,11 @@ if env['IS_MACOSX']:
     juce_env.Append(LINKFLAGS='-framework CoreFoundation -framework CoreAudioKit -framework AudioToolbox')
 
 juce_env.Append(CPPPATH=me)
-juce_env.PiSharedLibrary('juce',juce_files,package='eigend')
+juce_env.PiSharedLibrary('pijuce',juce_files,package='eigend')
 
 ejuce_env = env.Clone()
 ejuce_files = Split('ejuce.cpp ejuce_laf.cpp')
-ejuce_libraries = Split('juce pia pic')
+ejuce_libraries = Split('pijuce pia pic')
 ejuce_env.PiSharedLibrary('ejuce',ejuce_files,libraries=ejuce_libraries,package='eigend')
 
 epython_env = env.Clone()
