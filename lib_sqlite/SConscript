@@ -21,5 +21,9 @@
 Import('env')
 
 sqlite_env = env.Clone()
+
+if env['IS_MACOSX']:
+    sqlite_env.Append(CCFLAGS="-DSQLITE_API='__attribute__ ((visibility(\"default\")))'")
+
 sqlite_env.Append(CPPDEFINES=['SQLITE_ENABLE_COLUMN_METADATA','SQLITE_ENABLE_RTREE'])
 sqlite_env.PiSharedLibrary('pisqlite',Split('sqlite3.c'),package='eigend',deffile='sqlite3.def')
