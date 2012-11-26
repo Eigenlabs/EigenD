@@ -991,15 +991,15 @@ struct StateHelpers
 
         void add (const RectangleList& list, const PixelARGB& colour) noexcept
         {
-            for (RectangleList::Iterator i (list); i.next();)
-                add (*i.getRectangle(), colour);
+            for (const Rectangle<int>* i = list.begin(), * const e = list.end(); i != e; ++i)
+                add (*i, colour);
         }
 
         void add (const RectangleList& list, const Rectangle<int>& clip, const PixelARGB& colour) noexcept
         {
-            for (RectangleList::Iterator i (list); i.next();)
+            for (const Rectangle<int>* i = list.begin(), * const e = list.end(); i != e; ++i)
             {
-                const Rectangle<int> r (i.getRectangle()->getIntersection (clip));
+                const Rectangle<int> r (i->getIntersection (clip));
 
                 if (! r.isEmpty())
                     add (r, colour);
@@ -1041,10 +1041,11 @@ struct StateHelpers
         {
             context.extensions.glBufferData (GL_ARRAY_BUFFER, numVertices * sizeof (VertexInfo), vertexData, GL_DYNAMIC_DRAW);
             glDrawElements (GL_TRIANGLES, (numVertices * 3) / 2, GL_UNSIGNED_SHORT, 0);
+            JUCE_CHECK_OPENGL_ERROR
             numVertices = 0;
         }
 
-        ShaderQuadQueue& operator= (const ShaderQuadQueue&);
+        JUCE_DECLARE_NON_COPYABLE (ShaderQuadQueue);
     };
 
     //==============================================================================
@@ -1714,9 +1715,9 @@ public:
         const PixelARGB colour (fill.colour.getPixelARGB());
         ShaderFillOperation fillOp (*this, fill, false, false);
 
-        for (RectangleList::Iterator i (clip); i.next();)
+        for (const Rectangle<int>* i = clip.begin(), * const e = clip.end(); i != e; ++i)
         {
-            const Rectangle<float> r (i.getRectangle()->toFloat().getIntersection (area));
+            const Rectangle<float> r (i->toFloat().getIntersection (area));
             if (! r.isEmpty())
                 state.shaderQuadQueue.add (r, colour);
         }
@@ -1832,6 +1833,11 @@ public:
                 cloneClipIfMultiplyReferenced();
                 clip = clip->clipToRectangle (transform.translated (r));
             }
+            else if (transform.isIntegerScaling)
+            {
+                cloneClipIfMultiplyReferenced();
+                clip = clip->clipToRectangle (transform.transformed (r).getSmallestIntegerContainer());
+            }
             else
             {
                 Path p;
@@ -1854,6 +1860,16 @@ public:
                 offsetList.offsetAll (transform.xOffset, transform.yOffset);
                 clip = clip->clipToRectangleList (offsetList);
             }
+            else if (transform.isIntegerScaling)
+            {
+                cloneClipIfMultiplyReferenced();
+                RectangleList scaledList;
+
+                for (const Rectangle<int>* i = r.begin(), * const e = r.end(); i != e; ++i)
+                    scaledList.add (transform.transformed (*i).getSmallestIntegerContainer());
+
+                clip = clip->clipToRectangleList (scaledList);
+            }
             else
             {
                 clipToPath (r.toPath(), AffineTransform::identity);
@@ -1872,6 +1888,10 @@ public:
             if (transform.isOnlyTranslated)
             {
                 clip = clip->excludeClipRectangle (transform.translated (r));
+            }
+            else if (transform.isIntegerScaling)
+            {
+                clip = clip->excludeClipRectangle (transform.transformed (r).getSmallestIntegerContainer());
             }
             else
             {
@@ -2234,20 +2254,18 @@ LowLevelGraphicsContext* createOpenGLContext (const Target& target)
 }
 
 //==============================================================================
-LowLevelGraphicsContext* createOpenGLGraphicsContext (OpenGLContext& context)
+LowLevelGraphicsContext* createOpenGLGraphicsContext (OpenGLContext& context, int width, int height)
 {
-    return createOpenGLGraphicsContext (context, context.getFrameBufferID(),
-                                        context.getWidth(), context.getHeight());
+    return createOpenGLGraphicsContext (context, context.getFrameBufferID(), width, height);
 }
 
 LowLevelGraphicsContext* createOpenGLGraphicsContext (OpenGLContext& context, OpenGLFrameBuffer& target)
 {
-    using namespace OpenGLRendering;
-    return createOpenGLContext (Target (context, target, Point<int>()));
+    return OpenGLRendering::createOpenGLContext (OpenGLRendering::Target (context, target, Point<int>()));
 }
 
 LowLevelGraphicsContext* createOpenGLGraphicsContext (OpenGLContext& context, unsigned int frameBufferID, int width, int height)
 {
     using namespace OpenGLRendering;
-    return createOpenGLContext (Target (context, frameBufferID, width, height));
+    return OpenGLRendering::createOpenGLContext (OpenGLRendering::Target (context, frameBufferID, width, height));
 }

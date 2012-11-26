@@ -295,8 +295,10 @@ struct Component::ComponentHelpers
         return r;
     }
 
-    static void clipObscuredRegions (const Component& comp, Graphics& g, const Rectangle<int>& clipRect, const Point<int>& delta)
+    static bool clipObscuredRegions (const Component& comp, Graphics& g, const Rectangle<int>& clipRect, const Point<int>& delta)
     {
+        bool nothingChanged = true;
+
         for (int i = comp.childComponentList.size(); --i >= 0;)
         {
             const Component& child = *comp.childComponentList.getUnchecked(i);
@@ -310,15 +312,19 @@ struct Component::ComponentHelpers
                     if (child.isOpaque() && child.componentTransparency == 0)
                     {
                         g.excludeClipRegion (newClip + delta);
+                        nothingChanged = false;
                     }
                     else
                     {
                         const Point<int> childPos (child.getPosition());
-                        clipObscuredRegions (child, g, newClip - childPos, childPos + delta);
+                        if (clipObscuredRegions (child, g, newClip - childPos, childPos + delta))
+                            nothingChanged = false;
                     }
                 }
             }
         }
+
+        return nothingChanged;
     }
 
     static void subtractObscuredRegions (const Component& comp, RectangleList& result,
@@ -696,8 +702,8 @@ public:
             Graphics imG (image);
             LowLevelGraphicsContext& lg = imG.getInternalContext();
 
-            for (RectangleList::Iterator i (validArea); i.next();)
-                lg.excludeClipRectangle (*i.getRectangle());
+            for (const Rectangle<int>* i = validArea.begin(), * const e = validArea.end(); i != e; ++i)
+                lg.excludeClipRectangle (*i);
 
             if (! lg.isClipEmpty())
             {
@@ -1836,9 +1842,8 @@ void Component::paintComponentAndChildren (Graphics& g)
     else
     {
         g.saveState();
-        ComponentHelpers::clipObscuredRegions (*this, g, clipBounds, Point<int>());
 
-        if (! g.isClipEmpty())
+        if (ComponentHelpers::clipObscuredRegions (*this, g, clipBounds, Point<int>()) || ! g.isClipEmpty())
             paint (g);
 
         g.restoreState();
@@ -1911,12 +1916,12 @@ void Component::paintEntireComponent (Graphics& g, const bool ignoreAlphaLevel)
                            (int) (scale * getWidth()), (int) (scale * getHeight()), ! flags.opaqueFlag);
         {
             Graphics g2 (effectImage);
-            g2.addTransform (AffineTransform::scale (scale, scale));
+            g2.addTransform (AffineTransform::scale (scale));
             paintComponentAndChildren (g2);
         }
 
         g.saveState();
-        g.addTransform (AffineTransform::scale (1.0f / scale, 1.0f / scale));
+        g.addTransform (AffineTransform::scale (1.0f / scale));
         effect->applyEffect (effectImage, g, scale, ignoreAlphaLevel ? 1.0f : getAlpha());
         g.restoreState();
     }

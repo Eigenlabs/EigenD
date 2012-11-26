@@ -435,8 +435,10 @@ public:
         {
             vstXml = XmlDocument::parse (file.withFileExtension ("vstxml"));
 
+           #if JUCE_WINDOWS
             if (vstXml == nullptr)
                 vstXml = XmlDocument::parse (getDLLResource (file, "VSTXML", 1));
+           #endif
         }
 
         return moduleMain != nullptr;
@@ -454,6 +456,7 @@ public:
         eff->dispatcher (eff, effClose, 0, 0, 0, 0);
     }
 
+   #if JUCE_WINDOWS
     static String getDLLResource (const File& dllFile, const String& type, int resID)
     {
         DynamicLibrary dll (dllFile.getFullPathName());
@@ -461,13 +464,9 @@ public:
 
         if (dllModule != INVALID_HANDLE_VALUE)
         {
-            HRSRC res = FindResource (dllModule, MAKEINTRESOURCE (resID), type.toWideCharPointer());
-
-            if (res != 0)
+            if (HRSRC res = FindResource (dllModule, MAKEINTRESOURCE (resID), type.toWideCharPointer()))
             {
-                HGLOBAL hGlob = LoadResource (dllModule, res);
-
-                if (hGlob)
+                if (HGLOBAL hGlob = LoadResource (dllModule, res))
                 {
                     const char* data = static_cast <const char*> (LockResource (hGlob));
                     return String::fromUTF8 (data, SizeofResource (dllModule, res));
@@ -477,6 +476,7 @@ public:
 
         return String::empty;
     }
+   #endif
 #else
    #if JUCE_PPC
     CFragConnectionID fragId;
@@ -1140,10 +1140,8 @@ public:
 
     bool isValidChannel (int index, bool isInput) const
     {
-        if (isInput)
-            return index < getNumInputChannels();
-        else
-            return index < getNumOutputChannels();
+        return isInput ? (index < getNumInputChannels())
+                       : (index < getNumOutputChannels());
     }
 
     //==============================================================================
@@ -1183,33 +1181,9 @@ public:
         }
     }
 
-    const String getParameterName (int index)
-    {
-        if (effect != nullptr)
-        {
-            jassert (index >= 0 && index < effect->numParams);
-
-            char nm [256] = { 0 };
-            dispatch (effGetParamName, index, 0, nm, 0);
-            return String (nm).trim();
-        }
-
-        return String::empty;
-    }
-
-    const String getParameterText (int index)
-    {
-        if (effect != nullptr)
-        {
-            jassert (index >= 0 && index < effect->numParams);
-
-            char nm [256] = { 0 };
-            dispatch (effGetParamDisplay, index, 0, nm, 0);
-            return String (nm).trim();
-        }
-
-        return String::empty;
-    }
+    const String getParameterName (int index)       { return getTextForOpcode (index, effGetParamName); }
+    const String getParameterText (int index)       { return getTextForOpcode (index, effGetParamDisplay); }
+    String getParameterLabel (int index) const      { return getTextForOpcode (index, effGetParamLabel); }
 
     bool isParameterAutomatable (int index) const
     {
@@ -1720,6 +1694,17 @@ private:
         return false;
     }
 
+    String getTextForOpcode (const int index, const AEffectOpcodes opcode) const
+    {
+        if (effect == nullptr)
+            return String::empty;
+
+        jassert (index >= 0 && index < effect->numParams);
+        char nm [256] = { 0 };
+        dispatch (opcode, index, 0, nm, 0);
+        return String (CharPointer_UTF8 (nm)).trim();
+    }
+
     String getCurrentProgramName()
     {
         String name;
@@ -1818,20 +1803,6 @@ private:
         float* p = (float*) (((char*) m.getData()) + 64);
         for (int i = 0; i < getNumParameters(); ++i)
             setParameter (i, p[i]);
-    }
-
-    String getParameterLabel (int index) const
-    {
-        if (effect != nullptr)
-        {
-            jassert (index >= 0 && index < effect->numParams);
-
-            char nm [256] = { 0 };
-            dispatch (effGetParamLabel, index, 0, nm, 0);
-            return String (nm).trim();
-        }
-
-        return String::empty;
     }
 
     VstIntPtr getVstDirectory() const
@@ -2254,11 +2225,10 @@ private:
 
         #pragma warning (pop)
 
-        int w, h;
         RECT r;
         GetWindowRect (pluginHWND, &r);
-        w = r.right - r.left;
-        h = r.bottom - r.top;
+        int w = r.right - r.left;
+        int h = r.bottom - r.top;
 
         if (rect != nullptr)
         {
@@ -2346,9 +2316,6 @@ private:
             if (pluginHWND != 0 && IsWindow (pluginHWND))
                 SetWindowLongPtr (pluginHWND, GWLP_WNDPROC, (LONG_PTR) originalWndProc);
             #pragma warning (pop)
-
-            if (pluginHWND != 0 && IsWindow (pluginHWND))
-                DestroyWindow (pluginHWND);
 
             pluginHWND = 0;
            #elif JUCE_LINUX
