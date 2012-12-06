@@ -45,7 +45,6 @@ namespace
         const char *name_;
         piw::fastdata_t receiver_;
         lo_method method1_;
-        lo_method method2_;
         lo_method method3_;
         piw::dataqueue_t queue_;
         piw::data_t current_;
@@ -294,6 +293,9 @@ int widget_t::method1__(const char *path, const char *types, lo_arg **argv, int 
 
     if(argc!=1)
     {
+#ifdef OSC_DEBUG
+        pic::logmsg() << widget->name_ << " poll " << widget->current_;
+#endif
         impl->add_recipient(lo_message_get_source(msg));
         impl->send_any(widget->name_,widget->current_);
 
@@ -306,6 +308,9 @@ int widget_t::method1__(const char *path, const char *types, lo_arg **argv, int 
         return 0;
     }
 
+#ifdef OSC_DEBUG
+    pic::logmsg() << widget->name_ << " recv " << types;
+#endif
     impl->add_recipient(lo_message_get_source(msg));
 
     piw::data_t d;
@@ -530,14 +535,23 @@ void language::oscserver_t::impl_t::add_recipient(lo_address a)
 
 void language::oscserver_t::impl_t::send_any(const char *name,const piw::data_t &d)
 {
+#ifdef OSC_DEBUG
+    pic::logmsg() << "send any " << " " << name << d.type();
+#endif
     if(d.is_float() || d.is_bool() || d.is_long() || d.is_null())
     {
+#ifdef OSC_DEBUG
+        pic::logmsg() << "sending " << name << ' ' << d;
+#endif
         send(name,d.as_denorm());
         return;
     }
 
     if(d.is_string())
     {
+#ifdef OSC_DEBUG
+        pic::logmsg() << "send any string" << " " << name << d.type();
+#endif
         send_string(name,(const char *)d.as_string());
         return;
     }
@@ -560,6 +574,9 @@ void language::oscserver_t::impl_t::send_string(const char *name,const char *val
             continue;
         }
 
+#ifdef OSC_DEBUG
+        pic::logmsg() << "send string " << value << " to recipient " << i;
+#endif
         lo_send_from(recipients_[i]->address_,receiver_,LO_TT_IMMEDIATE,name,"s",value);
     }
 }
