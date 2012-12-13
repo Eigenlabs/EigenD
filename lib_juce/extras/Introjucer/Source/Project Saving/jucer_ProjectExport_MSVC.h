@@ -174,13 +174,22 @@ protected:
             props.add (new ChoicePropertyComponent (getWarningLevelValue(), "Warning Level",
                                                     StringArray (warningLevelNames), Array<var> (warningLevels)));
 
-            const char* const wpoNames[] = { "Enable link-time code generation when possible",
-                                             "Always disable link-time code generation", nullptr };
-            const var wpoValues[] = { var(), var (1) };
+            {
+                const char* const runtimeNames[] = { "(Default)", "Use static runtime", "Use DLL runtime", nullptr };
+                const var runtimeValues[] = { var(), var (false), var (true) };
 
-            props.add (new BooleanPropertyComponent (getUsingRuntimeLibDLL(), "Runtime Library", "Use DLL version of runtime library"));
-            props.add (new ChoicePropertyComponent (getWholeProgramOptValue(), "Whole Program Optimisation",
-                                                    StringArray (wpoNames), Array<var> (wpoValues, numElementsInArray (wpoValues))));
+                props.add (new ChoicePropertyComponent (getUsingRuntimeLibDLL(), "Runtime Library",
+                                                        StringArray (runtimeNames), Array<var> (runtimeValues, numElementsInArray (runtimeValues))));
+            }
+
+            {
+                const char* const wpoNames[] = { "Enable link-time code generation when possible",
+                                                 "Always disable link-time code generation", nullptr };
+                const var wpoValues[] = { var(), var (1) };
+
+                props.add (new ChoicePropertyComponent (getWholeProgramOptValue(), "Whole Program Optimisation",
+                                                        StringArray (wpoNames), Array<var> (wpoValues, numElementsInArray (wpoValues))));
+            }
 
             props.add (new TextPropertyComponent (getPrebuildCommand(),  "Pre-build Command",  2048, false));
             props.add (new TextPropertyComponent (getPostbuildCommand(), "Post-build Command", 2048, false));
@@ -802,8 +811,11 @@ protected:
             if (config.config [Ids::msvcModuleDefinitionFile].toString().isNotEmpty())
                 linker->setAttribute ("ModuleDefinitionFile", config.config [Ids::msvcModuleDefinitionFile].toString());
 
-            String extraLinkerOptions (getExtraLinkerFlagsString());
+            String externalLibraries (getExternalLibrariesString());
+            if (externalLibraries.isNotEmpty())
+                linker->setAttribute ("AdditionalDependencies", replacePreprocessorTokens (config, externalLibraries).trim());
 
+            String extraLinkerOptions (getExtraLinkerFlagsString());
             if (extraLinkerOptions.isNotEmpty())
                 linker->setAttribute ("AdditionalOptions", replacePreprocessorTokens (config, extraLinkerOptions).trim());
         }
@@ -816,6 +828,10 @@ protected:
                 String extraLinkerOptions (getExtraLinkerFlagsString());
                 extraLinkerOptions << " /IMPLIB:" << getOutDirFile (config.getOutputFilename (".lib", true));
                 linker->setAttribute ("AdditionalOptions", replacePreprocessorTokens (config, extraLinkerOptions).trim());
+
+                String externalLibraries (getExternalLibrariesString());
+                if (externalLibraries.isNotEmpty())
+                    linker->setAttribute ("AdditionalDependencies", replacePreprocessorTokens (config, externalLibraries).trim());
 
                 linker->setAttribute ("OutputFile", getOutDirFile (config.getOutputFilename (msvcTargetSuffix, false)));
                 linker->setAttribute ("IgnoreDefaultLibraryNames", isDebug ? "libcmt.lib, msvcrt.lib" : "");
@@ -1187,6 +1203,11 @@ protected:
                     link->createNewChildElement ("OptimizeReferences")->addTextElement ("true");
                     link->createNewChildElement ("EnableCOMDATFolding")->addTextElement ("true");
                 }
+
+                String externalLibraries (getExternalLibrariesString());
+                if (externalLibraries.isNotEmpty())
+                    link->createNewChildElement ("AdditionalDependencies")->addTextElement (replacePreprocessorTokens (config, externalLibraries).trim()
+                                                                                              + ";%(AdditionalDependencies)");
 
                 String extraLinkerOptions (getExtraLinkerFlagsString());
                 if (extraLinkerOptions.isNotEmpty())

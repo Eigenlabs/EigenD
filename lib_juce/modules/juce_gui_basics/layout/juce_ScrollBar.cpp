@@ -48,7 +48,7 @@ public:
 private:
     ScrollBar& owner;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ScrollbarButton);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ScrollbarButton)
 };
 
 
@@ -358,7 +358,7 @@ void ScrollBar::mouseDrag (const MouseEvent& e)
 {
     const int mousePos = vertical ? e.y : e.x;
 
-    if (isDraggingThumb && lastMousePos != mousePos)
+    if (isDraggingThumb && lastMousePos != mousePos && thumbAreaSize > thumbSize)
     {
         const int deltaPixels = mousePos - dragStartMousePos;
 

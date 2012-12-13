@@ -204,15 +204,13 @@ private:
     friend class ScopedPointer <DirectShowComponentWatcher>;
     ScopedPointer <DirectShowComponentWatcher> componentWatcher;
 
-    bool needToUpdateViewport, needToRecreateNativeWindow;
-
     //==============================================================================
     void updateContextPosition();
     void showContext (bool shouldBeVisible);
     void recreateNativeWindowAsync();
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectShowComponent);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectShowComponent)
 };
 
 #endif
