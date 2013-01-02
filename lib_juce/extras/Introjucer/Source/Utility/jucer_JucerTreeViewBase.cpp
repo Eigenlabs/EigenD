@@ -43,12 +43,8 @@ void TreePanelBase::setRoot (JucerTreeViewBase* root)
             tree.restoreOpennessState (*treeOpenness, true);
 
             for (int i = tree.getNumSelectedItems(); --i >= 0;)
-            {
-                JucerTreeViewBase* item = dynamic_cast<JucerTreeViewBase*> (tree.getSelectedItem (i));
-
-                if (item != nullptr)
+                if (JucerTreeViewBase* item = dynamic_cast<JucerTreeViewBase*> (tree.getSelectedItem (i)))
                     item->cancelDelayedSelectionTimer();
-            }
         }
     }
 }
@@ -89,7 +85,7 @@ Font JucerTreeViewBase::getFont() const
     return Font (getItemHeight() * 0.6f);
 }
 
-void JucerTreeViewBase::paintItem (Graphics& g, int width, int height)
+void JucerTreeViewBase::paintItem (Graphics& g, int /*width*/, int /*height*/)
 {
     if (isSelected())
         g.fillAll (getOwnerView()->findColour (treeviewHighlightColourId));
@@ -100,7 +96,7 @@ float JucerTreeViewBase::getIconSize() const
     return jmin (getItemHeight() - 4.0f, 18.0f);
 }
 
-void JucerTreeViewBase::paintOpenCloseButton (Graphics& g, int width, int height, bool isMouseOver)
+void JucerTreeViewBase::paintOpenCloseButton (Graphics& g, int width, int height, bool /*isMouseOver*/)
 {
     Path p;
 
@@ -229,17 +225,9 @@ void JucerTreeViewBase::handlePopupMenuResult (int)
 
 ProjectContentComponent* JucerTreeViewBase::getProjectContentComponent() const
 {
-    Component* c = getOwnerView();
-
-    while (c != nullptr)
-    {
-        ProjectContentComponent* pcc = dynamic_cast <ProjectContentComponent*> (c);
-
-        if (pcc != nullptr)
+    for (Component* c = getOwnerView(); c != nullptr; c = c->getParentComponent())
+        if (ProjectContentComponent* pcc = dynamic_cast <ProjectContentComponent*> (c))
             return pcc;
-
-        c = c->getParentComponent();
-    }
 
     return nullptr;
 }
@@ -276,7 +264,7 @@ void JucerTreeViewBase::invokeShowDocument()
     showDocument();
 }
 
-void JucerTreeViewBase::itemDoubleClicked (const MouseEvent& e)
+void JucerTreeViewBase::itemDoubleClicked (const MouseEvent&)
 {
     invokeShowDocument();
 }

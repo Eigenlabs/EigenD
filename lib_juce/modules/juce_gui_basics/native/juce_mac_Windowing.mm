@@ -107,7 +107,7 @@ private:
 
 void JUCE_CALLTYPE NativeMessageBox::showMessageBox (AlertWindow::AlertIconType iconType,
                                                      const String& title, const String& message,
-                                                     Component* associatedComponent)
+                                                     Component* /*associatedComponent*/)
 {
     OSXMessageBox box (iconType, title, message, "OK", nullptr, nullptr, nullptr, false);
     (void) box.getResult();
@@ -115,7 +115,7 @@ void JUCE_CALLTYPE NativeMessageBox::showMessageBox (AlertWindow::AlertIconType 
 
 void JUCE_CALLTYPE NativeMessageBox::showMessageBoxAsync (AlertWindow::AlertIconType iconType,
                                                           const String& title, const String& message,
-                                                          Component* associatedComponent)
+                                                          Component* /*associatedComponent*/)
 {
     new OSXMessageBox (iconType, title, message, "OK", nullptr, nullptr, nullptr, true);
 }
@@ -323,6 +323,24 @@ void Desktop::Displays::findDisplays()
 
         displays.add (d);
     }
+}
+
+//==============================================================================
+bool juce_areThereAnyAlwaysOnTopWindows()
+{
+    NSArray* windows = [NSApp windows];
+
+    for (unsigned int i = 0; i < [windows count]; ++i)
+    {
+        const NSInteger level = [((NSWindow*) [windows objectAtIndex: i]) level];
+
+        if (level == NSFloatingWindowLevel
+             || level == NSStatusWindowLevel
+             || level == NSModalPanelWindowLevel)
+            return true;
+    }
+
+    return false;
 }
 
 //==============================================================================

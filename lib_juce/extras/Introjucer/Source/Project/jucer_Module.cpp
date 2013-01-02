@@ -271,9 +271,10 @@ bool ModuleList::Module::operator!= (const Module& other) const
 
 LibraryModule* ModuleList::loadModule (const String& uid) const
 {
-    const Module* const m = findModuleInfo (uid);
+    if (const Module* const m = findModuleInfo (uid))
+        return m->create();
 
-    return m != nullptr ? m->create() : nullptr;
+    return nullptr;
 }
 
 const ModuleList::Module* ModuleList::findModuleInfo (const String& uid) const
@@ -312,7 +313,7 @@ void ModuleList::getDependencies (const String& moduleID, StringArray& dependenc
     }
 }
 
-void ModuleList::createDependencies (const String& moduleID, OwnedArray<LibraryModule>& modules) const
+void ModuleList::createDependencies (const String& moduleID, OwnedArray<LibraryModule>&) const
 {
     ScopedPointer<LibraryModule> m (loadModule (moduleID));
 
@@ -591,10 +592,10 @@ static bool exporterTargetMatches (const String& test, String target)
 
     for (int i = validTargets.size(); --i >= 0;)
     {
-        const String& target = validTargets[i];
+        const String& targetName = validTargets[i];
 
-        if (target == test
-             || (target.startsWithChar ('!') && test != target.substring (1).trimStart()))
+        if (targetName == test
+             || (targetName.startsWithChar ('!') && test != targetName.substring (1).trimStart()))
             return true;
     }
 

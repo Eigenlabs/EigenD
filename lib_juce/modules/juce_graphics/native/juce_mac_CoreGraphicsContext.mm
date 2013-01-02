@@ -74,7 +74,7 @@ public:
     ImageType* createType() const    { return new NativeImageType(); }
 
     //==============================================================================
-    static CGImageRef createImage (const Image& juceImage, const bool forAlpha,
+    static CGImageRef createImage (const Image& juceImage, const bool /*forAlpha*/,
                                    CGColorSpaceRef colourSpace, const bool mustOutliveSource)
     {
         const Image::BitmapData srcData (juceImage, Image::BitmapData::readOnly);
@@ -561,7 +561,7 @@ void CoreGraphicsContext::setFont (const Font& newFont)
         {
             state->fontRef = osxTypeface->fontRef;
             CGContextSetFont (context, state->fontRef);
-            CGContextSetFontSize (context, state->font.getHeight() * osxTypeface->fontHeightToCGSizeFactor);
+            CGContextSetFontSize (context, state->font.getHeight() * osxTypeface->fontHeightToPointsFactor);
 
             state->fontTransform = osxTypeface->renderingTransform;
             state->fontTransform.a *= state->font.getHorizontalScale();

@@ -171,9 +171,14 @@ public:
         for (int i = viewerComps.size(); --i >= 0;)
             viewerComps.getUnchecked(i)->ownerDeleted();
 
+        if (sampleGrabber != nullptr)
+        {
+            sampleGrabber->SetCallback (nullptr, 0);
+            sampleGrabber = nullptr;
+        }
+
         callback = nullptr;
         graphBuilder = nullptr;
-        sampleGrabber = nullptr;
         mediaControl = nullptr;
         filter = nullptr;
         captureGraphBuilder = nullptr;
@@ -677,7 +682,16 @@ private:
     class GrabberCallback   : public ComBaseClassHelperBase <ISampleGrabberCB>
     {
     public:
-        GrabberCallback (DShowCameraDeviceInteral& cam)  : owner (cam) {}
+        GrabberCallback (DShowCameraDeviceInteral& cam)
+            : ComBaseClassHelperBase <ISampleGrabberCB> (0), owner (cam) {}
+
+        JUCE_COMRESULT QueryInterface (REFIID refId, void** result)
+        {
+            if (refId == IID_ISampleGrabberCB)
+                return castToType <ISampleGrabberCB> (result);
+
+            return ComBaseClassHelperBase<ISampleGrabberCB>::QueryInterface (refId, result);
+        }
 
         STDMETHODIMP SampleCB (double, IMediaSample*)  { return E_FAIL; }
 

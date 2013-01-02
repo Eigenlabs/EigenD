@@ -218,7 +218,7 @@ void SourceFileTreeViewItem::setName (const String& newName)
     }
 }
 
-ProjectTreeViewBase* SourceFileTreeViewItem::createSubItem (const Project::Item& child)
+ProjectTreeViewBase* SourceFileTreeViewItem::createSubItem (const Project::Item&)
 {
     jassertfalse
     return nullptr;
@@ -226,11 +226,11 @@ ProjectTreeViewBase* SourceFileTreeViewItem::createSubItem (const Project::Item&
 
 void SourceFileTreeViewItem::showDocument()
 {
-    ProjectContentComponent* pcc = getProjectContentComponent();
     const File f (getFile());
 
-    if (pcc != nullptr && f.exists())
-        pcc->showEditorForFile (f, false);
+    if (f.exists())
+        if (ProjectContentComponent* pcc = getProjectContentComponent())
+            pcc->showEditorForFile (f, false);
 }
 
 void SourceFileTreeViewItem::showPopupMenu()

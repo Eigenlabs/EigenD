@@ -35,22 +35,18 @@ void SettingsTreeViewItemBase::showSettingsPage (Component* content)
     content->setComponentID (getUniqueName());
 
     ScopedPointer<Component> comp (content);
-    ProjectContentComponent* pcc = getProjectContentComponent();
 
-    if (pcc != nullptr)
+    if (ProjectContentComponent* pcc = getProjectContentComponent())
         pcc->setEditorComponent (new PropertyPanelViewport (comp.release()), nullptr);
 }
 
 void SettingsTreeViewItemBase::closeSettingsPage()
 {
-    ProjectContentComponent* pcc = getProjectContentComponent();
-
-    if (pcc != nullptr)
+    if (ProjectContentComponent* pcc = getProjectContentComponent())
     {
-        PropertyPanelViewport* ppv = dynamic_cast<PropertyPanelViewport*> (pcc->getEditorComponent());
-
-        if (ppv != nullptr && ppv->viewport.getViewedComponent()->getComponentID() == getUniqueName())
-            pcc->hideEditor();
+        if (PropertyPanelViewport* ppv = dynamic_cast<PropertyPanelViewport*> (pcc->getEditorComponent()))
+            if (ppv->viewport.getViewedComponent()->getComponentID() == getUniqueName())
+                pcc->hideEditor();
     }
 }
 
@@ -134,14 +130,14 @@ namespace ProjectSettingsTreeClasses
         class SettingsComp  : public Component
         {
         public:
-            SettingsComp (ProjectExporter::BuildConfiguration* config, const String& exporterName)
+            SettingsComp (ProjectExporter::BuildConfiguration* conf, const String& expName)
             {
                 addAndMakeVisible (&group);
 
                 PropertyListBuilder props;
-                config->createPropertyEditors (props);
+                conf->createPropertyEditors (props);
                 group.setProperties (props);
-                group.setName (exporterName + " / " + config->getName());
+                group.setName (expName + " / " + conf->getName());
                 parentSizeChanged();
             }
 
@@ -262,14 +258,14 @@ namespace ProjectSettingsTreeClasses
         class SettingsComp  : public Component
         {
         public:
-            SettingsComp (ProjectExporter* exporter)
+            SettingsComp (ProjectExporter* exp)
             {
                 addAndMakeVisible (&group);
 
                 PropertyListBuilder props;
-                exporter->createPropertyEditors (props);
+                exp->createPropertyEditors (props);
                 group.setProperties (props);
-                group.setName ("Export target: " + exporter->getName());
+                group.setName ("Export target: " + exp->getName());
                 parentSizeChanged();
             }
 
