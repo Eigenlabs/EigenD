@@ -67,7 +67,7 @@ class TalkerFinder(Finder):
 
 class Talker(atom.Atom):
     def __init__(self,finder,trigger,status_cookie,names='action',ordinal=None,protocols=None):
-        p = protocols+' nostage hidden-connection' if protocols else 'nostage hidden-connection'
+        p = protocols+' nostage hidden-connection explicit' if protocols else 'nostage hidden-connection explicit'
         atom.Atom.__init__(self,domain=domain.String(),policy=atom.default_policy(self.__change),names='action',protocols=p,ordinal=ordinal)
         self.__finder = finder
         self.__domain = piw.clockdomain_ctl()
@@ -80,8 +80,8 @@ class Talker(atom.Atom):
 
         if status_cookie:
             self.status_input = bundles.VectorInput(status_cookie,self.__domain,signals=(1,))
-            self[1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.status_input.vector_policy(1,False,clocked=False),names='status input',protocols='nostage hidden-connection')
-        self[2] = atom.Atom(domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),names='trigger output', protocols='hidden-connection')
+            self[1] = atom.Atom(domain=domain.BoundedFloat(0,1),policy=self.status_input.vector_policy(1,False,clocked=False),names='status input',protocols='nostage hidden-connection explicit')
+        self[2] = atom.Atom(domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),names='trigger output', protocols='hidden-connection explicit')
         self[2].get_policy().set_source(trigger)
 
         # prevent running coroutines from being garbage collected

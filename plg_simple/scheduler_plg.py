@@ -250,7 +250,7 @@ class Agent(agent.Agent):
         self[2][4] = atom.Atom(domain=domain.Aniso(), policy=self.input.policy(4,False), names='song beat input')
         self[2][5] = atom.Atom(domain=domain.Aniso(), policy=self.input.policy(5,False), names='bar input')
 
-        self[3] = collection.Collection(creator=self.__create,wrecker=self.__wreck,names='event',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst,protocols='hidden-connection')
+        self[3] = collection.Collection(creator=self.__create,wrecker=self.__wreck,names='event',inst_creator=self.__create_inst,inst_wrecker=self.__wreck_inst,protocols='hidden-connection explicit')
 
         self[4] = atom.Atom(names='controller')
 
