@@ -49,7 +49,7 @@ class Event(talker.Talker):
 
 class EventList(collection.Collection):
     def __init__(self,agent):
-        collection.Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,names='event',protocols='hidden-connection')
+        collection.Collection.__init__(self,creator=self.__create,wrecker=self.__wreck,names='event',protocols='hidden-connection explicit')
         self.agent = agent
         self.__event = bundles.FastSender(2)
 

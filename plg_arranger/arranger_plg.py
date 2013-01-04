@@ -41,7 +41,7 @@ class RowTarget(collection.Collection):
     def __init__(self,agent,index):
         self.agent = agent
         self.__fastdata = bundles.FastSender()
-        collection.Collection.__init__(self,domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),creator=self.__create,wrecker=self.__wreck,ordinal=index,names='row',protocols='hidden-connection remove')
+        collection.Collection.__init__(self,domain=domain.Aniso(),policy=policy.FastReadOnlyPolicy(),creator=self.__create,wrecker=self.__wreck,ordinal=index,names='row',protocols='hidden-connection remove explicit')
         self.get_policy().set_source(self.__fastdata)
         self.get_policy().set_clock(self.agent.model.get_clock())
 
@@ -340,7 +340,7 @@ class Agent(agent.Agent):
         self[4][1] = atom.Atom(domain=domain.Aniso(), policy=self.cinput.nodefault_policy(1,False),names='song beat input')
         self[4][2] = atom.Atom(domain=domain.Aniso(), policy=self.cinput.nodefault_policy(2,False),names='running input')
 
-        self[5] = collection.Collection(creator=self.__createtarget,wrecker=self.__wrecktarget,names="row",inst_creator=self.__createtarget_inst,inst_wrecker=self.__wrecktarget_inst,protocols='hidden-connection')
+        self[5] = collection.Collection(creator=self.__createtarget,wrecker=self.__wrecktarget,names="row",inst_creator=self.__createtarget_inst,inst_wrecker=self.__wrecktarget_inst,protocols='hidden-connection explicit')
 
         self[7] = Parameters(self)
 
