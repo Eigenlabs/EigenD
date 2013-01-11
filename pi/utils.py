@@ -215,14 +215,22 @@ def pack_str(*l):
 
 def makedict(items,ts):
     d = piw.dictnull(ts)
-    for (k,v) in items.iteritems():
-        d = piw.dictset(d,k,v)
+    if type(items) == dict:
+        for (k,v) in items.iteritems():
+            d = piw.dictset(d,k,v)
+    elif type(items) == list:
+        for e in items:
+            d = piw.dictset(d,e[0],e[1])
     return d
 
 def makedict_nb(items,ts):
     d = piw.dictnull_nb(ts)
-    for (k,v) in items.iteritems():
-        d = piw.dictset_nb(d,k,v)
+    if type(items) == dict:
+        for (k,v) in items.iteritems():
+            d = piw.dictset_nb(d,k,v)
+    elif type(items) == list:
+        for e in items:
+            d = piw.dictset_nb(d,e[0],e[1])
     return d
 
 def dict_items(d):
