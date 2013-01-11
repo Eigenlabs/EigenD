@@ -31,8 +31,8 @@ class Agent(agent.Agent):
 
         self[1] = atom.Atom(domain=domain.Aniso(hints=(logic.make_term('continuous'),)), names='controller output', policy=atom.readonly_policy())
 
-        self[2] = atom.Atom(domain=domain.String(), init='label', names='category', policy=atom.default_policy(self.set_category))
-        self[3] = atom.Atom(domain=domain.String(), init='', names='label', policy=atom.default_policy(self.set_label))
+        self[2] = atom.Atom(domain=domain.String(), init='label', names='label category', policy=atom.default_policy(self.__set_category))
+        self[3] = atom.Atom(domain=domain.String(), init='', names='label', policy=atom.default_policy(self.__set_label))
 
         self.ctl_functor = piw.functor_backend(1, True)
         self.ctl_input = bundles.VectorInput(self.ctl_functor.cookie(), self.domain, signals=(1,))
@@ -41,13 +41,15 @@ class Agent(agent.Agent):
 
         self.__ctl = []
  
-    def set_category(self,v):
-        self[2].set_value(v)
-        self.__update_labels()
+    def __set_category(self,v):
+        if v != self[2].get_value():
+            self[2].set_value(v)
+            self.__update_labels()
  
-    def set_label(self,v):
-        self[3].set_value(v)
-        self.__update_labels()
+    def __set_label(self,v):
+        if v != self[3].get_value():
+            self[3].set_value(v)
+            self.__update_labels()
 
     def __controller_input(self,c):
         self.__ctl = utils.dict_items(c);

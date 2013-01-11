@@ -123,6 +123,25 @@ class Controller:
         l = self.getlist('courseoffset')
         return len(l) if l else 0
 
+    def update_labels(self):
+        labels = None
+
+        category = self.__agent[38].get_value()
+        label = self.__agent[39].get_value()
+        if label is None or 0 == len(label):
+            label = self.__agent.get_description()
+        if category and len(category) > 0:
+            if self.__agent.upstream_labels is None:
+                labels = []
+            else:
+                labels = list(self.__agent.upstream_labels)
+            labels.append(utils.maketuple([piw.makestring(category,0), piw.makestring(label,0)],0))
+
+        if labels is None:
+            self.setlist('labels',piw.makenull(0))
+        else:
+            self.setlist('labels',labels)
+
     def ensure(self,course):
         l = [i.as_float() for i in self.getlist('courseoffset')]
         if course>len(l):
@@ -560,6 +579,8 @@ class Agent(agent.Agent):
         self[27] = atom.Atom(domain=domain.String(), init='[]', names='physical mapping', protocols='mapper', policy=atom.default_policy(self.__set_physical_key_map))
         self[34] = atom.Atom(domain=domain.String(), init='[]', names='musical mapping', protocols='mapper', policy=atom.default_policy(self.__set_musical_key_map))
         self[35] = atom.Atom(domain=domain.String(), init='[]', names='course offset', policy=atom.default_policy(self.__set_course_offset))
+        self[38] = atom.Atom(domain=domain.String(), init='keygroup', names='label category', policy=atom.default_policy(self.__set_category))
+        self[39] = atom.Atom(domain=domain.String(), init='', names='label', policy=atom.default_policy(self.__set_label))
 
         self.add_verb2(3,'set([un],None)',callback=self.__untune)
 
@@ -589,6 +610,7 @@ class Agent(agent.Agent):
 
         self.__upstream_columnlen = None
         self.__upstream_courselen = None
+        self.upstream_labels = None
 
         self.cfunctor = piw.functor_backend(1,True)
         self.cinput = bundles.ScalarInput(self.cfunctor.cookie(),self.domain,signals=(1,))
@@ -620,8 +642,19 @@ class Agent(agent.Agent):
         self.kclone.set_output(250,self.outputchoicefunctor.cookie())
         self.kclone.enable(250,False)
 
+        self.controller.update_labels()
+
     def agent_postload(self,filename):
         self.status_buffer.send()
+
+    def load_state(self,state,delegate,phase):
+        result = Atom.load_state(self,state,delegate,phase)
+        self.controller.update_labels()
+        return result
+
+    def property_change(self,key,value,delegate):
+        if key == 'name' or key == 'cname':
+            self.controller.update_labels()
 
     def rpc_fetch_sourcekeys(self,arg):
         name = str(arg)
@@ -740,6 +773,16 @@ class Agent(agent.Agent):
                 self.__set_physical_mapping(self.__current_physical_mapping())
                 self.__set_musical_mapping(self.__current_musical_mapping())
 
+            # store the upstream labels
+            labels = c.as_dict_lookup('labels')
+            new_labels = None
+            if labels.is_tuple():
+                new_labels = utils.tuple_items(labels)
+
+            if new_labels != self.upstream_labels:
+                self.upstream_labels = new_labels
+                self.controller.update_labels()
+
         except:
             return 0
 
@@ -778,6 +821,16 @@ class Agent(agent.Agent):
     def __set_course_offset(self,value):
         self.controller.set_course_offsets(logic.parse_clause(value))
         self[35].set_value(value)
+ 
+    def __set_category(self,v):
+        if v != self[38].get_value():
+            self[38].set_value(v)
+            self.controller.update_labels()
+ 
+    def __set_label(self,v):
+        if v != self[39].get_value():
+            self[39].set_value(v)
+            self.controller.update_labels()
 
     def __tune_tonic_fast(self,ctx,subj,dummy,arg):
         type,thing = action.crack_ideal(action.arg_objects(arg)[0])

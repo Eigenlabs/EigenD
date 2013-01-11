@@ -61,7 +61,7 @@ Not properly assigned, in use:
 8   6   5   8  : Processor     : Noun              : None
 8   6   6   1  : Conductor     : Noun              : None
 8   6   6   2  : Labeler       : Noun              : None
-8   6   6   3  : Unused        : Unused            : None
+8   6   6   3  : Category      : Noun              : None
 8   6   6   4  : Unused        : Unused            : None
 8   6   6   5  : Unused        : Unused            : None
 8   6   6   6  : Unused        : Unused            : None
