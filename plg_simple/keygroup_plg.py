@@ -648,7 +648,7 @@ class Agent(agent.Agent):
         self.status_buffer.send()
 
     def load_state(self,state,delegate,phase):
-        result = Atom.load_state(self,state,delegate,phase)
+        result = agent.Agent.load_state(self,state,delegate,phase)
         self.controller.update_labels()
         return result
 
