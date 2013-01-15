@@ -365,7 +365,7 @@ class Agent(agent.Agent):
         self[5][4] = atom.Atom(domain=domain.Aniso(),policy=self.__metronome_input.nodefault_policy(4,False),names='bar beat input')
 
         # kbd/controller inputs
-        self[6] = atom.Atom(names='controller inputs')
+        self[6] = atom.Atom(names='musical inputs')
         self[6][1] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.vector_policy(1,False),names='pressure input')
         self[6][2] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.merge_nodefault_policy(2,False),names='frequency input')
 
@@ -398,6 +398,20 @@ class Agent(agent.Agent):
         # midi output
         self[15] = self.__midi_output.add_output(bundles.Output(1,False,names='midi output'))
 
+        # controller input/output to add labels
+        self[16] = atom.Atom(domain=domain.Aniso(hints=(logic.make_term('continuous'),)), names='controller output', policy=atom.readonly_policy())
+
+        self[17] = atom.Atom(domain=domain.String(), init='plugin', names='label category', policy=atom.default_policy(self.__set_category))
+        self[18] = atom.Atom(domain=domain.String(), init='', names='label', policy=atom.default_policy(self.__set_label))
+
+        self.ctl_functor = piw.functor_backend(1, True)
+        self.ctl_input = bundles.VectorInput(self.ctl_functor.cookie(), self.__domain, signals=(1,))
+        self[19] = atom.Atom(domain=domain.Aniso(), policy=self.ctl_input.vector_policy(1,False), names='controller input')
+        self.ctl_functor.set_functor(piw.pathnull(0), utils.make_change_nb(piw.slowchange(utils.changify(self.__controller_input))))
+
+        self.__ctl = []
+
+        # verbs
         self.add_verb2(1,'show([],None)',callback=self.__show)
         self.add_verb2(2,'show([un],None)',callback=self.__unshow)
         self.add_verb2(3,'close([],None)',callback=self.__close)
@@ -479,6 +493,7 @@ class Agent(agent.Agent):
 
     def __close(self,*arg):
         self.__host.close()
+        self.__update_labels()
         return action.nosync_return()
 
     def __show(self,*arg):
@@ -530,6 +545,7 @@ class Agent(agent.Agent):
                 self.__unbypass()
                 self.__show()
                 self.__set_title()
+                self.__update_labels()
                 return True
         return False
 
@@ -614,6 +630,46 @@ class Agent(agent.Agent):
 
     def on_quit(self):
         self.__host.close()
+ 
+    def __set_category(self,v):
+        if v != self[17].get_value():
+            self[17].set_value(v)
+            self.__update_labels()
+ 
+    def __set_label(self,v):
+        if v != self[18].get_value():
+            self[18].set_value(v)
+            self.__update_labels()
+
+    def __controller_input(self,c):
+        self.__ctl = utils.dict_items(c);
+        self.__update_labels()
+
+    def __update_labels(self):
+        # extract all control stream entries into a new list
+        # extract the labels entry into a deticated list, if it exists
+        new_ctl = []
+        labels = []
+        for e in self.__ctl:
+            if e[0] == 'labels':
+                labels = utils.tuple_items(e[1])
+            else:
+                new_ctl.append(e)
+
+        # append the local category and label to the labels list
+        category = self[17].get_value()
+        label = self[18].get_value()
+        if len(label) == 0 and self.__host is not None and self.__host.has_plugin():
+            desc = self.__host.get_description()
+            if desc is not None:
+                label = desc.name()
+
+        if category and len(category) > 0 and label and len(label) > 0:
+            labels.append(utils.maketuple([piw.makestring(category,0), piw.makestring(label,0)],0))
+
+        # reintegrate the labels list and set the new control stream value
+        new_ctl.append(['labels',utils.maketuple(labels,0)])
+        self[16].set_value(utils.makedict(new_ctl,0))
 
 class Upgrader(upgrade.Upgrader):
     def upgrade_1_0_3_to_1_0_4(self,tools,address):

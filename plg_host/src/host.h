@@ -167,6 +167,7 @@ namespace host
 
             bool open(const plugin_description_t &);
             void close();
+            bool has_plugin();
 
             unsigned input_channel_count();
             unsigned output_channel_count();

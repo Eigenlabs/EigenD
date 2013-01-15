@@ -1916,6 +1916,11 @@ void host::plugin_instance_t::close()
     impl_->close();
 }
 
+bool host::plugin_instance_t::has_plugin()
+{
+    return impl_->has_plugin();
+}
+
 void host::plugin_instance_t::set_showing(bool b)
 {
     if(b)

@@ -89,6 +89,7 @@ class plugin_instance[host::plugin_instance_t] /gc/
 
     bool open(const plugin_description &)
     void close()
+    bool has_plugin()
 
     unsigned input_channel_count()
     unsigned output_channel_count()
