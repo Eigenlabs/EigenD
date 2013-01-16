@@ -1,0 +1,7 @@
+description
+    This script fixes the MIDI input note C# not being active
+    
+script
+    empty join
+    midi input controller hey connector 2 key column to 1 set
+    
