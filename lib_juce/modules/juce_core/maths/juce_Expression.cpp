@@ -439,8 +439,8 @@ struct Expression::Helpers
         {
             if (input->getOperatorPrecedence() > 0)
                 return "-(" + input->toString() + ")";
-            else
-                return "-" + input->toString();
+
+            return "-" + input->toString();
         }
 
     private:
@@ -492,8 +492,8 @@ struct Expression::Helpers
 
             if (input == left)
                 return new Add (newDest, right->clone());
-            else
-                return new Subtract (left->clone(), newDest);
+
+            return new Subtract (left->clone(), newDest);
         }
 
     private:
@@ -545,8 +545,8 @@ struct Expression::Helpers
 
             if (input == left)
                 return new Multiply (newDest, right->clone());
-            else
-                return new Divide (left->clone(), newDest);
+
+            return new Divide (left->clone(), newDest);
         }
 
     private:
@@ -877,7 +877,8 @@ struct Expression::Helpers
 
                     throw ParseError ("Expected \")\"");
                 }
-                else if (readOperator ("."))
+
+                if (readOperator ("."))
                 {
                     TermPtr rhs (readSymbolOrFunction());
 
@@ -889,11 +890,10 @@ struct Expression::Helpers
 
                     return new DotOperator (new SymbolTerm (identifier), rhs);
                 }
-                else // just a symbol..
-                {
-                    jassert (identifier.trim() == identifier);
-                    return new SymbolTerm (identifier);
-                }
+
+                // just a symbol..
+                jassert (identifier.trim() == identifier);
+                return new SymbolTerm (identifier);
             }
 
             return TermPtr();
@@ -1146,7 +1146,8 @@ double Expression::Scope::evaluateFunction (const String& functionName, const do
 
             return v;
         }
-        else if (functionName == "max")
+
+        if (functionName == "max")
         {
             double v = parameters[0];
             for (int i = 1; i < numParams; ++i)
@@ -1154,12 +1155,13 @@ double Expression::Scope::evaluateFunction (const String& functionName, const do
 
             return v;
         }
-        else if (numParams == 1)
+
+        if (numParams == 1)
         {
-            if      (functionName == "sin")     return sin (parameters[0]);
-            else if (functionName == "cos")     return cos (parameters[0]);
-            else if (functionName == "tan")     return tan (parameters[0]);
-            else if (functionName == "abs")     return std::abs (parameters[0]);
+            if (functionName == "sin")  return sin (parameters[0]);
+            if (functionName == "cos")  return cos (parameters[0]);
+            if (functionName == "tan")  return tan (parameters[0]);
+            if (functionName == "abs")  return std::abs (parameters[0]);
         }
     }
 

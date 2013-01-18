@@ -223,8 +223,9 @@ namespace AiffFileHelpers
 
                     out.writeIntBigEndian (values.getValue (prefix + "TimeStamp", "0").getIntValue());
                     out.writeShortBigEndian ((short) values.getValue (prefix + "Identifier", "0").getIntValue());
-                    
+
                     const String comment (values.getValue (prefix + "Text", String::empty));
+
                     const int commentLength = jmin (comment.getNumBytesAsUTF8(), 65534);
                     out.writeShortBigEndian ((short) commentLength + 1);
                     out.write (comment.toUTF8(), commentLength);

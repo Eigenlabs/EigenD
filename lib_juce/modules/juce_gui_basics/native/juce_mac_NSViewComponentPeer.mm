@@ -204,6 +204,15 @@ public:
             [window setTitle: juceStringToNS (title)];
     }
 
+    bool setDocumentEditedStatus (bool edited)
+    {
+        if (! hasNativeTitleBar())
+            return false;
+
+        [window setDocumentEdited: edited];
+        return true;
+    }
+
     void setPosition (int x, int y)
     {
         setBounds (x, y, component.getWidth(), component.getHeight(), false);
@@ -1523,9 +1532,11 @@ private:
 
     static NSRange markedRange (id self, SEL)
     {
-        NSViewComponentPeer* const owner = getOwner (self);
-        return owner->stringBeingComposed.isNotEmpty() ? NSMakeRange (0, (NSUInteger) owner->stringBeingComposed.length())
-                                                       : NSMakeRange (NSNotFound, 0);
+        if (NSViewComponentPeer* const owner = getOwner (self))
+            if (owner->stringBeingComposed.isNotEmpty())
+                return NSMakeRange (0, (NSUInteger) owner->stringBeingComposed.length());
+
+        return NSMakeRange (NSNotFound, 0);
     }
 
     static NSRange selectedRange (id self, SEL)
@@ -1576,10 +1587,9 @@ private:
     #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
     static BOOL performKeyEquivalent (id self, SEL, NSEvent* ev)
     {
-        NSViewComponentPeer* const owner = getOwner (self);
-
-        if (owner != nullptr && owner->redirectPerformKeyEquivalent (ev))
-            return true;
+        if (NSViewComponentPeer* const owner = getOwner (self))
+            if (owner->redirectPerformKeyEquivalent (ev))
+                return true;
 
         objc_super s = { self, [NSView class] };
         return objc_msgSendSuper (&s, @selector (performKeyEquivalent:), ev) != nil;
@@ -1616,12 +1626,11 @@ private:
 
     static NSDragOperation draggingUpdated (id self, SEL, id <NSDraggingInfo> sender)
     {
-        NSViewComponentPeer* const owner = getOwner (self);
+        if (NSViewComponentPeer* const owner = getOwner (self))
+            if (owner->sendDragCallback (0, sender))
+                return NSDragOperationCopy | NSDragOperationMove | NSDragOperationGeneric;
 
-        if (owner != nullptr && owner->sendDragCallback (0, sender))
-            return NSDragOperationCopy | NSDragOperationMove | NSDragOperationGeneric;
-        else
-            return NSDragOperationNone;
+        return NSDragOperationNone;
     }
 
     static void draggingEnded (id self, SEL s, id <NSDraggingInfo> sender)
@@ -1743,10 +1752,9 @@ private:
 
     static void windowWillMove (id self, SEL, NSNotification*)
     {
-        NSViewComponentPeer* const owner = getOwner (self);
-
-        if (owner != nullptr && owner->hasNativeTitleBar())
-            owner->sendModalInputAttemptIfBlocked();
+        if (NSViewComponentPeer* const owner = getOwner (self))
+            if (owner->hasNativeTitleBar())
+                owner->sendModalInputAttemptIfBlocked();
     }
 };
 

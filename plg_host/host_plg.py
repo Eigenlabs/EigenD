@@ -370,7 +370,7 @@ class Agent(agent.Agent):
         self[6][2] = atom.Atom(domain=domain.Aniso(),policy=self.__key_input.merge_nodefault_policy(2,False),names='frequency input')
 
         # midi channel 
-        self[7] =  atom.Atom(domain=domain.BoundedInt(0,16),init=0,names='midi channel',policy=atom.default_policy(self.set_midi_channel))
+        self[7] = atom.Atom(domain=domain.BoundedInt(0,16),init=0,names='midi channel',policy=atom.default_policy(self.set_midi_channel))
 
         # velocity curve control
         vel=(T('stageinc',0.1),T('inc',0.1),T('biginc',1),T('control','updown'))

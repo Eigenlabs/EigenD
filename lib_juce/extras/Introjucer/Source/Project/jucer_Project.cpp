@@ -346,7 +346,7 @@ void Project::createPropertyEditors (PropertyListBuilder& props)
                "The name of the project.");
 
     props.add (new TextPropertyComponent (getVersionValue(), "Project Version", 16, false),
-               "The project's version number, This should be in the format major.minor.point");
+               "The project's version number, This should be in the format major.minor.point[.point]");
 
     props.add (new TextPropertyComponent (getCompanyName(), "Company Name", 256, false),
                "Your company name, which will be added to the properties of the binary where possible");
@@ -387,7 +387,7 @@ static StringArray getConfigs (const Project& p)
     return configs;
 }
 
-String Project::getVersionAsHex() const
+int Project::getVersionAsHexInteger() const
 {
     const StringArray configs (getConfigs (*this));
 
@@ -396,7 +396,12 @@ String Project::getVersionAsHex() const
     if (configs.size() >= 4)
         value = (value << 8) + configs[3].getIntValue();
 
-    return "0x" + String::toHexString (value);
+    return value;
+}
+
+String Project::getVersionAsHex() const
+{
+    return "0x" + String::toHexString (getVersionAsHexInteger());
 }
 
 StringPairArray Project::getPreprocessorDefs() const
@@ -512,16 +517,16 @@ String Project::Item::getFilePath() const
 {
     if (isFile())
         return state [Ids::file].toString();
-    else
-        return String::empty;
+
+    return String::empty;
 }
 
 File Project::Item::getFile() const
 {
     if (isFile())
         return project.resolveFilename (state [Ids::file].toString());
-    else
-        return File::nonexistent;
+
+    return File::nonexistent;
 }
 
 void Project::Item::setFile (const File& file)
@@ -670,8 +675,8 @@ struct ItemSorterWithGroupsAtStart
 
         if (firstIsGroup == secondIsGroup)
             return first [Ids::name].toString().compareIgnoreCase (second [Ids::name].toString());
-        else
-            return firstIsGroup ? -1 : 1;
+
+        return firstIsGroup ? -1 : 1;
     }
 };
 
