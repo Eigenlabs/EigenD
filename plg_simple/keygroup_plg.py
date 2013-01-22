@@ -579,7 +579,7 @@ class Agent(agent.Agent):
         self[27] = atom.Atom(domain=domain.String(), init='[]', names='physical mapping', protocols='mapper', policy=atom.default_policy(self.__set_physical_key_map))
         self[34] = atom.Atom(domain=domain.String(), init='[]', names='musical mapping', protocols='mapper', policy=atom.default_policy(self.__set_musical_key_map))
         self[35] = atom.Atom(domain=domain.String(), init='[]', names='course offset', policy=atom.default_policy(self.__set_course_offset))
-        self[38] = atom.Atom(domain=domain.String(), init='keygroup', names='label category', policy=atom.default_policy(self.__set_category))
+        self[38] = atom.Atom(domain=domain.String(), init='Keygroup', names='label category', policy=atom.default_policy(self.__set_category))
         self[39] = atom.Atom(domain=domain.String(), init='', names='label', policy=atom.default_policy(self.__set_label))
 
         self.add_verb2(3,'set([un],None)',callback=self.__untune)

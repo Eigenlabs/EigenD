@@ -401,7 +401,7 @@ class Agent(agent.Agent):
         # controller input/output to add labels
         self[16] = atom.Atom(domain=domain.Aniso(hints=(logic.make_term('continuous'),)), names='controller output', policy=atom.readonly_policy())
 
-        self[17] = atom.Atom(domain=domain.String(), init='plugin', names='label category', policy=atom.default_policy(self.__set_category))
+        self[17] = atom.Atom(domain=domain.String(), init='Plugin', names='label category', policy=atom.default_policy(self.__set_category))
         self[18] = atom.Atom(domain=domain.String(), init='', names='label', policy=atom.default_policy(self.__set_label))
 
         self.ctl_functor = piw.functor_backend(1, True)

@@ -31,7 +31,7 @@ class Agent(agent.Agent):
 
         self[1] = atom.Atom(domain=domain.Aniso(hints=(logic.make_term('continuous'),)), names='controller output', policy=atom.readonly_policy())
 
-        self[2] = atom.Atom(domain=domain.String(), init='label', names='label category', policy=atom.default_policy(self.__set_category))
+        self[2] = atom.Atom(domain=domain.String(), init='Label', names='label category', policy=atom.default_policy(self.__set_category))
         self[3] = atom.Atom(domain=domain.String(), init='', names='label', policy=atom.default_policy(self.__set_label))
 
         self.ctl_functor = piw.functor_backend(1, True)
