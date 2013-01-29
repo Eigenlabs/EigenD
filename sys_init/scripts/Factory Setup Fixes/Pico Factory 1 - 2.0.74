@@ -1,0 +1,9 @@
+description
+    This script fixes the Audio Unit rig 2 talker wrongly browsing for Audio
+    Unit rig 1.
+    
+script
+    empty join
+    audio unit rig 2 talker hey 1 called 1 cancel
+    audio unit rig 2 talker hey ' " eigenbrowser , audio unit rig 2 instrument audio unit plugin browse " do ' when 1 called 1 do
+    
