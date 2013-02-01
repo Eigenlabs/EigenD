@@ -362,7 +362,6 @@ class RigInput(atom.Atom):
         atom.Atom.__init__(self,ordinal=index,domain=domain.Aniso(),policy=policy,protocols='remove')
         self.set_connection_scope(scope)
 
-
     def destroy_input(self):
         del self.__output_peer[self.__index]
 
@@ -409,6 +408,7 @@ class RigInput(atom.Atom):
             del self.__monitors[iid]
             self.__setup()
 
+
 class InputList(collection.Collection):
     def __init__(self,scope,outer):
         self.__output_peer = None
@@ -443,7 +443,6 @@ class InputList(collection.Collection):
         j.set_names(' '.join(names))
         j.set_ordinal(ordinal)
         self[k] = j
-
 
     @async.coroutine('internal error')
     def instance_create(self,name):
@@ -517,6 +516,84 @@ class OutputList(atom.Atom):
         else:
             yield async.Coroutine.failure('output not in use')
 
+
+class InnerGroup(atom.Atom):
+    def __init__(self,scope,index,outer_peer):
+        self.__scope = scope
+        self.__index = index
+        self.__outer_peer = outer_peer
+
+        atom.Atom.__init__(self,names='group',ordinal=index,protocols='remove')
+
+        self.__name = scope
+        self[1] = OutputList(self.__name)
+        self[2] = InputList(self.__name,False)
+
+        self.__outer_peer[self.__index] = OuterGroup(self,index)
+
+
+class InnerGroupList(collection.Collection):
+    def __init__(self,scope):
+        self.__outer_peer = None
+        self.__scope = scope
+        collection.Collection.__init__(self,names='group')
+
+    def set_outer_peer(self,outer_peer):
+        self.__outer_peer = outer_peer
+        self.__outer_peer.set_peer(self)
+
+    def scope(self):
+        return self.__scope
+
+    def create_group(self,name):
+        names = name.split() if name else None
+        ordinal = None
+
+        if names:
+            try:
+                ordinal=int(names[-1])
+                names = names[:-1]
+            except:
+                ordinal = None
+        else:
+            names = ''
+        if not ordinal:
+            ordinal = self.freeinstance()
+
+        k = self.find_hole()
+        j = InnerGroup(self.__scope,k,self.__outer_peer)
+        j.set_names(' '.join(names))
+        j.set_ordinal(ordinal)
+        self[k] = j
+
+    @async.coroutine('internal error')
+    def instance_create(self,name):
+        k = self.find_hole()
+        j = InnerGroup(self.__scope,k,self.__outer_peer)
+        j.set_ordinal(name)
+        self[k] = j
+        yield async.Coroutine.success(j)
+
+    @async.coroutine('internal error')
+    def instance_wreck(self,k,e,name):
+        del self[k]
+        del self.__outer_peer[k]
+        yield async.Coroutine.success()
+
+    def dynamic_create(self,i):
+        return InnerGroup(self.__scope,i,self.__outer_peer)
+
+    def dynamic_destroy(self,i,v):
+        del self.__outer_peer[k]
+
+    @async.coroutine('internal error')
+    def rpc_delinstance(self,arg):
+        iid = paths.to_relative(paths.to_absolute(arg,scope=self.scope()))
+        r = collection.Collection.rpc_delinstance(self,iid)
+        yield r
+        yield async.Coroutine.completion(r.status(),*r.args(),**r.kwds())
+
+
 class InnerAgent(agent.Agent):
     def __init__(self,outer_agent):
         agent.Agent.__init__(self,signature=version,names='gateway',ordinal=1)
@@ -531,6 +608,7 @@ class InnerAgent(agent.Agent):
         self[1] = self.__workspace
         self[2] = OutputList(self.__name)
         self[3] = InputList(self.__name,False)
+        self[4] = InnerGroupList(self.__name)
 
         constraint = 'or([%s])' % ','.join(['[matches([%s],%s)]' % (m.replace('_',','),m) for m in self.__registry.modules()])
 
@@ -634,6 +712,62 @@ class InnerAgent(agent.Agent):
         self.__workspace.on_quit()
 
 
+class OuterGroup(atom.Atom):
+    def __init__(self,innergroup,index):
+        self.__index = index
+
+        atom.Atom.__init__(self,names='group',ordinal=index,protocols='remove')
+        self[1] = OutputList(None)
+        self[2] = InputList(None,True)
+        self[2].set_output_peer(innergroup[1])
+        innergroup[2].set_output_peer(self[1])
+        
+
+class OuterGroupList(atom.Atom):
+    def __init__(self,scope=None):
+        atom.Atom.__init__(self,names="group",protocols='create',dynlist=True)
+        self.__peer = None
+        self.__scope = scope
+
+    def scope(self):
+        return self.__scope
+
+    def load_state(self,state,delegate,phase):
+        if phase == 1:
+            delegate.set_deferred(self,state)
+            return async.success()
+
+        return atom.Atom.load_state(self,state,delegate,phase-1)
+
+    def set_peer(self,peer):
+        self.__peer = peer
+
+    def rpc_createinstance(self,arg):
+        return self.__peer.rpc_createinstance(arg)
+
+    def rpc_listinstances(self,arg):
+        return self.__peer.rpc_listinstances(arg)
+
+    def rpc_instancename(self,arg):
+        return self.get_property_string('name');
+
+    @async.coroutine('internal error')
+    def rpc_delinstance(self,arg):
+        iid = paths.to_relative(paths.to_absolute(arg,scope=self.scope()))
+        pid = None
+        for v in self.values():
+            if iid == v.id():
+                pid = v.input().id()
+                break
+
+        if pid:
+            r =  self.__peer.rpc_delinstance(pid)
+            yield r
+            yield async.Coroutine.completion(r.status(),*r.args(),**r.kwds())
+        else:
+            yield async.Coroutine.failure('output not in use')
+
+
 class OuterAgent(agent.Agent):
     def __init__(self,address,ordinal):
         agent.Agent.__init__(self,signature=version,names='rig',ordinal=ordinal,protocols='rigouter')
@@ -647,11 +781,10 @@ class OuterAgent(agent.Agent):
 
         self[2] = OutputList(None)
         self[3] = InputList(None,True)
-
         self[3].set_output_peer(self.__inner_agent[2])
-
         self.__inner_agent[3].set_output_peer(self[2])
-
+        self[4] = OuterGroupList()
+        self.__inner_agent[4].set_outer_peer(self[4])
 
         self.add_verb2(1,'create([],None,role(None,[abstract,matches([input])]),option(called,[abstract]))',self.__create_input)
         self.add_verb2(2,'create([],None,role(None,[abstract,matches([output])]),option(called,[abstract]))',self.__create_output)
