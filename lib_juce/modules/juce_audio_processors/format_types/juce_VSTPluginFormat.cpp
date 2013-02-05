@@ -72,6 +72,14 @@
  static void _clearfp() {}
 #endif
 
+#ifndef JUCE_VST_WRAPPER_LOAD_CUSTOM_MAIN
+ #define JUCE_VST_WRAPPER_LOAD_CUSTOM_MAIN
+#endif
+
+#ifndef JUCE_VST_WRAPPER_INVOKE_MAIN
+ #define JUCE_VST_WRAPPER_INVOKE_MAIN  effect = module->moduleMain (&audioMaster);
+#endif
+
 //==============================================================================
 const int fxbVersionNum = 1;
 
@@ -337,7 +345,7 @@ class ModuleHandle    : public ReferenceCountedObject
 public:
     //==============================================================================
     File file;
-    MainCall moduleMain;
+    MainCall moduleMain, customMain;
     String pluginName;
     ScopedPointer<XmlElement> vstXml;
 
@@ -380,7 +388,8 @@ public:
     //==============================================================================
     ModuleHandle (const File& file_)
         : file (file_),
-          moduleMain (0)
+          moduleMain (nullptr),
+          customMain (nullptr)
          #if JUCE_MAC
           #if JUCE_PPC
            , fragId (0)
@@ -412,16 +421,6 @@ public:
 
     bool open()
     {
-       #if JUCE_WINDOWS
-        static bool timePeriodSet = false;
-
-        if (! timePeriodSet)
-        {
-            timePeriodSet = true;
-            timeBeginPeriod (2);
-        }
-       #endif
-
         pluginName = file.getFileNameWithoutExtension();
 
         module.open (file.getFullPathName());
@@ -430,6 +429,8 @@ public:
 
         if (moduleMain == nullptr)
             moduleMain = (MainCall) module.getFunction ("main");
+
+        JUCE_VST_WRAPPER_LOAD_CUSTOM_MAIN
 
         if (moduleMain != nullptr)
         {
@@ -506,10 +507,12 @@ public:
                     {
                         moduleMain = (MainCall) CFBundleGetFunctionPointerForName (bundleRef, CFSTR("main_macho"));
 
-                        if (moduleMain == 0)
+                        if (moduleMain == nullptr)
                             moduleMain = (MainCall) CFBundleGetFunctionPointerForName (bundleRef, CFSTR("VSTPluginMain"));
 
-                        if (moduleMain != 0)
+                        JUCE_VST_WRAPPER_LOAD_CUSTOM_MAIN
+
+                        if (moduleMain != nullptr)
                         {
                             if (CFTypeRef name = CFBundleGetValueForInfoDictionaryKey (bundleRef, CFSTR("CFBundleName")))
                             {
@@ -611,7 +614,7 @@ public:
        #if JUCE_PPC
         if (fragId != 0)
         {
-            if (moduleMain != 0)
+            if (moduleMain != nullptr)
                 disposeMachOFromCFM ((void*) moduleMain);
 
             CloseConnection (&fragId);
@@ -744,7 +747,7 @@ public:
            #endif
           #endif
             {
-                effect = module->moduleMain (&audioMaster);
+                JUCE_VST_WRAPPER_INVOKE_MAIN
             }
 
             if (effect != nullptr && effect->magic == kEffectMagic)
@@ -993,24 +996,12 @@ public:
 
                 switch (position.frameRate)
                 {
-                    case AudioPlayHead::fps24:
-                        vstHostTime.smpteFrameRate = 0;
-                        vstHostTime.smpteOffset = (long) (position.timeInSeconds * 80 * 24 + 0.5);
-                        vstHostTime.flags |= kVstSmpteValid;
-                        break;
-
-                    case AudioPlayHead::fps25:
-                        vstHostTime.smpteFrameRate = 1;
-                        vstHostTime.smpteOffset = (long) (position.timeInSeconds * 80 * 25 + 0.5);
-                        vstHostTime.flags |= kVstSmpteValid;
-                        break;
-
-                    case AudioPlayHead::fps30:
-                        vstHostTime.smpteFrameRate = 3;
-                        vstHostTime.smpteOffset = (long) (position.timeInSeconds * 80 * 30 + 0.5);
-                        vstHostTime.flags |= kVstSmpteValid;
-                        break;
-
+                    case AudioPlayHead::fps24:       setHostTimeFrameRate (0, 24.0,  position.timeInSeconds); break;
+                    case AudioPlayHead::fps25:       setHostTimeFrameRate (1, 25.0,  position.timeInSeconds); break;
+                    case AudioPlayHead::fps2997:     setHostTimeFrameRate (2, 29.97, position.timeInSeconds); break;
+                    case AudioPlayHead::fps30:       setHostTimeFrameRate (3, 30.0,  position.timeInSeconds); break;
+                    case AudioPlayHead::fps2997drop: setHostTimeFrameRate (4, 29.97, position.timeInSeconds); break;
+                    case AudioPlayHead::fps30drop:   setHostTimeFrameRate (5, 29.97, position.timeInSeconds); break;
                     default: break;
                 }
 
@@ -1333,6 +1324,9 @@ public:
             case audioMasterPinConnected:
                 return isValidChannel (index, value == 0) ? 0 : 1; // (yes, 0 = true)
 
+            case audioMasterGetCurrentProcessLevel:
+                return isNonRealtime() ? 4 : 0;
+
             // none of these are handled (yet)..
             case audioMasterBeginEdit:
             case audioMasterEndEdit:
@@ -1343,7 +1337,6 @@ public:
             case audioMasterGetPreviousPlug:
             case audioMasterGetNextPlug:
             case audioMasterWillReplaceOrAccumulate:
-            case audioMasterGetCurrentProcessLevel:
             case audioMasterOfflineStart:
             case audioMasterOfflineRead:
             case audioMasterOfflineWrite:
@@ -1689,6 +1682,13 @@ private:
     VstTimeInfo vstHostTime;
 
     //==============================================================================
+    void setHostTimeFrameRate (long frameRateIndex, double frameRate, double currentTime) noexcept
+    {
+        vstHostTime.flags |= kVstSmpteValid;
+        vstHostTime.smpteFrameRate  = frameRateIndex;
+        vstHostTime.smpteOffset     = (long) (currentTime * 80.0 * frameRate + 0.5);
+    }
+
     bool restoreProgramSettings (const fxProgram* const prog)
     {
         if (vst_swap (prog->chunkMagic) == 'CcnK' && vst_swap (prog->fxMagic) == 'FxCk')

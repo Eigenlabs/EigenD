@@ -164,7 +164,7 @@ class List(atom.Atom):
     def __set_base(self,a,prop,fr,fo,to):
         to_str = action.abstract_string(to)
         to_val = float(to_str)/100.0
-        if to_val < 0 or to_val > 1:
+        if to_val < -1 or to_val > 1:
             return errors.invalid_thing(to_str, 'set')
 
         try:

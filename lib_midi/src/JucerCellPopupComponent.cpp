@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:49:45pm
+  Creation date:  5 Feb 2013 11:51:07am
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -431,7 +431,7 @@ CellPopupComponent::CellPopupComponent ()
     boundslo->addListener (this);
 
     addAndMakeVisible (boundsbase = new Slider ("boundsbase dial"));
-    boundsbase->setRange (0, 100, 1);
+    boundsbase->setRange (-100, 100, 1);
     boundsbase->setSliderStyle (Slider::Rotary);
     boundsbase->setTextBoxStyle (Slider::NoTextBox, true, 45, 14);
     boundsbase->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
@@ -540,6 +540,7 @@ CellPopupComponent::CellPopupComponent ()
 
     setSize (208, 480);
 
+
     //[Constructor] You can add your own custom stuff here..
     curve_ = CURVE_LINEAR;
     //[/Constructor]
@@ -578,6 +579,7 @@ CellPopupComponent::~CellPopupComponent()
     deleteAndZero (control_scope_channel);
     deleteAndZero (control_scope_channel_number);
     deleteAndZero (bounds_origin_return);
+
 
     //[Destructor]. You can add your own custom destruction code here..
     //[/Destructor]
@@ -652,7 +654,7 @@ void CellPopupComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     else if (sliderThatWasMoved == boundsbase)
     {
         //[UserSliderCode_boundsbase] -- add your slider handling code here..
-        base->setText(juce::String((unsigned)boundsbase->getValue()), false);
+        base->setText(juce::String((int)boundsbase->getValue()), false);
         updateMapping();
         //[/UserSliderCode_boundsbase]
     }
@@ -880,7 +882,7 @@ BEGIN_JUCER_METADATA
           virtualName="" explicitFocusOrder="0" pos="85 90 40 40" thumbcol="ff8a8a8a"
           rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff" textboxtext="ffeeeeee"
           textboxbkgd="ffffff" textboxhighlight="40000000" textboxoutline="0"
-          min="0" max="100" int="1" style="Rotary" textBoxPos="NoTextBox"
+          min="-100" max="100" int="1" style="Rotary" textBoxPos="NoTextBox"
           textBoxEditable="0" textBoxWidth="45" textBoxHeight="14" skewFactor="1"/>
   <SLIDER name="boundshi dial" id="1c37d364908c9764" memberName="boundshi"
           virtualName="" explicitFocusOrder="0" pos="149 90 40 40" thumbcol="ff8a8a8a"
@@ -918,3 +920,8 @@ BEGIN_JUCER_METADATA
 END_JUCER_METADATA
 */
 #endif
+
+
+
+//[EndFile] You can add extra defines here...
+//[/EndFile]

@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  28 Jan 2011 3:49:45pm
+  Creation date:  5 Feb 2013 11:51:07am
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_74F99BDF__
-#define __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_74F99BDF__
+#ifndef __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_742110D3__
+#define __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_742110D3__
 
 //[Headers]     -- You can add your own extra header files here --
 #include <lib_midi/control_mapper_gui.h>
@@ -64,8 +64,6 @@ public:
     void comboBoxChanged (ComboBox* comboBoxThatHasChanged);
 
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
@@ -103,11 +101,12 @@ private:
     ComboBox* control_scope_channel_number;
     ToggleButton* bounds_origin_return;
 
+
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    CellPopupComponent (const CellPopupComponent&);
-    const CellPopupComponent& operator= (const CellPopupComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CellPopupComponent)
 };
 
+//[EndFile] You can add extra defines here...
+//[/EndFile]
 
-#endif   // __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_74F99BDF__
+#endif   // __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_742110D3__

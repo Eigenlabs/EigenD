@@ -39,6 +39,7 @@ StringArray ProjectExporter::getExporterNames()
     s.add (MSVCProjectExporterVC2005::getName());
     s.add (MSVCProjectExporterVC2008::getName());
     s.add (MSVCProjectExporterVC2010::getName());
+    s.add (MSVCProjectExporterVC2012::getName());
     s.add (MakefileProjectExporter::getNameLinux());
     s.add (AndroidProjectExporter::getNameAndroid());
     return s;
@@ -68,8 +69,9 @@ ProjectExporter* ProjectExporter::createNewExporter (Project& project, const int
         case 2:     exp = new MSVCProjectExporterVC2005 (project, ValueTree (MSVCProjectExporterVC2005::getValueTreeTypeName())); break;
         case 3:     exp = new MSVCProjectExporterVC2008 (project, ValueTree (MSVCProjectExporterVC2008::getValueTreeTypeName())); break;
         case 4:     exp = new MSVCProjectExporterVC2010 (project, ValueTree (MSVCProjectExporterVC2010::getValueTreeTypeName())); break;
-        case 5:     exp = new MakefileProjectExporter   (project, ValueTree (MakefileProjectExporter  ::getValueTreeTypeName())); break;
-        case 6:     exp = new AndroidProjectExporter    (project, ValueTree (AndroidProjectExporter   ::getValueTreeTypeName())); break;
+        case 5:     exp = new MSVCProjectExporterVC2012 (project, ValueTree (MSVCProjectExporterVC2012::getValueTreeTypeName())); break;
+        case 6:     exp = new MakefileProjectExporter   (project, ValueTree (MakefileProjectExporter  ::getValueTreeTypeName())); break;
+        case 7:     exp = new AndroidProjectExporter    (project, ValueTree (AndroidProjectExporter   ::getValueTreeTypeName())); break;
         default:    jassertfalse; return 0;
     }
 
@@ -96,6 +98,7 @@ ProjectExporter* ProjectExporter::createExporter (Project& project, const ValueT
     ProjectExporter*       exp = MSVCProjectExporterVC2005::createForSettings (project, settings);
     if (exp == nullptr)    exp = MSVCProjectExporterVC2008::createForSettings (project, settings);
     if (exp == nullptr)    exp = MSVCProjectExporterVC2010::createForSettings (project, settings);
+    if (exp == nullptr)    exp = MSVCProjectExporterVC2012::createForSettings (project, settings);
     if (exp == nullptr)    exp = XCodeProjectExporter     ::createForSettings (project, settings);
     if (exp == nullptr)    exp = MakefileProjectExporter  ::createForSettings (project, settings);
     if (exp == nullptr)    exp = AndroidProjectExporter   ::createForSettings (project, settings);
@@ -117,6 +120,7 @@ bool ProjectExporter::canProjectBeLaunched (Project* project)
             MSVCProjectExporterVC2005::getValueTreeTypeName(),
             MSVCProjectExporterVC2008::getValueTreeTypeName(),
             MSVCProjectExporterVC2010::getValueTreeTypeName(),
+            MSVCProjectExporterVC2012::getValueTreeTypeName(),
            #elif JUCE_LINUX
             // (this doesn't currently launch.. not really sure what it would do on linux)
             //MakefileProjectExporter::getValueTreeTypeName(),
@@ -399,7 +403,7 @@ void ProjectExporter::createDefaultConfigs()
 
         config->getNameValue() = debugConfig ? "Debug" : "Release";
         config->isDebugValue() = debugConfig;
-        config->getOptimisationLevel() = debugConfig ? 1 : 2;
+        config->getOptimisationLevel() = debugConfig ? optimisationOff : optimiseMinSize;
         config->getTargetBinaryName() = project.getProjectFilenameRoot();
     }
 }
@@ -504,8 +508,12 @@ ProjectExporter::BuildConfiguration::~BuildConfiguration()
 
 String ProjectExporter::BuildConfiguration::getGCCOptimisationFlag() const
 {
-    const int level = getOptimisationLevelInt();
-    return String (level <= 1 ? "0" : (level == 2 ? "s" : "3"));
+    switch (getOptimisationLevelInt())
+    {
+        case optimiseMaxSpeed:  return "3";
+        case optimiseMinSize:   return "s";
+        default:                return "0";
+    }
 }
 
 void ProjectExporter::BuildConfiguration::createPropertyEditors (PropertyListBuilder& props)
@@ -516,8 +524,8 @@ void ProjectExporter::BuildConfiguration::createPropertyEditors (PropertyListBui
     props.add (new BooleanPropertyComponent (isDebugValue(), "Debug mode", "Debugging enabled"),
                "If enabled, this means that the configuration should be built with debug synbols.");
 
-    const char* optimisationLevels[] = { "No optimisation", "Optimise for size and speed", "Optimise for maximum speed", 0 };
-    const int optimisationLevelValues[] = { 1, 2, 3, 0 };
+    const char* optimisationLevels[] = { "No optimisation", "Minimise size", "Maximise speed", 0 };
+    const int optimisationLevelValues[] = { optimisationOff, optimiseMinSize, optimiseMaxSpeed, 0 };
     props.add (new ChoicePropertyComponent (getOptimisationLevel(), "Optimisation",
                                             StringArray (optimisationLevels), Array<var> (optimisationLevelValues)),
                "The optimisation level for this configuration");
