@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  5 Feb 2013 11:51:07am
+  Creation date:  6 Feb 2013 4:38:36pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -34,7 +34,7 @@ void CellPopupComponent::initialize(midi::mapper_cell_editor_t *cell_editor)
 
     updateComponent(cell_editor);
 
-    int height = 480;
+    int height = 550;
 
     if(!cell_editor->edit_control_scope())
     {
@@ -187,7 +187,7 @@ void CellPopupComponent::updateComponent(midi::mapper_cell_editor_t *cell_editor
         }
     }
 
-    curve_ = info.curve_;
+    curve->setSelectedId(info.curve_+1);
 }
 
 void CellPopupComponent::setFocusOrder()
@@ -245,7 +245,7 @@ void CellPopupComponent::updateMapping()
     cell_editor_->map(mapping_enabled->getToggleState(), scale,
         boundslo->getValue()/100.f, boundsbase->getValue()/100.f, boundshi->getValue()/100.f,
         bounds_origin_return->getToggleState(), data_decimation->getValue(), scope, channel,
-        resolution, secondary_cc->getSelectedId(), curve_);
+        resolution, secondary_cc->getSelectedId(), curve->getSelectedId()-1);
 }
 //[/MiscUserDefs]
 
@@ -279,7 +279,9 @@ CellPopupComponent::CellPopupComponent ()
       data_decimation (0),
       control_scope_channel (0),
       control_scope_channel_number (0),
-      bounds_origin_return (0)
+      bounds_origin_return (0),
+      curve_group (0),
+      curve (0)
 {
     addAndMakeVisible (bounds_group = new GroupComponent ("bounds group",
                                                           "Bounds (in %)"));
@@ -512,6 +514,22 @@ CellPopupComponent::CellPopupComponent ()
     bounds_origin_return->addListener (this);
     bounds_origin_return->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
+    addAndMakeVisible (curve_group = new GroupComponent ("curve group",
+                                                         "Curve"));
+    curve_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
+    curve_group->setColour (GroupComponent::textColourId, Colour (0xffeeeeee));
+
+    addAndMakeVisible (curve = new ComboBox ("curve combo box"));
+    curve->setEditableText (false);
+    curve->setJustificationType (Justification::centredLeft);
+    curve->setTextWhenNothingSelected (String::empty);
+    curve->setTextWhenNoChoicesAvailable ("(no choices)");
+    curve->addItem ("linear", 1);
+    curve->addItem ("cubic", 2);
+    curve->addItem ("quadratic", 3);
+    curve->addItem ("step", 4);
+    curve->addListener (this);
+
 
     //[UserPreSize]
     cell_editor_ = 0;
@@ -538,11 +556,9 @@ CellPopupComponent::CellPopupComponent ()
     control_scope_channel_number->setEnabled(false);
     //[/UserPreSize]
 
-    setSize (208, 480);
-
+    setSize (208, 550);
 
     //[Constructor] You can add your own custom stuff here..
-    curve_ = CURVE_LINEAR;
     //[/Constructor]
 }
 
@@ -579,6 +595,8 @@ CellPopupComponent::~CellPopupComponent()
     deleteAndZero (control_scope_channel);
     deleteAndZero (control_scope_channel_number);
     deleteAndZero (bounds_origin_return);
+    deleteAndZero (curve_group);
+    deleteAndZero (curve);
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -597,38 +615,40 @@ void CellPopupComponent::paint (Graphics& g)
 
 void CellPopupComponent::resized()
 {
-    bounds_group->setBounds (8, 72, 192, 112);
-    lo_label->setBounds (16, 125, 30, 24);
-    base_label->setBounds (74, 125, 40, 24);
+    bounds_group->setBounds (8, 70, 192, 112);
+    lo_label->setBounds (16, 123, 30, 24);
+    base_label->setBounds (74, 123, 40, 24);
     scale_group->setBounds (8, 8, 192, 56);
-    control_scope_group->setBounds (8, 254, 192, 82);
+    control_scope_group->setBounds (8, 324, 192, 82);
     scale_factor->setBounds (21, 30, 107, 24);
     mapping_enabled->setBounds (64, getHeight() - 24, 72, 24);
-    control_scope_global->setBounds (16, 272, 72, 24);
-    control_scope_pernote->setBounds (104, 272, 80, 24);
+    control_scope_global->setBounds (16, 342, 72, 24);
+    control_scope_pernote->setBounds (104, 342, 80, 24);
     clear_mapping->setBounds (8, getHeight() - 24, 48, 24);
-    resolution_group->setBounds (8, 342, 192, 96);
-    resolution_7bit->setBounds (24, 366, 72, 24);
-    resolution_14bit->setBounds (104, 366, 80, 24);
-    secondary_cc->setBounds (24, 398, 160, 24);
-    lo->setBounds (33, 125, 36, 24);
-    base->setBounds ((getWidth() / 2) + 16 - ((36) / 2), 125, 36, 24);
-    hi_label->setBounds (141, 125, 32, 24);
-    hi->setBounds (157, 125, 36, 24);
+    resolution_group->setBounds (8, 412, 192, 96);
+    resolution_7bit->setBounds (24, 436, 72, 24);
+    resolution_14bit->setBounds (104, 436, 80, 24);
+    secondary_cc->setBounds (24, 468, 160, 24);
+    lo->setBounds (33, 123, 36, 24);
+    base->setBounds ((getWidth() / 2) + 16 - ((36) / 2), 123, 36, 24);
+    hi_label->setBounds (141, 123, 32, 24);
+    hi->setBounds (157, 123, 36, 24);
     ok->setBounds (152, getHeight() - 24, 48, 24);
-    boundslo->setBounds (21, 90, 40, 40);
-    boundsbase->setBounds (85, 90, 40, 40);
-    boundshi->setBounds (149, 90, 40, 40);
+    boundslo->setBounds (21, 88, 40, 40);
+    boundsbase->setBounds (85, 88, 40, 40);
+    boundshi->setBounds (149, 88, 40, 40);
     scale_factor_invert->setBounds (130, 32, 64, 24);
-    data_decimation_group->setBounds (8, 192, 192, 56);
-    data_decimation->setBounds (21, 214, 166, 24);
-    control_scope_channel->setBounds (16, 304, 112, 24);
-    control_scope_channel_number->setBounds (136, 301, 48, 24);
-    bounds_origin_return->setBounds (16, 152, 168, 24);
+    data_decimation_group->setBounds (8, 188, 192, 56);
+    data_decimation->setBounds (21, 210, 166, 24);
+    control_scope_channel->setBounds (16, 374, 112, 24);
+    control_scope_channel_number->setBounds (136, 371, 48, 24);
+    bounds_origin_return->setBounds (16, 150, 168, 24);
+    curve_group->setBounds (8, 250, 192, 68);
+    curve->setBounds (24, 278, 160, 24);
     //[UserResized] Add your own custom resize handling here..
     if(!control_scope_channel->isVisible())
     {
-        control_scope_group->setBounds (8, 254, 192, 50);
+        control_scope_group->setBounds (8, 324, 192, 50);
     }
     //[/UserResized]
 }
@@ -771,6 +791,12 @@ void CellPopupComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
         updateMapping();
         //[/UserComboBoxCode_control_scope_channel_number]
     }
+    else if (comboBoxThatHasChanged == curve)
+    {
+        //[UserComboBoxCode_curve] -- add your combo box handling code here..
+        updateMapping();
+        //[/UserComboBoxCode_curve]
+    }
 
     //[UsercomboBoxChanged_Post]
     //[/UsercomboBoxChanged_Post]
@@ -793,18 +819,18 @@ BEGIN_JUCER_METADATA
 <JUCER_COMPONENT documentType="Component" className="CellPopupComponent" componentName="CellPopup"
                  parentClasses="public Component" constructorParams="" variableInitialisers=""
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
-                 fixedSize="1" initialWidth="208" initialHeight="480">
+                 fixedSize="1" initialWidth="208" initialHeight="550">
   <BACKGROUND backgroundColour="0"/>
   <GROUPCOMPONENT name="bounds group" id="6d888bc9426a2e47" memberName="bounds_group"
-                  virtualName="" explicitFocusOrder="0" pos="8 72 192 112" outlinecol="66eeeeee"
+                  virtualName="" explicitFocusOrder="0" pos="8 70 192 112" outlinecol="66eeeeee"
                   textcol="ffeeeeee" title="Bounds (in %)"/>
   <LABEL name="lo label" id="7aa5189d547c63f1" memberName="lo_label" virtualName=""
-         explicitFocusOrder="0" pos="16 125 30 24" textCol="ffeeeeee"
+         explicitFocusOrder="0" pos="16 123 30 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="Lo:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="33"/>
   <LABEL name="base label" id="d74fb4f0a0a61833" memberName="base_label"
-         virtualName="" explicitFocusOrder="0" pos="74 125 40 24" textCol="ffeeeeee"
+         virtualName="" explicitFocusOrder="0" pos="74 123 40 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="Base:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="33"/>
@@ -812,7 +838,7 @@ BEGIN_JUCER_METADATA
                   virtualName="" explicitFocusOrder="0" pos="8 8 192 56" outlinecol="66eeeeee"
                   textcol="ffeeeeee" title="Scale factor"/>
   <GROUPCOMPONENT name="control scope group" id="130d1256c3688b43" memberName="control_scope_group"
-                  virtualName="" explicitFocusOrder="0" pos="8 254 192 82" outlinecol="66eeeeee"
+                  virtualName="" explicitFocusOrder="0" pos="8 324 192 82" outlinecol="66eeeeee"
                   textcol="ffeeeeee" title="Control scope"/>
   <SLIDER name="scale slider" id="c62d7549b8b11f7d" memberName="scale_factor"
           virtualName="" explicitFocusOrder="0" pos="21 30 107 24" thumbcol="ff8a8a8a"
@@ -825,47 +851,47 @@ BEGIN_JUCER_METADATA
                 buttonText="Enabled" connectedEdges="0" needsCallback="1" radioGroupId="0"
                 state="1"/>
   <TOGGLEBUTTON name="global scope toggle button" id="597f3f0704f60862" memberName="control_scope_global"
-                virtualName="" explicitFocusOrder="0" pos="16 272 72 24" txtcol="ffeeeeee"
+                virtualName="" explicitFocusOrder="0" pos="16 342 72 24" txtcol="ffeeeeee"
                 buttonText="Global" connectedEdges="0" needsCallback="1" radioGroupId="1"
                 state="1"/>
   <TOGGLEBUTTON name="pernote scope toggle button" id="9a5b8941fc384f38" memberName="control_scope_pernote"
-                virtualName="" explicitFocusOrder="0" pos="104 272 80 24" txtcol="ffeeeeee"
+                virtualName="" explicitFocusOrder="0" pos="104 342 80 24" txtcol="ffeeeeee"
                 buttonText="Per-note" connectedEdges="0" needsCallback="1" radioGroupId="1"
                 state="0"/>
   <TEXTBUTTON name="clear mapping button" id="ed011a91665c322b" memberName="clear_mapping"
               virtualName="" explicitFocusOrder="0" pos="8 24R 48 24" bgColOff="ffc1c1c1"
               buttonText="Clear" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <GROUPCOMPONENT name="resolution group" id="b0c6d411483e371d" memberName="resolution_group"
-                  virtualName="" explicitFocusOrder="0" pos="8 342 192 96" outlinecol="66eeeeee"
+                  virtualName="" explicitFocusOrder="0" pos="8 412 192 96" outlinecol="66eeeeee"
                   textcol="ffeeeeee" title="Resolution"/>
   <TOGGLEBUTTON name="7bit resolution toggle button" id="f6462456a441a00f" memberName="resolution_7bit"
-                virtualName="" explicitFocusOrder="0" pos="24 366 72 24" txtcol="ffeeeeee"
+                virtualName="" explicitFocusOrder="0" pos="24 436 72 24" txtcol="ffeeeeee"
                 buttonText="7 bit" connectedEdges="0" needsCallback="1" radioGroupId="2"
                 state="1"/>
   <TOGGLEBUTTON name="14 bit resolution toggle button" id="d12409e4a3754609"
                 memberName="resolution_14bit" virtualName="" explicitFocusOrder="0"
-                pos="104 366 80 24" txtcol="ffeeeeee" buttonText="14 bit" connectedEdges="0"
+                pos="104 436 80 24" txtcol="ffeeeeee" buttonText="14 bit" connectedEdges="0"
                 needsCallback="1" radioGroupId="2" state="0"/>
   <COMBOBOX name="secondary cc combo box" id="af7acf92d99991de" memberName="secondary_cc"
-            virtualName="" explicitFocusOrder="0" pos="24 398 160 24" editable="0"
+            virtualName="" explicitFocusOrder="0" pos="24 468 160 24" editable="0"
             layout="33" items="" textWhenNonSelected="" textWhenNoItems="(no choices)"/>
   <LABEL name="lo" id="471687e1a09eef00" memberName="lo" virtualName=""
-         explicitFocusOrder="0" pos="33 125 36 24" textCol="ffeeeeee"
+         explicitFocusOrder="0" pos="33 123 36 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="0" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="34"/>
   <LABEL name="base" id="b15f2763d2b38be6" memberName="base" virtualName=""
-         explicitFocusOrder="0" pos="16Cc 125 36 24" textCol="ffeeeeee"
+         explicitFocusOrder="0" pos="16Cc 123 36 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="0" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="34"/>
   <LABEL name="hi label" id="800da5e563ce405" memberName="hi_label" virtualName=""
-         explicitFocusOrder="0" pos="141 125 32 24" textCol="ffeeeeee"
+         explicitFocusOrder="0" pos="141 123 32 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="Hi:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="33"/>
   <LABEL name="hi" id="edb873f4838f0da2" memberName="hi" virtualName=""
-         explicitFocusOrder="0" pos="157 125 36 24" textCol="ffeeeeee"
+         explicitFocusOrder="0" pos="157 123 36 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="100" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15" bold="0" italic="0" justification="34"/>
@@ -873,19 +899,19 @@ BEGIN_JUCER_METADATA
               explicitFocusOrder="0" pos="152 24R 48 24" bgColOff="ffc1c1c1"
               buttonText="Ok" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <SLIDER name="boundslo dial" id="7b019cec9fcb7ea1" memberName="boundslo"
-          virtualName="" explicitFocusOrder="0" pos="21 90 40 40" thumbcol="ff8a8a8a"
+          virtualName="" explicitFocusOrder="0" pos="21 88 40 40" thumbcol="ff8a8a8a"
           trackcol="7fffffff" rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff"
           textboxtext="ffeeeeee" textboxbkgd="ffffff" textboxhighlight="40000000"
           textboxoutline="0" min="0" max="100" int="1" style="Rotary" textBoxPos="NoTextBox"
           textBoxEditable="0" textBoxWidth="45" textBoxHeight="14" skewFactor="1"/>
   <SLIDER name="boundsbase dial" id="2db1da6e8c60e90c" memberName="boundsbase"
-          virtualName="" explicitFocusOrder="0" pos="85 90 40 40" thumbcol="ff8a8a8a"
+          virtualName="" explicitFocusOrder="0" pos="85 88 40 40" thumbcol="ff8a8a8a"
           rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff" textboxtext="ffeeeeee"
           textboxbkgd="ffffff" textboxhighlight="40000000" textboxoutline="0"
           min="-100" max="100" int="1" style="Rotary" textBoxPos="NoTextBox"
           textBoxEditable="0" textBoxWidth="45" textBoxHeight="14" skewFactor="1"/>
   <SLIDER name="boundshi dial" id="1c37d364908c9764" memberName="boundshi"
-          virtualName="" explicitFocusOrder="0" pos="149 90 40 40" thumbcol="ff8a8a8a"
+          virtualName="" explicitFocusOrder="0" pos="149 88 40 40" thumbcol="ff8a8a8a"
           rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff" textboxtext="ffeeeeee"
           textboxbkgd="ffffff" textboxhighlight="40000000" textboxoutline="0"
           min="0" max="100" int="1" style="Rotary" textBoxPos="NoTextBox"
@@ -895,26 +921,33 @@ BEGIN_JUCER_METADATA
                 pos="130 32 64 24" txtcol="ffeeeeee" buttonText="Invert" connectedEdges="0"
                 needsCallback="1" radioGroupId="0" state="0"/>
   <GROUPCOMPONENT name="data decimation group" id="712092c3774a0aa8" memberName="data_decimation_group"
-                  virtualName="" explicitFocusOrder="0" pos="8 192 192 56" outlinecol="66eeeeee"
+                  virtualName="" explicitFocusOrder="0" pos="8 188 192 56" outlinecol="66eeeeee"
                   textcol="ffeeeeee" title="Data decimation (in ms)"/>
   <SLIDER name="data decimation slider" id="8b94f735d1a426e9" memberName="data_decimation"
-          virtualName="" explicitFocusOrder="0" pos="21 214 166 24" thumbcol="ff8a8a8a"
+          virtualName="" explicitFocusOrder="0" pos="21 210 166 24" thumbcol="ff8a8a8a"
           rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
           textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
           max="100" int="1" style="LinearBar" textBoxPos="TextBoxLeft"
           textBoxEditable="0" textBoxWidth="45" textBoxHeight="20" skewFactor="1"/>
   <TOGGLEBUTTON name="channel scope toggle button" id="601cb1dfa2e060cf" memberName="control_scope_channel"
-                virtualName="" explicitFocusOrder="0" pos="16 304 112 24" txtcol="ffeeeeee"
+                virtualName="" explicitFocusOrder="0" pos="16 374 112 24" txtcol="ffeeeeee"
                 buttonText="Fixed channel" connectedEdges="0" needsCallback="1"
                 radioGroupId="1" state="0"/>
   <COMBOBOX name="fixed channel combo box" id="cf5597acdc45560c" memberName="control_scope_channel_number"
-            virtualName="" explicitFocusOrder="0" pos="136 301 48 24" editable="0"
+            virtualName="" explicitFocusOrder="0" pos="136 371 48 24" editable="0"
             layout="34" items="1&#10;2&#10;3&#10;4&#10;5&#10;6&#10;7&#10;8&#10;9&#10;10&#10;11&#10;12&#10;13&#10;14&#10;15&#10;16"
             textWhenNonSelected="" textWhenNoItems="(no choices)"/>
   <TOGGLEBUTTON name="bounds return to origin" id="8d7dccf06a79a45b" memberName="bounds_origin_return"
-                virtualName="" explicitFocusOrder="0" pos="16 152 168 24" txtcol="ffeeeeee"
+                virtualName="" explicitFocusOrder="0" pos="16 150 168 24" txtcol="ffeeeeee"
                 buttonText="Always return to origin" connectedEdges="0" needsCallback="1"
                 radioGroupId="0" state="0"/>
+  <GROUPCOMPONENT name="curve group" id="a986178fe44e11ac" memberName="curve_group"
+                  virtualName="" explicitFocusOrder="0" pos="8 250 192 68" outlinecol="66eeeeee"
+                  textcol="ffeeeeee" title="Curve"/>
+  <COMBOBOX name="curve combo box" id="b74a35fbce3031e7" memberName="curve"
+            virtualName="" explicitFocusOrder="0" pos="24 278 160 24" editable="0"
+            layout="33" items="linear&#10;cubic&#10;quadratic&#10;step"
+            textWhenNonSelected="" textWhenNoItems="(no choices)"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
