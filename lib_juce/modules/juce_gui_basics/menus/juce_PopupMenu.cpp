@@ -712,7 +712,7 @@ private:
             if (totalW > maxMenuW)
             {
                 numColumns = jmax (1, numColumns - 1);
-                totalW = workOutBestSize (maxMenuW); // to update col widths
+                workOutBestSize (maxMenuW); // to update col widths
                 break;
             }
             else if (totalW > maxMenuW / 2 || contentHeight < maxMenuH)
@@ -1602,9 +1602,9 @@ void PopupMenu::setLookAndFeel (LookAndFeel* const newLookAndFeel)
 }
 
 //==============================================================================
-PopupMenu::CustomComponent::CustomComponent (const bool isTriggeredAutomatically)
+PopupMenu::CustomComponent::CustomComponent (bool autoTrigger)
     : isHighlighted (false),
-      triggeredAutomatically (isTriggeredAutomatically)
+      triggeredAutomatically (autoTrigger)
 {
 }
 

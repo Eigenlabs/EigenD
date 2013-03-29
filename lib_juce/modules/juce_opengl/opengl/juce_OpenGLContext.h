@@ -188,6 +188,8 @@ public:
         fairly system-dependent, but 0 turns off syncing, 1 makes it swap on frame-boundaries,
         and greater numbers indicate that it should swap less often.
 
+        By default, this will be set to 1.
+
         Returns true if it sets the value successfully - some platforms won't support
         this setting.
     */
@@ -219,10 +221,13 @@ public:
                                 used for scaling of the coordinates.
         @param contextHeight    the height of the context or framebuffer that is being drawn into,
                                 used for vertical flipping of the y coordinates.
+        @param textureOriginIsBottomLeft    if true, the texture's origin is treated as being at
+                                (0, 0). If false, it is assumed to be (0, 1)
     */
     void copyTexture (const Rectangle<int>& targetClipArea,
                       const Rectangle<int>& anchorPosAndTextureSize,
-                      int contextWidth, int contextHeight);
+                      int contextWidth, int contextHeight,
+                      bool textureOriginIsBottomLeft);
 
 
     //==============================================================================

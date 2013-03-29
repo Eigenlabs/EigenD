@@ -182,8 +182,14 @@ struct AAXClasses
         float** outputChannels;
         int32_t* bufferSize;
         int32_t* bypass;
+
+       #if JucePlugin_WantsMidiInput
         AAX_IMIDINode* midiNodeIn;
+       #endif
+
+       #if JucePlugin_ProducesMidiOutput
         AAX_IMIDINode* midiNodeOut;
+       #endif
 
         PluginInstanceInfo* pluginInstance;
         int32_t* isPrepared;
@@ -197,12 +203,32 @@ struct AAXClasses
             outputChannels  = AAX_FIELD_INDEX (JUCEAlgorithmContext, outputChannels),
             bufferSize      = AAX_FIELD_INDEX (JUCEAlgorithmContext, bufferSize),
             bypass          = AAX_FIELD_INDEX (JUCEAlgorithmContext, bypass),
+
+           #if JucePlugin_WantsMidiInput
             midiNodeIn      = AAX_FIELD_INDEX (JUCEAlgorithmContext, midiNodeIn),
+           #endif
+
+           #if JucePlugin_ProducesMidiOutput
             midiNodeOut     = AAX_FIELD_INDEX (JUCEAlgorithmContext, midiNodeOut),
+           #endif
+
             pluginInstance  = AAX_FIELD_INDEX (JUCEAlgorithmContext, pluginInstance),
             preparedFlag    = AAX_FIELD_INDEX (JUCEAlgorithmContext, isPrepared)
         };
     };
+
+   #if JucePlugin_WantsMidiInput
+    static AAX_IMIDINode* getMidiNodeIn (const JUCEAlgorithmContext& c) noexcept   { return c.midiNodeIn; }
+   #else
+    static AAX_IMIDINode* getMidiNodeIn (const JUCEAlgorithmContext&) noexcept     { return nullptr; }
+   #endif
+
+   #if JucePlugin_ProducesMidiOutput
+    AAX_IMIDINode* midiNodeOut;
+    static AAX_IMIDINode* getMidiNodeOut (const JUCEAlgorithmContext& c) noexcept  { return c.midiNodeOut; }
+   #else
+    static AAX_IMIDINode* getMidiNodeOut (const JUCEAlgorithmContext&) noexcept    { return nullptr; }
+   #endif
 
     //==============================================================================
     class JuceAAX_GUI   : public AAX_CEffectGUI
@@ -247,8 +273,10 @@ struct AAXClasses
             if (component != nullptr)
             {
                 JUCE_AUTORELEASEPOOL
-                component->removeFromDesktop();
-                component = nullptr;
+                {
+                    component->removeFromDesktop();
+                    component = nullptr;
+                }
             }
         }
 
@@ -423,7 +451,7 @@ struct AAXClasses
 
                 case JUCEAlgorithmIDs::preparedFlag:
                 {
-                    preparePlugin();
+                    const_cast<JuceAAX_Processor*>(this)->preparePlugin();
 
                     const size_t numObjects = dataSize / sizeof (uint32_t);
                     uint32_t* const objects = static_cast <uint32_t*> (data);
@@ -457,29 +485,35 @@ struct AAXClasses
         bool getCurrentPosition (juce::AudioPlayHead::CurrentPositionInfo& info)
         {
             const AAX_ITransport& transport = *Transport();
+
+            info.bpm = 0.0;
             check (transport.GetCurrentTempo (&info.bpm));
 
-            int32_t num, denom;
-            transport.GetCurrentMeter (&num, &denom);
-            info.timeSigNumerator = num;
-            info.timeSigDenominator = denom;
+            int32_t num = 4, den = 4;
+            transport.GetCurrentMeter (&num, &den);
+            info.timeSigNumerator   = (int) num;
+            info.timeSigDenominator = (int) den;
 
+            info.timeInSamples = 0;
             check (transport.GetCurrentNativeSampleLocation (&info.timeInSamples));
             info.timeInSeconds = info.timeInSamples / getSampleRate();
 
-            int64_t ticks;
+            int64_t ticks = 0;
             check (transport.GetCurrentTickPosition (&ticks));
             info.ppqPosition = ticks / 960000.0;
 
-            int64_t loopStartTick, loopEndTick;
+            info.isLooping = false;
+            int64_t loopStartTick = 0, loopEndTick = 0;
             check (transport.GetCurrentLoopPosition (&info.isLooping, &loopStartTick, &loopEndTick));
             info.ppqLoopStart = loopStartTick / 960000.0;
             info.ppqLoopEnd   = loopEndTick   / 960000.0;
 
             // No way to get these: (?)
+            info.isPlaying = false;
             info.isRecording = false;
             info.ppqPositionOfLastBarStart = 0;
             info.editOriginTime = 0;
+            info.frameRate = AudioPlayHead::fpsUnknown;
 
             return true;
         }
@@ -489,9 +523,9 @@ struct AAXClasses
             SetParameterNormalizedValue (IndexAsParamID (parameterIndex), (double) newValue);
         }
 
-        void audioProcessorChanged (AudioProcessor* /*processor*/)
+        void audioProcessorChanged (AudioProcessor* processor)
         {
-            // TODO
+            check (Controller()->SetSignalLatency (processor->getLatencySamples()));
         }
 
         void audioProcessorParameterChangeGestureBegin (AudioProcessor* /*processor*/, int parameterIndex)
@@ -665,7 +699,7 @@ struct AAXClasses
             }
         }
 
-        void preparePlugin() const
+        void preparePlugin()
         {
             AAX_EStemFormat inputStemFormat = AAX_eStemFormat_None;
             check (Controller()->GetInputStemFormat (&inputStemFormat));
@@ -675,14 +709,14 @@ struct AAXClasses
             check (Controller()->GetOutputStemFormat (&outputStemFormat));
             const int numberOfOutputChannels = getNumChannelsForStemFormat (outputStemFormat);
 
-            int32_t bufferSize = 0;
-            check (Controller()->GetSignalLatency (&bufferSize));
+            AudioProcessor& audioProcessor = getPluginInstance();
 
             const AAX_CSampleRate sampleRate = getSampleRate();
-
-            AudioProcessor& audioProcessor = getPluginInstance();
+            const int bufferSize = 0; // how to get this?
             audioProcessor.setPlayConfigDetails (numberOfInputChannels, numberOfOutputChannels, sampleRate, bufferSize);
             audioProcessor.prepareToPlay (sampleRate, bufferSize);
+
+            check (Controller()->SetSignalLatency (audioProcessor.getLatencySamples()));
         }
 
         AAX_CSampleRate getSampleRate() const
@@ -716,7 +750,7 @@ struct AAXClasses
 
             i.pluginInstance->parameters.process (i.inputChannels, i.outputChannels,
                                                   *(i.bufferSize), *(i.bypass) != 0,
-                                                  i.midiNodeIn, i.midiNodeOut);
+                                                  getMidiNodeIn(i), getMidiNodeOut(i));
         }
     }
 

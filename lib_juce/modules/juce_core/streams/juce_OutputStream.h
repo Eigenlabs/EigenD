@@ -84,11 +84,11 @@ public:
         types of data which use this to do the work.
 
         @param dataToWrite      the target buffer to receive the data. This must not be null.
-        @param numberOfBytes    the number of bytes to write. This must not be negative.
+        @param numberOfBytes    the number of bytes to write.
         @returns false if the write operation fails for some reason
     */
     virtual bool write (const void* dataToWrite,
-                        int numberOfBytes) = 0;
+                        size_t numberOfBytes) = 0;
 
     //==============================================================================
     /** Writes a single byte to the stream.
@@ -160,7 +160,7 @@ public:
     virtual void writeDoubleBigEndian (double value);
 
     /** Writes a byte to the output stream a given number of times. */
-    virtual void writeRepeatedByte (uint8 byte, int numTimesToRepeat);
+    virtual void writeRepeatedByte (uint8 byte, size_t numTimesToRepeat);
 
     /** Writes a condensed binary encoding of a 32-bit integer.
 
@@ -228,28 +228,28 @@ private:
 
 //==============================================================================
 /** Writes a number to a stream as 8-bit characters in the default system encoding. */
-OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, int number);
+JUCE_API OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, int number);
 
 /** Writes a number to a stream as 8-bit characters in the default system encoding. */
-OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, int64 number);
+JUCE_API OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, int64 number);
 
 /** Writes a number to a stream as 8-bit characters in the default system encoding. */
-OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, double number);
+JUCE_API OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, double number);
 
 /** Writes a character to a stream. */
-OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, char character);
+JUCE_API OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, char character);
 
 /** Writes a null-terminated text string to a stream. */
-OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, const char* text);
+JUCE_API OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, const char* text);
 
 /** Writes a block of data from a MemoryBlock to a stream. */
-OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, const MemoryBlock& data);
+JUCE_API OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, const MemoryBlock& data);
 
 /** Writes the contents of a file to a stream. */
-OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, const File& fileToRead);
+JUCE_API OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, const File& fileToRead);
 
 /** Writes the complete contents of an input stream to an output stream. */
-OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, InputStream& streamToRead);
+JUCE_API OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, InputStream& streamToRead);
 
 /** Writes a new-line to a stream.
     You can use the predefined symbol 'newLine' to invoke this, e.g.
@@ -258,7 +258,7 @@ OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, InputStream& strea
     @endcode
     @see OutputStream::setNewLineString
 */
-OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, const NewLine&);
+JUCE_API OutputStream& JUCE_CALLTYPE operator<< (OutputStream& stream, const NewLine&);
 
 
 #endif   // __JUCE_OUTPUTSTREAM_JUCEHEADER__

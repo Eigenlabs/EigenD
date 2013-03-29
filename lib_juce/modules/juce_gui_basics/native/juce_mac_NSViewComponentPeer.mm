@@ -199,9 +199,10 @@ public:
     void setTitle (const String& title)
     {
         JUCE_AUTORELEASEPOOL
-
-        if (! isSharedWindow)
-            [window setTitle: juceStringToNS (title)];
+        {
+            if (! isSharedWindow)
+                [window setTitle: juceStringToNS (title)];
+        }
     }
 
     bool setDocumentEditedStatus (bool edited)
@@ -211,6 +212,14 @@ public:
 
         [window setDocumentEdited: edited];
         return true;
+    }
+
+    void setRepresentedFile (const File& file)
+    {
+        if (! isSharedWindow)
+            [window setRepresentedFilename: juceStringToNS (file != File::nonexistent
+                                                                ? file.getFullPathName()
+                                                                : String::empty)];
     }
 
     void setPosition (int x, int y)
@@ -668,11 +677,9 @@ public:
 
                 return used;
             }
-            else
-            {
-                if (handleKeyUpOrDown (false))
-                    return true;
-            }
+
+            if (handleKeyUpOrDown (false))
+                return true;
         }
 
         return false;
@@ -680,6 +687,10 @@ public:
 
     bool redirectKeyDown (NSEvent* ev)
     {
+        // (need to retain this in case a modal loop runs in handleKeyEvent and
+        // our event object gets lost)
+        const NSObjectRetainer<NSEvent> r (ev);
+
         updateKeysDown (ev, true);
         bool used = handleKeyEvent (ev, true);
 
@@ -707,6 +718,9 @@ public:
 
     void redirectModKeyChange (NSEvent* ev)
     {
+        // (need to retain this in case a modal loop runs and our event object gets lost)
+        const NSObjectRetainer<NSEvent> r (ev);
+
         keysCurrentlyDown.clear();
         handleKeyUpOrDown (true);
 
@@ -717,10 +731,8 @@ public:
    #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
     bool redirectPerformKeyEquivalent (NSEvent* ev)
     {
-        if ([ev type] == NSKeyDown)
-            return redirectKeyDown (ev);
-        else if ([ev type] == NSKeyUp)
-            return redirectKeyUp (ev);
+        if ([ev type] == NSKeyDown)   return redirectKeyDown (ev);
+        if ([ev type] == NSKeyUp)     return redirectKeyUp (ev);
 
         return false;
     }
@@ -848,6 +860,18 @@ public:
     {
         if (isSharedWindow)
             window = [view window];
+    }
+
+    void liveResizingStart()
+    {
+        if (constrainer != nullptr)
+            constrainer->resizeStart();
+    }
+
+    void liveResizingEnd()
+    {
+        if (constrainer != nullptr)
+            constrainer->resizeEnd();
     }
 
     NSRect constrainRect (NSRect r)
@@ -1672,6 +1696,8 @@ struct JuceNSWindowClass   : public ObjCClass <NSWindow>
         addMethod (@selector (windowWillResize:toSize:),      windowWillResize,      @encode (NSSize), "@:@", @encode (NSSize));
         addMethod (@selector (zoom:),                         zoom,                  "v@:@");
         addMethod (@selector (windowWillMove:),               windowWillMove,        "v@:@");
+        addMethod (@selector (windowWillStartLiveResize:),    windowWillStartLiveResize, "v@:@");
+        addMethod (@selector (windowDidEndLiveResize:),       windowDidEndLiveResize, "v@:@");
 
        #if defined (MAC_OS_X_VERSION_10_6) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
         addProtocol (@protocol (NSWindowDelegate));
@@ -1755,6 +1781,18 @@ private:
         if (NSViewComponentPeer* const owner = getOwner (self))
             if (owner->hasNativeTitleBar())
                 owner->sendModalInputAttemptIfBlocked();
+    }
+
+    static void windowWillStartLiveResize (id self, SEL, NSNotification*)
+    {
+        if (NSViewComponentPeer* const owner = getOwner (self))
+            owner->liveResizingStart();
+    }
+
+    static void windowDidEndLiveResize (id self, SEL, NSNotification*)
+    {
+        if (NSViewComponentPeer* const owner = getOwner (self))
+            owner->liveResizingEnd();
     }
 };
 
@@ -1862,6 +1900,8 @@ void Desktop::setKioskComponent (Component* kioskComp, bool enableOrDisable, boo
         }
     }
    #elif JUCE_SUPPORT_CARBON
+    (void) kioskComp; (void) enableOrDisable; (void) allowMenusAndBars;
+
     if (enableOrDisable)
     {
         SetSystemUIMode (kUIModeAllSuppressed, allowMenusAndBars ? kUIOptionAutoShowMenuBar : 0);
@@ -1872,6 +1912,8 @@ void Desktop::setKioskComponent (Component* kioskComp, bool enableOrDisable, boo
         SetSystemUIMode (kUIModeNormal, 0);
     }
    #else
+    (void) kioskComp; (void) enableOrDisable; (void) allowMenusAndBars;
+
     // If you're targeting OSes earlier than 10.6 and want to use this feature,
     // you'll need to enable JUCE_SUPPORT_CARBON.
     jassertfalse;

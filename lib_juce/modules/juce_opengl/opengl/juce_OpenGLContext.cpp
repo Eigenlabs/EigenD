@@ -37,6 +37,7 @@ public:
          #else
           shadersAvailable (false),
          #endif
+          hasInitialised (false),
           needsUpdate (1)
     {
         nativeContext = new NativeContext (component, pixFormat, contextToShare);
@@ -65,6 +66,7 @@ public:
        #if ! JUCE_ANDROID
         stopThread (10000);
        #endif
+        hasInitialised = false;
     }
 
     //==============================================================================
@@ -244,7 +246,7 @@ public:
         glBindTexture (GL_TEXTURE_2D, cachedImageFrameBuffer.getTextureID());
 
         const Rectangle<int> cacheBounds (cachedImageFrameBuffer.getWidth(), cachedImageFrameBuffer.getHeight());
-        context.copyTexture (cacheBounds, cacheBounds, cacheBounds.getWidth(), cacheBounds.getHeight());
+        context.copyTexture (cacheBounds, cacheBounds, cacheBounds.getWidth(), cacheBounds.getHeight(), false);
         glBindTexture (GL_TEXTURE_2D, 0);
         JUCE_CHECK_OPENGL_ERROR
     }
@@ -276,6 +278,19 @@ public:
        #endif
     }
 
+    void handleResize()
+    {
+        updateViewportSize (true);
+
+       #if JUCE_MAC
+        if (hasInitialised)
+        {
+            [nativeContext->view update];
+            renderFrame();
+        }
+       #endif
+    }
+
     //==============================================================================
     void run()
     {
@@ -286,19 +301,18 @@ public:
                 return;
         }
 
-        nativeContext->makeActive();
         initialiseOnThread();
 
        #if JUCE_USE_OPENGL_SHADERS && ! JUCE_OPENGL_ES
         shadersAvailable = OpenGLShaderProgram::getLanguageVersion() > 0;
        #endif
 
+        hasInitialised = true;
+
         while (! threadShouldExit())
         {
-            const uint32 frameRenderStartTime = Time::getMillisecondCounter();
-
-            if (renderFrame())
-                waitForNextFrame (frameRenderStartTime);
+            if (! renderFrame())
+                wait (5); // failed to render, so avoid a tight fail-loop.
         }
 
         shutdownOnThread();
@@ -306,13 +320,16 @@ public:
 
     void initialiseOnThread()
     {
-        associatedObjectNames.clear();
-        associatedObjects.clear();
+        jassert (associatedObjectNames.size() == 0);
+        jassert (! cachedImageFrameBuffer.isValid());
 
-        nativeContext->initialiseOnRenderThread();
+        context.makeActive();
+        nativeContext->initialiseOnRenderThread (context);
+
         glViewport (0, 0, component.getWidth(), component.getHeight());
 
         context.extensions.initialise();
+        nativeContext->setSwapInterval (1);
 
         if (context.renderer != nullptr)
             context.renderer->newOpenGLContextCreated();
@@ -328,14 +345,6 @@ public:
 
         associatedObjectNames.clear();
         associatedObjects.clear();
-    }
-
-    void waitForNextFrame (const uint32 frameRenderStartTime)
-    {
-        const int defaultFPS = 60;
-
-        const int elapsed = (int) (Time::getMillisecondCounter() - frameRenderStartTime);
-        wait (jmax (1, (1000 / defaultFPS - 1) - elapsed));
     }
 
     //==============================================================================
@@ -359,7 +368,7 @@ public:
     ReferenceCountedArray<ReferenceCountedObject> associatedObjects;
 
     WaitableEvent canPaintNowFlag, finishedPaintingFlag;
-    bool shadersAvailable;
+    bool shadersAvailable, hasInitialised;
     Atomic<int> needsUpdate;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CachedImage)
@@ -417,7 +426,7 @@ public:
              && context.nativeContext != nullptr)
         {
             if (CachedImage* const c = CachedImage::get (comp))
-                c->updateViewportSize (true);
+                c->handleResize();
 
             context.nativeContext->updateWindowPosition (comp.getTopLevelComponent()
                                                             ->getLocalArea (&comp, comp.getLocalBounds()));
@@ -484,6 +493,10 @@ private:
     void detach()
     {
         Component& comp = *getComponent();
+
+       #if JUCE_MAC
+        [[(NSView*) comp.getWindowHandle() window] disableScreenUpdatesUntilFlush];
+       #endif
 
         if (CachedImage* const oldCachedImage = CachedImage::get (comp))
             oldCachedImage->stop(); // (must stop this before detaching it from the component)
@@ -568,22 +581,37 @@ Component* OpenGLContext::getTargetComponent() const noexcept
     return attachment != nullptr ? attachment->getComponent() : nullptr;
 }
 
+static ThreadLocalValue<OpenGLContext*> currentThreadActiveContext;
+
 OpenGLContext* OpenGLContext::getCurrentContext()
 {
-   #if JUCE_ANDROID
-    if (NativeContext* const nc = NativeContext::getActiveContext())
-        if (CachedImage* currentContext = CachedImage::get (nc->component))
-   #else
-        if (CachedImage* currentContext = dynamic_cast <CachedImage*> (Thread::getCurrentThread()))
-   #endif
-            return &currentContext->context;
-
-    return nullptr;
+    return currentThreadActiveContext.get();
 }
 
-bool OpenGLContext::makeActive() const noexcept     { return nativeContext != nullptr && nativeContext->makeActive(); }
-bool OpenGLContext::isActive() const noexcept       { return nativeContext != nullptr && nativeContext->isActive(); }
-void OpenGLContext::deactivateCurrentContext()      { NativeContext::deactivateCurrentContext(); }
+bool OpenGLContext::makeActive() const noexcept
+{
+    OpenGLContext*& current = currentThreadActiveContext.get();
+
+    if (nativeContext != nullptr && nativeContext->makeActive())
+    {
+        current = const_cast <OpenGLContext*> (this);
+        return true;
+    }
+
+    current = nullptr;
+    return false;
+}
+
+bool OpenGLContext::isActive() const noexcept
+{
+    return nativeContext != nullptr && nativeContext->isActive();
+}
+
+void OpenGLContext::deactivateCurrentContext()
+{
+    NativeContext::deactivateCurrentContext();
+    currentThreadActiveContext.get() = nullptr;
+}
 
 void OpenGLContext::triggerRepaint()
 {
@@ -670,7 +698,8 @@ void OpenGLContext::setAssociatedObject (const char* name, ReferenceCountedObjec
 
 void OpenGLContext::copyTexture (const Rectangle<int>& targetClipArea,
                                  const Rectangle<int>& anchorPosAndTextureSize,
-                                 const int contextWidth, const int contextHeight)
+                                 const int contextWidth, const int contextHeight,
+                                 bool flippedVertically)
 {
     if (contextWidth <= 0 || contextHeight <= 0)
         return;
@@ -720,12 +749,13 @@ void OpenGLContext::copyTexture (const Rectangle<int>& targetClipArea,
 
                     prog.addShader ("uniform sampler2D imageTexture;"
                                     "uniform " JUCE_HIGHP " float textureBounds[4];"
+                                    "uniform " JUCE_HIGHP " vec2 vOffsetAndScale;"
                                     "varying " JUCE_HIGHP " vec2 pixelPos;"
                                     "void main()"
                                     "{"
                                      JUCE_HIGHP " vec2 texturePos = (pixelPos - vec2 (textureBounds[0], textureBounds[1]))"
                                                                       "/ vec2 (textureBounds[2], textureBounds[3]);"
-                                     "gl_FragColor = texture2D (imageTexture, vec2 (texturePos.x, 1.0 - texturePos.y));"
+                                     "gl_FragColor = texture2D (imageTexture, vec2 (texturePos.x, vOffsetAndScale.x + vOffsetAndScale.y * texturePos.y));"
                                     "}",
                                     GL_FRAGMENT_SHADER);
                     prog.link();
@@ -738,19 +768,23 @@ void OpenGLContext::copyTexture (const Rectangle<int>& targetClipArea,
                     : positionAttribute (prog, "position"),
                       screenSize (prog, "screenSize"),
                       imageTexture (prog, "imageTexture"),
-                      textureBounds (prog, "textureBounds")
+                      textureBounds (prog, "textureBounds"),
+                      vOffsetAndScale (prog, "vOffsetAndScale")
                 {}
 
-                void set (const float targetWidth, const float targetHeight, const Rectangle<float>& bounds) const
+                void set (const float targetWidth, const float targetHeight, const Rectangle<float>& bounds, bool flippedVertically) const
                 {
                     const GLfloat m[] = { bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight() };
                     textureBounds.set (m, 4);
                     imageTexture.set (0);
                     screenSize.set (targetWidth, targetHeight);
+
+                    vOffsetAndScale.set (flippedVertically ? 0.0f : 1.0f,
+                                         flippedVertically ? 1.0f : -1.0f);
                 }
 
                 OpenGLShaderProgram::Attribute positionAttribute;
-                OpenGLShaderProgram::Uniform screenSize, imageTexture, textureBounds;
+                OpenGLShaderProgram::Uniform screenSize, imageTexture, textureBounds, vOffsetAndScale;
             };
 
             OpenGLShaderProgram program;
@@ -765,7 +799,7 @@ void OpenGLContext::copyTexture (const Rectangle<int>& targetClipArea,
         const GLshort vertices[] = { left, bottom, right, bottom, left, top, right, top };
 
         const OverlayShaderProgram& program = OverlayShaderProgram::select (*this);
-        program.params.set ((float) contextWidth, (float) contextHeight, anchorPosAndTextureSize.toFloat());
+        program.params.set ((float) contextWidth, (float) contextHeight, anchorPosAndTextureSize.toFloat(), flippedVertically);
 
         extensions.glVertexAttribPointer (program.params.positionAttribute.attributeID, 2, GL_SHORT, GL_FALSE, 4, vertices);
         extensions.glEnableVertexAttribArray (program.params.positionAttribute.attributeID);

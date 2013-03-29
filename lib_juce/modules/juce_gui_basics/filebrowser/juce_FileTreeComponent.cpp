@@ -104,19 +104,55 @@ public:
         newList->addChangeListener (this);
     }
 
+    bool selectFile (const File& target)
+    {
+        if (file == target)
+        {
+            setSelected (true, true);
+            return true;
+        }
+
+        if (target.isAChildOf (file))
+        {
+            setOpen (true);
+
+            for (int maxRetries = 500; --maxRetries > 0;)
+            {
+                for (int i = 0; i < getNumSubItems(); ++i)
+                    if (FileListTreeItem* f = dynamic_cast <FileListTreeItem*> (getSubItem (i)))
+                        if (f->selectFile (target))
+                            return true;
+
+                // if we've just opened and the contents are still loading, wait for it..
+                if (subContentsList != nullptr && subContentsList->isStillLoading())
+                {
+                    Thread::sleep (10);
+                    rebuildItemsFromContentList();
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        return false;
+    }
+
     void changeListenerCallback (ChangeBroadcaster*)
+    {
+        rebuildItemsFromContentList();
+    }
+
+    void rebuildItemsFromContentList()
     {
         clearSubItems();
 
         if (isOpen() && subContentsList != nullptr)
         {
             for (int i = 0; i < subContentsList->getNumFiles(); ++i)
-            {
-                FileListTreeItem* const item
-                    = new FileListTreeItem (owner, subContentsList, i, subContentsList->getFile(i), thread);
-
-                addSubItem (item);
-            }
+                addSubItem (new FileListTreeItem (owner, subContentsList, i,
+                                                  subContentsList->getFile(i), thread));
         }
     }
 
@@ -231,10 +267,10 @@ void FileTreeComponent::refresh()
 //==============================================================================
 File FileTreeComponent::getSelectedFile (const int index) const
 {
-    const FileListTreeItem* const item = dynamic_cast <const FileListTreeItem*> (getSelectedItem (index));
+    if (const FileListTreeItem* const item = dynamic_cast <const FileListTreeItem*> (getSelectedItem (index)))
+        return item->file;
 
-    return item != nullptr ? item->file
-                           : File::nonexistent;
+    return File::nonexistent;
 }
 
 void FileTreeComponent::deselectAllFiles()
@@ -254,16 +290,7 @@ void FileTreeComponent::setDragAndDropDescription (const String& description)
 
 void FileTreeComponent::setSelectedFile (const File& target)
 {
-    for (int i = getNumSelectedItems(); --i >= 0;)
-    {
-        FileListTreeItem* t = dynamic_cast <FileListTreeItem*> (getSelectedItem (i));
-
-        if (t != nullptr && t->file == target)
-        {
-            t->setSelected (true, true);
-            return;
-        }
-    }
-
-    clearSelectedItems();
+    if (FileListTreeItem* t = dynamic_cast <FileListTreeItem*> (getRootItem()))
+        if (! t->selectFile (target))
+            clearSelectedItems();
 }

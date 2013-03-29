@@ -107,7 +107,7 @@ public:
         let this pass through without being overwritten or cleared.
 
         Also note that the buffer may have more channels than are strictly necessary,
-        but your should only read/write from the ones that your filter is supposed to
+        but you should only read/write from the ones that your filter is supposed to
         be using.
 
         The number of samples in these buffers is NOT guaranteed to be the same for every
@@ -250,8 +250,11 @@ public:
     */
     void setLatencySamples (int newLatency);
 
-    /** Returns true if a silent input always produces a silent output (i.e. it has no tail). */
+    /** Returns true if a silent input always produces a silent output. */
     virtual bool silenceInProducesSilenceOut() const = 0;
+
+    /** Returns the length of the filter's tail, in seconds. */
+    virtual double getTailLengthSeconds() const = 0;
 
     /** Returns true if the processor wants midi messages. */
     virtual bool acceptsMidi() const = 0;
@@ -591,7 +594,7 @@ public:
     WrapperType wrapperType;
 
     /** @internal */
-    static void setTypeOfNextNewPlugin (WrapperType);
+    static void JUCE_CALLTYPE setTypeOfNextNewPlugin (WrapperType);
 
 protected:
     //==============================================================================

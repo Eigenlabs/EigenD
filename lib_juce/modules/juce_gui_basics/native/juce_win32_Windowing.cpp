@@ -467,9 +467,10 @@ public:
     };
 
     //==============================================================================
-    HWNDComponentPeer (Component& comp, const int windowStyleFlags, HWND parentToAddTo_)
+    HWNDComponentPeer (Component& comp, const int windowStyleFlags, HWND parent, bool nonRepainting)
         : ComponentPeer (comp, windowStyleFlags),
-          dontRepaint (false),
+          dontRepaint (nonRepainting),
+          parentToAddTo (parent),
           currentRenderingEngine (softwareRenderingEngine),
           lastPaintTime (0),
           fullScreen (false),
@@ -479,7 +480,6 @@ public:
           constrainerIsResizing (false),
           currentWindowIcon (0),
           dropTarget (nullptr),
-          parentToAddTo (parentToAddTo_),
           updateLayeredWindowAlpha (255)
     {
         callFunctionIfNotLocked (&createWindowCallback, this);
@@ -584,9 +584,11 @@ public:
                       h + windowBorder.getTopAndBottom(),
                       SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 
-        updateBorderSize();
-
-        repaintNowIfTransparent();
+        if (isValidPeer (this))
+        {
+            updateBorderSize();
+            repaintNowIfTransparent();
+        }
     }
 
     void setBounds (int x, int y, int w, int h, bool isNowFullScreen)
@@ -601,9 +603,11 @@ public:
                       h + windowBorder.getTopAndBottom(),
                       SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 
-        updateBorderSize();
-
-        repaintNowIfTransparent();
+        if (isValidPeer (this))
+        {
+            updateBorderSize();
+            repaintNowIfTransparent();
+        }
     }
 
     Rectangle<int> getBounds() const
@@ -903,7 +907,7 @@ public:
     class JuceDropTarget    : public ComBaseClassHelper <IDropTarget>
     {
     public:
-        JuceDropTarget (HWNDComponentPeer& owner_)   : ownerInfo (new OwnerInfo (owner_)) {}
+        JuceDropTarget (HWNDComponentPeer& p)   : ownerInfo (new OwnerInfo (p)) {}
 
         void clear()
         {
@@ -956,7 +960,7 @@ public:
     private:
         struct OwnerInfo
         {
-            OwnerInfo (HWNDComponentPeer& owner_) : owner (owner_) {}
+            OwnerInfo (HWNDComponentPeer& p) : owner (p) {}
 
             Point<int> getMousePos (const POINTL& mousePos) const
             {
@@ -1282,7 +1286,17 @@ private:
             JuceWindowIdentifier::setAsJUCEWindow (hwnd, true);
 
             if (dropTarget == nullptr)
-                dropTarget = new JuceDropTarget (*this);
+            {
+                HWNDComponentPeer* peer = nullptr;
+
+                if (dontRepaint)
+                    peer = getOwnerOfWindow (parentToAddTo);
+
+                if (peer == nullptr)
+                    peer = this;
+
+                dropTarget = new JuceDropTarget (*peer);
+            }
 
             RegisterDragDrop (hwnd, dropTarget);
 
@@ -2689,16 +2703,16 @@ ModifierKeys HWNDComponentPeer::modifiersAtLastCallback;
 
 ComponentPeer* Component::createNewPeer (int styleFlags, void* nativeWindowToAttachTo)
 {
-    return new HWNDComponentPeer (*this, styleFlags, (HWND) nativeWindowToAttachTo);
+    return new HWNDComponentPeer (*this, styleFlags,
+                                  (HWND) nativeWindowToAttachTo, false);
 }
 
 ComponentPeer* createNonRepaintingEmbeddedWindowsPeer (Component* component, void* parent)
 {
     jassert (component != nullptr);
 
-    HWNDComponentPeer* const p = new HWNDComponentPeer (*component, ComponentPeer::windowIgnoresMouseClicks, (HWND) parent);
-    p->dontRepaint = true;
-    return p;
+    return new HWNDComponentPeer (*component, ComponentPeer::windowIgnoresMouseClicks,
+                                  (HWND) parent, true);
 }
 
 
@@ -2881,9 +2895,10 @@ void JUCE_CALLTYPE NativeMessageBox::showMessageBox (AlertWindow::AlertIconType 
 
 void JUCE_CALLTYPE NativeMessageBox::showMessageBoxAsync (AlertWindow::AlertIconType iconType,
                                                           const String& title, const String& message,
-                                                          Component* associatedComponent)
+                                                          Component* associatedComponent,
+                                                          ModalComponentManager::Callback* callback)
 {
-    new WindowsMessageBox (iconType, title, message, associatedComponent, MB_OK, 0, true);
+    new WindowsMessageBox (iconType, title, message, associatedComponent, MB_OK, callback, true);
 }
 
 bool JUCE_CALLTYPE NativeMessageBox::showOkCancelBox (AlertWindow::AlertIconType iconType,
@@ -2954,19 +2969,11 @@ public:
     {
         if (Process::isForegroundProcess())
         {
-            // simulate a shift key getting pressed..
-            INPUT input[2];
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = VK_SHIFT;
-            input[0].ki.dwFlags = 0;
-            input[0].ki.dwExtraInfo = 0;
+            INPUT input = { 0 };
+            input.type = INPUT_MOUSE;
+            input.mi.mouseData = MOUSEEVENTF_MOVE;
 
-            input[1].type = INPUT_KEYBOARD;
-            input[1].ki.wVk = VK_SHIFT;
-            input[1].ki.dwFlags = KEYEVENTF_KEYUP;
-            input[1].ki.dwExtraInfo = 0;
-
-            SendInput (2, input, sizeof (INPUT));
+            SendInput (1, &input, sizeof (INPUT));
         }
     }
 };
@@ -2985,24 +2992,6 @@ bool Desktop::isScreenSaverEnabled()
 {
     return screenSaverDefeater == nullptr;
 }
-
-/* (The code below is the "correct" way to disable the screen saver, but it
-    completely fails on winXP when the saver is password-protected...)
-
-static bool juce_screenSaverEnabled = true;
-
-void Desktop::setScreenSaverEnabled (const bool isEnabled) noexcept
-{
-    juce_screenSaverEnabled = isEnabled;
-    SetThreadExecutionState (isEnabled ? ES_CONTINUOUS
-                                       : (ES_DISPLAY_REQUIRED | ES_CONTINUOUS));
-}
-
-bool Desktop::isScreenSaverEnabled() noexcept
-{
-    return juce_screenSaverEnabled;
-}
-*/
 
 //==============================================================================
 void LookAndFeel::playAlertSound()
@@ -3025,7 +3014,7 @@ void SystemClipboard::copyTextToClipboard (const String& text)
                 {
                     if (WCHAR* const data = static_cast <WCHAR*> (GlobalLock (bufH)))
                     {
-                        text.copyToUTF16 (data, (int) bytesNeeded);
+                        text.copyToUTF16 (data, bytesNeeded);
                         GlobalUnlock (bufH);
 
                         SetClipboardData (CF_UNICODETEXT, bufH);

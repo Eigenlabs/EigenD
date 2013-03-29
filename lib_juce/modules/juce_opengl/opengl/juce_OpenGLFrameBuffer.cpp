@@ -26,16 +26,11 @@
 class OpenGLFrameBuffer::Pimpl
 {
 public:
-    Pimpl (OpenGLContext& context_, const int width_, const int height_,
+    Pimpl (OpenGLContext& c, const int w, const int h,
            const bool wantsDepthBuffer, const bool wantsStencilBuffer)
-        : context (context_),
-          width (width_),
-          height (height_),
-          textureID (0),
-          frameBufferID (0),
-          depthOrStencilBuffer (0),
-          hasDepthBuffer (false),
-          hasStencilBuffer (false)
+        : context (c), width (w), height (h),
+          textureID (0), frameBufferID (0), depthOrStencilBuffer (0),
+          hasDepthBuffer (false), hasStencilBuffer (false)
     {
         // Framebuffer objects can only be created when the current thread has an active OpenGL
         // context. You'll need to create this object in one of the OpenGLContext's callbacks.
@@ -222,7 +217,7 @@ bool OpenGLFrameBuffer::initialise (OpenGLFrameBuffer& other)
         clearGLError();
        #endif
         glBindTexture (GL_TEXTURE_2D, p->textureID);
-        pimpl->context.copyTexture (area, area, area.getWidth(), area.getHeight());
+        pimpl->context.copyTexture (area, area, area.getWidth(), area.getHeight(), false);
         glBindTexture (GL_TEXTURE_2D, 0);
         JUCE_CHECK_OPENGL_ERROR
 
@@ -325,13 +320,14 @@ bool OpenGLFrameBuffer::readPixels (PixelARGB* target, const Rectangle<int>& are
     glReadPixels (area.getX(), area.getY(), area.getWidth(), area.getHeight(),
                   JUCE_RGBA_FORMAT, GL_UNSIGNED_BYTE, target);
     pimpl->context.extensions.glBindFramebuffer (GL_FRAMEBUFFER, 0);
-    glPixelStorei (GL_PACK_ALIGNMENT, 0);
     JUCE_CHECK_OPENGL_ERROR
     return true;
 }
 
 bool OpenGLFrameBuffer::writePixels (const PixelARGB* data, const Rectangle<int>& area)
 {
+    OpenGLTargetSaver ts (pimpl->context);
+
     if (! makeCurrentRenderingTarget())
         return false;
 
@@ -339,10 +335,10 @@ bool OpenGLFrameBuffer::writePixels (const PixelARGB* data, const Rectangle<int>
     glDisable (GL_BLEND);
     JUCE_CHECK_OPENGL_ERROR
 
+   #if JUCE_OPENGL_ES && JUCE_USE_OPENGL_FIXED_FUNCTION
     OpenGLTexture tex;
     tex.loadARGBFlipped (data, area.getWidth(), area.getHeight());
 
-   #if JUCE_OPENGL_ES && JUCE_USE_OPENGL_FIXED_FUNCTION
     const int texH = tex.getHeight();
     tex.bind();
     const GLint cropRect[4] = { 0, texH - area.getHeight(), area.getWidth(), area.getHeight() };
@@ -353,10 +349,15 @@ bool OpenGLFrameBuffer::writePixels (const PixelARGB* data, const Rectangle<int>
     glDrawTexiOES (area.getX(), area.getY(), 1, area.getWidth(), area.getHeight());
     glBindTexture (GL_TEXTURE_2D, 0);
    #else
-    pimpl->context.copyTexture (area, area, pimpl->width, pimpl->height);
+    OpenGLTexture tex;
+    tex.loadARGB (data, area.getWidth(), area.getHeight());
+
+    glViewport (0, 0, pimpl->width, pimpl->height);
+    pimpl->context.copyTexture (area, Rectangle<int> (area.getX(), area.getY(),
+                                                      tex.getWidth(), tex.getHeight()),
+                                pimpl->width, pimpl->height, true);
    #endif
 
-    pimpl->context.extensions.glBindFramebuffer (GL_FRAMEBUFFER, 0);
     JUCE_CHECK_OPENGL_ERROR
     return true;
 }

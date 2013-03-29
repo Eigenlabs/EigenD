@@ -28,47 +28,26 @@
 //==============================================================================
 namespace MouseCursorHelpers
 {
-    static NSImage* createImage (CGImageRef imageRef, int width, int height, float scaleFactor)
+    static NSImage* createNSImage (const Image& image)
     {
         JUCE_AUTORELEASEPOOL
-        /*
-        NSBitmapImageRep* rep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
-                                                                        pixelsWide:width
-                                                                        pixelsHigh:height
-                                                                     bitsPerSample:8
-                                                                   samplesPerPixel:4
-                                                                          hasAlpha:YES
-                                                                          isPlanar:NO
-                                                                    colorSpaceName:NSCalibratedRGBColorSpace
-                                                                      bitmapFormat:0
-                                                                       bytesPerRow:(4 * width)
-                                                                      bitsPerPixel:32];
-        [NSGraphicsContext saveGraphicsState];
-        [NSGraphicsContext setCurrentContext:[NSGraphicsContext
-                                              graphicsContextWithBitmapImageRep:rep]];
-        
-        CGContextRef cg = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
-        CGRect drawRect = CGRectMake(0, 0, width, height);
-        CGContextDrawImage (cg, drawRect, imageRef);
-        CGImageRelease (imageRef);
-        
-        [NSGraphicsContext restoreGraphicsState];
+        {
+            NSImage* im = [[NSImage alloc] init];
+            [im setSize: NSMakeSize (image.getWidth(), image.getHeight())];
+            [im lockFocus];
 
-        NSSize sizeScaled = NSMakeSize (width/scaleFactor, height/scaleFactor);
-        NSImage* im = [[NSImage alloc] initWithSize: sizeScaled];
-        [im addRepresentation: rep];
-        [rep setSize: sizeScaled];
-        [im recache];*/
-        return [[NSImage alloc] initWithCGImage:imageRef size:NSMakeSize (width/scaleFactor, height/scaleFactor)];
-    }
+            CGColorSpaceRef colourSpace = CGColorSpaceCreateDeviceRGB();
+            CGImageRef imageRef = juce_createCoreGraphicsImage (image, false, colourSpace, false);
+            CGColorSpaceRelease (colourSpace);
 
-    static NSImage* createNSImage (const Image& image, float scaleFactor)
-    {
-        CGColorSpaceRef colourSpace = CGColorSpaceCreateDeviceRGB();
-        CGImageRef imageRef = juce_createCoreGraphicsImage (image, false, colourSpace, true);
-        CGColorSpaceRelease (colourSpace);
-        
-        return createImage(imageRef, image.getWidth(), image.getHeight(), scaleFactor);
+            CGContextRef cg = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
+            CGContextDrawImage (cg, convertToCGRect (image.getBounds()), imageRef);
+
+            CGImageRelease (imageRef);
+            [im unlockFocus];
+
+            return im;
+        }
     }
 
     static void* fromWebKitFile (const char* filename, float hx, float hy)
@@ -90,7 +69,7 @@ namespace MouseCursorHelpers
 
 void* CustomMouseCursorInfo::create() const
 {
-    NSImage* im = MouseCursorHelpers::createNSImage (image, scaleFactor);
+    NSImage* im = MouseCursorHelpers::createNSImage (image);
     NSCursor* c = [[NSCursor alloc] initWithImage: im
                                           hotSpot: NSMakePoint (hotspot.x, hotspot.y)];
     [im release];
@@ -100,46 +79,48 @@ void* CustomMouseCursorInfo::create() const
 void* MouseCursor::createStandardMouseCursor (MouseCursor::StandardCursorType type)
 {
     JUCE_AUTORELEASEPOOL
-    NSCursor* c = nil;
-
-    switch (type)
     {
-        case NormalCursor:
-        case ParentCursor:          c = [NSCursor arrowCursor]; break;
-        case NoCursor:              return CustomMouseCursorInfo (Image (Image::ARGB, 8, 8, true), 0, 0).create();
-        case DraggingHandCursor:    c = [NSCursor openHandCursor]; break;
-        case WaitCursor:            c = [NSCursor arrowCursor]; break; // avoid this on the mac, let the OS provide the beachball
-        case IBeamCursor:           c = [NSCursor IBeamCursor]; break;
-        case PointingHandCursor:    c = [NSCursor pointingHandCursor]; break;
-        case LeftRightResizeCursor: c = [NSCursor resizeLeftRightCursor]; break;
-        case LeftEdgeResizeCursor:  c = [NSCursor resizeLeftCursor]; break;
-        case RightEdgeResizeCursor: c = [NSCursor resizeRightCursor]; break;
-        case CrosshairCursor:       c = [NSCursor crosshairCursor]; break;
-        case CopyingCursor:         return MouseCursorHelpers::fromWebKitFile ("copyCursor.png", 0, 0);
+        NSCursor* c = nil;
 
-        case UpDownResizeCursor:
-        case TopEdgeResizeCursor:
-        case BottomEdgeResizeCursor:
-            return MouseCursorHelpers::fromWebKitFile ("northSouthResizeCursor.png", 0.5f, 0.5f);
+        switch (type)
+        {
+            case NormalCursor:
+            case ParentCursor:          c = [NSCursor arrowCursor]; break;
+            case NoCursor:              return CustomMouseCursorInfo (Image (Image::ARGB, 8, 8, true), 0, 0).create();
+            case DraggingHandCursor:    c = [NSCursor openHandCursor]; break;
+            case WaitCursor:            c = [NSCursor arrowCursor]; break; // avoid this on the mac, let the OS provide the beachball
+            case IBeamCursor:           c = [NSCursor IBeamCursor]; break;
+            case PointingHandCursor:    c = [NSCursor pointingHandCursor]; break;
+            case LeftRightResizeCursor: c = [NSCursor resizeLeftRightCursor]; break;
+            case LeftEdgeResizeCursor:  c = [NSCursor resizeLeftCursor]; break;
+            case RightEdgeResizeCursor: c = [NSCursor resizeRightCursor]; break;
+            case CrosshairCursor:       c = [NSCursor crosshairCursor]; break;
+            case CopyingCursor:         return MouseCursorHelpers::fromWebKitFile ("copyCursor.png", 0, 0);
 
-        case TopLeftCornerResizeCursor:
-        case BottomRightCornerResizeCursor:
-            return MouseCursorHelpers::fromWebKitFile ("northWestSouthEastResizeCursor.png", 0.5f, 0.5f);
+            case UpDownResizeCursor:
+            case TopEdgeResizeCursor:
+            case BottomEdgeResizeCursor:
+                return MouseCursorHelpers::fromWebKitFile ("northSouthResizeCursor.png", 0.5f, 0.5f);
 
-        case TopRightCornerResizeCursor:
-        case BottomLeftCornerResizeCursor:
-            return MouseCursorHelpers::fromWebKitFile ("northEastSouthWestResizeCursor.png", 0.5f, 0.5f);
+            case TopLeftCornerResizeCursor:
+            case BottomRightCornerResizeCursor:
+                return MouseCursorHelpers::fromWebKitFile ("northWestSouthEastResizeCursor.png", 0.5f, 0.5f);
 
-        case UpDownLeftRightResizeCursor:
-            return MouseCursorHelpers::fromWebKitFile ("moveCursor.png", 0.5f, 0.5f);
+            case TopRightCornerResizeCursor:
+            case BottomLeftCornerResizeCursor:
+                return MouseCursorHelpers::fromWebKitFile ("northEastSouthWestResizeCursor.png", 0.5f, 0.5f);
 
-        default:
-            jassertfalse;
-            break;
+            case UpDownLeftRightResizeCursor:
+                return MouseCursorHelpers::fromWebKitFile ("moveCursor.png", 0.5f, 0.5f);
+
+            default:
+                jassertfalse;
+                break;
+        }
+
+        [c retain];
+        return c;
     }
-
-    [c retain];
-    return c;
 }
 
 void MouseCursor::deleteMouseCursor (void* const cursorHandle, const bool /*isStandard*/)

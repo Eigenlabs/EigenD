@@ -46,6 +46,7 @@
  #import <CoreAudio/AudioHardware.h>
  #import <CoreMIDI/MIDIServices.h>
  #import <DiscRecording/DiscRecording.h>
+ #import <AudioToolbox/AudioServices.h>
  #undef Point
  #undef Component
 
@@ -56,6 +57,11 @@
 
 //==============================================================================
 #elif JUCE_WINDOWS
+ #if JUCE_MINGW && JUCE_WASAPI
+  #warning "WASAPI not currently implemented with mingw..."
+  #undef JUCE_WASAPI
+ #endif
+
  #if JUCE_WASAPI
   #pragma warning (push)
   #pragma warning (disable: 4201)
@@ -233,4 +239,11 @@ namespace juce
 
 #endif
 
+#if ! JUCE_SYSTEMAUDIOVOL_IMPLEMENTED
+ // None of these methods are available. (On Windows you might need to enable WASAPI for this)
+ float JUCE_CALLTYPE SystemAudioVolume::getGain()         { jassertfalse; return 0.0f; }
+ bool  JUCE_CALLTYPE SystemAudioVolume::setGain (float)   { jassertfalse; return false; }
+ bool  JUCE_CALLTYPE SystemAudioVolume::isMuted()         { jassertfalse; return false; }
+ bool  JUCE_CALLTYPE SystemAudioVolume::setMuted (bool)   { jassertfalse; return false; }
+#endif
 }

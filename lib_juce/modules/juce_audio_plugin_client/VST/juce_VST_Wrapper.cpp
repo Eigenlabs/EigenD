@@ -292,7 +292,7 @@ public:
         canProcessReplacing (true);
 
         isSynth ((JucePlugin_IsSynth) != 0);
-        noTail (((JucePlugin_SilenceInProducesSilenceOut) != 0) && (JucePlugin_TailLengthSeconds <= 0));
+        noTail (filter->getTailLengthSeconds() <= 0);
         setInitialDelay (filter->getLatencySamples());
         programsAreChunks (true);
 
@@ -302,38 +302,39 @@ public:
     ~JuceVSTWrapper()
     {
         JUCE_AUTORELEASEPOOL
-
         {
-           #if JUCE_LINUX
-            MessageManagerLock mmLock;
-           #endif
-            stopTimer();
-            deleteEditor (false);
+            {
+               #if JUCE_LINUX
+                MessageManagerLock mmLock;
+               #endif
+                stopTimer();
+                deleteEditor (false);
 
-            hasShutdown = true;
+                hasShutdown = true;
 
-            delete filter;
-            filter = nullptr;
+                delete filter;
+                filter = nullptr;
 
-            jassert (editorComp == 0);
+                jassert (editorComp == 0);
 
-            channels.free();
-            deleteTempChannels();
+                channels.free();
+                deleteTempChannels();
 
-            jassert (activePlugins.contains (this));
-            activePlugins.removeFirstMatchingValue (this);
-        }
+                jassert (activePlugins.contains (this));
+                activePlugins.removeFirstMatchingValue (this);
+            }
 
-        if (activePlugins.size() == 0)
-        {
-           #if JUCE_LINUX
-            SharedMessageThread::deleteInstance();
-           #endif
-            shutdownJuce_GUI();
+            if (activePlugins.size() == 0)
+            {
+               #if JUCE_LINUX
+                SharedMessageThread::deleteInstance();
+               #endif
+                shutdownJuce_GUI();
 
-           #if JUCE_WINDOWS
-            messageThreadIsDefinitelyCorrect = false;
-           #endif
+               #if JUCE_WINDOWS
+                messageThreadIsDefinitelyCorrect = false;
+               #endif
+            }
         }
     }
 
@@ -436,8 +437,8 @@ public:
     static void setPinProperties (VstPinProperties& properties, const String& name,
                                   VstSpeakerArrangementType type, const bool isPair)
     {
-        name.copyToUTF8 (properties.label, kVstMaxLabelLen - 1);
-        name.copyToUTF8 (properties.shortLabel, kVstMaxShortLabelLen - 1);
+        name.copyToUTF8 (properties.label, (size_t) (kVstMaxLabelLen - 1));
+        name.copyToUTF8 (properties.shortLabel, (size_t) (kVstMaxShortLabelLen - 1));
 
         if (type != kSpeakerArrEmpty)
         {
@@ -458,6 +459,14 @@ public:
     {
         isBypassed = b;
         return true;
+    }
+
+    VstInt32 getGetTailSize()
+    {
+        if (filter != nullptr)
+            return (VstInt32) (filter->getTailLengthSeconds() * getSampleRate());
+
+        return 0;
     }
 
     //==============================================================================
@@ -526,7 +535,7 @@ public:
             if (filter->isSuspended())
             {
                 for (int i = 0; i < numOut; ++i)
-                    zeromem (outputs[i], sizeof (float) * (size_t) numSamples);
+                    FloatVectorOperations::clear (outputs[i], numSamples);
             }
             else
             {
@@ -1027,12 +1036,14 @@ public:
             recursionCheck = true;
 
             JUCE_AUTORELEASEPOOL
-            Timer::callPendingTimersSynchronously();
+            {
+                Timer::callPendingTimersSynchronously();
 
-            for (int i = ComponentPeer::getNumPeers(); --i >= 0;)
-                ComponentPeer::getPeer (i)->performAnyPendingRepaintsNow();
+                for (int i = ComponentPeer::getNumPeers(); --i >= 0;)
+                    ComponentPeer::getPeer (i)->performAnyPendingRepaintsNow();
 
-            recursionCheck = false;
+                recursionCheck = false;
+            }
         }
     }
 
@@ -1063,47 +1074,49 @@ public:
     void deleteEditor (bool canDeleteLaterIfModal)
     {
         JUCE_AUTORELEASEPOOL
-        PopupMenu::dismissAllActiveMenus();
-
-        jassert (! recursionCheck);
-        recursionCheck = true;
-
-        if (editorComp != nullptr)
         {
-            if (Component* const modalComponent = Component::getCurrentlyModalComponent())
-            {
-                modalComponent->exitModalState (0);
+            PopupMenu::dismissAllActiveMenus();
 
-                if (canDeleteLaterIfModal)
+            jassert (! recursionCheck);
+            recursionCheck = true;
+
+            if (editorComp != nullptr)
+            {
+                if (Component* const modalComponent = Component::getCurrentlyModalComponent())
                 {
-                    shouldDeleteEditor = true;
-                    recursionCheck = false;
-                    return;
+                    modalComponent->exitModalState (0);
+
+                    if (canDeleteLaterIfModal)
+                    {
+                        shouldDeleteEditor = true;
+                        recursionCheck = false;
+                        return;
+                    }
                 }
+
+               #if JUCE_MAC
+                if (hostWindow != 0)
+                {
+                    detachComponentFromWindowRef (editorComp, hostWindow);
+                    hostWindow = 0;
+                }
+               #endif
+
+                filter->editorBeingDeleted (editorComp->getEditorComp());
+
+                editorComp = nullptr;
+
+                // there's some kind of component currently modal, but the host
+                // is trying to delete our plugin. You should try to avoid this happening..
+                jassert (Component::getCurrentlyModalComponent() == nullptr);
             }
 
-           #if JUCE_MAC
-            if (hostWindow != 0)
-            {
-                detachComponentFromWindowRef (editorComp, hostWindow);
-                hostWindow = 0;
-            }
+           #if JUCE_LINUX
+            hostWindow = 0;
            #endif
 
-            filter->editorBeingDeleted (editorComp->getEditorComp());
-
-            editorComp = nullptr;
-
-            // there's some kind of component currently modal, but the host
-            // is trying to delete our plugin. You should try to avoid this happening..
-            jassert (Component::getCurrentlyModalComponent() == nullptr);
+            recursionCheck = false;
         }
-
-       #if JUCE_LINUX
-        hostWindow = 0;
-       #endif
-
-        recursionCheck = false;
     }
 
     VstIntPtr dispatcher (VstInt32 opCode, VstInt32 index, VstIntPtr value, void* ptr, float opt)
@@ -1458,23 +1471,25 @@ namespace
     AEffect* pluginEntryPoint (audioMasterCallback audioMaster)
     {
         JUCE_AUTORELEASEPOOL
-        initialiseJuce_GUI();
-
-        try
         {
-            if (audioMaster (0, audioMasterVersion, 0, 0, 0, 0) != 0)
-            {
-               #if JUCE_LINUX
-                MessageManagerLock mmLock;
-               #endif
+            initialiseJuce_GUI();
 
-                AudioProcessor* const filter = createPluginFilterOfType (AudioProcessor::wrapperType_VST);
-                JuceVSTWrapper* const wrapper = new JuceVSTWrapper (audioMaster, filter);
-                return wrapper->getAeffect();
+            try
+            {
+                if (audioMaster (0, audioMasterVersion, 0, 0, 0, 0) != 0)
+                {
+                   #if JUCE_LINUX
+                    MessageManagerLock mmLock;
+                   #endif
+
+                    AudioProcessor* const filter = createPluginFilterOfType (AudioProcessor::wrapperType_VST);
+                    JuceVSTWrapper* const wrapper = new JuceVSTWrapper (audioMaster, filter);
+                    return wrapper->getAeffect();
+                }
             }
+            catch (...)
+            {}
         }
-        catch (...)
-        {}
 
         return nullptr;
     }

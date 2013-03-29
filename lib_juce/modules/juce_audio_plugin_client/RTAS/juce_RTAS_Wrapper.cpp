@@ -161,28 +161,29 @@ public:
     ~JucePlugInProcess()
     {
         JUCE_AUTORELEASEPOOL
-
-        if (mLoggedIn)
-            MIDILogOut();
-
-        midiBufferNode = nullptr;
-        midiTransport = nullptr;
-
-        if (prepared)
-            juceFilter->releaseResources();
-
-        juceFilter = nullptr;
-        asyncUpdater = nullptr;
-
-        if (--numInstances == 0)
         {
-           #if JUCE_MAC
-            // Hack to allow any NSWindows to clear themselves up before returning to PT..
-            for (int i = 20; --i >= 0;)
-                MessageManager::getInstance()->runDispatchLoopUntil (1);
-           #endif
+            if (mLoggedIn)
+                MIDILogOut();
 
-            shutdownJuce_GUI();
+            midiBufferNode = nullptr;
+            midiTransport = nullptr;
+
+            if (prepared)
+                juceFilter->releaseResources();
+
+            juceFilter = nullptr;
+            asyncUpdater = nullptr;
+
+            if (--numInstances == 0)
+            {
+               #if JUCE_MAC
+                // Hack to allow any NSWindows to clear themselves up before returning to PT..
+                for (int i = 20; --i >= 0;)
+                    MessageManager::getInstance()->runDispatchLoopUntil (1);
+               #endif
+
+                shutdownJuce_GUI();
+            }
         }
     }
 
@@ -248,17 +249,19 @@ public:
             if (port != 0)
             {
                 JUCE_AUTORELEASEPOOL
-                updateSize();
+                {
+                    updateSize();
 
-               #if JUCE_WINDOWS
-                void* const hostWindow = (void*) ASI_GethWnd ((WindowPtr) port);
-               #else
-                void* const hostWindow = (void*) GetWindowFromPort (port);
-               #endif
-                wrapper = nullptr;
-                wrapper = new EditorCompWrapper (hostWindow, editorComp, this);
+                   #if JUCE_WINDOWS
+                    void* const hostWindow = (void*) ASI_GethWnd ((WindowPtr) port);
+                   #else
+                    void* const hostWindow = (void*) GetWindowFromPort (port);
+                   #endif
+                    wrapper = nullptr;
+                    wrapper = new EditorCompWrapper (hostWindow, editorComp, this);
 
-                process->touchAllParameters();
+                    process->touchAllParameters();
+                }
             }
             else
             {
@@ -291,15 +294,17 @@ public:
             if (editorComp != nullptr || wrapper != nullptr)
             {
                 JUCE_AUTORELEASEPOOL
-                PopupMenu::dismissAllActiveMenus();
+                {
+                    PopupMenu::dismissAllActiveMenus();
 
-                if (juce::Component* const modalComponent = juce::Component::getCurrentlyModalComponent())
-                    modalComponent->exitModalState (0);
+                    if (juce::Component* const modalComponent = juce::Component::getCurrentlyModalComponent())
+                        modalComponent->exitModalState (0);
 
-                filter->editorBeingDeleted (editorComp);
+                    filter->editorBeingDeleted (editorComp);
 
-                editorComp = nullptr;
-                wrapper = nullptr;
+                    editorComp = nullptr;
+                    wrapper = nullptr;
+                }
             }
         }
 
@@ -562,7 +567,7 @@ protected:
             if (juceFilter->isSuspended())
             {
                 for (int i = 0; i < numOut; ++i)
-                    zeromem (outputs [i], sizeof (float) * numSamples);
+                    FloatVectorOperations::clear (outputs [i], numSamples);
             }
             else
             {
@@ -573,7 +578,7 @@ protected:
                         channels[i] = outputs [i];
 
                         if (i < numIn && inputs != outputs)
-                            memcpy (outputs [i], inputs[i], sizeof (float) * numSamples);
+                            FloatVectorOperations::copy (outputs [i], inputs[i], numSamples);
                     }
 
                     for (; i < numIn; ++i)
@@ -813,9 +818,9 @@ private:
         for (int i = fNumOutputs; --i >= 0;)
         {
             if (i < fNumInputs)
-                memcpy (outputs[i], inputs[i], numSamples * sizeof (float));
+                FloatVectorOperations::copy (outputs[i], inputs[i], numSamples);
             else
-                zeromem (outputs[i], numSamples * sizeof (float));
+                FloatVectorOperations::clear (outputs[i], numSamples);
         }
     }
 
@@ -848,7 +853,7 @@ private:
             // Pro-tools expects all your parameters to have valid names!
             jassert (juceFilter->getParameterName (index).isNotEmpty());
 
-            juceFilter->getParameterName (index).copyToUTF8 (name, maxLength);
+            juceFilter->getParameterName (index).copyToUTF8 (name, (size_t) maxLength);
         }
 
         long GetPriority() const        { return kFicCooperativeTaskPriority; }
@@ -863,7 +868,7 @@ private:
 
         void GetValueString (char* valueString, int maxLength, long value) const
         {
-            juceFilter->getParameterText (index).copyToUTF8 (valueString, maxLength);
+            juceFilter->getParameterText (index).copyToUTF8 (valueString, (size_t) maxLength);
         }
 
         Cmn_Bool IsAutomatable() const
