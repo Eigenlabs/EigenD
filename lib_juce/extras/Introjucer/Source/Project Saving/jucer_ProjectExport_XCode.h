@@ -23,11 +23,6 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_PROJECTEXPORT_XCODE_JUCEHEADER__
-#define __JUCER_PROJECTEXPORT_XCODE_JUCEHEADER__
-
-#include "jucer_ProjectExporter.h"
-
 namespace
 {
     const char* const osxVersionDefault         = "default";
@@ -124,14 +119,6 @@ public:
                    "A comma-separated list of extra frameworks that should be added to the build. "
                    "(Don't include the .framework extension in the name)");
 
-        if (projectType.isLibrary())
-        {
-            const char* const libTypes[] = { "Static Library (.a)", "Dynamic Library (.dylib)", 0 };
-            const int libTypeValues[] = { 1, 2, 0 };
-            props.add (new ChoicePropertyComponent (getLibraryType(), "Library Type",
-                                                    StringArray (libTypes), Array<var> (libTypeValues)));
-        }
-
         props.add (new TextPropertyComponent (getPreBuildScriptValue(), "Pre-build shell script", 32768, true),
                    "Some shell-script that will be run before a build starts.");
 
@@ -173,10 +160,6 @@ public:
     }
 
 protected:
-    Value getLibraryType()          { return getSetting (Ids::libraryType); }
-    bool isStaticLibrary() const    { return projectType.isLibrary() && (int) settings [Ids::libraryType] == 1; }
-
-
     //==============================================================================
     class XcodeBuildConfiguration  : public BuildConfiguration
     {
@@ -265,9 +248,9 @@ protected:
         bool iOS;
     };
 
-    BuildConfiguration::Ptr createBuildConfig (const ValueTree& settings) const
+    BuildConfiguration::Ptr createBuildConfig (const ValueTree& v) const
     {
-        return new XcodeBuildConfiguration (project, settings, iOS);
+        return new XcodeBuildConfiguration (project, v, iOS);
     }
 
 private:
@@ -366,7 +349,7 @@ private:
 
         addShellScriptBuildPhase ("Pre-build script", getPreBuildScript());
 
-        if (! isStaticLibrary())
+        if (! projectType.isStaticLibrary())
             addBuildPhase ("PBXResourcesBuildPhase", resourceIDs);
 
         if (rezFileIDs.size() > 0)
@@ -374,7 +357,7 @@ private:
 
         addBuildPhase ("PBXSourcesBuildPhase", sourceIDs);
 
-        if (! isStaticLibrary())
+        if (! projectType.isStaticLibrary())
             addBuildPhase ("PBXFrameworksBuildPhase", frameworkIDs);
 
         addShellScriptBuildPhase ("Post-build script", getPostBuildScript());
@@ -618,13 +601,7 @@ private:
             getLinkerFlagsForStaticLibrary (extraLibs.getReference(i), flags, librarySearchPaths);
 
         flags.add (replacePreprocessorTokens (config, getExtraLinkerFlagsString()));
-
-        StringArray libraries;
-        libraries.addTokens (getExternalLibrariesString(), ";", "\"'");
-        libraries.removeEmptyStrings (true);
-
-        if (libraries.size() != 0)
-            flags.add (replacePreprocessorTokens (config, "-l" + libraries.joinIntoString (" -l")).trim());
+        flags.add (getExternalLibraryFlags (config));
 
         flags.removeEmptyStrings (true);
     }
@@ -643,7 +620,7 @@ private:
         s.add ("WARNING_CFLAGS = -Wreorder");
         s.add ("GCC_MODEL_TUNING = G5");
 
-        if (projectType.isLibrary())
+        if (projectType.isStaticLibrary())
         {
             s.add ("GCC_INLINES_ARE_PRIVATE_EXTERN = NO");
             s.add ("GCC_SYMBOLS_PRIVATE_EXTERN = NO");
@@ -712,11 +689,9 @@ private:
             s.add ("DSTROOT = " + sanitisePath (binaryPath.toUnixStyle()));
             s.add ("SYMROOT = " + sanitisePath (binaryPath.toUnixStyle()));
         }
-
-        if (projectType.isLibrary())
+        else
         {
-            s.add ("CONFIGURATION_BUILD_DIR = \"$(BUILD_DIR)\"");
-            s.add ("DEPLOYMENT_LOCATION = YES");
+            s.add ("CONFIGURATION_BUILD_DIR = \"$(PROJECT_DIR)/build/$(CONFIGURATION)\"");
         }
 
         String gccVersion ("com.apple.compilers.llvm.clang.1_0");
@@ -747,6 +722,7 @@ private:
 
         s.add ("GCC_VERSION = " + gccVersion);
         s.add ("CLANG_CXX_LANGUAGE_STANDARD = \"c++0x\"");
+        s.add ("CLANG_LINK_OBJC_RUNTIME = NO");
 
         if (config.getCppLibType().isNotEmpty())
             s.add ("CLANG_CXX_LIBRARY = " + config.getCppLibType().quoted());
@@ -824,7 +800,7 @@ private:
 
     void addFrameworks() const
     {
-        if (! isStaticLibrary())
+        if (! projectType.isStaticLibrary())
         {
             StringArray s (xcodeFrameworks);
             s.addTokens (getExtraFrameworksString(), ",;", "\"'");
@@ -1203,12 +1179,12 @@ private:
         misc.add (v);
     }
 
-    void addShellScriptBuildPhase (const String& name, const String& script) const
+    void addShellScriptBuildPhase (const String& phaseName, const String& script) const
     {
         if (script.trim().isNotEmpty())
         {
             ValueTree& v = addBuildPhase ("PBXShellScriptBuildPhase", StringArray());
-            v.setProperty (Ids::name, name, nullptr);
+            v.setProperty (Ids::name, phaseName, nullptr);
             v.setProperty ("shellPath", "/bin/sh", nullptr);
             v.setProperty ("shellScript", script.replace ("\\", "\\\\")
                                                 .replace ("\"", "\\\"")
@@ -1257,6 +1233,3 @@ private:
         return file.hasFileExtension (sourceFileExtensions);
     }
 };
-
-
-#endif   // __JUCER_PROJECTEXPORT_XCODE_JUCEHEADER__

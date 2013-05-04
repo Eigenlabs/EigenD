@@ -217,6 +217,17 @@ bool Project::isAudioPluginModuleMissing() const
             && ! isModuleEnabled ("juce_audio_plugin_client");
 }
 
+File Project::getBinaryDataCppFile (int index) const
+{
+    const File cpp (getGeneratedCodeFolder().getChildFile ("BinaryData.cpp"));
+
+    if (index > 0)
+        return cpp.getSiblingFile (cpp.getFileNameWithoutExtension() + String (index + 1))
+                    .withFileExtension (cpp.getFileExtension());
+
+    return cpp;
+}
+
 //==============================================================================
 static void registerRecentFile (const File& file)
 {
@@ -371,8 +382,29 @@ void Project::createPropertyEditors (PropertyListBuilder& props)
 
     getProjectType().createPropertyEditors (*this, props);
 
-    props.add (new TextPropertyComponent (getProjectPreprocessorDefs(), "Preprocessor definitions", 32768, false),
-               "Extra preprocessor definitions. Use the form \"NAME1=value NAME2=value\", using whitespace or commas to separate the items - to include a space or comma in a definition, precede it with a backslash.");
+    {
+        const int maxSizes[] = { 20480, 10240, 6144, 2048, 1024, 512, 256, 128, 64 };
+
+        StringArray maxSizeNames;
+        Array<var> maxSizeCodes;
+
+        maxSizeNames.add (TRANS("Default"));
+        maxSizeCodes.add (var::null);
+
+        maxSizeNames.add (String::empty);
+        maxSizeCodes.add (var::null);
+
+        for (int i = 0; i < numElementsInArray (maxSizes); ++i)
+        {
+            const int sizeInBytes = maxSizes[i] * 1024;
+            maxSizeNames.add (File::descriptionOfSizeInBytes (sizeInBytes));
+            maxSizeCodes.add (sizeInBytes);
+        }
+
+        props.add (new ChoicePropertyComponent (getMaxBinaryFileSize(), "BinaryData.cpp size limit", maxSizeNames, maxSizeCodes),
+                   "When splitting binary data into multiple cpp files, the Introjucer attempts to keep the file sizes below this threshold. "
+                   "(Note that individual resource files which are larger than this size cannot be split across multiple cpp files).");
+    }
 
     props.add (new TextPropertyComponent (getProjectUserNotes(), "Notes", 32768, true),
                "Extra comments: This field is not used for code or project generation, it's just a space where you can express your thoughts.");
@@ -391,7 +423,9 @@ int Project::getVersionAsHexInteger() const
 {
     const StringArray configs (getConfigs (*this));
 
-    int value = (configs[0].getIntValue() << 16) + (configs[1].getIntValue() << 8) + configs[2].getIntValue();
+    int value = (configs[0].getIntValue() << 16)
+                 + (configs[1].getIntValue() << 8)
+                  + configs[2].getIntValue();
 
     if (configs.size() >= 4)
         value = (value << 8) + configs[3].getIntValue();
@@ -495,7 +529,7 @@ bool Project::Item::canContain (const Item& child) const
     if (isGroup())
         return child.isFile() || child.isGroup();
 
-    jassertfalse
+    jassertfalse;
     return false;
 }
 

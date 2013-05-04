@@ -46,8 +46,8 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void set_title(const String &t) { title->setText(t,false); }
-    void set_text(const String &t) { text->setText(t,false); }
+    void set_title(const String &t) { title->setText(t,dontSendNotification); }
+    void set_text(const String &t) { text->setText(t,dontSendNotification); }
     void set_left() { text->setJustificationType (Justification::left); }
     Button *get_ok_button() { return ok_button; }
     ToggleButton *get_toggle_button() { return toggleButton; }

@@ -788,7 +788,7 @@ namespace midi
                 if(poly_info.is_valid() && PERNOTE_SCOPE == poly_info.scope_)
                 {
                     int channel = mapper_.settings_functors_.get_min_channel_()+(oparam_-o);
-                    label_->setText(juce::String::formatted("%.1f (ch.%02d)", poly_info.scale_, channel), true);
+                    label_->setText(juce::String::formatted("%.1f (ch.%02d)", poly_info.scale_, channel), sendNotification);
                     colour_cell(poly_info, true);
                     return;
                 }
@@ -800,16 +800,16 @@ namespace midi
         {
             if(span_poly_ && 0 == mapper_.settings_functors_.get_midi_channel_() && PERNOTE_SCOPE == info.scope_)
             {
-                label_->setText(juce::String::formatted("%.1f (ch.%02d)", info.scale_, mapper_.settings_functors_.get_min_channel_()), true);
+                label_->setText(juce::String::formatted("%.1f (ch.%02d)", info.scale_, mapper_.settings_functors_.get_min_channel_()), sendNotification);
             }
             else
             {
-                label_->setText(juce::String(info.scale_,1),true);
+                label_->setText(juce::String(info.scale_,1),sendNotification);
             }
         }
         else
         {
-            label_->setText("",true);
+            label_->setText("",sendNotification);
         }
 
         colour_cell(info, false);
@@ -923,7 +923,7 @@ namespace midi
         row_ = row;
 
         juce::String str(mapper_.getRowName(row));
-        label_->setText(str,true);
+        label_->setText(str,sendNotification);
         int current_width=mapper_.calculate_width(row);
         
         int row_header_size = std::max(mapper_.table_header_->getHeader().getColumnWidth(1),current_width);

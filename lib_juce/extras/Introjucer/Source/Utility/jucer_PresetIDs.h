@@ -45,6 +45,7 @@ namespace Ids
     DECLARE_ID (initialState);
     DECLARE_ID (juceFolder);
     DECLARE_ID (targetFolder);
+    DECLARE_ID (intermediatesPath);
     DECLARE_ID (vstFolder);
     DECLARE_ID (rtasFolder);
     DECLARE_ID (auFolder);
@@ -58,7 +59,6 @@ namespace Ids
     DECLARE_ID (externalLibraries);
     DECLARE_ID (extraDefs);
     DECLARE_ID (projectType);
-    DECLARE_ID (libraryType);
     DECLARE_ID (isDebug);
     DECLARE_ID (alwaysGenerateDebugSymbols);
     DECLARE_ID (targetName);
@@ -66,6 +66,7 @@ namespace Ids
     DECLARE_ID (optimisation);
     DECLARE_ID (defines);
     DECLARE_ID (headerPath);
+    DECLARE_ID (systemHeaderPath);
     DECLARE_ID (libraryPath);
     DECLARE_ID (customXcodeFlags);
     DECLARE_ID (cppLibType);
@@ -74,8 +75,11 @@ namespace Ids
     DECLARE_ID (osxArchitecture);
     DECLARE_ID (iosCompatibility);
     DECLARE_ID (extraFrameworks);
+    DECLARE_ID (extraDLLs);
     DECLARE_ID (winArchitecture);
     DECLARE_ID (winWarningLevel);
+    DECLARE_ID (linuxArchitecture);
+    DECLARE_ID (toolset);
     DECLARE_ID (msvcModuleDefinitionFile);
     DECLARE_ID (bigIcon);
     DECLARE_ID (smallIcon);
@@ -130,6 +134,7 @@ namespace Ids
     DECLARE_ID (font);
     DECLARE_ID (colour);
     DECLARE_ID (userNotes);
+    DECLARE_ID (maxBinaryFileSize);
     const Identifier ID ("id");
     const Identifier class_ ("class");
 

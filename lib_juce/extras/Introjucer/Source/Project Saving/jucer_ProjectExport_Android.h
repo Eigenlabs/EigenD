@@ -23,13 +23,7 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_PROJECTEXPORT_ANDROID_JUCEHEADER__
-#define __JUCER_PROJECTEXPORT_ANDROID_JUCEHEADER__
 
-#include "jucer_ProjectExporter.h"
-
-
-//==============================================================================
 class AndroidProjectExporter  : public ProjectExporter
 {
 public:
@@ -212,8 +206,8 @@ protected:
     class AndroidBuildConfiguration  : public BuildConfiguration
     {
     public:
-        AndroidBuildConfiguration (Project& project, const ValueTree& settings)
-            : BuildConfiguration (project, settings)
+        AndroidBuildConfiguration (Project& p, const ValueTree& settings)
+            : BuildConfiguration (p, settings)
         {
             if (getArchitectures().isEmpty())
                 getArchitecturesValue() = "armeabi armeabi-v7a";
@@ -229,9 +223,9 @@ protected:
         }
     };
 
-    BuildConfiguration::Ptr createBuildConfig (const ValueTree& settings) const
+    BuildConfiguration::Ptr createBuildConfig (const ValueTree& v) const
     {
-        return new AndroidBuildConfiguration (project, settings);
+        return new AndroidBuildConfiguration (project, v);
     }
 
 private:
@@ -436,32 +430,24 @@ private:
             {
                 const AndroidBuildConfiguration& androidConfig = dynamic_cast <const AndroidBuildConfiguration&> (*config);
 
-                out << "  LOCAL_CPPFLAGS += " << createCPPFlags (androidConfig)
-                    << (" " + replacePreprocessorTokens (androidConfig, getExtraCompilerFlagsString()).trim()).trimEnd()
-                    << newLine
-                    << getDynamicLibs (androidConfig);
+                String cppFlags;
+                cppFlags << createCPPFlags (androidConfig)
+                         << (" " + replacePreprocessorTokens (androidConfig, getExtraCompilerFlagsString()).trim()).trimEnd()
+                         << newLine
+                         << getLDLIBS (androidConfig).trimEnd()
+                         << newLine;
 
+                out << "  LOCAL_CPPFLAGS += " << cppFlags;
+                out << "  LOCAL_CFLAGS += " << cppFlags;
                 break;
             }
         }
     }
 
-    String getDynamicLibs (const AndroidBuildConfiguration& config) const
+    String getLDLIBS (const AndroidBuildConfiguration& config) const
     {
-        String flags ("  LOCAL_LDLIBS :=");
-
-        flags << config.getGCCLibraryPathFlags();
-
-        {
-            StringArray libs;
-            libs.add ("log");
-            libs.add ("GLESv2");
-
-            for (int i = 0; i < libs.size(); ++i)
-                flags << " -l" << libs[i];
-        }
-
-        return flags + newLine;
+        return "  LOCAL_LDLIBS :=" + config.getGCCLibraryPathFlags()
+                + " -llog -lGLESv2 " + getExternalLibraryFlags (config);
     }
 
     String createIncludePathFlags (const BuildConfiguration& config) const
@@ -640,9 +626,9 @@ private:
     void writeStringsFile (const File& file) const
     {
         XmlElement strings ("resources");
-        XmlElement* name = strings.createNewChildElement ("string");
-        name->setAttribute ("name", "app_name");
-        name->addTextElement (projectName);
+        XmlElement* resourceName = strings.createNewChildElement ("string");
+        resourceName->setAttribute ("name", "app_name");
+        resourceName->addTextElement (projectName);
 
         writeXmlOrThrow (strings, file, "utf-8", 100);
     }
@@ -650,6 +636,3 @@ private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE (AndroidProjectExporter)
 };
-
-
-#endif   // __JUCER_PROJECTEXPORT_ANDROID_JUCEHEADER__

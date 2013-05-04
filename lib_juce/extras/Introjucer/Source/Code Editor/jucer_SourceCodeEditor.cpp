@@ -63,27 +63,44 @@ void SourceCodeDocument::reloadInternal()
 {
     jassert (codeDoc != nullptr);
     modDetector.updateHash();
-    codeDoc->applyChanges (modDetector.getFile().loadFileAsString());
+    codeDoc->applyChanges (getFile().loadFileAsString());
     codeDoc->setSavePoint();
 }
 
-bool SourceCodeDocument::save()
+static bool writeCodeDocToFile (const File& file, CodeDocument& doc)
 {
-    TemporaryFile temp (modDetector.getFile());
+    TemporaryFile temp (file);
 
     {
         FileOutputStream fo (temp.getFile());
 
-        if (! (fo.openedOk() && getCodeDocument().writeToStream (fo)))
+        if (! (fo.openedOk() && doc.writeToStream (fo)))
             return false;
     }
 
-    if (! temp.overwriteTargetFileWithTemporary())
-        return false;
+    return temp.overwriteTargetFileWithTemporary();
+}
 
-    getCodeDocument().setSavePoint();
-    modDetector.updateHash();
-    return true;
+bool SourceCodeDocument::save()
+{
+    if (writeCodeDocToFile (getFile(), getCodeDocument()))
+    {
+        getCodeDocument().setSavePoint();
+        modDetector.updateHash();
+        return true;
+    }
+
+    return false;
+}
+
+bool SourceCodeDocument::saveAs()
+{
+    FileChooser fc (TRANS("Save As..."), getFile(), "*");
+
+    if (! fc.browseForFileToSave (true))
+        return true;
+
+    return writeCodeDocToFile (fc.getResult(), getCodeDocument());
 }
 
 void SourceCodeDocument::updateLastState (CodeEditorComponent& editor)
@@ -194,7 +211,11 @@ GenericCodeEditorComponent::GenericCodeEditorComponent (const File& f, CodeDocum
 
 GenericCodeEditorComponent::~GenericCodeEditorComponent() {}
 
-enum { showInFinderID = 0x2fe821e3 };
+enum
+{
+    showInFinderID = 0x2fe821e3,
+    insertComponentID = 0x2fe821e4
+};
 
 void GenericCodeEditorComponent::addPopupMenuItems (PopupMenu& menu, const MouseEvent* e)
 {
@@ -291,7 +312,7 @@ public:
         editor.setColour (CaretComponent::caretColourId, Colours::black);
 
         addAndMakeVisible (&editor);
-        label.setText ("Find:", false);
+        label.setText ("Find:", dontSendNotification);
         label.setColour (Label::textColourId, Colours::white);
         label.attachToComponent (&editor, false);
 
@@ -320,7 +341,7 @@ public:
         findNext.setCommandToTrigger (cm, CommandIDs::findNext, true);
     }
 
-    void paint (Graphics& g)
+    void paint (Graphics& g) override
     {
         Path outline;
         outline.addRoundedRectangle (1.0f, 1.0f, getWidth() - 2.0f, getHeight() - 2.0f, 8.0f);
@@ -331,7 +352,7 @@ public:
         g.strokePath (outline, PathStrokeType (1.0f));
     }
 
-    void resized()
+    void resized() override
     {
         int y = 30;
         editor.setBounds (10, y, getWidth() - 20, 24);
@@ -341,12 +362,12 @@ public:
         findPrev.setBounds (getWidth() - 70, y, 30, 22);
     }
 
-    void buttonClicked (Button*)
+    void buttonClicked (Button*) override
     {
         setCaseSensitiveSearch (caseButton.getToggleState());
     }
 
-    void textEditorTextChanged (TextEditor&)
+    void textEditorTextChanged (TextEditor&) override
     {
         setSearchString (editor.getText());
 
@@ -354,14 +375,14 @@ public:
             ed->findNext (true, false);
     }
 
-    void textEditorFocusLost (TextEditor&) {}
+    void textEditorFocusLost (TextEditor&) override {}
 
-    void textEditorReturnKeyPressed (TextEditor&)
+    void textEditorReturnKeyPressed (TextEditor&) override
     {
         commandManager->invokeDirectly (CommandIDs::findNext, true);
     }
 
-    void textEditorEscapeKeyPressed (TextEditor&)
+    void textEditorEscapeKeyPressed (TextEditor&) override
     {
         if (GenericCodeEditorComponent* ed = getOwner())
             ed->hideFindPanel();
@@ -400,8 +421,11 @@ void GenericCodeEditorComponent::showFindPanel()
         resized();
     }
 
-    findPanel->editor.grabKeyboardFocus();
-    findPanel->editor.selectAll();
+    if (findPanel != nullptr)
+    {
+        findPanel->editor.grabKeyboardFocus();
+        findPanel->editor.selectAll();
+    }
 }
 
 void GenericCodeEditorComponent::hideFindPanel()
@@ -548,4 +572,47 @@ void CppCodeEditorComponent::insertTextAtCaret (const String& newText)
     }
 
     GenericCodeEditorComponent::insertTextAtCaret (newText);
+}
+
+void CppCodeEditorComponent::addPopupMenuItems (PopupMenu& menu, const MouseEvent* e)
+{
+    GenericCodeEditorComponent::addPopupMenuItems (menu, e);
+
+    menu.addSeparator();
+    menu.addItem (insertComponentID, TRANS("Insert code for a new Component class..."));
+}
+
+void CppCodeEditorComponent::performPopupMenuAction (int menuItemID)
+{
+    if (menuItemID == insertComponentID)
+        insertComponentClass();
+
+    GenericCodeEditorComponent::performPopupMenuAction (menuItemID);
+}
+
+void CppCodeEditorComponent::insertComponentClass()
+{
+    AlertWindow aw (TRANS ("Insert a new Component class"),
+                    TRANS ("Please enter a name for the new class"),
+                    AlertWindow::NoIcon, nullptr);
+
+    const char* classNameField = "Class Name";
+
+    aw.addTextEditor (classNameField, String::empty, String::empty, false);
+    aw.addButton (TRANS ("Insert Code"),  1, KeyPress (KeyPress::returnKey));
+    aw.addButton (TRANS ("Cancel"),       0, KeyPress (KeyPress::escapeKey));
+
+    while (aw.runModalLoop() != 0)
+    {
+        const String className (aw.getTextEditorContents (classNameField).trim());
+
+        if (className == CodeHelpers::makeValidIdentifier (className, false, true, false))
+        {
+            String code (BinaryData::jucer_InlineComponentTemplate_h);
+            code = code.replace ("COMPONENTCLASS", className);
+
+            insertTextAtCaret (code);
+            break;
+        }
+    }
 }

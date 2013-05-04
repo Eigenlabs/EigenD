@@ -23,13 +23,7 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_PROJECTEXPORT_MAKE_JUCEHEADER__
-#define __JUCER_PROJECTEXPORT_MAKE_JUCEHEADER__
 
-#include "jucer_ProjectExporter.h"
-
-
-//==============================================================================
 class MakefileProjectExporter  : public ProjectExporter
 {
 public:
@@ -83,20 +77,29 @@ protected:
     class MakeBuildConfiguration  : public BuildConfiguration
     {
     public:
-        MakeBuildConfiguration (Project& project, const ValueTree& settings)
-            : BuildConfiguration (project, settings)
+        MakeBuildConfiguration (Project& p, const ValueTree& settings)
+            : BuildConfiguration (p, settings)
         {
             setValueIfVoid (getLibrarySearchPathValue(), "/usr/X11R6/lib/");
         }
 
-        void createConfigProperties (PropertyListBuilder&)
+        Value getArchitectureType()                 { return getValue (Ids::linuxArchitecture); }
+        String getArchitectureTypeString() const    { return config [Ids::linuxArchitecture]; }
+
+        void createConfigProperties (PropertyListBuilder& props)
         {
+            const char* const archNames[] = { "(Default)", "32-bit (-m32)", "64-bit (-m64)", "ARM v6", "ARM v7" };
+            const var archFlags[] = { var(), "-m32", "-m64", "-march=armv6", "-march=armv7" };
+
+            props.add (new ChoicePropertyComponent (getArchitectureType(), "Architecture",
+                                                    StringArray (archNames, numElementsInArray (archNames)),
+                                                    Array<var> (archFlags, numElementsInArray (archFlags))));
         }
     };
 
-    BuildConfiguration::Ptr createBuildConfig (const ValueTree& settings) const
+    BuildConfiguration::Ptr createBuildConfig (const ValueTree& tree) const
     {
-        return new MakeBuildConfiguration (project, settings);
+        return new MakeBuildConfiguration (project, tree);
     }
 
 private:
@@ -157,10 +160,13 @@ private:
 
     void writeLinkerFlags (OutputStream& out, const BuildConfiguration& config) const
     {
-        out << "  LDFLAGS += -L$(BINDIR) -L$(LIBDIR)";
+        out << "  LDFLAGS += $(TARGET_ARCH) -L$(BINDIR) -L$(LIBDIR)";
 
         if (makefileIsDLL)
             out << " -shared";
+
+        if (! config.isDebug())
+            out << " -fvisibility=hidden";
 
         out << config.getGCCLibraryPathFlags();
 
@@ -194,7 +200,12 @@ private:
         out << "  BINDIR := " << escapeSpaces (buildDirName) << newLine
             << "  LIBDIR := " << escapeSpaces (buildDirName) << newLine
             << "  OBJDIR := " << escapeSpaces (intermediatesDirName) << newLine
-            << "  OUTDIR := " << escapeSpaces (outputDir) << newLine;
+            << "  OUTDIR := " << escapeSpaces (outputDir) << newLine
+            << newLine
+            << "  ifeq ($(TARGET_ARCH),)" << newLine
+            << "    TARGET_ARCH := " << getArchFlags (config) << newLine
+            << "  endif"  << newLine
+            << newLine;
 
         writeCppFlags (out, config);
 
@@ -208,7 +219,8 @@ private:
 
         out << " -O" << config.getGCCOptimisationFlag() << newLine;
 
-        out << "  CXXFLAGS += $(CFLAGS) " << replacePreprocessorTokens (config, getExtraCompilerFlagsString()).trim() << newLine;
+        out << "  CXXFLAGS += $(CFLAGS) "
+            << replacePreprocessorTokens (config, getExtraCompilerFlagsString()).trim() << newLine;
 
         writeLinkerFlags (out, config);
 
@@ -220,14 +232,14 @@ private:
 
         String targetName (config.getTargetBinaryNameString());
 
-        if (projectType.isLibrary())
+        if (projectType.isStaticLibrary() || projectType.isDynamicLibrary())
             targetName = getLibbedFilename (targetName);
         else
             targetName = targetName.upToLastOccurrenceOf (".", false, false) + makefileTargetSuffix;
 
         out << "  TARGET := " << escapeSpaces (targetName) << newLine;
 
-        if (projectType.isLibrary())
+        if (projectType.isStaticLibrary())
             out << "  BLDCMD = ar -rcs $(OUTDIR)/$(TARGET) $(OBJECTS) $(TARGET_ARCH)" << newLine;
         else
             out << "  BLDCMD = $(CXX) -o $(OUTDIR)/$(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES) $(TARGET_ARCH)" << newLine;
@@ -257,17 +269,12 @@ private:
             << "endif" << newLine
             << newLine;
 
-        if (! projectType.isLibrary())
-            out << "ifeq ($(TARGET_ARCH),)" << newLine
-                << "  TARGET_ARCH := -march=native" << newLine
-                << "endif"  << newLine << newLine;
+        for (ConstConfigIterator config (*this); config.next();)
+            writeConfig (out, *config);
 
         out << "# (this disables dependency generation if multiple architectures are set)" << newLine
             << "DEPFLAGS := $(if $(word 2, $(TARGET_ARCH)), , -MMD)" << newLine
             << newLine;
-
-        for (ConstConfigIterator config (*this); config.next();)
-            writeConfig (out, *config);
 
         writeObjects (out, files);
 
@@ -313,6 +320,15 @@ private:
         out << "-include $(OBJECTS:%.o=%.d)" << newLine;
     }
 
+    String getArchFlags (const BuildConfiguration& config) const
+    {
+        if (const MakeBuildConfiguration* makeConfig = dynamic_cast<const MakeBuildConfiguration*> (&config))
+            if (makeConfig->getArchitectureTypeString().isNotEmpty())
+                return makeConfig->getArchitectureTypeString();
+
+        return "-march=native";
+    }
+
     String getObjectFileFor (const RelativePath& file) const
     {
         return file.getFileNameWithoutExtension()
@@ -321,6 +337,3 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE (MakefileProjectExporter)
 };
-
-
-#endif   // __JUCER_PROJECTEXPORT_MAKE_JUCEHEADER__

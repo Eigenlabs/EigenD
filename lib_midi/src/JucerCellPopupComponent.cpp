@@ -667,21 +667,21 @@ void CellPopupComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     else if (sliderThatWasMoved == boundslo)
     {
         //[UserSliderCode_boundslo] -- add your slider handling code here..
-        lo->setText(juce::String((unsigned)boundslo->getValue()), false);
+        lo->setText(juce::String((unsigned)boundslo->getValue()), dontSendNotification);
         updateMapping();
         //[/UserSliderCode_boundslo]
     }
     else if (sliderThatWasMoved == boundsbase)
     {
         //[UserSliderCode_boundsbase] -- add your slider handling code here..
-        base->setText(juce::String((int)boundsbase->getValue()), false);
+        base->setText(juce::String((int)boundsbase->getValue()), dontSendNotification);
         updateMapping();
         //[/UserSliderCode_boundsbase]
     }
     else if (sliderThatWasMoved == boundshi)
     {
         //[UserSliderCode_boundshi] -- add your slider handling code here..
-        hi->setText(juce::String((unsigned)boundshi->getValue()), false);
+        hi->setText(juce::String((unsigned)boundshi->getValue()), dontSendNotification);
         updateMapping();
         //[/UserSliderCode_boundshi]
     }

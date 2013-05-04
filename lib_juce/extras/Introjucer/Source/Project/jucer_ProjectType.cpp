@@ -30,8 +30,8 @@
 
 
 //==============================================================================
-ProjectType::ProjectType (const String& type_, const String& desc_)
-    : type (type_), desc (desc_)
+ProjectType::ProjectType (const String& t, const String& d)
+    : type (t), desc (d)
 {
     getAllTypes().add (this);
 }
@@ -123,13 +123,13 @@ public:
 };
 
 //==============================================================================
-class ProjectType_Library  : public ProjectType
+class ProjectType_StaticLibrary  : public ProjectType
 {
 public:
-    ProjectType_Library()  : ProjectType (getTypeName(), "Static Library") {}
+    ProjectType_StaticLibrary()  : ProjectType (getTypeName(), "Static Library") {}
 
     static const char* getTypeName() noexcept   { return "library"; }
-    bool isLibrary() const                      { return true; }
+    bool isStaticLibrary() const                { return true; }
 
     void setMissingProjectProperties (Project&) const
     {
@@ -142,22 +142,41 @@ public:
     void prepareExporter (ProjectExporter& exporter) const
     {
         exporter.xcodeCreatePList = false;
+        exporter.xcodeFileType = "archive.ar";
+        exporter.xcodeProductType = "com.apple.product-type.library.static";
+        exporter.xcodeProductInstallPath = String::empty;
+        exporter.makefileTargetSuffix = ".a";
+        exporter.msvcTargetSuffix = ".lib";
+        exporter.msvcExtraPreprocessorDefs.set ("_LIB", "");
+    }
+};
 
-        if (exporter.getSetting (Ids::libraryType) == 2)
-        {
-            exporter.xcodeFileType = "compiled.mach-o.dylib";
-            exporter.xcodeProductType = "com.apple.product-type.library.dynamic";
-            exporter.xcodeBundleExtension = ".dylib";
-        }
-        else
-        {
-            exporter.xcodeFileType = "archive.ar";
-            exporter.xcodeProductType = "com.apple.product-type.library.static";
-        }
+//==============================================================================
+class ProjectType_DLL  : public ProjectType
+{
+public:
+    ProjectType_DLL()  : ProjectType (getTypeName(), "Dynamic Library") {}
 
+    static const char* getTypeName() noexcept   { return "dll"; }
+    bool isDynamicLibrary() const               { return true; }
+
+    void setMissingProjectProperties (Project&) const
+    {
+    }
+
+    void createPropertyEditors (Project&, PropertyListBuilder&) const
+    {
+    }
+
+    void prepareExporter (ProjectExporter& exporter) const
+    {
+        exporter.xcodeCreatePList = false;
+        exporter.xcodeFileType = "compiled.mach-o.dylib";
+        exporter.xcodeProductType = "com.apple.product-type.library.dynamic";
+        exporter.xcodeBundleExtension = ".dylib";
         exporter.xcodeProductInstallPath = String::empty;
         exporter.makefileTargetSuffix = ".so";
-        exporter.msvcTargetSuffix = exporter.getSetting (Ids::libraryType) == 2 ? ".dll" : ".lib";
+        exporter.msvcTargetSuffix = ".dll";
         exporter.msvcExtraPreprocessorDefs.set ("_LIB", "");
     }
 };
@@ -188,10 +207,8 @@ public:
         setValueIfVoid (getPluginWantsMidiInput (project),         false);
         setValueIfVoid (getPluginProducesMidiOut (project),        false);
         setValueIfVoid (getPluginSilenceInProducesSilenceOut (project), false);
-        setValueIfVoid (getPluginTailLengthSeconds (project),      0);
         setValueIfVoid (getPluginEditorNeedsKeyFocus (project),    false);
         setValueIfVoid (getPluginAUExportPrefix (project),         sanitisedProjectName + "AU");
-        setValueIfVoid (getPluginAUCocoaViewClassName (project),   sanitisedProjectName + "AU_V1");
         setValueIfVoid (getPluginRTASCategory (project),           String::empty);
         setValueIfVoid (project.getBundleIdentifier(),             project.getDefaultBundleIdentifier());
         setValueIfVoid (project.getAAXIdentifier(),                project.getDefaultAAXIdentifier());
@@ -238,18 +255,11 @@ public:
         props.add (new BooleanPropertyComponent (getPluginSilenceInProducesSilenceOut (project), "Silence", "Silence in produces silence out"),
                    "Enable this if your plugin has no tail - i.e. if passing a silent buffer to it will always result in a silent buffer being produced.");
 
-        props.add (new TextPropertyComponent (getPluginTailLengthSeconds (project), "Tail Length (in seconds)", 12, false),
-                   "This indicates the length, in seconds, of the plugin's tail. This information may or may not be used by the host.");
-
         props.add (new BooleanPropertyComponent (getPluginEditorNeedsKeyFocus (project), "Key Focus", "Plugin editor requires keyboard focus"),
                    "Enable this if your plugin needs keyboard input - some hosts can be a bit funny about keyboard focus..");
 
         props.add (new TextPropertyComponent (getPluginAUExportPrefix (project), "Plugin AU Export Prefix", 64, false),
                    "A prefix for the names of exported entry-point functions that the component exposes - typically this will be a version of your plugin's name that can be used as part of a C++ token.");
-
-        props.add (new TextPropertyComponent (getPluginAUCocoaViewClassName (project), "Plugin AU Cocoa View Name", 64, false),
-                   "In an AU, this is the name of Cocoa class that creates the UI. Some hosts bizarrely display the class-name, so you might want to make it reflect your plugin. But the name must be "
-                   "UNIQUE to this exact version of your plugin, to avoid objective-C linkage mix-ups that happen when different plugins containing the same class-name are loaded simultaneously.");
 
         props.add (new TextPropertyComponent (getPluginAUMainType (project), "Plugin AU Main Type", 128, false),
                    "In an AU, this is the value that is set as JucePlugin_AUMainType. Leave it blank unless you want to use a custom value.");
@@ -330,12 +340,15 @@ public:
 };
 
 //==============================================================================
-static ProjectType_GUIApp       guiType;
-static ProjectType_ConsoleApp   consoleType;
-static ProjectType_Library      libraryType;
-static ProjectType_AudioPlugin  audioPluginType;
+static ProjectType_GUIApp        guiType;
+static ProjectType_ConsoleApp    consoleType;
+static ProjectType_StaticLibrary libraryType;
+static ProjectType_DLL           dllType;
+static ProjectType_AudioPlugin   audioPluginType;
 
 //==============================================================================
 const char* ProjectType::getGUIAppTypeName()        { return ProjectType_GUIApp::getTypeName(); }
 const char* ProjectType::getConsoleAppTypeName()    { return ProjectType_ConsoleApp::getTypeName(); }
+const char* ProjectType::getStaticLibTypeName()     { return ProjectType_StaticLibrary::getTypeName(); }
+const char* ProjectType::getDynamicLibTypeName()    { return ProjectType_DLL::getTypeName(); }
 const char* ProjectType::getAudioPluginTypeName()   { return ProjectType_AudioPlugin::getTypeName(); }

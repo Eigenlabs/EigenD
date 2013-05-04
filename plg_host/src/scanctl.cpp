@@ -196,8 +196,8 @@ namespace
                 String format_name = format->getName();
                 String plugin_name = format->getNameOfPluginFromIdentifier(plugins_[cur_plugin_]);
                 String msg = scan?"Scanning ":"Skipping "; msg += format_name;
-                component_->getPluginLabel()->setText(plugin_name,false);
-                component_->getFormatLabel()->setText(msg,false);
+                component_->getPluginLabel()->setText(plugin_name,dontSendNotification);
+                component_->getFormatLabel()->setText(msg,dontSendNotification);
                 float progress = ((float)cur_plugin_)/((float)plugins_.size());
                 component_->getProgressBar()->setValue(progress,sendNotificationAsync);
                 component_->getPeer()->performAnyPendingRepaintsNow();
@@ -636,17 +636,17 @@ namespace
             {
                 if(!ok)
                 {
-                    text()->setText("Scan failed.",false);
+                    text()->setText("Scan failed.",dontSendNotification);
                     return;
                 }
 
                 if(!bad_model_.getNumRows())
                 {
-                    text()->setText("All plugins passed.",false);
+                    text()->setText("All plugins passed.",dontSendNotification);
                 }
                 else
                 {
-                    text()->setText("Scan complete, but some plugins failed:",false);
+                    text()->setText("Scan complete, but some plugins failed:",dontSendNotification);
                 }
 
                 good_list_box()->setModel(&good_model_);

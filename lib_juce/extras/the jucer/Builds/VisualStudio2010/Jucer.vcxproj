@@ -36,11 +36,9 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Jucer</TargetName>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateManifest>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Jucer</TargetName>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
   </PropertyGroup>
@@ -78,6 +76,8 @@
       <ProgramDatabaseFile>$(IntDir)\Jucer.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -119,6 +119,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -214,6 +215,9 @@
     <ClCompile Include="..\..\..\..\modules\juce_core\threads\juce_ChildProcess.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\modules\juce_core\threads\juce_HighResolutionTimer.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_core\threads\juce_ReadWriteLock.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -251,6 +255,9 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_core\files\juce_TemporaryFile.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\modules\juce_core\network\juce_IPAddress.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_core\network\juce_MACAddress.cpp">
@@ -518,6 +525,9 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_graphics\native\juce_android_GraphicsContext.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\modules\juce_graphics\native\juce_freetype_Fonts.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_graphics\native\juce_linux_Fonts.cpp">
@@ -1063,6 +1073,7 @@
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_ChildProcess.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_CriticalSection.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_DynamicLibrary.h"/>
+    <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_HighResolutionTimer.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_InterProcessLock.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_Process.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_ReadWriteLock.h"/>
@@ -1085,6 +1096,7 @@
     <ClInclude Include="..\..\..\..\modules\juce_core\files\juce_FileSearchPath.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\files\juce_MemoryMappedFile.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\files\juce_TemporaryFile.h"/>
+    <ClInclude Include="..\..\..\..\modules\juce_core\network\juce_IPAddress.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\network\juce_MACAddress.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\network\juce_NamedPipe.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\network\juce_Socket.h"/>

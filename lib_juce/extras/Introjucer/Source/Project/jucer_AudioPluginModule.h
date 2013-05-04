@@ -45,10 +45,8 @@ namespace
     Value getPluginWantsMidiInput (Project& project)              { return project.getProjectValue ("pluginWantsMidiIn"); }
     Value getPluginProducesMidiOut (Project& project)             { return project.getProjectValue ("pluginProducesMidiOut"); }
     Value getPluginSilenceInProducesSilenceOut (Project& project) { return project.getProjectValue ("pluginSilenceInIsSilenceOut"); }
-    Value getPluginTailLengthSeconds (Project& project)           { return project.getProjectValue ("pluginTailLength"); }
     Value getPluginEditorNeedsKeyFocus (Project& project)         { return project.getProjectValue ("pluginEditorRequiresKeys"); }
     Value getPluginAUExportPrefix (Project& project)              { return project.getProjectValue ("pluginAUExportPrefix"); }
-    Value getPluginAUCocoaViewClassName (Project& project)        { return project.getProjectValue ("pluginAUViewClass"); }
     Value getPluginAUMainType (Project& project)                  { return project.getProjectValue ("pluginAUMainType"); }
     Value getPluginRTASCategory (Project& project)                { return project.getProjectValue ("pluginRTASCategory"); }
     Value getPluginRTASBypassDisabled (Project& project)          { return project.getProjectValue ("pluginRTASDisableBypass"); }
@@ -138,7 +136,6 @@ namespace
         flags.set ("JucePlugin_WantsMidiInput",              valueToBool (getPluginWantsMidiInput (project)));
         flags.set ("JucePlugin_ProducesMidiOutput",          valueToBool (getPluginProducesMidiOut (project)));
         flags.set ("JucePlugin_SilenceInProducesSilenceOut", valueToBool (getPluginSilenceInProducesSilenceOut (project)));
-        flags.set ("JucePlugin_TailLengthSeconds",           String (static_cast <double> (getPluginTailLengthSeconds (project).getValue())));
         flags.set ("JucePlugin_EditorRequiresKeyboardFocus", valueToBool (getPluginEditorNeedsKeyFocus (project)));
         flags.set ("JucePlugin_Version",                     project.getVersionString());
         flags.set ("JucePlugin_VersionCode",                 project.getVersionAsHex());
@@ -151,7 +148,6 @@ namespace
         flags.set ("JucePlugin_AUExportPrefixQuoted",        getPluginAUExportPrefix (project).toString().quoted());
         flags.set ("JucePlugin_AUManufacturerCode",          "JucePlugin_ManufacturerCode");
         flags.set ("JucePlugin_CFBundleIdentifier",          project.getBundleIdentifier().toString());
-        flags.set ("JucePlugin_AUCocoaViewClassName",        getPluginAUCocoaViewClassName (project).toString());
         flags.set ("JucePlugin_RTASCategory",                getPluginRTASCategoryCode (project));
         flags.set ("JucePlugin_RTASManufacturerCode",        "JucePlugin_ManufacturerCode");
         flags.set ("JucePlugin_RTASProductId",               "JucePlugin_PluginCode");
@@ -194,6 +190,13 @@ namespace
         return exporter.getVisualStudioVersion() < 10 ? CodeHelpers::addEscapeChars (text.quoted())
                                                       : CodeHelpers::addEscapeChars (text).quoted();
     }
+
+    String createRebasedPath (ProjectExporter& exporter, const RelativePath& path)
+    {
+        return createEscapedStringForVersion (exporter,
+                                              exporter.rebaseFromProjectFolderToBuildTarget (path)
+                                                      .toWindowsStyle());
+    }
 }
 
 //==============================================================================
@@ -225,8 +228,8 @@ namespace VSTHelpers
     static void fixMissingVSTValues (ProjectExporter& exporter)
     {
         if (getVSTFolder(exporter).toString().isEmpty())
-            getVSTFolder(exporter) = (exporter.isVisualStudio() ? "c:\\SDKs\\vstsdk2.4"
-                                                                : "~/SDKs/vstsdk2.4");
+            getVSTFolder(exporter) = (exporter.isWindows() ? "c:\\SDKs\\vstsdk2.4"
+                                                           : "~/SDKs/vstsdk2.4");
 
         fixMissingXcodePostBuildScript (exporter);
     }
@@ -246,7 +249,7 @@ namespace VSTHelpers
 
         addVSTFolderToPath (exporter, exporter.extraSearchPaths);
 
-        if (exporter.isVisualStudio())
+        if (exporter.isWindows())
             exporter.extraSearchPaths.add (juceWrapperFolder.toWindowsStyle());
         else if (exporter.isLinux())
             exporter.extraSearchPaths.add (juceWrapperFolder.toUnixStyle());
@@ -267,11 +270,6 @@ namespace RTASHelpers
                                                                                               RelativePath::projectFolder); }
 
     static bool isExporterSupported (ProjectExporter& exporter)   { return exporter.isVisualStudio() || exporter.isXcode(); }
-
-    static RelativePath getRTASFolderRelativePath (ProjectExporter& exporter)
-    {
-        return exporter.rebaseFromProjectFolderToBuildTarget (getRTASFolderPath (exporter));
-    }
 
     static void fixMissingRTASValues (ProjectExporter& exporter)
     {
@@ -310,6 +308,7 @@ namespace RTASHelpers
                                 "AlturaPorts/TDMPlugins/PluginLibrary/Interfaces",
                                 "AlturaPorts/TDMPlugins/common",
                                 "AlturaPorts/TDMPlugins/common/Platform",
+                                "AlturaPorts/TDMPlugins/common/Macros",
                                 "AlturaPorts/TDMPlugins/SignalProcessing/Public",
                                 "AlturaPorts/TDMPlugIns/DSPManager/Interfaces",
                                 "AlturaPorts/SADriver/Interfaces",
@@ -372,12 +371,15 @@ namespace RTASHelpers
         {
             fixMissingRTASValues (exporter);
 
+            const RelativePath rtasFolder (getRTASFolderPath (exporter));
+
             if (exporter.isVisualStudio())
             {
                 exporter.msvcTargetSuffix = ".dpm";
 
-                String winbag (getRTASFolderRelativePath (exporter).getChildFile ("WinBag").toWindowsStyle());
-                exporter.msvcExtraPreprocessorDefs.set ("JucePlugin_WinBag_path", createEscapedStringForVersion (exporter, winbag));
+                exporter.msvcExtraPreprocessorDefs.set ("JucePlugin_WinBag_path",
+                                                        createRebasedPath (exporter,
+                                                                           rtasFolder.getChildFile ("WinBag")));
 
                 RelativePath juceFolder (exporter.getJucePathFromTargetFolder());
                 if (juceFolder.getFileName() != "modules")
@@ -408,7 +410,6 @@ namespace RTASHelpers
             {
                 exporter.xcodeCanUseDwarf = false;
 
-                RelativePath rtasFolder (getRTASFolderPath (exporter));
                 exporter.xcodeExtraLibrariesDebug.add   (rtasFolder.getChildFile ("MacBag/Libs/Debug/libPluginLibrary.a"));
                 exporter.xcodeExtraLibrariesRelease.add (rtasFolder.getChildFile ("MacBag/Libs/Release/libPluginLibrary.a"));
             }
@@ -478,8 +479,6 @@ namespace AUHelpers
                                                 JUCE_AU_PUBLIC "AUBase/AUBase.h",
                                                 JUCE_AU_PUBLIC "AUBase/AUDispatch.cpp",
                                                 JUCE_AU_PUBLIC "AUBase/AUDispatch.h",
-                                                JUCE_AU_PUBLIC "AUBase/AUPlugInDispatch.cpp",
-                                                JUCE_AU_PUBLIC "AUBase/AUPlugInDispatch.h",
                                                 JUCE_AU_PUBLIC "AUBase/AUInputElement.cpp",
                                                 JUCE_AU_PUBLIC "AUBase/AUInputElement.h",
                                                 JUCE_AU_PUBLIC "AUBase/AUOutputElement.cpp",
@@ -523,7 +522,8 @@ namespace AUHelpers
 
                 Project& project = exporter.getProject();
 
-                addPlistDictionaryKey (dict, "name", getPluginName (project).toString());
+                addPlistDictionaryKey (dict, "name", getPluginManufacturer (project).toString()
+                                                       + ": " + getPluginName (project).toString());
                 addPlistDictionaryKey (dict, "description", getPluginDesc (project).toString());
                 addPlistDictionaryKey (dict, "factoryFunction", getPluginAUExportPrefix (project).toString() + "Factory");
                 addPlistDictionaryKey (dict, "manufacturer", getPluginManufacturerCode (project).toString().trim().substring (0, 4));
@@ -585,9 +585,8 @@ namespace AAXHelpers
                     if (config->getValue (Ids::useRuntimeLibDLL).getValue().isVoid())
                         config->getValue (Ids::useRuntimeLibDLL) = true;
 
-                exporter.msvcExtraPreprocessorDefs
-                    .set ("JucePlugin_AAXLibs_path",
-                          createEscapedStringForVersion (exporter, aaxLibsFolder.toWindowsStyle()));
+                exporter.msvcExtraPreprocessorDefs.set ("JucePlugin_AAXLibs_path",
+                                                        createRebasedPath (exporter, aaxLibsFolder));
             }
             else
             {

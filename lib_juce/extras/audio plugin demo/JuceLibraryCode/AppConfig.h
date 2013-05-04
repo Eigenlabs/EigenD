@@ -85,6 +85,10 @@
  //#define JUCE_USE_MP3AUDIOFORMAT
 #endif
 
+#ifndef    JUCE_USE_LAME_AUDIO_FORMAT
+ //#define JUCE_USE_LAME_AUDIO_FORMAT
+#endif
+
 #ifndef    JUCE_USE_WINDOWS_MEDIA_FORMAT
  //#define JUCE_USE_WINDOWS_MEDIA_FORMAT
 #endif
@@ -208,9 +212,6 @@
 #ifndef  JucePlugin_SilenceInProducesSilenceOut
  #define JucePlugin_SilenceInProducesSilenceOut  0
 #endif
-#ifndef  JucePlugin_TailLengthSeconds
- #define JucePlugin_TailLengthSeconds      0
-#endif
 #ifndef  JucePlugin_EditorRequiresKeyboardFocus
  #define JucePlugin_EditorRequiresKeyboardFocus  1
 #endif
@@ -246,9 +247,6 @@
 #endif
 #ifndef  JucePlugin_CFBundleIdentifier
  #define JucePlugin_CFBundleIdentifier     com.rawmaterialsoftware.JuceDemoPlugin
-#endif
-#ifndef  JucePlugin_AUCocoaViewClassName
- #define JucePlugin_AUCocoaViewClassName   JuceDemoProjectAU_V1
 #endif
 #ifndef  JucePlugin_RTASCategory
  #define JucePlugin_RTASCategory           ePlugInCategory_None

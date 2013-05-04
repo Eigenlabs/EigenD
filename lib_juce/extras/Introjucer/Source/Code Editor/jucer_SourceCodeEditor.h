@@ -59,7 +59,8 @@ public:
             const char* extensions[] = { "h", "hpp", nullptr };
             return findCounterpart (file, extensions);
         }
-        else if (file.hasFileExtension ("h;hpp"))
+
+        if (file.hasFileExtension ("h;hpp"))
         {
             const char* extensions[] = { "cpp", "mm", "cc", "cxx", "c", "m", nullptr };
             return findCounterpart (file, extensions);
@@ -83,6 +84,7 @@ public:
 
     void reloadFromFile();
     bool save();
+    bool saveAs();
 
     Component* createEditor();
     Component* createViewer()       { return createEditor(); }
@@ -211,10 +213,15 @@ public:
     CppCodeEditorComponent (const File& file, CodeDocument& codeDocument);
     ~CppCodeEditorComponent();
 
+    void addPopupMenuItems (PopupMenu&, const MouseEvent*);
+    void performPopupMenuAction (int menuItemID);
+
     void handleReturnKey();
     void insertTextAtCaret (const String& newText);
 
 private:
+    void insertComponentClass();
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CppCodeEditorComponent)
 };
 

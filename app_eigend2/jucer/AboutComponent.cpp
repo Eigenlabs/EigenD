@@ -57,7 +57,7 @@ AboutComponent::AboutComponent ()
     setSize (300, 400);
 
     //[Constructor] You can add your own custom stuff here..
-    label->setText(PI_RELEASE,false);
+    label->setText(PI_RELEASE,dontSendNotification);
     //[/Constructor]
 }
 

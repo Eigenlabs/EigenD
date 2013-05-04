@@ -180,8 +180,9 @@ void MainWindow::restoreWindowPosition()
 
 bool MainWindow::canOpenFile (const File& file) const
 {
-    return file.hasFileExtension (Project::projectFileExtension)
-             || IntrojucerApp::getApp().openDocumentManager.canOpenFile (file);
+    return (! file.isDirectory())
+             && (file.hasFileExtension (Project::projectFileExtension)
+                  || IntrojucerApp::getApp().openDocumentManager.canOpenFile (file));
 }
 
 bool MainWindow::openFile (const File& file)
@@ -242,10 +243,13 @@ bool MainWindow::shouldDropFilesWhenDraggedExternally (const DragAndDropTarget::
         {
             for (int i = selected.size(); --i >= 0;)
             {
-                const File f (selected.getUnchecked(i)->getDraggableFile());
+                if (JucerTreeViewBase* jtvb = selected.getUnchecked(i))
+                {
+                    const File f (jtvb->getDraggableFile());
 
-                if (f.existsAsFile())
-                    files.add (f.getFullPathName());
+                    if (f.existsAsFile())
+                        files.add (f.getFullPathName());
+                }
             }
 
             canMoveFiles = false;
@@ -282,7 +286,7 @@ void MainWindow::updateTitle (const String& documentName)
 void MainWindow::showNewProjectWizard()
 {
     jassert (currentProject == nullptr);
-    setContentOwned (NewProjectWizard::createComponent(), true);
+    setContentOwned (createNewProjectWizardComponent(), true);
     makeVisible();
 }
 

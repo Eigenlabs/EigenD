@@ -540,12 +540,15 @@ namespace
         if(note_pitchbend_!=0.f)
         {
             send_pitchbend(t);
+            if(sendnote)
+            {
+                root_->time_ = std::max(root_->time_+1,t++);
+                t = root_->time_;
+            }
         }
 
         if(sendnote)
         {
-            root_->time_ = std::max(root_->time_+1,t++);
-            t = root_->time_;
             send_note(t);
         }
     }
@@ -600,12 +603,15 @@ namespace
         if(note_velocity_>0)
         {
             send_pitchbend(t);
+            if(sendnote)
+            {
+                root_->time_ = std::max(root_->time_+1,t++);
+                t = root_->time_;
+            }
         }
 
         if(sendnote)
         {
-            root_->time_ = std::max(root_->time_+1,t++);
-            t = root_->time_;
             send_note(t);
         }
     }
@@ -1033,6 +1039,7 @@ namespace midi
                                             if(w->note_id_>=0)
                                             {
                                                 set_poly_aftertouch(global, i->continuous_, channel, w->note_id_, i->value_, time_);
+                                                time_++;
                                             }
                                             break;
                                         }

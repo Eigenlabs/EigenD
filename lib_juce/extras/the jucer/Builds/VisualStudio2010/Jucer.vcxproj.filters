@@ -382,6 +382,9 @@
     <ClCompile Include="..\..\..\..\modules\juce_core\threads\juce_ChildProcess.cpp">
       <Filter>Juce Modules\juce_core\threads</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\modules\juce_core\threads\juce_HighResolutionTimer.cpp">
+      <Filter>Juce Modules\juce_core\threads</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_core\threads\juce_ReadWriteLock.cpp">
       <Filter>Juce Modules\juce_core\threads</Filter>
     </ClCompile>
@@ -420,6 +423,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_core\files\juce_TemporaryFile.cpp">
       <Filter>Juce Modules\juce_core\files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\modules\juce_core\network\juce_IPAddress.cpp">
+      <Filter>Juce Modules\juce_core\network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_core\network\juce_MACAddress.cpp">
       <Filter>Juce Modules\juce_core\network</Filter>
@@ -707,6 +713,9 @@
       <Filter>Juce Modules\juce_graphics\native</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_graphics\native\juce_android_GraphicsContext.cpp">
+      <Filter>Juce Modules\juce_graphics\native</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\modules\juce_graphics\native\juce_freetype_Fonts.cpp">
       <Filter>Juce Modules\juce_graphics\native</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_graphics\native\juce_linux_Fonts.cpp">
@@ -1539,6 +1548,9 @@
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_DynamicLibrary.h">
       <Filter>Juce Modules\juce_core\threads</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_HighResolutionTimer.h">
+      <Filter>Juce Modules\juce_core\threads</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_InterProcessLock.h">
       <Filter>Juce Modules\juce_core\threads</Filter>
     </ClInclude>
@@ -1604,6 +1616,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\modules\juce_core\files\juce_TemporaryFile.h">
       <Filter>Juce Modules\juce_core\files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\modules\juce_core\network\juce_IPAddress.h">
+      <Filter>Juce Modules\juce_core\network</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\modules\juce_core\network\juce_MACAddress.h">
       <Filter>Juce Modules\juce_core\network</Filter>

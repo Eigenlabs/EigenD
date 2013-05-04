@@ -23,13 +23,7 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_PROJECTEXPORT_MSVC_JUCEHEADER__
-#define __JUCER_PROJECTEXPORT_MSVC_JUCEHEADER__
 
-#include "jucer_ProjectExporter.h"
-#include "jucer_ProjectSaver.h"
-
-//==============================================================================
 class MSVCProjectExporterBase   : public ProjectExporter
 {
 public:
@@ -39,18 +33,15 @@ public:
         if (getTargetLocationString().isEmpty())
             getTargetLocationValue() = getDefaultBuildsRootFolder() + folderName;
 
-        if ((int) getLibraryType().getValue() <= 0)
-            getLibraryType() = 1;
-
         projectGUID = createGUID (project.getProjectUID());
-
         updateOldSettings();
     }
 
     //==============================================================================
-    bool usesMMFiles() const                    { return false; }
-    bool isVisualStudio() const                 { return true; }
-    bool canCopeWithDuplicateFiles()            { return false; }
+    bool usesMMFiles() const            { return false; }
+    bool isVisualStudio() const         { return true; }
+    bool isWindows() const              { return true; }
+    bool canCopeWithDuplicateFiles()    { return false; }
 
     bool launchProject()
     {
@@ -61,15 +52,8 @@ public:
        #endif
     }
 
-    void createExporterProperties (PropertyListBuilder& props)
+    void createExporterProperties (PropertyListBuilder&)
     {
-        if (projectType.isLibrary())
-        {
-            const char* const libTypes[] = { "Static Library (.lib)", "Dynamic Library (.dll)", 0 };
-            const int libTypeValues[] = { 1, 2, 0 };
-            props.add (new ChoicePropertyComponent (getLibraryType(), "Library Type",
-                                                    StringArray (libTypes), Array<var> (libTypeValues)));
-        }
     }
 
 protected:
@@ -77,11 +61,9 @@ protected:
     mutable File rcFile, iconFile;
 
     File getProjectFile (const String& extension) const   { return getTargetFolder().getChildFile (project.getProjectFilenameRoot()).withFileExtension (extension); }
-    File getSLNFile() const             { return getProjectFile (".sln"); }
+    File getSLNFile() const     { return getProjectFile (".sln"); }
 
-    Value getLibraryType()              { return getSetting (Ids::libraryType); }
-    String getLibraryString() const     { return getSettingString (Ids::libraryType); }
-    bool isLibraryDLL() const           { return msvcIsDLL || (projectType.isLibrary() && (int) settings [Ids::libraryType] == 2); }
+    bool isLibraryDLL() const   { return msvcIsDLL || projectType.isDynamicLibrary(); }
 
     static String prependIfNotAbsolute (const String& file, const char* prefix)
     {
@@ -130,8 +112,8 @@ protected:
     class MSVCBuildConfiguration  : public BuildConfiguration
     {
     public:
-        MSVCBuildConfiguration (Project& project, const ValueTree& settings)
-            : BuildConfiguration (project, settings)
+        MSVCBuildConfiguration (Project& p, const ValueTree& settings)
+            : BuildConfiguration (p, settings)
         {
             if (getWarningLevel() == 0)
                 getWarningLevelValue() = 4;
@@ -159,6 +141,9 @@ protected:
         Value getUsingRuntimeLibDLL()               { return getValue (Ids::useRuntimeLibDLL); }
         bool isUsingRuntimeLibDLL() const           { return config [Ids::useRuntimeLibDLL]; }
 
+        String getIntermediatesPath() const         { return config [Ids::intermediatesPath].toString(); }
+        Value getIntermediatesPathValue()           { return getValue (Ids::intermediatesPath); }
+
         String getOutputFilename (const String& suffix, bool forceSuffix) const
         {
             const String target (File::createLegalFileName (getTargetBinaryNameString().trim()));
@@ -171,11 +156,16 @@ protected:
 
         void createConfigProperties (PropertyListBuilder& props)
         {
+            props.add (new TextPropertyComponent (getIntermediatesPathValue(), "Intermediates path", 2048, false),
+                       "An optional path to a folder to use for the intermediate build files. Note that Visual Studio allows "
+                       "you to use macros in this path, e.g. \"$(TEMP)\\MyAppBuildFiles\\$(Configuration)\", which is a handy way to "
+                       "send them to the user's temp folder.");
+
             const char* const warningLevelNames[] = { "Low", "Medium", "High", nullptr };
-            const int warningLevels[] = { 2, 3, 4, 0 };
+            const int warningLevels[] = { 2, 3, 4 };
 
             props.add (new ChoicePropertyComponent (getWarningLevelValue(), "Warning Level",
-                                                    StringArray (warningLevelNames), Array<var> (warningLevels)));
+                                                    StringArray (warningLevelNames), Array<var> (warningLevels, numElementsInArray (warningLevels))));
 
             {
                 const char* const runtimeNames[] = { "(Default)", "Use static runtime", "Use DLL runtime", nullptr };
@@ -203,9 +193,9 @@ protected:
         }
     };
 
-    BuildConfiguration::Ptr createBuildConfig (const ValueTree& settings) const
+    BuildConfiguration::Ptr createBuildConfig (const ValueTree& v) const
     {
-        return new MSVCBuildConfiguration (project, settings);
+        return new MSVCBuildConfiguration (project, v);
     }
 
     static int getWarningLevel (const BuildConfiguration& config)
@@ -214,16 +204,11 @@ protected:
     }
 
     //==============================================================================
-    String getIntermediatesPath (const BuildConfiguration& config) const
-    {
-        return prependDot (File::createLegalFileName (config.getName().trim()));
-    }
-
     String getConfigTargetPath (const BuildConfiguration& config) const
     {
         const String binaryPath (config.getTargetBinaryRelativePathString().trim());
         if (binaryPath.isEmpty())
-            return getIntermediatesPath (config);
+            return prependDot (File::createLegalFileName (config.getName().trim()));
 
         RelativePath binaryRelPath (binaryPath, RelativePath::projectFolder);
 
@@ -431,7 +416,7 @@ protected:
 
     bool hasResourceFile() const
     {
-        return ! projectType.isLibrary();
+        return ! projectType.isStaticLibrary();
     }
 
     void createResourcesAndIcon() const
@@ -680,7 +665,8 @@ protected:
             const RelativePath path (projectItem.getFile(), getTargetFolder(), RelativePath::buildTargetFolder);
 
             addFile (path, parent,
-                     projectItem.shouldBeAddedToBinaryResources() || (shouldFileBeCompiledByDefault (path) && ! projectItem.shouldBeCompiled()),
+                     projectItem.shouldBeAddedToBinaryResources()
+                       || (shouldFileBeCompiledByDefault (path) && ! projectItem.shouldBeCompiled()),
                      shouldFileBeCompiledByDefault (path) && (bool) projectItem.shouldUseStdCall());
         }
     }
@@ -710,8 +696,11 @@ protected:
 
         xml.setAttribute ("Name", createConfigName (config));
         xml.setAttribute ("OutputDirectory", FileHelpers::windowsStylePath (getConfigTargetPath (config)));
-        xml.setAttribute ("IntermediateDirectory", FileHelpers::windowsStylePath (getIntermediatesPath (config)));
-        xml.setAttribute ("ConfigurationType", isLibraryDLL() ? "2" : (projectType.isLibrary() ? "4" : "1"));
+
+        if (config.getIntermediatesPath().isNotEmpty())
+            xml.setAttribute ("IntermediateDirectory", FileHelpers::windowsStylePath (config.getIntermediatesPath()));
+
+        xml.setAttribute ("ConfigurationType", isLibraryDLL() ? "2" : (projectType.isStaticLibrary() ? "4" : "1"));
         xml.setAttribute ("UseOfMFC", "0");
         xml.setAttribute ("ATLMinimizesCRunTimeLibraryUsage", "false");
         xml.setAttribute ("CharacterSet", "2");
@@ -731,7 +720,7 @@ protected:
         createToolElement (xml, "VCXMLDataGeneratorTool");
         createToolElement (xml, "VCWebServiceProxyGeneratorTool");
 
-        if (! projectType.isLibrary())
+        if (! projectType.isStaticLibrary())
         {
             XmlElement* midl = createToolElement (xml, "VCMIDLTool");
             midl->setAttribute ("PreprocessorDefinitions", isDebug ? "_DEBUG" : "NDEBUG");
@@ -750,7 +739,7 @@ protected:
             if (isDebug)
             {
                 compiler->setAttribute ("BufferSecurityCheck", "");
-                compiler->setAttribute ("DebugInformationFormat", projectType.isLibrary() ? "3" : "4");
+                compiler->setAttribute ("DebugInformationFormat", projectType.isStaticLibrary() ? "3" : "4");
             }
             else
             {
@@ -785,7 +774,7 @@ protected:
 
         createToolElement (xml, "VCPreLinkEventTool");
 
-        if (! projectType.isLibrary())
+        if (! projectType.isStaticLibrary())
         {
             XmlElement* linker = createToolElement (xml, "VCLinkerTool");
 
@@ -863,7 +852,7 @@ protected:
 
         createToolElement (xml, "VCFxCopTool");
 
-        if (! projectType.isLibrary())
+        if (! projectType.isStaticLibrary())
             createToolElement (xml, "VCAppVerifierTool");
 
         XmlElement* postBuildEvent = createToolElement (xml, "VCPostBuildEventTool");
@@ -982,8 +971,8 @@ protected:
     class VC2010BuildConfiguration  : public MSVCBuildConfiguration
     {
     public:
-        VC2010BuildConfiguration (Project& project, const ValueTree& settings)
-            : MSVCBuildConfiguration (project, settings)
+        VC2010BuildConfiguration (Project& p, const ValueTree& settings)
+            : MSVCBuildConfiguration (p, settings)
         {
             if (getArchitectureType().toString().isEmpty())
                 getArchitectureType() = get32BitArchName();
@@ -1001,18 +990,19 @@ protected:
         {
             MSVCBuildConfiguration::createConfigProperties (props);
 
-            const char* const archTypes[] = { get32BitArchName(), get64BitArchName(), nullptr };
+            const char* const archTypes[] = { get32BitArchName(), get64BitArchName() };
+
             props.add (new ChoicePropertyComponent (getArchitectureType(), "Architecture",
-                                                    StringArray (archTypes), Array<var> (archTypes)));
+                                                    StringArray (archTypes, numElementsInArray (archTypes)),
+                                                    Array<var> (archTypes, numElementsInArray (archTypes))));
         }
     };
 
     virtual void addPlatformToolsetToPropertyGroup (XmlElement&) const {}
 
-
-    BuildConfiguration::Ptr createBuildConfig (const ValueTree& settings) const
+    BuildConfiguration::Ptr createBuildConfig (const ValueTree& v) const
     {
-        return new VC2010BuildConfiguration (project, settings);
+        return new VC2010BuildConfiguration (project, v);
     }
 
     static bool is64Bit (const BuildConfiguration& config)
@@ -1119,19 +1109,20 @@ protected:
                 {
                     XmlElement* outdir = props->createNewChildElement ("OutDir");
                     setConditionAttribute (*outdir, config);
-                    outdir->addTextElement (getConfigTargetPath (config) + "\\");
+                    outdir->addTextElement (FileHelpers::windowsStylePath (getConfigTargetPath (config)) + "\\");
                 }
 
+                if (config.getIntermediatesPath().isNotEmpty())
                 {
                     XmlElement* intdir = props->createNewChildElement ("IntDir");
                     setConditionAttribute (*intdir, config);
-                    intdir->addTextElement (getIntermediatesPath (config) + "\\");
+                    intdir->addTextElement (FileHelpers::windowsStylePath (config.getIntermediatesPath()) + "\\");
                 }
 
                 {
-                    XmlElement* name = props->createNewChildElement ("TargetName");
-                    setConditionAttribute (*name, config);
-                    name->addTextElement (config.getOutputFilename (String::empty, true));
+                    XmlElement* targetName = props->createNewChildElement ("TargetName");
+                    setConditionAttribute (*targetName, config);
+                    targetName->addTextElement (config.getOutputFilename (String::empty, true));
                 }
 
                 {
@@ -1239,6 +1230,8 @@ protected:
                     link->createNewChildElement ("AdditionalLibraryDirectories")->addTextElement (replacePreprocessorTokens (config, librarySearchPaths.joinIntoString (";"))
                                                                                                     + ";%(AdditionalLibraryDirectories)");
 
+                link->createNewChildElement ("LargeAddressAware")->addTextElement ("true");
+
                 String externalLibraries (getExternalLibrariesString());
                 if (externalLibraries.isNotEmpty())
                     link->createNewChildElement ("AdditionalDependencies")->addTextElement (replacePreprocessorTokens (config, externalLibraries).trim()
@@ -1320,7 +1313,7 @@ protected:
     {
         if (projectType.isGUIApplication() || projectType.isCommandLineApp())   return "Application";
         if (isLibraryDLL())                                                     return "DynamicLibrary";
-        if (projectType.isLibrary())                                            return "StaticLibrary";
+        if (projectType.isStaticLibrary())                                      return "StaticLibrary";
 
         jassertfalse;
         return String::empty;
@@ -1481,8 +1474,15 @@ public:
     static const char* getName()                { return "Visual Studio 2012"; }
     static const char* getValueTreeTypeName()   { return "VS2012"; }
     int getVisualStudioVersion() const          { return 11; }
-    String getPlatformToolset() const           { return "v110_xp"; }
     String getSolutionComment() const           { return "# Visual Studio 2012"; }
+
+    String getPlatformToolset() const
+    {
+        const String s (settings [Ids::toolset].toString());
+        return s.isNotEmpty() ? s : "v110";
+    }
+
+    Value getPlatformToolsetValue()             { return getSetting (Ids::toolset); }
 
     static MSVCProjectExporterVC2012* createForSettings (Project& project, const ValueTree& settings)
     {
@@ -1492,10 +1492,22 @@ public:
         return nullptr;
     }
 
-private:
-    void addPlatformToolsetToPropertyGroup (XmlElement& project) const
+    void createExporterProperties (PropertyListBuilder& props)
     {
-        forEachXmlChildElementWithTagName (project, e, "PropertyGroup")
+        MSVCProjectExporterVC2010::createExporterProperties (props);
+
+        const char* const toolsetNames[] = { "(default)", "v110", "v110_xp", "Windows7.1SDK", nullptr };
+        const var toolsets[]             = { var(),       "v110", "v110_xp", "Windows7.1SDK" };
+
+        props.add (new ChoicePropertyComponent (getPlatformToolsetValue(), "Platform Toolset",
+                                                StringArray (toolsetNames),
+                                                Array<var> (toolsets, numElementsInArray (toolsets))));
+    }
+
+private:
+    void addPlatformToolsetToPropertyGroup (XmlElement& p) const
+    {
+        forEachXmlChildElementWithTagName (p, e, "PropertyGroup")
         {
             XmlElement* platformToolset (new XmlElement ("PlatformToolset"));
             platformToolset->addTextElement (getPlatformToolset());
@@ -1506,6 +1518,3 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE (MSVCProjectExporterVC2012)
 };
-
-
-#endif   // __JUCER_PROJECTEXPORT_MSVC_JUCEHEADER__

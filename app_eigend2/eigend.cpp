@@ -739,7 +739,7 @@ bool EigenLoadComponent::select_setup(const char *setup)
     bool rv = model_->select_setup(setup);
     model_->setOpen(true);
 
-    getSetupLabel()->setText("",0);
+    getSetupLabel()->setText("",dontSendNotification);
 
     if(rv)
     {
@@ -747,7 +747,7 @@ bool EigenLoadComponent::select_setup(const char *setup)
 
         if(i)
         {
-            getSetupLabel()->setText(i->getSlot(),false);
+            getSetupLabel()->setText(i->getSlot(),dontSendNotification);
         }
     }
 
@@ -900,7 +900,7 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
     setVisible(true);
     pic::to_front();
     toFront(true);
-    component_->getSetupLabel()->setText("",false);
+    component_->getSetupLabel()->setText("",dontSendNotification);
 
     piw::tsd_thing(this);
     timer_slow(500);
@@ -1226,7 +1226,7 @@ void EigenMainWindow::load_started(const char *setup)
     juce::String title = "Loading ";
     title += setup;
     c->setName(title);
-    c->getMessageLabel()->setText("",false);
+    c->getMessageLabel()->setText("",dontSendNotification);
     c->getProgressSlider()->setValue(0,dontSendNotification);
     progress_ = new EigenDialog(this,c,400,90,0,0,0,0,this,DocumentWindow::minimiseButton);
     progress_->getPeer()->performAnyPendingRepaintsNow();
@@ -1239,7 +1239,7 @@ void EigenMainWindow::load_status(const char *msg,unsigned progress)
     if(progress_)
     {
         LoadProgressComponent *c = (LoadProgressComponent *)(progress_->getContentComponent());
-        c->getMessageLabel()->setText(msg,false);
+        c->getMessageLabel()->setText(msg,dontSendNotification);
         c->getProgressSlider()->setValue(progress,dontSendNotification);
         progress_->getPeer()->performAnyPendingRepaintsNow();
     }
@@ -1795,7 +1795,7 @@ EigenEditComponent::EigenEditComponent(EigenMainWindow *mediator, const std::str
             orig_=term_.arg(i).arg(2).value().as_string();
 
             juce::String slot=term_.arg(i).arg(1).value().as_string();
-            getSlot()->setText(slot,false);
+            getSlot()->setText(slot,dontSendNotification);
 
             if(term_.arg(i).arg(0).value().is_string())
             {
@@ -1949,8 +1949,8 @@ void EigenD::initialise (const String& commandLine)
     if(!lockfile_.lock())
     {
         ModalComponent mc;
-        mc.getTitle()->setText("eigenD is already running",false);
-        mc.getText()->setText("Another instance of eigenD is already running.  You have to close it before running eigenD again.",false);
+        mc.getTitle()->setText("eigenD is already running",dontSendNotification);
+        mc.getText()->setText("Another instance of eigenD is already running.  You have to close it before running eigenD again.",dontSendNotification);
         DialogWindow::showModalDialog("Another eigenD Running",&mc,0,Colour(0xffababab),true,false);
         quit();
         return;

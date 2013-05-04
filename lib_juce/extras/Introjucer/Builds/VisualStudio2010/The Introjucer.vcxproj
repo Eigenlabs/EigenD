@@ -36,11 +36,9 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Introjucer</TargetName>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateManifest>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Introjucer</TargetName>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
   </PropertyGroup>
@@ -78,6 +76,8 @@
       <ProgramDatabaseFile>$(IntDir)\Introjucer.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -119,6 +119,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -151,10 +152,33 @@
     <ClCompile Include="..\..\Source\Utility\jucer_MiscUtilities.cpp"/>
     <ClCompile Include="..\..\Source\Utility\jucer_StoredSettings.cpp"/>
     <ClCompile Include="..\..\Source\Code Editor\jucer_SourceCodeEditor.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\components\jucer_ComponentTypeHandler.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\documents\jucer_ButtonDocument.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\documents\jucer_ComponentDocument.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\paintelements\jucer_ColouredElement.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElement.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElementPath.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\ui\jucer_ComponentLayoutEditor.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\ui\jucer_ComponentOverlayComponent.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\ui\jucer_EditingPanelBase.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\ui\jucer_JucerDocumentEditor.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\ui\jucer_PaintRoutineEditor.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\ui\jucer_PaintRoutinePanel.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\ui\jucer_ResourceEditorPanel.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\ui\jucer_TestComponent.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\jucer_BinaryResources.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\jucer_ComponentLayout.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\jucer_GeneratedCode.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\jucer_JucerDocument.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\jucer_ObjectTypes.cpp"/>
+    <ClCompile Include="..\..\Source\ComponentEditor\jucer_PaintRoutine.cpp"/>
     <ClCompile Include="..\..\Source\BinaryData\jucer_AudioPluginEditorTemplate.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\Source\BinaryData\jucer_AudioPluginFilterTemplate.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\BinaryData\jucer_ComponentTemplate.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\Source\BinaryData\jucer_ContentCompTemplate.cpp">
@@ -229,6 +253,9 @@
     <ClCompile Include="..\..\..\..\modules\juce_core\threads\juce_ChildProcess.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\modules\juce_core\threads\juce_HighResolutionTimer.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_core\threads\juce_ReadWriteLock.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -266,6 +293,9 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_core\files\juce_TemporaryFile.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\modules\juce_core\network\juce_IPAddress.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_core\network\juce_MACAddress.cpp">
@@ -548,6 +578,9 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_graphics\native\juce_android_GraphicsContext.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\modules\juce_graphics\native\juce_freetype_Fonts.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\..\modules\juce_graphics\native\juce_linux_Fonts.cpp">
@@ -1001,6 +1034,7 @@
     <ClInclude Include="..\..\Source\Project\jucer_ProjectType.h"/>
     <ClInclude Include="..\..\Source\Project\jucer_TreeViewTypes.h"/>
     <ClInclude Include="..\..\Source\Project Saving\jucer_ProjectExport_Android.h"/>
+    <ClInclude Include="..\..\Source\Project Saving\jucer_ProjectExport_CodeBlocks.h"/>
     <ClInclude Include="..\..\Source\Project Saving\jucer_ProjectExport_Make.h"/>
     <ClInclude Include="..\..\Source\Project Saving\jucer_ProjectExport_MSVC.h"/>
     <ClInclude Include="..\..\Source\Project Saving\jucer_ProjectExport_XCode.h"/>
@@ -1018,9 +1052,75 @@
     <ClInclude Include="..\..\Source\Utility\jucer_StoredSettings.h"/>
     <ClInclude Include="..\..\Source\Utility\jucer_ValueSourceHelpers.h"/>
     <ClInclude Include="..\..\Source\Code Editor\jucer_SourceCodeEditor.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_ButtonHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_ComboBoxHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_ComponentNameProperty.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_ComponentTypeHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_ComponentUndoableAction.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_GenericComponentHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_GroupComponentHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_HyperlinkButtonHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_ImageButtonHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_JucerComponentHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_LabelHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_SliderHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_TabbedComponentHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_TextButtonHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_TextEditorHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_ToggleButtonHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_TreeViewHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\components\jucer_ViewportHandler.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\documents\jucer_ButtonDocument.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\documents\jucer_ComponentDocument.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_ColouredElement.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_ElementSiblingComponent.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_FillType.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_GradientPointComponent.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_ImageResourceProperty.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElement.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElementEllipse.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElementGroup.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElementImage.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElementPath.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElementRectangle.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElementRoundedRectangle.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElementText.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_PaintElementUndoableAction.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_PointComponent.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\paintelements\jucer_StrokeType.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\properties\jucer_ColourPropertyComponent.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\properties\jucer_ComponentBooleanProperty.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\properties\jucer_ComponentChoiceProperty.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\properties\jucer_ComponentColourProperty.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\properties\jucer_ComponentTextProperty.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\properties\jucer_FilePropertyComponent.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\properties\jucer_FontPropertyComponent.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\properties\jucer_JustificationProperty.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\properties\jucer_PositionPropertyBase.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_ComponentLayoutEditor.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_ComponentLayoutPanel.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_ComponentOverlayComponent.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_EditingPanelBase.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_JucerCommandIDs.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_JucerDocumentEditor.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_PaintRoutineEditor.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_PaintRoutinePanel.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_RelativePositionedRectangle.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_ResourceEditorPanel.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_SnapGridPainter.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\ui\jucer_TestComponent.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\jucer_BinaryResources.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\jucer_ComponentLayout.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\jucer_GeneratedCode.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\jucer_JucerDocument.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\jucer_ObjectTypes.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\jucer_PaintRoutine.h"/>
+    <ClInclude Include="..\..\Source\ComponentEditor\jucer_UtilityFunctions.h"/>
     <ClInclude Include="..\..\Source\BinaryData\jucer_AudioPluginEditorTemplate.h"/>
     <ClInclude Include="..\..\Source\BinaryData\jucer_AudioPluginFilterTemplate.h"/>
+    <ClInclude Include="..\..\Source\BinaryData\jucer_ComponentTemplate.h"/>
     <ClInclude Include="..\..\Source\BinaryData\jucer_ContentCompTemplate.h"/>
+    <ClInclude Include="..\..\Source\BinaryData\jucer_InlineComponentTemplate.h"/>
     <ClInclude Include="..\..\Source\BinaryData\jucer_NewComponentTemplate.h"/>
     <ClInclude Include="..\..\Source\BinaryData\jucer_NewCppFileTemplate.h"/>
     <ClInclude Include="..\..\Source\BinaryData\jucer_NewInlineComponentTemplate.h"/>
@@ -1071,6 +1171,7 @@
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_ChildProcess.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_CriticalSection.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_DynamicLibrary.h"/>
+    <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_HighResolutionTimer.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_InterProcessLock.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_Process.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\threads\juce_ReadWriteLock.h"/>
@@ -1093,6 +1194,7 @@
     <ClInclude Include="..\..\..\..\modules\juce_core\files\juce_FileSearchPath.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\files\juce_MemoryMappedFile.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\files\juce_TemporaryFile.h"/>
+    <ClInclude Include="..\..\..\..\modules\juce_core\network\juce_IPAddress.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\network\juce_MACAddress.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\network\juce_NamedPipe.h"/>
     <ClInclude Include="..\..\..\..\modules\juce_core\network\juce_Socket.h"/>

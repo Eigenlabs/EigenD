@@ -55,7 +55,7 @@ JuceUpdater::JuceUpdater (ModuleList& moduleList_, const String& message)
 
     currentVersionLabel.setFont (Font (14.0f, Font::italic));
     label.setFont (Font (12.0f));
-    label.setText ("Local modules folder:", false);
+    label.setText ("Local modules folder:", dontSendNotification);
 
     addAndMakeVisible (&availableVersionsList);
     availableVersionsList.setModel (this);
@@ -66,8 +66,6 @@ JuceUpdater::JuceUpdater (ModuleList& moduleList_, const String& message)
     versionsToDownload.addListener (this);
 
     setSize (600, 500);
-
-    checkNow();
 }
 
 JuceUpdater::~JuceUpdater()
@@ -216,12 +214,12 @@ void JuceUpdater::updateInstallButtonStatus()
 void JuceUpdater::filenameComponentChanged (FilenameComponent*)
 {
     moduleList.rescan (filenameComp.getCurrentFile());
-    filenameComp.setCurrentFile (moduleList.getModulesFolder(), true, false);
+    filenameComp.setCurrentFile (moduleList.getModulesFolder(), true, dontSendNotification);
 
     if (! ModuleList::isModulesFolder (moduleList.getModulesFolder()))
-        currentVersionLabel.setText ("(Not a Juce folder)", false);
+        currentVersionLabel.setText ("(Not a Juce folder)", dontSendNotification);
     else
-        currentVersionLabel.setText (String::empty, false);
+        currentVersionLabel.setText (String::empty, dontSendNotification);
 
     refresh();
 }
@@ -257,8 +255,7 @@ Component* JuceUpdater::refreshComponentForRow (int rowNumber, bool /*isRowSelec
     class UpdateListComponent  : public Component
     {
     public:
-        UpdateListComponent (JuceUpdater& updater_)
-            : updater (updater_)
+        UpdateListComponent()
         {
             addChildComponent (&toggle);
             toggle.setWantsKeyboardFocus (false);
@@ -318,14 +315,13 @@ Component* JuceUpdater::refreshComponentForRow (int rowNumber, bool /*isRowSelec
         }
 
     private:
-        JuceUpdater& updater;
         ToggleButton toggle;
         String name, status;
     };
 
     UpdateListComponent* c = dynamic_cast <UpdateListComponent*> (existingComponentToUpdate);
     if (c == nullptr)
-        c = new UpdateListComponent (*this);
+        c = new UpdateListComponent();
 
     if (ModuleList::Module* m = latestList.modules [rowNumber])
         c->setModule (m,

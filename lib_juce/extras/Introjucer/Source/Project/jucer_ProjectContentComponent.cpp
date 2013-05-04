@@ -36,11 +36,11 @@
 class FileTreeTab   : public TreePanelBase
 {
 public:
-    FileTreeTab (Project& project)
-        : TreePanelBase (&project, "fileTreeState")
+    FileTreeTab (Project& p)
+        : TreePanelBase (&p, "fileTreeState")
     {
         tree.setMultiSelectEnabled (true);
-        setRoot (new GroupTreeViewItem (project.getMainGroup()));
+        setRoot (new GroupTreeViewItem (p.getMainGroup()));
     }
 };
 
@@ -48,11 +48,11 @@ public:
 class ConfigTreeTab   : public TreePanelBase
 {
 public:
-    ConfigTreeTab (Project& project)
-        : TreePanelBase (&project, "settingsTreeState")
+    ConfigTreeTab (Project& p)
+        : TreePanelBase (&p, "settingsTreeState")
     {
         tree.setMultiSelectEnabled (false);
-        setRoot (createProjectConfigTreeViewRoot (project));
+        setRoot (createProjectConfigTreeViewRoot (p));
 
         if (tree.getNumSelectedItems() == 0)
             tree.getRootItem()->setSelected (true, true);
@@ -419,14 +419,31 @@ void ProjectContentComponent::closeDocument()
             hideEditor();
 }
 
+static void showSaveWarning (OpenDocumentManager::Document* currentDocument)
+{
+    AlertWindow::showMessageBox (AlertWindow::WarningIcon,
+                                 TRANS("Save failed!"),
+                                 TRANS("Couldn't save the file:")
+                                   + "\n" + currentDocument->getFile().getFullPathName());
+}
+
 void ProjectContentComponent::saveDocument()
 {
     if (currentDocument != nullptr)
-        currentDocument->save();
+    {
+        if (! currentDocument->save())
+            showSaveWarning (currentDocument);
+    }
     else
         saveProject();
 
     updateMainWindowTitle();
+}
+
+void ProjectContentComponent::saveAs()
+{
+    if (currentDocument != nullptr && ! currentDocument->saveAs())
+        showSaveWarning (currentDocument);
 }
 
 bool ProjectContentComponent::goToPreviousFile()
@@ -496,18 +513,24 @@ void ProjectContentComponent::updateMainWindowTitle()
     if (MainWindow* mw = findParentComponentOfClass<MainWindow>())
     {
         String title;
+        File file;
         bool edited = false;
 
         if (currentDocument != nullptr)
         {
             title = currentDocument->getName();
             edited = currentDocument->needsSaving();
+            file = currentDocument->getFile();
         }
 
         if (ComponentPeer* peer = mw->getPeer())
+        {
             if (! peer->setDocumentEditedStatus (edited))
                 if (edited)
                     title << "*";
+
+            peer->setRepresentedFile (file);
+        }
 
         mw->updateTitle (title);
     }
@@ -532,6 +555,7 @@ ApplicationCommandTarget* ProjectContentComponent::getNextCommandTarget()
 void ProjectContentComponent::getAllCommands (Array <CommandID>& commands)
 {
     const CommandID ids[] = { CommandIDs::saveDocument,
+                              CommandIDs::saveDocumentAs,
                               CommandIDs::closeDocument,
                               CommandIDs::saveProject,
                               CommandIDs::closeProject,
@@ -583,6 +607,14 @@ void ProjectContentComponent::getCommandInfo (const CommandID commandID, Applica
         result.defaultKeypresses.add (KeyPress ('s', ModifierKeys::commandModifier, 0));
         break;
 
+    case CommandIDs::saveDocumentAs:
+        result.setInfo ("Save As...",
+                        "Saves the current document to a new location",
+                        CommandCategories::general, 0);
+        result.setActive (currentDocument != nullptr || project != nullptr);
+        result.defaultKeypresses.add (KeyPress ('s', ModifierKeys::commandModifier | ModifierKeys::shiftModifier, 0));
+        break;
+
     case CommandIDs::closeDocument:
         result.setInfo ("Close" + documentName,
                         "Closes the current document",
@@ -611,7 +643,7 @@ void ProjectContentComponent::getCommandInfo (const CommandID commandID, Applica
 
     case CommandIDs::openInIDE:
        #if JUCE_MAC
-        result.setInfo ("Open in XCode...",
+        result.setInfo ("Open in Xcode...",
        #elif JUCE_WINDOWS
         result.setInfo ("Open in Visual Studio...",
        #else
@@ -624,7 +656,7 @@ void ProjectContentComponent::getCommandInfo (const CommandID commandID, Applica
 
     case CommandIDs::saveAndOpenInIDE:
        #if JUCE_MAC
-        result.setInfo ("Save Project and Open in XCode...",
+        result.setInfo ("Save Project and Open in Xcode...",
        #elif JUCE_WINDOWS
         result.setInfo ("Save Project and Open in Visual Studio...",
        #else
@@ -676,6 +708,7 @@ bool ProjectContentComponent::perform (const InvocationInfo& info)
         case CommandIDs::saveProject:
         case CommandIDs::closeProject:
         case CommandIDs::saveDocument:
+        case CommandIDs::saveDocumentAs:
         case CommandIDs::closeDocument:
         case CommandIDs::goToPreviousDoc:
         case CommandIDs::goToNextDoc:
@@ -698,6 +731,7 @@ bool ProjectContentComponent::perform (const InvocationInfo& info)
         case CommandIDs::saveProject:               saveProject(); break;
         case CommandIDs::closeProject:              closeProject(); break;
         case CommandIDs::saveDocument:              saveDocument(); break;
+        case CommandIDs::saveDocumentAs:            saveAs(); break;
 
         case CommandIDs::closeDocument:             closeDocument(); break;
         case CommandIDs::goToPreviousDoc:           goToPreviousFile(); break;
