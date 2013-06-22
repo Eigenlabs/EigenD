@@ -62,18 +62,10 @@ namespace midi
         clearall_t clearall_;
         get_settings_t get_settings_;
         change_settings_t change_settings_;
-        set_channel_t set_midi_channel_;
-        set_channel_t set_min_channel_;
-        set_channel_t set_max_channel_;
-        get_channel_t get_midi_channel_;
-        get_channel_t get_min_channel_;
-        get_channel_t get_max_channel_;
 
-        static settings_functors_t init(clearall_t c, get_settings_t g, change_settings_t s,
-            set_channel_t sch, set_channel_t smi, set_channel_t sma,
-            get_channel_t gch, get_channel_t gmi, get_channel_t gma)
+        static settings_functors_t init(clearall_t c, get_settings_t g, change_settings_t s)
         {
-            const settings_functors_t functors = {c,g,s,sch,smi,sma,gch,gmi,gma};
+            const settings_functors_t functors = {c,g,s};
             return functors;
         }
     };
@@ -91,12 +83,6 @@ namespace midi
             void change_settings(global_settings_t);
             global_settings_t get_settings();
             void settings_changed();
-            unsigned get_midi_channel();
-            void set_midi_channel(unsigned);
-            unsigned get_min_channel();
-            void set_min_channel(unsigned);
-            unsigned get_max_channel();
-            void set_max_channel(unsigned);
 
         private:
             void clearall();

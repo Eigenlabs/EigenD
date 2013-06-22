@@ -588,26 +588,20 @@ namespace
 
 struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_observer_t, piw::clocksink_t, piw::thing_t, virtual pic::tracked_t
 {
-    impl_t(plugin_observer_t *obs, midi::midi_channel_delegate_t *channel_delegate, piw::clockdomain_ctl_t *d,
+    impl_t(plugin_observer_t *obs, piw::clockdomain_ctl_t *d,
         const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, const pic::status_t &window_state): 
             messages_(new host_messages_t(this)),
             audio_output_cookie_(audio_out), audio_input_(this), midi_input_(this), metronome_input_(this), 
             plugin_(0), window_(0), audio_buffer_(0,0), buffer_data_(0), num_input_channels_(0), num_output_channels_(0),
             window_state_changed_(window_state), clockdomain_(d), sample_rate_(48000.0), buffer_size_(PLG_CLOCK_BUFFER_SIZE),
-            observer_(obs), channel_delegate_(channel_delegate), active_(false),
+            observer_(obs), active_(false),
             idle_count_(0), idle_time_ticks_(0), idling_enabled_(true), idle_time_sec_(10.f),
             settings_functors_(midi::settings_functors_t::init(
                     midi::clearall_t::method(this,&host::plugin_instance_t::impl_t::clear_all),
                     midi::get_settings_t::method(this,&host::plugin_instance_t::impl_t::get_settings),
-                    midi::change_settings_t::method(this,&host::plugin_instance_t::impl_t::change_settings),
-                    midi::set_channel_t::method(this,&host::plugin_instance_t::impl_t::set_midi_channel),
-                    midi::set_channel_t::method(this,&host::plugin_instance_t::impl_t::set_min_channel),
-                    midi::set_channel_t::method(this,&host::plugin_instance_t::impl_t::set_max_channel),
-                    midi::get_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::get_midi_channel),
-                    midi::get_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::get_min_channel),
-                    midi::get_channel_t::method(channel_delegate,&midi::midi_channel_delegate_t::get_max_channel)
+                    midi::change_settings_t::method(this,&host::plugin_instance_t::impl_t::change_settings)
                     )),
-            mapping_(*this, *channel_delegate), mapping_delegate_(settings_functors_),
+            mapping_(*this), mapping_delegate_(settings_functors_),
             midi_aggregator_(0), midi_from_belcanto_(0)
     {
         d->sink(this,"host");
@@ -1258,6 +1252,8 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     void settings_changed()
     {
         perform_settings_updates(get_settings());
+        if(observer_.isvalid())
+            observer_->settings_changed();
         mapping_delegate_.settings_changed();
     }
 
@@ -1326,24 +1322,63 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
     void set_midi_channel(unsigned ch)
     {
-        channel_delegate_->set_midi_channel(ch);
-        mapping_.settings_changed();
+        midi::global_settings_t settings = mapping_.get_settings();
+        mapping_.change_settings(settings.clone_with_midi_channel(ch));
     }
 
     void set_min_channel(unsigned ch)
     {
-        channel_delegate_->set_min_channel(ch);
-        mapping_.settings_changed();
+        midi::global_settings_t settings = mapping_.get_settings();
+        mapping_.change_settings(settings.clone_with_minimum_midi_channel(ch));
     }
 
     void set_max_channel(unsigned ch)
     {
-        channel_delegate_->set_max_channel(ch);
-        mapping_.settings_changed();
+        midi::global_settings_t settings = mapping_.get_settings();
+        mapping_.change_settings(settings.clone_with_maximum_midi_channel(ch));
+    }
+
+    void set_minimum_decimation(float decimation)
+    {
+        midi::global_settings_t settings = mapping_.get_settings();
+        mapping_.change_settings(settings.clone_with_minimum_decimation(decimation));
+    }
+
+    void set_midi_notes(bool enabled)
+    {
+        midi::global_settings_t settings = mapping_.get_settings();
+        mapping_.change_settings(settings.clone_with_send_notes(enabled));
+    }
+
+    void set_midi_pitchbend(bool enabled)
+    {
+        midi::global_settings_t settings = mapping_.get_settings();
+        mapping_.change_settings(settings.clone_with_send_pitchbend(enabled));
+    }
+
+    void set_midi_hires_velocity(bool enabled)
+    {
+        midi::global_settings_t settings = mapping_.get_settings();
+        mapping_.change_settings(settings.clone_with_send_hires_velocity(enabled));
+    }
+
+    void set_pitchbend_up(float semis)
+    {
+        midi::global_settings_t settings = mapping_.get_settings();
+        mapping_.change_settings(settings.clone_with_pitchbend_semitones_up(semis));
+    }
+
+    void set_pitchbend_down(float semis)
+    {
+        midi::global_settings_t settings = mapping_.get_settings();
+        mapping_.change_settings(settings.clone_with_pitchbend_semitones_down(semis));
     }
 
     void perform_settings_updates(midi::global_settings_t settings)
     {
+        midi_from_belcanto_->set_midi_channel(settings.midi_channel_);
+        midi_from_belcanto_->set_min_midi_channel(settings.minimum_midi_channel_);
+        midi_from_belcanto_->set_max_midi_channel(settings.maximum_midi_channel_);
         midi_from_belcanto_->set_send_notes(settings.send_notes_);
         midi_from_belcanto_->set_send_pitchbend(settings.send_pitchbend_);
         midi_from_belcanto_->set_send_hires_velocity(settings.send_hires_velocity_);
@@ -1391,7 +1426,6 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
     bool bypassed_;
 
     pic::weak_t<plugin_observer_t> observer_;
-    pic::weak_t<midi::midi_channel_delegate_t> channel_delegate_;
     pic::f_int_t parameter_changed_params_;
     pic::f_int_t parameter_changed_midi_cc_;
     pic::f_int_t parameter_changed_midi_behaviour_;
@@ -1656,10 +1690,10 @@ void host_param_table_t::default_mapping(midi::mapper_cell_editor_t &e)
     e.map(true,1.f,1.f,0.f,1.f,true,0.f,GLOBAL_SCOPE,0,BITS_7,-1,CURVE_LINEAR);
 }
 
-host::plugin_instance_t::plugin_instance_t(host::plugin_observer_t *obs, midi::midi_channel_delegate_t *channel_delegate,
+host::plugin_instance_t::plugin_instance_t(host::plugin_observer_t *obs,
     piw::clockdomain_ctl_t *d, const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, 
     const pic::status_t &window_state_changed):
-        impl_(new impl_t(obs,channel_delegate,d,audio_out,midi_out,window_state_changed))
+        impl_(new impl_t(obs,d,audio_out,midi_out,window_state_changed))
 {
 }
 
@@ -1711,27 +1745,6 @@ piw::cookie_t host::plugin_instance_t::midi_aggregator_cookie()
 piw::cookie_t host::plugin_instance_t::audio_input_cookie()
 {
     return impl_->audio_input_clone_.cookie();
-}
-
-void host::plugin_instance_t::set_midi_channel(unsigned ch)
-{
-    impl_->midi_from_belcanto_->set_midi_channel(ch);
-    impl_->mapping_.settings_changed();
-    impl_->settings_changed();
-}
-
-void host::plugin_instance_t::set_min_midi_channel(unsigned ch)
-{
-    impl_->midi_from_belcanto_->set_min_midi_channel(ch);
-    impl_->mapping_.settings_changed();
-    impl_->settings_changed();
-}
-
-void host::plugin_instance_t::set_max_midi_channel(unsigned ch)
-{
-    impl_->midi_from_belcanto_->set_max_midi_channel(ch);
-    impl_->mapping_.settings_changed();
-    impl_->settings_changed();
 }
 
 void host::plugin_instance_t::set_program_change(unsigned c)
@@ -1824,6 +1837,11 @@ midi::mapping_info_t host::plugin_instance_t::get_info_midi(unsigned iparam, uns
     return impl_->mapping_.get_info_midi(iparam,oparam);
 }
 
+midi::global_settings_t host::plugin_instance_t::get_settings()
+{
+    return impl_->get_settings();
+}
+
 void host::plugin_instance_t::clear_params()
 {
     return impl_->mapping_.clear_params();
@@ -1839,46 +1857,49 @@ void host::plugin_instance_t::clear_midi_behaviour()
     return impl_->mapping_.clear_midi_behaviour();
 }
 
-void host::plugin_instance_t::set_pitchbend_up(float semis)
+void host::plugin_instance_t::set_midi_channel(unsigned ch)
 {
-    midi::global_settings_t settings = impl_->mapping_.get_settings();
-    settings.pitchbend_semitones_up_= semis;
-    impl_->change_settings(settings);
+    impl_->set_midi_channel(ch);
 }
 
-void host::plugin_instance_t::set_pitchbend_down(float semis)
+void host::plugin_instance_t::set_min_midi_channel(unsigned ch)
 {
-    midi::global_settings_t settings = impl_->mapping_.get_settings();
-    settings.pitchbend_semitones_down_= semis;
-    impl_->change_settings(settings);
+    impl_->set_min_channel(ch);
+}
+
+void host::plugin_instance_t::set_max_midi_channel(unsigned ch)
+{
+    impl_->set_max_channel(ch);
 }
 
 void host::plugin_instance_t::set_minimum_decimation(float decimation)
 {
-    midi::global_settings_t settings = impl_->mapping_.get_settings();
-    settings.minimum_decimation_= decimation;
-    impl_->change_settings(settings);
+    impl_->set_minimum_decimation(decimation);
 }
 
 void host::plugin_instance_t::set_midi_notes(bool enabled)
 {
-    midi::global_settings_t settings = impl_->mapping_.get_settings();
-    settings.send_notes_= enabled;
-    impl_->change_settings(settings);
+    impl_->set_midi_notes(enabled);
 }
 
 void host::plugin_instance_t::set_midi_pitchbend(bool enabled)
 {
-    midi::global_settings_t settings = impl_->mapping_.get_settings();
-    settings.send_pitchbend_= enabled;
-    impl_->change_settings(settings);
+    impl_->set_midi_pitchbend(enabled);
 }
 
 void host::plugin_instance_t::set_midi_hires_velocity(bool enabled)
 {
-    midi::global_settings_t settings = impl_->mapping_.get_settings();
-    settings.send_hires_velocity_= enabled;
-    impl_->change_settings(settings);
+    impl_->set_midi_hires_velocity(enabled);
+}
+
+void host::plugin_instance_t::set_pitchbend_up(float semis)
+{
+    impl_->set_pitchbend_up(semis);
+}
+
+void host::plugin_instance_t::set_pitchbend_down(float semis)
+{
+    impl_->set_pitchbend_down(semis);
 }
 
 void host::plugin_instance_t::set_velocity_samples(unsigned n)

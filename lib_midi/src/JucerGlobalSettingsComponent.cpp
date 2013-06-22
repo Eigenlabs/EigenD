@@ -56,15 +56,12 @@ void GlobalSettingsComponent::updateComponent(midi::mapping_delegate_t *mapping_
     midi_pitchbend->setToggleState(settings.send_pitchbend_, false);
     midi_hires_velocity->setToggleState(settings.send_hires_velocity_, false);
 
-    unsigned midi_channel = mapping_delegate->get_midi_channel();
-    if(0==midi_channel)
-    {
-        midi_channel = 17;
-    }
+    unsigned midi_channel = settings.midi_channel_;
+    if(0==midi_channel) { midi_channel = 17; }
 
     active_channel->setSelectedId(midi_channel);
-    min_channel->setSelectedId(mapping_delegate->get_min_channel());
-    max_channel->setSelectedId(mapping_delegate->get_max_channel());
+    min_channel->setSelectedId(settings.minimum_midi_channel_);
+    max_channel->setSelectedId(settings.maximum_midi_channel_);
     pitchbend_up->setValue((int)settings.pitchbend_semitones_up_,sendNotificationSync);
     pitchbend_down->setValue((int)settings.pitchbend_semitones_down_,sendNotificationSync);
 }
@@ -80,13 +77,21 @@ void GlobalSettingsComponent::updateSettings()
 {
     if(!mapping_delegate_) return;
 
+    unsigned midi_channel = active_channel->getSelectedId();
+    if(midi_channel>0)
+    {
+        if(17==midi_channel)
+        {
+            midi_channel = 0;
+        }
+    }
     bool send_notes = midi_notes->getToggleState();
     bool send_pitchbend = midi_pitchbend->getToggleState();
     bool send_hires_velocity = midi_hires_velocity->getToggleState();
     unsigned pb_up = pitchbend_up->getValue();
     unsigned pb_down = pitchbend_down->getValue();
 
-    mapping_delegate_->change_settings(midi::global_settings_t(data_decimation->getValue(), send_notes, send_pitchbend, send_hires_velocity, pb_up, pb_down));
+    mapping_delegate_->change_settings(midi::global_settings_t(midi_channel, min_channel->getSelectedId(), max_channel->getSelectedId(), data_decimation->getValue(), send_notes, send_pitchbend, send_hires_velocity, pb_up, pb_down));
 }
 //[/MiscUserDefs]
 
@@ -269,7 +274,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     pitchbend_down_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
 
     addAndMakeVisible (pitchbend_up = new Slider (L"pitchbend up slider"));
-    pitchbend_up->setRange (0, 48, 0.1);
+    pitchbend_up->setRange (0, 48, 1);
     pitchbend_up->setSliderStyle (Slider::LinearBar);
     pitchbend_up->setTextBoxStyle (Slider::TextBoxLeft, true, 80, 20);
     pitchbend_up->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
@@ -281,7 +286,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     pitchbend_up->addListener (this);
 
     addAndMakeVisible (pitchbend_down = new Slider (L"pitchbend down slider"));
-    pitchbend_down->setRange (0, 48, 0.1);
+    pitchbend_down->setRange (0, 48, 1);
     pitchbend_down->setSliderStyle (Slider::LinearBar);
     pitchbend_down->setTextBoxStyle (Slider::TextBoxLeft, true, 80, 20);
     pitchbend_down->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
@@ -439,27 +444,19 @@ void GlobalSettingsComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     if (comboBoxThatHasChanged == active_channel)
     {
         //[UserComboBoxCode_active_channel] -- add your combo box handling code here..
-        unsigned midi_channel = active_channel->getSelectedId();
-        if(midi_channel>0)
-        {
-            if(17==midi_channel)
-            {
-                midi_channel = 0;
-            }
-            mapping_delegate_->set_midi_channel(midi_channel);
-        }
+        updateSettings();
         //[/UserComboBoxCode_active_channel]
     }
     else if (comboBoxThatHasChanged == min_channel)
     {
         //[UserComboBoxCode_min_channel] -- add your combo box handling code here..
-        mapping_delegate_->set_min_channel(min_channel->getSelectedId());
+        updateSettings();
         //[/UserComboBoxCode_min_channel]
     }
     else if (comboBoxThatHasChanged == max_channel)
     {
         //[UserComboBoxCode_max_channel] -- add your combo box handling code here..
-        mapping_delegate_->set_max_channel(max_channel->getSelectedId());
+        updateSettings();
         //[/UserComboBoxCode_max_channel]
     }
 

@@ -9,6 +9,33 @@
 
 from piw_native[piw/piw.pip] import change_nb, clockdomain_ctl, cookie
 
+class global_settings[midi::global_settings_t]
+{
+    global_settings(const global_settings &)
+    global_settings()
+    global_settings(unsigned, unsigned, unsigned, float, bool, bool, bool, float, float)
+
+    global_settings clone_with_midi_channel(unsigned)
+    global_settings clone_with_minimum_midi_channel(unsigned)
+    global_settings clone_with_maximum_midi_channel(unsigned)
+    global_settings clone_with_minimum_decimation(float)
+    global_settings clone_with_send_notes(bool)
+    global_settings clone_with_send_pitchbend(bool)
+    global_settings clone_with_send_hires_velocity(bool)
+    global_settings clone_with_pitchbend_semitones_up(float)
+    global_settings clone_with_pitchbend_semitones_down(float)
+
+    unsigned get_midi_channel()
+    unsigned get_minimum_midi_channel()
+    unsigned get_maximum_midi_channel()
+    float get_minimum_decimation()
+    bool get_send_notes()
+    bool get_send_pitchbend()
+    bool get_send_hires_velocity()
+    float get_pitchbend_semitones_up()
+    float get_pitchbend_semitones_down()
+}
+
 class mapping_info[midi::mapping_info_t]
 {
     mapping_info(const mapping_info &)
@@ -31,7 +58,7 @@ class mapping_info[midi::mapping_info_t]
 
 class midi_converter[midi::midi_converter_t]
 {
-    midi_converter(mapping_observer *, midi_channel_delegate *, clockdomain_ctl *, midi_from_belcanto *, const stdstr &)
+    midi_converter(mapping_observer *, clockdomain_ctl *, midi_from_belcanto *, const stdstr &)
 
     clockdomain_ctl *clock_domain()
 
@@ -48,6 +75,7 @@ class midi_converter[midi::midi_converter_t]
     bool is_mapped_midi(unsigned, unsigned short)
     mapping_info get_info_param(unsigned, unsigned short)
     mapping_info get_info_midi(unsigned, unsigned short)
+    global_settings get_settings()
     void set_pitchbend_up(float )
     void set_pitchbend_down(float )
     void set_minimum_decimation(float)
@@ -74,17 +102,6 @@ class mapping_observer[midi::mapping_observer_t]
     virtual void settings_changed() = 0
     virtual void parameter_changed(unsigned) = 0
     virtual stdstr get_parameter_name(unsigned) = 0
-}
-
-class midi_channel_delegate[midi::midi_channel_delegate_t]
-{
-    midi_channel_delegate()
-    virtual void set_midi_channel(unsigned) = 0
-    virtual void set_min_channel(unsigned) = 0
-    virtual void set_max_channel(unsigned) = 0
-    virtual unsigned get_midi_channel() = 0
-    virtual unsigned get_min_channel() = 0
-    virtual unsigned get_max_channel() = 0
 }
 
 class midi_from_belcanto[midi::midi_from_belcanto_t]

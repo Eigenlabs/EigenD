@@ -259,33 +259,6 @@ class PluginState(node.server):
         self[6].store(bounds)
 
 
-class MidiChannelDelegate(midilib_native.midi_channel_delegate):
-    def __init__(self,agent):
-        midilib_native.midi_channel_delegate.__init__(self)
-        self.__agent = agent
-
-    def set_midi_channel(self, channel):
-        self.__agent[7].set_value(channel)
-        self.__agent.set_midi_channel(channel)
-
-    def set_min_channel(self, channel):
-        self.__agent[11].set_value(channel)
-        self.__agent.set_min_channel(channel)
-
-    def set_max_channel(self, channel):
-        self.__agent[12].set_value(channel)
-        self.__agent.set_max_channel(channel)
-
-    def get_midi_channel(self):
-        return int(self.__agent[7].get_value())
-
-    def get_min_channel(self):
-        return int(self.__agent[11].get_value())
-
-    def get_max_channel(self):
-        return int(self.__agent[12].get_value())
-
-
 class PluginObserver(host_native.plugin_observer):
     def __init__(self,state,agent):
         host_native.plugin_observer.__init__(self)
@@ -304,6 +277,18 @@ class PluginObserver(host_native.plugin_observer):
 
     def mapping_changed(self,mapping):
         self.__state[5].set_data(piw.makestring(mapping,0))
+
+    def settings_changed(self):
+        settings = self.__agent.host.get_settings()
+        self.__agent.set_midi_channel(settings.get_midi_channel())
+        self.__agent.set_min_channel(settings.get_minimum_midi_channel())
+        self.__agent.set_max_channel(settings.get_maximum_midi_channel())
+        self.__agent.set_min_decimation(settings.get_minimum_decimation())
+        self.__agent.set_midi_notes(settings.get_send_notes())
+        self.__agent.set_midi_pitchbend(settings.get_send_pitchbend())
+        self.__agent.set_midi_hires_velocity(settings.get_send_hires_velocity())
+        self.__agent.set_pitchbend_up(settings.get_pitchbend_semitones_up())
+        self.__agent.set_pitchbend_down(settings.get_pitchbend_semitones_down())
 
     def get_parameter_name(self,index):
         n = string.capwords(self.__agent.parameter_list[index].get_property_string('name'))
@@ -328,18 +313,17 @@ class Agent(agent.Agent):
         self.__audio_output_channels = audio.AudioChannels(self.__audio_output)
         self.__midi_output = bundles.Splitter(self.__domain)
         self.__observer = PluginObserver(self.__state,self)
-        self.__channel_delegate = MidiChannelDelegate(self)
-        self.__host = host_native.plugin_instance(
-            self.__observer, self.__channel_delegate,
+        self.host = host_native.plugin_instance(
+            self.__observer,
             self.__domain,self.__audio_output.cookie(),self.__midi_output.cookie(),
             utils.statusify(self.__window_state_changed))
-        self.parameter_list = inputparameter.List(self.__host,self.__host.clock_domain(),self.verb_container())
-        self.__audio_input = audio.AudioInput(bundles.ScalarInput(self.__host.audio_input_cookie(),self.__domain,signals=range(1,65)),1,2,names='channels')
+        self.parameter_list = inputparameter.List(self.host,self.host.clock_domain(),self.verb_container())
+        self.__audio_input = audio.AudioInput(bundles.ScalarInput(self.host.audio_input_cookie(),self.__domain,signals=range(1,65)),1,2,names='channels')
         self.__audio_input_channels = audio.AudioChannels(self.__audio_input)
-        self.__key_input = bundles.VectorInput(self.__host.midi_from_belcanto_cookie(),self.__domain,signals=(1,2))
-        self.__midi_input = bundles.ScalarInput(self.__host.midi_aggregator_cookie(),self.__domain,signals=(1,))
-        self.__metronome_input = bundles.ScalarInput(self.__host.metronome_input_cookie(),self.__domain,signals=(1,2,3,4))
-        self.__host.set_bypassed(True)
+        self.__key_input = bundles.VectorInput(self.host.midi_from_belcanto_cookie(),self.__domain,signals=(1,2))
+        self.__midi_input = bundles.ScalarInput(self.host.midi_aggregator_cookie(),self.__domain,signals=(1,))
+        self.__metronome_input = bundles.ScalarInput(self.host.metronome_input_cookie(),self.__domain,signals=(1,2,3,4))
+        self.host.set_bypassed(True)
 
         # plugin browser
         self[1] = self.__browser
@@ -383,6 +367,14 @@ class Agent(agent.Agent):
         self[10] = atom.Atom(domain=domain.BoundedFloatOrNull(0,100000),init=10,names='tail time',policy=atom.default_policy(self.__set_tail_time))
         self[11] = atom.Atom(domain=domain.BoundedInt(1,16),init=1,names='minimum channel',policy=atom.default_policy(self.set_min_channel))
         self[12] = atom.Atom(domain=domain.BoundedInt(1,16),init=16,names='maximum channel',policy=atom.default_policy(self.set_max_channel))
+
+        # other global settings inputs
+        self[16] = atom.Atom(domain=domain.BoundedInt(0,100),init=0,names="minimum decimation",policy=atom.default_policy(self.set_min_decimation))
+        self[17] = atom.Atom(domain=domain.Bool(),init=True,names="notes enable",policy=atom.default_policy(self.set_midi_notes))
+        self[18] = atom.Atom(domain=domain.Bool(),init=True,names="pitch bend enable",policy=atom.default_policy(self.set_midi_pitchbend))
+        self[19] = atom.Atom(domain=domain.Bool(),init=False,names="high resolution velocity enable",policy=atom.default_policy(self.set_midi_hires_velocity))
+        self[20] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range upper",policy=atom.default_policy(self.set_pitchbend_up))
+        self[21] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range lower",policy=atom.default_policy(self.set_pitchbend_down))
 
         # status output to drive the talker lights
         self[13] = bundles.Output(1,False,names='status output')
@@ -430,22 +422,52 @@ class Agent(agent.Agent):
         self.set_ordinal(ordinal)
 
     def close_server(self):
-        self.__host.close();
+        self.host.close();
         agent.Agent.close_server(self)
 
     def set_midi_channel(self,c):
         self[7].set_value(c)
-        self.__host.set_midi_channel(c)
+        self.host.set_midi_channel(c)
         return True
 
     def set_min_channel(self,c):
         self[11].set_value(c)
-        self.__host.set_min_midi_channel(c)
+        self.host.set_min_midi_channel(c)
         return True
 
     def set_max_channel(self,c):
         self[12].set_value(c)
-        self.__host.set_max_midi_channel(c)
+        self.host.set_max_midi_channel(c)
+        return True
+
+    def set_min_decimation(self,v):
+        self[16].set_value(v)
+        self.host.set_minimum_decimation(v)
+        return True
+
+    def set_midi_notes(self,v):
+        self[17].set_value(v)
+        self.host.set_midi_notes(v)
+        return True
+
+    def set_midi_pitchbend(self,v):
+        self[18].set_value(v)
+        self.host.set_midi_pitchbend(v)
+        return True
+
+    def set_midi_hires_velocity(self,v):
+        self[19].set_value(v)
+        self.host.set_midi_hires_velocity(v)
+        return True
+
+    def set_pitchbend_up(self,v):
+        self[20].set_value(v)
+        self.host.set_pitchbend_up(v)
+        return True
+
+    def set_pitchbend_down(self,v):
+        self[21].set_value(v)
+        self.host.set_pitchbend_down(v)
         return True
 
     def __set_program_change(self,ctx,subj,dummy,val):
@@ -453,14 +475,14 @@ class Agent(agent.Agent):
         to_val = int(to)
         if to_val < 0 or to_val > 127:
             return errors.invalid_thing(to, 'set')
-        return piw.trigger(self.__host.change_program(),piw.makelong_nb(to_val,0)),None
+        return piw.trigger(self.host.change_program(),piw.makelong_nb(to_val,0)),None
 
     def __set_bank_change(self,ctx,subj,dummy,val):
         to = action.abstract_wordlist(val)[0]
         to_val = int(to)
         if to_val < 0 or to_val > 127:
             return errors.invalid_thing(to, 'set')
-        return piw.trigger(self.__host.change_bank(),piw.makelong_nb(to_val,0)),None
+        return piw.trigger(self.host.change_bank(),piw.makelong_nb(to_val,0)),None
 
     def __set_midi_control(self,ctx,subj,ctl,val):
         c = action.mass_quantity(ctl)
@@ -471,18 +493,18 @@ class Agent(agent.Agent):
             return errors.invalid_thing(c, 'set')
         if to_val < 0 or to_val > 127:
             return errors.invalid_thing(to, 'set')
-        return piw.trigger(self.__host.change_cc(),utils.makedict_nb({'ctl':piw.makelong_nb(c_val,0),'val':piw.makelong_nb(to_val,0)},0)),None
+        return piw.trigger(self.host.change_cc(),utils.makedict_nb({'ctl':piw.makelong_nb(c_val,0),'val':piw.makelong_nb(to_val,0)},0)),None
 
     def __set_velocity_samples(self,samples):
-        self.__host.set_velocity_samples(samples)
+        self.host.set_velocity_samples(samples)
         return True
 
     def __set_velocity_curve(self,curve):
-        self.__host.set_velocity_curve(curve)
+        self.host.set_velocity_curve(curve)
         return True
 
     def __set_velocity_scale(self,scale):
-        self.__host.set_velocity_scale(scale)
+        self.host.set_velocity_scale(scale)
         return True
 
     def __open(self,arg,id):
@@ -492,23 +514,23 @@ class Agent(agent.Agent):
         return async.success(errors.doesnt_exist('plugin "%s"'%id,'open'))
 
     def __close(self,*arg):
-        self.__host.close()
+        self.host.close()
         self.__update_labels()
         return action.nosync_return()
 
     def __show(self,*arg):
-        self.__host.set_showing(True)
+        self.host.set_showing(True)
         self.set_light(2,True)
         return action.nosync_return()
 
     def __unshow(self,*arg):
-        self.__host.set_showing(False)
+        self.host.set_showing(False)
         self.set_light(2,False)
         return action.nosync_return()
 
     def __tog_show(self,*arg):
-        self.__host.set_showing(not self.__host.is_showing())
-        self.set_light(2,self.__host.is_showing())
+        self.host.set_showing(not self.host.is_showing())
+        self.set_light(2,self.host.is_showing())
         return action.nosync_return()
 
     def __status_show(self,*arg):
@@ -518,30 +540,30 @@ class Agent(agent.Agent):
         return 'dsc(~(s)"#13","1")'
 
     def __bypass(self,*arg):
-        self.__host.set_bypassed(True)
+        self.host.set_bypassed(True)
         self.set_light(1,True)
         return action.nosync_return()
 
     def __unbypass(self,*arg):
-        self.__host.set_bypassed(False)
+        self.host.set_bypassed(False)
         self.set_light(1,False)
         return action.nosync_return()
 
     def __tog_bypass(self,*arg):
-        self.__host.set_bypassed(not self.__host.is_bypassed())
-        self.set_light(1,self.__host.is_bypassed())
+        self.host.set_bypassed(not self.host.is_bypassed())
+        self.set_light(1,self.host.is_bypassed())
         return action.nosync_return()
 
     def __window_state_changed(self,visible):
-        self.__host.set_showing(visible)
+        self.host.set_showing(visible)
 
     def set_plugin(self,id):
         desc = self.__browser.get_description(id)
         print 'set_plugin',id,desc
         if desc is not None:
-            if self.__host.open(desc):
-                self.__audio_input_channels.set_channels(self.__host.input_channel_count())
-                self.__audio_output_channels.set_channels(self.__host.output_channel_count())
+            if self.host.open(desc):
+                self.__audio_input_channels.set_channels(self.host.input_channel_count())
+                self.__audio_output_channels.set_channels(self.host.output_channel_count())
                 self.__unbypass()
                 self.__show()
                 self.__set_title()
@@ -556,13 +578,13 @@ class Agent(agent.Agent):
             if desc:
                 desc_checked = self.__browser.check_description(desc)
 
-                if desc_checked and self.__host.open(desc_checked):
-                    self.__host.set_state(state)
-                    self.__host.set_showing(show)
-                    self.__host.set_mapping(mapping)
+                if desc_checked and self.host.open(desc_checked):
+                    self.host.set_state(state)
+                    self.host.set_showing(show)
+                    self.host.set_mapping(mapping)
 
                     if bounds:
-                        self.__host.set_bounds(bounds)
+                        self.host.set_bounds(bounds)
 
                     self.__set_title()
 
@@ -573,22 +595,22 @@ class Agent(agent.Agent):
 
                     return
 
-        self.__host.close()
+        self.host.close()
 
     def __set_title(self):
-        if self.__host is None: return
+        if self.host is None: return
         e = self.get_enclosure()
         d = self.get_description().title()
-        desc = self.__host.get_description()
+        desc = self.host.get_description()
         if e:
             t = '%s %s (%s)' % (desc.name(),d,e.title())
         else:
             t = '%s %s' % (desc.name(),d)
-        self.__host.set_title(t)
+        self.host.set_title(t)
 
     def get_title(self):
-        if self.__host is None:return
-        desc = self.__host.get_description()
+        if self.host is None:return
+        desc = self.host.get_description()
         t = '%s %s' % (desc.name(),desc.format())
         return t 
 
@@ -601,15 +623,15 @@ class Agent(agent.Agent):
         self.__set_title()
 
     def agent_preload(self,filename):
-        self.__host.close()
+        self.host.close()
 
     def agent_postload(self,filename):
         self.__state.apply_state()
         agent.Agent.agent_postload(self,filename)
 
     def agent_presave(self,filename):
-        state = self.__host.get_state()
-        bounds = self.__host.get_bounds()
+        state = self.host.get_state()
+        bounds = self.host.get_bounds()
         self.__state.save_state(state,bounds)
 
     def set_light(self,ord,active):
@@ -620,16 +642,16 @@ class Agent(agent.Agent):
 
     def __set_tail_time_enabled(self,v):
         self[9].set_value(v)
-        self.__host.enable_idling(v)
+        self.host.enable_idling(v)
         return True
 
     def __set_tail_time(self,tt):
         self[10].set_value(tt)
-        self.__host.set_idle_time(tt or 0)
+        self.host.set_idle_time(tt or 0)
         return True
 
     def on_quit(self):
-        self.__host.close()
+        self.host.close()
  
     def __set_category(self,v):
         if v != self[17].get_value():
@@ -659,8 +681,8 @@ class Agent(agent.Agent):
         # append the local category and label to the labels list
         category = self[17].get_value()
         label = self[18].get_value()
-        if len(label) == 0 and self.__host is not None and self.__host.has_plugin():
-            desc = self.__host.get_description()
+        if len(label) == 0 and self.host is not None and self.host.has_plugin():
+            desc = self.host.get_description()
             if desc is not None:
                 label = desc.name()
 
@@ -693,6 +715,39 @@ class Upgrader(upgrade.Upgrader):
             upstream_slaves.remove(key_input.id())
             print 'new upstream slaves',upstream_slaves
             upstream.set_meta_string('slave', logic.render_termlist(upstream_slaves))
+
+    def upgrade_1_0_4_to_1_0_5(self,tools,address):
+        print 'upgrading host',address
+        root = tools.get_root(address)
+        state = root.get_node(255,5)
+        if state.get_data().is_string():
+            mapping = state.get_data().as_string()
+            if mapping != '[]':
+                term = logic.parse_term(mapping)
+                for t in term.args:
+                    if "s" == t.pred:
+                        decimation = 0
+                        notes = True
+                        pitchbend = True
+                        hiresvel = True 
+                        pbup = 1.0
+                        pbdown = 1.0
+                        if t.arity >= 3:
+                            decimation = float(t.args[0])
+                            notes = bool(t.args[1])
+                            pitchbend = bool(t.args[2])
+                        if t.arity >= 4:
+                            hiresvel = bool(t.args[3]) 
+                        if t.arity >= 6:
+                            pbup = float(t.args[4])
+                            pbdown = float(t.args[5])
+                        root.ensure_node(16,254).set_data(piw.makefloat_bounded(100,0,0,decimation,0))
+                        root.ensure_node(17,254).set_data(piw.makebool(notes,0))
+                        root.ensure_node(18,254).set_data(piw.makebool(pitchbend,0))
+                        root.ensure_node(19,254).set_data(piw.makebool(hiresvel,0))
+                        root.ensure_node(20,254).set_data(piw.makefloat_bounded(48,0,0,pbup,0))
+                        root.ensure_node(21,254).set_data(piw.makefloat_bounded(48,0,0,pbdown,0))
+                        break
 
 agent.main(Agent,Upgrader,gui=True)
 
