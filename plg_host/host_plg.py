@@ -369,12 +369,12 @@ class Agent(agent.Agent):
         self[12] = atom.Atom(domain=domain.BoundedInt(1,16),init=16,names='maximum channel',policy=atom.default_policy(self.set_max_channel))
 
         # other global settings inputs
-        self[16] = atom.Atom(domain=domain.BoundedInt(0,100),init=0,names="minimum decimation",policy=atom.default_policy(self.set_min_decimation))
-        self[17] = atom.Atom(domain=domain.Bool(),init=True,names="notes enable",policy=atom.default_policy(self.set_midi_notes))
-        self[18] = atom.Atom(domain=domain.Bool(),init=True,names="pitch bend enable",policy=atom.default_policy(self.set_midi_pitchbend))
-        self[19] = atom.Atom(domain=domain.Bool(),init=False,names="high resolution velocity enable",policy=atom.default_policy(self.set_midi_hires_velocity))
-        self[20] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range upper",policy=atom.default_policy(self.set_pitchbend_up))
-        self[21] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range lower",policy=atom.default_policy(self.set_pitchbend_down))
+        self[20] = atom.Atom(domain=domain.BoundedInt(0,100),init=0,names="minimum decimation",policy=atom.default_policy(self.set_min_decimation))
+        self[21] = atom.Atom(domain=domain.Bool(),init=True,names="notes enable",policy=atom.default_policy(self.set_midi_notes))
+        self[22] = atom.Atom(domain=domain.Bool(),init=True,names="pitch bend enable",policy=atom.default_policy(self.set_midi_pitchbend))
+        self[23] = atom.Atom(domain=domain.Bool(),init=False,names="high resolution velocity enable",policy=atom.default_policy(self.set_midi_hires_velocity))
+        self[24] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range upper",policy=atom.default_policy(self.set_pitchbend_up))
+        self[25] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range lower",policy=atom.default_policy(self.set_pitchbend_down))
 
         # status output to drive the talker lights
         self[13] = bundles.Output(1,False,names='status output')
@@ -441,32 +441,32 @@ class Agent(agent.Agent):
         return True
 
     def set_min_decimation(self,v):
-        self[16].set_value(v)
+        self[20].set_value(v)
         self.host.set_minimum_decimation(v)
         return True
 
     def set_midi_notes(self,v):
-        self[17].set_value(v)
+        self[21].set_value(v)
         self.host.set_midi_notes(v)
         return True
 
     def set_midi_pitchbend(self,v):
-        self[18].set_value(v)
+        self[22].set_value(v)
         self.host.set_midi_pitchbend(v)
         return True
 
     def set_midi_hires_velocity(self,v):
-        self[19].set_value(v)
+        self[23].set_value(v)
         self.host.set_midi_hires_velocity(v)
         return True
 
     def set_pitchbend_up(self,v):
-        self[20].set_value(v)
+        self[24].set_value(v)
         self.host.set_pitchbend_up(v)
         return True
 
     def set_pitchbend_down(self,v):
-        self[21].set_value(v)
+        self[25].set_value(v)
         self.host.set_pitchbend_down(v)
         return True
 
@@ -741,12 +741,12 @@ class Upgrader(upgrade.Upgrader):
                         if t.arity >= 6:
                             pbup = float(t.args[4])
                             pbdown = float(t.args[5])
-                        root.ensure_node(16,254).set_data(piw.makefloat_bounded(100,0,0,decimation,0))
-                        root.ensure_node(17,254).set_data(piw.makebool(notes,0))
-                        root.ensure_node(18,254).set_data(piw.makebool(pitchbend,0))
-                        root.ensure_node(19,254).set_data(piw.makebool(hiresvel,0))
-                        root.ensure_node(20,254).set_data(piw.makefloat_bounded(48,0,0,pbup,0))
-                        root.ensure_node(21,254).set_data(piw.makefloat_bounded(48,0,0,pbdown,0))
+                        root.ensure_node(20,254).set_data(piw.makefloat_bounded(100,0,0,decimation,0))
+                        root.ensure_node(21,254).set_data(piw.makebool(notes,0))
+                        root.ensure_node(22,254).set_data(piw.makebool(pitchbend,0))
+                        root.ensure_node(23,254).set_data(piw.makebool(hiresvel,0))
+                        root.ensure_node(24,254).set_data(piw.makefloat_bounded(48,0,0,pbup,0))
+                        root.ensure_node(25,254).set_data(piw.makefloat_bounded(48,0,0,pbdown,0))
                         break
 
 agent.main(Agent,Upgrader,gui=True)
