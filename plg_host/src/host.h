@@ -112,13 +112,14 @@ namespace host
             virtual void showing_changed(bool) = 0;
             virtual void bypassed_changed(bool) = 0;
             virtual void mapping_changed(const std::string &) = 0;
+            virtual void settings_changed() = 0;
             virtual std::string get_parameter_name(unsigned) = 0;
     };
 
     class PIHOST_DECLSPEC_CLASS plugin_instance_t: public pic::nocopy_t
     {
         public:
-            plugin_instance_t(plugin_observer_t *, midi::midi_channel_delegate_t *,
+            plugin_instance_t(plugin_observer_t *,
                 piw::clockdomain_ctl_t *, const piw::cookie_t &audio_out, const piw::cookie_t &midi_out,
                 const pic::status_t &window_state_changed);
             ~plugin_instance_t();
@@ -152,6 +153,7 @@ namespace host
             bool is_mapped_midi(unsigned, unsigned short);
             midi::mapping_info_t get_info_param(unsigned, unsigned short);
             midi::mapping_info_t get_info_midi(unsigned, unsigned short);
+            midi::global_settings_t get_settings();
             void clear_params();
             void clear_midi_cc();
             void clear_midi_behaviour();

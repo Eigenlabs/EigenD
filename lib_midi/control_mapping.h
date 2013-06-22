@@ -52,9 +52,35 @@ namespace midi
 
     struct MIDILIB_DECLSPEC_CLASS global_settings_t
     {
-        global_settings_t(): minimum_decimation_(0.f), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false), pitchbend_semitones_up_(1.0f), pitchbend_semitones_down_(1.0f) {};
-        global_settings_t(float minimum_decimation, bool send_notes, bool send_pitchbend, bool send_hires_velocity, float pb_up, float pb_down): minimum_decimation_(minimum_decimation), send_notes_(send_notes), send_pitchbend_(send_pitchbend), send_hires_velocity_(send_hires_velocity), pitchbend_semitones_up_(pb_up), pitchbend_semitones_down_(pb_down)  {};
+        global_settings_t(const global_settings_t &g): midi_channel_(g.midi_channel_), minimum_midi_channel_(g.minimum_midi_channel_), maximum_midi_channel_(g.maximum_midi_channel_), minimum_decimation_(g.minimum_decimation_), send_notes_(g.send_notes_), send_pitchbend_(g.send_pitchbend_), send_hires_velocity_(g.send_hires_velocity_), pitchbend_semitones_up_(g.pitchbend_semitones_up_), pitchbend_semitones_down_(g.pitchbend_semitones_down_)  {};
+        global_settings_t(): midi_channel_(0), minimum_midi_channel_(1), maximum_midi_channel_(16), minimum_decimation_(0.f), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false), pitchbend_semitones_up_(1.0f), pitchbend_semitones_down_(1.0f) {};
+        global_settings_t(unsigned midi_channel, unsigned minimum_midi_channel, unsigned maximum_midi_channel, float minimum_decimation, bool send_notes, bool send_pitchbend, bool send_hires_velocity, float pb_up, float pb_down): midi_channel_(midi_channel), minimum_midi_channel_(minimum_midi_channel), maximum_midi_channel_(maximum_midi_channel), minimum_decimation_(minimum_decimation), send_notes_(send_notes), send_pitchbend_(send_pitchbend), send_hires_velocity_(send_hires_velocity), pitchbend_semitones_up_(pb_up), pitchbend_semitones_down_(pb_down)  {};
 
+        global_settings_t clone_with_midi_channel(unsigned);
+        global_settings_t clone_with_minimum_midi_channel(unsigned);
+        global_settings_t clone_with_maximum_midi_channel(unsigned);
+        global_settings_t clone_with_minimum_decimation(float);
+        global_settings_t clone_with_send_notes(bool);
+        global_settings_t clone_with_send_pitchbend(bool);
+        global_settings_t clone_with_send_hires_velocity(bool);
+        global_settings_t clone_with_pitchbend_semitones_up(float);
+        global_settings_t clone_with_pitchbend_semitones_down(float);
+
+        unsigned get_midi_channel() { return midi_channel_; }
+        unsigned get_minimum_midi_channel() { return minimum_midi_channel_; }
+        unsigned get_maximum_midi_channel() { return maximum_midi_channel_; }
+        float get_minimum_decimation() { return minimum_decimation_; }
+        bool get_send_notes() { return send_notes_; }
+        bool get_send_pitchbend() { return send_pitchbend_; }
+        bool get_send_hires_velocity() { return send_hires_velocity_; }
+        float get_pitchbend_semitones_up() { return pitchbend_semitones_up_; }
+        float get_pitchbend_semitones_down() { return pitchbend_semitones_down_; }
+
+        bool operator==(const global_settings_t &) const;
+
+        unsigned midi_channel_;
+        unsigned minimum_midi_channel_;
+        unsigned maximum_midi_channel_;
         float minimum_decimation_;
         bool send_notes_;
         bool send_pitchbend_;
@@ -99,18 +125,6 @@ namespace midi
             decimation_handler_t * const decimation_handler_;
     };
 
-    class MIDILIB_DECLSPEC_CLASS midi_channel_delegate_t: public virtual pic::tracked_t
-    {
-        public:
-            virtual ~midi_channel_delegate_t() {}
-            virtual void set_midi_channel(unsigned) = 0;
-            virtual void set_min_channel(unsigned) = 0;
-            virtual void set_max_channel(unsigned) = 0;
-            virtual unsigned get_midi_channel() = 0;
-            virtual unsigned get_min_channel() = 0;
-            virtual unsigned get_max_channel() = 0;
-    };
-
     class controllers_mapping_t;
 
     typedef pic::lckmap_t<unsigned,mapping_wrapper_t>::nbtype nb_param_map_t;
@@ -147,18 +161,18 @@ namespace midi
         mapping_info_t(const mapping_info_t &i): mapping_data_t(i.scale_, i.lo_, i.base_, i.hi_, i.origin_return_, i.decimation_, i.scope_, i.channel_, i.resolution_, i.secondary_cc_, i.curve_), oparam_(i.oparam_), enabled_(i.enabled_) {};
         mapping_info_t(unsigned short oparam, bool enabled, float scale, float lo, float base, float hi, bool origin_return, float decimation, unsigned scope, unsigned channel, unsigned resolution, int secondary, unsigned curve): mapping_data_t(scale, lo, base, hi, origin_return, decimation, scope, channel, resolution, secondary, curve), oparam_(oparam), enabled_(enabled) {};
 
-        mapping_info_t clone_with_enabled(bool enabled);
-        mapping_info_t clone_with_scale(float scale);
-        mapping_info_t clone_with_lo(float lo);
-        mapping_info_t clone_with_base(float base);
-        mapping_info_t clone_with_hi(float hi);
-        mapping_info_t clone_with_origin_return(bool origin_return);
-        mapping_info_t clone_with_decimation(float decimation);
-        mapping_info_t clone_with_scope(unsigned scope);
-        mapping_info_t clone_with_channelscope(unsigned channel);
-        mapping_info_t clone_with_resolution(unsigned resolution);
-        mapping_info_t clone_with_secondarycc(int secondary);
-        mapping_info_t clone_with_curve(unsigned curve);
+        mapping_info_t clone_with_enabled(bool);
+        mapping_info_t clone_with_scale(float);
+        mapping_info_t clone_with_lo(float);
+        mapping_info_t clone_with_base(float);
+        mapping_info_t clone_with_hi(float);
+        mapping_info_t clone_with_origin_return(bool);
+        mapping_info_t clone_with_decimation(float);
+        mapping_info_t clone_with_scope(unsigned);
+        mapping_info_t clone_with_channelscope(unsigned);
+        mapping_info_t clone_with_resolution(unsigned);
+        mapping_info_t clone_with_secondarycc(int);
+        mapping_info_t clone_with_curve(unsigned);
 
         const int oparam_;
         const bool enabled_;
@@ -172,7 +186,7 @@ namespace midi
     class MIDILIB_DECLSPEC_CLASS controllers_mapping_t: public pic::guarded_t, virtual public pic::tracked_t
     {
         public:
-            controllers_mapping_t(mapping_observer_t &l, midi_channel_delegate_t &m) : listener_(l), midi_(m), acquired_(0) {};
+            controllers_mapping_t(mapping_observer_t &l) : listener_(l), acquired_(0) {};
 
             unsigned get_serial();
 
@@ -233,7 +247,6 @@ namespace midi
             };
 
             mapping_observer_t &listener_;
-            midi_channel_delegate_t &midi_;
             pic::flipflop_t<mapping_t> mapping_;
             const mapping_t* acquired_;
     };

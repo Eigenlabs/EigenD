@@ -49,33 +49,6 @@ class AgentState(node.server):
         self.__load_callback(delegate,mapping)
 
 
-class MidiChannelDelegate(midilib_native.midi_channel_delegate):
-    def __init__(self,agent):
-        midilib_native.midi_channel_delegate.__init__(self)
-        self.__agent = agent
-
-    def set_midi_channel(self, channel):
-        self.__agent[3].set_value(channel)
-        self.__agent.set_midi_channel(channel)
-
-    def set_min_channel(self, channel):
-        self.__agent[7].set_value(channel)
-        self.__agent.set_min_channel(channel)
-
-    def set_max_channel(self, channel):
-        self.__agent[8].set_value(channel)
-        self.__agent.set_max_channel(channel)
-
-    def get_midi_channel(self):
-        return int(self.__agent[3].get_value())
-
-    def get_min_channel(self):
-        return int(self.__agent[7].get_value())
-
-    def get_max_channel(self):
-        return int(self.__agent[8].get_value())
-
-
 class MappingObserver(midilib_native.mapping_observer):
     def __init__(self,state,agent):
         midilib_native.mapping_observer.__init__(self)
@@ -89,7 +62,16 @@ class MappingObserver(midilib_native.mapping_observer):
         pass
 
     def settings_changed(self):
-        pass
+        settings = self.__agent.midi_converter.get_settings()
+        self.__agent.set_midi_channel(settings.get_midi_channel())
+        self.__agent.set_min_channel(settings.get_minimum_midi_channel())
+        self.__agent.set_max_channel(settings.get_maximum_midi_channel())
+        self.__agent.set_min_decimation(settings.get_minimum_decimation())
+        self.__agent.set_midi_notes(settings.get_send_notes())
+        self.__agent.set_midi_pitchbend(settings.get_send_pitchbend())
+        self.__agent.set_midi_hires_velocity(settings.get_send_hires_velocity())
+        self.__agent.set_pitchbend_up(settings.get_pitchbend_semitones_up())
+        self.__agent.set_pitchbend_down(settings.get_pitchbend_semitones_down())
 
     def get_parameter_name(self,index):
         n = string.capwords(self.__agent.parameter_list[index].get_property_string('name'))
@@ -116,11 +98,10 @@ class Agent(agent.Agent):
         self.__output = bundles.Splitter(self.__domain, self[1])
 
         self.__observer = MappingObserver(self.__state,self)
-        self.__channel_delegate = MidiChannelDelegate(self)
         self.__midi_from_belcanto = midilib_native.midi_from_belcanto(self.__output.cookie(), self.__domain)
-        self.__midi_converter = midilib_native.midi_converter(self.__observer, self.__channel_delegate, self.__domain, self.__midi_from_belcanto, self.__get_title())
+        self.midi_converter = midilib_native.midi_converter(self.__observer, self.__domain, self.__midi_from_belcanto, self.__get_title())
  
-        self.parameter_list = inputparameter.List(self.__midi_converter,self.__midi_converter.clock_domain(),self.verb_container())
+        self.parameter_list = inputparameter.List(self.midi_converter,self.midi_converter.clock_domain(),self.verb_container())
 
         # Inputs for generating keyboard driven MIDI signals
         # MIDI controllers are merged down with signals from keys (driven by pressure)
@@ -142,6 +123,14 @@ class Agent(agent.Agent):
         self[7] = atom.Atom(domain=domain.BoundedInt(1,16),init=1,names="minimum channel",policy=atom.default_policy(self.set_min_channel))
         self[8] = atom.Atom(domain=domain.BoundedInt(1,16),init=16,names="maximum channel",policy=atom.default_policy(self.set_max_channel))
 
+        # other global settings inputs
+        self[13] = atom.Atom(domain=domain.BoundedInt(0,100),init=0,names="minimum decimation",policy=atom.default_policy(self.set_min_decimation))
+        self[14] = atom.Atom(domain=domain.Bool(),init=True,names="notes enable",policy=atom.default_policy(self.set_midi_notes))
+        self[15] = atom.Atom(domain=domain.Bool(),init=True,names="pitch bend enable",policy=atom.default_policy(self.set_midi_pitchbend))
+        self[16] = atom.Atom(domain=domain.Bool(),init=False,names="high resolution velocity enable",policy=atom.default_policy(self.set_midi_hires_velocity))
+        self[17] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range upper",policy=atom.default_policy(self.set_pitchbend_up))
+        self[18] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range lower",policy=atom.default_policy(self.set_pitchbend_down))
+
         # parameter mapping
         self[12] = self.parameter_list
 
@@ -153,7 +142,7 @@ class Agent(agent.Agent):
         self.set_midi_channel(0)
 
     def close_server(self):
-        self.__midi_converter.close();
+        self.midi_converter.close();
         agent.Agent.close_server(self)
 
     def property_change(self,key,value,delegate):
@@ -165,7 +154,7 @@ class Agent(agent.Agent):
         self.__set_title()
 
     def __set_title(self):
-        self.__midi_converter.set_title(self.__get_title())
+        self.midi_converter.set_title(self.__get_title())
 
     def __get_title(self):
         t = self.get_description().title()
@@ -176,17 +165,47 @@ class Agent(agent.Agent):
 
     def set_midi_channel(self,c):
         self[3].set_value(c)
-        self.__midi_converter.set_midi_channel(c)
+        self.midi_converter.set_midi_channel(c)
         return True
 
     def set_min_channel(self,c):
         self[7].set_value(c)
-        self.__midi_converter.set_min_midi_channel(c)
+        self.midi_converter.set_min_midi_channel(c)
         return True
 
     def set_max_channel(self,c):
         self[8].set_value(c)
-        self.__midi_converter.set_max_midi_channel(c)
+        self.midi_converter.set_max_midi_channel(c)
+        return True
+
+    def set_min_decimation(self,v):
+        self[13].set_value(v)
+        self.midi_converter.set_minimum_decimation(v)
+        return True
+
+    def set_midi_notes(self,v):
+        self[14].set_value(v)
+        self.midi_converter.set_midi_notes(v)
+        return True
+
+    def set_midi_pitchbend(self,v):
+        self[15].set_value(v)
+        self.midi_converter.set_midi_pitchbend(v)
+        return True
+
+    def set_midi_hires_velocity(self,v):
+        self[16].set_value(v)
+        self.midi_converter.set_midi_hires_velocity(v)
+        return True
+
+    def set_pitchbend_up(self,v):
+        self[17].set_value(v)
+        self.midi_converter.set_pitchbend_up(v)
+        return True
+
+    def set_pitchbend_down(self,v):
+        self[18].set_value(v)
+        self.midi_converter.set_pitchbend_down(v)
         return True
 
     def __set_samples(self,x):
@@ -227,7 +246,7 @@ class Agent(agent.Agent):
         return piw.trigger(self.__midi_from_belcanto.change_cc(),utils.makedict_nb({'ctl':piw.makelong_nb(c_val,0),'val':piw.makelong_nb(to_val,0)},0)),None
 
     def __agent_state_loaded(self,delegate,mapping):
-        self.__midi_converter.set_mapping(mapping)
+        self.midi_converter.set_mapping(mapping)
         return
 
 class Upgrader(upgrade.Upgrader):
@@ -253,5 +272,37 @@ class Upgrader(upgrade.Upgrader):
             print 'new upstream slaves',upstream_slaves
             upstream.set_meta_string('slave', logic.render_termlist(upstream_slaves))
 
+    def upgrade_1_0_4_to_1_0_5(self,tools,address):
+        print 'upgrading midi converter',address
+        root = tools.get_root(address)
+        state = root.get_node(255,1)
+        if state.get_data().is_string():
+            mapping = state.get_data().as_string()
+            if mapping != '[]':
+                term = logic.parse_term(mapping)
+                for t in term.args:
+                    if "s" == t.pred:
+                        decimation = 0
+                        notes = True
+                        pitchbend = True
+                        hiresvel = True 
+                        pbup = 1.0
+                        pbdown = 1.0
+                        if t.arity >= 3:
+                            decimation = float(t.args[0])
+                            notes = bool(t.args[1])
+                            pitchbend = bool(t.args[2])
+                        if t.arity >= 4:
+                            hiresvel = bool(t.args[3]) 
+                        if t.arity >= 6:
+                            pbup = float(t.args[4])
+                            pbdown = float(t.args[5])
+                        root.ensure_node(13,254).set_data(piw.makefloat_bounded(100,0,0,decimation,0))
+                        root.ensure_node(14,254).set_data(piw.makebool(notes,0))
+                        root.ensure_node(15,254).set_data(piw.makebool(pitchbend,0))
+                        root.ensure_node(16,254).set_data(piw.makebool(hiresvel,0))
+                        root.ensure_node(17,254).set_data(piw.makefloat_bounded(48,0,0,pbup,0))
+                        root.ensure_node(18,254).set_data(piw.makefloat_bounded(48,0,0,pbdown,0))
+                        break
 
 agent.main(Agent,Upgrader,gui=True)

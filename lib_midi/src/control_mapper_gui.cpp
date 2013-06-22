@@ -483,36 +483,6 @@ namespace midi
         }
     }
 
-    unsigned mapping_delegate_t::get_midi_channel()
-    {
-        return settings_functors_.get_midi_channel_();
-    }
-
-    void mapping_delegate_t::set_midi_channel(unsigned channel)
-    {
-        settings_functors_.set_midi_channel_(channel);
-    }
-
-    unsigned mapping_delegate_t::get_min_channel()
-    {
-        return settings_functors_.get_min_channel_();
-    }
-
-    void mapping_delegate_t::set_min_channel(unsigned channel)
-    {
-        settings_functors_.set_min_channel_(channel);
-    }
-
-    unsigned mapping_delegate_t::get_max_channel()
-    {
-        return settings_functors_.get_max_channel_();
-    }
-
-    void mapping_delegate_t::set_max_channel(unsigned channel)
-    {
-        settings_functors_.set_max_channel_(channel);
-    }
-
     void mapping_delegate_t::clearall()
     {
         if(!AlertWindow::showOkCancelBox(AlertWindow::NoIcon, "Please confirm ...", "Are you certain that you want to clear all the mappings in all tabs?", "No", "Yes"))
@@ -761,9 +731,10 @@ namespace midi
 
     bool mapper_cell_editor_t::is_spanned()
     {
-        if(span_poly_ && oparam_ > 0 && 0 == mapper_.settings_functors_.get_midi_channel_())
+        global_settings_t settings = mapper_.settings_functors_.get_settings_();
+        if(span_poly_ && oparam_ > 0 && 0 == settings.midi_channel_)
         {
-            int poly_range = mapper_.settings_functors_.get_max_channel_() - mapper_.settings_functors_.get_min_channel_();
+            int poly_range = settings.maximum_midi_channel_ - settings.minimum_midi_channel_;
             for(int o = oparam_-1; o >= 0 && o >= oparam_-poly_range; --o)
             {
                 mapping_info_t poly_info = mapper_.mapping_functors_.get_info_(iparam_,o);
@@ -779,15 +750,16 @@ namespace midi
 
     void mapper_cell_editor_t::draw_text()
     {
-        if(span_poly_ && oparam_ > 0 && 0 == mapper_.settings_functors_.get_midi_channel_())
+        global_settings_t settings = mapper_.settings_functors_.get_settings_();
+        if(span_poly_ && oparam_ > 0 && 0 == settings.midi_channel_)
         {
-            int poly_range = mapper_.settings_functors_.get_max_channel_()-mapper_.settings_functors_.get_min_channel_();
+            int poly_range = settings.maximum_midi_channel_ - settings.minimum_midi_channel_;
             for(int o = oparam_-1; o >= 0 && o >= oparam_-poly_range; --o)
             {
                 mapping_info_t poly_info = mapper_.mapping_functors_.get_info_(iparam_,o);
                 if(poly_info.is_valid() && PERNOTE_SCOPE == poly_info.scope_)
                 {
-                    int channel = mapper_.settings_functors_.get_min_channel_()+(oparam_-o);
+                    int channel = settings.minimum_midi_channel_+(oparam_-o);
                     label_->setText(juce::String::formatted("%.1f (ch.%02d)", poly_info.scale_, channel), true);
                     colour_cell(poly_info, true);
                     return;
@@ -798,9 +770,9 @@ namespace midi
         mapping_info_t info = get_info();
         if(info.is_valid())
         {
-            if(span_poly_ && 0 == mapper_.settings_functors_.get_midi_channel_() && PERNOTE_SCOPE == info.scope_)
+            if(span_poly_ && 0 == settings.midi_channel_ && PERNOTE_SCOPE == info.scope_)
             {
-                label_->setText(juce::String::formatted("%.1f (ch.%02d)", info.scale_, mapper_.settings_functors_.get_min_channel_()), true);
+                label_->setText(juce::String::formatted("%.1f (ch.%02d)", info.scale_, settings.minimum_midi_channel_), true);
             }
             else
             {

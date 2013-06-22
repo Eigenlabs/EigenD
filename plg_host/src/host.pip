@@ -5,7 +5,7 @@
 
 from picross[picross/picross.pip] import notify,status
 from piw_native[piw/piw.pip] import cookie,clockdomain_ctl,data,change_nb
-from midilib_native[lib_midi/midilib.pip] import mapping_info,midi_channel_delegate
+from midilib_native[lib_midi/midilib.pip] import mapping_info, global_settings
 
 class plugin_description[host::plugin_description_t]
 {
@@ -41,12 +41,13 @@ class plugin_observer[host::plugin_observer_t]
     virtual void showing_changed(bool) = 0
     virtual void bypassed_changed(bool) = 0
     virtual void mapping_changed(const stdstr &) = 0
+    virtual void settings_changed() = 0
     virtual stdstr get_parameter_name(unsigned) = 0
 }
 
 class plugin_instance[host::plugin_instance_t] /gc/
 {
-    plugin_instance(plugin_observer *, midi_channel_delegate *, clockdomain_ctl *, const cookie &, const cookie &, const status &)
+    plugin_instance(plugin_observer *, clockdomain_ctl *, const cookie &, const cookie &, const status &)
 
     clockdomain_ctl *clock_domain()
 
@@ -77,6 +78,7 @@ class plugin_instance[host::plugin_instance_t] /gc/
     bool is_mapped_midi(unsigned, unsigned short)
     mapping_info get_info_param(unsigned, unsigned short)
     mapping_info get_info_midi(unsigned, unsigned short)
+    global_settings get_settings()
     void set_pitchbend_up(float)
     void set_pitchbend_down(float)
     void set_minimum_decimation(float)

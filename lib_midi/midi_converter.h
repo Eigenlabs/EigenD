@@ -29,7 +29,7 @@ namespace midi
 {
     struct MIDILIB_DECLSPEC_CLASS midi_converter_t
     {
-        midi_converter_t(mapping_observer_t *, midi_channel_delegate_t *, piw::clockdomain_ctl_t *, midi_from_belcanto_t *, const std::string &);
+        midi_converter_t(mapping_observer_t *, piw::clockdomain_ctl_t *, midi_from_belcanto_t *, const std::string &);
         ~midi_converter_t();
 
         piw::clockdomain_ctl_t *clock_domain();
@@ -47,15 +47,16 @@ namespace midi
         bool is_mapped_midi(unsigned, unsigned);
         mapping_info_t get_info_param(unsigned, unsigned);
         mapping_info_t get_info_midi(unsigned, unsigned);
-        void set_minimum_decimation(float);
-        void set_pitchbend_up(float semis);
-        void set_pitchbend_down(float semis);
-        void set_midi_notes(bool);
-        void set_midi_pitchbend(bool);
-        void set_midi_hires_velocity(bool);
+        global_settings_t get_settings();
         void set_midi_channel(unsigned);
         void set_min_midi_channel(unsigned);
         void set_max_midi_channel(unsigned);
+        void set_minimum_decimation(float);
+        void set_midi_notes(bool);
+        void set_midi_pitchbend(bool);
+        void set_midi_hires_velocity(bool);
+        void set_pitchbend_up(float semis);
+        void set_pitchbend_down(float semis);
         void set_program_change(unsigned);
         piw::change_nb_t change_program();
         void set_bank_change(unsigned);
