@@ -160,12 +160,12 @@ def find_setup(srcname):
 
     for s in factory_setups:
         if s == srcname:
-            return os.path.join(factory_setups,s)
+            return os.path.join(release_dir,s)
         s2 = upgrade.split_setup(s)
         if s2[1] == srcname:
-            return os.path.join(factory_setups,s)
+            return os.path.join(release_dir,s)
 
-        return None
+    return None
 
 
 def user_setup_file(slot,tag):
