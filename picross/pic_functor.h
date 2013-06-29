@@ -126,6 +126,7 @@ namespace pic
 
             virtual bool iscallable() const { return true; }
             virtual bool compare(const sink_t<SIG> *s) const { const callable_t *c = dynamic_cast<const callable_t *>(s); if(c && c->callable_==callable_) return true; return false; }
+            virtual ~callable_t(){}
 
         private:
             CALLABLE callable_;
@@ -156,6 +157,7 @@ namespace pic
                 if(c && c->_object==_object && c->_method==_method) return true;
                 return false;
             }
+            virtual ~boundmethod_t(){}
 
         private:
             weak_t<O> _object;
@@ -191,6 +193,7 @@ namespace pic
 
                 return 0;
             }
+            virtual ~indirect_sink_t(){}
 
         public:
             rt_t invoke() const { sink_guard_t g(target_); if(!g.value().isvalid()) return rttraits<rt_t>::def(); return g.value()->invoke(); }
@@ -230,6 +233,7 @@ namespace pic
             list_sink_t()
             {
             }
+            virtual ~list_sink_t(){}
 
             void connect(const sink_ref_t &f)
             {

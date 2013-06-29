@@ -640,14 +640,14 @@ void pia_proot_t::buffer_receive_slow(const unsigned char *msg, unsigned len)
             case BCTMTYPE_FAST_REQ:
             {
                 fasttick_=0;
-                // fallthrough
             }
+            // fallthrough
 
             case BCTMTYPE_IDNT_REQ:
             {
                 fasttick_=0;
-                // fallthrough
             }
+            // fallthrough
         }
 
         if((x=pie_skipstanza(msg,len,bt))<0)

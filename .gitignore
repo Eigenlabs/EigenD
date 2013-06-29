@@ -11,3 +11,8 @@ vc90.pdb
 *.swp
 eigend-gpl
 steinberg
+.cproject
+.project
+.pydevproject
+.settings
+
