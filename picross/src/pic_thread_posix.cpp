@@ -607,6 +607,7 @@ unsigned pic::xgate_t::pass_and_shut_timed(unsigned long long t)
             return 0;
         }
     }
+    return 0;
 }
 
 unsigned pic::xgate_t::pass_and_shut()
@@ -632,6 +633,7 @@ unsigned pic::xgate_t::pass_and_shut()
 
         sem_.untimeddown();
     }
+    return 0;
 }
 
 pic::gate_t::gate_t()
