@@ -1,0 +1,13 @@
+
+<<<
+#include "osc_input.h"
+>>>
+
+
+from piw[piw/piw.pip] import clockdomain_ctl,cookie
+
+class osc_input[oscpad_plg::osc_input_t]
+{
+    osc_input(clockdomain_ctl *, const cookie &, const stdstr &, const stdstr &, const stdstr &)
+    cookie cookie()
+}

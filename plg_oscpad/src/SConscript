@@ -1,0 +1,31 @@
+#
+# Copyright 2011 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+#
+# Build a shared library called oscpad_plg.
+#
+env.PiSharedLibrary('oscpad_plg', Split('osc_input.cpp osc_server.cpp osc_client.cpp live_osc.cpp live_model.cpp'), libraries=Split('pic piw pie pia pilo'), package='eigend', per_agent='plg_oscpad')
+
+#
+# Build a Python native module as described by oscpad_plg.pip, called oscpad_plg_native.
+# Link it against our new shared library and other base libraries
+#
+env.PiPipBinding('oscpad_plg_native', 'oscpad_plg.pip', libraries=Split('oscpad_plg pic piw pie'), package='eigend', per_agent='plg_oscpad')
