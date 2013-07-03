@@ -288,7 +288,7 @@ Notes            Word           Classification      Synonyms
 7   6          : '             : Block             : None
 7   7          : Into          : Role              : None
 7   8          : Unused        : Unused            : None
-8   1          : Unused        : Unused            : None
+8   1          : Solo          : Verb              : None
 8   2          : Unused        : Unused            : None
 8   3          : Unused        : Unused            : None
 8   4          : Unused        : Unused            : None
@@ -395,8 +395,8 @@ Notes            Word           Classification     Synonyms
 2   4   3      : Scheduler     : Noun              : None
 2   4   4      : Mute          : Verb              : None
 2   4   5      : In            : Role              : None
-2   4   6      : Unused        : Unused            : None
-2   4   7      : Unused        : Unused            : None
+2   4   6      : Live          : Noun              : None
+2   4   7      : Track         : Noun              : None
 2   4   8      : Unused        : Unused            : None
 2   5   1      : Unused        : Unused            : None
 2   5   2      : Unused        : Unused            : None
