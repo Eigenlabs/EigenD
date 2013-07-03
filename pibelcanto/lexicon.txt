@@ -288,7 +288,7 @@ Notes            Word           Classification      Synonyms
 7   6          : '             : Block             : None
 7   7          : Into          : Role              : None
 7   8          : Unused        : Unused            : None
-8   1          : Solo          : Verb              : None
+8   1          : Unused        : Unused            : None
 8   2          : Unused        : Unused            : None
 8   3          : Unused        : Unused            : None
 8   4          : Unused        : Unused            : None
@@ -432,7 +432,7 @@ Notes            Word           Classification     Synonyms
 2   8   8      : Conversation  : Noun              : None
 3   1   1      : Unused        : Unused            : None
 3   1   2      : Clip          : Noun              : None
-3   1   3      : Unused        : Unused            : None
+3   1   3      : Solo          : Noun              : None
 3   1   4      : Unused        : Unused            : None
 3   1   5      : Unused        : Unused            : None
 3   1   6      : Unused        : Unused            : None
