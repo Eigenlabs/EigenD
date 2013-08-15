@@ -1,24 +1,27 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the juce_core module of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission to use, copy, modify, and/or distribute this software for any purpose with
+   or without fee is hereby granted, provided that the above copyright notice and this
+   permission notice appear in all copies.
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD
+   TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN
+   NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+   DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+   IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+   CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-   JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   ------------------------------------------------------------------------------
 
-  ------------------------------------------------------------------------------
+   NOTE! This permissive ISC license applies ONLY to files within the juce_core module!
+   All other JUCE modules are covered by a dual GPL/commercial license, so if you are
+   using any other modules, be sure to check that you also comply with their license.
 
-   To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   For more details, visit www.juce.com
 
   ==============================================================================
 */
@@ -133,10 +136,11 @@ public:
         if (start.getAddress() == nullptr || start.isEmpty())
             return getEmpty();
 
-        const size_t numBytes = (size_t) (end.getAddress() - start.getAddress());
-        const CharPointerType dest (createUninitialisedBytes (numBytes + 1));
+        const size_t numBytes = (size_t) (reinterpret_cast<const char*> (end.getAddress())
+                                           - reinterpret_cast<const char*> (start.getAddress()));
+        const CharPointerType dest (createUninitialisedBytes (numBytes + sizeof (CharType)));
         memcpy (dest.getAddress(), start, numBytes);
-        dest.getAddress()[numBytes] = 0;
+        dest.getAddress()[numBytes / sizeof (CharType)] = 0;
         return dest;
     }
 
@@ -359,73 +363,84 @@ String String::charToString (const juce_wchar character)
 //==============================================================================
 namespace NumberToStringConverters
 {
-    // pass in a pointer to the END of a buffer..
-    static char* numberToString (char* t, const int64 n) noexcept
+    enum
+    {
+        charsNeededForInt = 32,
+        charsNeededForDouble = 48
+    };
+
+    template <typename Type>
+    static char* printDigits (char* t, Type v) noexcept
     {
         *--t = 0;
-        int64 v = (n >= 0) ? n : -n;
 
         do
         {
-            *--t = (char) ('0' + (int) (v % 10));
+            *--t = '0' + (char) (v % 10);
             v /= 10;
 
         } while (v > 0);
 
-        if (n < 0)
-            *--t = '-';
+        return t;
+    }
 
+    // pass in a pointer to the END of a buffer..
+    static char* numberToString (char* t, const int64 n) noexcept
+    {
+        if (n >= 0)
+            return printDigits (t, static_cast<uint64> (n));
+
+        // NB: this needs to be careful not to call -std::numeric_limits<int64>::min(),
+        // which has undefined behaviour
+        t = printDigits (t, static_cast<uint64> (-(n + 1)) + 1);
+        *--t = '-';
         return t;
     }
 
     static char* numberToString (char* t, uint64 v) noexcept
     {
-        *--t = 0;
-
-        do
-        {
-            *--t = (char) ('0' + (int) (v % 10));
-            v /= 10;
-
-        } while (v > 0);
-
-        return t;
+        return printDigits (t, v);
     }
 
     static char* numberToString (char* t, const int n) noexcept
     {
-        if (n == (int) 0x80000000) // (would cause an overflow)
-            return numberToString (t, (int64) n);
+        if (n >= 0)
+            return printDigits (t, static_cast<unsigned int> (n));
 
-        *--t = 0;
-        int v = abs (n);
-
-        do
-        {
-            *--t = (char) ('0' + (v % 10));
-            v /= 10;
-
-        } while (v > 0);
-
-        if (n < 0)
-            *--t = '-';
-
+        // NB: this needs to be careful not to call -std::numeric_limits<int>::min(),
+        // which has undefined behaviour
+        t = printDigits (t, static_cast<unsigned int> (-(n + 1)) + 1);
+        *--t = '-';
         return t;
     }
 
     static char* numberToString (char* t, unsigned int v) noexcept
     {
-        *--t = 0;
-
-        do
-        {
-            *--t = (char) ('0' + (v % 10));
-            v /= 10;
-
-        } while (v > 0);
-
-        return t;
+        return printDigits (t, v);
     }
+
+    struct StackArrayStream  : public std::basic_streambuf<char, std::char_traits<char> >
+    {
+        explicit StackArrayStream (char* d)
+        {
+            imbue (std::locale::classic());
+            setp (d, d + charsNeededForDouble);
+        }
+
+        size_t writeDouble (double n, int numDecPlaces)
+        {
+            {
+                std::ostream o (this);
+
+                if (numDecPlaces > 0)
+                    o.precision ((std::streamsize) numDecPlaces);
+
+                o << n;
+            }
+
+            return (size_t) (pptr() - pbase());
+        }
+    };
 
     static char* doubleToString (char* buffer, const int numChars, double n, int numDecPlaces, size_t& len) noexcept
     {
@@ -454,36 +469,24 @@ namespace NumberToStringConverters
             return t;
         }
 
-       // Use a locale-free sprintf where possible (not available on linux AFAICT)
-       #if JUCE_MSVC
-        static _locale_t cLocale = _create_locale (LC_NUMERIC, "C");
-
-        len = (size_t) (numDecPlaces > 0 ? _sprintf_l (buffer, "%.*f", cLocale, numDecPlaces, n)
-                                         : _sprintf_l (buffer, "%.9g", cLocale, n));
-       #elif JUCE_MAC || JUCE_IOS
-        len = (size_t) (numDecPlaces > 0 ? sprintf_l (buffer, nullptr, "%.*f", numDecPlaces, n)
-                                         : sprintf_l (buffer, nullptr, "%.9g", n));
-       #else
-        len = (size_t) (numDecPlaces > 0 ? sprintf (buffer, "%.*f", numDecPlaces, n)
-                                         : sprintf (buffer, "%.9g", n));
-       #endif
-
+        StackArrayStream strm (buffer);
+        len = strm.writeDouble (n, numDecPlaces);
+        jassert (len <= charsNeededForDouble);
         return buffer;
     }
 
     template <typename IntegerType>
     static String::CharPointerType createFromInteger (const IntegerType number)
     {
-        char buffer [32];
+        char buffer [charsNeededForInt];
         char* const end = buffer + numElementsInArray (buffer);
         char* const start = numberToString (end, number);
-
         return StringHolder::createFromFixedLength (start, (size_t) (end - start - 1));
     }
 
     static String::CharPointerType createFromDouble (const double number, const int numberOfDecimalPlaces)
     {
-        char buffer [48];
+        char buffer [charsNeededForDouble];
         size_t len;
         char* const start = doubleToString (buffer, numElementsInArray (buffer), (double) number, numberOfDecimalPlaces, len);
         return StringHolder::createFromFixedLength (start, len);
@@ -522,10 +525,9 @@ juce_wchar String::operator[] (int index) const noexcept
 
 int String::hashCode() const noexcept
 {
-    CharPointerType t (text);
     int result = 0;
 
-    while (! t.isEmpty())
+    for (CharPointerType t (text); ! t.isEmpty();)
         result = 31 * result + (int) t.getAndAdvance();
 
     return result;
@@ -533,10 +535,9 @@ int String::hashCode() const noexcept
 
 int64 String::hashCode64() const noexcept
 {
-    CharPointerType t (text);
     int64 result = 0;
 
-    while (! t.isEmpty())
+    for (CharPointerType t (text); ! t.isEmpty();)
         result = 101 * result + t.getAndAdvance();
 
     return result;
@@ -1201,8 +1202,8 @@ public:
         dest = result.getCharPointer();
     }
 
-    StringCreationHelper (const String::CharPointerType& source_)
-        : source (source_), dest (nullptr), allocatedBytes (StringHolder::getAllocatedNumBytes (source)), bytesWritten (0)
+    StringCreationHelper (const String::CharPointerType s)
+        : source (s), dest (nullptr), allocatedBytes (StringHolder::getAllocatedNumBytes (s)), bytesWritten (0)
     {
         result.preallocateBytes (allocatedBytes);
         dest = result.getCharPointer();
@@ -1532,7 +1533,8 @@ String String::quoted (const juce_wchar quoteCharacter) const
 }
 
 //==============================================================================
-static String::CharPointerType findTrimmedEnd (const String::CharPointerType& start, String::CharPointerType end)
+static String::CharPointerType findTrimmedEnd (const String::CharPointerType start,
+                                               String::CharPointerType end)
 {
     while (end > start)
     {
@@ -2221,6 +2223,10 @@ public:
             expect (String ((int64) -1234).getLargeIntValue() == -1234);
             expect (String (-1234.56).getDoubleValue() == -1234.56);
             expect (String (-1234.56f).getFloatValue() == -1234.56f);
+            expect (String (std::numeric_limits<int>::max()).getIntValue() == std::numeric_limits<int>::max());
+            expect (String (std::numeric_limits<int>::min()).getIntValue() == std::numeric_limits<int>::min());
+            expect (String (std::numeric_limits<int64>::max()).getLargeIntValue() == std::numeric_limits<int64>::max());
+            expect (String (std::numeric_limits<int64>::min()).getLargeIntValue() == std::numeric_limits<int64>::min());
             expect (("xyz" + s).getTrailingIntValue() == s.getIntValue());
             expect (s.getHexValue32() == 0x12345678);
             expect (s.getHexValue64() == (int64) 0x12345678);

@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -86,7 +85,7 @@ bool Graphics::reduceClipRegion (const int x, const int y, const int w, const in
     return reduceClipRegion (Rectangle<int> (x, y, w, h));
 }
 
-bool Graphics::reduceClipRegion (const RectangleList& clipRegion)
+bool Graphics::reduceClipRegion (const RectangleList<int>& clipRegion)
 {
     saveStateIfPending();
     return context.clipToRectangleList (clipRegion);
@@ -223,7 +222,7 @@ Font Graphics::getCurrentFont() const
 
 //==============================================================================
 void Graphics::drawSingleLineText (const String& text, const int startX, const int baselineY,
-                                   const Justification& justification) const
+                                   Justification justification) const
 {
     if (text.isNotEmpty()
          && startX < context.getClipBounds().getRight())
@@ -252,16 +251,6 @@ void Graphics::drawSingleLineText (const String& text, const int startX, const i
     }
 }
 
-void Graphics::drawTextAsPath (const String& text, const AffineTransform& transform) const
-{
-    if (text.isNotEmpty())
-    {
-        GlyphArrangement arr;
-        arr.addLineOfText (context.getFont(), text, 0.0f, 0.0f);
-        arr.draw (*this, transform);
-    }
-}
-
 void Graphics::drawMultiLineText (const String& text, const int startX,
                                   const int baselineY, const int maximumLineWidth) const
 {
@@ -277,7 +266,7 @@ void Graphics::drawMultiLineText (const String& text, const int startX,
 }
 
 void Graphics::drawText (const String& text, const Rectangle<int>& area,
-                         const Justification& justificationType,
+                         Justification justificationType,
                          const bool useEllipsesIfTooBig) const
 {
     if (text.isNotEmpty() && context.clipRegionIntersects (area))
@@ -296,14 +285,14 @@ void Graphics::drawText (const String& text, const Rectangle<int>& area,
 }
 
 void Graphics::drawText (const String& text, const int x, const int y, const int width, const int height,
-                         const Justification& justificationType,
+                         Justification justificationType,
                          const bool useEllipsesIfTooBig) const
 {
     drawText (text, Rectangle<int> (x, y, width, height), justificationType, useEllipsesIfTooBig);
 }
 
 void Graphics::drawFittedText (const String& text, const Rectangle<int>& area,
-                               const Justification& justification,
+                               Justification justification,
                                const int maximumNumberOfLines,
                                const float minimumHorizontalScale) const
 {
@@ -322,7 +311,7 @@ void Graphics::drawFittedText (const String& text, const Rectangle<int>& area,
 }
 
 void Graphics::drawFittedText (const String& text, const int x, const int y, const int width, const int height,
-                               const Justification& justification,
+                               Justification justification,
                                const int maximumNumberOfLines,
                                const float minimumHorizontalScale) const
 {
@@ -638,7 +627,7 @@ void Graphics::drawImageAt (const Image& imageToDraw,
 void Graphics::drawImageWithin (const Image& imageToDraw,
                                 const int destX, const int destY,
                                 const int destW, const int destH,
-                                const RectanglePlacement& placementWithinTarget,
+                                RectanglePlacement placementWithinTarget,
                                 const bool fillAlphaChannelWithCurrentBrush) const
 {
     // passing in a silly number can cause maths problems in rendering!

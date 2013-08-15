@@ -1,30 +1,29 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
 
-#ifndef __JUCE_COMPONENT_JUCEHEADER__
-#define __JUCE_COMPONENT_JUCEHEADER__
+#ifndef JUCE_COMPONENT_H_INCLUDED
+#define JUCE_COMPONENT_H_INCLUDED
 
 #include "../mouse/juce_MouseCursor.h"
 #include "../mouse/juce_MouseListener.h"
@@ -136,7 +135,7 @@ public:
     */
     bool isVisible() const noexcept                         { return flags.visibleFlag; }
 
-    /** Called when this component's visiblility changes.
+    /** Called when this component's visibility changes.
         @see setVisible, isVisible
     */
     virtual void visibilityChanged();
@@ -331,7 +330,7 @@ public:
         If includeSiblings is true, it will also take into account any siblings
         that may be overlapping the component.
     */
-    void getVisibleArea (RectangleList& result, bool includeSiblings) const;
+    void getVisibleArea (RectangleList<int>& result, bool includeSiblings) const;
 
     //==============================================================================
     /** Returns this component's x coordinate relative the the screen's top-left origin.
@@ -566,7 +565,7 @@ public:
         @see setBounds
     */
     void setBoundsToFit (int x, int y, int width, int height,
-                         const Justification& justification,
+                         Justification justification,
                          bool onlyReduceInSize);
 
     /** Changes the position of the component's centre.
@@ -1454,7 +1453,7 @@ public:
                      the source component in which it occurred
         @see mouseEnter, mouseExit, mouseDrag, contains
     */
-    virtual void mouseMove (const MouseEvent& event);
+    virtual void mouseMove (const MouseEvent& event) override;
 
     /** Called when the mouse first enters a component.
 
@@ -1470,7 +1469,7 @@ public:
                      the source component in which it occurred
         @see mouseExit, mouseDrag, mouseMove, contains
     */
-    virtual void mouseEnter (const MouseEvent& event);
+    virtual void mouseEnter (const MouseEvent& event) override;
 
     /** Called when the mouse moves out of a component.
 
@@ -1485,7 +1484,7 @@ public:
                       the source component in which it occurred
         @see mouseEnter, mouseDrag, mouseMove, contains
     */
-    virtual void mouseExit (const MouseEvent& event);
+    virtual void mouseExit (const MouseEvent& event) override;
 
     /** Called when a mouse button is pressed.
 
@@ -1500,7 +1499,7 @@ public:
                       the source component in which it occurred
         @see mouseUp, mouseDrag, mouseDoubleClick, contains
     */
-    virtual void mouseDown (const MouseEvent& event);
+    virtual void mouseDown (const MouseEvent& event) override;
 
     /** Called when the mouse is moved while a button is held down.
 
@@ -1512,7 +1511,7 @@ public:
                       the source component in which it occurred
         @see mouseDown, mouseUp, mouseMove, contains, setDragRepeatInterval
     */
-    virtual void mouseDrag (const MouseEvent& event);
+    virtual void mouseDrag (const MouseEvent& event) override;
 
     /** Called when a mouse button is released.
 
@@ -1527,7 +1526,7 @@ public:
                       the source component in which it occurred
         @see mouseDown, mouseDrag, mouseDoubleClick, contains
     */
-    virtual void mouseUp (const MouseEvent& event);
+    virtual void mouseUp (const MouseEvent& event) override;
 
     /** Called when a mouse button has been double-clicked on a component.
 
@@ -1539,7 +1538,7 @@ public:
                       the source component in which it occurred
         @see mouseDown, mouseUp
     */
-    virtual void mouseDoubleClick (const MouseEvent& event);
+    virtual void mouseDoubleClick (const MouseEvent& event) override;
 
     /** Called when the mouse-wheel is moved.
 
@@ -1557,7 +1556,7 @@ public:
         @param wheel   details about the mouse wheel movement
     */
     virtual void mouseWheelMove (const MouseEvent& event,
-                                 const MouseWheelDetails& wheel);
+                                 const MouseWheelDetails& wheel) override;
 
     /** Called when a pinch-to-zoom mouse-gesture is used.
 
@@ -2215,12 +2214,10 @@ public:
     CachedComponentImage* getCachedComponentImage() const noexcept  { return cachedImage; }
 
     //==============================================================================
-   #ifndef DOXYGEN
     // These methods are deprecated - use localPointToGlobal, getLocalPoint, getLocalPoint, etc instead.
     JUCE_DEPRECATED (Point<int> relativePositionToGlobal (Point<int>) const);
     JUCE_DEPRECATED (Point<int> globalPositionToRelative (Point<int>) const);
     JUCE_DEPRECATED (Point<int> relativePositionToOtherComponent (const Component*, Point<int>) const);
-   #endif
 
 private:
     //==============================================================================
@@ -2348,4 +2345,4 @@ protected:
 };
 
 
-#endif   // __JUCE_COMPONENT_JUCEHEADER__
+#endif   // JUCE_COMPONENT_H_INCLUDED

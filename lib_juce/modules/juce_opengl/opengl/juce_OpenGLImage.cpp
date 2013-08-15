@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -26,8 +25,8 @@
 class OpenGLFrameBufferImage   : public ImagePixelData
 {
 public:
-    OpenGLFrameBufferImage (OpenGLContext& context_, int width, int height)
-        : ImagePixelData (Image::ARGB, width, height),
+    OpenGLFrameBufferImage (OpenGLContext& context_, int w, int h)
+        : ImagePixelData (Image::ARGB, w, h),
           context (context_),
           pixelStride (4),
           lineStride (width * pixelStride)
@@ -39,14 +38,14 @@ public:
         return frameBuffer.initialise (context, width, height);
     }
 
-    LowLevelGraphicsContext* createLowLevelContext()
+    LowLevelGraphicsContext* createLowLevelContext() override
     {
         return createOpenGLGraphicsContext (context, frameBuffer);
     }
 
-    ImageType* createType() const     { return new OpenGLImageType(); }
+    ImageType* createType() const override     { return new OpenGLImageType(); }
 
-    ImagePixelData* clone()
+    ImagePixelData* clone() override
     {
         OpenGLFrameBufferImage* im = new OpenGLFrameBufferImage (context, width, height);
         im->incReferenceCount();
@@ -61,7 +60,7 @@ public:
         return im;
     }
 
-    void initialiseBitmapData (Image::BitmapData& bitmapData, int x, int y, Image::BitmapData::ReadWriteMode mode)
+    void initialiseBitmapData (Image::BitmapData& bitmapData, int x, int y, Image::BitmapData::ReadWriteMode mode) override
     {
         bitmapData.pixelFormat = pixelFormat;
         bitmapData.lineStride  = lineStride;
@@ -156,7 +155,9 @@ private:
         {
             DataReleaser* r = new DataReleaser (frameBuffer, x, y, bitmapData.width, bitmapData.height);
             bitmapData.dataReleaser = r;
-            bitmapData.data = (uint8*) (r->data + (x + y * bitmapData.width));
+
+            bitmapData.data = (uint8*) r->data.getData();
+            bitmapData.lineStride = (bitmapData.width * bitmapData.pixelStride + 3) & ~3;
 
             ReaderType::read (frameBuffer, bitmapData, x, y);
         }

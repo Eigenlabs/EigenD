@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -407,7 +406,7 @@ public:
 
             outParameterInfo.minValue = 0.0f;
             outParameterInfo.maxValue = 1.0f;
-            outParameterInfo.defaultValue = 0.0f;
+            outParameterInfo.defaultValue = juceFilter->getParameterDefaultValue (index);
             outParameterInfo.unit = kAudioUnitParameterUnit_Generic;
 
             return noErr;
@@ -925,7 +924,7 @@ public:
         return noErr;
     }
 
-    void componentMovedOrResized (Component& component, bool /*wasMoved*/, bool /*wasResized*/)
+    void componentMovedOrResized (Component& component, bool /*wasMoved*/, bool /*wasResized*/) override
     {
         NSView* view = (NSView*) component.getWindowHandle();
         NSRect r = [[view superview] frame];
@@ -933,7 +932,7 @@ public:
         r.size.width = component.getWidth();
         r.size.height = component.getHeight();
         [[view superview] setFrame: r];
-        [view setFrame: NSMakeRect (0, 0, component.getWidth(), component.getHeight())];
+        [view setFrame: makeNSRect (component.getLocalBounds())];
         [view setNeedsDisplay: YES];
     }
 
@@ -962,7 +961,7 @@ public:
         static NSView* createViewFor (AudioProcessor* filter, JuceAU* au, AudioProcessorEditor* const editor)
         {
             EditorCompHolder* editorCompHolder = new EditorCompHolder (editor);
-            NSRect r = NSMakeRect (0, 0, editorCompHolder->getWidth(), editorCompHolder->getHeight());
+            NSRect r = makeNSRect (editorCompHolder->getLocalBounds());
 
             static JuceUIViewClass cls;
             NSView* view = [[cls.createInstance() initWithFrame: r] autorelease];
@@ -985,7 +984,7 @@ public:
             return view;
         }
 
-        void childBoundsChanged (Component*)
+        void childBoundsChanged (Component*) override
         {
             if (Component* editor = getChildComponent(0))
             {
@@ -1000,12 +999,12 @@ public:
                 r.size.width = editor->getWidth();
                 r.size.height = editor->getHeight();
                 [[view superview] setFrame: r];
-                [view setFrame: NSMakeRect (0, 0, editor->getWidth(), editor->getHeight())];
+                [view setFrame: makeNSRect (editor->getLocalBounds())];
                 [view setNeedsDisplay: YES];
             }
         }
 
-        bool keyPressed (const KeyPress&)
+        bool keyPressed (const KeyPress&) override
         {
             if (PluginHostType().isAbletonLive())
             {
@@ -1355,15 +1354,15 @@ private:
             [pluginWindow orderFront: nil];
         }
 
-        void resized()
+        void resized() override
         {
             if (Component* const child = getChildComponent (0))
                 child->setBounds (getLocalBounds());
         }
 
-        void paint (Graphics&) {}
+        void paint (Graphics&) override {}
 
-        void childBoundsChanged (Component*)
+        void childBoundsChanged (Component*) override
         {
             if (! recursive)
             {
@@ -1386,7 +1385,7 @@ private:
             }
         }
 
-        bool keyPressed (const KeyPress& kp)
+        bool keyPressed (const KeyPress& kp) override
         {
             if (! kp.getModifiers().isCommandDown())
             {

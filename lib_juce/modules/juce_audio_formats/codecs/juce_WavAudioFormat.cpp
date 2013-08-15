@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -768,7 +767,7 @@ public:
 
     //==============================================================================
     bool readSamples (int** destSamples, int numDestChannels, int startOffsetInDestBuffer,
-                      int64 startSampleInFile, int numSamples)
+                      int64 startSampleInFile, int numSamples) override
     {
         clearSamplesBeyondAvailableLength (destSamples, numDestChannels, startOffsetInDestBuffer,
                                            startSampleInFile, numSamples, lengthInSamples);
@@ -871,7 +870,7 @@ public:
     }
 
     //==============================================================================
-    bool write (const int** data, int numSamples)
+    bool write (const int** data, int numSamples) override
     {
         jassert (data != nullptr && *data != nullptr); // the input must contain at least one channel!
 
@@ -943,7 +942,7 @@ private:
         const size_t bytesPerFrame = numChannels * bitsPerSample / 8;
         uint64 audioDataSize = bytesPerFrame * lengthInSamples;
 
-        const bool isRF64 = (bytesWritten >= literal64bit (0x100000000));
+        const bool isRF64 = (bytesWritten >= 0x100000000LL);
         const bool isWaveFmtEx = isRF64 || (numChannels > 2);
 
         int64 riffChunkSize = (int64) (4 /* 'RIFF' */ + 8 + 40 /* WAVEFORMATEX */
@@ -963,13 +962,29 @@ private:
 
         if (! isRF64)
         {
+           #if ! JUCE_WAV_DO_NOT_PAD_HEADER_SIZE
+            /* NB: This junk chunk is added for padding, so that the header is a fixed size
+               regardless of whether it's RF64 or not. That way, we can begin recording a file,
+               and when it's finished, can go back and write either a RIFF or RF64 header,
+               depending on whether more than 2^32 samples were written.
+
+               The JUCE_WAV_DO_NOT_PAD_HEADER_SIZE macro allows you to disable this feature in case
+               you need to create files for crappy WAV players with bugs that stop them skipping chunks
+               which they don't recognise. But DO NOT USE THIS option unless you really have no choice,
+               because it means that if you write more than 2^32 samples to the file, you'll corrupt it.
+            */
             output->writeInt (chunkName ("JUNK"));
             output->writeInt (28 + (isWaveFmtEx? 0 : 24));
             output->writeRepeatedByte (0, 28 /* ds64 */ + (isWaveFmtEx? 0 : 24));
+           #endif
         }
         else
         {
-            // write ds64 chunk
+           #if ! JUCE_WAV_DO_NOT_PAD_HEADER_SIZE
+            // If you disable padding, then you MUST NOT write more than 2^32 samples to a file.
+            jassertfalse;
+           #endif
+
             output->writeInt (chunkName ("ds64"));
             output->writeInt (28);  // chunk size for uncompressed data (no table)
             output->writeInt64 (riffChunkSize);
@@ -1067,7 +1082,7 @@ public:
     }
 
     bool readSamples (int** destSamples, int numDestChannels, int startOffsetInDestBuffer,
-                      int64 startSampleInFile, int numSamples)
+                      int64 startSampleInFile, int numSamples) override
     {
         clearSamplesBeyondAvailableLength (destSamples, numDestChannels, startOffsetInDestBuffer,
                                            startSampleInFile, numSamples, lengthInSamples);
@@ -1085,7 +1100,7 @@ public:
     }
 
     void readMaxLevels (int64 startSampleInFile, int64 numSamples,
-                        float& min0, float& max0, float& min1, float& max1)
+                        float& min0, float& max0, float& min1, float& max1) override
     {
         if (numSamples <= 0)
         {

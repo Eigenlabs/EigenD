@@ -1,30 +1,29 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
 
-#ifndef __JUCE_OPENGLCONTEXT_JUCEHEADER__
-#define __JUCE_OPENGLCONTEXT_JUCEHEADER__
+#ifndef JUCE_OPENGLCONTEXT_H_INCLUDED
+#define JUCE_OPENGLCONTEXT_H_INCLUDED
 
 #include "juce_OpenGLPixelFormat.h"
 #include "../native/juce_OpenGLExtensions.h"
@@ -92,6 +91,11 @@ public:
         Note: This must be called BEFORE attaching your context to a target component!
     */
     void setNativeSharedContext (void* nativeContextToShareWith) noexcept;
+
+    /** Enables multisampling on platforms where this is implemented.
+        If enabling this, you must call this method before attachTo().
+    */
+    void setMultisamplingEnabled (bool) noexcept;
 
     //==============================================================================
     /** Attaches the context to a target component.
@@ -243,7 +247,7 @@ private:
     ScopedPointer<Attachment> attachment;
     OpenGLPixelFormat pixelFormat;
     void* contextToShareWith;
-    bool renderComponents;
+    bool renderComponents, useMultisampling;
 
     CachedImage* getCachedImage() const noexcept;
 
@@ -251,4 +255,4 @@ private:
 };
 
 
-#endif   // __JUCE_OPENGLCONTEXT_JUCEHEADER__
+#endif   // JUCE_OPENGLCONTEXT_H_INCLUDED

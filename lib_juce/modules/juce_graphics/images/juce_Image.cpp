@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -68,12 +67,12 @@ public:
         imageData.allocate ((size_t) (lineStride * jmax (1, h)), clearImage);
     }
 
-    LowLevelGraphicsContext* createLowLevelContext()
+    LowLevelGraphicsContext* createLowLevelContext() override
     {
         return new LowLevelGraphicsSoftwareRenderer (Image (this));
     }
 
-    void initialiseBitmapData (Image::BitmapData& bitmap, int x, int y, Image::BitmapData::ReadWriteMode)
+    void initialiseBitmapData (Image::BitmapData& bitmap, int x, int y, Image::BitmapData::ReadWriteMode) override
     {
         bitmap.data = imageData + x * pixelStride + y * lineStride;
         bitmap.pixelFormat = pixelFormat;
@@ -81,14 +80,14 @@ public:
         bitmap.pixelStride = pixelStride;
     }
 
-    ImagePixelData* clone()
+    ImagePixelData* clone() override
     {
         SoftwarePixelData* s = new SoftwarePixelData (pixelFormat, width, height, false);
         memcpy (s->imageData, imageData, (size_t) (lineStride * height));
         return s;
     }
 
-    ImageType* createType() const    { return new SoftwareImageType(); }
+    ImageType* createType() const override    { return new SoftwareImageType(); }
 
 private:
     HeapBlock<uint8> imageData;
@@ -136,7 +135,7 @@ public:
     {
     }
 
-    LowLevelGraphicsContext* createLowLevelContext()
+    LowLevelGraphicsContext* createLowLevelContext() override
     {
         LowLevelGraphicsContext* g = image->createLowLevelContext();
         g->clipToRectangle (area);
@@ -144,12 +143,12 @@ public:
         return g;
     }
 
-    void initialiseBitmapData (Image::BitmapData& bitmap, int x, int y, Image::BitmapData::ReadWriteMode mode)
+    void initialiseBitmapData (Image::BitmapData& bitmap, int x, int y, Image::BitmapData::ReadWriteMode mode) override
     {
         image->initialiseBitmapData (bitmap, x + area.getX(), y + area.getY(), mode);
     }
 
-    ImagePixelData* clone()
+    ImagePixelData* clone() override
     {
         jassert (getReferenceCount() > 0); // (This method can't be used on an unowned pointer, as it will end up self-deleting)
         const ScopedPointer<ImageType> type (image->createType());
@@ -165,7 +164,7 @@ public:
         return newImage.getPixelData();
     }
 
-    ImageType* createType() const    { return image->createType(); }
+    ImageType* createType() const override    { return image->createType(); }
 
 private:
     const ImagePixelData::Ptr image;
@@ -523,7 +522,7 @@ void Image::desaturate()
     }
 }
 
-void Image::createSolidAreaMask (RectangleList& result, const float alphaThreshold) const
+void Image::createSolidAreaMask (RectangleList<int>& result, const float alphaThreshold) const
 {
     if (hasAlphaChannel())
     {

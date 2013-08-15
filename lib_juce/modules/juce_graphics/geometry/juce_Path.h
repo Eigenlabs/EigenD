@@ -1,30 +1,29 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
 
-#ifndef __JUCE_PATH_JUCEHEADER__
-#define __JUCE_PATH_JUCEHEADER__
+#ifndef JUCE_PATH_H_INCLUDED
+#define JUCE_PATH_H_INCLUDED
 
 #include "juce_AffineTransform.h"
 #include "juce_Line.h"
@@ -191,7 +190,7 @@ public:
 
     /** Begins a new subpath with a given starting position.
 
-        This will move the path's current position to the co-ordinates passed in and
+        This will move the path's current position to the coordinates passed in and
         make it ready to draw lines or curves starting from this position.
 
         After adding whatever lines and curves are needed, you can either
@@ -204,7 +203,7 @@ public:
 
     /** Begins a new subpath with a given starting position.
 
-        This will move the path's current position to the co-ordinates passed in and
+        This will move the path's current position to the coordinates passed in and
         make it ready to draw lines or curves starting from this position.
 
         After adding whatever lines and curves are needed, you can either
@@ -613,7 +612,25 @@ public:
     */
     AffineTransform getTransformToScaleToFit (float x, float y, float width, float height,
                                               bool preserveProportions,
-                                              const Justification& justificationType = Justification::centred) const;
+                                              Justification justificationType = Justification::centred) const;
+
+    /** Returns a transform that can be used to rescale the path to fit into a given space.
+
+        @param area                 the rectangle to fit the path inside
+        @param preserveProportions  if true, it will fit the path into the space without altering its
+                                    horizontal/vertical scale ratio; if false, it will distort the
+                                    path to fill the specified ratio both horizontally and vertically
+        @param justificationType    if the proportions are preseved, the resultant path may be smaller
+                                    than the available rectangle, so this describes how it should be
+                                    positioned within the space.
+        @returns                    an appropriate transformation
+
+        @see applyTransform, scaleToFit
+
+    */
+    AffineTransform getTransformToScaleToFit (const Rectangle<float>& area,
+                                              bool preserveProportions,
+                                              Justification justificationType = Justification::centred) const;
 
     /** Creates a version of this path where all sharp corners have been replaced by curves.
 
@@ -765,4 +782,4 @@ private:
     JUCE_LEAK_DETECTOR (Path)
 };
 
-#endif   // __JUCE_PATH_JUCEHEADER__
+#endif   // JUCE_PATH_H_INCLUDED

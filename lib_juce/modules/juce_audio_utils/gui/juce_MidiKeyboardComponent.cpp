@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -34,7 +33,7 @@ public:
         setOpaque (true);
     }
 
-    void clicked()
+    void clicked() override
     {
         int note = owner.getLowestVisibleKey();
 
@@ -46,7 +45,7 @@ public:
         owner.setLowestVisibleKey (note * 12);
     }
 
-    void paintButton (Graphics& g, bool isMouseOverButton, bool isButtonDown)
+    void paintButton (Graphics& g, bool isMouseOverButton, bool isButtonDown) override
     {
         owner.drawUpDownButton (g, getWidth(), getHeight(),
                                 isMouseOverButton, isButtonDown,
@@ -61,13 +60,13 @@ private:
 };
 
 //==============================================================================
-MidiKeyboardComponent::MidiKeyboardComponent (MidiKeyboardState& state_,
-                                              const Orientation orientation_)
-    : state (state_),
+MidiKeyboardComponent::MidiKeyboardComponent (MidiKeyboardState& s,
+                                              const Orientation o)
+    : state (s),
       xOffset (0),
       blackNoteLength (1),
       keyWidth (16.0f),
-      orientation (orientation_),
+      orientation (o),
       midiChannel (1),
       midiInChannelMask (0xffff),
       velocity (1.0f),
@@ -540,8 +539,8 @@ String MidiKeyboardComponent::getWhiteNoteText (const int midiNoteNumber)
 }
 
 void MidiKeyboardComponent::drawUpDownButton (Graphics& g, int w, int h,
-                                              const bool isMouseOver_,
-                                              const bool isButtonDown,
+                                              const bool mouseOver,
+                                              const bool buttonDown,
                                               const bool movesOctavesUp)
 {
     g.fillAll (findColour (upDownButtonBackgroundColourId));
@@ -561,7 +560,7 @@ void MidiKeyboardComponent::drawUpDownButton (Graphics& g, int w, int h,
     path.applyTransform (AffineTransform::rotation (float_Pi * 2.0f * angle, 0.5f, 0.5f));
 
     g.setColour (findColour (upDownButtonArrowColourId)
-                  .withAlpha (isButtonDown ? 1.0f : (isMouseOver_ ? 0.6f : 0.4f)));
+                  .withAlpha (buttonDown ? 1.0f : (mouseOver ? 0.6f : 0.4f)));
 
     g.fillPath (path, path.getTransformToScaleToFit (1.0f, 1.0f, w - 2.0f, h - 2.0f, true));
 }
@@ -755,14 +754,9 @@ void MidiKeyboardComponent::mouseDrag (const MouseEvent& e)
     updateNoteUnderMouse (e, true);
 }
 
-bool MidiKeyboardComponent::mouseDownOnKey (int /*midiNoteNumber*/, const MouseEvent&)
-{
-    return true;
-}
-
-void MidiKeyboardComponent::mouseDraggedToKey (int /*midiNoteNumber*/, const MouseEvent&)
-{
-}
+bool MidiKeyboardComponent::mouseDownOnKey    (int, const MouseEvent&)  { return true; }
+void MidiKeyboardComponent::mouseDraggedToKey (int, const MouseEvent&)  {}
+void MidiKeyboardComponent::mouseUpOnKey      (int, const MouseEvent&)  {}
 
 void MidiKeyboardComponent::mouseDown (const MouseEvent& e)
 {
@@ -780,6 +774,11 @@ void MidiKeyboardComponent::mouseUp (const MouseEvent& e)
 {
     updateNoteUnderMouse (e, false);
     shouldCheckMousePos = false;
+
+    float mousePositionVelocity;
+    const int note = xyToNote (e.getPosition(), mousePositionVelocity);
+    if (note >= 0)
+        mouseUpOnKey (note, e);
 }
 
 void MidiKeyboardComponent::mouseEnter (const MouseEvent& e)

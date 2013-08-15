@@ -1,30 +1,29 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
 
-#ifndef __JUCE_POPUPMENU_JUCEHEADER__
-#define __JUCE_POPUPMENU_JUCEHEADER__
+#ifndef JUCE_POPUPMENU_H_INCLUDED
+#define JUCE_POPUPMENU_H_INCLUDED
 
 
 //==============================================================================
@@ -153,13 +152,11 @@ public:
 
     /** Appends a custom menu item that can't be used to trigger a result.
 
-        This will add a user-defined component to use as a menu item. Unlike the
-        addCustomItem() method that takes a PopupMenu::CustomComponent, this version
-        can't trigger a result from it, so doesn't take a menu ID. It also doesn't
-        delete the component when it's finished, so it's the caller's responsibility
-        to manage the component that is passed-in.
+        This will add a user-defined component to use as a menu item.
+        It's the caller's responsibility to delete the component that is passed-in
+        when it's no longer needed after the menu has been hidden.
 
-        if triggerMenuItemAutomaticallyWhenClicked is true, the menu itself will handle
+        If triggerMenuItemAutomaticallyWhenClicked is true, the menu itself will handle
         detection of a mouse-click on your component, and use that to trigger the
         menu ID specified in itemResultID. If this is false, the menu item can't
         be triggered, so itemResultID is not used.
@@ -290,7 +287,7 @@ public:
     /** Displays the menu at a specific location.
 
         This is the same as show(), but uses a specific location (in global screen
-        co-ordinates) rather than the current mouse position.
+        coordinates) rather than the current mouse position.
 
         The screenAreaToAttachTo parameter indicates a screen area to which the menu
         will be adjacent. Depending on where this is, the menu will decide which edge to
@@ -508,4 +505,4 @@ private:
     JUCE_LEAK_DETECTOR (PopupMenu)
 };
 
-#endif   // __JUCE_POPUPMENU_JUCEHEADER__
+#endif   // JUCE_POPUPMENU_H_INCLUDED

@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -26,9 +25,9 @@
 const int juce_edgeTableDefaultEdgesPerLine = 32;
 
 //==============================================================================
-EdgeTable::EdgeTable (const Rectangle<int>& bounds_,
+EdgeTable::EdgeTable (const Rectangle<int>& area,
                       const Path& path, const AffineTransform& transform)
-   : bounds (bounds_),
+   : bounds (area),
      maxEdgesPerLine (juce_edgeTableDefaultEdgesPerLine),
      lineStrideElements ((juce_edgeTableDefaultEdgesPerLine << 1) + 1),
      needToCheckEmptinesss (true)
@@ -125,7 +124,7 @@ EdgeTable::EdgeTable (const Rectangle<int>& rectangleToAdd)
     }
 }
 
-EdgeTable::EdgeTable (const RectangleList& rectanglesToAdd)
+EdgeTable::EdgeTable (const RectangleList<int>& rectanglesToAdd)
    : bounds (rectanglesToAdd.getBounds()),
      maxEdgesPerLine (juce_edgeTableDefaultEdgesPerLine),
      lineStrideElements ((juce_edgeTableDefaultEdgesPerLine << 1) + 1),
@@ -418,7 +417,7 @@ void EdgeTable::intersectWithEdgeTableLine (const int y, const int* otherLine)
     if (dest[0] == 0)
         return;
 
-    int otherNumPoints = *otherLine;
+    const int otherNumPoints = *otherLine;
     if (otherNumPoints == 0)
     {
         *dest = 0;
@@ -496,7 +495,7 @@ void EdgeTable::intersectWithEdgeTableLine (const int y, const int* otherLine)
                 if (destTotal >= maxEdgesPerLine)
                 {
                     dest[0] = destTotal;
-                    remapTableForNumEdges (maxEdgesPerLine + juce_edgeTableDefaultEdgesPerLine);
+                    remapTableForNumEdges (jmax (256, destTotal * 2));
                     dest = table + lineStrideElements * y;
                 }
 
@@ -513,7 +512,7 @@ void EdgeTable::intersectWithEdgeTableLine (const int y, const int* otherLine)
         if (destTotal >= maxEdgesPerLine)
         {
             dest[0] = destTotal;
-            remapTableForNumEdges (maxEdgesPerLine + juce_edgeTableDefaultEdgesPerLine);
+            remapTableForNumEdges (jmax (256, destTotal * 2));
             dest = table + lineStrideElements * y;
         }
 
@@ -523,17 +522,6 @@ void EdgeTable::intersectWithEdgeTableLine (const int y, const int* otherLine)
     }
 
     dest[0] = destTotal;
-
-#if JUCE_DEBUG
-    int last = std::numeric_limits<int>::min();
-    for (int i = 0; i < dest[0]; ++i)
-    {
-        jassert (dest[i * 2 + 1] > last);
-        last = dest[i * 2 + 1];
-    }
-
-    jassert (dest [dest[0] * 2] == 0);
-#endif
 }
 
 void EdgeTable::clipEdgeTableLineToRange (int* dest, const int x1, const int x2) noexcept
@@ -657,13 +645,12 @@ void EdgeTable::clipToEdgeTable (const EdgeTable& other)
         if (clipped.getRight() < bounds.getRight())
             bounds.setRight (clipped.getRight());
 
-        int i = 0;
-        for (i = top; --i >= 0;)
+        for (int i = 0; i < top; ++i)
             table [lineStrideElements * i] = 0;
 
         const int* otherLine = other.table + other.lineStrideElements * (clipped.getY() - other.bounds.getY());
 
-        for (i = top; i < bottom; ++i)
+        for (int i = top; i < bottom; ++i)
         {
             intersectWithEdgeTableLine (i, otherLine);
             otherLine += other.lineStrideElements;

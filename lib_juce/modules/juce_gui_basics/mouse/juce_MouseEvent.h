@@ -1,30 +1,29 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
 
-#ifndef __JUCE_MOUSEEVENT_JUCEHEADER__
-#define __JUCE_MOUSEEVENT_JUCEHEADER__
+#ifndef JUCE_MOUSEEVENT_H_INCLUDED
+#define JUCE_MOUSEEVENT_H_INCLUDED
 
 class Component;
 class MouseInputSource;
@@ -134,25 +133,25 @@ public:
     MouseInputSource& source;
 
     //==============================================================================
-    /** Returns the x co-ordinate of the last place that a mouse was pressed.
+    /** Returns the x coordinate of the last place that a mouse was pressed.
 
-        The co-ordinate is relative to the component specified in MouseEvent::component.
+        The coordinate is relative to the component specified in MouseEvent::component.
 
         @see getDistanceFromDragStart, getDistanceFromDragStartX, mouseWasClicked
     */
     int getMouseDownX() const noexcept;
 
-    /** Returns the y co-ordinate of the last place that a mouse was pressed.
+    /** Returns the y coordinate of the last place that a mouse was pressed.
 
-        The co-ordinate is relative to the component specified in MouseEvent::component.
+        The coordinate is relative to the component specified in MouseEvent::component.
 
         @see getDistanceFromDragStart, getDistanceFromDragStartX, mouseWasClicked
     */
     int getMouseDownY() const noexcept;
 
-    /** Returns the co-ordinates of the last place that a mouse was pressed.
+    /** Returns the coordinates of the last place that a mouse was pressed.
 
-        The co-ordinates are relative to the component specified in MouseEvent::component.
+        The coordinates are relative to the component specified in MouseEvent::component.
 
         @see getDistanceFromDragStart, getDistanceFromDragStartX, mouseWasClicked
     */
@@ -229,50 +228,38 @@ public:
     */
     Point<int> getPosition() const noexcept;
 
-    /** Returns the mouse x position of this event, in global screen co-ordinates.
-
-        The co-ordinates are relative to the top-left of the main monitor.
-
+    /** Returns the mouse x position of this event, in global screen coordinates.
+        The coordinates are relative to the top-left of the main monitor.
         @see getScreenPosition
     */
     int getScreenX() const;
 
-    /** Returns the mouse y position of this event, in global screen co-ordinates.
-
-        The co-ordinates are relative to the top-left of the main monitor.
-
+    /** Returns the mouse y position of this event, in global screen coordinates.
+        The coordinates are relative to the top-left of the main monitor.
         @see getScreenPosition
     */
     int getScreenY() const;
 
-    /** Returns the mouse position of this event, in global screen co-ordinates.
-
-        The co-ordinates are relative to the top-left of the main monitor.
-
+    /** Returns the mouse position of this event, in global screen coordinates.
+        The coordinates are relative to the top-left of the main monitor.
         @see getMouseDownScreenPosition
     */
     Point<int> getScreenPosition() const;
 
-    /** Returns the x co-ordinate at which the mouse button was last pressed.
-
-        The co-ordinates are relative to the top-left of the main monitor.
-
+    /** Returns the x coordinate at which the mouse button was last pressed.
+        The coordinates are relative to the top-left of the main monitor.
         @see getMouseDownScreenPosition
     */
     int getMouseDownScreenX() const;
 
-    /** Returns the y co-ordinate at which the mouse button was last pressed.
-
-        The co-ordinates are relative to the top-left of the main monitor.
-
+    /** Returns the y coordinate at which the mouse button was last pressed.
+        The coordinates are relative to the top-left of the main monitor.
         @see getMouseDownScreenPosition
     */
     int getMouseDownScreenY() const;
 
-    /** Returns the co-ordinates at which the mouse button was last pressed.
-
-        The co-ordinates are relative to the top-left of the main monitor.
-
+    /** Returns the coordinates at which the mouse button was last pressed.
+        The coordinates are relative to the top-left of the main monitor.
         @see getScreenPosition
     */
     Point<int> getMouseDownScreenPosition() const;
@@ -358,4 +345,4 @@ struct MouseWheelDetails
 };
 
 
-#endif   // __JUCE_MOUSEEVENT_JUCEHEADER__
+#endif   // JUCE_MOUSEEVENT_H_INCLUDED
