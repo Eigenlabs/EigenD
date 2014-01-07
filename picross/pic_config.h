@@ -94,4 +94,19 @@
 
 #endif
 
+#ifdef PI_MACOSX
+//as we use -Werror downgrade certain warnings, and ignore ones which are very frequent
+#pragma GCC diagnostic ignored "-Wmismatched-tags"
+#pragma GCC diagnostic warning "-Wbool-conversion"
+#pragma GCC diagnostic warning "-Wtautological-compare"
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#pragma GCC diagnostic warning "-Wnon-literal-null-conversion"
+#pragma GCC diagnostic ignored "-Wself-assign"
+#pragma GCC diagnostic warning "-Wself-assign-field"
+#pragma GCC diagnostic ignored "-Wdangling-else"
+#pragma GCC diagnostic warning "-Wsizeof-pointer-memaccess"
+#pragma GCC diagnostic warning "-Wsizeof-array-argument"
+ 
+#endif
+
 #endif

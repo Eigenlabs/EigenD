@@ -96,11 +96,11 @@ namespace pic
         private:
             pic_atomic_t count_;
     };
-};
 
 inline void pic_incref(pic::counted_t *c) { c->incref(); }
 inline void pic_decref(pic::counted_t *c) { c->decref(); }
 inline void pic_incref(pic::atomic_counted_t *c) { c->incref(); }
 inline void pic_decref(pic::atomic_counted_t *c) { c->decref(); }
+};
 
 #endif

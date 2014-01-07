@@ -19,6 +19,7 @@
 */
 
 #include <piw/piw_dumper.h>
+using namespace piw;
 
 static std::string type2str(unsigned char type)
 {
