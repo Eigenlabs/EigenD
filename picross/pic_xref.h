@@ -50,9 +50,9 @@ namespace pic
             template <class X> xref_t(const xref_t<X> &r): _ptr(0), _shared(0) { assign(r._ptr,r._shared); }
             template <class X> xref_t &operator=(const xref_t<X> &r) { assign(r._ptr,r._shared); return *this; }
             template <class X> bool operator==(const xref_t<X> &r) const { return r._ptr==_ptr; }
-            template <class X> bool operator==(const X *r) const { return r->_ptr==_ptr; }
+            template <class X> bool operator==(const X *r) const { return r==_ptr; }
             template <class X> bool operator<(const xref_t<X> &r) const { return _ptr<r._ptr; }
-            template <class X> bool operator<(const X *r) const { return _ptr<r->_ptr; }
+            template <class X> bool operator<(const X *r) const { return _ptr<r; }
 
             void clear() { assign(0,0); }
 
