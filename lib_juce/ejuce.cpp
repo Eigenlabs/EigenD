@@ -91,7 +91,7 @@ pia::scaffold_gui_t *ejuce::Application::scaffold()
     return messages_->scaffold_;
 }
 
-void ejuce::Application::initialise (const juce::String& commandLine,const pic::f_string_t &l,bool ck,bool rt)
+void ejuce::Application::eInitialise (const juce::String& commandLine,const pic::f_string_t &l,bool ck,bool rt)
 {
     messages_ = new impl_t(this,l,ck,rt);
 

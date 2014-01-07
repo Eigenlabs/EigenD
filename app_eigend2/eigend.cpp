@@ -230,14 +230,14 @@ class EigenLogger
         pic::f_string_t logger_;
 };
 
-class EigenDialog: public DocumentWindow, public KeyListener, public MessageListener
+class EigenDialog: public DocumentWindow, public MessageListener
 {
     public:
         EigenDialog(EigenMainWindow *main, Component *content, int, int, int, int, int, int, Component *position = 0, int buttons = DocumentWindow::closeButton|DocumentWindow::minimiseButton);
         void closeButtonPressed();
         ~EigenDialog();
-        bool keyPressed (const KeyPress& key, Component* originatingComponent);
-        bool keyStateChanged (bool isKeyDown, Component* originatingComponent);
+        bool keyPressed (const KeyPress& key);
+        bool keyStateChanged (bool isKeyDown);
         void handleMessage(const Message &m);
 
     private:
@@ -1873,8 +1873,6 @@ EigenDialog::EigenDialog(EigenMainWindow *main, Component *content, int w, int h
 
     setVisible (true);
     toFront(true);
-    addKeyListener(this);
-
 }
 
 void EigenDialog::handleMessage (const Message &m)
@@ -1895,7 +1893,7 @@ void EigenDialog::handleMessage (const Message &m)
     }
 }
 
-bool EigenDialog::keyPressed (const KeyPress& key, Component* originatingComponent)
+bool EigenDialog::keyPressed (const KeyPress& key)
 {
     if(key.getKeyCode() == KeyPress::escapeKey)
     {
@@ -1916,7 +1914,7 @@ bool EigenDialog::keyPressed (const KeyPress& key, Component* originatingCompone
     return false;
 }
 
-bool EigenDialog::keyStateChanged (bool isKeyDown, Component* originatingComponent)
+bool EigenDialog::keyStateChanged (bool isKeyDown)
 {
     return false;
 }
@@ -1963,7 +1961,7 @@ void EigenD::initialise (const String& commandLine)
     pic::f_string_t primary_logger = pic::f_string_t::method(this,&EigenD::log);
     pic::f_string_t eigend_logger = EigenLogger::create("eigend",primary_logger);
 
-    ejuce::Application::initialise(commandLine,eigend_logger,false,true);
+    ejuce::Application::eInitialise(commandLine,eigend_logger,false,true);
     LookAndFeel::setDefaultLookAndFeel(new ejuce::EJuceLookandFeel);
     ApplicationCommandManager *manager = new ApplicationCommandManager();
 

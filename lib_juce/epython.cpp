@@ -121,9 +121,9 @@ bool epython::PythonInterface::init_python(const char *module, const char *metho
     error = false;
 err:
 
-    if(o_module) Py_DECREF(o_module);
-    if(o_func) Py_DECREF(o_func);
-    if(o_args) Py_DECREF(o_args);
+    if(o_module) { Py_DECREF(o_module); }
+    if(o_func) { Py_DECREF(o_func); }
+    if(o_args) { Py_DECREF(o_args); }
 
 
     if(error)
@@ -154,9 +154,9 @@ void epython::PythonInterface::handle_error()
 
 err2:
 
-    if(o_output) Py_DECREF(o_output);
-    if(o_main_dict) Py_DECREF(o_main_dict);
-    if(o_main) Py_DECREF(o_main);
+    if(o_output) { Py_DECREF(o_output); }
+    if(o_main_dict) { Py_DECREF(o_main_dict); }
+    if(o_main) { Py_DECREF(o_main); }
 }
 
 void epython::PythonInterface::shutdown_python()
@@ -186,9 +186,9 @@ err:
     if(error)
         handle_error();
 
-    if(o_object) Py_DECREF(o_object);
-    if(o_func) Py_DECREF(o_func);
-    if(o_args) Py_DECREF(o_args);
+    if(o_object) { Py_DECREF(o_object); }
+    if(o_func) { Py_DECREF(o_func); }
+    if(o_args) { Py_DECREF(o_args); }
 
     thread_ = PyEval_SaveThread();
     return m;

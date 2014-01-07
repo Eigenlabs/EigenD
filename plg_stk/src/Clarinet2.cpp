@@ -630,7 +630,6 @@ void Clarinet2 :: reedClip(StkFloat g, StkFloat m, StkFloat h)
         if (kx2 > kclipx2)
         {
             // no clipping
-            kx2 = kx2;
         }
         else
         {

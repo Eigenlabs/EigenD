@@ -128,7 +128,7 @@ class Test: public ejuce::Application, virtual public pic::tracked_t
 
             pic::f_string_t test_logger = pic::f_string_t::method(this,&Test::log);
 
-            ejuce::Application::initialise(commandLine,test_logger,false,true);
+            ejuce::Application::eInitialise(commandLine,test_logger,false,true);
 
             context_ = scaffold()->context("main",pic::status_t(),test_logger,"eigend");
 

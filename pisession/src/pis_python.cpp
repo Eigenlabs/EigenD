@@ -127,13 +127,13 @@ namespace
 
             err:
 
-                if(spath) Py_DECREF(spath);
-                if(ppath) Py_DECREF(ppath);
-                if(bmodule) Py_DECREF(bmodule);
-                if(smodule) Py_DECREF(smodule);
-                if(bfunc) Py_DECREF(bfunc);
-                if(sfunc) Py_DECREF(sfunc);
-                if(bargs) Py_DECREF(bargs);
+                if(spath) { Py_DECREF(spath); }
+                if(ppath) { Py_DECREF(ppath); }
+                if(bmodule) { Py_DECREF(bmodule); }
+                if(smodule) { Py_DECREF(smodule); }
+                if(bfunc) { Py_DECREF(bfunc); }
+                if(sfunc) { Py_DECREF(sfunc); }
+                if(bargs) { Py_DECREF(bargs); }
 
                 PyErr_Print();
                 return false;
@@ -195,14 +195,14 @@ namespace
 
             err:
 
-                if(module) Py_DECREF(module);
-                if(func) Py_DECREF(func);
-                if(args) Py_DECREF(args);
-                if(env) Py_DECREF(env);
-                if(pyname) Py_DECREF(pyname);
-                if(python_) Py_DECREF(python_);
-                if(unload) Py_DECREF(unload);
-                if(fini) Py_DECREF(fini);
+                if(module) { Py_DECREF(module); }
+                if(func) { Py_DECREF(func); }
+                if(args) { Py_DECREF(args); }
+                if(env) { Py_DECREF(env); }
+                if(pyname) { Py_DECREF(pyname); }
+                if(python_) { Py_DECREF(python_); }
+                if(unload) { Py_DECREF(unload); }
+                if(fini) { Py_DECREF(fini); }
 
                 python_=0;
                 unload_=0;
