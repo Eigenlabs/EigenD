@@ -20,10 +20,13 @@
 
 #include <piw/piw_bundle.h>
 #include <piw/piw_clock.h>
+#include <piw/piw_data.h>
 #include <piw/piw_address.h>
 #include <piw/piw_tsd.h>
 #include <map>
 #include <sstream>
+
+using namespace piw;
 
 namespace
 {

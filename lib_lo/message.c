@@ -385,7 +385,7 @@ int lo_message_add_midi(lo_message m, uint8_t a[4])
     if (lo_message_add_typechar(m, LO_MIDI))
         return -1;
 
-    memcpy(nptr, a, sizeof(a));
+    memcpy(nptr, a, sizeof(uint8_t)*4);
     return 0;
 }
 

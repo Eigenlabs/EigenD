@@ -225,7 +225,7 @@ channeliser_driver_t *piw::channeliser_t::impl_t::claim(channeliser_input_t *own
     }
 
     pic::logmsg() << "no free voices";
-    return false;
+    return 0;
 }
 
 void piw::channeliser_t::impl_t::release(channeliser_voice_t *voice, const piw::data_t &channel)
@@ -532,19 +532,16 @@ void channeliser_voice_t::invalidate()
 {
     tracked_invalidate();
 
-    if(index_ >= 0)
+    root_->aggregator_.clear_output(1+index_);
+
+    pic::lckmap_t<piw::data_t,channeliser_relay_t *>::lcktype::iterator ci;
+
+    while((ci=children_.begin())!=children_.end())
     {
-        root_->aggregator_.clear_output(1+index_);
-
-        pic::lckmap_t<piw::data_t,channeliser_relay_t *>::lcktype::iterator ci;
-
-        while((ci=children_.begin())!=children_.end())
-        {
-            delete ci->second;
-        }
-
-        index_ = 0;
+        delete ci->second;
     }
+
+    index_ = 0;
 }
 
 void channeliser_voice_t::root_latency()
