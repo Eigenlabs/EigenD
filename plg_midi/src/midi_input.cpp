@@ -412,7 +412,7 @@ namespace
 
         unsigned current(unsigned cc)
         {
-            if(cc>=0 && cc<WIRES)
+            if(cc<WIRES)
             {
                 return wires_[cc]->current_;
             }
@@ -422,7 +422,7 @@ namespace
 
         void set_trim(unsigned cc, float min, float max, bool inv)
         {
-            if(cc>=0 && cc<WIRES)
+            if(cc<WIRES)
             {
                 wires_[cc]->min_=min;
                 wires_[cc]->max_=max;
@@ -482,7 +482,7 @@ namespace
             {
                 pcblob_t *blob = (pcblob_t *)d.as_blob();
 
-                if(blob->val >= 0 && blob->val < WIRES)
+                if(blob->val < WIRES)
                 {
                     wires_[blob->val]->sendprogramchange(blob->ch, d.time());
                 }

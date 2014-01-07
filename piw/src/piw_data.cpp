@@ -1252,19 +1252,19 @@ unsigned piw::data_base_t::as_tuplelen() const
     return c;
 }
 
-std::ostream &operator<<(std::ostream &o, const piw::data_base_t &d)
+std::ostream &piw::operator<<(std::ostream &o, const piw::data_base_t &d)
 {
     pie_print(d.wire_length(),d.wire_data(), pie::ostreamwriter, &o);
     return o;
 }
 
-std::ostream &operator<<(std::ostream &o, const piw::fullprinter_t<piw::data_t> &d)
+std::ostream &piw::operator<<(std::ostream &o, const piw::fullprinter_t<piw::data_t> &d)
 {
     pie_printfull(d.data_.wire_length(),d.data_.wire_data(), pie::ostreamwriter, &o);
     return o;
 }
 
-std::ostream &operator<<(std::ostream &o, const piw::fullprinter_t<piw::data_nb_t> &d)
+std::ostream &piw::operator<<(std::ostream &o, const piw::fullprinter_t<piw::data_nb_t> &d)
 {
     pie_printfull(d.data_.wire_length(),d.data_.wire_data(), pie::ostreamwriter, &o);
     return o;
@@ -1861,7 +1861,7 @@ piw::dataholder_nb_t::operator piw::data_nb_t() const
     return get();
 }
 
-std::ostream &operator<<(std::ostream &o, const piw::dataholder_nb_t &d)
+std::ostream &piw::operator<<(std::ostream &o, const piw::dataholder_nb_t &d)
 {
     pie_print(d.get().wire_length(),d.get().wire_data(), pie::ostreamwriter, &o);
     return o;

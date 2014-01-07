@@ -688,11 +688,11 @@ namespace piw
     };
 
     PIW_DECLSPEC_FUNC(d2d_nb_t) dict_merger(const data_t &override);
-}
 
 PIW_DECLSPEC_FUNC(std::ostream) &operator<<(std::ostream &o, const piw::dataholder_nb_t &d);
 PIW_DECLSPEC_FUNC(std::ostream) &operator<<(std::ostream &o, const piw::data_base_t &p);
 PIW_DECLSPEC_FUNC(std::ostream) &operator<<(std::ostream &o, const piw::fullprinter_t<piw::data_t> &p);
 PIW_DECLSPEC_FUNC(std::ostream) &operator<<(std::ostream &o, const piw::fullprinter_t<piw::data_nb_t> &p);
+};
 
 #endif

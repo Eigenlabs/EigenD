@@ -237,8 +237,8 @@ bool piw::decode_key(const piw::data_nb_t &d, float *column, float *row, float *
     piw::data_nb_t d_mkey = d.as_tuple_value(1);
     piw::data_nb_t d_hardness = d.as_tuple_value(2);
 
-    if((column || row) && (!d_pkey.is_tuple() || d_pkey.as_tuplelen() != 2) ||
-       (course || key) && (!d_mkey.is_tuple() || d_mkey.as_tuplelen() != 2) ||
+    if(((column || row) && (!d_pkey.is_tuple() || d_pkey.as_tuplelen() != 2)) ||
+       ((course || key) && (!d_mkey.is_tuple() || d_mkey.as_tuplelen() != 2)) ||
        (hardness && !d_hardness.is_long()))
     {
         return false;
