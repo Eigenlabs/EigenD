@@ -678,9 +678,9 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         }
     }
     
-    juce::AudioPluginInstance *find_plugin(juce::PluginDescription &desc,juce::String &err)
+    juce::AudioPluginInstance *find_plugin(juce::PluginDescription &desc, double sr, int bs, juce::String &err)
     {
-        return plugin_formats_.createPluginInstance(desc,err);
+        return plugin_formats_.createPluginInstance(desc, sr, bs, err);
     }
 
     plugin_description_t get_description()
@@ -732,8 +732,11 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
         close();
 
+        sample_rate_ = clockdomain_->get_sample_rate();
+        buffer_size_ = clockdomain_->get_buffer_size();
+
         juce::String err;
-        juce::AudioPluginInstance *plg = find_plugin(desc,err);
+        juce::AudioPluginInstance *plg = find_plugin(desc, sample_rate_, buffer_size_, err);
 
         if(!plg)
         {
@@ -754,8 +757,6 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
         audio_output_.setup(num_output_channels_,PIW_DATAQUEUE_SIZE_ISO);
         midi_output_.setup(1,PIW_DATAQUEUE_SIZE_NORM);
-        sample_rate_ = clockdomain_->get_sample_rate();
-        buffer_size_ = clockdomain_->get_buffer_size();
         if(allocate_buffer(plg))
         {
             midi_time_ = 0ULL;

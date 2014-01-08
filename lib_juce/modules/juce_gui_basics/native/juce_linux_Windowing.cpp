@@ -1345,10 +1345,12 @@ public:
             ScopedXLock xlock;
             updateKeyStates (keyEvent.keycode, true);
 
-            const char* oldLocale = ::setlocale (LC_ALL, 0);
+            String oldLocale (::setlocale (LC_ALL, 0));
             ::setlocale (LC_ALL, "");
             XLookupString (&keyEvent, utf8, sizeof (utf8), &sym, 0);
-            ::setlocale (LC_ALL, oldLocale);
+
+            if (oldLocale.isNotEmpty())
+                ::setlocale (LC_ALL, oldLocale.toRawUTF8());
 
             unicodeChar = *CharPointer_UTF8 (utf8);
             keyCode = (int) unicodeChar;
@@ -2928,14 +2930,14 @@ bool LinuxComponentPeer::isActiveApplication = false;
 Point<int> LinuxComponentPeer::lastMousePos;
 
 //==============================================================================
-bool Process::isForegroundProcess()
+JUCE_API bool JUCE_CALLTYPE Process::isForegroundProcess()
 {
     return LinuxComponentPeer::isActiveApplication;
 }
 
 // N/A on Linux as far as I know.
-void Process::makeForegroundProcess() {}
-void Process::hide() {}
+JUCE_API void JUCE_CALLTYPE Process::makeForegroundProcess() {}
+JUCE_API void JUCE_CALLTYPE Process::hide() {}
 
 //==============================================================================
 void ModifierKeys::updateCurrentModifiers() noexcept
@@ -3095,11 +3097,11 @@ void Desktop::Displays::findDisplays (float masterScale)
 }
 
 //==============================================================================
-bool Desktop::addMouseInputSource()
+bool MouseInputSource::SourceList::addSource()
 {
-    if (mouseSources.size() == 0)
+    if (sources.size() == 0)
     {
-        mouseSources.add (new MouseInputSource (0, true));
+        addSource (0, true);
         return true;
     }
 

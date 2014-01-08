@@ -48,33 +48,32 @@ namespace StringPoolHelpers
                 strings.insert (start, newString);
                 return strings.getReference (start).getCharPointer();
             }
-            else
+
+            const String& startString = strings.getReference (start);
+
+            if (startString == newString)
+                return startString.getCharPointer();
+
+            const int halfway = (start + end) >> 1;
+
+            if (halfway == start)
             {
-                const String& startString = strings.getReference (start);
+                if (startString.compare (newString) < 0)
+                    ++start;
 
-                if (startString == newString)
-                    return startString.getCharPointer();
-
-                const int halfway = (start + end) >> 1;
-
-                if (halfway == start)
-                {
-                    if (startString.compare (newString) < 0)
-                        ++start;
-
-                    strings.insert (start, newString);
-                    return strings.getReference (start).getCharPointer();
-                }
-
-                const int comp = strings.getReference (halfway).compare (newString);
-
-                if (comp == 0)
-                    return strings.getReference (halfway).getCharPointer();
-                else if (comp < 0)
-                    start = halfway;
-                else
-                    end = halfway;
+                strings.insert (start, newString);
+                return strings.getReference (start).getCharPointer();
             }
+
+            const int comp = strings.getReference (halfway).compare (newString);
+
+            if (comp == 0)
+                return strings.getReference (halfway).getCharPointer();
+
+            if (comp < 0)
+                start = halfway;
+            else
+                end = halfway;
         }
     }
 }
@@ -82,7 +81,7 @@ namespace StringPoolHelpers
 String::CharPointerType StringPool::getPooledString (const String& s)
 {
     if (s.isEmpty())
-        return String::empty.getCharPointer();
+        return String().getCharPointer();
 
     return StringPoolHelpers::getPooledStringFromArray (strings, s, lock);
 }
@@ -90,7 +89,7 @@ String::CharPointerType StringPool::getPooledString (const String& s)
 String::CharPointerType StringPool::getPooledString (const char* const s)
 {
     if (s == nullptr || *s == 0)
-        return String::empty.getCharPointer();
+        return String().getCharPointer();
 
     return StringPoolHelpers::getPooledStringFromArray (strings, s, lock);
 }
@@ -98,7 +97,7 @@ String::CharPointerType StringPool::getPooledString (const char* const s)
 String::CharPointerType StringPool::getPooledString (const wchar_t* const s)
 {
     if (s == nullptr || *s == 0)
-        return String::empty.getCharPointer();
+        return String().getCharPointer();
 
     return StringPoolHelpers::getPooledStringFromArray (strings, s, lock);
 }

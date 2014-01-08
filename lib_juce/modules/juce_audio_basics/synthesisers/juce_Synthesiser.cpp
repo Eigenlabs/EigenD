@@ -22,13 +22,8 @@
   ==============================================================================
 */
 
-SynthesiserSound::SynthesiserSound()
-{
-}
-
-SynthesiserSound::~SynthesiserSound()
-{
-}
+SynthesiserSound::SynthesiserSound() {}
+SynthesiserSound::~SynthesiserSound() {}
 
 //==============================================================================
 SynthesiserVoice::SynthesiserVoice()
@@ -60,6 +55,8 @@ void SynthesiserVoice::clearCurrentNote()
     currentlyPlayingNote = -1;
     currentlyPlayingSound = nullptr;
 }
+
+void SynthesiserVoice::aftertouchChanged (int) {}
 
 //==============================================================================
 Synthesiser::Synthesiser()
@@ -118,9 +115,9 @@ void Synthesiser::removeSound (const int index)
     sounds.remove (index);
 }
 
-void Synthesiser::setNoteStealingEnabled (const bool shouldStealNotes_)
+void Synthesiser::setNoteStealingEnabled (const bool shouldSteal)
 {
-    shouldStealNotes = shouldStealNotes_;
+    shouldStealNotes = shouldSteal;
 }
 
 //==============================================================================
@@ -139,10 +136,8 @@ void Synthesiser::setCurrentPlaybackSampleRate (const double newRate)
     }
 }
 
-void Synthesiser::renderNextBlock (AudioSampleBuffer& outputBuffer,
-                                   const MidiBuffer& midiData,
-                                   int startSample,
-                                   int numSamples)
+void Synthesiser::renderNextBlock (AudioSampleBuffer& outputBuffer, const MidiBuffer& midiData,
+                                   int startSample, int numSamples)
 {
     // must set the sample rate before using this!
     jassert (sampleRate != 0);
@@ -180,15 +175,11 @@ void Synthesiser::handleMidiEvent (const MidiMessage& m)
 {
     if (m.isNoteOn())
     {
-        noteOn (m.getChannel(),
-                m.getNoteNumber(),
-                m.getFloatVelocity());
+        noteOn (m.getChannel(), m.getNoteNumber(), m.getFloatVelocity());
     }
     else if (m.isNoteOff())
     {
-        noteOff (m.getChannel(),
-                 m.getNoteNumber(),
-                 true);
+        noteOff (m.getChannel(), m.getNoteNumber(), true);
     }
     else if (m.isAllNotesOff() || m.isAllSoundOff())
     {
@@ -202,11 +193,13 @@ void Synthesiser::handleMidiEvent (const MidiMessage& m)
 
         handlePitchWheel (channel, wheelPos);
     }
+    else if (m.isAftertouch())
+    {
+        handleAftertouch (m.getChannel(), m.getNoteNumber(), m.getAfterTouchValue());
+    }
     else if (m.isController())
     {
-        handleController (m.getChannel(),
-                          m.getControllerNumber(),
-                          m.getControllerValue());
+        handleController (m.getChannel(), m.getControllerNumber(), m.getControllerValue());
     }
 }
 
@@ -351,6 +344,20 @@ void Synthesiser::handleController (const int midiChannel,
     }
 }
 
+void Synthesiser::handleAftertouch (int midiChannel, int midiNoteNumber, int aftertouchValue)
+{
+    const ScopedLock sl (lock);
+
+    for (int i = voices.size(); --i >= 0;)
+    {
+        SynthesiserVoice* const voice = voices.getUnchecked (i);
+
+        if (voice->getCurrentlyPlayingNote() == midiNoteNumber
+              && (midiChannel <= 0 || voice->isPlayingChannel (midiChannel)))
+            voice->aftertouchChanged (aftertouchValue);
+    }
+}
+
 void Synthesiser::handleSustainPedal (int midiChannel, bool isDown)
 {
     jassert (midiChannel > 0 && midiChannel <= 16);
@@ -406,9 +413,12 @@ SynthesiserVoice* Synthesiser::findFreeVoice (SynthesiserSound* soundToPlay,
     const ScopedLock sl (lock);
 
     for (int i = voices.size(); --i >= 0;)
-        if (voices.getUnchecked (i)->getCurrentlyPlayingNote() < 0
-             && voices.getUnchecked (i)->canPlaySound (soundToPlay))
-            return voices.getUnchecked (i);
+    {
+        SynthesiserVoice* const voice = voices.getUnchecked (i);
+
+        if (voice->getCurrentlyPlayingNote() < 0  && voice->canPlaySound (soundToPlay))
+            return voice;
+    }
 
     if (stealIfNoneAvailable)
     {

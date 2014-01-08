@@ -25,7 +25,7 @@
 
 namespace ejuce
 {
-    class EJUCE_DECLSPEC_CLASS EJuceLookandFeel: public juce::LookAndFeel
+    class EJUCE_DECLSPEC_CLASS EJuceLookandFeel: public juce::LookAndFeel_V2
     {
         public:
             EJuceLookandFeel();

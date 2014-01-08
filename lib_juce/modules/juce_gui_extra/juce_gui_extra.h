@@ -37,21 +37,31 @@
  #define JUCE_WEB_BROWSER 1
 #endif
 
+/** Config: JUCE_ENABLE_LIVE_CONSTANT_EDITOR
+    This lets you turn on the JUCE_ENABLE_LIVE_CONSTANT_EDITOR support. See the documentation
+    for that macro for more details.
+*/
+#ifndef JUCE_ENABLE_LIVE_CONSTANT_EDITOR
+ #if JUCE_DEBUG
+  #define JUCE_ENABLE_LIVE_CONSTANT_EDITOR 1
+ #endif
+#endif
+
 //=============================================================================
 namespace juce
 {
 
-// START_AUTOINCLUDE documents, code_editor, embedding, lookandfeel, misc
 #include "documents/juce_FileBasedDocument.h"
 #include "code_editor/juce_CodeDocument.h"
 #include "code_editor/juce_CodeEditorComponent.h"
 #include "code_editor/juce_CodeTokeniser.h"
 #include "code_editor/juce_CPlusPlusCodeTokeniser.h"
 #include "code_editor/juce_CPlusPlusCodeTokeniserFunctions.h"
+#include "code_editor/juce_XMLCodeTokeniser.h"
+#include "code_editor/juce_LuaCodeTokeniser.h"
 #include "embedding/juce_ActiveXControlComponent.h"
 #include "embedding/juce_NSViewComponent.h"
 #include "embedding/juce_UIViewComponent.h"
-#include "lookandfeel/juce_OldSchoolLookAndFeel.h"
 #include "misc/juce_AppleRemote.h"
 #include "misc/juce_BubbleMessageComponent.h"
 #include "misc/juce_ColourSelector.h"
@@ -61,7 +71,7 @@ namespace juce
 #include "misc/juce_SplashScreen.h"
 #include "misc/juce_SystemTrayIconComponent.h"
 #include "misc/juce_WebBrowserComponent.h"
-// END_AUTOINCLUDE
+#include "misc/juce_LiveConstantEditor.h"
 
 }
 

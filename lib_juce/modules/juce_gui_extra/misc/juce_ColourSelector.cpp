@@ -73,7 +73,7 @@ public:
     ColourSpaceView (ColourSelector& cs, float& hue, float& sat, float& val, const int edgeSize)
         : owner (cs), h (hue), s (sat), v (val), lastHue (0.0f), edge (edgeSize)
     {
-        addAndMakeVisible (&marker);
+        addAndMakeVisible (marker);
         setMouseCursor (MouseCursor::CrosshairCursor);
     }
 
@@ -100,8 +100,11 @@ public:
         }
 
         g.setOpacity (1.0f);
-        g.drawImage (colours, edge, edge, getWidth() - edge * 2, getHeight() - edge * 2,
-                     0, 0, colours.getWidth(), colours.getHeight());
+        g.drawImageTransformed (colours,
+                                RectanglePlacement (RectanglePlacement::stretchToFit)
+                                    .getTransformToFit (colours.getBounds().toFloat(),
+                                                        getLocalBounds().reduced (edge).toFloat()),
+                                false);
     }
 
     void mouseDown (const MouseEvent& e) override
@@ -196,7 +199,7 @@ public:
     HueSelectorComp (ColourSelector& cs, float& hue, const int edgeSize)
         : owner (cs), h (hue), edge (edgeSize)
     {
-        addAndMakeVisible (&marker);
+        addAndMakeVisible (marker);
     }
 
     void paint (Graphics& g) override

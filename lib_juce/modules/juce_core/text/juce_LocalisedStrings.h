@@ -29,8 +29,6 @@
 #ifndef JUCE_LOCALISEDSTRINGS_H_INCLUDED
 #define JUCE_LOCALISEDSTRINGS_H_INCLUDED
 
-#include "juce_StringPairArray.h"
-#include "../files/juce_File.h"
 
 //==============================================================================
 /**
@@ -174,11 +172,29 @@ public:
     /** Provides access to the actual list of mappings. */
     const StringPairArray& getMappings() const            { return translations; }
 
+    //==============================================================================
+    /** Adds and merges another set of translations into this set.
+
+        Note that the language name and country codes of the new LocalisedStrings
+        object must match that of this object - an assertion will be thrown if they
+        don't match.
+
+        Any existing values will have their mappings overwritten by the new ones.
+    */
+    void addStrings (const LocalisedStrings&);
+
+    /** Gives this object a set of strings to use as a fallback if a string isn't found.
+        The object that is passed-in will be owned and deleted by this object
+        when no longer needed. It can be nullptr to clear the existing fallback object.
+    */
+    void setFallback (LocalisedStrings* fallbackStrings);
+
 private:
     //==============================================================================
     String languageName;
     StringArray countryCodes;
     StringPairArray translations;
+    ScopedPointer<LocalisedStrings> fallback;
 
     void loadFromText (const String&, bool ignoreCase);
 

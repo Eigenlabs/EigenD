@@ -106,6 +106,9 @@ public:
         */
         bool ignoreCaseOfKeyNames;
 
+        /** If set to true, this prevents the file from being written to disk. */
+        bool doNotSave;
+
         /** If this is zero or greater, then after a value is changed, the object will wait
             for this amount of time and then save the file. If this zero, the file will be
             written to disk immediately on being changed (which might be slow, as it'll re-write
@@ -141,7 +144,7 @@ public:
             C:\\Documents and Settings\\username\\Application Data\\[folderName]\\[applicationName].[filenameSuffix]
 
             On Linux it'll return
-            ~/.[folderName]/[applicationName].[filenameSuffix]
+            ~/[folderName]/[applicationName].[filenameSuffix]
 
             If the folderName variable is empty, it'll use the app name for this (or omit the
             folder name on the Mac).

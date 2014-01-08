@@ -25,12 +25,6 @@
 #ifndef JUCE_COMPONENTPEER_H_INCLUDED
 #define JUCE_COMPONENTPEER_H_INCLUDED
 
-#include "../components/juce_Component.h"
-#include "../mouse/juce_MouseCursor.h"
-#include "../keyboard/juce_TextInputTarget.h"
-
-class ComponentBoundsConstrainer;
-
 
 //==============================================================================
 /**
@@ -316,7 +310,7 @@ public:
         Point<int> position;
 
         bool isEmpty() const noexcept       { return files.size() == 0 && text.isEmpty(); }
-        void clear() noexcept               { files.clear(); text = String::empty; }
+        void clear() noexcept               { files.clear(); text.clear(); }
     };
 
     bool handleDragMove (const DragInfo&);

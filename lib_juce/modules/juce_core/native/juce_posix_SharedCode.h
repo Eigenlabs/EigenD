@@ -34,29 +34,14 @@ CriticalSection::CriticalSection() noexcept
    #if ! JUCE_ANDROID
     pthread_mutexattr_setprotocol (&atts, PTHREAD_PRIO_INHERIT);
    #endif
-    pthread_mutex_init (&internal, &atts);
+    pthread_mutex_init (&lock, &atts);
+    pthread_mutexattr_destroy (&atts);
 }
 
-CriticalSection::~CriticalSection() noexcept
-{
-    pthread_mutex_destroy (&internal);
-}
-
-void CriticalSection::enter() const noexcept
-{
-    pthread_mutex_lock (&internal);
-}
-
-bool CriticalSection::tryEnter() const noexcept
-{
-    return pthread_mutex_trylock (&internal) == 0;
-}
-
-void CriticalSection::exit() const noexcept
-{
-    pthread_mutex_unlock (&internal);
-}
-
+CriticalSection::~CriticalSection() noexcept        { pthread_mutex_destroy (&lock); }
+void CriticalSection::enter() const noexcept        { pthread_mutex_lock (&lock); }
+bool CriticalSection::tryEnter() const noexcept     { return pthread_mutex_trylock (&lock) == 0; }
+void CriticalSection::exit() const noexcept         { pthread_mutex_unlock (&lock); }
 
 //==============================================================================
 WaitableEvent::WaitableEvent (const bool useManualReset) noexcept
@@ -129,8 +114,13 @@ bool WaitableEvent::wait (const int timeOutMillisecs) const noexcept
 void WaitableEvent::signal() const noexcept
 {
     pthread_mutex_lock (&mutex);
-    triggered = true;
-    pthread_cond_broadcast (&condition);
+
+    if (! triggered)
+    {
+        triggered = true;
+        pthread_cond_broadcast (&condition);
+    }
+
     pthread_mutex_unlock (&mutex);
 }
 
@@ -150,7 +140,7 @@ void JUCE_CALLTYPE Thread::sleep (int millisecs)
     nanosleep (&time, nullptr);
 }
 
-void Process::terminate()
+void JUCE_CALLTYPE Process::terminate()
 {
    #if JUCE_ANDROID
     _exit (EXIT_FAILURE);
@@ -646,7 +636,7 @@ String File::getVolumeLabel() const
     }
    #endif
 
-    return String::empty;
+    return String();
 }
 
 int File::getVolumeSerialNumber() const
@@ -1003,7 +993,7 @@ void* DynamicLibrary::getFunction (const String& functionName) noexcept
 class ChildProcess::ActiveProcess
 {
 public:
-    ActiveProcess (const StringArray& arguments)
+    ActiveProcess (const StringArray& arguments, int streamFlags)
         : childPID (0), pipeHandle (0), readHandle (0)
     {
         int pipeHandles[2] = { 0 };
@@ -1021,8 +1011,17 @@ public:
             {
                 // we're the child process..
                 close (pipeHandles[0]);   // close the read handle
-                dup2 (pipeHandles[1], 1); // turns the pipe into stdout
-                dup2 (pipeHandles[1], 2); //  + stderr
+
+                if ((streamFlags | wantStdOut) != 0)
+                    dup2 (pipeHandles[1], 1); // turns the pipe into stdout
+                else
+                    close (STDOUT_FILENO);
+
+                if ((streamFlags | wantStdErr) != 0)
+                    dup2 (pipeHandles[1], 2);
+                else
+                    close (STDERR_FILENO);
+
                 close (pipeHandles[1]);
 
                 Array<char*> argv;
@@ -1097,17 +1096,17 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ActiveProcess)
 };
 
-bool ChildProcess::start (const String& command)
+bool ChildProcess::start (const String& command, int streamFlags)
 {
-    return start (StringArray::fromTokens (command, true));
+    return start (StringArray::fromTokens (command, true), streamFlags);
 }
 
-bool ChildProcess::start (const StringArray& args)
+bool ChildProcess::start (const StringArray& args, int streamFlags)
 {
     if (args.size() == 0)
         return false;
 
-    activeProcess = new ActiveProcess (args);
+    activeProcess = new ActiveProcess (args, streamFlags);
 
     if (activeProcess->childPID == 0)
         activeProcess = nullptr;
@@ -1151,7 +1150,7 @@ struct HighResolutionTimer::Pimpl
             shouldStop = false;
 
             if (pthread_create (&thread, nullptr, timerThread, this) == 0)
-                setThreadToRealtime (thread, newPeriod);
+                setThreadToRealtime (thread, (uint64) newPeriod);
             else
                 jassertfalse;
         }

@@ -29,8 +29,6 @@
 #ifndef JUCE_SOCKET_H_INCLUDED
 #define JUCE_SOCKET_H_INCLUDED
 
-#include "../text/juce_String.h"
-
 
 //==============================================================================
 /**
@@ -148,7 +146,7 @@ public:
 
         @see waitForNextConnection
     */
-    bool createListener (int portNumber, const String& localHostName = String::empty);
+    bool createListener (int portNumber, const String& localHostName = String());
 
     /** When in "listener" mode, this waits for a connection and spawns it as a new
         socket.

@@ -25,22 +25,6 @@
 #ifndef JUCE_COMPONENT_H_INCLUDED
 #define JUCE_COMPONENT_H_INCLUDED
 
-#include "../mouse/juce_MouseCursor.h"
-#include "../mouse/juce_MouseListener.h"
-#include "../mouse/juce_MouseEvent.h"
-#include "juce_ComponentListener.h"
-#include "../keyboard/juce_KeyListener.h"
-#include "../keyboard/juce_KeyboardFocusTraverser.h"
-#include "juce_ModalComponentManager.h"
-
-class LookAndFeel;
-class MouseInputSource;
-class MouseInputSourceInternal;
-class ComponentPeer;
-class MarkerList;
-class RelativeRectangle;
-class CachedComponentImage;
-
 
 //==============================================================================
 /**
@@ -194,7 +178,7 @@ public:
         object that it is using. Otherwise, it will return the window of
         its top-level parent component.
 
-        This may return 0 if there isn't a desktop component.
+        This may return nullptr if there isn't a desktop component.
 
         @see addToDesktop, isOnDesktop
     */
@@ -214,6 +198,15 @@ public:
         @see getPeer, ComponentPeer::setMinimised, ComponentPeer::isMinimised
     */
     virtual void minimisationStateChanged (bool isNowMinimised);
+
+    /** Returns the default scale factor to use for this component when it is placed
+        on the desktop.
+        The default implementation of this method just returns the value from
+        Desktop::getGlobalScaleFactor(), but it can be overridden if a particular component
+        has different requirements. The method only used if this component is added
+        to the desktop - it has no effect for child components.
+    */
+    virtual float getDesktopScaleFactor() const;
 
     //==============================================================================
     /** Brings the component to the front of its siblings.
@@ -690,7 +683,7 @@ public:
     /** Looks for a child component with the specified ID.
         @see setComponentID, getComponentID
     */
-    Component* findChildWithID (const String& componentID) const noexcept;
+    Component* findChildWithID (StringRef componentID) const noexcept;
 
     /** Adds a child component to this one.
 
@@ -710,12 +703,37 @@ public:
     */
     void addChildComponent (Component* child, int zOrder = -1);
 
-    /** Adds a child component to this one, and also makes the child visible if it isn't.
+    /** Adds a child component to this one.
 
-        Quite a useful function, this is just the same as calling setVisible (true) on the child
-        and then addChildComponent(). See addChildComponent() for more details.
+        Adding a child component does not mean that the component will own or delete the child - it's
+        your responsibility to delete the component. Note that it's safe to delete a component
+        without first removing it from its parent - doing so will automatically remove it and
+        send out the appropriate notifications before the deletion completes.
+
+        If the child is already a child of this component, then no action will be taken, and its
+        z-order will be left unchanged.
+
+        @param child    the new component to add. If the component passed-in is already
+                        the child of another component, it'll first be removed from it current parent.
+        @param zOrder   The index in the child-list at which this component should be inserted.
+                        A value of -1 will insert it in front of the others, 0 is the back.
+        @see removeChildComponent, addAndMakeVisible, addChildAndSetID, getChild, ComponentListener::componentChildrenChanged
+    */
+    void addChildComponent (Component& child, int zOrder = -1);
+
+    /** Adds a child component to this one, and also makes the child visible if it isn't already.
+
+        This is the same as calling setVisible (true) on the child and then addChildComponent().
+        See addChildComponent() for more details.
     */
     void addAndMakeVisible (Component* child, int zOrder = -1);
+
+    /** Adds a child component to this one, and also makes the child visible if it isn't already.
+
+        This is the same as calling setVisible (true) on the child and then addChildComponent().
+        See addChildComponent() for more details.
+    */
+    void addAndMakeVisible (Component& child, int zOrder = -1);
 
     /** Adds a child component to this one, makes it visible, and sets its component ID.
         @see addAndMakeVisible, addChildComponent
@@ -1017,7 +1035,8 @@ public:
         @see paintEntireComponent
     */
     Image createComponentSnapshot (const Rectangle<int>& areaToGrab,
-                                   bool clipImageToComponentBounds = true);
+                                   bool clipImageToComponentBounds = true,
+                                   float scaleFactor = 1.0f);
 
     /** Draws this component and all its subcomponents onto the specified graphics
         context.
@@ -1240,6 +1259,9 @@ public:
         @returns the focused component, or null if nothing is focused.
     */
     static Component* JUCE_CALLTYPE getCurrentlyFocusedComponent() noexcept;
+
+    /** If any component has keyboard focus, this will defocus it. */
+    static void JUCE_CALLTYPE unfocusAllComponents();
 
     //==============================================================================
     /** Tries to move the keyboard focus to one of this component's siblings.
@@ -2124,7 +2146,7 @@ public:
         const ComponentType* operator->() const noexcept    { return getComponent(); }
 
         /** If the component is valid, this deletes it and sets this pointer to null. */
-        void deleteAndZero()                                { delete getComponent(); jassert (getComponent() == nullptr); }
+        void deleteAndZero()                                { delete getComponent(); }
 
         bool operator== (ComponentType* component) const noexcept   { return weakRef == component; }
         bool operator!= (ComponentType* component) const noexcept   { return weakRef != component; }
@@ -2242,7 +2264,7 @@ private:
 
     class MouseListenerList;
     friend class MouseListenerList;
-    friend class ScopedPointer <MouseListenerList>;
+    friend struct ContainerDeletePolicy<MouseListenerList>;
     ScopedPointer <MouseListenerList> mouseListeners;
     ScopedPointer <Array <KeyListener*> > keyListeners;
     ListenerList <ComponentListener> componentListeners;
@@ -2284,14 +2306,14 @@ private:
     uint8 componentTransparency;
 
     //==============================================================================
-    void internalMouseEnter (MouseInputSource&, Point<int>, Time);
-    void internalMouseExit  (MouseInputSource&, Point<int>, Time);
-    void internalMouseDown  (MouseInputSource&, Point<int>, Time);
-    void internalMouseUp    (MouseInputSource&, Point<int>, Time, const ModifierKeys oldModifiers);
-    void internalMouseDrag  (MouseInputSource&, Point<int>, Time);
-    void internalMouseMove  (MouseInputSource&, Point<int>, Time);
-    void internalMouseWheel (MouseInputSource&, Point<int>, Time, const MouseWheelDetails&);
-    void internalMagnifyGesture (MouseInputSource&, Point<int>, Time, float);
+    void internalMouseEnter (MouseInputSource, Point<int>, Time);
+    void internalMouseExit  (MouseInputSource, Point<int>, Time);
+    void internalMouseDown  (MouseInputSource, Point<int>, Time);
+    void internalMouseUp    (MouseInputSource, Point<int>, Time, const ModifierKeys oldModifiers);
+    void internalMouseDrag  (MouseInputSource, Point<int>, Time);
+    void internalMouseMove  (MouseInputSource, Point<int>, Time);
+    void internalMouseWheel (MouseInputSource, Point<int>, Time, const MouseWheelDetails&);
+    void internalMagnifyGesture (MouseInputSource, Point<int>, Time, float);
     void internalBroughtToFront();
     void internalFocusGain (const FocusChangeType, const WeakReference<Component>&);
     void internalFocusGain (const FocusChangeType);
@@ -2334,7 +2356,7 @@ private:
 
     // This is included here to cause an error if you use or overload it - it has been deprecated in
     // favour of contains (Point<int>)
-    void contains (int, int);
+    void contains (int, int) JUCE_DELETED_FUNCTION;
    #endif
 
 protected:

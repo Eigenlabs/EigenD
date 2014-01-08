@@ -68,20 +68,16 @@ public:
                   const StringArray* headers = nullptr,
                   const MemoryBlock* postData = nullptr);
 
-    /** Stops the current page loading.
-    */
+    /** Stops the current page loading. */
     void stop();
 
-    /** Sends the browser back one page.
-    */
+    /** Sends the browser back one page. */
     void goBack();
 
-    /** Sends the browser forward one page.
-    */
+    /** Sends the browser forward one page. */
     void goForward();
 
-    /** Refreshes the browser.
-    */
+    /** Refreshes the browser. */
     void refresh();
 
     //==============================================================================
@@ -96,6 +92,11 @@ public:
 
     /** This callback happens when the browser has finished loading a page. */
     virtual void pageFinishedLoading (const String& url);
+
+    /** This callback occurs when a script or other activity in the browser asks for
+        the window to be closed.
+    */
+    virtual void windowCloseRequest();
 
     //==============================================================================
     /** @internal */

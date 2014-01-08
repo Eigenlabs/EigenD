@@ -25,8 +25,6 @@
 #ifndef JUCE_UNDOMANAGER_H_INCLUDED
 #define JUCE_UNDOMANAGER_H_INCLUDED
 
-#include "juce_UndoableAction.h"
-
 
 //==============================================================================
 /**
@@ -109,7 +107,7 @@ public:
         @see beginNewTransaction
     */
     bool perform (UndoableAction* action,
-                  const String& actionName = String::empty);
+                  const String& actionName = String());
 
     /** Starts a new group of actions that together will be treated as a single transaction.
 
@@ -120,7 +118,7 @@ public:
         @param actionName   a description of the transaction that is about to be
                             performed
     */
-    void beginNewTransaction (const String& actionName = String::empty);
+    void beginNewTransaction (const String& actionName = String());
 
     /** Changes the name stored for the current transaction.
 
@@ -216,7 +214,7 @@ public:
 private:
     //==============================================================================
     struct ActionSet;
-    friend class OwnedArray<ActionSet>;
+    friend struct ContainerDeletePolicy<ActionSet>;
     OwnedArray<ActionSet> transactions;
     String currentTransactionName;
     int totalUnitsStored, maxNumUnitsToKeep, minimumTransactionsToKeep, nextIndex;

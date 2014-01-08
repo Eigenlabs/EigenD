@@ -164,6 +164,7 @@ public:
         if (context.renderer != nullptr)
         {
             glViewport (0, 0, viewportArea.getWidth(), viewportArea.getHeight());
+            context.currentRenderScale = scale;
             context.renderer->renderOpenGL();
             clearGLError();
         }
@@ -258,10 +259,15 @@ public:
 
     void paintOwner (LowLevelGraphicsContext& llgc)
     {
-        Graphics g (&llgc);
+        Graphics g (llgc);
 
-       #if JUCE_ENABLE_REPAINT_DEBUGGING
-        g.saveState();
+      #if JUCE_ENABLE_REPAINT_DEBUGGING
+       #ifdef JUCE_IS_REPAINT_DEBUGGING_ACTIVE
+        if (JUCE_IS_REPAINT_DEBUGGING_ACTIVE)
+       #endif
+        {
+            g.saveState();
+        }
        #endif
 
         JUCE_TRY
@@ -270,16 +276,21 @@ public:
         }
         JUCE_CATCH_EXCEPTION
 
-       #if JUCE_ENABLE_REPAINT_DEBUGGING
-        // enabling this code will fill all areas that get repainted with a colour overlay, to show
-        // clearly when things are being repainted.
-        g.restoreState();
+      #if JUCE_ENABLE_REPAINT_DEBUGGING
+       #ifdef JUCE_IS_REPAINT_DEBUGGING_ACTIVE
+        if (JUCE_IS_REPAINT_DEBUGGING_ACTIVE)
+       #endif
+        {
+            // enabling this code will fill all areas that get repainted with a colour overlay, to show
+            // clearly when things are being repainted.
+            g.restoreState();
 
-        static Random rng;
-        g.fillAll (Colour ((uint8) rng.nextInt (255),
-                           (uint8) rng.nextInt (255),
-                           (uint8) rng.nextInt (255),
-                           (uint8) 0x50));
+            static Random rng;
+            g.fillAll (Colour ((uint8) rng.nextInt (255),
+                               (uint8) rng.nextInt (255),
+                               (uint8) rng.nextInt (255),
+                               (uint8) 0x50));
+        }
        #endif
     }
 
@@ -314,6 +325,8 @@ public:
         {
             if (! renderFrame())
                 wait (5); // failed to render, so avoid a tight fail-loop.
+            else if (! context.continuousRepaint)
+                wait (-1);
         }
 
         shutdownOnThread();
@@ -401,7 +414,12 @@ void OpenGLContext::NativeContext::renderCallback()
     isInsideGLCallback = true;
 
     if (CachedImage* const c = CachedImage::get (component))
+    {
+        if (c->context.continuousRepaint)
+            c->context.triggerRepaint();
+
         c->renderFrame();
+    }
 
     isInsideGLCallback = false;
 }
@@ -527,8 +545,9 @@ private:
 
 //==============================================================================
 OpenGLContext::OpenGLContext()
-    : nativeContext (nullptr), renderer (nullptr), contextToShareWith (nullptr),
-      renderComponents (true), useMultisampling (false)
+    : nativeContext (nullptr), renderer (nullptr), currentRenderScale (1.0),
+      contextToShareWith (nullptr), renderComponents (true),
+      useMultisampling (false), continuousRepaint (false)
 {
 }
 
@@ -553,6 +572,11 @@ void OpenGLContext::setComponentPaintingEnabled (bool shouldPaintComponent) noex
     jassert (nativeContext == nullptr);
 
     renderComponents = shouldPaintComponent;
+}
+
+void OpenGLContext::setContinuousRepainting (bool shouldContinuouslyRepaint) noexcept
+{
+    continuousRepaint = shouldContinuouslyRepaint;
 }
 
 void OpenGLContext::setPixelFormat (const OpenGLPixelFormat& preferredPixelFormat) noexcept
@@ -622,7 +646,7 @@ bool OpenGLContext::makeActive() const noexcept
 
     if (nativeContext != nullptr && nativeContext->makeActive())
     {
-        current = const_cast <OpenGLContext*> (this);
+        current = const_cast<OpenGLContext*> (this);
         return true;
     }
 
@@ -705,22 +729,23 @@ void OpenGLContext::setAssociatedObject (const char* name, ReferenceCountedObjec
 {
     jassert (name != nullptr);
 
-    CachedImage* const c = getCachedImage();
-
-    // This method must only be called from an openGL rendering callback.
-    jassert (c != nullptr && nativeContext != nullptr);
-    jassert (getCurrentContext() != nullptr);
-
-    const int index = c->associatedObjectNames.indexOf (name);
-
-    if (index >= 0)
+    if (CachedImage* const c = getCachedImage())
     {
-        c->associatedObjects.set (index, newObject);
-    }
-    else
-    {
-        c->associatedObjectNames.add (name);
-        c->associatedObjects.add (newObject);
+        // This method must only be called from an openGL rendering callback.
+        jassert (nativeContext != nullptr);
+        jassert (getCurrentContext() != nullptr);
+
+        const int index = c->associatedObjectNames.indexOf (name);
+
+        if (index >= 0)
+        {
+            c->associatedObjects.set (index, newObject);
+        }
+        else
+        {
+            c->associatedObjectNames.add (name);
+            c->associatedObjects.add (newObject);
+        }
     }
 }
 
@@ -829,14 +854,15 @@ void OpenGLContext::copyTexture (const Rectangle<int>& targetClipArea,
         const OverlayShaderProgram& program = OverlayShaderProgram::select (*this);
         program.params.set ((float) contextWidth, (float) contextHeight, anchorPosAndTextureSize.toFloat(), flippedVertically);
 
-        extensions.glVertexAttribPointer (program.params.positionAttribute.attributeID, 2, GL_SHORT, GL_FALSE, 4, vertices);
-        extensions.glEnableVertexAttribArray (program.params.positionAttribute.attributeID);
+        const GLuint index = (GLuint) program.params.positionAttribute.attributeID;
+        extensions.glVertexAttribPointer (index, 2, GL_SHORT, GL_FALSE, 4, vertices);
+        extensions.glEnableVertexAttribArray (index);
         JUCE_CHECK_OPENGL_ERROR
 
         glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
 
         extensions.glUseProgram (0);
-        extensions.glDisableVertexAttribArray (program.params.positionAttribute.attributeID);
+        extensions.glDisableVertexAttribArray (index);
     }
     #if JUCE_USE_OPENGL_FIXED_FUNCTION
     else

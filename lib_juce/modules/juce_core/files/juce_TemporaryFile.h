@@ -29,8 +29,6 @@
 #ifndef JUCE_TEMPORARYFILE_H_INCLUDED
 #define JUCE_TEMPORARYFILE_H_INCLUDED
 
-#include "juce_File.h"
-
 
 //==============================================================================
 /**
@@ -91,7 +89,7 @@ public:
         The file will not be created until you write to it. And remember that when
         this object is deleted, the file will also be deleted!
     */
-    TemporaryFile (const String& suffix = String::empty,
+    TemporaryFile (const String& suffix = String(),
                    int optionFlags = 0);
 
     /** Creates a temporary file in the same directory as a specified file.

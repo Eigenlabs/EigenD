@@ -25,12 +25,6 @@
 #ifndef JUCE_DRAWABLE_H_INCLUDED
 #define JUCE_DRAWABLE_H_INCLUDED
 
-#include "../components/juce_Component.h"
-#include "../positioning/juce_RelativeCoordinate.h"
-#include "../positioning/juce_RelativeCoordinatePositioner.h"
-#include "../layout/juce_ComponentBuilder.h"
-class DrawableComposite;
-
 
 //==============================================================================
 /**
@@ -148,7 +142,7 @@ public:
         into a Drawable tree.
 
         The object returned must be deleted by the caller. If something goes wrong
-        while parsing, it may return 0.
+        while parsing, it may return nullptr.
 
         SVG is a pretty large and complex spec, and this doesn't aim to be a full
         implementation, but it can return the basic vector objects.

@@ -25,9 +25,6 @@
 #ifndef JUCE_SYNTHESISER_H_INCLUDED
 #define JUCE_SYNTHESISER_H_INCLUDED
 
-#include "../buffers/juce_AudioSampleBuffer.h"
-#include "../midi/juce_MidiBuffer.h"
-
 
 //==============================================================================
 /**
@@ -67,9 +64,8 @@ public:
     */
     virtual bool appliesToChannel (const int midiChannel) = 0;
 
-    /**
-    */
-    typedef ReferenceCountedObjectPtr <SynthesiserSound> Ptr;
+    /** The class is reference-counted, so this is a handy pointer class for it. */
+    typedef ReferenceCountedObjectPtr<SynthesiserSound> Ptr;
 
 
 private:
@@ -99,16 +95,14 @@ public:
 
     //==============================================================================
     /** Returns the midi note that this voice is currently playing.
-
         Returns a value less than 0 if no note is playing.
     */
-    int getCurrentlyPlayingNote() const                               { return currentlyPlayingNote; }
+    int getCurrentlyPlayingNote() const noexcept                        { return currentlyPlayingNote; }
 
     /** Returns the sound that this voice is currently playing.
-
         Returns nullptr if it's not playing.
     */
-    SynthesiserSound::Ptr getCurrentlyPlayingSound() const            { return currentlyPlayingSound; }
+    SynthesiserSound::Ptr getCurrentlyPlayingSound() const noexcept     { return currentlyPlayingSound; }
 
     /** Must return true if this voice object is capable of playing the given sound.
 
@@ -119,16 +113,15 @@ public:
         of voice and sound, or it might check the type of the sound object passed-in and
         see if it's one that it understands.
     */
-    virtual bool canPlaySound (SynthesiserSound* sound) = 0;
+    virtual bool canPlaySound (SynthesiserSound*) = 0;
 
     /** Called to start a new note.
-
         This will be called during the rendering callback, so must be fast and thread-safe.
     */
-    virtual void startNote (const int midiNoteNumber,
-                            const float velocity,
+    virtual void startNote (int midiNoteNumber,
+                            float velocity,
                             SynthesiserSound* sound,
-                            const int currentPitchWheelPosition) = 0;
+                            int currentPitchWheelPosition) = 0;
 
     /** Called to stop a note.
 
@@ -143,20 +136,22 @@ public:
         finishes playing (during the rendering callback), it must make sure that it calls
         clearCurrentNote().
     */
-    virtual void stopNote (const bool allowTailOff) = 0;
+    virtual void stopNote (bool allowTailOff) = 0;
 
     /** Called to let the voice know that the pitch wheel has been moved.
-
         This will be called during the rendering callback, so must be fast and thread-safe.
     */
-    virtual void pitchWheelMoved (const int newValue) = 0;
+    virtual void pitchWheelMoved (int newPitchWheelValue) = 0;
 
     /** Called to let the voice know that a midi controller has been moved.
-
         This will be called during the rendering callback, so must be fast and thread-safe.
     */
-    virtual void controllerMoved (const int controllerNumber,
-                                  const int newValue) = 0;
+    virtual void controllerMoved (int controllerNumber, int newControllerValue) = 0;
+
+    /** Called to let the voice know that the aftertouch has changed.
+        This will be called during the rendering callback, so must be fast and thread-safe.
+    */
+    virtual void aftertouchChanged (int newAftertouchValue);
 
     //==============================================================================
     /** Renders the next block of data for this voice.
@@ -195,6 +190,14 @@ public:
     */
     void setCurrentPlaybackSampleRate (double newRate);
 
+    /** Returns true if the key that triggered this voice is still held down.
+        Note that the voice may still be playing after the key was released (e.g because the
+        sostenuto pedal is down).
+    */
+    bool isKeyDown() const noexcept                             { return keyIsDown; }
+
+    /** Returns true if the sostenuto pedal is currently active for this voice. */
+    bool isSostenutoPedalDown() const noexcept                  { return sostenutoPedalDown; }
 
 protected:
     //==============================================================================
@@ -227,8 +230,7 @@ private:
     int currentlyPlayingNote;
     uint32 noteOnTime;
     SynthesiserSound::Ptr currentlyPlayingSound;
-    bool keyIsDown; // the voice may still be playing when the key is not down (i.e. sustain pedal)
-    bool sostenutoPedalDown;
+    bool keyIsDown, sostenutoPedalDown;
 
     JUCE_LEAK_DETECTOR (SynthesiserVoice)
 };
@@ -276,7 +278,7 @@ public:
     void clearVoices();
 
     /** Returns the number of voices that have been added. */
-    int getNumVoices() const                                        { return voices.size(); }
+    int getNumVoices() const noexcept                               { return voices.size(); }
 
     /** Returns one of the voices that have been added. */
     SynthesiserVoice* getVoice (int index) const;
@@ -299,10 +301,10 @@ public:
     void clearSounds();
 
     /** Returns the number of sounds that have been added to the synth. */
-    int getNumSounds() const                                        { return sounds.size(); }
+    int getNumSounds() const noexcept                               { return sounds.size(); }
 
     /** Returns one of the sounds. */
-    SynthesiserSound* getSound (int index) const                    { return sounds [index]; }
+    SynthesiserSound* getSound (int index) const noexcept           { return sounds [index]; }
 
     /** Adds a new sound to the synthesiser.
 
@@ -326,7 +328,7 @@ public:
     /** Returns true if note-stealing is enabled.
         @see setNoteStealingEnabled
     */
-    bool isNoteStealingEnabled() const                              { return shouldStealNotes; }
+    bool isNoteStealingEnabled() const noexcept                     { return shouldStealNotes; }
 
     //==============================================================================
     /** Triggers a note-on event.
@@ -379,7 +381,7 @@ public:
     virtual void allNotesOff (int midiChannel,
                               bool allowTailOff);
 
-    /** Sends a pitch-wheel message.
+    /** Sends a pitch-wheel message to any active voices.
 
         This will send a pitch-wheel message to any voices that are playing sounds on
         the given midi channel.
@@ -393,7 +395,7 @@ public:
     virtual void handlePitchWheel (int midiChannel,
                                    int wheelValue);
 
-    /** Sends a midi controller message.
+    /** Sends a midi controller message to any active voices.
 
         This will send a midi controller message to any voices that are playing sounds on
         the given midi channel.
@@ -409,13 +411,31 @@ public:
                                    int controllerNumber,
                                    int controllerValue);
 
+    /** Sends an aftertouch message.
+
+        This will send an aftertouch message to any voices that are playing sounds on
+        the given midi channel and note number.
+
+        This method will be called automatically according to the midi data passed into
+        renderNextBlock(), but may be called explicitly too.
+
+        @param midiChannel          the midi channel, from 1 to 16 inclusive
+        @param aftertouchValue      the aftertouch value, between 0 and 127,
+                                    as returned by MidiMessage::getAftertouchValue()
+    */
+    virtual void handleAftertouch (int midiChannel, int midiNoteNumber, int aftertouchValue);
+
+    /** Handles a sustain pedal event. */
     virtual void handleSustainPedal (int midiChannel, bool isDown);
+
+    /** Handles a sostenuto pedal event. */
     virtual void handleSostenutoPedal (int midiChannel, bool isDown);
+
+    /** Can be overridden to handle soft pedal events. */
     virtual void handleSoftPedal (int midiChannel, bool isDown);
 
     //==============================================================================
-    /** Tells the synthesiser what the sample rate is for the audio it's being used to
-        render.
+    /** Tells the synthesiser what the sample rate is for the audio it's being used to render.
 
         This value is propagated to the voices so that they can use it to render the correct
         pitches.
@@ -444,8 +464,8 @@ protected:
     /** This is used to control access to the rendering callback and the note trigger methods. */
     CriticalSection lock;
 
-    OwnedArray <SynthesiserVoice> voices;
-    ReferenceCountedArray <SynthesiserSound> sounds;
+    OwnedArray<SynthesiserVoice> voices;
+    ReferenceCountedArray<SynthesiserSound> sounds;
 
     /** The last pitch-wheel values for each midi channel. */
     int lastPitchWheelValues [16];

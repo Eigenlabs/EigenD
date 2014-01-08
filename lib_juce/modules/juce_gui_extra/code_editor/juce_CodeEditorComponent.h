@@ -25,8 +25,8 @@
 #ifndef JUCE_CODEEDITORCOMPONENT_H_INCLUDED
 #define JUCE_CODEEDITORCOMPONENT_H_INCLUDED
 
-#include "juce_CodeDocument.h"
 class CodeTokeniser;
+
 
 //==============================================================================
 /**
@@ -204,6 +204,12 @@ public:
     /** Returns the font that the editor is using. */
     const Font& getFont() const noexcept                { return font; }
 
+    /** Makes the editor read-only. */
+    void setReadOnly (bool shouldBeReadOnly) noexcept;
+
+    /** Returns true if the editor is set to be read-only. */
+    bool isReadOnly() const noexcept                    { return readOnly; }
+
     //==============================================================================
     struct JUCE_API  ColourScheme
     {
@@ -352,7 +358,7 @@ private:
     float charWidth;
     int lineHeight, linesOnScreen, columnsOnScreen;
     int scrollbarThickness, columnToTryToMaintain;
-    bool useSpacesForTabs, showLineNumbers;
+    bool readOnly, useSpacesForTabs, showLineNumbers, shouldFollowDocumentChanges;
     double xOffset;
 
     CodeDocument::Position caretPos, selectionStart, selectionEnd;
@@ -363,12 +369,12 @@ private:
 
     class Pimpl;
     friend class Pimpl;
-    friend class ScopedPointer<Pimpl>;
+    friend struct ContainerDeletePolicy<Pimpl>;
     ScopedPointer<Pimpl> pimpl;
 
     class GutterComponent;
     friend class GutterComponent;
-    friend class ScopedPointer<GutterComponent>;
+    friend struct ContainerDeletePolicy<GutterComponent>;
     ScopedPointer<GutterComponent> gutter;
 
     enum DragType
@@ -408,7 +414,7 @@ private:
     void cut();
     void indentSelectedLines (int spacesToAdd);
     bool skipBackwardsToPreviousTab();
-    bool performCommand (int);
+    bool performCommand (CommandID);
 
     int indexToColumn (int line, int index) const noexcept;
     int columnToIndex (int line, int column) const noexcept;

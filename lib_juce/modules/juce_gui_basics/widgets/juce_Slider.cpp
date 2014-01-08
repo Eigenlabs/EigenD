@@ -128,7 +128,7 @@ public:
 
             if (newInt != 0)
             {
-                int v = abs ((int) (newInt * 10000000));
+                int v = std::abs (roundToInt (newInt * 10000000));
 
                 while ((v % 10) == 0)
                 {
@@ -408,7 +408,12 @@ public:
     void updateText()
     {
         if (valueBox != nullptr)
-            valueBox->setText (owner.getTextFromValue (currentValue.getValue()), dontSendNotification);
+        {
+            String newValue (owner.getTextFromValue (currentValue.getValue()));
+
+            if (newValue != valueBox->getText())
+                valueBox->setText (newValue, dontSendNotification);
+        }
     }
 
     double constrainedValue (double value) const
@@ -428,30 +433,19 @@ public:
     {
         double pos;
 
-        if (maximum > minimum)
-        {
-            if (value < minimum)
-            {
-                pos = 0.0;
-            }
-            else if (value > maximum)
-            {
-                pos = 1.0;
-            }
-            else
-            {
-                pos = owner.valueToProportionOfLength (value);
-                jassert (pos >= 0 && pos <= 1.0);
-            }
-        }
-        else
-        {
+        if (maximum <= minimum)
             pos = 0.5;
-        }
+        else if (value < minimum)
+            pos = 0.0;
+        else if (value > maximum)
+            pos = 1.0;
+        else
+            pos = owner.valueToProportionOfLength (value);
 
         if (isVertical() || style == IncDecButtons)
             pos = 1.0 - pos;
 
+        jassert (pos >= 0 && pos <= 1.0);
         return (float) (sliderRegionStart + pos * sliderRegionSize);
     }
 
@@ -595,10 +589,10 @@ public:
 
         if (style == IncDecButtons)
         {
-            owner.addAndMakeVisible (incButton = lf.createSliderButton (true));
+            owner.addAndMakeVisible (incButton = lf.createSliderButton (owner, true));
             incButton->addListener (this);
 
-            owner.addAndMakeVisible (decButton = lf.createSliderButton (false));
+            owner.addAndMakeVisible (decButton = lf.createSliderButton (owner, false));
             decButton->addListener (this);
 
             if (incDecButtonMode != incDecButtonsNotDraggable)
@@ -609,10 +603,7 @@ public:
             else
             {
                 incButton->setRepeatSpeed (300, 100, 20);
-                incButton->addMouseListener (decButton, false);
-
                 decButton->setRepeatSpeed (300, 100, 20);
-                decButton->addMouseListener (incButton, false);
             }
 
             const String tooltip (owner.getTooltip());
@@ -625,7 +616,7 @@ public:
             decButton = nullptr;
         }
 
-        owner.setComponentEffect (lf.getSliderEffect());
+        owner.setComponentEffect (lf.getSliderEffect (owner));
 
         owner.resized();
         owner.repaint();
@@ -818,13 +809,11 @@ public:
             valueWhenLastDragged = owner.proportionOfLengthToValue (jlimit (0.0, 1.0, currentPos + speed));
 
             e.source.enableUnboundedMouseMovement (true, false);
-            mouseWasHidden = true;
         }
     }
 
     void mouseDown (const MouseEvent& e)
     {
-        mouseWasHidden = false;
         incDecDragged = false;
         useDragEvents = false;
         mouseDragStartPos = mousePosWhenLastDragged = e.getPosition();
@@ -880,9 +869,9 @@ public:
 
     void mouseDrag (const MouseEvent& e)
     {
-        if (useDragEvents
-             && maximum > minimum
-             && ! ((style == LinearBar || style == LinearBarVertical) && e.mouseWasClicked() && valueBox != nullptr && valueBox->isEditable()))
+        if (useDragEvents && maximum > minimum
+             && ! ((style == LinearBar || style == LinearBarVertical)
+                    && e.mouseWasClicked() && valueBox != nullptr && valueBox->isEditable()))
         {
             if (style == Rotary)
             {
@@ -899,10 +888,7 @@ public:
                     mouseDragStartPos = e.getPosition();
                 }
 
-                if (isVelocityBased == (userKeyOverridesVelocity && e.mods.testFlags (ModifierKeys::ctrlModifier
-                                                                                        | ModifierKeys::commandModifier
-                                                                                        | ModifierKeys::altModifier))
-                     || (maximum - minimum) / sliderRegionSize < interval)
+                if (isAbsoluteDragMode (e.mods) || (maximum - minimum) / sliderRegionSize < interval)
                     handleAbsoluteDrag (e);
                 else
                     handleVelocityDrag (e);
@@ -1019,48 +1005,56 @@ public:
 
     void modifierKeysChanged (const ModifierKeys& modifiers)
     {
-        if (style != IncDecButtons
-             && style != Rotary
-             && isVelocityBased == modifiers.isAnyModifierKeyDown())
-        {
+        if (style != IncDecButtons && style != Rotary && isAbsoluteDragMode (modifiers))
             restoreMouseIfHidden();
-        }
+    }
+
+    bool isAbsoluteDragMode (ModifierKeys mods) const
+    {
+        return isVelocityBased == (userKeyOverridesVelocity
+                                    && mods.testFlags (ModifierKeys::ctrlAltCommandModifiers));
     }
 
     void restoreMouseIfHidden()
     {
-        if (mouseWasHidden)
+        const Array<MouseInputSource>& mouseSources = Desktop::getInstance().getMouseSources();
+
+        for (MouseInputSource* mi = mouseSources.begin(), * const e = mouseSources.end(); mi != e; ++mi)
         {
-            mouseWasHidden = false;
-
-            for (int i = Desktop::getInstance().getNumMouseSources(); --i >= 0;)
-                Desktop::getInstance().getMouseSource(i)->enableUnboundedMouseMovement (false);
-
-            const double pos = sliderBeingDragged == 2 ? getMaxValue()
-                                                       : (sliderBeingDragged == 1 ? getMinValue()
-                                                                                  : (double) currentValue.getValue());
-            Point<int> mousePos;
-
-            if (isRotary())
+            if (mi->isUnboundedMouseMovementEnabled())
             {
-                mousePos = Desktop::getLastMouseDownPosition();
+                mi->enableUnboundedMouseMovement (false);
 
-                const int delta = roundToInt (pixelsForFullDragExtent * (owner.valueToProportionOfLength (valueOnMouseDown)
-                                                                           - owner.valueToProportionOfLength (pos)));
+                const double pos = sliderBeingDragged == 2 ? getMaxValue()
+                                                           : (sliderBeingDragged == 1 ? getMinValue()
+                                                                                      : (double) currentValue.getValue());
+                Point<int> mousePos;
 
-                if (style == RotaryHorizontalDrag)      mousePos += Point<int> (-delta, 0);
-                else if (style == RotaryVerticalDrag)   mousePos += Point<int> (0, delta);
-                else                                    mousePos += Point<int> (delta / -2, delta / 2);
+                if (isRotary())
+                {
+                    mousePos = mi->getLastMouseDownPosition();
+
+                    const int delta = roundToInt (pixelsForFullDragExtent * (owner.valueToProportionOfLength (valueOnMouseDown)
+                                                                               - owner.valueToProportionOfLength (pos)));
+
+                    if (style == RotaryHorizontalDrag)      mousePos += Point<int> (-delta, 0);
+                    else if (style == RotaryVerticalDrag)   mousePos += Point<int> (0, delta);
+                    else                                    mousePos += Point<int> (delta / -2, delta / 2);
+
+                    mousePos = owner.getScreenBounds().reduced (4).getConstrainedPoint (mousePos);
+                    mouseDragStartPos = mousePosWhenLastDragged = owner.getLocalPoint (nullptr, mousePos);
+                    valueOnMouseDown = valueWhenLastDragged;
+                }
+                else
+                {
+                    const int pixelPos = (int) getLinearSliderPos (pos);
+
+                    mousePos = owner.localPointToGlobal (Point<int> (isHorizontal() ? pixelPos : (owner.getWidth() / 2),
+                                                                     isVertical()   ? pixelPos : (owner.getHeight() / 2)));
+                }
+
+                mi->setScreenPosition (mousePos);
             }
-            else
-            {
-                const int pixelPos = (int) getLinearSliderPos (pos);
-
-                mousePos = owner.localPointToGlobal (Point<int> (isHorizontal() ? pixelPos : (owner.getWidth() / 2),
-                                                                 isVertical()   ? pixelPos : (owner.getHeight() / 2)));
-            }
-
-            Desktop::setMousePosition (mousePos);
         }
     }
 
@@ -1252,7 +1246,6 @@ public:
     bool popupDisplayEnabled;
     bool menuEnabled;
     bool useDragEvents;
-    bool mouseWasHidden;
     bool incDecDragged;
     bool scrollWheelEnabled;
     bool snapsToMousePos;
@@ -1267,16 +1260,16 @@ public:
     public:
         PopupDisplayComponent (Slider& s)
             : owner (s),
-              font (s.getLookAndFeel().getSliderPopupFont())
+              font (s.getLookAndFeel().getSliderPopupFont (s))
         {
             setAlwaysOnTop (true);
-            setAllowedPlacement (owner.getLookAndFeel().getSliderPopupPlacement());
+            setAllowedPlacement (owner.getLookAndFeel().getSliderPopupPlacement (s));
         }
 
         void paintContent (Graphics& g, int w, int h)
         {
             g.setFont (font);
-            g.setColour (findColour (TooltipWindow::textColourId, true));
+            g.setColour (owner.findColour (TooltipWindow::textColourId, true));
             g.drawFittedText (text, Rectangle<int> (w, h), Justification::centred, 1);
         }
 
@@ -1306,7 +1299,7 @@ public:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PopupDisplayComponent)
     };
 
-    ScopedPointer <PopupDisplayComponent> popupDisplay;
+    ScopedPointer<PopupDisplayComponent> popupDisplay;
     Component* parentForPopupDisplay;
 
     //==============================================================================

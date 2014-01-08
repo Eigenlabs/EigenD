@@ -25,8 +25,6 @@
 #ifndef JUCE_DRAGANDDROPCONTAINER_H_INCLUDED
 #define JUCE_DRAGANDDROPCONTAINER_H_INCLUDED
 
-#include "juce_DragAndDropTarget.h"
-
 
 //==============================================================================
 /**
@@ -112,7 +110,7 @@ public:
         It's useful when a component wants to call startDragging but doesn't know
         the DragAndDropContainer it should to use.
 
-        Obviously this may return 0 if it doesn't find a suitable component.
+        Obviously this may return nullptr if it doesn't find a suitable component.
     */
     static DragAndDropContainer* findParentDragContainerFor (Component* childComponent);
 
@@ -171,8 +169,8 @@ private:
     //==============================================================================
     class DragImageComponent;
     friend class DragImageComponent;
-    ScopedPointer <Component> dragImageComponent;
-    var currentDragDesc;
+    friend struct ContainerDeletePolicy<DragImageComponent>;
+    ScopedPointer<DragImageComponent> dragImageComponent;
 
     JUCE_DEPRECATED (virtual bool shouldDropFilesWhenDraggedExternally (const String&, Component*, StringArray&, bool&)) { return false; }
 

@@ -48,7 +48,7 @@ public:
         close();
     }
 
-    StringArray getOutputChannelNames()
+    StringArray getOutputChannelNames() override
     {
         StringArray s;
         s.add ("Left");
@@ -56,7 +56,7 @@ public:
         return s;
     }
 
-    StringArray getInputChannelNames()
+    StringArray getInputChannelNames() override
     {
         StringArray s;
         if (audioInputIsAvailable)
@@ -67,48 +67,51 @@ public:
         return s;
     }
 
-    int getNumSampleRates()                 { return 1; }
-    double getSampleRate (int index)        { return sampleRate; }
+    Array<double> getAvailableSampleRates() override    { return sampleRates; }
 
-    int getNumBufferSizesAvailable()        { return 6; }
-    int getBufferSizeSamples (int index)    { return 1 << (jlimit (0, 5, index) + 6); }
-    int getDefaultBufferSize()              { return 1024; }
+    Array<int> getAvailableBufferSizes() override
+    {
+        Array<int> r;
 
-    String open (const BigInteger& inputChannels,
-                 const BigInteger& outputChannels,
-                 double sampleRate,
-                 int bufferSize)
+        for (int i = 6; i < 12; ++i)
+            r.add (1 << i);
+
+        return r;
+    }
+
+    int getDefaultBufferSize() override                 { return 1024; }
+
+    String open (const BigInteger& inputChannelsWanted,
+                 const BigInteger& outputChannelsWanted,
+                 double targetSampleRate, int bufferSize) override
     {
         close();
 
-        lastError = String::empty;
+        lastError.clear();
         preferredBufferSize = (bufferSize <= 0) ? getDefaultBufferSize() : bufferSize;
 
         //  xxx set up channel mapping
 
-        activeOutputChans = outputChannels;
+        activeOutputChans = outputChannelsWanted;
         activeOutputChans.setRange (2, activeOutputChans.getHighestBit(), false);
         numOutputChannels = activeOutputChans.countNumberOfSetBits();
         monoOutputChannelNumber = activeOutputChans.findNextSetBit (0);
 
-        activeInputChans = inputChannels;
+        activeInputChans = inputChannelsWanted;
         activeInputChans.setRange (2, activeInputChans.getHighestBit(), false);
         numInputChannels = activeInputChans.countNumberOfSetBits();
         monoInputChannelNumber = activeInputChans.findNextSetBit (0);
 
         AudioSessionSetActive (true);
 
-        UInt32 audioCategory = (numInputChannels > 0 && audioInputIsAvailable) ? kAudioSessionCategory_PlayAndRecord
-                                                                               : kAudioSessionCategory_MediaPlayback;
-
-        AudioSessionSetProperty (kAudioSessionProperty_AudioCategory, sizeof (audioCategory), &audioCategory);
-
-        if (audioCategory == kAudioSessionCategory_PlayAndRecord)
+        if (numInputChannels > 0 && audioInputIsAvailable)
         {
-            // (note: mustn't set this until after the audio category property has been set)
-            UInt32 allowBluetoothInput = 1;
-            AudioSessionSetProperty (kAudioSessionProperty_OverrideCategoryEnableBluetoothInput,
-                                     sizeof (allowBluetoothInput), &allowBluetoothInput);
+            setSessionUInt32Property (kAudioSessionProperty_AudioCategory, kAudioSessionCategory_PlayAndRecord);
+            setSessionUInt32Property (kAudioSessionProperty_OverrideCategoryEnableBluetoothInput, 1);
+        }
+        else
+        {
+            setSessionUInt32Property (kAudioSessionProperty_AudioCategory, kAudioSessionCategory_MediaPlayback);
         }
 
         AudioSessionAddPropertyListener (kAudioSessionProperty_AudioRouteChange, routingChangedStatic, this);
@@ -116,11 +119,13 @@ public:
         fixAudioRouteIfSetToReceiver();
         updateDeviceInfo();
 
-        Float32 bufferDuration = preferredBufferSize / sampleRate;
-        AudioSessionSetProperty (kAudioSessionProperty_PreferredHardwareIOBufferDuration, sizeof (bufferDuration), &bufferDuration);
-        actualBufferSize = preferredBufferSize;
+        setSessionFloat64Property (kAudioSessionProperty_PreferredHardwareSampleRate, targetSampleRate);
+        updateSampleRates();
 
-        prepareFloatBuffers();
+        setSessionFloat64Property (kAudioSessionProperty_PreferredHardwareIOBufferDuration, preferredBufferSize / sampleRate);
+        updateCurrentBufferSize();
+
+        prepareFloatBuffers (actualBufferSize);
 
         isRunning = true;
         routingChanged (nullptr);  // creates and starts the AU
@@ -129,11 +134,14 @@ public:
         return lastError;
     }
 
-    void close()
+    void close() override
     {
         if (isRunning)
         {
             isRunning = false;
+
+            setSessionUInt32Property (kAudioSessionProperty_AudioCategory, kAudioSessionCategory_MediaPlayback);
+
             AudioSessionRemovePropertyListenerWithUserData (kAudioSessionProperty_AudioRouteChange, routingChangedStatic, this);
             AudioSessionSetActive (false);
 
@@ -145,19 +153,19 @@ public:
         }
     }
 
-    bool isOpen()                       { return isRunning; }
+    bool isOpen() override                       { return isRunning; }
 
-    int getCurrentBufferSizeSamples()   { return actualBufferSize; }
-    double getCurrentSampleRate()       { return sampleRate; }
-    int getCurrentBitDepth()            { return 16; }
+    int getCurrentBufferSizeSamples() override   { return actualBufferSize; }
+    double getCurrentSampleRate() override       { return sampleRate; }
+    int getCurrentBitDepth() override            { return 16; }
 
-    BigInteger getActiveOutputChannels() const    { return activeOutputChans; }
-    BigInteger getActiveInputChannels() const     { return activeInputChans; }
+    BigInteger getActiveOutputChannels() const override    { return activeOutputChans; }
+    BigInteger getActiveInputChannels() const override     { return activeInputChans; }
 
-    int getOutputLatencyInSamples()               { return 0; } //xxx
-    int getInputLatencyInSamples()                { return 0; } //xxx
+    int getOutputLatencyInSamples() override               { return 0; } //xxx
+    int getInputLatencyInSamples() override                { return 0; } //xxx
 
-    void start (AudioIODeviceCallback* newCallback)
+    void start (AudioIODeviceCallback* newCallback) override
     {
         if (isRunning && callback != newCallback)
         {
@@ -169,7 +177,7 @@ public:
         }
     }
 
-    void stop()
+    void stop() override
     {
         if (isRunning)
         {
@@ -186,13 +194,14 @@ public:
         }
     }
 
-    bool isPlaying()            { return isRunning && callback != nullptr; }
-    String getLastError()       { return lastError; }
+    bool isPlaying() override            { return isRunning && callback != nullptr; }
+    String getLastError() override       { return lastError; }
 
 private:
     //==================================================================================================
     CriticalSection callbackLock;
     Float64 sampleRate;
+    Array<Float64> sampleRates;
     int numInputChannels, numOutputChannels;
     int preferredBufferSize, actualBufferSize;
     bool isRunning;
@@ -209,11 +218,11 @@ private:
     float* outputChannels[3];
     bool monoInputChannelNumber, monoOutputChannelNumber;
 
-    void prepareFloatBuffers()
+    void prepareFloatBuffers (int bufferSize)
     {
         if (numInputChannels + numOutputChannels > 0)
         {
-            floatData.setSize (numInputChannels + numOutputChannels, actualBufferSize);
+            floatData.setSize (numInputChannels + numOutputChannels, bufferSize);
             zeromem (inputChannels, sizeof (inputChannels));
             zeromem (outputChannels, sizeof (outputChannels));
 
@@ -238,6 +247,9 @@ private:
 
         if (callback != nullptr)
         {
+            if ((int) numFrames > floatData.getNumSamples())
+                prepareFloatBuffers ((int) numFrames);
+
             if (audioInputIsAvailable && numInputChannels > 0)
             {
                 short* shortData = (short*) data->mBuffers[0].mData;
@@ -306,11 +318,47 @@ private:
 
     void updateDeviceInfo()
     {
-        UInt32 size = sizeof (sampleRate);
-        AudioSessionGetProperty (kAudioSessionProperty_CurrentHardwareSampleRate, &size, &sampleRate);
+        getSessionProperty (kAudioSessionProperty_CurrentHardwareSampleRate, sampleRate);
+        getSessionProperty (kAudioSessionProperty_AudioInputAvailable, audioInputIsAvailable);
+    }
 
-        size = sizeof (audioInputIsAvailable);
-        AudioSessionGetProperty (kAudioSessionProperty_AudioInputAvailable, &size, &audioInputIsAvailable);
+    void updateSampleRates()
+    {
+        getSessionProperty (kAudioSessionProperty_CurrentHardwareSampleRate, sampleRate);
+
+        sampleRates.clear();
+        sampleRates.add (sampleRate);
+
+        const int commonSampleRates[] = { 8000, 16000, 22050, 32000, 44100, 48000 };
+
+        for (int i = 0; i < numElementsInArray (commonSampleRates); ++i)
+        {
+            Float64 rate = (Float64) commonSampleRates[i];
+
+            if (rate != sampleRate)
+            {
+                setSessionFloat64Property (kAudioSessionProperty_PreferredHardwareSampleRate, rate);
+
+                Float64 actualSampleRate = 0.0;
+                getSessionProperty (kAudioSessionProperty_CurrentHardwareSampleRate, actualSampleRate);
+
+                if (actualSampleRate == rate)
+                    sampleRates.add (actualSampleRate);
+            }
+        }
+
+        DefaultElementComparator<Float64> comparator;
+        sampleRates.sort (comparator);
+
+        setSessionFloat64Property (kAudioSessionProperty_PreferredHardwareSampleRate, sampleRate);
+        getSessionProperty (kAudioSessionProperty_CurrentHardwareSampleRate, sampleRate);
+    }
+
+    void updateCurrentBufferSize()
+    {
+        Float32 bufferDuration = sampleRate > 0 ? (Float32) (preferredBufferSize / sampleRate) : 0.0f;
+        getSessionProperty (kAudioSessionProperty_CurrentHardwareIOBufferDuration, bufferDuration);
+        actualBufferSize = (int) (sampleRate * bufferDuration + 0.5);
     }
 
     void routingChanged (const void* propertyValue)
@@ -346,11 +394,7 @@ private:
             UInt32 formatSize = sizeof (format);
             AudioUnitGetProperty (audioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &format, &formatSize);
 
-            Float32 bufferDuration = preferredBufferSize / sampleRate;
-            UInt32 bufferDurationSize = sizeof (bufferDuration);
-            AudioSessionGetProperty (kAudioSessionProperty_CurrentHardwareIOBufferDuration, &bufferDurationSize, &bufferDuration);
-            actualBufferSize = (int) (sampleRate * bufferDuration + 0.5);
-
+            updateCurrentBufferSize();
             AudioOutputUnitStart (audioUnit);
         }
     }
@@ -399,6 +443,11 @@ private:
             isRunning = true;
             AudioSessionSetActive (true);
             AudioOutputUnitStart (audioUnit);
+
+            const ScopedLock sl (callbackLock);
+
+            if (callback != nullptr)
+                callback->audioDeviceError ("iOS audio session resumed");
         }
     }
 
@@ -421,9 +470,9 @@ private:
         format.mFormatID = kAudioFormatLinearPCM;
         format.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked | kAudioFormatFlagsNativeEndian;
         format.mBitsPerChannel = 8 * sizeof (short);
-        format.mChannelsPerFrame = numChannels;
+        format.mChannelsPerFrame = (UInt32) numChannels;
         format.mFramesPerPacket = 1;
-        format.mBytesPerFrame = format.mBytesPerPacket = numChannels * sizeof (short);
+        format.mBytesPerFrame = format.mBytesPerPacket = (UInt32) numChannels * sizeof (short);
     }
 
     bool createAudioUnit()
@@ -483,22 +532,28 @@ private:
     static void fixAudioRouteIfSetToReceiver()
     {
         CFStringRef audioRoute = 0;
-        UInt32 propertySize = sizeof (audioRoute);
-        if (AudioSessionGetProperty (kAudioSessionProperty_AudioRoute, &propertySize, &audioRoute) == noErr)
+        if (getSessionProperty (kAudioSessionProperty_AudioRoute, audioRoute) == noErr)
         {
             NSString* route = (NSString*) audioRoute;
 
             //DBG ("audio route: " + nsStringToJuce (route));
 
             if ([route hasPrefix: @"Receiver"])
-            {
-                UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_Speaker;
-                AudioSessionSetProperty (kAudioSessionProperty_OverrideAudioRoute, sizeof (audioRouteOverride), &audioRouteOverride);
-            }
+                setSessionUInt32Property (kAudioSessionProperty_OverrideAudioRoute, kAudioSessionOverrideAudioRoute_Speaker);
 
             CFRelease (audioRoute);
         }
     }
+
+    template <typename Type>
+    static OSStatus getSessionProperty (AudioSessionPropertyID propID, Type& result) noexcept
+    {
+        UInt32 valueSize = sizeof (result);
+        return AudioSessionGetProperty (propID, &valueSize, &result);
+    }
+
+    static void setSessionUInt32Property  (AudioSessionPropertyID propID, UInt32  v) noexcept  { AudioSessionSetProperty (propID, sizeof (v), &v); }
+    static void setSessionFloat64Property (AudioSessionPropertyID propID, Float64 v) noexcept  { AudioSessionSetProperty (propID, sizeof (v), &v); }
 
     JUCE_DECLARE_NON_COPYABLE (iOSAudioIODevice)
 };
@@ -508,31 +563,15 @@ private:
 class iOSAudioIODeviceType  : public AudioIODeviceType
 {
 public:
-    iOSAudioIODeviceType()  : AudioIODeviceType ("iOS Audio")
-    {
-    }
+    iOSAudioIODeviceType()  : AudioIODeviceType ("iOS Audio") {}
 
     void scanForDevices() {}
+    StringArray getDeviceNames (bool /*wantInputNames*/) const       { return StringArray ("iOS Audio"); }
+    int getDefaultDeviceIndex (bool /*forInput*/) const              { return 0; }
+    int getIndexOfDevice (AudioIODevice* d, bool /*asInput*/) const  { return d != nullptr ? 0 : -1; }
+    bool hasSeparateInputsAndOutputs() const                         { return false; }
 
-    StringArray getDeviceNames (bool wantInputNames) const
-    {
-        return StringArray ("iOS Audio");
-    }
-
-    int getDefaultDeviceIndex (bool forInput) const
-    {
-        return 0;
-    }
-
-    int getIndexOfDevice (AudioIODevice* device, bool asInput) const
-    {
-        return device != nullptr ? 0 : -1;
-    }
-
-    bool hasSeparateInputsAndOutputs() const    { return false; }
-
-    AudioIODevice* createDevice (const String& outputDeviceName,
-                                 const String& inputDeviceName)
+    AudioIODevice* createDevice (const String& outputDeviceName, const String& inputDeviceName)
     {
         if (outputDeviceName.isNotEmpty() || inputDeviceName.isNotEmpty())
             return new iOSAudioIODevice (outputDeviceName.isNotEmpty() ? outputDeviceName
