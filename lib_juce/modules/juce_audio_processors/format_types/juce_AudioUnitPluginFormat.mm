@@ -653,8 +653,13 @@ public:
 
     void sendAllParametersChangedEvents()
     {
-        for (int i = 0; i < parameters.size(); ++i)
-            sendParameterChangeEvent (i);
+        jassert (audioUnit != nullptr);
+
+        AudioUnitParameter changedUnit;
+        changedUnit.mAudioUnit = audioUnit;
+        changedUnit.mParameterID = kAUParameterListener_AnyParameter;
+
+        AUParameterListenerNotify (nullptr, nullptr, &changedUnit);
     }
 
     const String getParameterName (int index) override
@@ -944,11 +949,11 @@ private:
             }
 
             AUEventListenerCreate (eventListenerCallback, this,
-//                                  #if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
-//                                   CFRunLoopGetMain(),
-//                                  #else
+                                  #if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_4
+                                   CFRunLoopGetMain(),
+                                  #else
                                    nullptr,
-//                                  #endif
+                                  #endif
                                    kCFRunLoopDefaultMode, 0, 0, &eventListenerRef);
 
             for (int i = 0; i < parameters.size(); ++i)
