@@ -35,18 +35,16 @@ Windows device drivers.
 Steinberg SDK
 -------------
 
-You will need to obtain the Asio and VST headers from the
+You will need to obtain the VST headers from the
 Steinberg site.  Place these in a directory called
 'steinberg' as follows:
 
-    asio.h
-    asiodrvr.h
-    asiosys.h
-    combase.h
-    iasiodrv.h
-    pluginterfaces/vst2.x/aeffect.h
-    pluginterfaces/vst2.x/aeffectx.h
-    pluginterfaces/vst2.x/vstfxstore.h
+    ...
+    pluginterfaces/base/*
+    pluginterfaces/vst2.x/*
+    ...
+    public.sdk/source/*
+    ...
 
 Windows
 -------
