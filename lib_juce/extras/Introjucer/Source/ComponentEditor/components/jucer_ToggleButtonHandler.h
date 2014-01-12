@@ -1,28 +1,26 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
-
 
 class ToggleButtonHandler  : public ButtonHandler
 {
@@ -38,13 +36,13 @@ public:
         return new ToggleButton ("new toggle button");
     }
 
-    void getEditableProperties (Component* component, JucerDocument& document, Array <PropertyComponent*>& properties)
+    void getEditableProperties (Component* component, JucerDocument& document, Array<PropertyComponent*>& props)
     {
-        ButtonHandler::getEditableProperties (component, document, properties);
+        ButtonHandler::getEditableProperties (component, document, props);
 
-        properties.add (new ToggleButtonStateProperty ((ToggleButton*) component, document));
+        props.add (new ToggleButtonStateProperty ((ToggleButton*) component, document));
 
-        addColourProperties (component, document, properties);
+        addColourProperties (component, document, props);
     }
 
     XmlElement* createXmlFor (Component* comp, const ComponentLayout* layout)
@@ -64,7 +62,7 @@ public:
         if (! ButtonHandler::restoreFromXml (xml, comp, layout))
             return false;
 
-        tb->setToggleState (xml.getBoolAttribute ("state", false), false);
+        tb->setToggleState (xml.getBoolAttribute ("state", false), dontSendNotification);
         return true;
     }
 
@@ -77,7 +75,7 @@ public:
         String s;
 
         if (tb->getToggleState())
-            s << memberVariableName << "->setToggleState (true, false);\n";
+            s << memberVariableName << "->setToggleState (true, dontSendNotification);\n";
 
         s << getColourIntialisationCode (component, memberVariableName)
           << '\n';
@@ -109,8 +107,8 @@ private:
         class ToggleStateChangeAction  : public ComponentUndoableAction <ToggleButton>
         {
         public:
-            ToggleStateChangeAction (ToggleButton* const comp, ComponentLayout& layout, const bool newState_)
-                : ComponentUndoableAction <ToggleButton> (comp, layout),
+            ToggleStateChangeAction (ToggleButton* const comp, ComponentLayout& l, const bool newState_)
+                : ComponentUndoableAction <ToggleButton> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->getToggleState();
@@ -119,7 +117,7 @@ private:
             bool perform()
             {
                 showCorrectTab();
-                getComponent()->setToggleState (newState, false);
+                getComponent()->setToggleState (newState, dontSendNotification);
                 changed();
                 return true;
             }
@@ -127,7 +125,7 @@ private:
             bool undo()
             {
                 showCorrectTab();
-                getComponent()->setToggleState (oldState, false);
+                getComponent()->setToggleState (oldState, dontSendNotification);
                 changed();
                 return true;
             }

@@ -17,12 +17,13 @@
         <Compiler>
           <Add option="-O0"/>
           <Add option="-std=gnu++0x"/>
-          <Add option="-march=pentium4"/>
           <Add option="-mstackrealign"/>
           <Add option="-g"/>
           <Add option="-D__MINGW__=1"/>
           <Add option="-D__MINGW_EXTENSION="/>
           <Add option="-DJUCER_CODEBLOCKS_20734A5D=1"/>
+          <Add option="-DJUCE_APP_VERSION=3.1.0"/>
+          <Add option="-DJUCE_APP_VERSION_HEX=0x30100"/>
           <Add directory="."/>
           <Add directory="..\..\JuceLibraryCode"/>
         </Compiler>
@@ -51,11 +52,12 @@
         <Compiler>
           <Add option="-Os"/>
           <Add option="-std=gnu++0x"/>
-          <Add option="-march=pentium4"/>
           <Add option="-mstackrealign"/>
           <Add option="-D__MINGW__=1"/>
           <Add option="-D__MINGW_EXTENSION="/>
           <Add option="-DJUCER_CODEBLOCKS_20734A5D=1"/>
+          <Add option="-DJUCE_APP_VERSION=3.1.0"/>
+          <Add option="-DJUCE_APP_VERSION_HEX=0x30100"/>
           <Add directory="."/>
           <Add directory="..\..\JuceLibraryCode"/>
         </Compiler>
@@ -122,11 +124,6 @@
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
-    <Unit filename="../../Source/Application/jucer_JuceUpdater.cpp"/>
-    <Unit filename="../../Source/Application/jucer_JuceUpdater.h">
-      <Option compile="0"/>
-      <Option link="0"/>
-    </Unit>
     <Unit filename="../../Source/Application/jucer_Main.cpp"/>
     <Unit filename="../../Source/Application/jucer_MainWindow.cpp"/>
     <Unit filename="../../Source/Application/jucer_MainWindow.h">
@@ -142,8 +139,15 @@
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
-    <Unit filename="../../Source/Project/jucer_ConfigPage.cpp"/>
-    <Unit filename="../../Source/Project/jucer_ConfigPage.h">
+    <Unit filename="../../Source/Project/jucer_ConfigTree_Base.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../Source/Project/jucer_ConfigTree_Exporter.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../Source/Project/jucer_ConfigTree_Modules.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -180,18 +184,20 @@
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
-    <Unit filename="../../Source/Project/jucer_ProjectTreeViewBase.cpp"/>
-    <Unit filename="../../Source/Project/jucer_ProjectTreeViewBase.h">
+    <Unit filename="../../Source/Project/jucer_ProjectTree_Base.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../Source/Project/jucer_ProjectTree_File.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../Source/Project/jucer_ProjectTree_Group.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
     <Unit filename="../../Source/Project/jucer_ProjectType.cpp"/>
     <Unit filename="../../Source/Project/jucer_ProjectType.h">
-      <Option compile="0"/>
-      <Option link="0"/>
-    </Unit>
-    <Unit filename="../../Source/Project/jucer_TreeViewTypes.cpp"/>
-    <Unit filename="../../Source/Project/jucer_TreeViewTypes.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -268,6 +274,10 @@
     </Unit>
     <Unit filename="../../Source/Utility/jucer_StoredSettings.cpp"/>
     <Unit filename="../../Source/Utility/jucer_StoredSettings.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../Source/Utility/jucer_TranslationTool.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -724,6 +734,10 @@
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
+    <Unit filename="../../../../modules/juce_core/text/juce_StringRef.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
     <Unit filename="../../../../modules/juce_core/text/juce_TextDiff.cpp">
       <Option compile="0"/>
       <Option link="0"/>
@@ -769,6 +783,10 @@
       <Option link="0"/>
     </Unit>
     <Unit filename="../../../../modules/juce_core/memory/juce_ByteOrder.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_core/memory/juce_ContainerDeletePolicy.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -1208,11 +1226,19 @@
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
-    <Unit filename="../../../../modules/juce_core/json/juce_JSON.cpp">
+    <Unit filename="../../../../modules/juce_core/javascript/juce_Javascript.cpp">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
-    <Unit filename="../../../../modules/juce_core/json/juce_JSON.h">
+    <Unit filename="../../../../modules/juce_core/javascript/juce_Javascript.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_core/javascript/juce_JSON.cpp">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_core/javascript/juce_JSON.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -1293,6 +1319,10 @@
       <Option link="0"/>
     </Unit>
     <Unit filename="../../../../modules/juce_core/native/juce_BasicNativeHeaders.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_core/native/juce_linux_CommonFile.cpp">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -1493,6 +1523,10 @@
       <Option link="0"/>
     </Unit>
     <Unit filename="../../../../modules/juce_events/messages/juce_DeletedAtShutdown.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_events/messages/juce_Initialisation.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -1792,15 +1826,7 @@
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
-    <Unit filename="../../../../modules/juce_graphics/geometry/juce_RectangleList.cpp">
-      <Option compile="0"/>
-      <Option link="0"/>
-    </Unit>
     <Unit filename="../../../../modules/juce_graphics/geometry/juce_RectangleList.h">
-      <Option compile="0"/>
-      <Option link="0"/>
-    </Unit>
-    <Unit filename="../../../../modules/juce_graphics/placement/juce_Justification.cpp">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -2021,6 +2047,14 @@
       <Option link="0"/>
     </Unit>
     <Unit filename="../../../../modules/juce_gui_basics/mouse/juce_MouseEvent.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_basics/mouse/juce_MouseInactivityDetector.cpp">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_basics/mouse/juce_MouseInactivityDetector.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -2309,6 +2343,14 @@
       <Option link="0"/>
     </Unit>
     <Unit filename="../../../../modules/juce_gui_basics/menus/juce_PopupMenu.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_basics/layout/juce_AnimatedPosition.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_basics/layout/juce_AnimatedPositionBehaviours.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -2700,6 +2742,30 @@
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
+    <Unit filename="../../../../modules/juce_gui_basics/lookandfeel/juce_LookAndFeel_V1.cpp">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_basics/lookandfeel/juce_LookAndFeel_V1.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_basics/lookandfeel/juce_LookAndFeel_V2.cpp">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_basics/lookandfeel/juce_LookAndFeel_V2.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_basics/lookandfeel/juce_LookAndFeel_V3.cpp">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_basics/lookandfeel/juce_LookAndFeel_V3.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
     <Unit filename="../../../../modules/juce_gui_basics/filebrowser/juce_DirectoryContentsDisplayComponent.cpp">
       <Option compile="0"/>
       <Option link="0"/>
@@ -2864,10 +2930,6 @@
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
-    <Unit filename="../../../../modules/juce_gui_basics/application/juce_Initialisation.h">
-      <Option compile="0"/>
-      <Option link="0"/>
-    </Unit>
     <Unit filename="../../../../modules/juce_gui_basics/native/juce_android_FileChooser.cpp">
       <Option compile="0"/>
       <Option link="0"/>
@@ -2972,6 +3034,22 @@
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
+    <Unit filename="../../../../modules/juce_gui_extra/code_editor/juce_LuaCodeTokeniser.cpp">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_extra/code_editor/juce_LuaCodeTokeniser.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_extra/code_editor/juce_XMLCodeTokeniser.cpp">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_extra/code_editor/juce_XMLCodeTokeniser.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
     <Unit filename="../../../../modules/juce_gui_extra/documents/juce_FileBasedDocument.cpp">
       <Option compile="0"/>
       <Option link="0"/>
@@ -2989,14 +3067,6 @@
       <Option link="0"/>
     </Unit>
     <Unit filename="../../../../modules/juce_gui_extra/embedding/juce_UIViewComponent.h">
-      <Option compile="0"/>
-      <Option link="0"/>
-    </Unit>
-    <Unit filename="../../../../modules/juce_gui_extra/lookandfeel/juce_OldSchoolLookAndFeel.cpp">
-      <Option compile="0"/>
-      <Option link="0"/>
-    </Unit>
-    <Unit filename="../../../../modules/juce_gui_extra/lookandfeel/juce_OldSchoolLookAndFeel.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -3025,6 +3095,14 @@
       <Option link="0"/>
     </Unit>
     <Unit filename="../../../../modules/juce_gui_extra/misc/juce_KeyMappingEditorComponent.h">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_extra/misc/juce_LiveConstantEditor.cpp">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_extra/misc/juce_LiveConstantEditor.h">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>
@@ -3089,6 +3167,10 @@
       <Option link="0"/>
     </Unit>
     <Unit filename="../../../../modules/juce_gui_extra/native/juce_mac_NSViewComponent.mm">
+      <Option compile="0"/>
+      <Option link="0"/>
+    </Unit>
+    <Unit filename="../../../../modules/juce_gui_extra/native/juce_mac_SystemTrayIcon.cpp">
       <Option compile="0"/>
       <Option link="0"/>
     </Unit>

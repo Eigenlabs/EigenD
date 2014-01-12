@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -34,18 +33,18 @@ public:
 
     Component* createNewComponent (JucerDocument*)
     {
-        HyperlinkButton* hb = new HyperlinkButton ("new hyperlink", URL ("http://www.rawmaterialsoftware.com/juce"));
+        HyperlinkButton* hb = new HyperlinkButton ("new hyperlink", URL ("http://www.juce.com"));
 
         setNeedsButtonListener (hb, false);
         return hb;
     }
 
-    void getEditableProperties (Component* component, JucerDocument& document, Array <PropertyComponent*>& properties)
+    void getEditableProperties (Component* component, JucerDocument& document, Array<PropertyComponent*>& props)
     {
         HyperlinkButton* const hb = (HyperlinkButton*) component;
-        ButtonHandler::getEditableProperties (component, document, properties);
-        properties.add (new HyperlinkURLProperty (hb, document));
-        addColourProperties (component, document, properties);
+        ButtonHandler::getEditableProperties (component, document, props);
+        props.add (new HyperlinkURLProperty (hb, document));
+        addColourProperties (component, document, props);
     }
 
     XmlElement* createXmlFor (Component* comp, const ComponentLayout* layout)
@@ -68,13 +67,13 @@ public:
         return true;
     }
 
-    String getCreationParameters (Component* comp)
+    String getCreationParameters (GeneratedCode& code, Component* comp)
     {
-        HyperlinkButton* const hb = dynamic_cast <HyperlinkButton*> (comp);
+        HyperlinkButton* const hb = dynamic_cast<HyperlinkButton*> (comp);
 
-        return quotedString (hb->getButtonText())
+        return quotedString (hb->getButtonText(), code.shouldUseTransMacro())
                 + ",\nURL ("
-                + quotedString (hb->getURL().toString (false))
+                + quotedString (hb->getURL().toString (false), false)
                 + ")";
     }
 
@@ -110,8 +109,8 @@ private:
         class HyperlinkURLChangeAction  : public ComponentUndoableAction <HyperlinkButton>
         {
         public:
-            HyperlinkURLChangeAction (HyperlinkButton* const comp, ComponentLayout& layout, const URL& newState_)
-                : ComponentUndoableAction <HyperlinkButton> (comp, layout),
+            HyperlinkURLChangeAction (HyperlinkButton* const comp, ComponentLayout& l, const URL& newState_)
+                : ComponentUndoableAction <HyperlinkButton> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->getURL();

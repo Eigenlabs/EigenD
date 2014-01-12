@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -173,7 +172,7 @@ void ComponentOverlayComponent::resizeEnd()
     layout.getDocument()->beginTransaction();
 }
 
-void ComponentOverlayComponent::checkBounds (Rectangle<int>& bounds,
+void ComponentOverlayComponent::checkBounds (Rectangle<int>& b,
                                              const Rectangle<int>& previousBounds,
                                              const Rectangle<int>& limits,
                                              const bool isStretchingTop,
@@ -186,7 +185,7 @@ void ComponentOverlayComponent::checkBounds (Rectangle<int>& bounds,
     else
         setFixedAspectRatio (0.0);
 
-    ComponentBoundsConstrainer::checkBounds (bounds, previousBounds, limits, isStretchingTop, isStretchingLeft, isStretchingBottom, isStretchingRight);
+    ComponentBoundsConstrainer::checkBounds (b, previousBounds, limits, isStretchingTop, isStretchingLeft, isStretchingBottom, isStretchingRight);
 
     if (layout.getDocument()->isSnapActive (true))
     {
@@ -195,10 +194,10 @@ void ComponentOverlayComponent::checkBounds (Rectangle<int>& bounds,
             const int dx = parent->getX();
             const int dy = parent->getY();
 
-            int x = bounds.getX();
-            int y = bounds.getY();
-            int w = bounds.getWidth();
-            int h = bounds.getHeight();
+            int x = b.getX();
+            int y = b.getY();
+            int w = b.getWidth();
+            int h = b.getHeight();
 
             x += borderThickness - dx;
             y += borderThickness - dy;
@@ -225,24 +224,24 @@ void ComponentOverlayComponent::checkBounds (Rectangle<int>& bounds,
             x -= borderThickness - dx;
             y -= borderThickness - dy;
 
-            bounds = Rectangle<int> (x, y, w, h);
+            b = Rectangle<int> (x, y, w, h);
         }
     }
 }
 
-void ComponentOverlayComponent::applyBoundsToComponent (Component* component, const Rectangle<int>& bounds)
+void ComponentOverlayComponent::applyBoundsToComponent (Component* component, const Rectangle<int>& b)
 {
-    if (component->getBounds() != bounds)
+    if (component->getBounds() != b)
     {
         layout.getDocument()->getUndoManager().undoCurrentTransactionOnly();
 
-        component->setBounds (bounds);
+        component->setBounds (b);
 
         if (Component* const parent = target->getParentComponent())
-            target->setBounds (bounds.getX() + borderThickness - parent->getX(),
-                               bounds.getY() + borderThickness - parent->getY(),
-                               bounds.getWidth() - borderThickness * 2,
-                               bounds.getHeight() - borderThickness * 2);
+            target->setBounds (b.getX() + borderThickness - parent->getX(),
+                               b.getY() + borderThickness - parent->getY(),
+                               b.getWidth() - borderThickness * 2,
+                               b.getHeight() - borderThickness * 2);
 
         layout.updateStoredComponentPosition (target, true);
     }

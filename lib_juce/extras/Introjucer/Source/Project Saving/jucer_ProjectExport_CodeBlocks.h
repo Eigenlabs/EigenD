@@ -1,28 +1,26 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
-
 
 class CodeBlocksProjectExporter  : public ProjectExporter
 {
@@ -49,18 +47,19 @@ public:
     }
 
     //==============================================================================
-    bool launchProject()                    { return false; }
-    bool isCodeBlocks() const               { return true; }
-    bool isWindows() const                  { return true; }
-    bool usesMMFiles() const                { return false; }
-    bool canCopeWithDuplicateFiles()        { return false; }
+    bool canLaunchProject() override                 { return false; }
+    bool launchProject() override                    { return false; }
+    bool isCodeBlocks() const override               { return true; }
+    bool isWindows() const override                  { return true; }
+    bool usesMMFiles() const override                { return false; }
+    bool canCopeWithDuplicateFiles() override        { return false; }
 
-    void createExporterProperties (PropertyListBuilder&)
+    void createExporterProperties (PropertyListBuilder&) override
     {
     }
 
     //==============================================================================
-    void create (const OwnedArray<LibraryModule>&) const
+    void create (const OwnedArray<LibraryModule>&) const override
     {
         const File cbpFile (getTargetFolder().getChildFile (project.getProjectFilenameRoot())
                                              .withFileExtension (".cbp"));
@@ -86,7 +85,7 @@ private:
         }
     };
 
-    BuildConfiguration::Ptr createBuildConfig (const ValueTree& tree) const
+    BuildConfiguration::Ptr createBuildConfig (const ValueTree& tree) const override
     {
         return new CodeBlocksBuildConfiguration (project, tree);
     }
@@ -133,7 +132,6 @@ private:
         StringArray flags;
         flags.add ("-O" + config.getGCCOptimisationFlag());
         flags.add ("-std=gnu++0x");
-        flags.add ("-march=pentium4");
         flags.add ("-mstackrealign");
 
         if (config.isDebug())
@@ -212,7 +210,7 @@ private:
                 outputPath ="bin/" + File::createLegalFileName (config.getName().trim());
             }
 
-            output->setAttribute ("output", outputPath + "/" + config.getTargetBinaryNameString());
+            output->setAttribute ("output", outputPath + "/" + replacePreprocessorTokens (config, config.getTargetBinaryNameString()));
 
             output->setAttribute ("prefix_auto", 1);
             output->setAttribute ("extension_auto", 1);
@@ -278,7 +276,7 @@ private:
     {
         XmlElement* const linker = xml.createNewChildElement ("Linker");
 
-        const char* defaultLibs[] = { "gdi32", "user32", "kernel32", "comctl32" };
+        static const char* defaultLibs[] = { "gdi32", "user32", "kernel32", "comctl32" };
 
         StringArray libs (defaultLibs, numElementsInArray (defaultLibs));
         libs.addTokens (getExternalLibrariesString(), ";\n", "\"'");
@@ -326,9 +324,9 @@ private:
         addCompileUnits (xml);
     }
 
-    void setAddOption (XmlElement& xml, const String& name, const String& value) const
+    void setAddOption (XmlElement& xml, const String& nm, const String& value) const
     {
-        xml.createNewChildElement ("Add")->setAttribute (name, value);
+        xml.createNewChildElement ("Add")->setAttribute (nm, value);
     }
 
     JUCE_DECLARE_NON_COPYABLE (CodeBlocksProjectExporter)

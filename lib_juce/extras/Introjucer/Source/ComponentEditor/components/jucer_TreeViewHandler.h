@@ -1,28 +1,26 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
-
 
 class TreeViewHandler  : public ComponentTypeHandler
 {
@@ -64,20 +62,20 @@ public:
         return true;
     }
 
-    void getEditableProperties (Component* component, JucerDocument& document, Array <PropertyComponent*>& properties)
+    void getEditableProperties (Component* component, JucerDocument& document, Array<PropertyComponent*>& props)
     {
-        ComponentTypeHandler::getEditableProperties (component, document, properties);
+        ComponentTypeHandler::getEditableProperties (component, document, props);
         TreeView* const t = dynamic_cast <TreeView*> (component);
 
-        properties.add (new TreeViewRootItemProperty (t, document));
-        properties.add (new TreeViewRootOpennessProperty (t, document));
+        props.add (new TreeViewRootItemProperty (t, document));
+        props.add (new TreeViewRootOpennessProperty (t, document));
 
-        addColourProperties (t, document, properties);
+        addColourProperties (t, document, props);
     }
 
-    String getCreationParameters (Component* comp)
+    String getCreationParameters (GeneratedCode&, Component* comp)
     {
-        return quotedString (comp->getName());
+        return quotedString (comp->getName(), false);
     }
 
     void fillInCreationCode (GeneratedCode& code, Component* component, const String& memberVariableName)
@@ -155,8 +153,8 @@ private:
     class TreeViewRootItemProperty  : public ComponentBooleanProperty <TreeView>
     {
     public:
-        TreeViewRootItemProperty (TreeView* comp, JucerDocument& document)
-            : ComponentBooleanProperty <TreeView> ("show root item", "Root item visible", "Root item visible", comp, document)
+        TreeViewRootItemProperty (TreeView* comp, JucerDocument& doc)
+            : ComponentBooleanProperty <TreeView> ("show root item", "Root item visible", "Root item visible", comp, doc)
         {
         }
 
@@ -175,8 +173,8 @@ private:
         class TreeviewRootChangeAction  : public ComponentUndoableAction <TreeView>
         {
         public:
-            TreeviewRootChangeAction (TreeView* const comp, ComponentLayout& layout, const bool newState_)
-                : ComponentUndoableAction <TreeView> (comp, layout),
+            TreeviewRootChangeAction (TreeView* const comp, ComponentLayout& l, const bool newState_)
+                : ComponentUndoableAction <TreeView> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->isRootItemVisible();
@@ -206,8 +204,8 @@ private:
     class TreeViewRootOpennessProperty  : public ComponentChoiceProperty <TreeView>
     {
     public:
-        TreeViewRootOpennessProperty (TreeView* comp, JucerDocument& document)
-            : ComponentChoiceProperty <TreeView> ("default openness", comp, document)
+        TreeViewRootOpennessProperty (TreeView* comp, JucerDocument& doc)
+            : ComponentChoiceProperty <TreeView> ("default openness", comp, doc)
         {
             choices.add ("Items open by default");
             choices.add ("Items closed by default");
@@ -228,8 +226,8 @@ private:
         class TreeviewOpennessChangeAction  : public ComponentUndoableAction <TreeView>
         {
         public:
-            TreeviewOpennessChangeAction (TreeView* const comp, ComponentLayout& layout, const bool newState_)
-                : ComponentUndoableAction <TreeView> (comp, layout),
+            TreeviewOpennessChangeAction (TreeView* const comp, ComponentLayout& l, const bool newState_)
+                : ComponentUndoableAction <TreeView> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->areItemsOpenByDefault();

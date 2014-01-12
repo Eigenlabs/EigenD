@@ -655,11 +655,11 @@ public:
     {
         jassert (audioUnit != nullptr);
 
-        AudioUnitParameter changedUnit;
-        changedUnit.mAudioUnit = audioUnit;
-        changedUnit.mParameterID = kAUParameterListener_AnyParameter;
+        AudioUnitParameter param;
+        param.mAudioUnit = audioUnit;
+        param.mParameterID = kAUParameterListener_AnyParameter;
 
-        AUParameterListenerNotify (nullptr, nullptr, &changedUnit);
+        AUParameterListenerNotify (nullptr, nullptr, &param);
     }
 
     const String getParameterName (int index) override

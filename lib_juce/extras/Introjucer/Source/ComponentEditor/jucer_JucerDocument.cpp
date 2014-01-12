@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -53,31 +52,38 @@ JucerDocument::JucerDocument (SourceCodeDocument* c)
     jassert (cpp != nullptr);
     resources.setDocument (this);
 
-    commandManager->commandStatusChanged();
+    IntrojucerApp::getCommandManager().commandStatusChanged();
     cpp->getCodeDocument().addListener (this);
+    IntrojucerApp::getApp().openDocumentManager.addListener (this);
 }
 
 JucerDocument::~JucerDocument()
 {
+    IntrojucerApp::getApp().openDocumentManager.removeListener (this);
     cpp->getCodeDocument().removeListener (this);
-    commandManager->commandStatusChanged();
+    IntrojucerApp::getCommandManager().commandStatusChanged();
 }
 
 //==============================================================================
 void JucerDocument::changed()
 {
     sendChangeMessage();
-    commandManager->commandStatusChanged();
+    IntrojucerApp::getCommandManager().commandStatusChanged();
     startTimer (800);
 }
 
 struct UserDocChangeTimer  : public Timer
 {
     UserDocChangeTimer (JucerDocument& d) : doc (d) {}
-    void timerCallback()        { doc.reloadFromDocument(); }
+    void timerCallback() override       { doc.reloadFromDocument(); }
 
     JucerDocument& doc;
 };
+
+bool JucerDocument::documentAboutToClose (OpenDocumentManager::Document* doc)
+{
+    return doc != cpp;
+}
 
 void JucerDocument::userEditedCpp()
 {
@@ -349,7 +355,7 @@ XmlElement* JucerDocument::createXml() const
     doc->setAttribute ("snapPixels", snapGridPixels);
     doc->setAttribute ("snapActive", snapActive);
     doc->setAttribute ("snapShown", snapShown);
-    doc->setAttribute ("overlayOpacity", (double) componentOverlayOpacity);
+    doc->setAttribute ("overlayOpacity", String (componentOverlayOpacity, 3));
     doc->setAttribute ("fixedSize", fixedSize);
     doc->setAttribute ("initialWidth", initialWidth);
     doc->setAttribute ("initialHeight", initialHeight);
@@ -395,12 +401,8 @@ bool JucerDocument::loadFromXml (const XmlElement& xml)
         activeExtraMethods.clear();
 
         if (XmlElement* const methods = xml.getChildByName ("METHODS"))
-        {
             forEachXmlChildElementWithTagName (*methods, e, "METHOD")
-            {
                 activeExtraMethods.addIfNotAlreadyThere (e->getStringAttribute ("name"));
-            }
-        }
 
         activeExtraMethods.trim();
         activeExtraMethods.removeEmptyStrings();
@@ -424,7 +426,7 @@ void JucerDocument::fillInGeneratedCode (GeneratedCode& code) const
     code.initialisers.addLines (variableInitialisers);
 
     if (! componentName.isEmpty())
-        code.parentClassInitialiser = "Component (" + quotedString (code.componentName) + ")";
+        code.constructorCode << "setName (" + quotedString (componentName, false) + ");\n";
 
     // call these now, just to make sure they're the first two methods in the list.
     code.getCallbackCode (String::empty, "void", "paint (Graphics& g)", false)
@@ -439,7 +441,7 @@ void JucerDocument::fillInGeneratedCode (GeneratedCode& code) const
 
     ScopedPointer<XmlElement> e (createXml());
     jassert (e != nullptr);
-    code.jucerMetadata = e->createDocument (String::empty, false, false);
+    code.jucerMetadata = e->createDocument ("", false, false);
 
     resources.fillInGeneratedCode (code);
 
@@ -448,8 +450,7 @@ void JucerDocument::fillInGeneratedCode (GeneratedCode& code) const
            "//[/UserPreSize]\n";
 
     if (initialWidth > 0 || initialHeight > 0)
-        code.constructorCode
-            << "\nsetSize (" << initialWidth << ", " << initialHeight << ");\n";
+        code.constructorCode << "\nsetSize (" << initialWidth << ", " << initialHeight << ");\n";
 
     code.getCallbackCode (String::empty, "void", "paint (Graphics& g)", false)
         << "//[UserPaint] Add your own custom painting code here..\n//[/UserPaint]";
@@ -465,24 +466,25 @@ void JucerDocument::fillInGeneratedCode (GeneratedCode& code) const
     {
         if (isOptionalMethodEnabled (methods[i]))
         {
-            String& s = code.getCallbackCode (baseClasses[i], returnValues[i], methods[i], false);
+            String baseClassToAdd (baseClasses[i]);
+
+            if (baseClassToAdd == "Component" || baseClassToAdd == "Button")
+                baseClassToAdd.clear();
+
+            String& s = code.getCallbackCode (baseClassToAdd, returnValues[i], methods[i], false);
 
             if (! s.contains ("//["))
             {
                 String userCommentTag ("UserCode_");
                 userCommentTag += methods[i].upToFirstOccurrenceOf ("(", false, false).trim();
 
-                s << "\n//["
-                  << userCommentTag
-                  << "] -- Add your code here...\n"
+                s << "\n//[" << userCommentTag << "] -- Add your code here...\n"
                   << initialContents[i];
 
                 if (initialContents[i].isNotEmpty() && ! initialContents[i].endsWithChar ('\n'))
                     s << '\n';
 
-                s << "//[/"
-                  << userCommentTag
-                  << "]\n";
+                s << "//[/" << userCommentTag << "]\n";
             }
         }
     }
@@ -592,11 +594,10 @@ bool JucerDocument::reloadFromDocument()
 
     currentXML = newXML;
     stopTimer();
-    if (! loadFromXml (*currentXML))
-        return false;
 
     resources.loadFromCpp (getCppFile(), cppContent);
-    return true;
+
+    return loadFromXml (*currentXML);
 }
 
 XmlElement* JucerDocument::pullMetaDataFromCppFile (const String& cpp)
@@ -658,8 +659,8 @@ JucerDocument* JucerDocument::createForCppFile (Project* p, const File& file)
 {
     OpenDocumentManager& odm = IntrojucerApp::getApp().openDocumentManager;
 
-    if (SourceCodeDocument* cpp = dynamic_cast <SourceCodeDocument*> (odm.openFile (p, file)))
-        if (dynamic_cast <SourceCodeDocument*> (odm.openFile (p, file.withFileExtension (".h"))) != nullptr)
+    if (SourceCodeDocument* cpp = dynamic_cast<SourceCodeDocument*> (odm.openFile (p, file)))
+        if (dynamic_cast<SourceCodeDocument*> (odm.openFile (p, file.withFileExtension (".h"))) != nullptr)
             return createDocument (cpp);
 
     return nullptr;
@@ -674,7 +675,7 @@ public:
     {
     }
 
-    bool save()
+    bool save() override
     {
         return SourceCodeDocument::save() && saveHeader();
     }
@@ -689,7 +690,7 @@ public:
         return false;
     }
 
-    Component* createEditor()
+    Component* createEditor() override
     {
         ScopedPointer<JucerDocument> jucerDoc (JucerDocument::createForCppFile (getProject(), getFile()));
 
@@ -704,8 +705,8 @@ public:
     public:
         Type() {}
 
-        bool canOpenFile (const File& f)                { return JucerDocument::isValidJucerCppFile (f); }
-        Document* openFile (Project* p, const File& f)  { return new JucerComponentDocument (p, f); }
+        bool canOpenFile (const File& f) override                { return JucerDocument::isValidJucerCppFile (f); }
+        Document* openFile (Project* p, const File& f) override  { return new JucerComponentDocument (p, f); }
     };
 };
 

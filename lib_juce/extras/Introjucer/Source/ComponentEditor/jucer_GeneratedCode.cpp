@@ -1,31 +1,30 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
 
 #include "../jucer_Headers.h"
 #include "jucer_GeneratedCode.h"
-
+#include "jucer_JucerDocument.h"
 
 //==============================================================================
 GeneratedCode::GeneratedCode (const JucerDocument* const doc)
@@ -230,6 +229,11 @@ static String getIncludeFileCode (StringArray files)
     return s;
 }
 
+bool GeneratedCode::shouldUseTransMacro() const noexcept
+{
+    return document->shouldUseTransMacro();
+}
+
 //==============================================================================
 static void replaceTemplate (String& text, const String& itemName, const String& value)
 {
@@ -298,11 +302,10 @@ static void copyAcrossUserSections (String& dest, const String& src)
 
                     if (getUserSection (srcLines, tag, sourceLines))
                     {
-                        int j;
-                        for (j = endLine - i; --j > 0;)
+                        for (int j = endLine - i; --j > 0;)
                             dstLines.remove (i + 1);
 
-                        for (j = 0; j < sourceLines.size(); ++j)
+                        for (int j = 0; j < sourceLines.size(); ++j)
                             dstLines.insert (++i, sourceLines [j].trimEnd());
 
                         ++i;
@@ -332,7 +335,7 @@ void GeneratedCode::applyToCode (String& code,
     headerGuard << String::toHexString ((className + "xx" + fileNameRoot).hashCode64()).toUpperCase() << "__";
     replaceTemplate (code, "headerGuard", headerGuard);
 
-    replaceTemplate (code, "version", JUCEApplication::getInstance()->getApplicationVersion());
+    replaceTemplate (code, "version", JUCEApplicationBase::getInstance()->getApplicationVersion());
     replaceTemplate (code, "creationTime", Time::getCurrentTime().toString (true, true, true));
 
     replaceTemplate (code, "className", className);

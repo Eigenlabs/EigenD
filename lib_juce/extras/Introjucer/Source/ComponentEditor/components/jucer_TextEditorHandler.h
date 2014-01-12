@@ -1,28 +1,26 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
-
 
 class TextEditorHandler  : public ComponentTypeHandler
 {
@@ -81,26 +79,26 @@ public:
         return true;
     }
 
-    void getEditableProperties (Component* component, JucerDocument& document, Array <PropertyComponent*>& properties)
+    void getEditableProperties (Component* component, JucerDocument& document, Array<PropertyComponent*>& props)
     {
-        ComponentTypeHandler::getEditableProperties (component, document, properties);
+        ComponentTypeHandler::getEditableProperties (component, document, props);
 
         TextEditor* const t = dynamic_cast <TextEditor*> (component);
         jassert (t != nullptr);
 
-        properties.add (new TextEditorInitialTextProperty (t, document));
-        properties.add (new TextEditorMultiLineProperty (t, document));
-        properties.add (new TextEditorReadOnlyProperty (t, document));
-        properties.add (new TextEditorScrollbarsProperty (t, document));
-        properties.add (new TextEditorCaretProperty (t, document));
-        properties.add (new TextEditorPopupMenuProperty (t, document));
+        props.add (new TextEditorInitialTextProperty (t, document));
+        props.add (new TextEditorMultiLineProperty (t, document));
+        props.add (new TextEditorReadOnlyProperty (t, document));
+        props.add (new TextEditorScrollbarsProperty (t, document));
+        props.add (new TextEditorCaretProperty (t, document));
+        props.add (new TextEditorPopupMenuProperty (t, document));
 
-        addColourProperties (t, document, properties);
+        addColourProperties (t, document, props);
     }
 
-    String getCreationParameters (Component* component)
+    String getCreationParameters (GeneratedCode&, Component* component)
     {
-        return quotedString (component->getName());
+        return quotedString (component->getName(), false);
     }
 
     void fillInCreationCode (GeneratedCode& code, Component* component, const String& memberVariableName)
@@ -118,7 +116,7 @@ public:
           << memberVariableName << "->setCaretVisible (" << CodeHelpers::boolLiteral (te->isCaretVisible()) << ");\n"
           << memberVariableName << "->setPopupMenuEnabled (" << CodeHelpers::boolLiteral (te->isPopupMenuEnabled()) << ");\n"
           << getColourIntialisationCode (component, memberVariableName)
-          << memberVariableName << "->setText (" << quotedString (te->getProperties() ["initialText"].toString()) << ");\n\n";
+          << memberVariableName << "->setText (" << quotedString (te->getProperties() ["initialText"].toString(), code.shouldUseTransMacro()) << ");\n\n";
 
         code.constructorCode += s;
     }
@@ -151,8 +149,8 @@ private:
         class TextEditorMultilineChangeAction  : public ComponentUndoableAction <TextEditor>
         {
         public:
-            TextEditorMultilineChangeAction (TextEditor* const comp, ComponentLayout& layout, const int newState_)
-                : ComponentUndoableAction <TextEditor> (comp, layout),
+            TextEditorMultilineChangeAction (TextEditor* const comp, ComponentLayout& l, const int newState_)
+                : ComponentUndoableAction <TextEditor> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->isMultiLine() ? (comp->getReturnKeyStartsNewLine() ? 1 : 2) : 0;
@@ -201,8 +199,8 @@ private:
         class TextEditorReadonlyChangeAction  : public ComponentUndoableAction <TextEditor>
         {
         public:
-            TextEditorReadonlyChangeAction (TextEditor* const comp, ComponentLayout& layout, const bool newState_)
-                : ComponentUndoableAction <TextEditor> (comp, layout),
+            TextEditorReadonlyChangeAction (TextEditor* const comp, ComponentLayout& l, const bool newState_)
+                : ComponentUndoableAction <TextEditor> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->isReadOnly();
@@ -249,8 +247,8 @@ private:
         class TextEditorScrollbarChangeAction  : public ComponentUndoableAction <TextEditor>
         {
         public:
-            TextEditorScrollbarChangeAction (TextEditor* const comp, ComponentLayout& layout, const bool newState_)
-                : ComponentUndoableAction <TextEditor> (comp, layout),
+            TextEditorScrollbarChangeAction (TextEditor* const comp, ComponentLayout& l, const bool newState_)
+                : ComponentUndoableAction <TextEditor> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->areScrollbarsShown();
@@ -297,8 +295,8 @@ private:
         class TextEditorCaretChangeAction  : public ComponentUndoableAction <TextEditor>
         {
         public:
-            TextEditorCaretChangeAction (TextEditor* const comp, ComponentLayout& layout, const bool newState_)
-                : ComponentUndoableAction <TextEditor> (comp, layout),
+            TextEditorCaretChangeAction (TextEditor* const comp, ComponentLayout& l, const bool newState_)
+                : ComponentUndoableAction <TextEditor> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->isCaretVisible();
@@ -345,8 +343,8 @@ private:
         class TextEditorPopupMenuChangeAction  : public ComponentUndoableAction <TextEditor>
         {
         public:
-            TextEditorPopupMenuChangeAction (TextEditor* const comp, ComponentLayout& layout, const bool newState_)
-                : ComponentUndoableAction <TextEditor> (comp, layout),
+            TextEditorPopupMenuChangeAction (TextEditor* const comp, ComponentLayout& l, const bool newState_)
+                : ComponentUndoableAction <TextEditor> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->isPopupMenuEnabled();
@@ -395,8 +393,8 @@ private:
         class TextEditorInitialTextChangeAction  : public ComponentUndoableAction <TextEditor>
         {
         public:
-            TextEditorInitialTextChangeAction (TextEditor* const comp, ComponentLayout& layout, const String& newState_)
-                : ComponentUndoableAction <TextEditor> (comp, layout),
+            TextEditorInitialTextChangeAction (TextEditor* const comp, ComponentLayout& l, const String& newState_)
+                : ComponentUndoableAction <TextEditor> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->getProperties() ["initialText"];

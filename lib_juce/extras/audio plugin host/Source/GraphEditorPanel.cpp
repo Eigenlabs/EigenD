@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-9 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -33,17 +32,17 @@
 class PluginWindow;
 static Array <PluginWindow*> activePluginWindows;
 
-PluginWindow::PluginWindow (Component* const uiComp,
-                            AudioProcessorGraph::Node* owner_,
-                            const bool isGeneric_)
-    : DocumentWindow (uiComp->getName(), Colours::lightblue,
+PluginWindow::PluginWindow (Component* const pluginEditor,
+                            AudioProcessorGraph::Node* const o,
+                            WindowFormatType t)
+    : DocumentWindow (pluginEditor->getName(), Colours::lightblue,
                       DocumentWindow::minimiseButton | DocumentWindow::closeButton),
-      owner (owner_),
-      isGeneric (isGeneric_)
+      owner (o),
+      type (t)
 {
     setSize (400, 300);
 
-    setContentOwned (uiComp, true);
+    setContentOwned (pluginEditor, true);
 
     setTopLeftPosition (owner->properties.getWithDefault ("uiLastX", Random::getSystemRandom().nextInt (500)),
                         owner->properties.getWithDefault ("uiLastY", Random::getSystemRandom().nextInt (500)));
@@ -56,7 +55,7 @@ void PluginWindow::closeCurrentlyOpenWindowsFor (const uint32 nodeId)
 {
     for (int i = activePluginWindows.size(); --i >= 0;)
         if (activePluginWindows.getUnchecked(i)->owner->nodeId == nodeId)
-            delete activePluginWindows.getUnchecked(i);
+            delete activePluginWindows.getUnchecked (i);
 }
 
 void PluginWindow::closeAllCurrentlyOpenWindows()
@@ -64,7 +63,7 @@ void PluginWindow::closeAllCurrentlyOpenWindows()
     if (activePluginWindows.size() > 0)
     {
         for (int i = activePluginWindows.size(); --i >= 0;)
-            delete activePluginWindows.getUnchecked(i);
+            delete activePluginWindows.getUnchecked (i);
 
         Component dummyModalComp;
         dummyModalComp.enterModalState();
@@ -72,33 +71,120 @@ void PluginWindow::closeAllCurrentlyOpenWindows()
     }
 }
 
-PluginWindow* PluginWindow::getWindowFor (AudioProcessorGraph::Node* node,
-                                          bool useGenericView)
+//==============================================================================
+class ProcessorProgramPropertyComp : public PropertyComponent,
+                                     private AudioProcessorListener
 {
-    for (int i = activePluginWindows.size(); --i >= 0;)
-        if (activePluginWindows.getUnchecked(i)->owner == node
-             && activePluginWindows.getUnchecked(i)->isGeneric == useGenericView)
-            return activePluginWindows.getUnchecked(i);
-
-    AudioProcessorEditor* ui = nullptr;
-
-    if (! useGenericView)
+public:
+    ProcessorProgramPropertyComp (const String& name, AudioProcessor& p, int index_)
+        : PropertyComponent (name),
+          owner (p),
+          index (index_)
     {
-        ui = node->getProcessor()->createEditorIfNeeded();
-
-        if (ui == nullptr)
-            useGenericView = true;
+        owner.addListener (this);
     }
 
-    if (useGenericView)
-        ui = new GenericAudioProcessorEditor (node->getProcessor());
+    ~ProcessorProgramPropertyComp()
+    {
+        owner.removeListener (this);
+    }
+
+    void refresh() { }
+    void audioProcessorChanged (AudioProcessor*) { }
+    void audioProcessorParameterChanged (AudioProcessor*, int, float) { }
+
+private:
+    AudioProcessor& owner;
+    const int index;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProcessorProgramPropertyComp)
+};
+
+class ProgramAudioProcessorEditor : public AudioProcessorEditor
+{
+public:
+    ProgramAudioProcessorEditor (AudioProcessor* const p)
+        : AudioProcessorEditor (p)
+    {
+        jassert (p != nullptr);
+        setOpaque (true);
+
+        addAndMakeVisible (panel);
+
+        Array<PropertyComponent*> programs;
+
+        const int numPrograms = p->getNumPrograms();
+        int totalHeight = 0;
+
+        for (int i = 0; i < numPrograms; ++i)
+        {
+            String name (p->getProgramName (i).trim());
+
+            if (name.isEmpty())
+                name = "Unnamed";
+
+            ProcessorProgramPropertyComp* const pc = new ProcessorProgramPropertyComp (name, *p, i);
+            programs.add (pc);
+            totalHeight += pc->getPreferredHeight();
+        }
+
+        panel.addProperties (programs);
+
+        setSize (400, jlimit (25, 400, totalHeight));
+    }
+
+    void paint (Graphics& g)
+    {
+        g.fillAll (Colours::grey);
+    }
+
+    void resized()
+    {
+        panel.setBounds (getLocalBounds());
+    }
+
+private:
+    PropertyPanel panel;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProgramAudioProcessorEditor)
+};
+
+//==============================================================================
+PluginWindow* PluginWindow::getWindowFor (AudioProcessorGraph::Node* const node,
+                                          WindowFormatType type)
+{
+    jassert (node != nullptr);
+
+    for (int i = activePluginWindows.size(); --i >= 0;)
+        if (activePluginWindows.getUnchecked(i)->owner == node
+             && activePluginWindows.getUnchecked(i)->type == type)
+            return activePluginWindows.getUnchecked(i);
+
+    AudioProcessor* processor = node->getProcessor();
+    AudioProcessorEditor* ui = nullptr;
+
+    if (type == Normal)
+    {
+        ui = processor->createEditorIfNeeded();
+
+        if (ui == nullptr)
+            type = Generic;
+    }
+
+    if (ui == nullptr)
+    {
+        if (type == Generic || type == Parameters)
+            ui = new GenericAudioProcessorEditor (processor);
+        else if (type == Programs)
+            ui = new ProgramAudioProcessorEditor (processor);
+    }
 
     if (ui != nullptr)
     {
-        if (AudioPluginInstance* const plugin = dynamic_cast <AudioPluginInstance*> (node->getProcessor()))
+        if (AudioPluginInstance* const plugin = dynamic_cast<AudioPluginInstance*> (processor))
             ui->setName (plugin->getName());
 
-        return new PluginWindow (ui, node, useGenericView);
+        return new PluginWindow (ui, node, type);
     }
 
     return nullptr;
@@ -137,16 +223,18 @@ public:
         {
             String tip;
 
-            if (isInput)
-                tip = node->getProcessor()->getInputChannelName (index_);
-            else
-                tip = node->getProcessor()->getOutputChannelName (index_);
-
-            if (tip.isEmpty())
+            if (index_ == FilterGraph::midiChannelNumber)
             {
-                if (index_ == FilterGraph::midiChannelNumber)
-                    tip = isInput ? "Midi Input" : "Midi Output";
+                tip = isInput ? "MIDI Input" : "MIDI Output";
+            }
+            else
+            {
+                if (isInput)
+                    tip = node->getProcessor()->getInputChannelName (index_);
                 else
+                    tip = node->getProcessor()->getOutputChannelName (index_);
+
+                if (tip.isEmpty())
                     tip = (isInput ? "Input " : "Output ") + String (index_ + 1);
             }
 
@@ -243,7 +331,9 @@ public:
             m.addItem (2, "Disconnect all pins");
             m.addSeparator();
             m.addItem (3, "Show plugin UI");
-            m.addItem (4, "Show all parameters");
+            m.addItem (4, "Show all programs");
+            m.addItem (5, "Show all parameters");
+            m.addItem (6, "Test state save/load");
 
             const int r = m.show();
 
@@ -256,12 +346,35 @@ public:
             {
                 graph.disconnectFilter (filterID);
             }
-            else if (r == 3 || r == 4)
+            else
             {
                 if (AudioProcessorGraph::Node::Ptr f = graph.getNodeForId (filterID))
                 {
-                    if (PluginWindow* const w = PluginWindow::getWindowFor (f, r == 4))
-                        w->toFront (true);
+                    AudioProcessor* const processor = f->getProcessor();
+                    jassert (processor != nullptr);
+
+                    if (r == 6)
+                    {
+                        MemoryBlock state;
+                        processor->getStateInformation (state);
+                        processor->setStateInformation (state.getData(), (int) state.getSize());
+                    }
+                    else
+                    {
+                        PluginWindow::WindowFormatType type = processor->hasEditor() ? PluginWindow::Normal
+                                                                                     : PluginWindow::Generic;
+
+                        switch (r)
+                        {
+                            case 4: type = PluginWindow::Programs; break;
+                            case 5: type = PluginWindow::Parameters; break;
+
+                            default: break;
+                        };
+
+                        if (PluginWindow* const w = PluginWindow::getWindowFor (f, type))
+                            w->toFront (true);
+                    }
                 }
             }
         }
@@ -289,7 +402,7 @@ public:
         if (e.mouseWasClicked() && e.getNumberOfClicks() == 2)
         {
             if (const AudioProcessorGraph::Node::Ptr f = graph.getNodeForId (filterID))
-                if (PluginWindow* const w = PluginWindow::getWindowFor (f, false))
+                if (PluginWindow* const w = PluginWindow::getWindowFor (f, PluginWindow::Normal))
                     w->toFront (true);
         }
         else if (! e.mouseWasClicked())

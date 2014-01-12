@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -38,11 +37,11 @@ public:
         : textBox (String::empty),
           button ("Send a message to the webpage")
     {
-        addAndMakeVisible (&textBox);
+        addAndMakeVisible (textBox);
         textBox.setMultiLine (true);
         textBox.setBounds (8, 8, 300, 300);
 
-        addAndMakeVisible (&button);
+        addAndMakeVisible (button);
         button.setBounds (320, 8, 180, 22);
         button.addListener (this);
         button.setEnabled (false);
@@ -88,13 +87,12 @@ public:
     class DemoBrowserObject : public DynamicObject
     {
     public:
-        DemoBrowserObject (JuceDemoBrowserPlugin* owner_)
-            : owner (owner_)
+        DemoBrowserObject (JuceDemoBrowserPlugin* bp)  : owner (bp)
         {
             // Add a couple of methods to our object..
-            setMethod ("printText", (var::MethodFunction) &DemoBrowserObject::printText);
-            setMethod ("popUpMessageBox", (var::MethodFunction) &DemoBrowserObject::popUpMessageBox);
-            setMethod ("registerCallbackObject", (var::MethodFunction) &DemoBrowserObject::registerCallbackObject);
+            setMethod ("printText", printText);
+            setMethod ("popUpMessageBox", popUpMessageBox);
+            setMethod ("registerCallbackObject", registerCallbackObject);
 
             // Add some value properties that the webpage can access
             setProperty ("property1", "testing testing...");
@@ -103,30 +101,33 @@ public:
 
         //==============================================================================
         // These methods are called by javascript in the webpage...
-        const var printText (const var* params, int numParams)
+        static var printText (const var::NativeFunctionArgs& args)
         {
-            if (numParams > 0)
-                owner->textBox.setText (owner->textBox.getText() + "\n" + params[0].toString());
+            if (DemoBrowserObject* b = dynamic_cast<DemoBrowserObject*> (args.thisObject.getObject()))
+                if (args.numArguments > 0)
+                    b->owner->textBox.setText (b->owner->textBox.getText() + "\n" + args.arguments[0].toString());
 
             return "text was printed ok!";
         }
 
-        const var popUpMessageBox (const var* params, int numParams)
+        static var popUpMessageBox (const var::NativeFunctionArgs& args)
         {
-            if (numParams > 0)
-                AlertWindow::showMessageBox (AlertWindow::InfoIcon,
-                                             "A message from the webpage",
-                                             params[0].toString(),
-                                             String::empty, owner);
-            return var::null;
+            if (DemoBrowserObject* b = dynamic_cast<DemoBrowserObject*> (args.thisObject.getObject()))
+                if (args.numArguments > 0)
+                    AlertWindow::showMessageBox (AlertWindow::InfoIcon,
+                                                 "A message from the webpage",
+                                                 args.arguments[0].toString(),
+                                                 String::empty, b->owner);
+            return var();
         }
 
-        const var registerCallbackObject (const var* params, int numParams)
+        static var registerCallbackObject (const var::NativeFunctionArgs& args)
         {
-            if (numParams > 0)
-                owner->setJavascriptObjectFromBrowser (params[0]);
+            if (DemoBrowserObject* b = dynamic_cast<DemoBrowserObject*> (args.thisObject.getObject()))
+                if (args.numArguments > 0)
+                    b->owner->setJavascriptObjectFromBrowser (args.arguments[0]);
 
-            return var::null;
+            return var();
         }
 
         //==============================================================================

@@ -44,6 +44,7 @@
 
 #ifndef PI_LINUX
 #define JUCE_PLUGINHOST_VST 1
+#define JUCE_PLUGINHOST_VST3 1
 #define JUCE_PLUGINHOST_AU 1
 #endif
 

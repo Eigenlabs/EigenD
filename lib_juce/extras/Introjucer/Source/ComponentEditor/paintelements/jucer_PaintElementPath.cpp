@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -127,8 +126,8 @@ private:
 
 
 //==============================================================================
-PaintElementPath::PaintElementPath (PaintRoutine* owner)
-    : ColouredElement (owner, "Path", true, true),
+PaintElementPath::PaintElementPath (PaintRoutine* pr)
+    : ColouredElement (pr, "Path", true, true),
       nonZeroWinding (true)
 {
 }
@@ -168,14 +167,14 @@ Rectangle<int> PaintElementPath::getCurrentBounds (const Rectangle<int>& parentA
 {
     updateStoredPath (getDocument()->getComponentLayout(), parentArea);
 
-    Rectangle<float> bounds (path.getBounds());
+    Rectangle<float> r (path.getBounds());
 
     const int borderSize = getBorderSize();
 
-    return Rectangle<int> ((int) bounds.getX() - borderSize,
-                           (int) bounds.getY() - borderSize,
-                           (int) bounds.getWidth() + borderSize * 2,
-                           (int) bounds.getHeight() + borderSize * 2);
+    return Rectangle<int> ((int) r.getX() - borderSize,
+                           (int) r.getY() - borderSize,
+                           (int) r.getWidth() + borderSize * 2,
+                           (int) r.getHeight() + borderSize * 2);
 }
 
 void PaintElementPath::setCurrentBounds (const Rectangle<int>& b,
@@ -231,7 +230,7 @@ void PaintElementPath::rescalePoint (RelativePositionedRectangle& pos, int dx, i
 }
 
 //==============================================================================
-static void drawArrow (Graphics& g, const Point<float>& p1, const Point<float>& p2)
+static void drawArrow (Graphics& g, const Point<float> p1, const Point<float> p2)
 {
     g.drawArrow (Line<float> (p1.x, p1.y, (p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f), 1.0f, 8.0f, 10.0f);
     g.drawLine (p1.x + (p2.x - p1.x) * 0.49f, p1.y + (p2.y - p1.y) * 0.49f, p2.x, p2.y);
@@ -348,10 +347,10 @@ void PaintElementPath::pointListChanged()
 }
 
 //==============================================================================
-void PaintElementPath::getEditableProperties (Array <PropertyComponent*>& properties)
+void PaintElementPath::getEditableProperties (Array <PropertyComponent*>& props)
 {
-    properties.add (new PathWindingModeProperty (this));
-    getColourSpecificProperties (properties);
+    props.add (new PathWindingModeProperty (this));
+    getColourSpecificProperties (props);
 }
 
 //==============================================================================
@@ -978,7 +977,10 @@ bool PaintElementPath::getPoint (int index, int pointNumber, double& x, double& 
     const PathPoint* const p = points [index];
 
     if (p == nullptr)
+    {
+        x = y = 0;
         return false;
+    }
 
     jassert (pointNumber < 3 || p->type == Path::Iterator::cubicTo);
     jassert (pointNumber < 2 || p->type == Path::Iterator::cubicTo || p->type == Path::Iterator::quadraticTo);
@@ -1424,7 +1426,7 @@ void PathPoint::changePointType (const Path::Iterator::PathElementType newType,
     }
 }
 
-void PathPoint::getEditableProperties (Array <PropertyComponent*>& properties)
+void PathPoint::getEditableProperties (Array<PropertyComponent*>& props)
 {
     const int index = owner->points.indexOf (this);
     jassert (index >= 0);
@@ -1432,38 +1434,38 @@ void PathPoint::getEditableProperties (Array <PropertyComponent*>& properties)
     switch (type)
     {
         case Path::Iterator::startNewSubPath:
-            properties.add (new PathPointPositionProperty (owner, index, 0, "x", PositionPropertyBase::componentX));
-            properties.add (new PathPointPositionProperty (owner, index, 0, "y", PositionPropertyBase::componentY));
+            props.add (new PathPointPositionProperty (owner, index, 0, "x", PositionPropertyBase::componentX));
+            props.add (new PathPointPositionProperty (owner, index, 0, "y", PositionPropertyBase::componentY));
 
-            properties.add (new PathPointClosedProperty (owner, index));
-            properties.add (new AddNewPointProperty (owner, index));
+            props.add (new PathPointClosedProperty (owner, index));
+            props.add (new AddNewPointProperty (owner, index));
             break;
 
         case Path::Iterator::lineTo:
-            properties.add (new PathPointTypeProperty (owner, index));
-            properties.add (new PathPointPositionProperty (owner, index, 0, "x", PositionPropertyBase::componentX));
-            properties.add (new PathPointPositionProperty (owner, index, 0, "y", PositionPropertyBase::componentY));
-            properties.add (new AddNewPointProperty (owner, index));
+            props.add (new PathPointTypeProperty (owner, index));
+            props.add (new PathPointPositionProperty (owner, index, 0, "x", PositionPropertyBase::componentX));
+            props.add (new PathPointPositionProperty (owner, index, 0, "y", PositionPropertyBase::componentY));
+            props.add (new AddNewPointProperty (owner, index));
             break;
 
         case Path::Iterator::quadraticTo:
-            properties.add (new PathPointTypeProperty (owner, index));
-            properties.add (new PathPointPositionProperty (owner, index, 0, "control pt x", PositionPropertyBase::componentX));
-            properties.add (new PathPointPositionProperty (owner, index, 0, "control pt y", PositionPropertyBase::componentY));
-            properties.add (new PathPointPositionProperty (owner, index, 1, "x", PositionPropertyBase::componentX));
-            properties.add (new PathPointPositionProperty (owner, index, 1, "y", PositionPropertyBase::componentY));
-            properties.add (new AddNewPointProperty (owner, index));
+            props.add (new PathPointTypeProperty (owner, index));
+            props.add (new PathPointPositionProperty (owner, index, 0, "control pt x", PositionPropertyBase::componentX));
+            props.add (new PathPointPositionProperty (owner, index, 0, "control pt y", PositionPropertyBase::componentY));
+            props.add (new PathPointPositionProperty (owner, index, 1, "x", PositionPropertyBase::componentX));
+            props.add (new PathPointPositionProperty (owner, index, 1, "y", PositionPropertyBase::componentY));
+            props.add (new AddNewPointProperty (owner, index));
             break;
 
         case Path::Iterator::cubicTo:
-            properties.add (new PathPointTypeProperty (owner, index));
-            properties.add (new PathPointPositionProperty (owner, index, 0, "control pt1 x", PositionPropertyBase::componentX));
-            properties.add (new PathPointPositionProperty (owner, index, 0, "control pt1 y", PositionPropertyBase::componentY));
-            properties.add (new PathPointPositionProperty (owner, index, 1, "control pt2 x", PositionPropertyBase::componentX));
-            properties.add (new PathPointPositionProperty (owner, index, 1, "control pt2 y", PositionPropertyBase::componentY));
-            properties.add (new PathPointPositionProperty (owner, index, 2, "x", PositionPropertyBase::componentX));
-            properties.add (new PathPointPositionProperty (owner, index, 2, "y", PositionPropertyBase::componentY));
-            properties.add (new AddNewPointProperty (owner, index));
+            props.add (new PathPointTypeProperty (owner, index));
+            props.add (new PathPointPositionProperty (owner, index, 0, "control pt1 x", PositionPropertyBase::componentX));
+            props.add (new PathPointPositionProperty (owner, index, 0, "control pt1 y", PositionPropertyBase::componentY));
+            props.add (new PathPointPositionProperty (owner, index, 1, "control pt2 x", PositionPropertyBase::componentX));
+            props.add (new PathPointPositionProperty (owner, index, 1, "control pt2 y", PositionPropertyBase::componentY));
+            props.add (new PathPointPositionProperty (owner, index, 2, "x", PositionPropertyBase::componentX));
+            props.add (new PathPointPositionProperty (owner, index, 2, "y", PositionPropertyBase::componentY));
+            props.add (new AddNewPointProperty (owner, index));
             break;
 
         case Path::Iterator::closePath:

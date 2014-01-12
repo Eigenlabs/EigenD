@@ -1,28 +1,26 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
-
 
 class SliderHandler  : public ComponentTypeHandler
 {
@@ -87,9 +85,9 @@ public:
         return true;
     }
 
-    String getCreationParameters (Component* component)
+    String getCreationParameters (GeneratedCode&, Component* component)
     {
-        return quotedString (component->getName());
+        return quotedString (component->getName(), false);
     }
 
     void fillInCreationCode (GeneratedCode& code, Component* component, const String& memberVariableName)
@@ -143,24 +141,24 @@ public:
         }
     }
 
-    void getEditableProperties (Component* component, JucerDocument& document, Array <PropertyComponent*>& properties)
+    void getEditableProperties (Component* component, JucerDocument& document, Array<PropertyComponent*>& props)
     {
-        ComponentTypeHandler::getEditableProperties (component, document, properties);
+        ComponentTypeHandler::getEditableProperties (component, document, props);
 
         Slider* s = dynamic_cast <Slider*> (component);
         jassert (s != 0);
 
-        properties.add (new SliderRangeProperty (s, document, "minimum", 0));
-        properties.add (new SliderRangeProperty (s, document, "maximum", 1));
-        properties.add (new SliderRangeProperty (s, document, "interval", 2));
-        properties.add (new SliderTypeProperty (s, document));
-        properties.add (new SliderTextboxProperty (s, document));
-        properties.add (new SliderTextboxEditableProperty (s, document));
-        properties.add (new SliderTextboxSizeProperty (s, document, true));
-        properties.add (new SliderTextboxSizeProperty (s, document, false));
-        properties.add (new SliderSkewProperty (s, document));
+        props.add (new SliderRangeProperty (s, document, "minimum", 0));
+        props.add (new SliderRangeProperty (s, document, "maximum", 1));
+        props.add (new SliderRangeProperty (s, document, "interval", 2));
+        props.add (new SliderTypeProperty (s, document));
+        props.add (new SliderTextboxProperty (s, document));
+        props.add (new SliderTextboxEditableProperty (s, document));
+        props.add (new SliderTextboxSizeProperty (s, document, true));
+        props.add (new SliderTextboxSizeProperty (s, document, false));
+        props.add (new SliderSkewProperty (s, document));
 
-        addColourProperties (component, document, properties);
+        addColourProperties (component, document, props);
     }
 
     static bool needsCallback (Component*)
@@ -173,8 +171,8 @@ private:
     class SliderTypeProperty  : public ComponentChoiceProperty <Slider>
     {
     public:
-        SliderTypeProperty (Slider* slider, JucerDocument& document)
-            : ComponentChoiceProperty <Slider> ("type", slider, document)
+        SliderTypeProperty (Slider* slider, JucerDocument& doc)
+            : ComponentChoiceProperty <Slider> ("type", slider, doc)
         {
             choices.add ("Linear Horizontal");
             choices.add ("Linear Vertical");
@@ -238,8 +236,8 @@ private:
         class SliderTypeChangeAction  : public ComponentUndoableAction <Slider>
         {
         public:
-            SliderTypeChangeAction (Slider* const comp, ComponentLayout& layout, const Slider::SliderStyle newState_)
-                : ComponentUndoableAction <Slider> (comp, layout),
+            SliderTypeChangeAction (Slider* const comp, ComponentLayout& l, const Slider::SliderStyle newState_)
+                : ComponentUndoableAction <Slider> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->getSliderStyle();
@@ -269,8 +267,8 @@ private:
     class SliderTextboxProperty  : public ComponentChoiceProperty <Slider>
     {
     public:
-        SliderTextboxProperty (Slider* slider, JucerDocument& document)
-            : ComponentChoiceProperty <Slider> ("text position", slider, document)
+        SliderTextboxProperty (Slider* slider, JucerDocument& doc)
+            : ComponentChoiceProperty <Slider> ("text position", slider, doc)
         {
             choices.add ("No text box");
             choices.add ("Text box on left");
@@ -313,8 +311,8 @@ private:
         class SliderTextBoxChangeAction  : public ComponentUndoableAction <Slider>
         {
         public:
-            SliderTextBoxChangeAction (Slider* const comp, ComponentLayout& layout, const Slider::TextEntryBoxPosition newState_)
-                : ComponentUndoableAction <Slider> (comp, layout),
+            SliderTextBoxChangeAction (Slider* const comp, ComponentLayout& l, const Slider::TextEntryBoxPosition newState_)
+                : ComponentUndoableAction <Slider> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->getTextBoxPosition();
@@ -350,8 +348,8 @@ private:
     class SliderTextboxEditableProperty  : public ComponentBooleanProperty <Slider>
     {
     public:
-        SliderTextboxEditableProperty (Slider* slider, JucerDocument& document)
-            : ComponentBooleanProperty <Slider> ("text box mode", "Editable", "Editable", slider, document)
+        SliderTextboxEditableProperty (Slider* slider, JucerDocument& doc)
+            : ComponentBooleanProperty <Slider> ("text box mode", "Editable", "Editable", slider, doc)
         {
         }
 
@@ -370,8 +368,8 @@ private:
         class SliderEditableChangeAction  : public ComponentUndoableAction <Slider>
         {
         public:
-            SliderEditableChangeAction (Slider* const comp, ComponentLayout& layout, const bool newState_)
-                : ComponentUndoableAction <Slider> (comp, layout),
+            SliderEditableChangeAction (Slider* const comp, ComponentLayout& l, const bool newState_)
+                : ComponentUndoableAction <Slider> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->isTextBoxEditable();
@@ -401,9 +399,9 @@ private:
     class SliderTextboxSizeProperty  : public ComponentTextProperty <Slider>
     {
     public:
-        SliderTextboxSizeProperty (Slider* slider, JucerDocument& document, const bool isWidth_)
+        SliderTextboxSizeProperty (Slider* slider, JucerDocument& doc, const bool isWidth_)
             : ComponentTextProperty <Slider> (isWidth_ ? "text box width" : "text box height",
-                                              12, false, slider, document),
+                                              12, false, slider, doc),
               isWidth (isWidth_)
         {
         }
@@ -426,8 +424,8 @@ private:
         class SliderBoxSizeChangeAction  : public ComponentUndoableAction <Slider>
         {
         public:
-            SliderBoxSizeChangeAction (Slider* const comp, ComponentLayout& layout, const bool isWidth_, int newSize_)
-                : ComponentUndoableAction <Slider> (comp, layout),
+            SliderBoxSizeChangeAction (Slider* const comp, ComponentLayout& l, const bool isWidth_, int newSize_)
+                : ComponentUndoableAction <Slider> (comp, l),
                   isWidth (isWidth_),
                   newSize (newSize_)
             {
@@ -482,9 +480,9 @@ private:
     class SliderRangeProperty  : public ComponentTextProperty <Slider>
     {
     public:
-        SliderRangeProperty (Slider* slider, JucerDocument& document,
+        SliderRangeProperty (Slider* slider, JucerDocument& doc,
                              const String& name, const int rangeParam_)
-            : ComponentTextProperty <Slider> (name, 15, false, slider, document),
+            : ComponentTextProperty <Slider> (name, 15, false, slider, doc),
               rangeParam (rangeParam_)
         {
         }
@@ -524,8 +522,8 @@ private:
         class SliderRangeChangeAction  : public ComponentUndoableAction <Slider>
         {
         public:
-            SliderRangeChangeAction (Slider* const comp, ComponentLayout& layout, const double newState_[3])
-                : ComponentUndoableAction <Slider> (comp, layout)
+            SliderRangeChangeAction (Slider* const comp, ComponentLayout& l, const double newState_[3])
+                : ComponentUndoableAction <Slider> (comp, l)
             {
                 newState [0] = newState_ [0];
                 newState [1] = newState_ [1];
@@ -560,8 +558,8 @@ private:
     class SliderSkewProperty  : public ComponentTextProperty <Slider>
     {
     public:
-        SliderSkewProperty (Slider* slider, JucerDocument& document)
-            : ComponentTextProperty <Slider> ("skew factor", 12, false, slider, document)
+        SliderSkewProperty (Slider* slider, JucerDocument& doc)
+            : ComponentTextProperty <Slider> ("skew factor", 12, false, slider, doc)
         {
         }
 
@@ -585,8 +583,8 @@ private:
         class SliderSkewChangeAction  : public ComponentUndoableAction <Slider>
         {
         public:
-            SliderSkewChangeAction (Slider* const comp, ComponentLayout& layout, const double newValue_)
-                : ComponentUndoableAction <Slider> (comp, layout)
+            SliderSkewChangeAction (Slider* const comp, ComponentLayout& l, const double newValue_)
+                : ComponentUndoableAction <Slider> (comp, l)
             {
                 newValue = newValue_;
                 oldValue = comp->getSkewFactor();

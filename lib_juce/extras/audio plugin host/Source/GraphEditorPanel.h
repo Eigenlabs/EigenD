@@ -1,30 +1,29 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-9 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
 
-#ifndef __JUCE_FILTERGRAPHEDITOR_JUCEHEADER__
-#define __JUCE_FILTERGRAPHEDITOR_JUCEHEADER__
+#ifndef __GRAPHEDITORPANEL_JUCEHEADER__
+#define __GRAPHEDITORPANEL_JUCEHEADER__
 
 #include "FilterGraph.h"
 
@@ -49,17 +48,17 @@ public:
 
     void createNewPlugin (const PluginDescription* desc, int x, int y);
 
-    FilterComponent* getComponentForFilter (const uint32 filterID) const;
+    FilterComponent* getComponentForFilter (uint32 filterID) const;
     ConnectorComponent* getComponentForConnection (const AudioProcessorGraph::Connection& conn) const;
-    PinComponent* findPinAt (const int x, const int y) const;
+    PinComponent* findPinAt (int x, int y) const;
 
     void resized();
     void changeListenerCallback (ChangeBroadcaster*);
     void updateComponents();
 
     //==============================================================================
-    void beginConnectorDrag (const uint32 sourceFilterID, const int sourceFilterChannel,
-                             const uint32 destFilterID, const int destFilterChannel,
+    void beginConnectorDrag (uint32 sourceFilterID, int sourceFilterChannel,
+                             uint32 destFilterID, int destFilterChannel,
                              const MouseEvent& e);
     void dragConnector (const MouseEvent& e);
     void endDraggingConnector (const MouseEvent& e);
@@ -110,30 +109,36 @@ private:
 };
 
 //==============================================================================
-/** A desktop window containing a plugin's UI.
-*/
+/** A desktop window containing a plugin's UI. */
 class PluginWindow  : public DocumentWindow
 {
-    PluginWindow (Component* const uiComp,
-                  AudioProcessorGraph::Node* owner_,
-                  const bool isGeneric_);
-
 public:
-    static PluginWindow* getWindowFor (AudioProcessorGraph::Node* node,
-                                       bool useGenericView);
+    enum WindowFormatType
+    {
+        Normal = 0,
+        Generic,
+        Programs,
+        Parameters
+    };
 
-    static void closeCurrentlyOpenWindowsFor (const uint32 nodeId);
-
-    static void closeAllCurrentlyOpenWindows();
-
+    PluginWindow (Component* pluginEditor, AudioProcessorGraph::Node*, WindowFormatType);
     ~PluginWindow();
 
-    void moved();
-    void closeButtonPressed();
+    static PluginWindow* getWindowFor (AudioProcessorGraph::Node*, WindowFormatType);
+
+    static void closeCurrentlyOpenWindowsFor (const uint32 nodeId);
+    static void closeAllCurrentlyOpenWindows();
+
+    void moved() override;
+    void closeButtonPressed() override;
 
 private:
     AudioProcessorGraph::Node* owner;
-    bool isGeneric;
+    WindowFormatType type;
+
+    float getDesktopScaleFactor() const override     { return 1.0f; }
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginWindow)
 };
 
-#endif
+#endif   // __GRAPHEDITORPANEL_JUCEHEADER__

@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -199,10 +198,10 @@ namespace CodeHelpers
 
     String makeHeaderGuardName (const File& file)
     {
-        return "__" + file.getFileName().toUpperCase()
-                                        .replaceCharacters (" .", "__")
-                                        .retainCharacters ("_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-                + "_" + String::toHexString (file.hashCode()).toUpperCase() + "__";
+        return file.getFileName().toUpperCase()
+                                 .replaceCharacters (" .", "__")
+                                 .retainCharacters ("_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+                + "_INCLUDED";
     }
 
     String makeBinaryDataIdentifierName (const File& file)
@@ -219,22 +218,52 @@ namespace CodeHelpers
             return "String::empty";
 
         StringArray lines;
-        lines.add (text);
+
+        {
+            String::CharPointerType t (text.getCharPointer());
+            bool finished = t.isEmpty();
+
+            while (! finished)
+            {
+                for (String::CharPointerType startOfLine (t);;)
+                {
+                    switch (t.getAndAdvance())
+                    {
+                        case 0:     finished = true; break;
+                        case '\n':  break;
+                        case '\r':  if (*t == '\n') ++t; break;
+                        default:    continue;
+                    }
+
+                    lines.add (String (startOfLine, t));
+                    break;
+                }
+            }
+        }
 
         if (maxLineLength > 0)
         {
-            while (lines [lines.size() - 1].length() > maxLineLength)
+            for (int i = 0; i < lines.size(); ++i)
             {
-                String& lastLine = lines.getReference (lines.size() - 1);
-                const String start (lastLine.substring (0, maxLineLength));
-                const String end (lastLine.substring (maxLineLength));
-                lastLine = start;
-                lines.add (end);
+                String& line = lines.getReference (i);
+
+                if (line.length() > maxLineLength)
+                {
+                    const String start (line.substring (0, maxLineLength));
+                    const String end (line.substring (maxLineLength));
+                    line = start;
+                    lines.insert (i + 1, end);
+                }
             }
         }
 
         for (int i = 0; i < lines.size(); ++i)
-            lines.getReference(i) = "\"" + addEscapeChars (lines.getReference(i)) + "\"";
+            lines.getReference(i) = addEscapeChars (lines.getReference(i));
+
+        lines.removeEmptyStrings();
+
+        for (int i = 0; i < lines.size(); ++i)
+            lines.getReference(i) = "\"" + lines.getReference(i) + "\"";
 
         String result (lines.joinIntoString (newLine));
 
@@ -284,7 +313,7 @@ namespace CodeHelpers
         return value ? "true" : "false";
     }
 
-    String colourToCode (const Colour& col)
+    String colourToCode (Colour col)
     {
         const Colour colours[] =
         {
@@ -309,7 +338,7 @@ namespace CodeHelpers
         return "Colour (0x" + hexString8Digits ((int) col.getARGB()) + ')';
     }
 
-    String justificationToCode (const Justification& justification)
+    String justificationToCode (Justification justification)
     {
         switch (justification.getFlags())
         {
@@ -402,7 +431,7 @@ namespace CodeHelpers
     }
 
     //==============================================================================
-    static unsigned int calculateHash (const String& s, const int hashMultiplier)
+    static unsigned int calculateHash (const String& s, const unsigned int hashMultiplier)
     {
         const char* t = s.toUTF8();
         unsigned int hash = 0;
@@ -412,9 +441,9 @@ namespace CodeHelpers
         return hash;
     }
 
-    static int findBestHashMultiplier (const StringArray& strings)
+    static unsigned int findBestHashMultiplier (const StringArray& strings)
     {
-        int v = 31;
+        unsigned int v = 31;
 
         for (;;)
         {
@@ -446,19 +475,19 @@ namespace CodeHelpers
     {
         jassert (strings.size() == codeToExecute.size());
         const String indent (String::repeatedString (" ", indentLevel));
-        const int hashMultiplier = findBestHashMultiplier (strings);
+        const unsigned int hashMultiplier = findBestHashMultiplier (strings);
 
         out << indent << "unsigned int hash = 0;" << newLine
             << indent << "if (" << utf8PointerVariable << " != 0)" << newLine
             << indent << "    while (*" << utf8PointerVariable << " != 0)" << newLine
-            << indent << "        hash = " << hashMultiplier << " * hash + (unsigned int) *" << utf8PointerVariable << "++;" << newLine
+            << indent << "        hash = " << (int) hashMultiplier << " * hash + (unsigned int) *" << utf8PointerVariable << "++;" << newLine
             << newLine
             << indent << "switch (hash)" << newLine
             << indent << "{" << newLine;
 
         for (int i = 0; i < strings.size(); ++i)
         {
-            out << indent << "    case 0x" << hexString8Digits (calculateHash (strings[i], hashMultiplier))
+            out << indent << "    case 0x" << hexString8Digits ((int) calculateHash (strings[i], hashMultiplier))
                 << ":  " << codeToExecute[i] << newLine;
         }
 

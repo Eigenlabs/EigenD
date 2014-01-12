@@ -1,28 +1,26 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
-
 
 class GroupComponentHandler  : public ComponentTypeHandler
 {
@@ -67,13 +65,13 @@ public:
         return true;
     }
 
-    String getCreationParameters (Component* component)
+    String getCreationParameters (GeneratedCode& code, Component* component)
     {
-        GroupComponent* g = dynamic_cast <GroupComponent*> (component);
+        GroupComponent* g = dynamic_cast<GroupComponent*> (component);
 
-        return quotedString (component->getName())
+        return quotedString (component->getName(), false)
                 + ",\n"
-                + quotedString (g->getText());
+                + quotedString (g->getText(), code.shouldUseTransMacro());
     }
 
     void fillInCreationCode (GeneratedCode& code, Component* component, const String& memberVariableName)
@@ -99,14 +97,14 @@ public:
         code.constructorCode += s;
     }
 
-    void getEditableProperties (Component* component, JucerDocument& document, Array <PropertyComponent*>& properties)
+    void getEditableProperties (Component* component, JucerDocument& document, Array<PropertyComponent*>& props)
     {
-        ComponentTypeHandler::getEditableProperties (component, document, properties);
+        ComponentTypeHandler::getEditableProperties (component, document, props);
 
-        properties.add (new GroupTitleProperty ((GroupComponent*) component, document));
-        properties.add (new GroupJustificationProperty ((GroupComponent*) component, document));
+        props.add (new GroupTitleProperty ((GroupComponent*) component, document));
+        props.add (new GroupJustificationProperty ((GroupComponent*) component, document));
 
-        addColourProperties (component, document, properties);
+        addColourProperties (component, document, props);
     }
 
 private:
@@ -133,8 +131,8 @@ private:
         class GroupTitleChangeAction  : public ComponentUndoableAction <GroupComponent>
         {
         public:
-            GroupTitleChangeAction (GroupComponent* const comp, ComponentLayout& layout, const String& newName_)
-                : ComponentUndoableAction <GroupComponent> (comp, layout),
+            GroupTitleChangeAction (GroupComponent* const comp, ComponentLayout& l, const String& newName_)
+                : ComponentUndoableAction <GroupComponent> (comp, l),
                   newName (newName_)
             {
                 oldName = comp->getText();
@@ -178,13 +176,13 @@ private:
             document.removeChangeListener (this);
         }
 
-        void setJustification (const Justification& newJustification)
+        void setJustification (Justification newJustification)
         {
             document.perform (new GroupJustifyChangeAction (group, *document.getComponentLayout(), newJustification),
                               "Change text label position");
         }
 
-        const Justification getJustification() const
+        Justification getJustification() const
         {
             return group->getTextLabelPosition();
         }
@@ -198,8 +196,8 @@ private:
         class GroupJustifyChangeAction  : public ComponentUndoableAction <GroupComponent>
         {
         public:
-            GroupJustifyChangeAction (GroupComponent* const comp, ComponentLayout& layout, const Justification& newState_)
-                : ComponentUndoableAction <GroupComponent> (comp, layout),
+            GroupJustifyChangeAction (GroupComponent* const comp, ComponentLayout& l, Justification newState_)
+                : ComponentUndoableAction <GroupComponent> (comp, l),
                   newState (newState_),
                   oldState (comp->getTextLabelPosition())
             {

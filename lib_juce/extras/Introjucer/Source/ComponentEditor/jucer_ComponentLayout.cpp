@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -124,8 +123,8 @@ private:
 class DeleteCompAction  : public ComponentUndoableAction <Component>
 {
 public:
-    DeleteCompAction (Component* const comp, ComponentLayout& layout)
-       : ComponentUndoableAction <Component> (comp, layout),
+    DeleteCompAction (Component* const comp, ComponentLayout& l)
+       : ComponentUndoableAction <Component> (comp, l),
          oldIndex (-1)
     {
         if (ComponentTypeHandler* const h = ComponentTypeHandler::getHandlerFor (*comp))
@@ -133,7 +132,7 @@ public:
         else
             jassertfalse;
 
-        oldIndex = layout.indexOfComponent (comp);
+        oldIndex = l.indexOfComponent (comp);
     }
 
     bool perform()
@@ -182,11 +181,11 @@ void ComponentLayout::removeComponent (Component* comp, const bool undoable)
 class FrontBackCompAction  : public ComponentUndoableAction <Component>
 {
 public:
-    FrontBackCompAction (Component* const comp, ComponentLayout& layout, int newIndex_)
-       : ComponentUndoableAction <Component> (comp, layout),
+    FrontBackCompAction (Component* const comp, ComponentLayout& l, int newIndex_)
+       : ComponentUndoableAction <Component> (comp, l),
          newIndex (newIndex_)
     {
-        oldIndex = layout.indexOfComponent (comp);
+        oldIndex = l.indexOfComponent (comp);
     }
 
     bool perform()
@@ -266,7 +265,7 @@ void ComponentLayout::copySelectedToClipboard()
         }
     }
 
-    SystemClipboard::copyTextToClipboard (clip.createDocument (String::empty, false, false));
+    SystemClipboard::copyTextToClipboard (clip.createDocument ("", false, false));
 }
 
 void ComponentLayout::paste()
@@ -532,12 +531,11 @@ void ComponentLayout::processRelativeTargetMenuResult (Component* comp, int whic
 class ChangeCompPositionAction  : public ComponentUndoableAction <Component>
 {
 public:
-    ChangeCompPositionAction (Component* const comp, ComponentLayout& layout,
+    ChangeCompPositionAction (Component* const comp, ComponentLayout& l,
                               const RelativePositionedRectangle& newPos_)
-       : ComponentUndoableAction <Component> (comp, layout),
-         newPos (newPos_)
+       : ComponentUndoableAction <Component> (comp, l),
+         newPos (newPos_), oldPos (ComponentTypeHandler::getComponentPosition (comp))
     {
-        oldPos = ComponentTypeHandler::getComponentPosition (comp);
     }
 
     bool perform()
@@ -729,6 +727,7 @@ String ComponentLayout::getComponentMemberVariableName (Component* comp) const
 
 void ComponentLayout::setComponentMemberVariableName (Component* comp, const String& newName)
 {
+    jassert (comp != nullptr);
     const String oldName (getComponentMemberVariableName (comp));
 
     comp->getProperties().set ("memberName", String::empty);
@@ -783,6 +782,7 @@ String ComponentLayout::getComponentVirtualClassName (Component* comp) const
 
 void ComponentLayout::setComponentVirtualClassName (Component* comp, const String& newName)
 {
+    jassert (comp != nullptr);
     const String name (CodeHelpers::makeValidIdentifier (newName, false, false, true));
 
     if (name != getComponentVirtualClassName (comp))

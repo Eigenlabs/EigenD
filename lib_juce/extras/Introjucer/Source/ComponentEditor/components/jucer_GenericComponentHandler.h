@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -98,22 +97,22 @@ public:
         return true;
     }
 
-    void getEditableProperties (Component* component, JucerDocument& document, Array <PropertyComponent*>& properties)
+    void getEditableProperties (Component* component, JucerDocument& document, Array<PropertyComponent*>& props)
     {
-        ComponentTypeHandler::getEditableProperties (component, document, properties);
+        ComponentTypeHandler::getEditableProperties (component, document, props);
 
-        properties.add (new GenericCompClassProperty (dynamic_cast <GenericComponent*> (component), document));
-        properties.add (new GenericCompParamsProperty (dynamic_cast <GenericComponent*> (component), document));
+        props.add (new GenericCompClassProperty (dynamic_cast <GenericComponent*> (component), document));
+        props.add (new GenericCompParamsProperty (dynamic_cast <GenericComponent*> (component), document));
     }
 
     String getClassName (Component* comp) const
     {
-        return ((GenericComponent*) comp)->actualClassName;
+        return static_cast<GenericComponent*> (comp)->actualClassName;
     }
 
-    String getCreationParameters (Component* comp)
+    String getCreationParameters (GeneratedCode&, Component* comp)
     {
-        return ((GenericComponent*) comp)->constructorParams;
+        return static_cast<GenericComponent*> (comp)->constructorParams;
     }
 
     void fillInCreationCode (GeneratedCode& code, Component* component, const String& memberVariableName)
@@ -123,7 +122,7 @@ public:
         if (component->getName().isNotEmpty())
             code.constructorCode
                 << memberVariableName << "->setName ("
-                << quotedString (component->getName())
+                << quotedString (component->getName(), false)
                 << ");\n\n";
         else
             code.constructorCode << "\n";
@@ -133,8 +132,8 @@ private:
     class GenericCompClassProperty  : public ComponentTextProperty <GenericComponent>
     {
     public:
-        GenericCompClassProperty (GenericComponent* comp, JucerDocument& document)
-            : ComponentTextProperty <GenericComponent> ("class", 300, false, comp, document)
+        GenericCompClassProperty (GenericComponent* comp, JucerDocument& doc)
+            : ComponentTextProperty <GenericComponent> ("class", 300, false, comp, doc)
         {
         }
 
@@ -154,8 +153,8 @@ private:
         class GenericCompClassChangeAction  : public ComponentUndoableAction <GenericComponent>
         {
         public:
-            GenericCompClassChangeAction (GenericComponent* const comp, ComponentLayout& layout, const String& newState_)
-                : ComponentUndoableAction <GenericComponent> (comp, layout),
+            GenericCompClassChangeAction (GenericComponent* const comp, ComponentLayout& l, const String& newState_)
+                : ComponentUndoableAction <GenericComponent> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->actualClassName;
@@ -184,8 +183,8 @@ private:
     class GenericCompParamsProperty  : public ComponentTextProperty <GenericComponent>
     {
     public:
-        GenericCompParamsProperty (GenericComponent* comp, JucerDocument& document)
-            : ComponentTextProperty <GenericComponent> ("constructor params", 1024, true, comp, document)
+        GenericCompParamsProperty (GenericComponent* comp, JucerDocument& doc)
+            : ComponentTextProperty <GenericComponent> ("constructor params", 1024, true, comp, doc)
         {
         }
 
@@ -204,8 +203,8 @@ private:
         class GenericCompParamsChangeAction  : public ComponentUndoableAction <GenericComponent>
         {
         public:
-            GenericCompParamsChangeAction (GenericComponent* const comp, ComponentLayout& layout, const String& newState_)
-                : ComponentUndoableAction <GenericComponent> (comp, layout),
+            GenericCompParamsChangeAction (GenericComponent* const comp, ComponentLayout& l, const String& newState_)
+                : ComponentUndoableAction <GenericComponent> (comp, l),
                   newState (newState_)
             {
                 oldState = comp->constructorParams;

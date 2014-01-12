@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -38,7 +37,7 @@ class JucerComponentHandler  : public ComponentTypeHandler
 {
 public:
     JucerComponentHandler()
-        : ComponentTypeHandler ("Jucer Component", "xxx",
+        : ComponentTypeHandler ("Introjucer Component", "xxx",
                                 typeid (TestComponent), 300, 200)
     {}
 
@@ -88,23 +87,22 @@ public:
         return jucerCompClassName;
     }
 
-    void getEditableProperties (Component* component, JucerDocument& document, Array <PropertyComponent*>& properties)
+    void getEditableProperties (Component* component, JucerDocument& document, Array<PropertyComponent*>& props)
     {
         TestComponent* const tc = dynamic_cast <TestComponent*> (component);
 
-        ComponentTypeHandler::getEditableProperties (component, document, properties);
+        ComponentTypeHandler::getEditableProperties (component, document, props);
 
-        properties.add (new JucerCompFileProperty (tc, document));
-        properties.add (new ConstructorParamsProperty (tc, document));
-        properties.add (new JucerCompOpenDocProperty (tc));
+        props.add (new JucerCompFileProperty (tc, document));
+        props.add (new ConstructorParamsProperty (tc, document));
+        props.add (new JucerCompOpenDocProperty (tc));
     }
 
-    String getCreationParameters (Component* component)
+    String getCreationParameters (GeneratedCode&, Component* component)
     {
-        TestComponent* const tc = dynamic_cast <TestComponent*> (component);
-
-        return tc->getConstructorParams().trim();
+        return dynamic_cast<TestComponent*> (component)->getConstructorParams().trim();
     }
+
     void fillInCreationCode (GeneratedCode& code, Component* component, const String& memberVariableName)
     {
         ComponentTypeHandler::fillInCreationCode (code, component, memberVariableName);
@@ -118,8 +116,8 @@ public:
     class JucerCompFileChangeAction  : public ComponentUndoableAction <TestComponent>
     {
     public:
-        JucerCompFileChangeAction (TestComponent* const comp, ComponentLayout& layout, const String& newState_)
-            : ComponentUndoableAction <TestComponent> (comp, layout),
+        JucerCompFileChangeAction (TestComponent* const comp, ComponentLayout& l, const String& newState_)
+            : ComponentUndoableAction <TestComponent> (comp, l),
               newState (newState_)
         {
             oldState = comp->getFilename();
@@ -146,11 +144,11 @@ public:
 
     static void setJucerComponentFile (JucerDocument& document, TestComponent* comp, const String& newFilename)
     {
-        jassert (comp != 0);
+        jassert (comp != nullptr);
 
-        if (comp != 0)
+        if (comp != nullptr)
             document.perform (new JucerCompFileChangeAction (comp, *document.getComponentLayout(), newFilename),
-                              "Change Jucer component file");
+                              "Change Introjucer component file");
     }
 
 private:
@@ -223,8 +221,8 @@ private:
     class ConstructorParamsProperty   : public ComponentTextProperty <TestComponent>
     {
     public:
-        ConstructorParamsProperty (TestComponent* comp, JucerDocument& document)
-            : ComponentTextProperty <TestComponent> ("constructor params", 512, false, comp, document)
+        ConstructorParamsProperty (TestComponent* comp, JucerDocument& doc)
+            : ComponentTextProperty <TestComponent> ("constructor params", 512, false, comp, doc)
         {
         }
 
@@ -243,8 +241,8 @@ private:
         class ConstructorParamChangeAction  : public ComponentUndoableAction <TestComponent>
         {
         public:
-            ConstructorParamChangeAction (TestComponent* const comp, ComponentLayout& layout, const String& newValue_)
-                : ComponentUndoableAction <TestComponent> (comp, layout),
+            ConstructorParamChangeAction (TestComponent* const comp, ComponentLayout& l, const String& newValue_)
+                : ComponentUndoableAction <TestComponent> (comp, l),
                   newValue (newValue_)
             {
                 oldValue = comp->getConstructorParams();

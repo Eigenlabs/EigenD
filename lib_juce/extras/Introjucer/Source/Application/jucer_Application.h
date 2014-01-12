@@ -1,24 +1,23 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library - "Jules' Utility Class Extensions"
-   Copyright 2004-11 by Raw Material Software Ltd.
+   This file is part of the JUCE library.
+   Copyright (c) 2013 - Raw Material Software Ltd.
 
-  ------------------------------------------------------------------------------
+   Permission is granted to use this software under the terms of either:
+   a) the GPL v2 (or any later version)
+   b) the Affero GPL v3
 
-   JUCE can be redistributed and/or modified under the terms of the GNU General
-   Public License (Version 2), as published by the Free Software Foundation.
-   A copy of the license is included in the JUCE distribution, or can be found
-   online at www.gnu.org/licenses.
+   Details of these licenses can be found at: www.gnu.org/licenses
 
    JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
    A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-  ------------------------------------------------------------------------------
+   ------------------------------------------------------------------------------
 
    To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.rawmaterialsoftware.com/juce for more information.
+   available: visit www.juce.com for more information.
 
   ==============================================================================
 */
@@ -28,7 +27,6 @@
 
 #include "../jucer_Headers.h"
 #include "jucer_MainWindow.h"
-#include "jucer_JuceUpdater.h"
 #include "jucer_CommandLine.h"
 #include "../Code Editor/jucer_SourceCodeEditor.h"
 
@@ -44,7 +42,7 @@ public:
     IntrojucerApp() :  isRunningCommandLine (false) {}
 
     //==============================================================================
-    void initialise (const String& commandLine)
+    void initialise (const String& commandLine) override
     {
         LookAndFeel::setDefaultLookAndFeel (&lookAndFeel);
         settings = new StoredSettings();
@@ -62,14 +60,14 @@ public:
             }
         }
 
-        initialiseLogger ("log_");
-
         if (sendCommandLineToPreexistingInstance())
         {
             DBG ("Another instance is running - quitting...");
             quit();
             return;
         }
+
+        initialiseLogger ("log_");
 
         icons = new Icons();
 
@@ -93,25 +91,13 @@ public:
        #if JUCE_MAC
         MenuBarModel::setMacMainMenu (menuModel, nullptr, "Open Recent");
        #endif
-
-        struct ModuleFolderChecker  : public CallbackMessage
-        {
-            ModuleFolderChecker() {}
-
-            void messageCallback()
-            {
-                if (IntrojucerApp* const app = dynamic_cast<IntrojucerApp*> (JUCEApplication::getInstance()))
-                    app->makeSureUserHasSelectedModuleFolder();
-            }
-        };
-
-        (new ModuleFolderChecker())->post();
     }
 
-    void shutdown()
+    void shutdown() override
     {
         appearanceEditorWindow = nullptr;
         utf8Window = nullptr;
+        svgPathWindow = nullptr;
 
        #if JUCE_MAC
         MenuBarModel::setMacMainMenu (nullptr);
@@ -132,7 +118,7 @@ public:
     }
 
     //==============================================================================
-    void systemRequestedQuit()
+    void systemRequestedQuit() override
     {
         closeModalCompsAndQuit();
     }
@@ -151,17 +137,17 @@ public:
     }
 
     //==============================================================================
-    const String getApplicationName()       { return "Introjucer"; }
-    const String getApplicationVersion()    { return ProjectInfo::versionString; }
+    const String getApplicationName() override       { return "Introjucer"; }
+    const String getApplicationVersion() override    { return ProjectInfo::versionString; }
 
-    bool moreThanOneInstanceAllowed()
+    bool moreThanOneInstanceAllowed() override
     {
         return true; // this is handled manually in initialise()
     }
 
-    void anotherInstanceStarted (const String& commandLine)
+    void anotherInstanceStarted (const String& commandLine) override
     {
-        openFile (commandLine.unquoted());
+        openFile (File (commandLine.unquoted()));
     }
 
     static IntrojucerApp& getApp()
@@ -171,13 +157,20 @@ public:
         return *app;
     }
 
+    static ApplicationCommandManager& getCommandManager()
+    {
+        ApplicationCommandManager* cm = IntrojucerApp::getApp().commandManager;
+        jassert (cm != nullptr);
+        return *cm;
+    }
+
     //==============================================================================
     class MainMenuModel  : public MenuBarModel
     {
     public:
         MainMenuModel()
         {
-            setApplicationCommandManagerToWatch (commandManager);
+            setApplicationCommandManagerToWatch (&getCommandManager());
         }
 
         StringArray getMenuBarNames()
@@ -207,19 +200,19 @@ public:
 
     virtual StringArray getMenuNames()
     {
-        const char* const names[] = { "File", "Edit", "View", "Window", "Jucer", "Tools", nullptr };
+        const char* const names[] = { "File", "Edit", "View", "Window", "GUI Editor", "Tools", nullptr };
         return StringArray (names);
     }
 
     virtual void createMenu (PopupMenu& menu, const String& menuName)
     {
-        if (menuName == "File")         createFileMenu   (menu);
-        else if (menuName == "Edit")    createEditMenu   (menu);
-        else if (menuName == "View")    createViewMenu   (menu);
-        else if (menuName == "Window")  createWindowMenu (menu);
-        else if (menuName == "Tools")   createToolsMenu  (menu);
-        else if (menuName == "Jucer")   createGUIEditorMenu (menu);
-        else                            jassertfalse; // names have changed?
+        if (menuName == "File")             createFileMenu   (menu);
+        else if (menuName == "Edit")        createEditMenu   (menu);
+        else if (menuName == "View")        createViewMenu   (menu);
+        else if (menuName == "Window")      createWindowMenu (menu);
+        else if (menuName == "Tools")       createToolsMenu  (menu);
+        else if (menuName == "GUI Editor")  createGUIEditorMenu (menu);
+        else                                jassertfalse; // names have changed?
     }
 
     virtual void createFileMenu (PopupMenu& menu)
@@ -236,6 +229,7 @@ public:
         menu.addCommandItem (commandManager, CommandIDs::closeDocument);
         menu.addCommandItem (commandManager, CommandIDs::saveDocument);
         menu.addCommandItem (commandManager, CommandIDs::saveDocumentAs);
+        menu.addCommandItem (commandManager, CommandIDs::saveAll);
         menu.addSeparator();
         menu.addCommandItem (commandManager, CommandIDs::closeProject);
         menu.addCommandItem (commandManager, CommandIDs::saveProject);
@@ -271,6 +265,8 @@ public:
     {
         menu.addCommandItem (commandManager, CommandIDs::showFilePanel);
         menu.addCommandItem (commandManager, CommandIDs::showConfigPanel);
+        menu.addCommandItem (commandManager, CommandIDs::showProjectSettings);
+        menu.addCommandItem (commandManager, CommandIDs::showProjectModules);
         menu.addSeparator();
         createColourSchemeItems (menu);
     }
@@ -316,8 +312,9 @@ public:
 
     virtual void createToolsMenu (PopupMenu& menu)
     {
-        menu.addCommandItem (commandManager, CommandIDs::updateModules);
         menu.addCommandItem (commandManager, CommandIDs::showUTF8Tool);
+        menu.addCommandItem (commandManager, CommandIDs::showSVGPathTool);
+        menu.addCommandItem (commandManager, CommandIDs::showTranslationTool);
     }
 
     virtual void handleMainMenuCommand (int menuItemID)
@@ -345,7 +342,7 @@ public:
     }
 
     //==============================================================================
-    void getAllCommands (Array <CommandID>& commands)
+    void getAllCommands (Array <CommandID>& commands) override
     {
         JUCEApplication::getAllCommands (commands);
 
@@ -353,14 +350,14 @@ public:
                                   CommandIDs::open,
                                   CommandIDs::closeAllDocuments,
                                   CommandIDs::saveAll,
-                                  CommandIDs::updateModules,
                                   CommandIDs::showAppearanceSettings,
-                                  CommandIDs::showUTF8Tool };
+                                  CommandIDs::showUTF8Tool,
+                                  CommandIDs::showSVGPathTool };
 
         commands.addArray (ids, numElementsInArray (ids));
     }
 
-    void getCommandInfo (CommandID commandID, ApplicationCommandInfo& result)
+    void getCommandInfo (CommandID commandID, ApplicationCommandInfo& result) override
     {
         switch (commandID)
         {
@@ -385,15 +382,15 @@ public:
 
         case CommandIDs::saveAll:
             result.setInfo ("Save All", "Saves all open documents", CommandCategories::general, 0);
-            result.setActive (openDocumentManager.anyFilesNeedSaving());
-            break;
-
-        case CommandIDs::updateModules:
-            result.setInfo ("Download the latest JUCE modules", "Checks online for any JUCE modules updates and installs them", CommandCategories::general, 0);
+            result.defaultKeypresses.add (KeyPress ('s', ModifierKeys::commandModifier | ModifierKeys::altModifier, 0));
             break;
 
         case CommandIDs::showUTF8Tool:
             result.setInfo ("UTF-8 String-Literal Helper", "Shows the UTF-8 string literal utility", CommandCategories::general, 0);
+            break;
+
+        case CommandIDs::showSVGPathTool:
+            result.setInfo ("SVG Path Helper", "Shows the SVG->Path data conversion utility", CommandCategories::general, 0);
             break;
 
         default:
@@ -402,7 +399,7 @@ public:
         }
     }
 
-    bool perform (const InvocationInfo& info)
+    bool perform (const InvocationInfo& info) override
     {
         switch (info.commandID)
         {
@@ -411,8 +408,9 @@ public:
             case CommandIDs::saveAll:                   openDocumentManager.saveAll(); break;
             case CommandIDs::closeAllDocuments:         closeAllDocuments (true); break;
             case CommandIDs::showUTF8Tool:              showUTF8ToolWindow (utf8Window); break;
+            case CommandIDs::showSVGPathTool:           showSVGPathDataToolWindow (svgPathWindow); break;
+
             case CommandIDs::showAppearanceSettings:    AppearanceSettings::showEditorWindow (appearanceEditorWindow); break;
-            case CommandIDs::updateModules:             runModuleUpdate (String::empty); break;
             default:                                    return JUCEApplication::perform (info);
         }
 
@@ -422,12 +420,9 @@ public:
     //==============================================================================
     void createNewProject()
     {
-        if (makeSureUserHasSelectedModuleFolder())
-        {
-            MainWindow* mw = mainWindowList.getOrCreateEmptyWindow();
-            mw->showNewProjectWizard();
-            mainWindowList.avoidSuperimposedWindows (mw);
-        }
+        MainWindow* mw = mainWindowList.getOrCreateEmptyWindow();
+        mw->showNewProjectWizard();
+        mainWindowList.avoidSuperimposedWindows (mw);
     }
 
     virtual void updateNewlyOpenedProject (Project&) {}
@@ -453,35 +448,6 @@ public:
     virtual bool closeAllMainWindows()
     {
         return mainWindowList.askAllWindowsToClose();
-    }
-
-    bool makeSureUserHasSelectedModuleFolder()
-    {
-        if (! ModuleList::isLocalModulesFolderValid())
-        {
-            if (! runModuleUpdate ("Please select a location to store your local set of JUCE modules,\n"
-                                   "and download the ones that you'd like to use!"))
-            {
-                AlertWindow::showMessageBox (AlertWindow::WarningIcon,
-                                             "Introjucer",
-                                             "Unless you create a local JUCE folder containing some modules, you'll be unable to save any projects correctly!\n\n"
-                                             "Use the option on the 'Tools' menu to set this up!");
-
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool runModuleUpdate (const String& message)
-    {
-        ModuleList list;
-        list.rescan (ModuleList::getDefaultModulesFolder (nullptr));
-        JuceUpdater::show (list, mainWindowList.windows[0], message);
-
-        ModuleList::setLocalModulesFolder (list.getModulesFolder());
-        return ModuleList::isJuceOrModulesFolder (list.getModulesFolder());
     }
 
     //==============================================================================
@@ -537,7 +503,11 @@ public:
     virtual void doExtraInitialisation() {}
     virtual void addExtraConfigItems (Project&, TreeViewItem&) {}
 
+   #if JUCE_LINUX
+    virtual String getLogFolderName() const    { return "~/.config/Introjucer/Logs"; }
+   #else
     virtual String getLogFolderName() const    { return "com.juce.introjucer"; }
+   #endif
 
     virtual PropertiesFile::Options getPropertyFileOptionsFor (const String& filename)
     {
@@ -546,7 +516,7 @@ public:
         options.filenameSuffix      = "settings";
         options.osxLibrarySubFolder = "Application Support";
        #if JUCE_LINUX
-        options.folderName          = ".introjucer";
+        options.folderName          = "~/.config/Introjucer";
        #else
         options.folderName          = "Introjucer";
        #endif
@@ -569,8 +539,9 @@ public:
 
     MainWindowList mainWindowList;
     OpenDocumentManager openDocumentManager;
+    ScopedPointer<ApplicationCommandManager> commandManager;
 
-    ScopedPointer<Component> appearanceEditorWindow, utf8Window;
+    ScopedPointer<Component> appearanceEditorWindow, utf8Window, svgPathWindow;
 
     ScopedPointer<FileLogger> logger;
 
@@ -582,12 +553,12 @@ private:
     public:
         AsyncQuitRetrier()   { startTimer (500); }
 
-        void timerCallback()
+        void timerCallback() override
         {
             stopTimer();
             delete this;
 
-            if (JUCEApplication::getInstance() != nullptr)
+            if (JUCEApplicationBase::getInstance() != nullptr)
                 getApp().closeModalCompsAndQuit();
         }
 
