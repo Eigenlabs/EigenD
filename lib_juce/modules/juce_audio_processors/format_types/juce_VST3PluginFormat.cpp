@@ -753,7 +753,6 @@ public:
     //==============================================================================
     tresult PLUGIN_API setDirty (TBool) override
     {
-        jassertfalse;
         return kResultFalse;
     }
 
@@ -1930,6 +1929,7 @@ public:
             associateTo (data, midiMessages);
 
             processor->process (data);
+            buffer = resultBuffer;
 
             MidiEventList::toMidiBuffer (midiMessages, *midiOutputs);
         }
