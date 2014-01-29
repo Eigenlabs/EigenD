@@ -1,20 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  6 Feb 2013 4:38:36pm
+  This is an automatically generated GUI class created by the Introjucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Introjucer version: 3.1.0
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Introjucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright 2004-13 by Raw Material Software Ltd.
 
   ==============================================================================
 */
@@ -95,12 +93,12 @@ void CellPopupComponent::updateComponent(midi::mapper_cell_editor_t *cell_editor
     midi::mapping_info_t info = cell_editor->get_info();
     if(info.scale_<0)
     {
-        scale_factor_invert->setToggleState(true,false);
+        scale_factor_invert->setToggleState(true, dontSendNotification);
         scale_factor->setValue(info.scale_*-1.0, sendNotificationSync);
     }
     else
     {
-        scale_factor_invert->setToggleState(false,false);
+        scale_factor_invert->setToggleState(false, dontSendNotification);
         scale_factor->setValue(info.scale_, sendNotificationSync);
     }
 
@@ -108,7 +106,7 @@ void CellPopupComponent::updateComponent(midi::mapper_cell_editor_t *cell_editor
     boundsbase->setValue(info.base_*100, sendNotificationSync);
     boundslo->setValue(info.lo_*100, sendNotificationSync);
 
-    bounds_origin_return->setToggleState(info.origin_return_, false);
+    bounds_origin_return->setToggleState(info.origin_return_, dontSendNotification);
 
     if(cell_editor->get_settings().minimum_decimation_ > info.decimation_)
     {
@@ -120,28 +118,28 @@ void CellPopupComponent::updateComponent(midi::mapper_cell_editor_t *cell_editor
     }
     data_decimation->setValue(info.decimation_, sendNotificationSync);
 
-    mapping_enabled->setToggleState(info.enabled_, false);
+    mapping_enabled->setToggleState(info.enabled_, dontSendNotification);
 
     if(cell_editor->edit_control_scope())
     {
         switch(info.scope_)
         {
             case GLOBAL_SCOPE:
-                control_scope_global->setToggleState(true,false);
-                control_scope_pernote->setToggleState(false,false);
-                control_scope_channel->setToggleState(false,false);
+                control_scope_global->setToggleState(true, dontSendNotification);
+                control_scope_pernote->setToggleState(false, dontSendNotification);
+                control_scope_channel->setToggleState(false, dontSendNotification);
                 control_scope_channel_number->setEnabled(false);
                 break;
             case PERNOTE_SCOPE:
-                control_scope_global->setToggleState(false,false);
-                control_scope_pernote->setToggleState(true,false);
-                control_scope_channel->setToggleState(false,false);
+                control_scope_global->setToggleState(false, dontSendNotification);
+                control_scope_pernote->setToggleState(true, dontSendNotification);
+                control_scope_channel->setToggleState(false, dontSendNotification);
                 control_scope_channel_number->setEnabled(false);
                 break;
             case CHANNEL_SCOPE:
-                control_scope_global->setToggleState(false,false);
-                control_scope_pernote->setToggleState(true,false);
-                control_scope_channel->setToggleState(true,false);
+                control_scope_global->setToggleState(false, dontSendNotification);
+                control_scope_pernote->setToggleState(false, dontSendNotification);
+                control_scope_channel->setToggleState(true, dontSendNotification);
                 control_scope_channel_number->setSelectedId(info.channel_);
                 control_scope_channel_number->setEnabled(true);
                 break;
@@ -150,13 +148,13 @@ void CellPopupComponent::updateComponent(midi::mapper_cell_editor_t *cell_editor
         switch(info.resolution_)
         {
             case BITS_7:
-                resolution_7bit->setToggleState(true,false);
-                resolution_14bit->setToggleState(false,false);
+                resolution_7bit->setToggleState(true, dontSendNotification);
+                resolution_14bit->setToggleState(false, dontSendNotification);
                 secondary_cc->setEnabled(false);
                 break;
             case BITS_14:
-                resolution_7bit->setToggleState(false,false);
-                resolution_14bit->setToggleState(true,false);
+                resolution_7bit->setToggleState(false, dontSendNotification);
+                resolution_14bit->setToggleState(true, dontSendNotification);
                 secondary_cc->setEnabled(true);
                 break;
         }
@@ -202,7 +200,7 @@ void CellPopupComponent::setFocusOrder()
     ok->setWantsKeyboardFocus(false);
 }
 
-void CellPopupComponent::updateMapping()
+void CellPopupComponent::handleMessage(const Message &)
 {
     if(!cell_editor_) return;
 
@@ -247,42 +245,17 @@ void CellPopupComponent::updateMapping()
         bounds_origin_return->getToggleState(), data_decimation->getValue(), scope, channel,
         resolution, secondary_cc->getSelectedId(), curve->getSelectedId()-1);
 }
+
+void CellPopupComponent::updateMapping()
+{
+    postMessage(new Message());
+}
 //[/MiscUserDefs]
 
 //==============================================================================
 CellPopupComponent::CellPopupComponent ()
-    : Component ("CellPopup"),
-      bounds_group (0),
-      lo_label (0),
-      base_label (0),
-      scale_group (0),
-      control_scope_group (0),
-      scale_factor (0),
-      mapping_enabled (0),
-      control_scope_global (0),
-      control_scope_pernote (0),
-      clear_mapping (0),
-      resolution_group (0),
-      resolution_7bit (0),
-      resolution_14bit (0),
-      secondary_cc (0),
-      lo (0),
-      base (0),
-      hi_label (0),
-      hi (0),
-      ok (0),
-      boundslo (0),
-      boundsbase (0),
-      boundshi (0),
-      scale_factor_invert (0),
-      data_decimation_group (0),
-      data_decimation (0),
-      control_scope_channel (0),
-      control_scope_channel_number (0),
-      bounds_origin_return (0),
-      curve_group (0),
-      curve (0)
 {
+    setName ("CellPopup");
     addAndMakeVisible (bounds_group = new GroupComponent ("bounds group",
                                                           "Bounds (in %)"));
     bounds_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
@@ -290,21 +263,21 @@ CellPopupComponent::CellPopupComponent ()
 
     addAndMakeVisible (lo_label = new Label ("lo label",
                                              "Lo:"));
-    lo_label->setFont (Font (15.0000f, Font::plain));
+    lo_label->setFont (Font (15.00f, Font::plain));
     lo_label->setJustificationType (Justification::centredLeft);
     lo_label->setEditable (false, false, false);
     lo_label->setColour (Label::textColourId, Colour (0xffeeeeee));
     lo_label->setColour (TextEditor::textColourId, Colours::black);
-    lo_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    lo_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (base_label = new Label ("base label",
                                                "Base:"));
-    base_label->setFont (Font (15.0000f, Font::plain));
+    base_label->setFont (Font (15.00f, Font::plain));
     base_label->setJustificationType (Justification::centredLeft);
     base_label->setEditable (false, false, false);
     base_label->setColour (Label::textColourId, Colour (0xffeeeeee));
     base_label->setColour (TextEditor::textColourId, Colours::black);
-    base_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    base_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (scale_group = new GroupComponent ("scale group",
                                                          "Scale factor"));
@@ -323,7 +296,7 @@ CellPopupComponent::CellPopupComponent ()
     scale_factor->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
     scale_factor->setColour (Slider::rotarySliderFillColourId, Colours::azure);
     scale_factor->setColour (Slider::textBoxTextColourId, Colour (0xffeeeeee));
-    scale_factor->setColour (Slider::textBoxBackgroundColourId, Colour (0xffffff));
+    scale_factor->setColour (Slider::textBoxBackgroundColourId, Colour (0x00ffffff));
     scale_factor->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
     scale_factor->setColour (Slider::textBoxOutlineColourId, Colour (0x66ffffff));
     scale_factor->addListener (this);
@@ -331,14 +304,14 @@ CellPopupComponent::CellPopupComponent ()
     addAndMakeVisible (mapping_enabled = new ToggleButton ("enabled toggle button"));
     mapping_enabled->setButtonText ("Enabled");
     mapping_enabled->addListener (this);
-    mapping_enabled->setToggleState (true, false);
+    mapping_enabled->setToggleState (true, dontSendNotification);
     mapping_enabled->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
     addAndMakeVisible (control_scope_global = new ToggleButton ("global scope toggle button"));
     control_scope_global->setButtonText ("Global");
     control_scope_global->setRadioGroupId (1);
     control_scope_global->addListener (this);
-    control_scope_global->setToggleState (true, false);
+    control_scope_global->setToggleState (true, dontSendNotification);
     control_scope_global->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
     addAndMakeVisible (control_scope_pernote = new ToggleButton ("pernote scope toggle button"));
@@ -361,7 +334,7 @@ CellPopupComponent::CellPopupComponent ()
     resolution_7bit->setButtonText ("7 bit");
     resolution_7bit->setRadioGroupId (2);
     resolution_7bit->addListener (this);
-    resolution_7bit->setToggleState (true, false);
+    resolution_7bit->setToggleState (true, dontSendNotification);
     resolution_7bit->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
     addAndMakeVisible (resolution_14bit = new ToggleButton ("14 bit resolution toggle button"));
@@ -379,39 +352,39 @@ CellPopupComponent::CellPopupComponent ()
 
     addAndMakeVisible (lo = new Label ("lo",
                                        "0"));
-    lo->setFont (Font (15.0000f, Font::plain));
+    lo->setFont (Font (15.00f, Font::plain));
     lo->setJustificationType (Justification::centredRight);
     lo->setEditable (false, false, false);
     lo->setColour (Label::textColourId, Colour (0xffeeeeee));
     lo->setColour (TextEditor::textColourId, Colours::black);
-    lo->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    lo->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (base = new Label ("base",
                                          "0"));
-    base->setFont (Font (15.0000f, Font::plain));
+    base->setFont (Font (15.00f, Font::plain));
     base->setJustificationType (Justification::centredRight);
     base->setEditable (false, false, false);
     base->setColour (Label::textColourId, Colour (0xffeeeeee));
     base->setColour (TextEditor::textColourId, Colours::black);
-    base->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    base->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (hi_label = new Label ("hi label",
                                              "Hi:"));
-    hi_label->setFont (Font (15.0000f, Font::plain));
+    hi_label->setFont (Font (15.00f, Font::plain));
     hi_label->setJustificationType (Justification::centredLeft);
     hi_label->setEditable (false, false, false);
     hi_label->setColour (Label::textColourId, Colour (0xffeeeeee));
     hi_label->setColour (TextEditor::textColourId, Colours::black);
-    hi_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    hi_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (hi = new Label ("hi",
                                        "100"));
-    hi->setFont (Font (15.0000f, Font::plain));
+    hi->setFont (Font (15.00f, Font::plain));
     hi->setJustificationType (Justification::centredRight);
     hi->setEditable (false, false, false);
     hi->setColour (Label::textColourId, Colour (0xffeeeeee));
     hi->setColour (TextEditor::textColourId, Colours::black);
-    hi->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    hi->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (ok = new TextButton ("ok button"));
     ok->setButtonText ("Ok");
@@ -427,9 +400,9 @@ CellPopupComponent::CellPopupComponent ()
     boundslo->setColour (Slider::rotarySliderFillColourId, Colour (0xddffffff));
     boundslo->setColour (Slider::rotarySliderOutlineColourId, Colour (0x66ffffff));
     boundslo->setColour (Slider::textBoxTextColourId, Colour (0xffeeeeee));
-    boundslo->setColour (Slider::textBoxBackgroundColourId, Colour (0xffffff));
+    boundslo->setColour (Slider::textBoxBackgroundColourId, Colour (0x00ffffff));
     boundslo->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
-    boundslo->setColour (Slider::textBoxOutlineColourId, Colour (0x0));
+    boundslo->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundslo->addListener (this);
 
     addAndMakeVisible (boundsbase = new Slider ("boundsbase dial"));
@@ -440,9 +413,9 @@ CellPopupComponent::CellPopupComponent ()
     boundsbase->setColour (Slider::rotarySliderFillColourId, Colour (0xddffffff));
     boundsbase->setColour (Slider::rotarySliderOutlineColourId, Colour (0x66ffffff));
     boundsbase->setColour (Slider::textBoxTextColourId, Colour (0xffeeeeee));
-    boundsbase->setColour (Slider::textBoxBackgroundColourId, Colour (0xffffff));
+    boundsbase->setColour (Slider::textBoxBackgroundColourId, Colour (0x00ffffff));
     boundsbase->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
-    boundsbase->setColour (Slider::textBoxOutlineColourId, Colour (0x0));
+    boundsbase->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundsbase->addListener (this);
 
     addAndMakeVisible (boundshi = new Slider ("boundshi dial"));
@@ -453,9 +426,9 @@ CellPopupComponent::CellPopupComponent ()
     boundshi->setColour (Slider::rotarySliderFillColourId, Colour (0xddffffff));
     boundshi->setColour (Slider::rotarySliderOutlineColourId, Colour (0x66ffffff));
     boundshi->setColour (Slider::textBoxTextColourId, Colour (0xffeeeeee));
-    boundshi->setColour (Slider::textBoxBackgroundColourId, Colour (0xffffff));
+    boundshi->setColour (Slider::textBoxBackgroundColourId, Colour (0x00ffffff));
     boundshi->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
-    boundshi->setColour (Slider::textBoxOutlineColourId, Colour (0x0));
+    boundshi->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundshi->addListener (this);
 
     addAndMakeVisible (scale_factor_invert = new ToggleButton ("scale factor invert toggle button"));
@@ -475,7 +448,7 @@ CellPopupComponent::CellPopupComponent ()
     data_decimation->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
     data_decimation->setColour (Slider::rotarySliderFillColourId, Colours::azure);
     data_decimation->setColour (Slider::textBoxTextColourId, Colour (0xffeeeeee));
-    data_decimation->setColour (Slider::textBoxBackgroundColourId, Colour (0xffffff));
+    data_decimation->setColour (Slider::textBoxBackgroundColourId, Colour (0x00ffffff));
     data_decimation->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
     data_decimation->setColour (Slider::textBoxOutlineColourId, Colour (0x66ffffff));
     data_decimation->addListener (this);
@@ -558,6 +531,7 @@ CellPopupComponent::CellPopupComponent ()
 
     setSize (208, 550);
 
+
     //[Constructor] You can add your own custom stuff here..
     //[/Constructor]
 }
@@ -567,36 +541,36 @@ CellPopupComponent::~CellPopupComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
-    deleteAndZero (bounds_group);
-    deleteAndZero (lo_label);
-    deleteAndZero (base_label);
-    deleteAndZero (scale_group);
-    deleteAndZero (control_scope_group);
-    deleteAndZero (scale_factor);
-    deleteAndZero (mapping_enabled);
-    deleteAndZero (control_scope_global);
-    deleteAndZero (control_scope_pernote);
-    deleteAndZero (clear_mapping);
-    deleteAndZero (resolution_group);
-    deleteAndZero (resolution_7bit);
-    deleteAndZero (resolution_14bit);
-    deleteAndZero (secondary_cc);
-    deleteAndZero (lo);
-    deleteAndZero (base);
-    deleteAndZero (hi_label);
-    deleteAndZero (hi);
-    deleteAndZero (ok);
-    deleteAndZero (boundslo);
-    deleteAndZero (boundsbase);
-    deleteAndZero (boundshi);
-    deleteAndZero (scale_factor_invert);
-    deleteAndZero (data_decimation_group);
-    deleteAndZero (data_decimation);
-    deleteAndZero (control_scope_channel);
-    deleteAndZero (control_scope_channel_number);
-    deleteAndZero (bounds_origin_return);
-    deleteAndZero (curve_group);
-    deleteAndZero (curve);
+    bounds_group = nullptr;
+    lo_label = nullptr;
+    base_label = nullptr;
+    scale_group = nullptr;
+    control_scope_group = nullptr;
+    scale_factor = nullptr;
+    mapping_enabled = nullptr;
+    control_scope_global = nullptr;
+    control_scope_pernote = nullptr;
+    clear_mapping = nullptr;
+    resolution_group = nullptr;
+    resolution_7bit = nullptr;
+    resolution_14bit = nullptr;
+    secondary_cc = nullptr;
+    lo = nullptr;
+    base = nullptr;
+    hi_label = nullptr;
+    hi = nullptr;
+    ok = nullptr;
+    boundslo = nullptr;
+    boundsbase = nullptr;
+    boundshi = nullptr;
+    scale_factor_invert = nullptr;
+    data_decimation_group = nullptr;
+    data_decimation = nullptr;
+    control_scope_channel = nullptr;
+    control_scope_channel_number = nullptr;
+    bounds_origin_return = nullptr;
+    curve_group = nullptr;
+    curve = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -810,16 +784,17 @@ void CellPopupComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 
 //==============================================================================
 #if 0
-/*  -- Jucer information section --
+/*  -- Introjucer information section --
 
-    This is where the Jucer puts all of its metadata, so don't change anything in here!
+    This is where the Introjucer stores the metadata that describe this GUI layout, so
+    make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="CellPopupComponent" componentName="CellPopup"
-                 parentClasses="public Component" constructorParams="" variableInitialisers=""
-                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
-                 fixedSize="1" initialWidth="208" initialHeight="550">
+                 parentClasses="public Component, public MessageListener" constructorParams=""
+                 variableInitialisers="" snapPixels="8" snapActive="1" snapShown="1"
+                 overlayOpacity="0.330" fixedSize="1" initialWidth="208" initialHeight="550">
   <BACKGROUND backgroundColour="0"/>
   <GROUPCOMPONENT name="bounds group" id="6d888bc9426a2e47" memberName="bounds_group"
                   virtualName="" explicitFocusOrder="0" pos="8 70 192 112" outlinecol="66eeeeee"
@@ -844,7 +819,7 @@ BEGIN_JUCER_METADATA
           virtualName="" explicitFocusOrder="0" pos="21 30 107 24" thumbcol="ff8a8a8a"
           rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
           textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
-          max="10" int="0.1" style="LinearBar" textBoxPos="TextBoxLeft"
+          max="10" int="0.10000000000000000555" style="LinearBar" textBoxPos="TextBoxLeft"
           textBoxEditable="0" textBoxWidth="45" textBoxHeight="20" skewFactor="1"/>
   <TOGGLEBUTTON name="enabled toggle button" id="9699df892a5ec5b4" memberName="mapping_enabled"
                 virtualName="" explicitFocusOrder="0" pos="64 24R 72 24" txtcol="ffeeeeee"
@@ -946,14 +921,13 @@ BEGIN_JUCER_METADATA
                   textcol="ffeeeeee" title="Curve"/>
   <COMBOBOX name="curve combo box" id="b74a35fbce3031e7" memberName="curve"
             virtualName="" explicitFocusOrder="0" pos="24 278 160 24" editable="0"
-            layout="33" items="linear&#10;cubic&#10;quadratic&#10;step"
-            textWhenNonSelected="" textWhenNoItems="(no choices)"/>
+            layout="33" items="linear&#10;cubic&#10;quadratic&#10;step" textWhenNonSelected=""
+            textWhenNoItems="(no choices)"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
 */
 #endif
-
 
 
 //[EndFile] You can add extra defines here...

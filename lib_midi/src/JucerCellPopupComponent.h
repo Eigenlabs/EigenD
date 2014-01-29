@@ -1,26 +1,24 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  6 Feb 2013 4:38:36pm
+  This is an automatically generated GUI class created by the Introjucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Introjucer version: 3.1.0
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Introjucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright 2004-13 by Raw Material Software Ltd.
 
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_5E07B17A__
-#define __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_5E07B17A__
+#ifndef __JUCE_HEADER_7F7EC30B14DA7E63__
+#define __JUCE_HEADER_7F7EC30B14DA7E63__
 
 //[Headers]     -- You can add your own extra header files here --
 #include <lib_midi/control_mapper_gui.h>
@@ -39,6 +37,7 @@
                                                                     //[/Comments]
 */
 class CellPopupComponent  : public Component,
+                            public MessageListener,
                             public SliderListener,
                             public ButtonListener,
                             public ComboBoxListener
@@ -55,6 +54,7 @@ public:
     void updateComponent(midi::mapper_cell_editor_t *cell_editor);
     void setFocusOrder();
     void updateMapping();
+    void handleMessage(const Message &);
     //[/UserMethods]
 
     void paint (Graphics& g);
@@ -71,36 +71,36 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    GroupComponent* bounds_group;
-    Label* lo_label;
-    Label* base_label;
-    GroupComponent* scale_group;
-    GroupComponent* control_scope_group;
-    Slider* scale_factor;
-    ToggleButton* mapping_enabled;
-    ToggleButton* control_scope_global;
-    ToggleButton* control_scope_pernote;
-    TextButton* clear_mapping;
-    GroupComponent* resolution_group;
-    ToggleButton* resolution_7bit;
-    ToggleButton* resolution_14bit;
-    ComboBox* secondary_cc;
-    Label* lo;
-    Label* base;
-    Label* hi_label;
-    Label* hi;
-    TextButton* ok;
-    Slider* boundslo;
-    Slider* boundsbase;
-    Slider* boundshi;
-    ToggleButton* scale_factor_invert;
-    GroupComponent* data_decimation_group;
-    Slider* data_decimation;
-    ToggleButton* control_scope_channel;
-    ComboBox* control_scope_channel_number;
-    ToggleButton* bounds_origin_return;
-    GroupComponent* curve_group;
-    ComboBox* curve;
+    ScopedPointer<GroupComponent> bounds_group;
+    ScopedPointer<Label> lo_label;
+    ScopedPointer<Label> base_label;
+    ScopedPointer<GroupComponent> scale_group;
+    ScopedPointer<GroupComponent> control_scope_group;
+    ScopedPointer<Slider> scale_factor;
+    ScopedPointer<ToggleButton> mapping_enabled;
+    ScopedPointer<ToggleButton> control_scope_global;
+    ScopedPointer<ToggleButton> control_scope_pernote;
+    ScopedPointer<TextButton> clear_mapping;
+    ScopedPointer<GroupComponent> resolution_group;
+    ScopedPointer<ToggleButton> resolution_7bit;
+    ScopedPointer<ToggleButton> resolution_14bit;
+    ScopedPointer<ComboBox> secondary_cc;
+    ScopedPointer<Label> lo;
+    ScopedPointer<Label> base;
+    ScopedPointer<Label> hi_label;
+    ScopedPointer<Label> hi;
+    ScopedPointer<TextButton> ok;
+    ScopedPointer<Slider> boundslo;
+    ScopedPointer<Slider> boundsbase;
+    ScopedPointer<Slider> boundshi;
+    ScopedPointer<ToggleButton> scale_factor_invert;
+    ScopedPointer<GroupComponent> data_decimation_group;
+    ScopedPointer<Slider> data_decimation;
+    ScopedPointer<ToggleButton> control_scope_channel;
+    ScopedPointer<ComboBox> control_scope_channel_number;
+    ScopedPointer<ToggleButton> bounds_origin_return;
+    ScopedPointer<GroupComponent> curve_group;
+    ScopedPointer<ComboBox> curve;
 
 
     //==============================================================================
@@ -110,4 +110,4 @@ private:
 //[EndFile] You can add extra defines here...
 //[/EndFile]
 
-#endif   // __JUCER_HEADER_CELLPOPUPCOMPONENT_JUCERCELLPOPUPCOMPONENT_5E07B17A__
+#endif   // __JUCE_HEADER_7F7EC30B14DA7E63__

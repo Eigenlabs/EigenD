@@ -1,26 +1,24 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  13 Jul 2012 6:13:26pm
+  This is an automatically generated GUI class created by the Introjucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Introjucer version: 3.1.0
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Introjucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright 2004-13 by Raw Material Software Ltd.
 
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_E1544CC5__
-#define __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_E1544CC5__
+#ifndef __JUCE_HEADER_152173484D4E5DB7__
+#define __JUCE_HEADER_152173484D4E5DB7__
 
 //[Headers]     -- You can add your own extra header files here --
 #include <lib_midi/control_mapper_gui.h>
@@ -39,6 +37,7 @@
                                                                     //[/Comments]
 */
 class GlobalSettingsComponent  : public Component,
+                                 public MessageListener,
                                  public ButtonListener,
                                  public SliderListener,
                                  public ComboBoxListener
@@ -56,6 +55,7 @@ public:
     void setDialogWindow(DialogWindow *window);
     void setFocusOrder();
     void updateSettings();
+    void handleMessage(const Message &);
     //[/UserMethods]
 
     void paint (Graphics& g);
@@ -66,9 +66,6 @@ public:
 
 
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
-
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     DialogWindow* window_;
@@ -76,30 +73,30 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    GroupComponent* midi_group;
-    TextButton* ok;
-    ToggleButton* midi_notes;
-    ToggleButton* midi_pitchbend;
-    GroupComponent* min_data_decimation_group;
-    Slider* data_decimation;
-    Label* active_channel_label;
-    ComboBox* active_channel;
-    Label* min_channel_label;
-    ComboBox* min_channel;
-    Label* max_channel_label;
-    ComboBox* max_channel;
-    ToggleButton* midi_hires_velocity;
-    Label* pitchbend_up_label;
-    Label* pitchbend_down_label;
-    Slider* pitchbend_up;
-    Slider* pitchbend_down;
+    ScopedPointer<GroupComponent> midi_group;
+    ScopedPointer<TextButton> ok;
+    ScopedPointer<ToggleButton> midi_notes;
+    ScopedPointer<ToggleButton> midi_pitchbend;
+    ScopedPointer<GroupComponent> min_data_decimation_group;
+    ScopedPointer<Slider> data_decimation;
+    ScopedPointer<Label> active_channel_label;
+    ScopedPointer<ComboBox> active_channel;
+    ScopedPointer<Label> min_channel_label;
+    ScopedPointer<ComboBox> min_channel;
+    ScopedPointer<Label> max_channel_label;
+    ScopedPointer<ComboBox> max_channel;
+    ScopedPointer<ToggleButton> midi_hires_velocity;
+    ScopedPointer<Label> pitchbend_up_label;
+    ScopedPointer<Label> pitchbend_down_label;
+    ScopedPointer<Slider> pitchbend_up;
+    ScopedPointer<Slider> pitchbend_down;
 
 
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    GlobalSettingsComponent (const GlobalSettingsComponent&);
-    const GlobalSettingsComponent& operator= (const GlobalSettingsComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlobalSettingsComponent)
 };
 
+//[EndFile] You can add extra defines here...
+//[/EndFile]
 
-#endif   // __JUCER_HEADER_GLOBALSETTINGSCOMPONENT_JUCERGLOBALSETTINGSCOMPONENT_E1544CC5__
+#endif   // __JUCE_HEADER_152173484D4E5DB7__

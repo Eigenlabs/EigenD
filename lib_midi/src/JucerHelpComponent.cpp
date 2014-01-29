@@ -1,20 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  24 Sep 2012 6:41:26pm
+  This is an automatically generated GUI class created by the Introjucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Introjucer version: 3.1.0
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Introjucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright 2004-13 by Raw Material Software Ltd.
 
   ==============================================================================
 */
@@ -30,27 +28,14 @@
 
 //==============================================================================
 HelpComponent::HelpComponent ()
-    : title (0),
-      ok_button (0),
-      label (0),
-      cachedImage_backgroundBoxInner_png (0),
-      cachedImage_backgroundBoxT_png (0),
-      cachedImage_backgroundBoxL_png (0),
-      cachedImage_backgroundBoxR_png (0),
-      cachedImage_backgroundBoxTl_png (0),
-      cachedImage_backgroundBoxTr_png (0),
-      cachedImage_backgroundBoxB_png (0),
-      cachedImage_backgroundBoxBr_png (0),
-      cachedImage_backgroundBoxBl_png (0),
-      cachedImage_eigenD_png (0)
 {
     addAndMakeVisible (title = new Label ("title label",
                                           "Dialog Title"));
-    title->setFont (Font (25.2000f, Font::bold));
+    title->setFont (Font (25.20f, Font::bold));
     title->setJustificationType (Justification::centred);
     title->setEditable (false, false, false);
     title->setColour (TextEditor::textColourId, Colours::black);
-    title->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    title->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (ok_button = new TextButton ("ok button"));
     ok_button->setButtonText ("OK");
@@ -92,9 +77,9 @@ HelpComponent::~HelpComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
-    deleteAndZero (title);
-    deleteAndZero (ok_button);
-    deleteAndZero (label);
+    title = nullptr;
+    ok_button = nullptr;
+    label = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -195,15 +180,16 @@ void HelpComponent::buttonClicked (Button* buttonThatWasClicked)
 
 //==============================================================================
 #if 0
-/*  -- Jucer information section --
+/*  -- Introjucer information section --
 
-    This is where the Jucer puts all of its metadata, so don't change anything in here!
+    This is where the Introjucer stores the metadata that describe this GUI layout, so
+    make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="HelpComponent" componentName=""
                  parentClasses="public Component" constructorParams="" variableInitialisers=""
-                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
+                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="400" initialHeight="400">
   <BACKGROUND backgroundColour="ff000000">
     <IMAGE pos="26 98 49M 125M" resource="backgroundBoxInner_png" opacity="1"
@@ -230,7 +216,7 @@ BEGIN_JUCER_METADATA
          explicitFocusOrder="0" pos="0Cc 112 320 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Dialog Title" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="25.2" bold="1" italic="0" justification="36"/>
+         fontsize="25.199999999999999289" bold="1" italic="0" justification="36"/>
   <TEXTBUTTON name="ok button" id="470aa5ee480a2171" memberName="ok_button"
               virtualName="" explicitFocusOrder="0" pos="-0.5Cc 60R 35 24"
               bgColOff="ffaeaeae" buttonText="OK" connectedEdges="0" needsCallback="1"
@@ -543,3 +529,7 @@ static const unsigned char resource_HelpComponent_eigenD_png[] = { 137,80,78,71,
 
 const char* HelpComponent::eigenD_png = (const char*) resource_HelpComponent_eigenD_png;
 const int HelpComponent::eigenD_pngSize = 3575;
+
+
+//[EndFile] You can add extra defines here...
+//[/EndFile]
