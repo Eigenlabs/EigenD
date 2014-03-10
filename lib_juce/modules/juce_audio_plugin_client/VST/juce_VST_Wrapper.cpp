@@ -499,6 +499,7 @@ public:
         VSTMidiEventList::addEventsToMidiBuffer (events, midiEvents);
         return 1;
        #else
+        (void) events;
         return 0;
        #endif
     }
@@ -1278,12 +1279,6 @@ public:
             if (ComponentPeer* peer = editorComp->getPeer())
                 peer->handleMovedOrResized();
         }
-    }
-
-    static PluginHostType& getHostType()
-    {
-        static PluginHostType hostType;
-        return hostType;
     }
 
     //==============================================================================
