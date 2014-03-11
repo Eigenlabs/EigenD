@@ -28,6 +28,7 @@
 
 namespace
 {
+    typedef pic::lckset_t<unsigned>::lcktype channels_t;
     typedef pic::lckmap_t<unsigned,unsigned>::lcktype mapping_t;
 }
 
@@ -60,6 +61,10 @@ namespace pi_midi
         void messages_enabled(bool v);
         static int __messages_enabled(void *r_, void *c_);
 
+        void clear_enabled_channels();
+        void enable_channel(unsigned);
+        void activate_enabled_channels();
+
         void clear_channel_mapping();
         void set_channel_mapping(unsigned from, unsigned to);
         void activate_channel_mapping();
@@ -74,6 +79,7 @@ namespace pi_midi
         bool pitchbend_enabled_;
         bool messages_enabled_;
 
+        pic::flipflop_t<channels_t> enabled_channels_;
         pic::flipflop_t<mapping_t> channel_mapping_;
     };
 }
@@ -183,6 +189,13 @@ namespace
             *number = entry >> 4;
         }
 
+        bool channel_enabled(unsigned channel)
+        {
+            pic::flipflop_t<channels_t>::guard_t guard_channel(root_->enabled_channels_);
+            bool result = guard_channel.value().find(channel+1) != guard_channel.value().end();
+            return result;
+        }
+
         unsigned mapped_channel(unsigned channel)
         {
             pic::flipflop_t<mapping_t>::guard_t guard_channel(root_->channel_mapping_);
@@ -196,7 +209,7 @@ namespace
 
         void decoder_noteon(unsigned channel, unsigned number, unsigned velocity)
         {
-            if(root_->noteon_enabled_)
+            if(root_->noteon_enabled_ && channel_enabled(channel))
             {
                 channel = mapped_channel(channel);
                 notes_.insert(encode_note_entry(channel, number));
@@ -210,7 +223,7 @@ namespace
 
         void decoder_noteoff(unsigned channel, unsigned number, unsigned velocity)
         {
-            if(root_->noteoff_enabled_)
+            if(root_->noteoff_enabled_ && channel_enabled(channel))
             {
                 channel = mapped_channel(channel);
                 notes_.erase(encode_note_entry(channel, number));
@@ -224,7 +237,7 @@ namespace
 
         void decoder_polypressure(unsigned channel, unsigned number, unsigned value)
         {
-            if(root_->polypressure_enabled_)
+            if(root_->polypressure_enabled_ && channel_enabled(channel))
             {
                 send(1, 0xa0|mapped_channel(channel), number, value);
             }
@@ -236,7 +249,7 @@ namespace
 
         void decoder_cc(unsigned channel, unsigned number, unsigned value)
         {
-            if(root_->cc_enabled_)
+            if(root_->cc_enabled_ && channel_enabled(channel))
             {
                 send(1, 0xb0|mapped_channel(channel), number, value);
             }
@@ -248,7 +261,7 @@ namespace
 
         void decoder_programchange(unsigned channel, unsigned value)
         {
-            if(root_->programchange_enabled_)
+            if(root_->programchange_enabled_ && channel_enabled(channel))
             {
                 send(1, 0xc0|mapped_channel(channel), value);
             }
@@ -260,7 +273,7 @@ namespace
 
         void decoder_channelpressure(unsigned channel, unsigned value)
         {
-            if(root_->channelpressure_enabled_)
+            if(root_->channelpressure_enabled_ && channel_enabled(channel))
             {
                 send(1, 0xd0|mapped_channel(channel), value);
             }
@@ -272,7 +285,7 @@ namespace
 
         void decoder_pitchbend(unsigned channel, unsigned value)
         {
-            if(root_->pitchbend_enabled_)
+            if(root_->pitchbend_enabled_ && channel_enabled(channel))
             {
                 send(1, 0xe0|mapped_channel(channel), value&0x7f, (value&0x3f80)>>7);
             }
@@ -343,6 +356,24 @@ pi_midi::midi_processor_t::impl_t::impl_t(const piw::cookie_t &o, piw::clockdoma
     closed_(false), noteon_enabled_(true), noteoff_enabled_(true), polypressure_enabled_(true), cc_enabled_(true),
     programchange_enabled_(true), channelpressure_enabled_(true), pitchbend_enabled_(true), messages_enabled_(true)
 {
+    clear_enabled_channels();
+    enable_channel(1);
+    enable_channel(2);
+    enable_channel(3);
+    enable_channel(4);
+    enable_channel(5);
+    enable_channel(6);
+    enable_channel(7);
+    enable_channel(8);
+    enable_channel(9);
+    enable_channel(10);
+    enable_channel(11);
+    enable_channel(12);
+    enable_channel(13);
+    enable_channel(14);
+    enable_channel(15);
+    enable_channel(16);
+    activate_enabled_channels();
 }
 
 piw::cfilterfunc_t *pi_midi::midi_processor_t::impl_t::cfilterctl_create(const piw::data_t &)
@@ -458,6 +489,21 @@ int pi_midi::midi_processor_t::impl_t::__messages_enabled(void *r_, void *v_)
     return 0;
 }
 
+void pi_midi::midi_processor_t::impl_t::clear_enabled_channels()
+{
+    enabled_channels_.alternate().clear();
+}
+
+void pi_midi::midi_processor_t::impl_t::enable_channel(unsigned c)
+{
+    enabled_channels_.alternate().insert(c);
+}
+
+void pi_midi::midi_processor_t::impl_t::activate_enabled_channels()
+{
+    enabled_channels_.exchange();
+}
+
 void pi_midi::midi_processor_t::impl_t::clear_channel_mapping()
 {
     channel_mapping_.alternate().clear();
@@ -486,5 +532,8 @@ void pi_midi::midi_processor_t::channelpressure_enabled(bool v) { impl_->channel
 void pi_midi::midi_processor_t::pitchbend_enabled(bool v) { impl_->pitchbend_enabled(v); }
 void pi_midi::midi_processor_t::messages_enabled(bool v) { impl_->messages_enabled(v); }
 void pi_midi::midi_processor_t::clear_channel_mapping() { impl_->clear_channel_mapping(); }
+void pi_midi::midi_processor_t::clear_enabled_channels() { impl_->clear_enabled_channels(); }
+void pi_midi::midi_processor_t::activate_enabled_channels() { impl_->activate_enabled_channels(); }
+void pi_midi::midi_processor_t::enable_channel(unsigned c) { impl_->enable_channel(c); }
 void pi_midi::midi_processor_t::set_channel_mapping(unsigned from, unsigned to) { impl_->set_channel_mapping(from, to); }
 void pi_midi::midi_processor_t::activate_channel_mapping() { impl_->activate_channel_mapping(); }

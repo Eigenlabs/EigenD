@@ -42,6 +42,10 @@ namespace pi_midi
             void pitchbend_enabled(bool);
             void messages_enabled(bool);
 
+            void clear_enabled_channels();
+            void enable_channel(unsigned);
+            void activate_enabled_channels();
+
             void clear_channel_mapping();
             void set_channel_mapping(unsigned, unsigned);
             void activate_channel_mapping();

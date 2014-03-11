@@ -49,6 +49,7 @@ class Agent(agent.Agent):
         self[4][6] = atom.Atom(domain=domain.Bool(), init=True, names='channel pressure enabled', policy=atom.default_policy(self.__channelpressure_enabled))
         self[4][7] = atom.Atom(domain=domain.Bool(), init=True, names='pitch bend enabled', policy=atom.default_policy(self.__pitchbend_enabled))
         self[4][8] = atom.Atom(domain=domain.Bool(), init=True, names='messages enabled', policy=atom.default_policy(self.__messages_enabled))
+        self[4][9] = atom.Atom(domain=domain.String(), init='[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]', names='channels enabled', policy=atom.default_policy(self.__channels_enabled))
 
         self[5] = atom.Atom(names='mapping')
         self[5][1] = atom.Atom(domain=domain.String(), init='[]', names='channel mapping', policy=atom.default_policy(self.__set_channel_map))
@@ -92,6 +93,14 @@ class Agent(agent.Agent):
     def __messages_enabled(self,v):
         self.midiprocessor.messages_enabled(v)
         self[4][8].set_value(v)
+
+    def __channels_enabled(self,v):
+        channels = logic.parse_clause(v)
+        self.midiprocessor.clear_enabled_channels()
+        for c in channels:
+            self.midiprocessor.enable_channel(c)
+        self.midiprocessor.activate_enabled_channels()
+        self[4][9].set_value(v)
 
     def __current_channel_mapping(self):
         return logic.parse_clause(self[5][1].get_value())
