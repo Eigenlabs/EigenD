@@ -378,7 +378,7 @@ namespace
             StringArray skip_;
             bool fullscan_;
             FileSearchPath path_;
-            
+
             JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EigenScanPrgWindow);
     };
 
@@ -588,7 +588,7 @@ namespace
                 setVisible (true);
                 toFront(true);
             }
-            
+
             void closeButtonPressed()
             {
                 JUCEApplication::quit();
@@ -652,7 +652,7 @@ namespace
                 good_list_box()->setModel(&good_model_);
                 failed_list_box()->setModel(&bad_model_);
             }
-            
+
             void closeButtonPressed()
             {
                 JUCEApplication::quit();
@@ -677,7 +677,7 @@ namespace
                 setVisible (true);
                 toFront(true);
             }
-            
+
             void closeButtonPressed()
             {
                 delete this;
@@ -703,6 +703,7 @@ class EigenScanner : public juce::JUCEApplication
         void initialise (const String& commandLine)
         {
             pic::to_front();
+            pic::disable_powersaving();
             LookAndFeel::setDefaultLookAndFeel(new ejuce::EJuceLookandFeel);
 
             manager_.addDefaultFormats();

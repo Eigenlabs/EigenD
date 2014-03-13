@@ -130,6 +130,7 @@ class EigenScanner : public juce::JUCEApplication
         {
             scanner_ = new Scanner();
             pic::to_front();
+            pic::disable_powersaving();
         }
 
         const String getApplicationName()

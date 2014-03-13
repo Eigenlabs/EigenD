@@ -45,19 +45,19 @@
 
 namespace
 {
-    enum HostMessageTypes 
+    enum HostMessageTypes
     {
         messageShowGUI,
         messageDestroyGUI,
         messageDestroyPlugin,
         messageDestroyListener
     };
-    
+
     struct HostMessage: juce::Message
     {
         HostMessage (const int type, void* const payload): type_ (type), payload_ (payload) {}
         ~HostMessage() {}
-        
+
         const int type_;
         void* const payload_;
     };
@@ -109,7 +109,7 @@ struct host::plugin_list_t::impl_t: piw::thing_t
             if(jmanu != d->manufacturerName) continue;
             if(jname != d->name) continue;
 
-            pic::logmsg() << "match " << format << ":" << manu << ":" << name << " -> " 
+            pic::logmsg() << "match " << format << ":" << manu << ":" << name << " -> "
                           << d->pluginFormatName << ":" << d->manufacturerName << ':' << d->name;
 
             return i;
@@ -149,8 +149,8 @@ host::plugin_list_t::~plugin_list_t()
 }
 
 unsigned host::plugin_list_t::num_plugins()
-{ 
-    return impl_->list_.getNumTypes(); 
+{
+    return impl_->list_.getNumTypes();
 }
 
 int host::plugin_list_t::find_plugin(const host::plugin_description_t &desc)
@@ -579,7 +579,7 @@ namespace
         {
             always_schedule_messages_ = false;
         }
-        
+
         private:
             bool always_schedule_messages_;
             host::plugin_instance_t::impl_t *root_;
@@ -589,9 +589,9 @@ namespace
 struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_observer_t, piw::clocksink_t, piw::thing_t, virtual pic::tracked_t
 {
     impl_t(plugin_observer_t *obs, piw::clockdomain_ctl_t *d,
-        const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, const pic::status_t &window_state): 
+        const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, const pic::status_t &window_state):
             messages_(new host_messages_t(this)),
-            audio_output_cookie_(audio_out), audio_input_(this), midi_input_(this), metronome_input_(this), 
+            audio_output_cookie_(audio_out), audio_input_(this), midi_input_(this), metronome_input_(this),
             plugin_(0), window_(0), audio_buffer_(0,0), buffer_data_(0), num_input_channels_(0), num_output_channels_(0),
             window_state_changed_(window_state), clockdomain_(d), sample_rate_(48000.0), buffer_size_(PLG_CLOCK_BUFFER_SIZE),
             observer_(obs), active_(false),
@@ -607,7 +607,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         d->sink(this,"host");
         piw::tsd_thing(this);
         d->add_listener(pic::notify_t::method(this,&impl_t::clock_changed));
-        
+
         plugin_formats_.addDefaultFormats();
 
         midi_output_.scalar_connect(midi_out);
@@ -677,7 +677,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
             set_bypassed(bypassed);
         }
     }
-    
+
     juce::AudioPluginInstance *find_plugin(juce::PluginDescription &desc, double sr, int bs, juce::String &err)
     {
         return plugin_formats_.createPluginInstance(desc, sr, bs, err);
@@ -1593,7 +1593,7 @@ bool metronome_input_t::getCurrentPosition(CurrentPositionInfo &result)
     return true;
 }
 
-host_param_tabs_t::host_param_tabs_t(host::plugin_instance_t::impl_t *c) : 
+host_param_tabs_t::host_param_tabs_t(host::plugin_instance_t::impl_t *c) :
     au_mapper_(midi::mapping_functors_t::init(
                 midi::is_mapped_t::method(&c->mapping_,&midi::controllers_mapping_t::is_mapped_param),
                 midi::get_info_t::method(&c->mapping_,&midi::controllers_mapping_t::get_info_param),
@@ -1692,7 +1692,7 @@ void host_param_table_t::default_mapping(midi::mapper_cell_editor_t &e)
 }
 
 host::plugin_instance_t::plugin_instance_t(host::plugin_observer_t *obs,
-    piw::clockdomain_ctl_t *d, const piw::cookie_t &audio_out, const piw::cookie_t &midi_out, 
+    piw::clockdomain_ctl_t *d, const piw::cookie_t &audio_out, const piw::cookie_t &midi_out,
     const pic::status_t &window_state_changed):
         impl_(new impl_t(obs,d,audio_out,midi_out,window_state_changed))
 {

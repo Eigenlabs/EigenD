@@ -1,4 +1,3 @@
-
 /*
  Copyright 2009 Eigenlabs Ltd.  http://www.eigenlabs.com
 
@@ -21,8 +20,6 @@
 #include <picross/pic_power.h>
 #include <picross/pic_log.h>
 
-#ifdef PI_LINUX
-
 void pic::display_active(void)
 {
 }
@@ -35,45 +32,6 @@ void pic::to_front(void)
 {
 }
 
-#endif
-
-#ifdef PI_MACOSX
-
-#include <CoreServices/CoreServices.h>
-#include <Carbon/Carbon.h>
-
-void pic::disk_active(void)
-{
-    UpdateSystemActivity(HDActivity);
-}
-
-void pic::display_active(void)
-{
-    UpdateSystemActivity(UsrActivity);
-}
-
-void pic::to_front(void)
-{
-    ProcessSerialNumber psn;
-    if(GetCurrentProcess(&psn)==noErr)
-        SetFrontProcess(&psn);
-}
-
-#endif
-
-#ifdef PI_WINDOWS
-#pragma message ("      ****  Needs fixing for windows  ****")
-void pic::display_active(void)
+void pic::disable_powersaving(void)
 {
 }
-
-void pic::disk_active(void)
-{
-}
-
-void pic::to_front(void)
-{
-}
-
-#endif
-

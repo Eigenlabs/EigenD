@@ -105,17 +105,17 @@ class EigenMainWindow;
 
 namespace
 {
-    enum EigenDMessageTypes 
+    enum EigenDMessageTypes
     {
         messageEscape,
         messageConfirm
     };
-    
+
     struct EigenDMessage: juce::Message
     {
         EigenDMessage (const int type): type_ (type) {}
         ~EigenDMessage() {}
-        
+
         const int type_;
     };
 }
@@ -535,7 +535,7 @@ bool EigenMainWindow::perform (const InvocationInfo& info)
         case commandStartStage:
             stage_.start();
             break;
-            
+
         case commandStartBug:
             if(!bug_)
             {
@@ -885,7 +885,7 @@ File getGlobalDir()
 EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_gui_t *scaffold, eigend::c2p_t *backend, const pic::f_string_t &log):
     DocumentWindow ("eigenD", Colours::black, DocumentWindow::allButtons, true),
     manager_(mgr), scaffold_(scaffold), backend_(backend), status_(0), saving_(0), editing_(0), about_(0), logger_(log), bug_(0),
-    browser_(pic::private_tools_dir(),TOOL_BROWSER), commander_(pic::private_tools_dir(),TOOL_COMMANDER), scanner_(pic::private_tools_dir(),TOOL_SCANNER), 
+    browser_(pic::private_tools_dir(),TOOL_BROWSER), commander_(pic::private_tools_dir(),TOOL_COMMANDER), scanner_(pic::private_tools_dir(),TOOL_SCANNER),
     workbench_(pic::public_tools_dir(),TOOL_WORKBENCH), stage_(pic::public_tools_dir(),TOOL_STAGE),
     progress_(0), help_(0), ignores_(getGlobalDir().getChildFile("ignores.xml"), PropertiesFile::Options()), save_menu_active_(false)
 {
@@ -899,6 +899,7 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
     setResizeLimits(600,585,2000,2000);
     setVisible(true);
     pic::to_front();
+    pic::disable_powersaving();
     toFront(true);
     component_->getSetupLabel()->setText("",dontSendNotification);
 
@@ -978,7 +979,7 @@ bool EigenMainWindow::do_quit()
 
 void EigenMainWindow::getAllCommands (Array <CommandID>& commands)
 {
-    const CommandID ids[] = { 
+    const CommandID ids[] = {
         commandAbout,
         commandStartStatus,
         commandStartSave,
@@ -1075,7 +1076,7 @@ void EigenMainWindow::getCommandInfo (const CommandID commandID, ApplicationComm
             result.setInfo ("Stage", "Stage", generalCategory, 0);
             result.addDefaultKeypress ('g', ModifierKeys::commandModifier);
             break;
-            
+
         case commandStartBug:
             result.setInfo ("Report Bug", "Report Bug", generalCategory, 0);
             result.addDefaultKeypress ('u', ModifierKeys::commandModifier);
@@ -1850,7 +1851,7 @@ EigenDialog::EigenDialog(EigenMainWindow *main, Component *content, int w, int h
     setUsingNativeTitleBar(true);
 
     setSize(w,h);
-    
+
     if(mw>0)
     {
         setResizeLimits(mw, mh, xw, xh);
@@ -1861,7 +1862,7 @@ EigenDialog::EigenDialog(EigenMainWindow *main, Component *content, int w, int h
         setResizeLimits(1,1,w,h);
         setResizable (false, false);
     }
-    
+
     if(position)
     {
         centreAroundComponent (position, getWidth(), getHeight());
@@ -2400,7 +2401,7 @@ void EigenD::handleWinch(const std::string &msg)
     juce::String alert_klass = jmsg.substring(0,c1);
     juce::String alert_title = jmsg.substring(c1+1,c2);
     juce::String alert_msg = jmsg.substring(c2+1);
-    
+
     main_window_->alert1(alert_klass,alert_title,alert_msg);
 }
 

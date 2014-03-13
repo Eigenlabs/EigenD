@@ -17,18 +17,22 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __PICROSS_PIC_POWER__
-#define __PICROSS_PIC_POWER__
+#include <picross/pic_power.h>
+#include <picross/pic_log.h>
 
-#include <picross/pic_config.h>
-#include "pic_exports.h"
-
-namespace pic
+#pragma message ("      ****  Needs fixing for windows  ****")
+void pic::display_active(void)
 {
-    PIC_DECLSPEC_FUNC(void) display_active(void);
-    PIC_DECLSPEC_FUNC(void) disk_active(void);
-    PIC_DECLSPEC_FUNC(void) to_front(void);
-    PIC_DECLSPEC_FUNC(void) disable_powersaving(void);
-};
+}
 
-#endif
+void pic::disk_active(void)
+{
+}
+
+void pic::to_front(void)
+{
+}
+
+void pic::disable_powersaving(void)
+{
+}
