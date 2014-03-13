@@ -21,22 +21,25 @@
 Import('env')
 
 pistk_files=Split("""
-    Stk.cpp Generator.cpp Noise.cpp SubNoise.cpp Blit.cpp BlitSaw.cpp BlitSquare.cpp 
-    Envelope.cpp ADSR.cpp Asymp.cpp Modulate.cpp SingWave.cpp SineWave.cpp Granulate.cpp 
-    FileRead.cpp FileWrite.cpp WvIn.cpp FileWvIn.cpp WaveLoop.cpp WvOut.cpp FileWvOut.cpp 
-    Filter.cpp OneZero.cpp OnePole.cpp PoleZero.cpp TwoZero.cpp TwoPole.cpp 
-    BiQuad.cpp FormSwep.cpp Delay.cpp DelayL.cpp DelayA.cpp 
-    Effect.cpp PRCRev.cpp JCRev.cpp NRev.cpp 
-    Chorus.cpp Echo.cpp PitShift.cpp 
-    Function.cpp ReedTable.cpp JetTable.cpp BowTable.cpp 
-    Voicer.cpp Vector3D.cpp Sphere.cpp 
-    Instrmnt.cpp Clarinet.cpp Clarinet2.cpp BlowHole.cpp Saxofony.cpp Flute.cpp Brass.cpp BlowBotl.cpp 
-    Bowed.cpp Cello.cpp Plucked.cpp StifKarp.cpp Sitar.cpp PluckTwo.cpp Mandolin.cpp Mesh2D.cpp 
-    FM.cpp Rhodey.cpp Wurley.cpp TubeBell.cpp HevyMetl.cpp PercFlut.cpp BeeThree.cpp FMVoices.cpp 
-    Sampler.cpp Moog.cpp Simple.cpp Drummer.cpp Shakers.cpp 
-    Modal.cpp ModalBar.cpp BandedWG.cpp Resonate.cpp VoicForm.cpp Phonemes.cpp Whistle.cpp 
+    Stk.cpp Generator.cpp Noise.cpp SubNoise.cpp Blit.cpp BlitSaw.cpp BlitSquare.cpp
+    Envelope.cpp ADSR.cpp Asymp.cpp Modulate.cpp SingWave.cpp SineWave.cpp Granulate.cpp
+    FileRead.cpp FileWrite.cpp WvIn.cpp FileWvIn.cpp WaveLoop.cpp WvOut.cpp FileWvOut.cpp
+    Filter.cpp OneZero.cpp OnePole.cpp PoleZero.cpp TwoZero.cpp TwoPole.cpp
+    BiQuad.cpp FormSwep.cpp Delay.cpp DelayL.cpp DelayA.cpp
+    Effect.cpp PRCRev.cpp JCRev.cpp NRev.cpp
+    Chorus.cpp Echo.cpp PitShift.cpp
+    Function.cpp ReedTable.cpp JetTable.cpp BowTable.cpp
+    Voicer.cpp Vector3D.cpp Sphere.cpp
+    Instrmnt.cpp Clarinet.cpp Clarinet2.cpp BlowHole.cpp Saxofony.cpp Flute.cpp Brass.cpp BlowBotl.cpp
+    Bowed.cpp Cello.cpp Plucked.cpp StifKarp.cpp Sitar.cpp PluckTwo.cpp Mandolin.cpp Mesh2D.cpp
+    FM.cpp Rhodey.cpp Wurley.cpp TubeBell.cpp HevyMetl.cpp PercFlut.cpp BeeThree.cpp FMVoices.cpp
+    Sampler.cpp Moog.cpp Simple.cpp Drummer.cpp Shakers.cpp
+    Modal.cpp ModalBar.cpp BandedWG.cpp Resonate.cpp VoicForm.cpp Phonemes.cpp Whistle.cpp
     Messager.cpp Skini.cpp MidiFileIn.cpp
     pistk.cpp
     """)
 
+if env['IS_MACOSX']:
+    env.Append(CCFLAGS="-Wno-unused-const-variable")
+    
 env.PiPipBinding('stk_native','stk.pip',sources=pistk_files,libraries=Split('pic piw pie pia'),package='eigend',per_agent='plg_stk',locked=True)

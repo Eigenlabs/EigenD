@@ -377,7 +377,7 @@ namespace
             StringArray skip_;
             bool fullscan_;
             FileSearchPath path_;
-            
+
             JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EigenScanPrgWindow);
     };
 
@@ -688,6 +688,7 @@ class EigenScanner : public juce::JUCEApplication
         void initialise (const String& commandLine)
         {
             pic::to_front();
+            pic::disable_powersaving();
             LookAndFeel::setDefaultLookAndFeel(new ejuce::EJuceLookandFeel);
 
             manager_ = AudioPluginFormatManager::getInstance();
