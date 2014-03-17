@@ -59,6 +59,8 @@ struct ChildProcessPingThread  : public Thread,
     int timeoutMs;
 
 private:
+    JUCE_LEAK_DETECTOR (ChildProcessPingThread)
+    
     Atomic<int> countdown;
 
     void handleAsyncUpdate() override   { pingFailed(); }

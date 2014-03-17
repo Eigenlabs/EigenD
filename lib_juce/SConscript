@@ -44,6 +44,7 @@ if env['IS_WINDOWS']:
     juce_env.Append(LINKFLAGS='WS2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib')
     juce_env.Append(LINKFLAGS='advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib')
     juce_env.Append(LINKFLAGS='odbccp32.lib wininet.lib shlwapi.lib version.lib imm32.lib winmm.lib ')
+    juce_env.Append(LINKFLAGS='Dbghelp.lib')
 
 if env['IS_LINUX']:
     juce_files = Split("""
