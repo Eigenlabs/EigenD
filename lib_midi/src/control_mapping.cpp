@@ -879,7 +879,8 @@ namespace midi
             {
                 bool decimate_per_id = false;
                 unsigned oparam = ic.first->second.oparam_;
-                if(oparam == MIDI_CC_MAX + POLY_AFTERTOUCH)
+                if(oparam == MIDI_CC_MAX + POLY_AFTERTOUCH ||
+                   ic.first->second.scope_ == PERNOTE_SCOPE)
                 {
                     decimate_per_id = true;
                 }
