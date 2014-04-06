@@ -93,6 +93,9 @@ void midi::mididecoder_t::decode3(unsigned char b1,unsigned char b2,unsigned cha
                 break;
             }
             b3 = 0x7f;
+            decoder_noteoff(lo,b2,b3);
+            h=true;
+            break;
 
         case 2:
             decoder_polypressure(lo,b2,b3);
