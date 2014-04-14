@@ -117,6 +117,7 @@ class midi_from_belcanto[midi::midi_from_belcanto_t]
     change_nb change_bank()
     void set_cc(unsigned, unsigned)
     change_nb change_cc()
+    change_nb change_clock()
     void set_omni(bool)
     void set_velocity_samples(unsigned)
     void set_velocity_curve(float)

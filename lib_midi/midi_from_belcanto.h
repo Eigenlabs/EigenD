@@ -54,6 +54,7 @@ namespace midi
         piw::change_nb_t change_bank();
         void set_cc(unsigned, unsigned);
         piw::change_nb_t change_cc();
+        piw::change_nb_t change_clock();
         void set_control_interval(float);
         void set_midi(pic::lckvector_t<midi_data_t>::nbtype &);
         void set_send_notes(bool);

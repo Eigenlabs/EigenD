@@ -138,6 +138,8 @@ class Agent(agent.Agent):
         self.add_verb2(1,'set([],~a,role(None,[matches([midi,program])]),role(to,[numeric]))',create_action=self.__set_program_change)
         self.add_verb2(2,'set([],~a,role(None,[matches([midi,bank])]),role(to,[numeric]))',create_action=self.__set_bank_change)
         self.add_verb2(3,'set([],~a,role(None,[mass([midi,controller])]),role(to,[numeric]))',create_action=self.__set_midi_control)
+        self.add_verb2(4,'start([],~a,role(None,[matches([midi,clock])]))',create_action=self.__start_midi_clock)
+        self.add_verb2(5,'stop([],~a,role(None,[matches([midi,clock])]))',create_action=self.__stop_midi_clock)
 
         self.set_midi_channel(0)
 
@@ -244,6 +246,12 @@ class Agent(agent.Agent):
         if to_val < 0 or to_val > 127:
             return errors.invalid_thing(to, 'set')
         return piw.trigger(self.__midi_from_belcanto.change_cc(),utils.makedict_nb({'ctl':piw.makelong_nb(c_val,0),'val':piw.makelong_nb(to_val,0)},0)),None
+
+    def __start_midi_clock(self,ctx,subj,dummy):
+        return piw.trigger(self.__midi_from_belcanto.change_clock(),piw.makelong_nb(1,0)),None
+
+    def __stop_midi_clock(self,ctx,subj,dummy):
+        return piw.trigger(self.__midi_from_belcanto.change_clock(),piw.makelong_nb(0,0)),None
 
     def __agent_state_loaded(self,delegate,mapping):
         self.midi_converter.set_mapping(mapping)

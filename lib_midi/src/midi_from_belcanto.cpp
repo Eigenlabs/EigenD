@@ -268,6 +268,9 @@ namespace midi
         void set_cc(unsigned c, unsigned v);
         static int __set_cc(void *r_, void *c_, void *v_);
         void set_cc_data(const piw::data_nb_t &d);
+        // set the MIDI clock
+        static int __set_clock(void *r_, void *c_);
+        void set_clock_data(const piw::data_nb_t &d);
 
         // set MIDI omni mode (send to all channels)
         void set_omni(bool b);
@@ -279,6 +282,7 @@ namespace midi
         // set midi values
         void set_midi(pic::lckvector_t<midi_data_t>::nbtype &);
         void set_cc(bool global, bool continuous, unsigned channel, unsigned mid, unsigned lid, const unsigned d, unsigned long long t);
+        void set_midi_clock(bool state, unsigned long long t);
 
         // set other status MIDI messages
         void set_poly_aftertouch(bool global, bool continuous, unsigned channel, const unsigned noteid, const unsigned value, unsigned long long t);
@@ -908,6 +912,25 @@ namespace midi
         return 0;
     }
 
+    void midi_from_belcanto_t::impl_t::set_clock_data(const piw::data_nb_t &d)
+    {
+        if(!d.is_long()) return;
+
+        unsigned state = d.as_long();
+        piw::tsd_fastcall(__set_clock,this,&state);
+    }
+
+    int midi_from_belcanto_t::impl_t::__set_clock(void *r_, void *c_)
+    {
+        midi_from_belcanto_t::impl_t *r = (midi_from_belcanto_t::impl_t *)r_;
+        unsigned c = *(unsigned *)c_;
+
+        r->time_++;
+        r->set_midi_clock(c, r->time_);
+
+        return 0;
+    }
+
     void midi_from_belcanto_t::impl_t::set_control_interval(float interval)
     {
         if(interval<0)
@@ -1118,6 +1141,26 @@ namespace midi
 
             last_cc_msb_[mid+channel_offset] = msb;
         }
+    }
+
+    void midi_from_belcanto_t::impl_t::set_midi_clock(bool state, unsigned long long t)
+    {
+        unsigned char *blob = 0;
+        piw::data_nb_t d = piw::makeblob_nb(t,1,&blob);
+
+        if (state)
+        {
+            blob[0] = (unsigned char)0xfa;
+        }
+        else
+        {
+            blob[0] = (unsigned char)0xfc;
+        }
+#if MIDI_FROM_BELCANTO_DEBUG>0
+        pic::logmsg() << "add_midi_data d0=" << hex << (unsigned)blob[0] << " len=1 time=" << std::dec << t;
+#endif // MIDI_FROM_BELCANTO_DEBUG>0
+
+        add_to_midi_buffer(d);
     }
 
     void midi_from_belcanto_t::impl_t::set_poly_aftertouch(bool global, bool continuous, unsigned channel, const unsigned noteid, const unsigned value, unsigned long long t)
@@ -1399,6 +1442,7 @@ namespace midi
     void midi_from_belcanto_t::set_cc(unsigned c, unsigned v) { impl_->set_cc(c, v); }
     piw::change_nb_t midi_from_belcanto_t::change_cc() { return piw::change_nb_t::method(impl_,&impl_t::set_cc_data); }
     void midi_from_belcanto_t::set_control_interval(float interval) { impl_->set_control_interval(interval); }
+    piw::change_nb_t midi_from_belcanto_t::change_clock() { return piw::change_nb_t::method(impl_,&impl_t::set_clock_data); }
     void midi_from_belcanto_t::set_midi(pic::lckvector_t<midi_data_t>::nbtype &data) { impl_->set_midi(data); }
     void midi_from_belcanto_t::set_send_notes(bool send) { piw::tsd_fastcall(__set_send_notes,impl_,&send); }
     void midi_from_belcanto_t::set_send_pitchbend(bool send) { piw::tsd_fastcall(__set_send_pitchbend,impl_,&send); }
