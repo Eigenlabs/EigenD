@@ -347,18 +347,20 @@ namespace
             if(mapping_dialog_)
             {
                 delete mapping_dialog_;
-                mapping_dialog_=0;
+                mapping_dialog_ = 0;
             }
         }
 
         enum item_id
         {
-            id_automation = 4
+            id_configure = 4,
+            id_bypass = 5
         };
 
         void getAllToolbarItemIds(juce::Array<int> &ids)
         {
-            ids.add(id_automation);
+            ids.add(id_configure);
+            ids.add(id_bypass);
         }
 
         void getDefaultItemSet(juce::Array<int> &ids)
@@ -370,15 +372,24 @@ namespace
         {
             switch(id)
             {
-                case id_automation:
-                    return button0_=new midi::toolbar_button_t(id,"Configure");
+                case id_configure:
+                    return button0_ = new midi::toolbar_button_t(id, "Configure");
+                case id_bypass:
+                    button1_ = new midi::toolbar_button_t(id, "Bypass");
+                    update_bypass_button();
+                    return button1_;
             }
             return 0;
         }
 
         void buttonClicked(juce::Button *b)
         {
-            if(b==button0_) mapping();
+            if (b == button0_) {
+                mapping();
+            }
+            else if (b ==button1_) {
+                toggle_bypass();
+            }
         }
 
         void load()
@@ -394,10 +405,13 @@ namespace
         }
 
         void mapping();
+        void update_bypass_button();
+        void toggle_bypass();
 
         host::plugin_instance_t::impl_t *controller_;
         host_dialog_t *mapping_dialog_;
         juce::ToolbarButton *button0_;
+        juce::ToolbarButton *button1_;
     };
 
     struct host_view_t: juce::DocumentWindow
@@ -1228,6 +1242,10 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
 
         bypassed_ = b;
         refresh_title();
+        if(window_)
+        {
+            window_->delegate_.update_bypass_button();
+        }
         observer_->bypassed_changed(b);
     }
 
@@ -1492,6 +1510,23 @@ void mainpanel_delegate_t::mapping()
     {
         mapping_dialog_ = new mapping_dialog_t(controller_);
     }
+}
+
+void mainpanel_delegate_t::update_bypass_button()
+{
+    if(controller_->is_bypassed())
+    {
+        button1_->setButtonText("Activate");
+    }
+    else
+    {
+        button1_->setButtonText("Bypass");
+    }
+}
+
+void mainpanel_delegate_t::toggle_bypass()
+{
+    controller_->set_bypassed(!controller_->is_bypassed());
 }
 
 mapping_dialog_t::mapping_dialog_t(host::plugin_instance_t::impl_t *controller):
