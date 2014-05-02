@@ -770,7 +770,7 @@ public:
     tresult PLUGIN_API getRoutingInfo (Vst::RoutingInfo&, Vst::RoutingInfo&) override   { return kNotImplemented; }
 
    #if JUCE_VST3_CAN_REPLACE_VST2
-    void loadVST2CompatibleState (const char* data, int size)
+    void loadVST2VstWBlock (const char* data, int size)
     {
         const int headerLen = htonl (*(juce::int32*) (data + 4));
         const struct fxBank* bank = (const struct fxBank*) (data + (8 + headerLen));
@@ -787,14 +787,76 @@ public:
                                              jmin ((int) (size - (bank->content.data.chunk - data)),
                                                    (int) htonl (bank->content.data.size)));
     }
+
+    bool loadVST3PresetFile (const char* data, int size)
+    {
+        if (size < 48)
+            return false;
+
+        // At offset 4 there's a little-endian version number which seems to typically be 1
+        // At offset 8 there's 32 bytes the SDK calls "ASCII-encoded class id"
+        const int chunkListOffset = (int) ByteOrder::littleEndianInt (data + 40);
+        jassert (memcmp (data + chunkListOffset, "List", 4) == 0);
+        const int entryCount = (int) ByteOrder::littleEndianInt (data + chunkListOffset + 4);
+        jassert (entryCount > 0);
+
+        for (int i = 0; i < entryCount; ++i)
+        {
+            const int entryOffset = chunkListOffset + 8 + 20 * i;
+
+            if (entryOffset + 20 > size)
+                return false;
+
+            if (memcmp (data + entryOffset, "Comp", 4) == 0)
+            {
+                // "Comp" entries seem to contain the data.
+                juce::uint64 chunkOffset = ByteOrder::littleEndianInt64 (data + entryOffset + 4);
+                juce::uint64 chunkSize   = ByteOrder::littleEndianInt64 (data + entryOffset + 12);
+
+                if (chunkOffset + chunkSize > size)
+                {
+                    jassertfalse;
+                    return false;
+                }
+
+                loadVST2VstWBlock (data + chunkOffset, (int) chunkSize);
+            }
+        }
+
+        return true;
+    }
+
+    bool loadVST2CompatibleState (const char* data, int size)
+    {
+        if (size < 4)
+            return false;
+
+        if (htonl (*(juce::int32*) data) == 'VstW')
+        {
+            loadVST2VstWBlock (data, size);
+            return true;
+        }
+
+        if (memcmp (data, "VST3", 4) == 0)
+        {
+            // In Cubase 5, when loading VST3 .vstpreset files,
+            // we get the whole content of the files to load.
+            // In Cubase 7 we get just the contents within and
+            // we go directly to the loadVST2VstW codepath instead.
+            return loadVST3PresetFile (data, size);
+        }
+
+        return false;
+    }
    #endif
 
-    void loadStateData (const void* data, int size)
+    bool loadStateData (const void* data, int size)
     {
        #if JUCE_VST3_CAN_REPLACE_VST2
-        loadVST2CompatibleState ((const char*) data, size);
+        return loadVST2CompatibleState ((const char*) data, size);
        #else
         pluginInstance->setStateInformation (data, size);
+        return true;
        #endif
     }
 
@@ -812,8 +874,7 @@ public:
                 if (s->getSize() >= 5 && memcmp (s->getData(), "VC2!E", 5) == 0)
                     return false;
 
-            loadStateData (s->getData(), (int) s->getSize());
-            return true;
+            return loadStateData (s->getData(), (int) s->getSize());
         }
 
         return false;
@@ -830,26 +891,19 @@ public:
             for (;;)
             {
                 Steinberg::int32 bytesRead = 0;
+                const Steinberg::tresult status = state->read (buffer, (Steinberg::int32) bytesPerBlock, &bytesRead);
 
-                if (state->read (buffer, (Steinberg::int32) bytesPerBlock, &bytesRead) == kResultTrue && bytesRead > 0)
-                {
-                    allData.write (buffer, bytesRead);
-                    continue;
-                }
+                if (bytesRead <= 0 || (status != kResultTrue && ! getHostType().isWavelab()))
+                    break;
 
-                break;
+                allData.write (buffer, bytesRead);
             }
         }
 
         const size_t dataSize = allData.getDataSize();
 
-        if (dataSize > 0 && dataSize < 0x7fffffff)
-        {
-            loadStateData (allData.getData(), (int) dataSize);
-            return true;
-        }
-
-        return false;
+        return dataSize > 0 && dataSize < 0x7fffffff
+                && loadStateData (allData.getData(), (int) dataSize);
     }
 
     tresult PLUGIN_API setState (IBStream* state) override
@@ -1188,8 +1242,8 @@ public:
         const int numMidiEventsComingIn = midiBuffer.getNumEvents();
        #endif
 
-        const int numInputChans  = data.inputs  != nullptr ? (int) data.inputs[0].numChannels : 0;
-        const int numOutputChans = data.outputs != nullptr ? (int) data.outputs[0].numChannels : 0;
+        const int numInputChans  = (data.inputs  != nullptr && data.inputs[0].channelBuffers32 != nullptr)  ? (int) data.inputs[0].numChannels  : 0;
+        const int numOutputChans = (data.outputs != nullptr && data.outputs[0].channelBuffers32 != nullptr) ? (int) data.outputs[0].numChannels : 0;
 
         int totalChans = 0;
 
@@ -1205,7 +1259,13 @@ public:
             ++totalChans;
         }
 
-        AudioSampleBuffer buffer (channelList.getRawDataPointer(), totalChans, (int) data.numSamples);
+        AudioSampleBuffer buffer;
+
+        if (totalChans != 0)
+            buffer.setDataToReferTo (channelList.getRawDataPointer(), totalChans, (int) data.numSamples);
+        else if (getHostType().isWavelab()
+                  && pluginInstance->getNumInputChannels() + pluginInstance->getNumOutputChannels() > 0)
+            return kResultFalse;
 
         {
             const ScopedLock sl (pluginInstance->getCallbackLock());

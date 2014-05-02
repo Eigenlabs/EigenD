@@ -31,6 +31,7 @@
  #define JUCE_VST3HEADERS_INCLUDE_HEADERS_ONLY 1
 #endif
 
+#include <map>
 #include "juce_VST3Headers.h"
 
 #undef JUCE_VST3HEADERS_INCLUDE_HEADERS_ONLY
@@ -111,6 +112,7 @@ static void createPluginDescription (PluginDescription& description,
     description.lastFileModTime     = pluginFile.getLastModificationTime();
     description.manufacturerName    = company;
     description.name                = name;
+    description.descriptiveName     = name;
     description.pluginFormatName    = "VST3";
     description.numInputChannels    = numInputs;
     description.numOutputChannels   = numOutputs;
@@ -379,24 +381,37 @@ public:
     FUnknown* getFUnknown()     { return static_cast<Vst::IComponentHandler*> (this); }
 
     //==============================================================================
-    tresult PLUGIN_API beginEdit (Vst::ParamID) override
+    tresult PLUGIN_API beginEdit (Vst::ParamID paramID) override
     {
-        // XXX todo..
-        return kResultFalse;
+        const int index = getIndexOfParamID (paramID);
+
+        if (index < 0)
+            return kResultFalse;
+
+        owner->beginParameterChangeGesture (index);
+        return kResultTrue;
     }
 
-    tresult PLUGIN_API performEdit (Vst::ParamID id, Vst::ParamValue valueNormalized) override
+    tresult PLUGIN_API performEdit (Vst::ParamID paramID, Vst::ParamValue valueNormalized) override
     {
-        if (owner != nullptr)
-            return owner->editController->setParamNormalized (id, valueNormalized);
+        const int index = getIndexOfParamID (paramID);
 
-        return kResultFalse;
+        if (index < 0)
+            return kResultFalse;
+
+        owner->sendParamChangeMessageToListeners (index, (float) valueNormalized);
+        return owner->editController->setParamNormalized (paramID, valueNormalized);
     }
 
-    tresult PLUGIN_API endEdit (Vst::ParamID) override
+    tresult PLUGIN_API endEdit (Vst::ParamID paramID) override
     {
-        // XXX todo..
-        return kResultFalse;
+        const int index = getIndexOfParamID (paramID);
+
+        if (index < 0)
+            return kResultFalse;
+
+        owner->endParameterChangeGesture (index);
+        return kResultTrue;
     }
 
     tresult PLUGIN_API restartComponent (Steinberg::int32) override
@@ -549,9 +564,42 @@ public:
 
 private:
     //==============================================================================
+    VST3PluginInstance* const owner;
     Atomic<int32> refCount;
     String appName;
-    VST3PluginInstance* owner;
+
+    typedef std::map<Vst::ParamID, int> ParamMapType;
+    ParamMapType paramToIndexMap;
+
+    int getIndexOfParamID (Vst::ParamID paramID)
+    {
+        if (owner == nullptr || owner->editController == nullptr)
+            return -1;
+
+        int result = getMappedParamID (paramID);
+
+        if (result < 0)
+        {
+            const int numParams = owner->editController->getParameterCount();
+
+            for (int i = 0; i < numParams; ++i)
+            {
+                Vst::ParameterInfo paramInfo;
+                owner->editController->getParameterInfo (i, paramInfo);
+                paramToIndexMap[paramInfo.id] = i;
+            }
+
+            result = getMappedParamID (paramID);
+        }
+
+        return result;
+    }
+
+    int getMappedParamID (Vst::ParamID paramID)
+    {
+        const ParamMapType::iterator it (paramToIndexMap.find (paramID));
+        return it != paramToIndexMap.end() ? it->second : -1;
+    }
 
     //==============================================================================
     class Message  : public Vst::IMessage
@@ -577,9 +625,9 @@ private:
         JUCE_DECLARE_VST3_COM_REF_METHODS
         JUCE_DECLARE_VST3_COM_QUERY_METHODS
 
-        FIDString PLUGIN_API getMessageID()              { return messageId.toRawUTF8(); }
-        void PLUGIN_API setMessageID (FIDString id)      { messageId = toString (id); }
-        Vst::IAttributeList* PLUGIN_API getAttributes()  { return attributeList; }
+        FIDString PLUGIN_API getMessageID() override              { return messageId.toRawUTF8(); }
+        void PLUGIN_API setMessageID (FIDString id) override      { messageId = toString (id); }
+        Vst::IAttributeList* PLUGIN_API getAttributes() override  { return attributeList; }
 
         var value;
 
@@ -1195,7 +1243,8 @@ public:
     VST3PluginWindow (AudioProcessor* owner, IPlugView* pluginView)
       : AudioProcessorEditor (owner),
         ComponentMovementWatcher (this),
-        view (pluginView),
+        refCount (1),
+        view (pluginView, false),
         pluginHandle (nullptr),
         recursiveResize (false)
     {
@@ -1497,10 +1546,11 @@ public:
 
         Array<SpeakerArrangement> inArrangements, outArrangements;
 
-        for (int i = 0; i < numInputAudioBusses; ++i)
+        // NB: Some plugins need a valid arrangement despite specifying 0 for their I/O busses
+        for (int i = 0; i < jmax (1, numInputAudioBusses); ++i)
             inArrangements.add (getArrangementForNumChannels (jmax (0, (int) getBusInfo (true, true, i).channelCount)));
 
-        for (int i = 0; i < numOutputAudioBusses; ++i)
+        for (int i = 0; i < jmax (1, numOutputAudioBusses); ++i)
             outArrangements.add (getArrangementForNumChannels (jmax (0, (int) getBusInfo (false, true, i).channelCount)));
 
         warnOnFailure (processor->setBusArrangements (inArrangements.getRawDataPointer(), numInputAudioBusses,
@@ -1640,7 +1690,7 @@ public:
         if (getActiveEditor() != nullptr)
             return true;
 
-        ComSmartPtr<IPlugView> view (tryCreatingView());
+        ComSmartPtr<IPlugView> view (tryCreatingView(), false);
         return view != nullptr;
     }
 
@@ -2031,11 +2081,11 @@ private:
     Vst::BusInfo getBusInfo (bool forInput, bool forAudio, int index = 0) const
     {
         Vst::BusInfo busInfo;
+        busInfo.mediaType = forAudio ? Vst::kAudio : Vst::kEvent;
+        busInfo.direction = forInput ? Vst::kInput : Vst::kOutput;
 
-        component->getBusInfo (forAudio ? Vst::kAudio : Vst::kEvent,
-                               forInput ? Vst::kInput : Vst::kOutput,
+        component->getBusInfo (busInfo.mediaType, busInfo.direction,
                                (Steinberg::int32) index, busInfo);
-
         return busInfo;
     }
 
