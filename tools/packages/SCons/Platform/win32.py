@@ -8,7 +8,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,11 +30,10 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Platform/win32.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Platform/win32.py  2014/03/02 14:18:15 garyo"
 
 import os
 import os.path
-import string
 import sys
 import tempfile
 
@@ -61,30 +60,60 @@ except AttributeError:
 else:
     parallel_msg = None
 
-    import __builtin__
+    import builtins
 
-    _builtin_file = __builtin__.file
-    _builtin_open = __builtin__.open
-    
-    def _scons_file(*args, **kw):
-        fp = apply(_builtin_file, args, kw)
-        win32api.SetHandleInformation(msvcrt.get_osfhandle(fp.fileno()),
-                                      win32con.HANDLE_FLAG_INHERIT,
-                                      0)
-        return fp
+    _builtin_file = builtins.file
+    _builtin_open = builtins.open
+
+    class _scons_file(_builtin_file):
+        def __init__(self, *args, **kw):
+            _builtin_file.__init__(self, *args, **kw)
+            win32api.SetHandleInformation(msvcrt.get_osfhandle(self.fileno()),
+                win32con.HANDLE_FLAG_INHERIT, 0)
 
     def _scons_open(*args, **kw):
-        fp = apply(_builtin_open, args, kw)
+        fp = _builtin_open(*args, **kw)
         win32api.SetHandleInformation(msvcrt.get_osfhandle(fp.fileno()),
                                       win32con.HANDLE_FLAG_INHERIT,
                                       0)
         return fp
 
-    __builtin__.file = _scons_file
-    __builtin__.open = _scons_open
+    builtins.file = _scons_file
+    builtins.open = _scons_open
 
-
-
+try:
+    import threading
+    spawn_lock = threading.Lock()
+    
+    # This locked version of spawnve works around a Windows
+    # MSVCRT bug, because its spawnve is not thread-safe.
+    # Without this, python can randomly crash while using -jN.
+    # See the python bug at http://bugs.python.org/issue6476
+    # and SCons issue at
+    # http://scons.tigris.org/issues/show_bug.cgi?id=2449
+    def spawnve(mode, file, args, env):
+        spawn_lock.acquire()
+        try:
+            if mode == os.P_WAIT:
+                ret = os.spawnve(os.P_NOWAIT, file, args, env)
+            else:
+                ret = os.spawnve(mode, file, args, env)
+        finally:
+            spawn_lock.release()
+        if mode == os.P_WAIT:
+            pid, status = os.waitpid(ret, 0)
+            ret = status >> 8
+        return ret
+except ImportError:
+    # Use the unsafe method of spawnve.
+    # Please, don't try to optimize this try-except block
+    # away by assuming that the threading module is always present.
+    # In the test test/option-j.py we intentionally call SCons with
+    # a fake threading.py that raises an import exception right away,
+    # simulating a non-existent package.
+    def spawnve(mode, file, args, env):
+        return os.spawnve(mode, file, args, env)
+    
 # The upshot of all this is that, if you are using Python 1.5.2,
 # you had better have cmd or command.com in your PATH when you run
 # scons.
@@ -109,11 +138,11 @@ def piped_spawn(sh, escape, cmd, args, env, stdout, stderr):
         stderrRedirected = 0
         for arg in args:
             # are there more possibilities to redirect stdout ?
-            if (string.find( arg, ">", 0, 1 ) != -1 or
-                string.find( arg, "1>", 0, 2 ) != -1):
+            if (arg.find( ">", 0, 1 ) != -1 or
+                arg.find( "1>", 0, 2 ) != -1):
                 stdoutRedirected = 1
             # are there more possibilities to redirect stderr ?
-            if string.find( arg, "2>", 0, 2 ) != -1:
+            if arg.find( "2>", 0, 2 ) != -1:
                 stderrRedirected = 1
 
         # redirect output of non-redirected streams to our tempfiles
@@ -124,8 +153,8 @@ def piped_spawn(sh, escape, cmd, args, env, stdout, stderr):
 
         # actually do the spawn
         try:
-            args = [sh, '/C', escape(string.join(args)) ]
-            ret = os.spawnve(os.P_WAIT, sh, args, env)
+            args = [sh, '/C', escape(' '.join(args)) ]
+            ret = spawnve(os.P_WAIT, sh, args, env)
         except OSError, e:
             # catch any error
             try:
@@ -153,7 +182,7 @@ def piped_spawn(sh, escape, cmd, args, env, stdout, stderr):
 
 def exec_spawn(l, env):
     try:
-        result = os.spawnve(os.P_WAIT, l[0], l, env)
+        result = spawnve(os.P_WAIT, l[0], l, env)
     except OSError, e:
         try:
             result = exitvalmap[e[0]]
@@ -162,7 +191,7 @@ def exec_spawn(l, env):
             result = 127
             if len(l) > 2:
                 if len(l[2]) < 1000:
-                    command = string.join(l[0:3])
+                    command = ' '.join(l[0:3])
                 else:
                     command = l[0]
             else:
@@ -174,7 +203,7 @@ def spawn(sh, escape, cmd, args, env):
     if not sh:
         sys.stderr.write("scons: Could not find command interpreter, is it in your PATH?\n")
         return 127
-    return exec_spawn([sh, '/C', escape(string.join(args))], env)
+    return exec_spawn([sh, '/C', escape(' '.join(args))], env)
 
 # Windows does not allow special characters in file names anyway, so no
 # need for a complex escape function, we will just quote the arg, except
@@ -195,7 +224,7 @@ def get_system_root():
         return _system_root
 
     # A resonable default if we can't read the registry
-    val = os.environ.get('SystemRoot', "C:/WINDOWS")
+    val = os.environ.get('SystemRoot', "C:\\WINDOWS")
 
     if SCons.Util.can_read_reg:
         try:
@@ -240,7 +269,7 @@ def get_program_files_dir():
 
 
 # Determine which windows CPU were running on.
-class ArchDefinition:
+class ArchDefinition(object):
     """
     A class for defining architecture-specific settings and logic.
     """
@@ -318,7 +347,7 @@ def generate(env):
         tmp_path = systemroot + os.pathsep + \
                    os.path.join(systemroot,'System32')
         tmp_pathext = '.com;.exe;.bat;.cmd'
-        if os.environ.has_key('PATHEXT'):
+        if 'PATHEXT' in os.environ:
             tmp_pathext = os.environ['PATHEXT'] 
         cmd_interp = SCons.Util.WhereIs('cmd', tmp_path, tmp_pathext)
         if not cmd_interp:
@@ -330,7 +359,7 @@ def generate(env):
             cmd_interp = env.Detect('command')
 
     
-    if not env.has_key('ENV'):
+    if 'ENV' not in env:
         env['ENV']        = {}
 
     # Import things from the external environment to the construction
@@ -347,7 +376,7 @@ def generate(env):
         if v:
             env['ENV'][var] = v
 
-    if not env['ENV'].has_key('COMSPEC'):
+    if 'COMSPEC' not in env['ENV']:
         v = os.environ.get("COMSPEC")
         if v:
             env['ENV']['COMSPEC'] = v

@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,7 +31,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/zip.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/zip.py  2014/03/02 14:18:15 garyo"
 
 import os.path
 
@@ -49,18 +49,17 @@ except ImportError:
 if internal_zip:
     zipcompression = zipfile.ZIP_DEFLATED
     def zip(target, source, env):
-        def visit(arg, dirname, names):
-            for name in names:
-                path = os.path.join(dirname, name)
-                if os.path.isfile(path):
-                    arg.write(path)
         compression = env.get('ZIPCOMPRESSION', 0)
         zf = zipfile.ZipFile(str(target[0]), 'w', compression)
         for s in source:
             if s.isdir():
-                os.path.walk(str(s), visit, zf)
+                for dirpath, dirnames, filenames in os.walk(str(s)):
+                    for fname in filenames:
+                        path = os.path.join(dirpath, fname)
+                        if os.path.isfile(path):
+                            zf.write(path, os.path.relpath(path, str(env.get('ZIPROOT', ''))))
             else:
-                zf.write(str(s))
+                zf.write(str(s), os.path.relpath(str(s), str(env.get('ZIPROOT', ''))))
         zf.close()
 else:
     zipcompression = 0
@@ -89,6 +88,7 @@ def generate(env):
     env['ZIPCOM']     = zipAction
     env['ZIPCOMPRESSION'] =  zipcompression
     env['ZIPSUFFIX']  = '.zip'
+    env['ZIPROOT']    = SCons.Util.CLVar('')
 
 def exists(env):
     return internal_zip or env.Detect('zip')

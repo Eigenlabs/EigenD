@@ -10,7 +10,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -32,7 +32,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/pdftex.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/pdftex.py  2014/03/02 14:18:15 garyo"
 
 import os
 import SCons.Action
@@ -59,11 +59,11 @@ def PDFTeXLaTeXFunction(target = None, source= None, env=None):
     if SCons.Tool.tex.is_LaTeX(source,env,abspath):
         result = PDFLaTeXAuxAction(target,source,env)
         if result != 0:
-            print env['PDFLATEX']," returned an error, check the log file"
+            SCons.Tool.tex.check_file_error_message(env['PDFLATEX'])
     else:
         result = PDFTeXAction(target,source,env)
         if result != 0:
-            print env['PDFTEX']," returned an error, check the log file"
+            SCons.Tool.tex.check_file_error_message(env['PDFTEX'])
     return result
 
 PDFTeXLaTeXAction = None
@@ -99,6 +99,7 @@ def generate(env):
     SCons.Tool.tex.generate_common(env)
 
 def exists(env):
+    SCons.Tool.tex.generate_darwin(env)
     return env.Detect('pdftex')
 
 # Local Variables:

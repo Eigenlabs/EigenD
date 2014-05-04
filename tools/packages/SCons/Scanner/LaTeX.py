@@ -5,7 +5,7 @@ This module implements the dependency scanner for LaTeX code.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -27,10 +27,9 @@ This module implements the dependency scanner for LaTeX code.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Scanner/LaTeX.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Scanner/LaTeX.py  2014/03/02 14:18:15 garyo"
 
 import os.path
-import string
 import re
 
 import SCons.Scanner
@@ -41,7 +40,7 @@ TexGraphics   = ['.eps', '.ps']
 LatexGraphics = ['.pdf', '.png', '.jpg', '.gif', '.tif']
 
 # Used as a return value of modify_env_var if the variable is not set.
-class _Null:
+class _Null(object):
     pass
 _null = _Null
 
@@ -58,13 +57,10 @@ def modify_env_var(env, var, abspath):
     env.PrependENVPath(var, abspath)
     try:
         if SCons.Util.is_List(env[var]):
-            #TODO(1.5)
-            #env.PrependENVPath(var, [os.path.abspath(str(p)) for p in env[var]])
-            env.PrependENVPath(var, map(lambda p: os.path.abspath(str(p)), env[var]))
+            env.PrependENVPath(var, [os.path.abspath(str(p)) for p in env[var]])
         else:
             # Split at os.pathsep to convert into absolute path
-            #TODO(1.5) env.PrependENVPath(var, [os.path.abspath(p) for p in str(env[var]).split(os.pathsep)])
-            env.PrependENVPath(var, map(lambda p: os.path.abspath(p), string.split(str(env[var]), os.pathsep)))
+            env.PrependENVPath(var, [os.path.abspath(p) for p in str(env[var]).split(os.pathsep)])
     except KeyError:
         pass
 
@@ -73,15 +69,13 @@ def modify_env_var(env, var, abspath):
     # does not work, refuses to append ":" (os.pathsep).
 
     if SCons.Util.is_List(env['ENV'][var]):
-        # TODO(1.5)
-        #env['ENV'][var] = os.pathsep.join(env['ENV'][var])
-        env['ENV'][var] = string.join(env['ENV'][var], os.pathsep)
+        env['ENV'][var] = os.pathsep.join(env['ENV'][var])
     # Append the trailing os.pathsep character here to catch the case with no env[var]
     env['ENV'][var] = env['ENV'][var] + os.pathsep
 
     return save
 
-class FindENVPathDirs:
+class FindENVPathDirs(object):
     """A class to bind a specific *PATH variable name to a function that
     will return all of the *path directories."""
     def __init__(self, variable):
@@ -154,6 +148,8 @@ class LaTeX(SCons.Scanner.Base):
     env['TEXINPUTS'] for "lstinputlisting" keyword
     env['BIBINPUTS'] for "bibliography" keyword
     env['BSTINPUTS'] for "bibliographystyle" keyword
+    env['INDEXSTYLE'] for "makeindex" keyword, no scanning support needed
+                      just allows user to set it if needed.
 
     FIXME: also look for the class or style in document[class|style]{}
     FIXME: also look for the argument of bibliographystyle{}
@@ -163,9 +159,13 @@ class LaTeX(SCons.Scanner.Base):
                      'includegraphics': 'TEXINPUTS',
                      'bibliography': 'BIBINPUTS',
                      'bibliographystyle': 'BSTINPUTS',
+                     'addbibresource': 'BIBINPUTS',
+                     'addglobalbib': 'BIBINPUTS',
+                     'addsectionbib': 'BIBINPUTS',
+                     'makeindex': 'INDEXSTYLE',
                      'usepackage': 'TEXINPUTS',
                      'lstinputlisting': 'TEXINPUTS'}
-    env_variables = SCons.Util.unique(keyword_paths.values())
+    env_variables = SCons.Util.unique(list(keyword_paths.values()))
 
     def __init__(self, name, suffixes, graphics_extensions, *args, **kw):
 
@@ -174,17 +174,20 @@ class LaTeX(SCons.Scanner.Base):
         # Without the \n,  the ^ could match the beginning of a *previous*
         # line followed by one or more newline characters (i.e. blank
         # lines), interfering with a match on the next line.
-        regex = r'^[^%\n]*\\(include|includegraphics(?:\[[^\]]+\])?|lstinputlisting(?:\[[^\]]+\])?|input|bibliography|usepackage){([^}]*)}'
+        # add option for whitespace before the '[options]' or the '{filename}'
+        regex = r'^[^%\n]*\\(include|includegraphics(?:\s*\[[^\]]+\])?|lstinputlisting(?:\[[^\]]+\])?|input|bibliography|addbibresource|addglobalbib|addsectionbib|usepackage)\s*{([^}]*)}'
         self.cre = re.compile(regex, re.M)
+        self.comment_re = re.compile(r'^((?:(?:\\%)|[^%\n])*)(.*)$', re.M)
+
         self.graphics_extensions = graphics_extensions
 
         def _scan(node, env, path=(), self=self):
             node = node.rfile()
             if not node.exists():
                 return []
-            return self.scan(node, path)
+            return self.scan_recurse(node, path)
 
-        class FindMultiPathDirs:
+        class FindMultiPathDirs(object):
             """The stock FindPathDirs function has the wrong granularity:
             it is called once per target, while we need the path that depends
             on what kind of included files is being searched. This wrapper
@@ -212,7 +215,7 @@ class LaTeX(SCons.Scanner.Base):
                 # To prevent "dict is not hashable error"
                 return tuple(di.items())
 
-        class LaTeXScanCheck:
+        class LaTeXScanCheck(object):
             """Skip all but LaTeX source files, i.e., do not scan *.eps,
             *.pdf, *.jpg, etc.
             """
@@ -226,12 +229,12 @@ class LaTeX(SCons.Scanner.Base):
 
         kw['function'] = _scan
         kw['path_function'] = FindMultiPathDirs(LaTeX.keyword_paths)
-        kw['recursive'] = 1
+        kw['recursive'] = 0
         kw['skeys'] = suffixes
         kw['scan_check'] = LaTeXScanCheck(suffixes)
         kw['name'] = name
 
-        apply(SCons.Scanner.Base.__init__, (self,) + args, kw)
+        SCons.Scanner.Base.__init__(self, *args, **kw)
 
     def _latex_names(self, include):
         filename = include[1]
@@ -252,11 +255,12 @@ class LaTeX(SCons.Scanner.Base):
         if include[0] == 'includegraphics':
             base, ext = os.path.splitext( filename )
             if ext == "":
-                #TODO(1.5) return [filename + e for e in self.graphics_extensions]
-                #return map(lambda e, f=filename: f+e, self.graphics_extensions + TexGraphics)
-                # use the line above to find dependency for PDF builder when only .eps figure is present
-                # Since it will be found if the user tell scons how to make the pdf figure leave it out for now.
-                return map(lambda e, f=filename: f+e, self.graphics_extensions)
+                #return [filename+e for e in self.graphics_extensions + TexGraphics]
+                # use the line above to find dependencies for the PDF builder
+                # when only an .eps figure is present.  Since it will be found
+                # if the user tells scons how to make the pdf figure, leave
+                # it out for now.
+                return [filename+e for e in self.graphics_extensions]
         return [filename]
 
     def sort_key(self, include):
@@ -279,18 +283,37 @@ class LaTeX(SCons.Scanner.Base):
                 return i, include
         return i, include
 
-    def scan(self, node, path=()):
+    def canonical_text(self, text):
+        """Standardize an input TeX-file contents.
+
+        Currently:
+          * removes comments, unwrapping comment-wrapped lines.
+        """
+        out = []
+        line_continues_a_comment = False
+        for line in text.splitlines():
+            line,comment = self.comment_re.findall(line)[0]
+            if line_continues_a_comment == True:
+                out[-1] = out[-1] + line.lstrip()
+            else:
+                out.append(line)
+            line_continues_a_comment = len(comment) > 0
+        return '\n'.join(out).rstrip()+'\n'
+
+    def scan(self, node):
         # Modify the default scan function to allow for the regular
         # expression to return a comma separated list of file names
         # as can be the case with the bibliography keyword.
 
         # Cache the includes list in node so we only scan it once:
-        path_dict = dict(list(path))
-        noopt_cre = re.compile('\[.*$')
+        # path_dict = dict(list(path))
+        # add option for whitespace (\s) before the '['
+        noopt_cre = re.compile('\s*\[.*$')
         if node.includes != None:
             includes = node.includes
         else:
-            includes = self.cre.findall(node.get_text_contents())
+            text = self.canonical_text(node.get_text_contents())
+            includes = self.cre.findall(text)
             # 1. Split comma-separated lines, e.g.
             #      ('bibliography', 'phys,comp')
             #    should become two entries
@@ -303,12 +326,25 @@ class LaTeX(SCons.Scanner.Base):
             split_includes = []
             for include in includes:
                 inc_type = noopt_cre.sub('', include[0])
-                inc_list = string.split(include[1],',')
+                inc_list = include[1].split(',')
                 for j in range(len(inc_list)):
                     split_includes.append( (inc_type, inc_list[j]) )
             #
             includes = split_includes
             node.includes = includes
+
+        return includes
+
+    def scan_recurse(self, node, path=()):
+        """ do a recursive scan of the top level target file
+        This lets us search for included files based on the
+        directory of the main file just as latex does"""
+
+        path_dict = dict(list(path))
+        
+        queue = [] 
+        queue.extend( self.scan(node) )
+        seen = {}
 
         # This is a hand-coded DSU (decorate-sort-undecorate, or
         # Schwartzian transform) pattern.  The sort key is the raw name
@@ -319,7 +355,16 @@ class LaTeX(SCons.Scanner.Base):
         # is actually found in a Repository or locally."""
         nodes = []
         source_dir = node.get_dir()
-        for include in includes:
+        #for include in includes:
+        while queue:
+            
+            include = queue.pop()
+            try:
+                if seen[include[1]] == 1:
+                    continue
+            except KeyError:
+                seen[include[1]] = 1
+
             #
             # Handle multiple filenames in include[1]
             #
@@ -333,10 +378,10 @@ class LaTeX(SCons.Scanner.Base):
             else:
                 sortkey = self.sort_key(n)
                 nodes.append((sortkey, n))
-        #
-        nodes.sort()
-        nodes = map(lambda pair: pair[1], nodes)
-        return nodes
+                # recurse down 
+                queue.extend( self.scan(n) )
+
+        return [pair[1] for pair in sorted(nodes)]
 
 # Local Variables:
 # tab-width:4

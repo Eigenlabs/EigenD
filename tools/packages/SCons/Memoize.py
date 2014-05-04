@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,7 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Memoize.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Memoize.py  2014/03/02 14:18:15 garyo"
 
 __doc__ = """Memoizer
 
@@ -119,14 +119,14 @@ This collected caching logic nicely, but had two drawbacks:
     to figure out how to optimize the underlying methods.
 """
 
-import new
+import types
 
 # A flag controlling whether or not we actually use memoization.
 use_memoizer = None
 
 CounterList = []
 
-class Counter:
+class Counter(object):
     """
     Base class for counting memoization hits and misses.
 
@@ -165,11 +165,11 @@ class CountValue(Counter):
     """
     def __call__(self, *args, **kw):
         obj = args[0]
-        if obj._memo.has_key(self.method_name):
+        if self.method_name in obj._memo:
             self.hit = self.hit + 1
         else:
             self.miss = self.miss + 1
-        return apply(self.underlying_method, args, kw)
+        return self.underlying_method(*args, **kw)
 
 class CountDict(Counter):
     """
@@ -199,91 +199,43 @@ class CountDict(Counter):
         except KeyError:
             self.miss = self.miss + 1
         else:
-            key = apply(self.keymaker, args, kw)
-            if memo_dict.has_key(key):
+            key = self.keymaker(*args, **kw)
+            if key in memo_dict:
                 self.hit = self.hit + 1
             else:
                 self.miss = self.miss + 1
-        return apply(self.underlying_method, args, kw)
+        return self.underlying_method(*args, **kw)
 
-class Memoizer:
+class Memoizer(object):
     """Object which performs caching of method calls for its 'primary'
     instance."""
 
     def __init__(self):
         pass
 
-# Find out if we support metaclasses (Python 2.2 and later).
+def Dump(title=None):
+    if title:
+        print title
+    CounterList.sort()
+    for counter in CounterList:
+        counter.display()
 
-class M:
+class Memoized_Metaclass(type):
     def __init__(cls, name, bases, cls_dict):
-        cls.use_metaclass = 1
-        def fake_method(self):
-            pass
-        new.instancemethod(fake_method, None, cls)
+        super(Memoized_Metaclass, cls).__init__(name, bases, cls_dict)
 
-try:
-    class A:
-        __metaclass__ = M
+        for counter in cls_dict.get('memoizer_counters', []):
+            method_name = counter.method_name
 
-    use_metaclass = A.use_metaclass
-except AttributeError:
-    use_metaclass = None
-    reason = 'no metaclasses'
-except TypeError:
-    use_metaclass = None
-    reason = 'new.instancemethod() bug'
-else:
-    del A
+            counter.name = cls.__name__ + '.' + method_name
+            counter.underlying_method = cls_dict[method_name]
 
-del M
+            replacement_method = types.MethodType(counter, None, cls)
+            setattr(cls, method_name, replacement_method)
 
-if not use_metaclass:
-
-    def Dump(title):
-        pass
-
-    try:
-        class Memoized_Metaclass(type):
-            # Just a place-holder so pre-metaclass Python versions don't
-            # have to have special code for the Memoized classes.
-            pass
-    except TypeError:
-        class Memoized_Metaclass:
-            # A place-holder so pre-metaclass Python versions don't
-            # have to have special code for the Memoized classes.
-            pass
-
-    def EnableMemoization():
-        import SCons.Warnings
-        msg = 'memoization is not supported in this version of Python (%s)'
-        raise SCons.Warnings.NoMetaclassSupportWarning, msg % reason
-
-else:
-
-    def Dump(title=None):
-        if title:
-            print title
-        CounterList.sort()
-        for counter in CounterList:
-            counter.display()
-
-    class Memoized_Metaclass(type):
-        def __init__(cls, name, bases, cls_dict):
-            super(Memoized_Metaclass, cls).__init__(name, bases, cls_dict)
-
-            for counter in cls_dict.get('memoizer_counters', []):
-                method_name = counter.method_name
-
-                counter.name = cls.__name__ + '.' + method_name
-                counter.underlying_method = cls_dict[method_name]
-
-                replacement_method = new.instancemethod(counter, None, cls)
-                setattr(cls, method_name, replacement_method)
-
-    def EnableMemoization():
-        global use_memoizer
-        use_memoizer = 1
+def EnableMemoization():
+    global use_memoizer
+    use_memoizer = 1
 
 # Local Variables:
 # tab-width:4

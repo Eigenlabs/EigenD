@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -29,13 +29,11 @@ selection method.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
-__revision__ = "src/engine/SCons/Tool/javac.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/javac.py  2014/03/02 14:18:15 garyo"
 
 import os
 import os.path
-import string
 
 import SCons.Action
 import SCons.Builder
@@ -45,7 +43,7 @@ import SCons.Util
 
 def classname(path):
     """Turn a string (path name) into a Java class name."""
-    return string.replace(os.path.normpath(path), os.sep, '.')
+    return os.path.normpath(path).replace(os.sep, '.')
 
 def emit_java_classes(target, source, env):
     """Create and return lists of source java files
@@ -67,27 +65,25 @@ def emit_java_classes(target, source, env):
 
     slist = []
     js = _my_normcase(java_suffix)
-    find_java = lambda n, js=js, ljs=len(js): _my_normcase(n[-ljs:]) == js
     for entry in source:
         entry = entry.rentry().disambiguate()
         if isinstance(entry, SCons.Node.FS.File):
             slist.append(entry)
         elif isinstance(entry, SCons.Node.FS.Dir):
             result = SCons.Util.OrderedDict()
-            def visit(arg, dirname, names, fj=find_java, dirnode=entry.rdir()):
-                java_files = filter(fj, names)
-                # The on-disk entries come back in arbitrary order.  Sort
-                # them so our target and source lists are determinate.
-                java_files.sort()
-                mydir = dirnode.Dir(dirname)
-                java_paths = map(lambda f, d=mydir: d.File(f), java_files)
+            dirnode = entry.rdir()
+            def find_java_files(arg, dirpath, filenames):
+                java_files = sorted([n for n in filenames
+                                       if _my_normcase(n).endswith(js)])
+                mydir = dirnode.Dir(dirpath)
+                java_paths = [mydir.File(f) for f in java_files]
                 for jp in java_paths:
                      arg[jp] = True
+            for dirpath, dirnames, filenames in os.walk(dirnode.get_abspath()):
+               find_java_files(result, dirpath, filenames)
+            entry.walk(find_java_files, result)
 
-            os.path.walk(entry.rdir().get_abspath(), visit, result)
-            entry.walk(visit, result)
-
-            slist.extend(result.keys())
+            slist.extend(list(result.keys()))
         else:
             raise SCons.Errors.UserError("Java source must be File or Dir, not '%s'" % entry.__class__)
 
@@ -139,7 +135,7 @@ JavaBuilder = SCons.Builder.Builder(action = JavaAction,
                     target_factory = SCons.Node.FS.Entry,
                     source_factory = SCons.Node.FS.Entry)
 
-class pathopt:
+class pathopt(object):
     """
     Callable object for generating javac-style path options from
     a construction variable (e.g. -classpath, -sourcepath).
@@ -154,13 +150,15 @@ class pathopt:
         if path and not SCons.Util.is_List(path):
             path = [path]
         if self.default:
-            path = path + [ env[self.default] ]
+            default = env[self.default]
+            if default:
+                if not SCons.Util.is_List(default):
+                    default = [default]
+                path = path + default
         if path:
-            return [self.opt, string.join(path, os.pathsep)]
-            #return self.opt + " " + string.join(path, os.pathsep)
+            return [self.opt, os.pathsep.join(map(str, path))]
         else:
             return []
-            #return ""
 
 def Java(env, target, source, *args, **kw):
     """
@@ -194,7 +192,7 @@ def Java(env, target, source, *args, **kw):
                 b = env.JavaClassFile
             else:
                 b = env.JavaClassDir
-        result.extend(apply(b, (t, s) + args, kw))
+        result.extend(b(t, s, *args, **kw))
 
     return result
 

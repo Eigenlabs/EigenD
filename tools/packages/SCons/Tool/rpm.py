@@ -11,7 +11,7 @@ tar.gz consisting of the source file and a specfile.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -33,7 +33,7 @@ tar.gz consisting of the source file and a specfile.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/rpm.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/rpm.py  2014/03/02 14:18:15 garyo"
 
 import os
 import re
@@ -79,7 +79,7 @@ def build_rpm(target, source, env):
                                        errstr=output,
                                        filename=str(target[0]) )
     else:
-        # XXX: assume that LC_ALL=c is set while running rpmbuild
+        # XXX: assume that LC_ALL=C is set while running rpmbuild
         output_files = re.compile( 'Wrote: (.*)' ).findall( output )
 
         for output, input in zip( output_files, target ):
@@ -117,7 +117,7 @@ def generate(env):
         bld = RpmBuilder
         env['BUILDERS']['Rpm'] = bld
 
-    env.SetDefault(RPM          = 'LC_ALL=c rpmbuild')
+    env.SetDefault(RPM          = 'LC_ALL=C rpmbuild')
     env.SetDefault(RPMFLAGS     = SCons.Util.CLVar('-ta'))
     env.SetDefault(RPMCOM       = rpmAction)
     env.SetDefault(RPMSUFFIX    = '.rpm')

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,20 +21,16 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/cpp.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/cpp.py  2014/03/02 14:18:15 garyo"
 
 __doc__ = """
 SCons C Pre-Processor module
 """
-
-# TODO(1.5):  remove this import
-# This module doesn't use anything from SCons by name, but we import SCons
-# here to pull in zip() from the SCons.compat layer for early Pythons.
-import SCons
+#TODO 2.3 and before has no sorted()
+import SCons.compat
 
 import os
 import re
-import string
 
 #
 # First "subsystem" of regular expressions that we set up:
@@ -91,7 +87,7 @@ del op_list
 override = {
     'if'                        : 'if(?!def)',
 }
-l = map(lambda x, o=override: o.get(x, x), Table.keys())
+l = [override.get(x, x) for x in Table.keys()]
 
 
 # Turn the list of expressions into one big honkin' regular expression
@@ -99,7 +95,7 @@ l = map(lambda x, o=override: o.get(x, x), Table.keys())
 # a list of tuples, one for each preprocessor line.  The preprocessor
 # directive will be the first element in each tuple, and the rest of
 # the line will be the second element.
-e = '^\s*#\s*(' + string.join(l, '|') + ')(.*)$'
+e = '^\s*#\s*(' + '|'.join(l) + ')(.*)$'
 
 # And last but not least, compile the expression.
 CPP_Expression = re.compile(e, re.M)
@@ -126,7 +122,7 @@ CPP_to_Python_Ops_Dict = {
     '\r'        : '',
 }
 
-CPP_to_Python_Ops_Sub = lambda m, d=CPP_to_Python_Ops_Dict: d[m.group(0)]
+CPP_to_Python_Ops_Sub = lambda m: CPP_to_Python_Ops_Dict[m.group(0)]
 
 # We have to sort the keys by length so that longer expressions
 # come *before* shorter expressions--in particular, "!=" must
@@ -134,12 +130,11 @@ CPP_to_Python_Ops_Sub = lambda m, d=CPP_to_Python_Ops_Dict: d[m.group(0)]
 # re module, as late as version 2.2.2, empirically matches the
 # "!" in "!=" first, instead of finding the longest match.
 # What's up with that?
-l = CPP_to_Python_Ops_Dict.keys()
-l.sort(lambda a, b: cmp(len(b), len(a)))
+l = sorted(CPP_to_Python_Ops_Dict.keys(), key=lambda a: len(a), reverse=True)
 
 # Turn the list of keys into one regular expression that will allow us
 # to substitute all of the operators at once.
-expr = string.join(map(re.escape, l), '|')
+expr = '|'.join(map(re.escape, l))
 
 # ...and compile the expression.
 CPP_to_Python_Ops_Expression = re.compile(expr)
@@ -147,12 +142,12 @@ CPP_to_Python_Ops_Expression = re.compile(expr)
 # A separate list of expressions to be evaluated and substituted
 # sequentially, not all at once.
 CPP_to_Python_Eval_List = [
-    ['defined\s+(\w+)',         '__dict__.has_key("\\1")'],
-    ['defined\s*\((\w+)\)',     '__dict__.has_key("\\1")'],
+    ['defined\s+(\w+)',         '"\\1" in __dict__'],
+    ['defined\s*\((\w+)\)',     '"\\1" in __dict__'],
     ['/\*.*\*/',                ''],
     ['/\*.*',                   ''],
     ['//.*',                    ''],
-    ['(0x[0-9A-Fa-f]*)[UL]+',   '\\1L'],
+    ['(0x[0-9A-Fa-f]*)[UL]+',   '\\1'],
 ]
 
 # Replace the string representations of the regular expressions in the
@@ -179,7 +174,7 @@ del override
 
 
 
-class FunctionEvaluator:
+class FunctionEvaluator(object):
     """
     Handles delayed evaluation of a #define function call.
     """
@@ -192,10 +187,8 @@ class FunctionEvaluator:
         self.name = name
         self.args = function_arg_separator.split(args)
         try:
-            expansion = string.split(expansion, '##')
-        except (AttributeError, TypeError):
-            # Python 1.5 throws TypeError if "expansion" isn't a string,
-            # later versions throw AttributeError.
+            expansion = expansion.split('##')
+        except AttributeError:
             pass
         self.expansion = expansion
     def __call__(self, *values):
@@ -204,7 +197,7 @@ class FunctionEvaluator:
         with the specified values.
         """
         if len(self.args) != len(values):
-            raise ValueError, "Incorrect number of arguments to `%s'" % self.name
+            raise ValueError("Incorrect number of arguments to `%s'" % self.name)
         # Create a dictionary that maps the macro arguments to the
         # corresponding values in this "call."  We'll use this when we
         # eval() the expansion so that arguments will get expanded to
@@ -218,7 +211,7 @@ class FunctionEvaluator:
             if not s in self.args:
                 s = repr(s)
             parts.append(s)
-        statement = string.join(parts, ' + ')
+        statement = ' + '.join(parts)
 
         return eval(statement, globals(), locals)
 
@@ -238,7 +231,7 @@ function_arg_separator = re.compile(',\s*')
 
 
 
-class PreProcessor:
+class PreProcessor(object):
     """
     The main workhorse class for handling C pre-processing.
     """
@@ -292,9 +285,7 @@ class PreProcessor:
         global CPP_Expression, Table
         contents = line_continuations.sub('', contents)
         cpp_tuples = CPP_Expression.findall(contents)
-        return  map(lambda m, t=Table:
-                           (m[0],) + t[m[0]].match(m[1]).groups(),
-                    cpp_tuples)
+        return  [(m[0],) + Table[m[0]].match(m[1]).groups() for m in cpp_tuples]
 
     def __call__(self, file):
         """
@@ -363,7 +354,7 @@ class PreProcessor:
         eval()ing it in the C preprocessor namespace we use to
         track #define values.
         """
-        t = CPP_to_Python(string.join(t[1:]))
+        t = CPP_to_Python(' '.join(t[1:]))
         try: return eval(t, self.cpp_namespace)
         except (NameError, TypeError): return 0
 
@@ -446,13 +437,13 @@ class PreProcessor:
         """
         Default handling of a #ifdef line.
         """
-        self._do_if_else_condition(self.cpp_namespace.has_key(t[1]))
+        self._do_if_else_condition(t[1] in self.cpp_namespace)
 
     def do_ifndef(self, t):
         """
         Default handling of a #ifndef line.
         """
-        self._do_if_else_condition(not self.cpp_namespace.has_key(t[1]))
+        self._do_if_else_condition(t[1] not in self.cpp_namespace)
 
     def do_if(self, t):
         """
@@ -563,7 +554,7 @@ class PreProcessor:
                 s = self.cpp_namespace[m.group(1)]
                 if callable(s):
                     args = function_arg_separator.split(m.group(2))
-                    s = apply(s, args)
+                    s = s(*args)
             if not s:
                 return None
         return (t[0], s[0], s[1:-1])
@@ -584,7 +575,7 @@ class DumbPreProcessor(PreProcessor):
     to tailor its behavior.
     """
     def __init__(self, *args, **kw):
-        apply(PreProcessor.__init__, (self,)+args, kw)
+        PreProcessor.__init__(self, *args, **kw)
         d = self.default_table
         for func in ['if', 'elif', 'else', 'endif', 'ifdef', 'ifndef']:
             d[func] = d[func] = self.do_nothing

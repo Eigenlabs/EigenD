@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -28,7 +28,7 @@ and user errors in SCons.
 
 """
 
-__revision__ = "src/engine/SCons/Errors.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Errors.py  2014/03/02 14:18:15 garyo"
 
 import SCons.Util
 
@@ -133,7 +133,7 @@ class ExplicitExit(Exception):
         self.node = node
         self.status = status
         self.exitstatus = status
-        apply(Exception.__init__, (self,) + args)
+        Exception.__init__(self, *args)
 
 def convert_to_BuildError(status, exc_info=None):
     """
@@ -157,9 +157,7 @@ def convert_to_BuildError(status, exc_info=None):
             status=status,      # might be 0, OK here
             exitstatus=status,      # might be 0, OK here
             exc_info=exc_info)
-    # TODO(1.5):
-    #elif isinstance(status, (StopError, UserError)):
-    elif isinstance(status, StopError) or isinstance(status, UserError):
+    elif isinstance(status, (StopError, UserError)):
         buildError = BuildError(
             errstr=str(status),
             status=2,

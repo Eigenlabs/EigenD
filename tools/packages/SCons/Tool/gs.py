@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,9 +31,10 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/gs.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/gs.py  2014/03/02 14:18:15 garyo"
 
 import SCons.Action
+import SCons.Builder
 import SCons.Platform
 import SCons.Util
 
@@ -52,24 +53,33 @@ GhostscriptAction = None
 def generate(env):
     """Add Builders and construction variables for Ghostscript to an
     Environment."""
-
     global GhostscriptAction
-    if GhostscriptAction is None:
-        GhostscriptAction = SCons.Action.Action('$GSCOM', '$GSCOMSTR')
+    # The following try-except block enables us to use the Tool
+    # in standalone mode (without the accompanying pdf.py),
+    # whenever we need an explicit call of gs via the Gs()
+    # Builder ...
+    try:
+        if GhostscriptAction is None:
+            GhostscriptAction = SCons.Action.Action('$GSCOM', '$GSCOMSTR')
+    
+        import pdf
+        pdf.generate(env)
+    
+        bld = env['BUILDERS']['PDF']
+        bld.add_action('.ps', GhostscriptAction)
+    except ImportError, e:
+        pass
 
-    import pdf
-    pdf.generate(env)
-
-    bld = env['BUILDERS']['PDF']
-    bld.add_action('.ps', GhostscriptAction)
-
+    gsbuilder = SCons.Builder.Builder(action = SCons.Action.Action('$GSCOM', '$GSCOMSTR'))
+    env['BUILDERS']['Gs'] = gsbuilder
+    
     env['GS']      = gs
     env['GSFLAGS'] = SCons.Util.CLVar('-dNOPAUSE -dBATCH -sDEVICE=pdfwrite')
     env['GSCOM']   = '$GS $GSFLAGS -sOutputFile=$TARGET $SOURCES'
 
 
 def exists(env):
-    if env.has_key('PS2PDF'):
+    if 'PS2PDF' in env:
         return env.Detect(env['PS2PDF'])
     else:
         return env.Detect(gs) or SCons.Util.WhereIs(gs)

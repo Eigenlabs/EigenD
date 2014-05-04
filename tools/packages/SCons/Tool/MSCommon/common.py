@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,7 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/MSCommon/common.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/MSCommon/common.py  2014/03/02 14:18:15 garyo"
 
 __doc__ = """
 Common helper functions for working with the Microsoft tool chain.
@@ -55,17 +55,32 @@ _is_win64 = None
 
 def is_win64():
     """Return true if running on windows 64 bits.
-    
+
     Works whether python itself runs in 64 bits or 32 bits."""
     # Unfortunately, python does not provide a useful way to determine
     # if the underlying Windows OS is 32-bit or 64-bit.  Worse, whether
     # the Python itself is 32-bit or 64-bit affects what it returns,
-    # so nothing in sys.* or os.* help.  So we go to the registry to
-    # look directly for a clue from Windows, caching the result to
-    # avoid repeated registry calls.
+    # so nothing in sys.* or os.* help.
+
+    # Apparently the best solution is to use env vars that Windows
+    # sets.  If PROCESSOR_ARCHITECTURE is not x86, then the python
+    # process is running in 64 bit mode (on a 64-bit OS, 64-bit
+    # hardware, obviously).
+    # If this python is 32-bit but the OS is 64, Windows will set
+    # ProgramW6432 and PROCESSOR_ARCHITEW6432 to non-null.
+    # (Checking for HKLM\Software\Wow6432Node in the registry doesn't
+    # work, because some 32-bit installers create it.)
     global _is_win64
     if _is_win64 is None:
-        _is_win64 = has_reg(r"Software\Wow6432Node")
+        # I structured these tests to make it easy to add new ones or
+        # add exceptions in the future, because this is a bit fragile.
+        _is_win64 = False
+        if os.environ.get('PROCESSOR_ARCHITECTURE','x86') != 'x86':
+            _is_win64 = True
+        if os.environ.get('PROCESSOR_ARCHITEW6432'):
+            _is_win64 = True
+        if os.environ.get('ProgramW6432'):
+            _is_win64 = True
     return _is_win64
 
 
@@ -84,46 +99,98 @@ def has_reg(value):
 
 # Functions for fetching environment variable settings from batch files.
 
-def normalize_env(env, keys):
+def normalize_env(env, keys, force=False):
     """Given a dictionary representing a shell environment, add the variables
     from os.environ needed for the processing of .bat files; the keys are
     controlled by the keys argument.
 
     It also makes sure the environment values are correctly encoded.
 
-    Note: the environment is copied"""
+    If force=True, then all of the key values that exist are copied
+    into the returned dictionary.  If force=false, values are only
+    copied if the key does not already exist in the copied dictionary.
+
+    Note: the environment is copied."""
     normenv = {}
     if env:
         for k in env.keys():
             normenv[k] = copy.deepcopy(env[k]).encode('mbcs')
 
         for k in keys:
-            if os.environ.has_key(k):
+            if k in os.environ and (force or not k in normenv):
                 normenv[k] = os.environ[k].encode('mbcs')
+
+    # This shouldn't be necessary, since the default environment should include system32,
+    # but keep this here to be safe, since it's needed to find reg.exe which the MSVC
+    # bat scripts use.
+    sys32_dir = os.path.join(os.environ.get("SystemRoot", os.environ.get("windir",r"C:\Windows\system32")),"System32")
+
+    if sys32_dir not in normenv['PATH']:
+        normenv['PATH'] = normenv['PATH'] + os.pathsep + sys32_dir
+
+    debug("PATH: %s"%normenv['PATH'])
 
     return normenv
 
 def get_output(vcbat, args = None, env = None):
     """Parse the output of given bat file, with given args."""
+
+    if env is None:
+        # Create a blank environment, for use in launching the tools
+        env = SCons.Environment.Environment(tools=[])
+
+    # TODO:  This is a hard-coded list of the variables that (may) need
+    # to be imported from os.environ[] for v[sc]*vars*.bat file
+    # execution to work.  This list should really be either directly
+    # controlled by vc.py, or else derived from the common_tools_var
+    # settings in vs.py.
+    vars = [
+        'COMSPEC',
+# VS100 and VS110: Still set, but modern MSVC setup scripts will
+# discard these if registry has values.  However Intel compiler setup
+# script still requires these as of 2013/2014.
+        'VS110COMNTOOLS',
+        'VS100COMNTOOLS',
+        'VS90COMNTOOLS',
+        'VS80COMNTOOLS',
+        'VS71COMNTOOLS',
+        'VS70COMNTOOLS',
+        'VS60COMNTOOLS',
+    ]
+    env['ENV'] = normalize_env(env['ENV'], vars, force=False)
+
     if args:
         debug("Calling '%s %s'" % (vcbat, args))
-        popen = subprocess.Popen('"%s" %s & set' % (vcbat, args),
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 env=env)
+        popen = SCons.Action._subproc(env,
+                                     '"%s" %s & set' % (vcbat, args),
+                                     stdin = 'devnull',
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
     else:
         debug("Calling '%s'" % vcbat)
-        popen = subprocess.Popen('"%s" & set' % vcbat,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 env=env)
+        popen = SCons.Action._subproc(env,
+                                     '"%s" & set' % vcbat,
+                                     stdin = 'devnull',
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
 
     # Use the .stdout and .stderr attributes directly because the
     # .communicate() method uses the threading module on Windows
     # and won't work under Pythons not built with threading.
     stdout = popen.stdout.read()
+    stderr = popen.stderr.read()
+
+    # Extra debug logic, uncomment if necessar
+#     debug('get_output():stdout:%s'%stdout)
+#     debug('get_output():stderr:%s'%stderr)
+
+    if stderr:
+        # TODO: find something better to do with stderr;
+        # this at least prevents errors from getting swallowed.
+        import sys
+        sys.stderr.write(stderr)
     if popen.wait() != 0:
-        raise IOError(popen.stderr.read().decode("mbcs"))
+        raise IOError(stderr.decode("mbcs"))
 
     output = stdout.decode("mbcs")
     return output
@@ -132,9 +199,7 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
     # dkeep is a dict associating key: path_list, where key is one item from
     # keep, and pat_list the associated list of paths
 
-    # TODO(1.5):  replace with the following list comprehension:
-    #dkeep = dict([(i, []) for i in keep])
-    dkeep = dict(map(lambda i: (i, []), keep))
+    dkeep = dict([(i, []) for i in keep])
 
     # rdk will  keep the regex to match the .bat file output line starts
     rdk = {}
@@ -149,7 +214,7 @@ def parse_output(output, keep = ("INCLUDE", "LIB", "LIBPATH", "PATH")):
                 p = p.encode('mbcs')
                 # XXX: For some reason, VC98 .bat file adds "" around the PATH
                 # values, and it screws up the environment later, so we strip
-                # it. 
+                # it.
                 p = p.strip('"')
                 dkeep[key].append(p)
 

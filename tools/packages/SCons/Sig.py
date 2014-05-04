@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,7 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Sig.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Sig.py  2014/03/02 14:18:15 garyo"
 
 __doc__ = """Place-holder for the old SCons.Sig module hierarchy
 
@@ -40,7 +40,7 @@ import SCons.Warnings
 msg = 'The SCons.Sig module no longer exists.\n' \
       '    Remove the following "import SCons.Sig" line to eliminate this warning:'
 
-SCons.Warnings.warn(SCons.Warnings.DeprecatedWarning, msg)
+SCons.Warnings.warn(SCons.Warnings.DeprecatedSigModuleWarning, msg)
 
 default_calc = None
 default_module = None

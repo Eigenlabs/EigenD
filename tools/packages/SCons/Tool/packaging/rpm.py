@@ -4,7 +4,7 @@ The rpm packager.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -24,14 +24,13 @@ The rpm packager.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
-__revision__ = "src/engine/SCons/Tool/packaging/rpm.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/packaging/rpm.py  2014/03/02 14:18:15 garyo"
 
 import os
-import string
 
 import SCons.Builder
+import SCons.Tool.rpmutils
 
 from SCons.Environment import OverrideEnvironment
 from SCons.Tool.packaging import stripinstallbuilder, src_targz
@@ -54,18 +53,9 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
     else:
         # This should be overridable from the construction environment,
         # which it is by using ARCHITECTURE=.
-        # Guessing based on what os.uname() returns at least allows it
-        # to work for both i386 and x86_64 Linux systems.
-        archmap = {
-            'i686'  : 'i386',
-            'i586'  : 'i386',
-            'i486'  : 'i386',
-        }
+        buildarchitecture = SCons.Tool.rpmutils.defaultMachine()
 
-        buildarchitecture = os.uname()[4]
-        buildarchitecture = archmap.get(buildarchitecture, buildarchitecture)
-
-        if kw.has_key('ARCHITECTURE'):
+        if 'ARCHITECTURE' in kw:
             buildarchitecture = kw['ARCHITECTURE']
 
         fmt = '%s-%s-%s.%s.rpm'
@@ -81,9 +71,9 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
     del kw['source'], kw['target'], kw['env']
 
     # if no "SOURCE_URL" tag is given add a default one.
-    if not kw.has_key('SOURCE_URL'):
+    if 'SOURCE_URL' not in kw:
         #kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
-        kw['SOURCE_URL']=string.replace(str(target[0])+".tar.gz", '.rpm', '')
+        kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
 
     # mangle the source and target list for the rpmbuild
     env = OverrideEnvironment(env, kw)
@@ -92,7 +82,7 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
     target, source = collectintargz(target, source, env)
 
     # now call the rpm builder to actually build the packet.
-    return apply(bld, [env, target, source], kw)
+    return bld(env, target, source, **kw)
 
 def collectintargz(target, source, env):
     """ Puts all source files into a tar.gz file. """
@@ -102,21 +92,21 @@ def collectintargz(target, source, env):
 
     # filter out the target we are building the source list for.
     #sources = [s for s in sources if not (s in target)]
-    sources = filter(lambda s, t=target: not (s in t), sources)
+    sources = [s for s in sources if s not in target]
 
     # find the .spec file for rpm and add it since it is not necessarily found
     # by the FindSourceFiles function.
     #sources.extend( [s for s in source if str(s).rfind('.spec')!=-1] )
-    spec_file = lambda s: string.rfind(str(s), '.spec') != -1
-    sources.extend( filter(spec_file, source) )
+    spec_file = lambda s: str(s).rfind('.spec') != -1
+    sources.extend( list(filter(spec_file, source)) )
 
     # as the source contains the url of the source package this rpm package
     # is built from, we extract the target name
     #tarball = (str(target[0])+".tar.gz").replace('.rpm', '')
-    tarball = string.replace(str(target[0])+".tar.gz", '.rpm', '')
+    tarball = (str(target[0])+".tar.gz").replace('.rpm', '')
     try:
         #tarball = env['SOURCE_URL'].split('/')[-1]
-        tarball = string.split(env['SOURCE_URL'], '/')[-1]
+        tarball = env['SOURCE_URL'].split('/')[-1]
     except KeyError, e:
         raise SCons.Errors.UserError( "Missing PackageTag '%s' for RPM packager" % e.args[0] )
 
@@ -150,7 +140,7 @@ def build_specfile(target, source, env):
         file.close()
 
         # call a user specified function
-        if env.has_key('CHANGE_SPECFILE'):
+        if 'CHANGE_SPECFILE' in env:
             env['CHANGE_SPECFILE'](target, source)
 
     except KeyError, e:
@@ -188,16 +178,16 @@ def build_specfile_sections(spec):
 
     # Default prep, build, install and clean rules
     # TODO: optimize those build steps, to not compile the project a second time
-    if not spec.has_key('X_RPM_PREP'):
+    if 'X_RPM_PREP' not in spec:
         spec['X_RPM_PREP'] = '[ -n "$RPM_BUILD_ROOT" -a "$RPM_BUILD_ROOT" != / ] && rm -rf "$RPM_BUILD_ROOT"' + '\n%setup -q'
 
-    if not spec.has_key('X_RPM_BUILD'):
+    if 'X_RPM_BUILD' not in spec:
         spec['X_RPM_BUILD'] = 'mkdir "$RPM_BUILD_ROOT"'
 
-    if not spec.has_key('X_RPM_INSTALL'):
+    if 'X_RPM_INSTALL' not in spec:
         spec['X_RPM_INSTALL'] = 'scons --install-sandbox="$RPM_BUILD_ROOT" "$RPM_BUILD_ROOT"'
 
-    if not spec.has_key('X_RPM_CLEAN'):
+    if 'X_RPM_CLEAN' not in spec:
         spec['X_RPM_CLEAN'] = '[ -n "$RPM_BUILD_ROOT" -a "$RPM_BUILD_ROOT" != / ] && rm -rf "$RPM_BUILD_ROOT"'
 
     str = str + SimpleTagCompiler(optional_sections, mandatory=0).compile( spec )
@@ -254,7 +244,7 @@ def build_specfile_header(spec):
 #    if not s.has_key('x_rpm_BuildRequires'):
 #        s['x_rpm_BuildRequires'] = 'scons'
 
-    if not spec.has_key('X_RPM_BUILDROOT'):
+    if 'X_RPM_BUILDROOT' not in spec:
         spec['X_RPM_BUILDROOT'] = '%{_tmppath}/%{name}-%{version}-%{release}'
 
     str = str + SimpleTagCompiler(optional_header_fields, mandatory=0).compile( spec )
@@ -268,7 +258,7 @@ def build_specfile_filesection(spec, files):
     """
     str  = '%files\n'
 
-    if not spec.has_key('X_RPM_DEFATTR'):
+    if 'X_RPM_DEFATTR' not in spec:
         spec['X_RPM_DEFATTR'] = '(-,root,root)'
 
     str = str + '%%defattr %s\n' % spec['X_RPM_DEFATTR']
@@ -302,7 +292,7 @@ def build_specfile_filesection(spec, files):
 
     return str
 
-class SimpleTagCompiler:
+class SimpleTagCompiler(object):
     """ This class is a simple string substition utility:
     the replacement specfication is stored in the tagset dictionary, something
     like:
@@ -333,11 +323,11 @@ class SimpleTagCompiler:
         def strip_country_code(tag):
             return tag[:-2]
 
-        replacements = self.tagset.items()
+        replacements = list(self.tagset.items())
 
         str = ""
         #domestic = [ (k,v) for k,v in replacements if not is_international(k) ]
-        domestic = filter(lambda t, i=is_international: not i(t[0]), replacements)
+        domestic = [t for t in replacements if not is_international(t[0])]
         for key, replacement in domestic:
             try:
                 str = str + replacement % values[key]
@@ -346,12 +336,12 @@ class SimpleTagCompiler:
                     raise e
 
         #international = [ (k,v) for k,v in replacements if is_international(k) ]
-        international = filter(lambda t, i=is_international: i(t[0]), replacements)
+        international = [t for t in replacements if is_international(t[0])]
         for key, replacement in international:
             try:
                 #int_values_for_key = [ (get_country_code(k),v) for k,v in values.items() if strip_country_code(k) == key ]
-                x = filter(lambda t,key=key,s=strip_country_code: s(t[0]) == key, values.items())
-                int_values_for_key = map(lambda t,g=get_country_code: (g(t[0]),t[1]), x)
+                x = [t for t in values.items() if strip_country_code(t[0]) == key]
+                int_values_for_key = [(get_country_code(t[0]),t[1]) for t in x]
                 for v in int_values_for_key:
                     str = str + replacement % v
             except KeyError, e:

@@ -5,7 +5,7 @@ This module implements the dependency scanner for Fortran code.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -25,12 +25,10 @@ This module implements the dependency scanner for Fortran code.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
-__revision__ = "src/engine/SCons/Scanner/Fortran.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Scanner/Fortran.py  2014/03/02 14:18:15 garyo"
 
 import re
-import string
 
 import SCons.Node
 import SCons.Node.FS
@@ -75,7 +73,7 @@ class F90Scanner(SCons.Scanner.Classic):
         kw['skeys'] = suffixes
         kw['name'] = name
 
-        apply(SCons.Scanner.Current.__init__, (self,) + args, kw)
+        SCons.Scanner.Current.__init__(self, *args, **kw)
 
     def scan(self, node, env, path=()):
 
@@ -91,15 +89,15 @@ class F90Scanner(SCons.Scanner.Classic):
             defmodules = self.cre_def.findall(node.get_text_contents())
 
             # Remove all USE'd module names that are defined in the same file
+            # (case-insensitively)
             d = {}
             for m in defmodules:
-                d[m] = 1
-            modules = filter(lambda m, d=d: not d.has_key(m), modules)
-            #modules = self.undefinedModules(modules, defmodules)
+                d[m.lower()] = 1
+            modules = [m for m in modules if m.lower() not in d]
 
             # Convert module name to a .mod filename
             suffix = env.subst('$FORTRANMODSUFFIX')
-            modules = map(lambda x, s=suffix: string.lower(x) + s, modules)
+            modules = [x.lower() + suffix for x in modules]
             # Remove unique items from the list
             mods_and_includes = SCons.Util.unique(includes+modules)
             node.includes = mods_and_includes
@@ -123,9 +121,7 @@ class F90Scanner(SCons.Scanner.Classic):
                 sortkey = self.sort_key(dep)
                 nodes.append((sortkey, n))
 
-        nodes.sort()
-        nodes = map(lambda pair: pair[1], nodes)
-        return nodes
+        return [pair[1] for pair in sorted(nodes)]
 
 def FortranScan(path_variable="FORTRANPATH"):
     """Return a prototype Scanner instance for scanning source files

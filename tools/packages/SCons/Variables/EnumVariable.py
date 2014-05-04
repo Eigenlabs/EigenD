@@ -15,7 +15,7 @@ Usage example:
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -37,18 +37,17 @@ Usage example:
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Variables/EnumVariable.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Variables/EnumVariable.py  2014/03/02 14:18:15 garyo"
 
 __all__ = ['EnumVariable',]
 
-import string
 
 import SCons.Errors
 
 def _validator(key, val, env, vals):
     if not val in vals:
         raise SCons.Errors.UserError(
-            'Invalid value for option %s: %s' % (key, val))
+            'Invalid value for option %s: %s.  Valid values are: %s' % (key, val, vals))
 
 
 def EnumVariable(key, help, default, allowed_values, map={}, ignorecase=0):
@@ -80,24 +79,21 @@ def EnumVariable(key, help, default, allowed_values, map={}, ignorecase=0):
     given 'map'-dictionary (unmapped input values are returned
     unchanged). 
     """
-    help = '%s (%s)' % (help, string.join(allowed_values, '|'))
+    help = '%s (%s)' % (help, '|'.join(allowed_values))
     # define validator
     if ignorecase >= 1:
-        validator = lambda key, val, env, vals=allowed_values: \
-                    _validator(key, string.lower(val), env, vals)
+        validator = lambda key, val, env: \
+                    _validator(key, val.lower(), env, allowed_values)
     else:
-        validator = lambda key, val, env, vals=allowed_values: \
-                    _validator(key, val, env, vals)
+        validator = lambda key, val, env: \
+                    _validator(key, val, env, allowed_values)
     # define converter
     if ignorecase == 2:
-        converter = lambda val, map=map: \
-                    string.lower(map.get(string.lower(val), val))
+        converter = lambda val: map.get(val.lower(), val).lower()
     elif ignorecase == 1:
-        converter = lambda val, map=map: \
-                    map.get(string.lower(val), val)
+        converter = lambda val: map.get(val.lower(), val)
     else:
-        converter = lambda val, map=map: \
-                    map.get(val, val)
+        converter = lambda val: map.get(val, val)
     return (key, help, default, validator, converter)
 
 # Local Variables:

@@ -8,7 +8,7 @@ This creates a hash of global Aliases (dummy targets).
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,23 +30,22 @@ This creates a hash of global Aliases (dummy targets).
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Node/Alias.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Node/Alias.py  2014/03/02 14:18:15 garyo"
 
-import string
-import UserDict
+import collections
 
 import SCons.Errors
 import SCons.Node
 import SCons.Util
 
-class AliasNameSpace(UserDict.UserDict):
+class AliasNameSpace(collections.UserDict):
     def Alias(self, name, **kw):
         if isinstance(name, SCons.Node.Alias.Alias):
             return name
         try:
             a = self[name]
         except KeyError:
-            a = apply(SCons.Node.Alias.Alias, (name,), kw)
+            a = SCons.Node.Alias.Alias(name, **kw)
             self[name] = a
         return a
 
@@ -95,8 +94,8 @@ class Alias(SCons.Node.Node):
     def get_contents(self):
         """The contents of an alias is the concatenation
         of the content signatures of all its sources."""
-        childsigs = map(lambda n: n.get_csig(), self.children())
-        return string.join(childsigs, '')
+        childsigs = [n.get_csig() for n in self.children()]
+        return ''.join(childsigs)
 
     def sconsign(self):
         """An Alias is not recorded in .sconsign files"""

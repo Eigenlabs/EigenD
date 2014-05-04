@@ -10,7 +10,7 @@ from distutils.msvccompiler.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,19 +31,16 @@ from distutils.msvccompiler.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import division
 
-__revision__ = "src/engine/SCons/Defaults.py 4577 2009/12/27 19:43:56 scons"
-
+__revision__ = "src/engine/SCons/Defaults.py  2014/03/02 14:18:15 garyo"
 
 
 import os
-import os.path
 import errno
 import shutil
 import stat
-import string
 import time
-import types
 import sys
 
 import SCons.Action
@@ -88,7 +85,7 @@ def DefaultEnvironment(*args, **kw):
     global _default_env
     if not _default_env:
         import SCons.Util
-        _default_env = apply(SCons.Environment.Environment, args, kw)
+        _default_env = SCons.Environment.Environment(*args, **kw)
         if SCons.Util.md5:
             _default_env.Decider('MD5')
         else:
@@ -120,7 +117,7 @@ def SharedFlagChecker(source, target, env):
             except AttributeError:
                 shared = None
             if not shared:
-                raise SCons.Errors.UserError, "Source file: %s is static and is not compatible with shared target: %s" % (src, target[0])
+                raise SCons.Errors.UserError("Source file: %s is static and is not compatible with shared target: %s" % (src, target[0]))
 
 SharedCheck = SCons.Action.Action(SharedFlagChecker, None)
 
@@ -165,7 +162,7 @@ def get_paths_str(dest):
         elem_strs = []
         for element in dest:
             elem_strs.append('"' + str(element) + '"')
-        return '[' + string.join(elem_strs, ', ') + ']'
+        return '[' + ', '.join(elem_strs) + ']'
     else:
         return '"' + str(dest) + '"'
 
@@ -202,14 +199,15 @@ def delete_func(dest, must_exist=0):
         dest = [dest]
     for entry in dest:
         entry = str(entry)
-        if not must_exist and not os.path.exists(entry):
+        # os.path.exists returns False with broken links that exist
+        entry_exists = os.path.exists(entry) or os.path.islink(entry)
+        if not entry_exists and not must_exist:
             continue
-        if not os.path.exists(entry) or os.path.isfile(entry):
-            os.unlink(entry)
-            continue
-        else:
+        # os.path.isdir returns True when entry is a link to a dir
+        if os.path.isdir(entry) and not os.path.islink(entry):
             shutil.rmtree(entry, 1)
             continue
+        os.unlink(entry)
 
 def delete_strfunc(dest, must_exist=0):
     return 'Delete(%s)' % get_paths_str(dest)
@@ -225,7 +223,8 @@ def mkdir_func(dest):
             os.makedirs(str(entry))
         except os.error, e:
             p = str(entry)
-            if (e[0] == errno.EEXIST or (sys.platform=='win32' and e[0]==183)) \
+            if (e.args[0] == errno.EEXIST or
+                    (sys.platform=='win32' and e.args[0]==183)) \
                     and os.path.isdir(str(entry)):
                 pass            # not an error if already exists
             else:
@@ -315,16 +314,16 @@ def _concat_ixes(prefix, list, suffix, env):
 
     return result
 
-def _stripixes(prefix, list, suffix, stripprefixes, stripsuffixes, env, c=None):
+def _stripixes(prefix, itms, suffix, stripprefixes, stripsuffixes, env, c=None):
     """
-    This is a wrapper around _concat()/_concat_ixes() that checks for the
-    existence of prefixes or suffixes on list elements and strips them
+    This is a wrapper around _concat()/_concat_ixes() that checks for
+    the existence of prefixes or suffixes on list items and strips them
     where it finds them.  This is used by tools (like the GNU linker)
     that need to turn something like 'libfoo.a' into '-lfoo'.
     """
     
-    if not list:
-        return list
+    if not itms:
+        return itms
 
     if not callable(c):
         env_c = env['_concat']
@@ -337,11 +336,11 @@ def _stripixes(prefix, list, suffix, stripprefixes, stripsuffixes, env, c=None):
         else:
             c = _concat_ixes
     
-    stripprefixes = map(env.subst, SCons.Util.flatten(stripprefixes))
-    stripsuffixes = map(env.subst, SCons.Util.flatten(stripsuffixes))
+    stripprefixes = list(map(env.subst, SCons.Util.flatten(stripprefixes)))
+    stripsuffixes = list(map(env.subst, SCons.Util.flatten(stripsuffixes)))
 
     stripped = []
-    for l in SCons.PathList.PathList(list).subst_path(env, None, None):
+    for l in SCons.PathList.PathList(itms).subst_path(env, None, None):
         if isinstance(l, SCons.Node.FS.File):
             stripped.append(l)
             continue
@@ -374,10 +373,23 @@ def processDefines(defs):
     if SCons.Util.is_List(defs):
         l = []
         for d in defs:
-            if SCons.Util.is_List(d) or type(d) is types.TupleType:
-                l.append(str(d[0]) + '=' + str(d[1]))
-            else:
+            if d is None:
+                continue
+            elif SCons.Util.is_List(d) or isinstance(d, tuple):
+                if len(d) >= 2:
+                    l.append(str(d[0]) + '=' + str(d[1]))
+                else:
+                    l.append(str(d[0]))
+            elif SCons.Util.is_Dict(d):
+                for macro,value in d.iteritems():
+                    if value is not None:
+                        l.append(str(macro) + '=' + str(value))
+                    else:
+                        l.append(str(macro))
+            elif SCons.Util.is_String(d):
                 l.append(str(d))
+            else:
+                raise SCons.Errors.UserError("DEFINE %s is not a list, dict, string or None."%repr(d))
     elif SCons.Util.is_Dict(defs):
         # The items in a dictionary are stored in random order, but
         # if the order of the command-line options changes from
@@ -386,10 +398,7 @@ def processDefines(defs):
         # Consequently, we have to sort the keys to ensure a
         # consistent order...
         l = []
-        keys = defs.keys()
-        keys.sort()
-        for k in keys:
-            v = defs[k]
+        for k,v in sorted(defs.items()):
             if v is None:
                 l.append(str(k))
             else:
@@ -405,7 +414,7 @@ def _defines(prefix, defs, suffix, env, c=_concat_ixes):
 
     return c(prefix, env.subst_path(processDefines(defs)), suffix, env)
     
-class NullCmdGenerator:
+class NullCmdGenerator(object):
     """This is a callable class that can be used in place of other
     command generators if you don't want them to do anything.
 
@@ -423,7 +432,7 @@ class NullCmdGenerator:
     def __call__(self, target, source, env, for_signature=None):
         return self.cmd
 
-class Variable_Method_Caller:
+class Variable_Method_Caller(object):
     """A class for finding a construction variable on the stack and
     calling one of its methods.
 
@@ -439,18 +448,18 @@ class Variable_Method_Caller:
         self.variable = variable
         self.method = method
     def __call__(self, *args, **kw):
-        try: 1/0
+        try: 1//0
         except ZeroDivisionError: 
             # Don't start iterating with the current stack-frame to
             # prevent creating reference cycles (f_back is safe).
             frame = sys.exc_info()[2].tb_frame.f_back
         variable = self.variable
         while frame:
-            if frame.f_locals.has_key(variable):
+            if variable in frame.f_locals:
                 v = frame.f_locals[variable]
                 if v:
                     method = getattr(v, self.method)
-                    return apply(method, args, kw)
+                    return method(*args, **kw)
             frame = frame.f_back
         return None
 

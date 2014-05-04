@@ -49,7 +49,9 @@ Steinberg site.  Place these in a directory called
 Windows
 -------
 
-Visual Studio 2008
+Visual Studio 2012, including Express
+(http://www.microsoft.com/en-us/download/details.aspx?id=34673)
+
 NSIS
 WiX
 Direct X SDK (June 2010)

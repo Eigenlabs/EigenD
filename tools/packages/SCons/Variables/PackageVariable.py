@@ -28,7 +28,7 @@ Usage example:
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -50,11 +50,9 @@ Usage example:
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Variables/PackageVariable.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Variables/PackageVariable.py  2014/03/02 14:18:15 garyo"
 
 __all__ = ['PackageVariable',]
-
-import string
 
 import SCons.Errors
 
@@ -64,7 +62,7 @@ __disable_strings = ('0', 'no',  'false', 'off', 'disable')
 def _converter(val):
     """
     """
-    lval = string.lower(val)
+    lval = val.lower()
     if lval in __enable_strings: return True
     if lval in __disable_strings: return False
     #raise ValueError("Invalid value for boolean option: %s" % val)
@@ -95,11 +93,10 @@ def PackageVariable(key, help, default, searchfunc=None):
     A 'package list' option may either be 'all', 'none' or a list of
     package names (seperated by space).
     """
-    help = string.join(
-        (help, '( yes | no | /path/to/%s )' % key),
-        '\n    ')
+    help = '\n    '.join(
+        (help, '( yes | no | /path/to/%s )' % key))
     return (key, help, default,
-            lambda k, v, e, f=searchfunc: _validator(k,v,e,f),
+            lambda k, v, e: _validator(k,v,e,searchfunc),
             _converter)
 
 # Local Variables:

@@ -12,7 +12,7 @@ it goes here.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -34,15 +34,14 @@ it goes here.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Script/__init__.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Script/__init__.py  2014/03/02 14:18:15 garyo"
 
 import time
 start_time = time.time()
 
+import collections
 import os
-import string
 import sys
-import UserList
 
 # Special chicken-and-egg handling of the "--debug=memoizer" flag:
 #
@@ -58,16 +57,15 @@ import UserList
 # the "--debug=memoizer" flag and enable Memoizer before we import any
 # of the other modules that use it.
 
-_args = sys.argv + string.split(os.environ.get('SCONSFLAGS', ''))
+_args = sys.argv + os.environ.get('SCONSFLAGS', '').split()
 if "--debug=memoizer" in _args:
     import SCons.Memoize
     import SCons.Warnings
     try:
         SCons.Memoize.EnableMemoization()
     except SCons.Warnings.Warning:
-        # Some warning was thrown (inability to --debug=memoizer on
-        # Python 1.5.2 because it doesn't have metaclasses).  Arrange
-        # for it to be displayed or not after warnings are configured.
+        # Some warning was thrown.  Arrange for it to be displayed
+        # or not after warnings are configured.
         import Main
         exc_type, exc_value, tb = sys.exc_info()
         Main.delayed_warnings.append((exc_type, exc_value))
@@ -184,7 +182,7 @@ CScan                   = SCons.Defaults.CScan
 DefaultEnvironment      = SCons.Defaults.DefaultEnvironment
 
 # Other variables we provide.
-class TargetList(UserList.UserList):
+class TargetList(collections.UserList):
     def _do_nothing(self, *args, **kw):
         pass
     def _add_Default(self, list):
@@ -211,7 +209,7 @@ _build_plus_default = TargetList()
 
 def _Add_Arguments(alist):
     for arg in alist:
-        a, b = string.split(arg, '=', 1)
+        a, b = arg.split('=', 1)
         ARGUMENTS[a] = b
         ARGLIST.append((a, b))
 

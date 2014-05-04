@@ -5,7 +5,7 @@ XXX
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@ XXX
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/ilink32.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/ilink32.py  2014/03/02 14:18:15 garyo"
 
 import SCons.Tool
 import SCons.Tool.bcc32

@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,10 +31,9 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/yacc.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/yacc.py  2014/03/02 14:18:15 garyo"
 
 import os.path
-import string
 
 import SCons.Defaults
 import SCons.Tool
@@ -62,6 +61,16 @@ def _yaccEmitter(target, source, env, ysuf, hsuf):
         base, ext = os.path.splitext(SCons.Util.to_String(source[0]))
         target.append(base + env.subst("$YACCVCGFILESUFFIX"))
 
+    # If -v is specirfied yacc will create the output debug file
+    # which is not really source for any process, but should
+    # be noted and also be cleaned
+    # Bug #2558
+    if "-v" in flags:
+        env.SideEffect(targetBase+'.output',target[0])
+        env.Clean(target[0],targetBase+'.output')
+
+
+
     # With --defines and --graph, the name of the file is totally defined
     # in the options.
     fileGenOptions = ["--defines=", "--graph="]
@@ -71,7 +80,7 @@ def _yaccEmitter(target, source, env, ysuf, hsuf):
             if option[:l] == fileGenOption:
                 # A file generating option is present, so add the file
                 # name to the list of targets.
-                fileName = string.strip(option[l:])
+                fileName = option[l:].strip()
                 target.append(fileName)
 
     return (target, source)

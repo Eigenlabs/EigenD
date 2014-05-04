@@ -31,6 +31,7 @@
 
 #ifdef PI_WINDOWS
 #include <float.h>
+#include <memory.h>
 #endif
 
 #define PIC_PI   3.14159265358979323846f

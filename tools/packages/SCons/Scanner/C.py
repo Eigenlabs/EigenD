@@ -5,7 +5,7 @@ This module implements the depenency scanner for C/C++ code.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@ This module implements the depenency scanner for C/C++ code.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Scanner/C.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Scanner/C.py  2014/03/02 14:18:15 garyo"
 
 import SCons.Node.FS
 import SCons.Scanner
@@ -44,7 +44,7 @@ class SConsCPPScanner(SCons.cpp.PreProcessor):
     missing.
     """
     def __init__(self, *args, **kw):
-        apply(SCons.cpp.PreProcessor.__init__, (self,)+args, kw)
+        SCons.cpp.PreProcessor.__init__(self, *args, **kw)
         self.missing = []
     def initialize_result(self, fname):
         self.result = SCons.Util.UniqueList([fname])
@@ -81,7 +81,7 @@ def dictify_CPPDEFINES(env):
         return {cppdefines : None}
     return cppdefines
 
-class SConsCPPScannerWrapper:
+class SConsCPPScannerWrapper(object):
     """
     The SCons wrapper around a cpp.py scanner.
 

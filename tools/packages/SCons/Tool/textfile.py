@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -44,7 +44,7 @@ Textfile/Substfile builder for SCons.
     is unpredictible whether the expansion will occur.
 """
 
-__revision__ = "src/engine/SCons/Tool/textfile.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/textfile.py  2014/03/02 14:18:15 garyo"
 
 import SCons
 
@@ -84,12 +84,12 @@ def _action(target, source, env):
                                          % repr(linesep), None)
 
     # create a dictionary to use for the substitutions
-    if not env.has_key('SUBST_DICT'):
+    if 'SUBST_DICT' not in env:
         subs = None    # no substitutions
     else:
         d = env['SUBST_DICT']
         if is_Dict(d):
-            d = d.items()
+            d = list(d.items())
         elif is_Sequence(d):
             pass
         else:

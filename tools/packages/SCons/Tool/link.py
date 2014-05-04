@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,7 +31,9 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/link.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/link.py  2014/03/02 14:18:15 garyo"
+
+import re
 
 import SCons.Defaults
 import SCons.Tool
@@ -64,9 +66,82 @@ def smart_link(source, target, env, for_signature):
     return '$CC'
 
 def shlib_emitter(target, source, env):
+    Verbose = False
+    platform = env.subst('$PLATFORM')
     for tgt in target:
         tgt.attributes.shared = 1
+    try:
+        # target[0] comes in as libtest.so. Add the version extensions
+        version = env.subst('$SHLIBVERSION')
+        if version:
+            version_names = shlib_emitter_names(target, source, env)
+            # change the name of the target to include the version number
+            target[0].name = version_names[0]
+            for name in version_names:
+                env.SideEffect(name, target[0])
+                env.Clean(target[0], name)
+                if Verbose:
+                    print "shlib_emitter: add side effect - ",name
+    except KeyError:
+        version = None
     return (target, source)
+
+def shlib_emitter_names(target, source, env):
+    """Return list of file names that are side effects for a versioned library build. The first name in the list is the new name for the target"""
+    Verbose = False
+    platform = env.subst('$PLATFORM')
+    version_names = []
+    try:
+        # target[0] comes in as libtest.so. Add the version extensions
+        version = env.subst('$SHLIBVERSION')
+        if version.count(".") != 2:
+            # We need a version of the form x.y.z to proceed
+            raise ValueError
+        if version:
+            if platform == 'posix':
+                versionparts = version.split('.')
+                name = target[0].name
+                # generate library name with the version number
+                version_name = target[0].name + '.' + version
+                if Verbose:
+                    print "shlib_emitter_names: target is ", version_name
+                    print "shlib_emitter_names: side effect: ", name
+                # add version_name to list of names to be a Side effect
+                version_names.append(version_name)
+                if Verbose:
+                    print "shlib_emitter_names: versionparts ",versionparts
+                for ver in versionparts[0:-1]:
+                    name = name + '.' + ver
+                    if Verbose:
+                        print "shlib_emitter_names: side effect: ", name
+                    # add name to list of names to be a Side effect
+                    version_names.append(name)
+            elif platform == 'darwin':
+                shlib_suffix = env.subst('$SHLIBSUFFIX')
+                name = target[0].name
+                # generate library name with the version number
+                suffix_re = re.escape(shlib_suffix)
+                version_name = re.sub(suffix_re, '.' + version + shlib_suffix, name)
+                if Verbose:
+                    print "shlib_emitter_names: target is ", version_name
+                    print "shlib_emitter_names: side effect: ", name
+                # add version_name to list of names to be a Side effect
+                version_names.append(version_name)
+            elif platform == 'cygwin':
+                shlib_suffix = env.subst('$SHLIBSUFFIX')
+                name = target[0].name
+                # generate library name with the version number
+                suffix_re = re.escape(shlib_suffix)
+                version_name = re.sub(suffix_re, '-' + re.sub('\.', '-', version) + shlib_suffix, name)
+                if Verbose:
+                    print "shlib_emitter_names: target is ", version_name
+                    print "shlib_emitter_names: side effect: ", name
+                # add version_name to list of names to be a Side effect
+                version_names.append(version_name)
+                
+    except KeyError:
+        version = None
+    return version_names
 
 def generate(env):
     """Add Builders and construction variables for gnulink to an Environment."""
@@ -75,14 +150,15 @@ def generate(env):
 
     env['SHLINK']      = '$LINK'
     env['SHLINKFLAGS'] = SCons.Util.CLVar('$LINKFLAGS -shared')
-    env['SHLINKCOM']   = '$SHLINK -o $TARGET $SHLINKFLAGS $SOURCES $_LIBDIRFLAGS $_LIBFLAGS'
+    env['SHLINKCOM']   = '$SHLINK -o $TARGET $SHLINKFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS'
     # don't set up the emitter, cause AppendUnique will generate a list
     # starting with None :-(
     env.Append(SHLIBEMITTER = [shlib_emitter])
     env['SMARTLINK']   = smart_link
     env['LINK']        = "$SMARTLINK"
     env['LINKFLAGS']   = SCons.Util.CLVar('')
-    env['LINKCOM']     = '$LINK -o $TARGET $LINKFLAGS $SOURCES $_LIBDIRFLAGS $_LIBFLAGS'
+    # __RPATH is only set to something ($_RPATH typically) on platforms that support it.
+    env['LINKCOM']     = '$LINK -o $TARGET $LINKFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS'
     env['LIBDIRPREFIX']='-L'
     env['LIBDIRSUFFIX']=''
     env['_LIBFLAGS']='${_stripixes(LIBLINKPREFIX, LIBS, LIBLINKSUFFIX, LIBPREFIXES, LIBSUFFIXES, __env__)}'
@@ -105,7 +181,7 @@ def generate(env):
     env['LDMODULEPREFIX'] = '$SHLIBPREFIX' 
     env['LDMODULESUFFIX'] = '$SHLIBSUFFIX' 
     env['LDMODULEFLAGS'] = '$SHLINKFLAGS'
-    env['LDMODULECOM'] = '$LDMODULE -o $TARGET $LDMODULEFLAGS $SOURCES $_LIBDIRFLAGS $_LIBFLAGS'
+    env['LDMODULECOM'] = '$LDMODULE -o $TARGET $LDMODULEFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS'
 
 
 

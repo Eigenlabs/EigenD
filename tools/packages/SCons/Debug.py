@@ -1,13 +1,12 @@
 """SCons.Debug
 
-Code for debugging SCons internal things.  Not everything here is
-guaranteed to work all the way back to Python 1.5.2, and shouldn't be
+Code for debugging SCons internal things.  Shouldn't be
 needed by most users.
 
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -29,42 +28,35 @@ needed by most users.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Debug.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Debug.py  2014/03/02 14:18:15 garyo"
 
 import os
-import string
 import sys
 import time
+import weakref
 
-# Recipe 14.10 from the Python Cookbook.
-try:
-    import weakref
-except ImportError:
-    def logInstanceCreation(instance, name=None):
-        pass
-else:
-    def logInstanceCreation(instance, name=None):
-        if name is None:
-            name = instance.__class__.__name__
-        if not tracked_classes.has_key(name):
-            tracked_classes[name] = []
-        tracked_classes[name].append(weakref.ref(instance))
-
-
-
+# Global variable that gets set to 'True' by the Main script,
+# when the creation of class instances should get tracked.
+track_instances = False
+# List of currently tracked classes
 tracked_classes = {}
+
+def logInstanceCreation(instance, name=None):
+    if name is None:
+        name = instance.__class__.__name__
+    if name not in tracked_classes:
+        tracked_classes[name] = []
+    tracked_classes[name].append(weakref.ref(instance))
 
 def string_to_classes(s):
     if s == '*':
-        c = tracked_classes.keys()
-        c.sort()
-        return c
+        return sorted(tracked_classes.keys())
     else:
-        return string.split(s)
+        return s.split()
 
 def fetchLoggedInstances(classes="*"):
     classnames = string_to_classes(classes)
-    return map(lambda cn: (cn, len(tracked_classes[cn])), classnames)
+    return [(cn, len(tracked_classes[cn])) for cn in classnames]
   
 def countLoggedInstances(classes, file=sys.stdout):
     for classname in string_to_classes(classes):
@@ -94,8 +86,12 @@ if sys.platform[:5] == "linux":
     # Linux doesn't actually support memory usage stats from getrusage().
     def memory():
         mstr = open('/proc/self/stat').read()
-        mstr = string.split(mstr)[22]
+        mstr = mstr.split()[22]
         return int(mstr)
+elif sys.platform[:6] == 'darwin':
+    #TODO really get memory stats for OS X
+    def memory():
+        return 0
 else:
     try:
         import resource
@@ -117,14 +113,15 @@ else:
             return res[4]
 
 # returns caller's stack
-def caller_stack(*backlist):
+def caller_stack():
     import traceback
-    if not backlist:
-        backlist = [0]
+    tb = traceback.extract_stack()
+    # strip itself and the caller from the output
+    tb = tb[:-2]
     result = []
-    for back in backlist:
-        tb = traceback.extract_stack(limit=3+back)
-        key = tb[0][:3]
+    for back in tb:
+        # (filename, line number, function name, text)
+        key = back[:3]
         result.append('%s:%d(%s)' % func_shorten(key))
     return result
 
@@ -149,21 +146,15 @@ def caller_trace(back=0):
 
 # print a single caller and its callers, if any
 def _dump_one_caller(key, file, level=0):
-    l = []
-    for c,v in caller_dicts[key].items():
-        l.append((-v,c))
-    l.sort()
     leader = '      '*level
-    for v,c in l:
+    for v,c in sorted([(-v,c) for c,v in caller_dicts[key].items()]):
         file.write("%s  %6d %s:%d(%s)\n" % ((leader,-v) + func_shorten(c[-3:])))
-        if caller_dicts.has_key(c):
+        if c in caller_dicts:
             _dump_one_caller(c, file, level+1)
 
 # print each call tree
 def dump_caller_counts(file=sys.stdout):
-    keys = caller_bases.keys()
-    keys.sort()
-    for k in keys:
+    for k in sorted(caller_bases.keys()):
         file.write("Callers of %s:%d(%s), %d calls:\n"
                     % (func_shorten(k) + (caller_bases[k],)))
         _dump_one_caller(k, file)
@@ -175,15 +166,12 @@ shorten_list = [
 ]
 
 if os.sep != '/':
-   def platformize(t):
-       return (string.replace(t[0], '/', os.sep), t[1])
-   shorten_list = map(platformize, shorten_list)
-   del platformize
+    shorten_list = [(t[0].replace('/', os.sep), t[1]) for t in shorten_list]
 
 def func_shorten(func_tuple):
     f = func_tuple[0]
     for t in shorten_list:
-        i = string.find(f, t[0])
+        i = f.find(t[0])
         if i >= 0:
             if t[1]:
                 i = i + len(t[0])
@@ -205,7 +193,7 @@ def Trace(msg, file=None, mode='w', tstamp=None):
     """Write a trace message to a file.  Whenever a file is specified,
     it becomes the default for the next call to Trace()."""
     global TraceDefault
-    global TimeStamp
+    global TimeStampDefault
     global PreviousTime
     if file is None:
         file = TraceDefault

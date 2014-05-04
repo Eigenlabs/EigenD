@@ -1,11 +1,9 @@
 """SCons.Util
 
 Various utility functions go here.
-
 """
-
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -25,29 +23,25 @@ Various utility functions go here.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
-__revision__ = "src/engine/SCons/Util.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Util.py  2014/03/02 14:18:15 garyo"
 
-import copy
 import os
-import os.path
-import re
-import string
 import sys
+import copy
+import re
 import types
 
-from UserDict import UserDict
-from UserList import UserList
-from UserString import UserString
+from collections import UserDict, UserList, UserString
 
 # Don't "from types import ..." these because we need to get at the
 # types module later to look for UnicodeType.
-DictType        = types.DictType
 InstanceType    = types.InstanceType
-ListType        = types.ListType
-StringType      = types.StringType
-TupleType       = types.TupleType
+MethodType      = types.MethodType
+FunctionType    = types.FunctionType
+try: unicode
+except NameError: UnicodeType = None
+else:             UnicodeType = unicode
 
 def dictify(keys, values, result={}):
     for k, v in zip(keys, values):
@@ -59,11 +53,11 @@ if _altsep is None and sys.platform == 'win32':
     # My ActivePython 2.0.1 doesn't set os.altsep!  What gives?
     _altsep = '/'
 if _altsep:
-    def rightmost_separator(path, sep, _altsep=_altsep):
-        rfind = string.rfind
-        return max(rfind(path, sep), rfind(path, _altsep))
+    def rightmost_separator(path, sep):
+        return max(path.rfind(sep), path.rfind(_altsep))
 else:
-    rightmost_separator = string.rfind
+    def rightmost_separator(path, sep):
+        return path.rfind(sep)
 
 # First two from the Python Cookbook, just for completeness.
 # (Yeah, yeah, YAGNI...)
@@ -88,7 +82,7 @@ def containsOnly(str, set):
 def splitext(path):
     "Same as os.path.splitext() but faster."
     sep = rightmost_separator(path, os.sep)
-    dot = string.rfind(path, '.')
+    dot = path.rfind('.')
     # An ext is only real if it has at least one non-digit char
     if dot > sep and not containsOnly(path[dot:], "0123456789."):
         return path[:dot],path[dot:]
@@ -104,7 +98,7 @@ def updrive(path):
     """
     drive, rest = os.path.splitdrive(path)
     if drive:
-        path = string.upper(drive) + rest
+        path = drive.upper() + rest
     return path
 
 class NodeList(UserList):
@@ -121,20 +115,17 @@ class NodeList(UserList):
         return len(self.data) != 0
 
     def __str__(self):
-        return string.join(map(str, self.data))
+        return ' '.join(map(str, self.data))
 
     def __iter__(self):
         return iter(self.data)
 
     def __call__(self, *args, **kwargs):
-        result = map(lambda x, args=args, kwargs=kwargs: apply(x,
-                                                               args,
-                                                               kwargs),
-                     self.data)
+        result = [x(*args, **kwargs) for x in self.data]
         return self.__class__(result)
 
     def __getattr__(self, name):
-        result = map(lambda x, n=name: getattr(x, n), self.data)
+        result = [getattr(x, name) for x in self.data]
         return self.__class__(result)
 
 
@@ -155,14 +146,14 @@ def get_environment_var(varstr):
     else:
         return None
 
-class DisplayEngine:
-    def __init__(self):
-        self.__call__ = self.print_it
-
-    def print_it(self, text, append_newline=1):
+class DisplayEngine(object):
+    print_it = True
+    def __call__(self, text, append_newline=1):
+        if not self.print_it:
+            return
         if append_newline: text = text + '\n'
         try:
-            sys.stdout.write(text)
+            sys.stdout.write(unicode(text))
         except IOError:
             # Stdout might be connected to a pipe that has been closed
             # by now. The most likely reason for the pipe being closed
@@ -173,14 +164,8 @@ class DisplayEngine:
             # before SCons exits.
             pass
 
-    def dont_print(self, text, append_newline=1):
-        pass
-
     def set_mode(self, mode):
-        if mode:
-            self.__call__ = self.print_it
-        else:
-            self.__call__ = self.dont_print
+        self.print_it = mode
 
 def render_tree(root, child_func, prune=0, margin=[0], visited={}):
     """
@@ -204,7 +189,7 @@ def render_tree(root, child_func, prune=0, margin=[0], visited={}):
         else:
             retval = retval + "  "
 
-    if visited.has_key(rname):
+    if rname in visited:
         return retval + "+-[" + rname + "]\n"
 
     retval = retval + "+-" + rname + "\n"
@@ -243,17 +228,18 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
     if showtags:
 
         if showtags == 2:
-            print ' E         = exists'
-            print '  R        = exists in repository only'
-            print '   b       = implicit builder'
-            print '   B       = explicit builder'
-            print '    S      = side effect'
-            print '     P     = precious'
-            print '      A    = always build'
-            print '       C   = current'
-            print '        N  = no clean'
-            print '         H = no cache'
-            print ''
+            legend = (' E         = exists\n' +
+                      '  R        = exists in repository only\n' +
+                      '   b       = implicit builder\n' +
+                      '   B       = explicit builder\n' +
+                      '    S      = side effect\n' +
+                      '     P     = precious\n' +
+                      '      A    = always build\n' +
+                      '       C   = current\n' +
+                      '        N  = no clean\n' +
+                      '         H = no cache\n' +
+                      '\n')
+            sys.stdout.write(unicode(legend))
 
         tags = ['[']
         tags.append(' E'[IDX(root.exists())])
@@ -273,15 +259,15 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
 
     def MMM(m):
         return ["  ","| "][m]
-    margins = map(MMM, margin[:-1])
+    margins = list(map(MMM, margin[:-1]))
 
     children = child_func(root)
 
-    if prune and visited.has_key(rname) and children:
-        print string.join(tags + margins + ['+-[', rname, ']'], '')
+    if prune and rname in visited and children:
+        sys.stdout.write(''.join(tags + margins + ['+-[', rname, ']']) + u'\n')
         return
 
-    print string.join(tags + margins + ['+-', rname], '')
+    sys.stdout.write(''.join(tags + margins + ['+-', rname]) + u'\n')
 
     visited[rname] = 1
 
@@ -304,273 +290,137 @@ def print_tree(root, child_func, prune=0, showtags=0, margin=[0], visited={}):
 # exception, but handling the exception when it's not the right type is
 # often too slow.
 
-try:
-    class mystr(str):
-        pass
-except TypeError:
-    # An older Python version without new-style classes.
-    #
-    # The actual implementations here have been selected after timings
-    # coded up in in bench/is_types.py (from the SCons source tree,
-    # see the scons-src distribution), mostly against Python 1.5.2.
-    # Key results from those timings:
-    #
-    #   --  Storing the type of the object in a variable (t = type(obj))
-    #       slows down the case where it's a native type and the first
-    #       comparison will match, but nicely speeds up the case where
-    #       it's a different native type.  Since that's going to be
-    #       common, it's a good tradeoff.
-    #
-    #   --  The data show that calling isinstance() on an object that's
-    #       a native type (dict, list or string) is expensive enough
-    #       that checking up front for whether the object is of type
-    #       InstanceType is a pretty big win, even though it does slow
-    #       down the case where it really *is* an object instance a
-    #       little bit.
-    def is_Dict(obj):
-        t = type(obj)
-        return t is DictType or \
-               (t is InstanceType and isinstance(obj, UserDict))
+# We are using the following trick to speed up these
+# functions. Default arguments are used to take a snapshot of the
+# the global functions and constants used by these functions. This
+# transforms accesses to global variable into local variables
+# accesses (i.e. LOAD_FAST instead of LOAD_GLOBAL).
 
-    def is_List(obj):
-        t = type(obj)
-        return t is ListType \
-            or (t is InstanceType and isinstance(obj, UserList))
+DictTypes = (dict, UserDict)
+ListTypes = (list, UserList)
+SequenceTypes = (list, tuple, UserList)
 
-    def is_Sequence(obj):
-        t = type(obj)
-        return t is ListType \
-            or t is TupleType \
-            or (t is InstanceType and isinstance(obj, UserList))
+# Note that profiling data shows a speed-up when comparing
+# explicitely with str and unicode instead of simply comparing
+# with basestring. (at least on Python 2.5.1)
+StringTypes = (str, unicode, UserString)
 
-    def is_Tuple(obj):
-        t = type(obj)
-        return t is TupleType
+# Empirically, it is faster to check explicitely for str and
+# unicode than for basestring.
+BaseStringTypes = (str, unicode)
 
-    if hasattr(types, 'UnicodeType'):
-        def is_String(obj):
-            t = type(obj)
-            return t is StringType \
-                or t is UnicodeType \
-                or (t is InstanceType and isinstance(obj, UserString))
+def is_Dict(obj, isinstance=isinstance, DictTypes=DictTypes):
+    return isinstance(obj, DictTypes)
+
+def is_List(obj, isinstance=isinstance, ListTypes=ListTypes):
+    return isinstance(obj, ListTypes)
+
+def is_Sequence(obj, isinstance=isinstance, SequenceTypes=SequenceTypes):
+    return isinstance(obj, SequenceTypes)
+
+def is_Tuple(obj, isinstance=isinstance, tuple=tuple):
+    return isinstance(obj, tuple)
+
+def is_String(obj, isinstance=isinstance, StringTypes=StringTypes):
+    return isinstance(obj, StringTypes)
+
+def is_Scalar(obj, isinstance=isinstance, StringTypes=StringTypes, SequenceTypes=SequenceTypes):
+    # Profiling shows that there is an impressive speed-up of 2x
+    # when explicitely checking for strings instead of just not
+    # sequence when the argument (i.e. obj) is already a string.
+    # But, if obj is a not string then it is twice as fast to
+    # check only for 'not sequence'. The following code therefore
+    # assumes that the obj argument is a string must of the time.
+    return isinstance(obj, StringTypes) or not isinstance(obj, SequenceTypes)
+
+def do_flatten(sequence, result, isinstance=isinstance, 
+               StringTypes=StringTypes, SequenceTypes=SequenceTypes):
+    for item in sequence:
+        if isinstance(item, StringTypes) or not isinstance(item, SequenceTypes):
+            result.append(item)
+        else:
+            do_flatten(item, result)
+
+def flatten(obj, isinstance=isinstance, StringTypes=StringTypes, 
+            SequenceTypes=SequenceTypes, do_flatten=do_flatten):
+    """Flatten a sequence to a non-nested list.
+
+    Flatten() converts either a single scalar or a nested sequence
+    to a non-nested list. Note that flatten() considers strings
+    to be scalars instead of sequences like Python would.
+    """
+    if isinstance(obj, StringTypes) or not isinstance(obj, SequenceTypes):
+        return [obj]
+    result = []
+    for item in obj:
+        if isinstance(item, StringTypes) or not isinstance(item, SequenceTypes):
+            result.append(item)
+        else:
+            do_flatten(item, result)
+    return result
+
+def flatten_sequence(sequence, isinstance=isinstance, StringTypes=StringTypes, 
+                     SequenceTypes=SequenceTypes, do_flatten=do_flatten):
+    """Flatten a sequence to a non-nested list.
+
+    Same as flatten(), but it does not handle the single scalar
+    case. This is slightly more efficient when one knows that
+    the sequence to flatten can not be a scalar.
+    """
+    result = []
+    for item in sequence:
+        if isinstance(item, StringTypes) or not isinstance(item, SequenceTypes):
+            result.append(item)
+        else:
+            do_flatten(item, result)
+    return result
+
+# Generic convert-to-string functions that abstract away whether or
+# not the Python we're executing has Unicode support.  The wrapper
+# to_String_for_signature() will use a for_signature() method if the
+# specified object has one.
+#
+def to_String(s, 
+              isinstance=isinstance, str=str,
+              UserString=UserString, BaseStringTypes=BaseStringTypes):
+    if isinstance(s,BaseStringTypes):
+        # Early out when already a string!
+        return s
+    elif isinstance(s, UserString):
+        # s.data can only be either a unicode or a regular
+        # string. Please see the UserString initializer.
+        return s.data
     else:
-        def is_String(obj):
-            t = type(obj)
-            return t is StringType \
-                or (t is InstanceType and isinstance(obj, UserString))
+        return str(s)
 
-    def is_Scalar(obj):
-        return is_String(obj) or not is_Sequence(obj)
-
-    def flatten(obj, result=None):
-        """Flatten a sequence to a non-nested list.
-
-        Flatten() converts either a single scalar or a nested sequence
-        to a non-nested list. Note that flatten() considers strings
-        to be scalars instead of sequences like Python would.
-        """
-        if is_Scalar(obj):
-            return [obj]
-        if result is None:
-            result = []
-        for item in obj:
-            if is_Scalar(item):
-                result.append(item)
-            else:
-                flatten_sequence(item, result)
-        return result
-
-    def flatten_sequence(sequence, result=None):
-        """Flatten a sequence to a non-nested list.
-
-        Same as flatten(), but it does not handle the single scalar
-        case. This is slightly more efficient when one knows that
-        the sequence to flatten can not be a scalar.
-        """
-        if result is None:
-            result = []
-        for item in sequence:
-            if is_Scalar(item):
-                result.append(item)
-            else:
-                flatten_sequence(item, result)
-        return result
-
-    #
-    # Generic convert-to-string functions that abstract away whether or
-    # not the Python we're executing has Unicode support.  The wrapper
-    # to_String_for_signature() will use a for_signature() method if the
-    # specified object has one.
-    #
-    if hasattr(types, 'UnicodeType'):
-        UnicodeType = types.UnicodeType
-        def to_String(s):
-            if isinstance(s, UserString):
-                t = type(s.data)
-            else:
-                t = type(s)
-            if t is UnicodeType:
-                return unicode(s)
-            else:
-                return str(s)
+def to_String_for_subst(s, 
+                        isinstance=isinstance, str=str, to_String=to_String,
+                        BaseStringTypes=BaseStringTypes, SequenceTypes=SequenceTypes,
+                        UserString=UserString):
+                        
+    # Note that the test cases are sorted by order of probability.
+    if isinstance(s, BaseStringTypes):
+        return s
+    elif isinstance(s, SequenceTypes):
+        l = []
+        for e in s:
+            l.append(to_String_for_subst(e))
+        return ' '.join( s )
+    elif isinstance(s, UserString):
+        # s.data can only be either a unicode or a regular
+        # string. Please see the UserString initializer.
+        return s.data
     else:
-        to_String = str
+        return str(s)
 
-    def to_String_for_signature(obj):
-        try:
-            f = obj.for_signature
-        except AttributeError:
-            return to_String_for_subst(obj)
-        else:
-            return f()
-
-    def to_String_for_subst(s):
-        if is_Sequence( s ):
-            return string.join( map(to_String_for_subst, s) )
-
-        return to_String( s )
-
-else:
-    # A modern Python version with new-style classes, so we can just use
-    # isinstance().
-    #
-    # We are using the following trick to speed-up these
-    # functions. Default arguments are used to take a snapshot of the
-    # the global functions and constants used by these functions. This
-    # transforms accesses to global variable into local variables
-    # accesses (i.e. LOAD_FAST instead of LOAD_GLOBAL).
-
-    DictTypes = (dict, UserDict)
-    ListTypes = (list, UserList)
-    SequenceTypes = (list, tuple, UserList)
-
-    # Empirically, Python versions with new-style classes all have
-    # unicode.
-    #
-    # Note that profiling data shows a speed-up when comparing
-    # explicitely with str and unicode instead of simply comparing
-    # with basestring. (at least on Python 2.5.1)
-    StringTypes = (str, unicode, UserString)
-
-    # Empirically, it is faster to check explicitely for str and
-    # unicode than for basestring.
-    BaseStringTypes = (str, unicode)
-
-    def is_Dict(obj, isinstance=isinstance, DictTypes=DictTypes):
-        return isinstance(obj, DictTypes)
-
-    def is_List(obj, isinstance=isinstance, ListTypes=ListTypes):
-        return isinstance(obj, ListTypes)
-
-    def is_Sequence(obj, isinstance=isinstance, SequenceTypes=SequenceTypes):
-        return isinstance(obj, SequenceTypes)
-
-    def is_Tuple(obj, isinstance=isinstance, tuple=tuple):
-        return isinstance(obj, tuple)
-
-    def is_String(obj, isinstance=isinstance, StringTypes=StringTypes):
-        return isinstance(obj, StringTypes)
-
-    def is_Scalar(obj, isinstance=isinstance, StringTypes=StringTypes, SequenceTypes=SequenceTypes):
-        # Profiling shows that there is an impressive speed-up of 2x
-        # when explicitely checking for strings instead of just not
-        # sequence when the argument (i.e. obj) is already a string.
-        # But, if obj is a not string than it is twice as fast to
-        # check only for 'not sequence'. The following code therefore
-        # assumes that the obj argument is a string must of the time.
-        return isinstance(obj, StringTypes) or not isinstance(obj, SequenceTypes)
-
-    def do_flatten(sequence, result, isinstance=isinstance, 
-                   StringTypes=StringTypes, SequenceTypes=SequenceTypes):
-        for item in sequence:
-            if isinstance(item, StringTypes) or not isinstance(item, SequenceTypes):
-                result.append(item)
-            else:
-                do_flatten(item, result)
-
-    def flatten(obj, isinstance=isinstance, StringTypes=StringTypes, 
-                SequenceTypes=SequenceTypes, do_flatten=do_flatten):
-        """Flatten a sequence to a non-nested list.
-
-        Flatten() converts either a single scalar or a nested sequence
-        to a non-nested list. Note that flatten() considers strings
-        to be scalars instead of sequences like Python would.
-        """
-        if isinstance(obj, StringTypes) or not isinstance(obj, SequenceTypes):
-            return [obj]
-        result = []
-        for item in obj:
-            if isinstance(item, StringTypes) or not isinstance(item, SequenceTypes):
-                result.append(item)
-            else:
-                do_flatten(item, result)
-        return result
-
-    def flatten_sequence(sequence, isinstance=isinstance, StringTypes=StringTypes, 
-                         SequenceTypes=SequenceTypes, do_flatten=do_flatten):
-        """Flatten a sequence to a non-nested list.
-
-        Same as flatten(), but it does not handle the single scalar
-        case. This is slightly more efficient when one knows that
-        the sequence to flatten can not be a scalar.
-        """
-        result = []
-        for item in sequence:
-            if isinstance(item, StringTypes) or not isinstance(item, SequenceTypes):
-                result.append(item)
-            else:
-                do_flatten(item, result)
-        return result
-
-
-    #
-    # Generic convert-to-string functions that abstract away whether or
-    # not the Python we're executing has Unicode support.  The wrapper
-    # to_String_for_signature() will use a for_signature() method if the
-    # specified object has one.
-    #
-    def to_String(s, 
-                  isinstance=isinstance, str=str,
-                  UserString=UserString, BaseStringTypes=BaseStringTypes):
-        if isinstance(s,BaseStringTypes):
-            # Early out when already a string!
-            return s
-        elif isinstance(s, UserString):
-            # s.data can only be either a unicode or a regular
-            # string. Please see the UserString initializer.
-            return s.data
-        else:
-            return str(s)
-
-    def to_String_for_subst(s, 
-                            isinstance=isinstance, join=string.join, str=str, to_String=to_String,
-                            BaseStringTypes=BaseStringTypes, SequenceTypes=SequenceTypes,
-                            UserString=UserString):
-                            
-        # Note that the test cases are sorted by order of probability.
-        if isinstance(s, BaseStringTypes):
-            return s
-        elif isinstance(s, SequenceTypes):
-            l = []
-            for e in s:
-                l.append(to_String_for_subst(e))
-            return join( s )
-        elif isinstance(s, UserString):
-            # s.data can only be either a unicode or a regular
-            # string. Please see the UserString initializer.
-            return s.data
-        else:
-            return str(s)
-
-    def to_String_for_signature(obj, to_String_for_subst=to_String_for_subst, 
-                                AttributeError=AttributeError):
-        try:
-            f = obj.for_signature
-        except AttributeError:
-            return to_String_for_subst(obj)
-        else:
-            return f()
-
+def to_String_for_signature(obj, to_String_for_subst=to_String_for_subst, 
+                            AttributeError=AttributeError):
+    try:
+        f = obj.for_signature
+    except AttributeError:
+        return to_String_for_subst(obj)
+    else:
+        return f()
 
 
 # The SCons "semi-deep" copy.
@@ -580,15 +430,15 @@ else:
 # references to anything else it finds.
 #
 # A special case is any object that has a __semi_deepcopy__() method,
-# which we invoke to create the copy, which is used by the BuilderDict
-# class because of its extra initialization argument.
+# which we invoke to create the copy. Currently only used by
+# BuilderDict to actually prevent the copy operation (as invalid on that object)
 #
 # The dispatch table approach used here is a direct rip-off from the
 # normal Python copy module.
 
 _semi_deepcopy_dispatch = d = {}
 
-def _semi_deepcopy_dict(x):
+def semi_deepcopy_dict(x, exclude = [] ):
     copy = {}
     for key, val in x.items():
         # The regular Python copy.deepcopy() also deepcopies the key,
@@ -597,39 +447,35 @@ def _semi_deepcopy_dict(x):
         #    copy[semi_deepcopy(key)] = semi_deepcopy(val)
         #
         # Doesn't seem like we need to, but we'll comment it just in case.
-        copy[key] = semi_deepcopy(val)
+        if key not in exclude:
+            copy[key] = semi_deepcopy(val)
     return copy
-d[types.DictionaryType] = _semi_deepcopy_dict
+d[dict] = semi_deepcopy_dict
 
 def _semi_deepcopy_list(x):
-    return map(semi_deepcopy, x)
-d[types.ListType] = _semi_deepcopy_list
+    return list(map(semi_deepcopy, x))
+d[list] = _semi_deepcopy_list
 
 def _semi_deepcopy_tuple(x):
     return tuple(map(semi_deepcopy, x))
-d[types.TupleType] = _semi_deepcopy_tuple
-
-def _semi_deepcopy_inst(x):
-    if hasattr(x, '__semi_deepcopy__'):
-        return x.__semi_deepcopy__()
-    elif isinstance(x, UserDict):
-        return x.__class__(_semi_deepcopy_dict(x))
-    elif isinstance(x, UserList):
-        return x.__class__(_semi_deepcopy_list(x))
-    else:
-        return x
-d[types.InstanceType] = _semi_deepcopy_inst
+d[tuple] = _semi_deepcopy_tuple
 
 def semi_deepcopy(x):
     copier = _semi_deepcopy_dispatch.get(type(x))
     if copier:
         return copier(x)
     else:
+        if hasattr(x, '__semi_deepcopy__') and callable(x.__semi_deepcopy__):
+            return x.__semi_deepcopy__()
+        elif isinstance(x, UserDict):
+            return x.__class__(semi_deepcopy_dict(x))
+        elif isinstance(x, UserList):
+            return x.__class__(_semi_deepcopy_list(x))
+        
         return x
 
 
-
-class Proxy:
+class Proxy(object):
     """A simple generic Proxy class, forwarding all calls to
     subject.  So, for the benefit of the python newbie, what does
     this really mean?  Well, it means that you can take an object, let's
@@ -647,39 +493,65 @@ class Proxy:
 
                  x = objA.var1
 
-    Inherit from this class to create a Proxy."""
+    Inherit from this class to create a Proxy.
+
+    Note that, with new-style classes, this does *not* work transparently
+    for Proxy subclasses that use special .__*__() method names, because
+    those names are now bound to the class, not the individual instances.
+    You now need to know in advance which .__*__() method names you want
+    to pass on to the underlying Proxy object, and specifically delegate
+    their calls like this:
+
+        class Foo(Proxy):
+            __str__ = Delegate('__str__')
+    """
 
     def __init__(self, subject):
         """Wrap an object as a Proxy object"""
-        self.__subject = subject
+        self._subject = subject
 
     def __getattr__(self, name):
         """Retrieve an attribute from the wrapped object.  If the named
            attribute doesn't exist, AttributeError is raised"""
-        return getattr(self.__subject, name)
+        return getattr(self._subject, name)
 
     def get(self):
         """Retrieve the entire wrapped object"""
-        return self.__subject
+        return self._subject
 
     def __cmp__(self, other):
-        if issubclass(other.__class__, self.__subject.__class__):
-            return cmp(self.__subject, other)
+        if issubclass(other.__class__, self._subject.__class__):
+            return cmp(self._subject, other)
         return cmp(self.__dict__, other.__dict__)
+
+class Delegate(object):
+    """A Python Descriptor class that delegates attribute fetches
+    to an underlying wrapped subject of a Proxy.  Typical use:
+
+        class Foo(Proxy):
+            __str__ = Delegate('__str__')
+    """
+    def __init__(self, attribute):
+        self.attribute = attribute
+    def __get__(self, obj, cls):
+        if isinstance(obj, cls):
+            return getattr(obj._subject, self.attribute)
+        else:
+            return self
 
 # attempt to load the windows registry module:
 can_read_reg = 0
 try:
-    import _winreg
+    import winreg
 
     can_read_reg = 1
-    hkey_mod = _winreg
+    hkey_mod = winreg
 
-    RegOpenKeyEx    = _winreg.OpenKeyEx
-    RegEnumKey      = _winreg.EnumKey
-    RegEnumValue    = _winreg.EnumValue
-    RegQueryValueEx = _winreg.QueryValueEx
-    RegError        = _winreg.error
+    RegOpenKeyEx    = winreg.OpenKeyEx
+    RegEnumKey      = winreg.EnumKey
+    RegEnumValue    = winreg.EnumValue
+    RegQueryValueEx = winreg.QueryValueEx
+    RegError        = winreg.error
 
 except ImportError:
     try:
@@ -741,8 +613,8 @@ else:
         # OSError subclass on Windows.)
         class WindowsError(OSError):
             pass
-        import __builtin__
-        __builtin__.WindowsError = WindowsError
+        import builtins
+        builtins.WindowsError = WindowsError
     else:
         del e
         
@@ -766,16 +638,16 @@ if sys.platform == 'win32':
             except KeyError:
                 return None
         if is_String(path):
-            path = string.split(path, os.pathsep)
+            path = path.split(os.pathsep)
         if pathext is None:
             try:
                 pathext = os.environ['PATHEXT']
             except KeyError:
                 pathext = '.COM;.EXE;.BAT;.CMD'
         if is_String(pathext):
-            pathext = string.split(pathext, os.pathsep)
+            pathext = pathext.split(os.pathsep)
         for ext in pathext:
-            if string.lower(ext) == string.lower(file[-len(ext):]):
+            if ext.lower() == file[-len(ext):].lower():
                 pathext = ['']
                 break
         if not is_List(reject) and not is_Tuple(reject):
@@ -801,11 +673,11 @@ elif os.name == 'os2':
             except KeyError:
                 return None
         if is_String(path):
-            path = string.split(path, os.pathsep)
+            path = path.split(os.pathsep)
         if pathext is None:
             pathext = ['.exe', '.cmd']
         for ext in pathext:
-            if string.lower(ext) == string.lower(file[-len(ext):]):
+            if ext.lower() == file[-len(ext):].lower():
                 pathext = ['']
                 break
         if not is_List(reject) and not is_Tuple(reject):
@@ -832,7 +704,7 @@ else:
             except KeyError:
                 return None
         if is_String(path):
-            path = string.split(path, os.pathsep)
+            path = path.split(os.pathsep)
         if not is_List(reject) and not is_Tuple(reject):
             reject = [reject]
         for d in path:
@@ -881,18 +753,18 @@ def PrependPath(oldpath, newpath, sep = os.pathsep,
     is_list = 1
     paths = orig
     if not is_List(orig) and not is_Tuple(orig):
-        paths = string.split(paths, sep)
+        paths = paths.split(sep)
         is_list = 0
 
     if is_String(newpath):
-        newpaths = string.split(newpath, sep)
+        newpaths = newpath.split(sep)
     elif not is_List(newpath) and not is_Tuple(newpath):
         newpaths = [ newpath ]  # might be a Dir
     else:
         newpaths = newpath
 
     if canonicalize:
-        newpaths=map(canonicalize, newpaths)
+        newpaths=list(map(canonicalize, newpaths))
 
     if not delete_existing:
         # First uniquify the old paths, making sure to 
@@ -934,7 +806,7 @@ def PrependPath(oldpath, newpath, sep = os.pathsep,
     if is_list:
         return paths
     else:
-        return string.join(paths, sep)
+        return sep.join(paths)
 
 def AppendPath(oldpath, newpath, sep = os.pathsep, 
                delete_existing=1, canonicalize=None):
@@ -962,18 +834,18 @@ def AppendPath(oldpath, newpath, sep = os.pathsep,
     is_list = 1
     paths = orig
     if not is_List(orig) and not is_Tuple(orig):
-        paths = string.split(paths, sep)
+        paths = paths.split(sep)
         is_list = 0
 
     if is_String(newpath):
-        newpaths = string.split(newpath, sep)
+        newpaths = newpath.split(sep)
     elif not is_List(newpath) and not is_Tuple(newpath):
         newpaths = [ newpath ]  # might be a Dir
     else:
         newpaths = newpath
 
     if canonicalize:
-        newpaths=map(canonicalize, newpaths)
+        newpaths=list(map(canonicalize, newpaths))
 
     if not delete_existing:
         # add old paths to result, then
@@ -1015,13 +887,13 @@ def AppendPath(oldpath, newpath, sep = os.pathsep,
     if is_list:
         return paths
     else:
-        return string.join(paths, sep)
+        return sep.join(paths)
 
 if sys.platform == 'cygwin':
     def get_native_path(path):
         """Transforms an absolute path into a native path for the system.  In
         Cygwin, this converts from a Cygwin path to a Windows one."""
-        return string.replace(os.popen('cygpath -w ' + path).read(), '\n', '')
+        return os.popen('cygpath -w ' + path).read().replace('\n', '')
 else:
     def get_native_path(path):
         """Transforms an absolute path into a native path for the system.
@@ -1034,7 +906,7 @@ def Split(arg):
     if is_List(arg) or is_Tuple(arg):
         return arg
     elif is_String(arg):
-        return string.split(arg)
+        return arg.split()
     else:
         return [arg]
 
@@ -1057,7 +929,7 @@ class CLVar(UserList):
     def __coerce__(self, other):
         return (self, CLVar(other))
     def __str__(self):
-        return string.join(self.data)
+        return ' '.join(self.data)
 
 # A dictionary that preserves the order in which items are added.
 # Submitted by David Benjamin to ActiveState's Python Cookbook web site:
@@ -1086,7 +958,7 @@ class OrderedDict(UserDict):
         return dict
 
     def items(self):
-        return zip(self._keys, self.values())
+        return list(zip(self._keys, list(self.values())))
 
     def keys(self):
         return self._keys[:]
@@ -1111,7 +983,7 @@ class OrderedDict(UserDict):
             self.__setitem__(key, val)
 
     def values(self):
-        return map(self.get, self._keys)
+        return list(map(self.get, self._keys))
 
 class Selector(OrderedDict):
     """A callable ordered dictionary that maps file suffixes to
@@ -1132,12 +1004,12 @@ class Selector(OrderedDict):
             for (k,v) in self.items():
                 if k is not None:
                     s_k = env.subst(k)
-                    if s_dict.has_key(s_k):
+                    if s_k in s_dict:
                         # We only raise an error when variables point
                         # to the same suffix.  If one suffix is literal
                         # and a variable suffix contains this literal,
                         # the literal wins and we don't raise an error.
-                        raise KeyError, (s_dict[s_k][0], k, s_k)
+                        raise KeyError(s_dict[s_k][0], k, s_k)
                     s_dict[s_k] = (k,v)
             try:
                 return s_dict[ext][1]
@@ -1213,7 +1085,7 @@ def unique(s):
     except TypeError:
         pass    # move on to the next method
     else:
-        return u.keys()
+        return list(u.keys())
     del u
 
     # We can't hash all the elements.  Second fastest is to sort,
@@ -1224,8 +1096,7 @@ def unique(s):
     # sort functions in all languages or libraries, so this approach
     # is more effective in Python than it may be elsewhere.
     try:
-        t = list(s)
-        t.sort()
+        t = sorted(s)
     except TypeError:
         pass    # move on to the next method
     else:
@@ -1279,7 +1150,7 @@ def uniquer_hashables(seq):
     result = []
     for item in seq:
         #if not item in seen:
-        if not seen.has_key(item):
+        if item not in seen:
             seen[item] = 1
             result.append(item)
     return result
@@ -1288,14 +1159,14 @@ def uniquer_hashables(seq):
 
 # Much of the logic here was originally based on recipe 4.9 from the
 # Python CookBook, but we had to dumb it way down for Python 1.5.2.
-class LogicalLines:
+class LogicalLines(object):
 
     def __init__(self, fileobj):
         self.fileobj = fileobj
 
     def readline(self):
         result = []
-        while 1:
+        while True:
             line = self.fileobj.readline()
             if not line:
                 break
@@ -1304,11 +1175,11 @@ class LogicalLines:
             else:
                 result.append(line)
                 break
-        return string.join(result, '')
+        return ''.join(result)
 
     def readlines(self):
         result = []
-        while 1:
+        while True:
             line = self.readline()
             if not line:
                 break
@@ -1402,21 +1273,20 @@ class UniqueList(UserList):
         UserList.reverse(self)
     def sort(self, *args, **kwds):
         self.__make_unique()
-        #return UserList.sort(self, *args, **kwds)
-        return apply(UserList.sort, (self,)+args, kwds)
+        return UserList.sort(self, *args, **kwds)
     def extend(self, other):
         UserList.extend(self, other)
         self.unique = False
 
 
-
-class Unbuffered:
+class Unbuffered(object):
     """
     A proxy class that wraps a file object, flushing after every write,
     and delegating everything else to the wrapped object.
     """
     def __init__(self, file):
         self.file = file
+        self.softspace = 0  ## backward compatibility; not supported in Py3k
     def write(self, arg):
         try:
             self.file.write(arg)
@@ -1474,7 +1344,7 @@ def make_path_relative(path):
 #	ASPN: Python Cookbook : Dynamically added methods to a class
 #	http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/81732
 
-def AddMethod(object, function, name = None):
+def AddMethod(obj, function, name=None):
     """
     Adds either a bound method to an instance or an unbound method to
     a class. If name is ommited the name of the specified function
@@ -1489,40 +1359,27 @@ def AddMethod(object, function, name = None):
       AddMethod(lambda self, i: self.l[i], a, "listIndex")
       print a.listIndex(5)
     """
-    import new
-
     if name is None:
         name = function.func_name
     else:
         function = RenameFunction(function, name)
 
-    try:
-        klass = object.__class__
-    except AttributeError:
-        # "object" is really a class, so it gets an unbound method.
-        object.__dict__[name] = new.instancemethod(function, None, object)
+    if hasattr(obj, '__class__') and obj.__class__ is not type:
+        # "obj" is an instance, so it gets a bound method.
+        setattr(obj, name, MethodType(function, obj, obj.__class__))
     else:
-        # "object" is really an instance, so it gets a bound method.
-        object.__dict__[name] = new.instancemethod(function, object, klass)
+        # "obj" is a class, so it gets an unbound method.
+        setattr(obj, name, MethodType(function, None, obj))
 
 def RenameFunction(function, name):
     """
     Returns a function identical to the specified function, but with
     the specified name.
     """
-    import new
-
-    # Compatibility for Python 1.5 and 2.1.  Can be removed in favor of
-    # passing function.func_defaults directly to new.function() once
-    # we base on Python 2.2 or later.
-    func_defaults = function.func_defaults
-    if func_defaults is None:
-        func_defaults = ()
-
-    return new.function(function.func_code,
+    return FunctionType(function.func_code,
                         function.func_globals,
                         name,
-                        func_defaults)
+                        function.func_defaults)
 
 
 md5 = False
@@ -1550,7 +1407,7 @@ else:
         def MD5filesignature(fname, chunksize=65536):
             m = hashlib.md5()
             f = open(fname, "rb")
-            while 1:
+            while True:
                 blck = f.read(chunksize)
                 if not blck:
                     break
@@ -1568,26 +1425,18 @@ def MD5collect(signatures):
     if len(signatures) == 1:
         return signatures[0]
     else:
-        return MD5signature(string.join(signatures, ', '))
+        return MD5signature(', '.join(signatures))
 
 
-
-# Wrap the intern() function so it doesn't throw exceptions if ineligible
-# arguments are passed. The intern() function was moved into the sys module in
-# Python 3.
-try:
-    intern
-except NameError:
-    from sys import intern
 
 def silent_intern(x):
     """
-    Perform intern() on the passed argument and return the result.
+    Perform sys.intern() on the passed argument and return the result.
     If the input is ineligible (e.g. a unicode string) the original argument is
     returned and no exception is thrown.
     """
     try:
-        return intern(x)
+        return sys.intern(x)
     except TypeError:
         return x
 
@@ -1599,15 +1448,13 @@ def silent_intern(x):
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/68205
 # ASPN: Python Cookbook: Null Object Design Pattern
 
-# TODO(1.5):
-#class Null(object):
-class Null:
+#TODO??? class Null(object):
+class Null(object):
     """ Null objects always and reliably "do nothing." """
     def __new__(cls, *args, **kwargs):
-        if not '_inst' in vars(cls):
-            #cls._inst = type.__new__(cls, *args, **kwargs)
-            cls._inst = apply(type.__new__, (cls,) + args, kwargs)
-        return cls._inst
+        if not '_instance' in vars(cls):
+            cls._instance = super(Null, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
     def __init__(self, *args, **kwargs):
         pass
     def __call__(self, *args, **kwargs):

@@ -33,7 +33,7 @@ master_env.Initialise()
 SConscriptChdir(0)
 SConsignFile()
 
-BuildDir(join(master_env.subst('$TMPDIR')),'.',duplicate=0)
+VariantDir(join(master_env.subst('$TMPDIR')),'.',duplicate=0)
 
 Export(master_env=master_env)
 

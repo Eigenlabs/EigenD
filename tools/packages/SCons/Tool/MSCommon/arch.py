@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,14 +21,14 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/MSCommon/arch.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/MSCommon/arch.py  2014/03/02 14:18:15 garyo"
 
 __doc__ = """Module to define supported Windows chip architectures.
 """
 
 import os
 
-class ArchDefinition:
+class ArchDefinition(object):
     """
     A class for defining architecture-specific settings and logic.
     """

@@ -25,7 +25,7 @@ Usage example:
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -45,26 +45,23 @@ Usage example:
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
-__revision__ = "src/engine/SCons/Variables/ListVariable.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Variables/ListVariable.py  2014/03/02 14:18:15 garyo"
 
 # Know Bug: This should behave like a Set-Type, but does not really,
 # since elements can occur twice.
 
 __all__ = ['ListVariable',]
 
-import string
-import UserList
+import collections
 
 import SCons.Util
 
 
-class _ListVariable(UserList.UserList):
+class _ListVariable(collections.UserList):
     def __init__(self, initlist=[], allowedElems=[]):
-        UserList.UserList.__init__(self, filter(None, initlist))
-        self.allowedElems = allowedElems[:]
-        self.allowedElems.sort()
+        collections.UserList.__init__(self, [_f for _f in initlist if _f])
+        self.allowedElems = sorted(allowedElems)
 
     def __cmp__(self, other):
         raise NotImplementedError
@@ -85,7 +82,7 @@ class _ListVariable(UserList.UserList):
         if self.data == self.allowedElems:
             return 'all'
         else:
-            return string.join(self, ',')
+            return ','.join(self)
     def prepare_to_store(self):
         return self.__str__()
 
@@ -97,12 +94,12 @@ def _converter(val, allowedElems, mapdict):
     elif val == 'all':
         val = allowedElems
     else:
-        val = filter(None, string.split(val, ','))
-        val = map(lambda v, m=mapdict: m.get(v, v), val)
-        notAllowed = filter(lambda v, aE=allowedElems: not v in aE, val)
+        val = [_f for _f in val.split(',') if _f]
+        val = [mapdict.get(v, v) for v in val]
+        notAllowed = [v for v in val if not v in allowedElems]
         if notAllowed:
             raise ValueError("Invalid value(s) for option: %s" %
-                             string.join(notAllowed, ','))
+                             ','.join(notAllowed))
     return _ListVariable(val, allowedElems)
 
 
@@ -122,15 +119,14 @@ def ListVariable(key, help, default, names, map={}):
     A 'package list' option may either be 'all', 'none' or a list of
     package names (separated by space).
     """
-    names_str = 'allowed names: %s' % string.join(names, ' ')
+    names_str = 'allowed names: %s' % ' '.join(names)
     if SCons.Util.is_List(default):
-        default = string.join(default, ',')
-    help = string.join(
-        (help, '(all|none|comma-separated list of names)', names_str),
-        '\n    ')
+        default = ','.join(default)
+    help = '\n    '.join(
+        (help, '(all|none|comma-separated list of names)', names_str))
     return (key, help, default,
             None, #_validator,
-            lambda val, elems=names, m=map: _converter(val, elems, m))
+            lambda val: _converter(val, names, map))
 
 # Local Variables:
 # tab-width:4

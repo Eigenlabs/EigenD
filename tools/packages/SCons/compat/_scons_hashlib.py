@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,18 +31,18 @@ purposes, anyway).  In fact, this module will raise an ImportError if
 the underlying md5 module isn't available.
 """
 
-__revision__ = "src/engine/SCons/compat/_scons_hashlib.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/compat/_scons_hashlib.py  2014/03/02 14:18:15 garyo"
 
 import md5
-import string
+from string import hexdigits
 
-class md5obj:
+class md5obj(object):
 
     md5_module = md5
 
     def __init__(self, name, string=''):
         if not name in ('MD5', 'md5'):
-            raise ValueError, "unsupported hash type"
+            raise ValueError("unsupported hash type")
         self.name = 'md5'
         self.m = self.md5_module.md5()
 
@@ -61,23 +61,8 @@ class md5obj:
     def update(self, arg):
         return self.m.update(arg)
 
-    if hasattr(md5.md5(), 'hexdigest'):
-
-        def hexdigest(self):
-            return self.m.hexdigest()
-
-    else:
-
-        # Objects created by the underlying md5 module have no native
-        # hexdigest() method (*cough* 1.5.2 *cough*), so provide an
-        # equivalent lifted from elsewhere.
-        def hexdigest(self):
-            h = string.hexdigits
-            r = ''
-            for c in self.digest():
-                i = ord(c)
-                r = r + h[(i >> 4) & 0xF] + h[i & 0xF]
-            return r
+    def hexdigest(self):
+        return self.m.hexdigest()
 
 new = md5obj
 

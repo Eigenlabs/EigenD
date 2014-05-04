@@ -20,7 +20,7 @@ their own platform definition.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 # 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -42,13 +42,12 @@ their own platform definition.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Platform/__init__.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Platform/__init__.py  2014/03/02 14:18:15 garyo"
 
 import SCons.compat
 
 import imp
 import os
-import string
 import sys
 import tempfile
 
@@ -69,15 +68,15 @@ def platform_default():
     if osname == 'posix':
         if sys.platform == 'cygwin':
             return 'cygwin'
-        elif string.find(sys.platform, 'irix') != -1:
+        elif sys.platform.find('irix') != -1:
             return 'irix'
-        elif string.find(sys.platform, 'sunos') != -1:
+        elif sys.platform.find('sunos') != -1:
             return 'sunos'
-        elif string.find(sys.platform, 'hp-ux') != -1:
+        elif sys.platform.find('hp-ux') != -1:
             return 'hpux'
-        elif string.find(sys.platform, 'aix') != -1:
+        elif sys.platform.find('aix') != -1:
             return 'aix'
-        elif string.find(sys.platform, 'darwin') != -1:
+        elif sys.platform.find('darwin') != -1:
             return 'darwin'
         else:
             return 'posix'
@@ -94,7 +93,7 @@ def platform_module(name = platform_default()):
     our execution environment.
     """
     full_name = 'SCons.Platform.' + name
-    if not sys.modules.has_key(full_name):
+    if full_name not in sys.modules:
         if os.name == 'java':
             eval(full_name)
         else:
@@ -112,7 +111,7 @@ def platform_module(name = platform_default()):
                     importer = zipimport.zipimporter( sys.modules['SCons.Platform'].__path__[0] )
                     mod = importer.load_module(full_name)
                 except ImportError:
-                    raise SCons.Errors.UserError, "No platform named '%s'" % name
+                    raise SCons.Errors.UserError("No platform named '%s'" % name)
             setattr(SCons.Platform, name, mod)
     return sys.modules[full_name]
 
@@ -121,14 +120,18 @@ def DefaultToolList(platform, env):
     """
     return SCons.Tool.tool_list(platform, env)
 
-class PlatformSpec:
-    def __init__(self, name):
+class PlatformSpec(object):
+    def __init__(self, name, generate):
         self.name = name
+        self.generate = generate
+
+    def __call__(self, *args, **kw):
+        return self.generate(*args, **kw)
 
     def __str__(self):
         return self.name
         
-class TempFileMunge:
+class TempFileMunge(object):
     """A callable class.  You can set an Environment variable to this,
     then call it with a string argument, then it will perform temporary
     file substitution on it.  This is used to circumvent the long command
@@ -167,7 +170,10 @@ class TempFileMunge:
         except ValueError:
             maxline = 2048
 
-        if (reduce(lambda x, y: x + len(y), cmd, 0) + len(cmd)) <= maxline:
+        length = 0
+        for c in cmd:
+            length += len(c)
+        if length <= maxline:
             return self.cmd
 
         # We do a normpath because mktemp() has what appears to be
@@ -184,7 +190,7 @@ class TempFileMunge:
         if env['SHELL'] and env['SHELL'] == 'sh':
             # The sh shell will try to escape the backslashes in the
             # path, so unescape them.
-            native_tmp = string.replace(native_tmp, '\\', r'\\\\')
+            native_tmp = native_tmp.replace('\\', r'\\\\')
             # In Cygwin, we want to use rm to delete the temporary
             # file, because del does not exist in the sh shell.
             rm = env.Detect('rm') or 'del'
@@ -198,8 +204,8 @@ class TempFileMunge:
         if not prefix:
             prefix = '@'
 
-        args = map(SCons.Subst.quote_spaces, cmd[1:])
-        os.write(fd, string.join(args, " ") + "\n")
+        args = list(map(SCons.Subst.quote_spaces, cmd[1:]))
+        os.write(fd, " ".join(args) + "\n")
         os.close(fd)
         # XXX Using the SCons.Action.print_actions value directly
         # like this is bogus, but expedient.  This class should
@@ -218,15 +224,14 @@ class TempFileMunge:
         # reach into SCons.Action directly.
         if SCons.Action.print_actions:
             print("Using tempfile "+native_tmp+" for command line:\n"+
-                  str(cmd[0]) + " " + string.join(args," "))
+                  str(cmd[0]) + " " + " ".join(args))
         return [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
     
 def Platform(name = platform_default()):
     """Select a canned Platform specification.
     """
     module = platform_module(name)
-    spec = PlatformSpec(name)
-    spec.__call__ = module.generate
+    spec = PlatformSpec(name, module.generate)
     return spec
 
 # Local Variables:

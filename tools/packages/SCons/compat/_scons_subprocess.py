@@ -356,7 +356,6 @@ import sys
 mswindows = (sys.platform == "win32")
 
 import os
-import string
 import types
 import traceback
 
@@ -381,7 +380,21 @@ if mswindows:
         # can't import it.
         pass
     import msvcrt
-    if 0: # <-- change this to use pywin32 instead of the _subprocess driver
+    try:
+        # Try to get _subprocess
+        from _subprocess import *
+        class STARTUPINFO(object):
+            dwFlags = 0
+            hStdInput = None
+            hStdOutput = None
+            hStdError = None
+            wShowWindow = 0
+        class pywintypes(object):
+            error = IOError
+    except ImportError:
+        # If not there, then drop back to requiring pywin32
+        # TODO: Should this be wrapped in try as well? To notify user to install
+        #       pywin32 ? With URL to it?
         import pywintypes
         from win32api import GetStdHandle, STD_INPUT_HANDLE, \
                              STD_OUTPUT_HANDLE, STD_ERROR_HANDLE
@@ -393,20 +406,8 @@ if mswindows:
                                  GetExitCodeProcess, STARTF_USESTDHANDLES, \
                                  STARTF_USESHOWWINDOW, CREATE_NEW_CONSOLE
         from win32event import WaitForSingleObject, INFINITE, WAIT_OBJECT_0
-    else:
-        # SCons:  don't die on Python versions that don't have _subprocess.
-        try:
-            from _subprocess import *
-        except ImportError:
-            pass
-        class STARTUPINFO:
-            dwFlags = 0
-            hStdInput = None
-            hStdOutput = None
-            hStdError = None
-            wShowWindow = 0
-        class pywintypes:
-            error = IOError
+
+
 else:
     import select
     import errno
@@ -432,18 +433,11 @@ except KeyboardInterrupt:
 except:
     MAXFD = 256
 
-# True/False does not exist on 2.2.0
-try:
-    False
-except NameError:
-    False = 0
-    True = 1
-
 try:
     isinstance(1, int)
 except TypeError:
     def is_int(obj):
-        return type(obj) == type(1)
+        return isinstance(obj, type(1))
     def is_int_or_long(obj):
         return type(obj) in (type(1), type(1L))
 else:
@@ -456,20 +450,17 @@ try:
     types.StringTypes
 except AttributeError:
     try:
-        types.StringTypes = (types.StringType, types.UnicodeType)
-    except AttributeError:
-        types.StringTypes = (types.StringType,)
-    def is_string(obj):
-        return type(obj) in types.StringTypes
-else:
-    def is_string(obj):
-        return isinstance(obj, types.StringTypes)
+        types.StringTypes = (str, unicode)
+    except NameError:
+        types.StringTypes = (str,)
+def is_string(obj):
+    return isinstance(obj, types.StringTypes)
 
 _active = []
 
 def _cleanup():
     for inst in _active[:]:
-        if inst.poll(_deadstate=sys.maxint) >= 0:
+        if inst.poll(_deadstate=sys.maxsize) >= 0:
             try:
                 _active.remove(inst)
             except ValueError:
@@ -502,7 +493,7 @@ def check_call(*popenargs, **kwargs):
 
     check_call(["ls", "-l"])
     """
-    retcode = apply(call, popenargs, kwargs)
+    retcode = call(*popenargs, **kwargs)
     cmd = kwargs.get("args")
     if cmd is None:
         cmd = popenargs[0]
@@ -576,14 +567,7 @@ def list2cmdline(seq):
             result.extend(bs_buf)
             result.append('"')
 
-    return string.join(result, '')
-
-
-try:
-    object
-except NameError:
-    class object:
-        pass
+    return ''.join(result)
 
 class Popen(object):
     def __init__(self, args, bufsize=0, executable=None,
@@ -672,7 +656,7 @@ class Popen(object):
             # We didn't get to successfully create a child process.
             return
         # In case the child hasn't been waited on, check if it's done.
-        self.poll(_deadstate=sys.maxint)
+        self.poll(_deadstate=sys.maxsize)
         if self.returncode is None and _active is not None:
             # Child is still running, keep us alive until we can wait on it.
             _active.append(self)
@@ -851,7 +835,7 @@ class Popen(object):
                 # a subclass of OSError.  FIXME: We should really
                 # translate errno using _sys_errlist (or simliar), but
                 # how can this be done from Python?
-                raise apply(WindowsError, e.args)
+                raise WindowsError(*e.args)
 
             # Retain the process handle, but close the thread handle
             self._child_created = True
@@ -1001,7 +985,7 @@ class Popen(object):
 
 
         def _close_fds(self, but):
-            for i in xrange(3, MAXFD):
+            for i in range(3, MAXFD):
                 if i == but:
                     continue
                 try:
@@ -1098,7 +1082,7 @@ class Popen(object):
                     exc_lines = traceback.format_exception(exc_type,
                                                            exc_value,
                                                            tb)
-                    exc_value.child_traceback = string.join(exc_lines, '')
+                    exc_value.child_traceback = ''.join(exc_lines)
                     os.write(errpipe_write, pickle.dumps(exc_value))
 
                 # This exitcode won't be reported to applications, so it
@@ -1185,7 +1169,8 @@ class Popen(object):
                     # When select has indicated that the file is writable,
                     # we can write up to PIPE_BUF bytes without risk
                     # blocking.  POSIX defines PIPE_BUF >= 512
-                    bytes_written = os.write(self.stdin.fileno(), buffer(input, input_offset, 512))
+                    m = memoryview(input)[input_offset:input_offset+512]
+                    bytes_written = os.write(self.stdin.fileno(), m)
                     input_offset = input_offset + bytes_written
                     if input_offset >= len(input):
                         self.stdin.close()
@@ -1207,9 +1192,9 @@ class Popen(object):
 
             # All data exchanged.  Translate lists into strings.
             if stdout is not None:
-                stdout = string.join(stdout, '')
+                stdout = ''.join(stdout)
             if stderr is not None:
-                stderr = string.join(stderr, '')
+                stderr = ''.join(stderr)
 
             # Translate newlines, if requested.  We cannot let the file
             # object do the translation: It is based on stdio, which is

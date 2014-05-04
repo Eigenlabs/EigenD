@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,10 +31,9 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/javah.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/javah.py  2014/03/02 14:18:15 garyo"
 
 import os.path
-import string
 
 import SCons.Action
 import SCons.Builder
@@ -93,7 +92,7 @@ def emit_java_headers(target, source, env):
             target[0]._morph()
         tlist = []
         for s in source:
-            fname = string.replace(s.attributes.java_classname, '.', '_') + '.h'
+            fname = s.attributes.java_classname.replace('.', '_') + '.h'
             t = target[0].File(fname)
             t.attributes.java_lookupdir = target[0]
             tlist.append(t)
@@ -112,7 +111,7 @@ def JavaHOutFlagGenerator(target, source, env, for_signature):
 
 def getJavaHClassPath(env,target, source, for_signature):
     path = "${SOURCE.attributes.java_classdir}"
-    if env.has_key('JAVACLASSPATH') and env['JAVACLASSPATH']:
+    if 'JAVACLASSPATH' in env and env['JAVACLASSPATH']:
         path = SCons.Util.AppendPath(path, env['JAVACLASSPATH'])
     return "-classpath %s" % (path)
 

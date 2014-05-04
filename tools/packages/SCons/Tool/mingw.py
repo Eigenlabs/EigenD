@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,11 +31,10 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/mingw.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/mingw.py  2014/03/02 14:18:15 garyo"
 
 import os
 import os.path
-import string
 
 import SCons.Action
 import SCons.Builder
@@ -47,8 +46,22 @@ import SCons.Util
 key_program = 'mingw32-gcc'
 
 def find(env):
-    # First search in the SCons path and then the OS path:
-    return env.WhereIs(key_program) or SCons.Util.WhereIs(key_program)
+    # First search in the SCons path
+    path=env.WhereIs(key_program)
+    if (path):
+        return path
+    # then the OS path:
+    path=SCons.Util.WhereIs(key_program)
+    if (path):
+        return path
+
+    # If that doesn't work try default location for mingw
+    save_path=env['ENV']['PATH']
+    env.AppendENVPath('PATH',r'c:\MinGW\bin')
+    path =env.WhereIs(key_program)
+    if not path:
+        env['ENV']['PATH']=save_path
+    return path
 
 def shlib_generator(target, source, env, for_signature):
     cmd = SCons.Util.CLVar(['$SHLINK', '$SHLINKFLAGS']) 
@@ -73,27 +86,34 @@ def shlib_emitter(target, source, env):
     no_import_lib = env.get('no_import_lib', 0)
 
     if not dll:
-        raise SCons.Errors.UserError, "A shared library should have exactly one target with the suffix: %s" % env.subst("$SHLIBSUFFIX")
+        raise SCons.Errors.UserError("A shared library should have exactly one target with the suffix: %s" % env.subst("$SHLIBSUFFIX"))
     
     if not no_import_lib and \
        not env.FindIxes(target, 'LIBPREFIX', 'LIBSUFFIX'):
 
-        # Append an import library to the list of targets.
-        target.append(env.ReplaceIxes(dll,  
+        # Create list of target libraries as strings
+        targetStrings=env.ReplaceIxes(dll,  
                                       'SHLIBPREFIX', 'SHLIBSUFFIX',
-                                      'LIBPREFIX', 'LIBSUFFIX'))
+                                      'LIBPREFIX', 'LIBSUFFIX')
+        
+        # Now add file nodes to target list
+        target.append(env.fs.File(targetStrings))
 
     # Append a def file target if there isn't already a def file target
-    # or a def file source. There is no option to disable def file
-    # target emitting, because I can't figure out why someone would ever
-    # want to turn it off.
+    # or a def file source or the user has explicitly asked for the target
+    # to be emitted.
     def_source = env.FindIxes(source, 'WINDOWSDEFPREFIX', 'WINDOWSDEFSUFFIX')
     def_target = env.FindIxes(target, 'WINDOWSDEFPREFIX', 'WINDOWSDEFSUFFIX')
-    if not def_source and not def_target:
-        target.append(env.ReplaceIxes(dll,  
+    skip_def_insert = env.subst("$WINDOWS_INSERT_DEF") in ['', '0', 0]
+    if not def_source and not def_target and not skip_def_insert:
+        # Create list of target libraries and def files as strings
+        targetStrings=env.ReplaceIxes(dll,  
                                       'SHLIBPREFIX', 'SHLIBSUFFIX',
-                                      'WINDOWSDEFPREFIX', 'WINDOWSDEFSUFFIX'))
-    
+                                      'WINDOWSDEFPREFIX', 'WINDOWSDEFSUFFIX')
+        
+        # Now add file nodes to target list
+        target.append(env.fs.File(targetStrings))
+
     return (target, source)
                          
 
@@ -113,7 +133,7 @@ def generate(env):
         
 
     # Most of mingw is the same as gcc and friends...
-    gnu_tools = ['gcc', 'g++', 'gnulink', 'ar', 'gas', 'm4']
+    gnu_tools = ['gcc', 'g++', 'gnulink', 'ar', 'gas', 'gfortran', 'm4']
     for tool in gnu_tools:
         SCons.Tool.Tool(tool)(env)
 
@@ -148,6 +168,7 @@ def generate(env):
     env['OBJSUFFIX'] = '.o'
     env['LIBPREFIX'] = 'lib'
     env['LIBSUFFIX'] = '.a'
+    env['PROGSUFFIX'] = '.exe'
 
 def exists(env):
     return find(env)

@@ -4,7 +4,7 @@ Autoconf-like configuration support.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -26,15 +26,15 @@ Autoconf-like configuration support.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/SConf.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/SConf.py  2014/03/02 14:18:15 garyo"
 
+import SCons.compat
+
+import io
 import os
 import re
-import string
-import StringIO
 import sys
 import traceback
-import types
 
 import SCons.Action
 import SCons.Builder
@@ -79,7 +79,7 @@ def SetCacheMode(mode):
     elif mode == "cache":
         cache_mode = CACHE
     else:
-        raise ValueError, "SCons.SConf.SetCacheMode: Unknown mode " + mode
+        raise ValueError("SCons.SConf.SetCacheMode: Unknown mode " + mode)
 
 progress_display = SCons.Util.display # will be overwritten by SCons.Script
 def SetProgressDisplay(display):
@@ -96,7 +96,7 @@ sconf_global = None   # current sconf object
 
 def _createConfigH(target, source, env):
     t = open(str(target[0]), "w")
-    defname = re.sub('[^A-Za-z0-9_]', '_', string.upper(str(target[0])))
+    defname = re.sub('[^A-Za-z0-9_]', '_', str(target[0]).upper())
     t.write("""#ifndef %(DEFNAME)s_SEEN
 #define %(DEFNAME)s_SEEN
 
@@ -153,12 +153,7 @@ def _createSource( target, source, env ):
     fd.close()
 def _stringSource( target, source, env ):
     return (str(target[0]) + ' <-\n  |' +
-            string.replace( source[0].get_contents(),
-                            '\n', "\n  |" ) )
-
-# python 2.2 introduces types.BooleanType
-BooleanTypes = [types.IntType]
-if hasattr(types, 'BooleanType'): BooleanTypes.append(types.BooleanType)
+            source[0].get_contents().replace( '\n', "\n  |" ) )
 
 class SConfBuildInfo(SCons.Node.FS.FileBuildInfo):
     """
@@ -174,13 +169,13 @@ class SConfBuildInfo(SCons.Node.FS.FileBuildInfo):
         self.string = string
 
 
-class Streamer:
+class Streamer(object):
     """
     'Sniffer' for a file-like writable object. Similar to the unix tool tee.
     """
     def __init__(self, orig):
         self.orig = orig
-        self.s = StringIO.StringIO()
+        self.s = io.StringIO()
 
     def write(self, str):
         if self.orig:
@@ -222,8 +217,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
               "The stored build information has an unexpected class: %s" % bi.__class__)
         else:
             self.display("The original builder output was:\n" +
-                         string.replace("  |" + str(bi.string),
-                                        "\n", "\n  |"))
+                         ("  |" + str(bi.string)).replace("\n", "\n  |"))
 
     def failed(self):
         # check, if the reason was a ConfigureDryRunError or a
@@ -246,7 +240,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
                 def excepthook(type, value, tb):
                     traceback.print_tb(tb)
                     print type, value
-            apply(excepthook, self.exc_info())
+            excepthook(*self.exc_info())
         return SCons.Taskmaster.Task.failed(self)
 
     def collect_node_states(self):
@@ -374,7 +368,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
                     sconsign.set_entry(t.name, sconsign_entry)
                     sconsign.merge()
 
-class SConfBase:
+class SConfBase(object):
     """This is simply a class to represent a configure context. After
     creating a SConf object, you can call any tests. After finished with your
     tests, be sure to call the Finish() method, which returns the modified
@@ -400,8 +394,7 @@ class SConfBase:
             SConfFS = SCons.Node.FS.default_fs or \
                       SCons.Node.FS.FS(env.fs.pathTop)
         if sconf_global is not None:
-            raise (SCons.Errors.UserError,
-                   "Only one SConf object may be active at one time")
+            raise SCons.Errors.UserError
         self.env = env
         if log_file is not None:
             log_file = SConfFS.File(env.subst(log_file))
@@ -465,7 +458,7 @@ class SConfBase:
         lines.append(define_str)
         lines.append('')
 
-        self.config_h_text = self.config_h_text + string.join(lines, '\n')
+        self.config_h_text = self.config_h_text + '\n'.join(lines)
 
     def BuildNodes(self, nodes):
         """
@@ -490,6 +483,9 @@ class SConfBase:
         # so we really control how it gets written.
         for n in nodes:
             n.store_info = n.do_not_store_info
+            if not hasattr(n, 'attributes'):
+                n.attributes = SCons.Node.Node.Attrs()
+            n.attributes.keep_targetinfo = 1
 
         ret = 1
 
@@ -635,17 +631,16 @@ class SConfBase:
                 return( 1, outputStr)
         return (0, "")
 
-    class TestWrapper:
+    class TestWrapper(object):
         """A wrapper around Tests (to ensure sanity)"""
         def __init__(self, test, sconf):
             self.test = test
             self.sconf = sconf
         def __call__(self, *args, **kw):
             if not self.sconf.active:
-                raise (SCons.Errors.UserError,
-                       "Test called after sconf.Finish()")
+                raise SCons.Errors.UserError
             context = CheckContext(self.sconf)
-            ret = apply(self.test, (context,) +  args, kw)
+            ret = self.test(context, *args, **kw)
             if self.sconf.config_h is not None:
                 self.sconf.config_h_text = self.sconf.config_h_text + context.config_h
             context.Result("error: no result")
@@ -689,7 +684,7 @@ class SConfBase:
         if self.logfile is not None and not dryrun:
             # truncate logfile, if SConf.Configure is called for the first time
             # in a build
-            if _ac_config_logs.has_key(self.logfile):
+            if self.logfile in _ac_config_logs:
                 log_mode = "a"
             else:
                 _ac_config_logs[self.logfile] = None
@@ -724,7 +719,7 @@ class SConfBase:
         global sconf_global, _ac_config_hs
 
         if not self.active:
-            raise SCons.Errors.UserError, "Finish may be called only once!"
+            raise SCons.Errors.UserError("Finish may be called only once!")
         if self.logstream is not None and not dryrun:
             self.logstream.write("\n")
             self.logstream.close()
@@ -739,7 +734,7 @@ class SConfBase:
             _ac_config_hs[self.config_h] = self.config_h_text
         self.env.fs = self.lastEnvFs
 
-class CheckContext:
+class CheckContext(object):
     """Provides a context for configure tests. Defines how a test writes to the
     screen and log file.
 
@@ -784,19 +779,16 @@ class CheckContext:
         self.did_show_result = 0
 
     def Result(self, res):
-        """Inform about the result of the test. res may be an integer or a
-        string. In case of an integer, the written text will be 'yes' or 'no'.
+        """Inform about the result of the test. If res is not a string, displays
+        'yes' or 'no' depending on whether res is evaluated as true or false.
         The result is only displayed when self.did_show_result is not set.
         """
-        if type(res) in BooleanTypes:
-            if res:
-                text = "yes"
-            else:
-                text = "no"
-        elif type(res) == types.StringType:
+        if isinstance(res, str):
             text = res
+        elif res:
+            text = "yes"
         else:
-            raise TypeError, "Expected string, int or bool, got " + str(type(res))
+            text = "no"
 
         if self.did_show_result == 0:
             # Didn't show result yet, do it now.
@@ -804,19 +796,19 @@ class CheckContext:
             self.did_show_result = 1
 
     def TryBuild(self, *args, **kw):
-        return apply(self.sconf.TryBuild, args, kw)
+        return self.sconf.TryBuild(*args, **kw)
 
     def TryAction(self, *args, **kw):
-        return apply(self.sconf.TryAction, args, kw)
+        return self.sconf.TryAction(*args, **kw)
 
     def TryCompile(self, *args, **kw):
-        return apply(self.sconf.TryCompile, args, kw)
+        return self.sconf.TryCompile(*args, **kw)
 
     def TryLink(self, *args, **kw):
-        return apply(self.sconf.TryLink, args, kw)
+        return self.sconf.TryLink(*args, **kw)
 
     def TryRun(self, *args, **kw):
-        return apply(self.sconf.TryRun, args, kw)
+        return self.sconf.TryRun(*args, **kw)
 
     def __getattr__( self, attr ):
         if( attr == 'env' ):
@@ -824,7 +816,7 @@ class CheckContext:
         elif( attr == 'lastTarget' ):
             return self.sconf.lastTarget
         else:
-            raise AttributeError, "CheckContext instance has no attribute '%s'" % attr
+            raise AttributeError("CheckContext instance has no attribute '%s'" % attr)
 
     #### Stuff used by Conftest.py (look there for explanations).
 
@@ -889,7 +881,7 @@ def SConf(*args, **kw):
                 del kw[bt]
             except KeyError:
                 pass
-        return apply(SConfBase, args, kw)
+        return SConfBase(*args, **kw)
     else:
         return SCons.Util.Null()
 
@@ -901,7 +893,7 @@ def CheckFunc(context, function_name, header = None, language = None):
 
 def CheckType(context, type_name, includes = "", language = None):
     res = SCons.Conftest.CheckType(context, type_name,
-                                        header = includes, language = language)
+                                   header = includes, language = language)
     context.did_show_result = 1
     return not res
 
@@ -933,7 +925,7 @@ def createIncludesFromHeaders(headers, leaveLast, include_quotes = '""'):
     for s in headers:
         l.append("#include %s%s%s\n"
                  % (include_quotes[0], s, include_quotes[1]))
-    return string.join(l, ''), lastHeader
+    return ''.join(l), lastHeader
 
 def CheckHeader(context, header, include_quotes = '<>', language = None):
     """

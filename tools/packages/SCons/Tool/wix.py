@@ -8,7 +8,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,12 +30,11 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/wix.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/wix.py  2014/03/02 14:18:15 garyo"
 
 import SCons.Builder
 import SCons.Action
 import os
-import string
 
 def generate(env):
     """Add Builders and construction variables for WiX to an Environment."""
@@ -48,15 +47,17 @@ def generate(env):
 
     env['WIXLIGHTFLAGS'].append( '-nologo' )
     env['WIXLIGHTCOM'] = "$WIXLIGHT $WIXLIGHTFLAGS -out ${TARGET} ${SOURCES}"
+    env['WIXSRCSUF'] = '.wxs'
+    env['WIXOBJSUF'] = '.wixobj'
 
     object_builder = SCons.Builder.Builder(
         action      = '$WIXCANDLECOM',
-        suffix      = '.wxiobj',
-        src_suffix  = '.wxs')
+        suffix      = '$WIXOBJSUF',
+        src_suffix  = '$WIXSRCSUF')
 
     linker_builder = SCons.Builder.Builder(
         action      = '$WIXLIGHTCOM',
-        src_suffix  = '.wxiobj',
+        src_suffix  = '$WIXOBJSUF',
         src_builder = object_builder)
 
     env['BUILDERS']['WiX'] = linker_builder
@@ -67,8 +68,7 @@ def exists(env):
 
     # try to find the candle.exe and light.exe tools and 
     # add the install directory to light libpath.
-    #for path in os.environ['PATH'].split(os.pathsep):
-    for path in string.split(os.environ['PATH'], os.pathsep):
+    for path in os.environ['PATH'].split(os.pathsep):
         if not path:
             continue
 
@@ -81,13 +81,17 @@ def exists(env):
 
         # search for the tools in the PATH environment variable
         try:
-            if env['WIXCANDLE'] in os.listdir(path) and\
-               env['WIXLIGHT']  in os.listdir(path):
-                   env.PrependENVPath('PATH', path)
-                   env['WIXLIGHTFLAGS'] = [ os.path.join( path, 'wixui.wixlib' ),
-                                            '-loc',
-                                            os.path.join( path, 'WixUI_en-us.wxl' ) ]
-                   return 1
+            files = os.listdir(path)
+            if env['WIXCANDLE'] in files and env['WIXLIGHT'] in files:
+                env.PrependENVPath('PATH', path)
+                # include appropriate flags if running WiX 2.0
+                if 'wixui.wixlib' in files and 'WixUI_en-us.wxl' in files:
+                    env['WIXLIGHTFLAGS'] = [ os.path.join( path, 'wixui.wixlib' ),
+                                             '-loc',
+                                             os.path.join( path, 'WixUI_en-us.wxl' ) ]
+                else:
+                    env['WIXLIGHTFLAGS'] = []
+                return 1
         except OSError:
             pass # ignore this, could be a stale PATH entry.
 

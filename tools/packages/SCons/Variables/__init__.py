@@ -5,7 +5,7 @@ customizable variables to an SCons build.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -25,12 +25,10 @@ customizable variables to an SCons build.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
-__revision__ = "src/engine/SCons/Variables/__init__.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Variables/__init__.py  2014/03/02 14:18:15 garyo"
 
 import os.path
-import string
 import sys
 
 import SCons.Environment
@@ -45,7 +43,7 @@ from PackageVariable import PackageVariable # naja
 from PathVariable import PathVariable # okay
 
 
-class Variables:
+class Variables(object):
     instance=None
 
     """
@@ -76,7 +74,7 @@ class Variables:
                 Variables.instance=self
 
     def _do_add(self, key, help="", default=None, validator=None, converter=None):
-        class Variable:
+        class Variable(object):
             pass
 
         option = Variable()
@@ -84,11 +82,11 @@ class Variables:
         # if we get a list or a tuple, we take the first element as the
         # option key and store the remaining in aliases.
         if SCons.Util.is_List(key) or SCons.Util.is_Tuple(key):
-          option.key     = key[0]
-          option.aliases = key[1:]
+            option.key     = key[0]
+            option.aliases = key[1:]
         else:
-          option.key     = key
-          option.aliases = [ key ]
+            option.key     = key
+            option.aliases = [ key ]
         option.help = help
         option.default = default
         option.validator = validator
@@ -99,16 +97,14 @@ class Variables:
         # options might be added after the 'unknown' dict has been set up,
         # so we remove the key and all its aliases from that dict
         for alias in list(option.aliases) + [ option.key ]:
-          # TODO(1.5)
-          #if alias in self.unknown:
-          if alias in self.unknown.keys():
-            del self.unknown[alias]
+            if alias in self.unknown:
+                del self.unknown[alias]
 
     def keys(self):
         """
         Returns the keywords for the options
         """
-        return map(lambda o: o.key, self.options)
+        return [o.key for o in self.options]
 
     def Add(self, key, help="", default=None, validator=None, converter=None, **kw):
         """
@@ -123,13 +119,13 @@ class Variables:
                     putting it in the environment.
         """
 
-        if SCons.Util.is_List(key) or type(key) == type(()):
-            apply(self._do_add, key)
+        if SCons.Util.is_List(key) or isinstance(key, tuple):
+            self._do_add(*key)
             return
 
         if not SCons.Util.is_String(key) or \
-           not SCons.Environment.is_valid_construction_var(key):
-            raise SCons.Errors.UserError, "Illegal Variables.Add() key `%s'" % str(key)
+            not SCons.Environment.is_valid_construction_var(key):
+                raise SCons.Errors.UserError("Illegal Variables.Add() key `%s'" % str(key))
 
         self._do_add(key, help, default, validator, converter)
 
@@ -149,7 +145,7 @@ class Variables:
             )
         """
         for o in optlist:
-            apply(self._do_add, o)
+            self._do_add(*o)
 
 
     def Update(self, env, args=None):
@@ -203,7 +199,7 @@ class Variables:
 
         # Call the convert functions:
         for option in self.options:
-            if option.converter and values.has_key(option.key):
+            if option.converter and option.key in values:
                 value = env.subst('${%s}'%option.key)
                 try:
                     try:
@@ -211,12 +207,12 @@ class Variables:
                     except TypeError:
                         env[option.key] = option.converter(value, env)
                 except ValueError, x:
-                    raise SCons.Errors.UserError, 'Error converting option: %s\n%s'%(option.key, x)
+                    raise SCons.Errors.UserError('Error converting option: %s\n%s'%(option.key, x))
 
 
         # Finally validate the values:
         for option in self.options:
-            if option.validator and values.has_key(option.key):
+            if option.validator and option.key in values:
                 option.validator(option.key, env.subst('${%s}'%option.key), env)
 
     def UnknownVariables(self):
@@ -273,7 +269,7 @@ class Variables:
                 fh.close()
 
         except IOError, x:
-            raise SCons.Errors.UserError, 'Error writing options to file: %s\n%s' % (filename, x)
+            raise SCons.Errors.UserError('Error writing options to file: %s\n%s' % (filename, x))
 
     def GenerateHelpText(self, env, sort=None):
         """
@@ -284,27 +280,26 @@ class Variables:
         """
 
         if sort:
-            options = self.options[:]
-            options.sort(lambda x,y,func=sort: func(x.key,y.key))
+            options = sorted(self.options, key=lambda x: x.key)
         else:
             options = self.options
 
         def format(opt, self=self, env=env):
-            if env.has_key(opt.key):
+            if opt.key in env:
                 actual = env.subst('${%s}' % opt.key)
             else:
                 actual = None
             return self.FormatVariableHelpText(env, opt.key, opt.help, opt.default, actual, opt.aliases)
-        lines = filter(None, map(format, options))
+        lines = [_f for _f in map(format, options) if _f]
 
-        return string.join(lines, '')
+        return ''.join(lines)
 
     format  = '\n%s: %s\n    default: %s\n    actual: %s\n'
     format_ = '\n%s: %s\n    default: %s\n    actual: %s\n    aliases: %s\n'
 
     def FormatVariableHelpText(self, env, key, help, default, actual, aliases=[]):
         # Don't display the key name itself as an alias.
-        aliases = filter(lambda a, k=key: a != k, aliases)
+        aliases = [a for a in aliases if a != key]
         if len(aliases)==0:
             return self.format % (key, help, default, actual)
         else:

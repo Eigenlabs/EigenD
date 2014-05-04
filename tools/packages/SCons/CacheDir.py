@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,7 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/CacheDir.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/CacheDir.py  2014/03/02 14:18:15 garyo"
 
 __doc__ = """
 CacheDir support
@@ -29,7 +29,6 @@ CacheDir support
 
 import os.path
 import stat
-import string
 import sys
 
 import SCons.Action
@@ -38,6 +37,7 @@ cache_enabled = True
 cache_debug = False
 cache_force = False
 cache_show = False
+cache_readonly = False
 
 def CacheRetrieveFunc(target, source, env):
     t = target[0]
@@ -71,6 +71,8 @@ CacheRetrieve = SCons.Action.Action(CacheRetrieveFunc, CacheRetrieveString)
 CacheRetrieveSilent = SCons.Action.Action(CacheRetrieveFunc, None)
 
 def CachePushFunc(target, source, env):
+    if cache_readonly: return
+
     t = target[0]
     if t.nocache:
         return
@@ -101,7 +103,7 @@ def CachePushFunc(target, source, env):
             # has beaten us creating the directory.
             if not fs.isdir(cachedir):
                 msg = errfmt % (str(target), cachefile)
-                raise SCons.Errors.EnvironmentError, msg
+                raise SCons.Errors.EnvironmentError(msg)
 
     try:
         if fs.islink(t.path):
@@ -122,7 +124,7 @@ def CachePushFunc(target, source, env):
 
 CachePush = SCons.Action.Action(CachePushFunc, None)
 
-class CacheDir:
+class CacheDir(object):
 
     def __init__(self, path):
         try:
@@ -151,6 +153,9 @@ class CacheDir:
     def is_enabled(self):
         return (cache_enabled and not self.path is None)
 
+    def is_readonly(self):
+        return cache_readonly
+
     def cachepath(self, node):
         """
         """
@@ -158,7 +163,7 @@ class CacheDir:
             return None, None
 
         sig = node.get_cachedir_bsig()
-        subdir = string.upper(sig[0])
+        subdir = sig[0].upper()
         dir = os.path.join(self.path, subdir)
         return dir, os.path.join(dir, sig)
 
@@ -202,7 +207,7 @@ class CacheDir:
         return False
 
     def push(self, node):
-        if not self.is_enabled():
+        if self.is_readonly() or not self.is_enabled():
             return
         return CachePush(node, [], node.get_build_env())
 

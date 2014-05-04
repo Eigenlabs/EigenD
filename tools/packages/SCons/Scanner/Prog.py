@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,9 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Scanner/Prog.py 4577 2009/12/27 19:43:56 scons"
-
-import string
+__revision__ = "src/engine/SCons/Scanner/Prog.py  2014/03/02 14:18:15 garyo"
 
 import SCons.Node
 import SCons.Node.FS
@@ -37,7 +35,7 @@ def ProgramScanner(**kw):
     """Return a prototype Scanner instance for scanning executable
     files for static-lib dependencies"""
     kw['path_function'] = SCons.Scanner.FindPathDirs('LIBPATH')
-    ps = apply(SCons.Scanner.Base, [scan, "ProgramScanner"], kw)
+    ps = SCons.Scanner.Base(scan, "ProgramScanner", **kw)
     return ps
 
 def scan(node, env, libpath = ()):
@@ -53,7 +51,7 @@ def scan(node, env, libpath = ()):
         # There are no LIBS in this environment, so just return a null list:
         return []
     if SCons.Util.is_String(libs):
-        libs = string.split(libs)
+        libs = libs.split()
     else:
         libs = SCons.Util.flatten(libs)
 

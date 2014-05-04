@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -19,16 +19,14 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
-__revision__ = "src/engine/SCons/Tool/MSCommon/netframework.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/MSCommon/netframework.py  2014/03/02 14:18:15 garyo"
 
 __doc__ = """
 """
 
 import os
 import re
-import string
 
 from common import read_reg, debug
 
@@ -58,14 +56,14 @@ def query_versions():
         contents = os.listdir(froot)
 
         l = re.compile('v[0-9]+.*')
-        versions = filter(lambda e, l=l: l.match(e), contents)
+        versions = [e for e in contents if l.match(e)]
 
         def versrt(a,b):
             # since version numbers aren't really floats...
             aa = a[1:]
             bb = b[1:]
-            aal = string.split(aa, '.')
-            bbl = string.split(bb, '.')
+            aal = aa.split('.')
+            bbl = bb.split('.')
             # sequence comparison in python is lexicographical
             # which is exactly what we want.
             # Note we sort backwards so the highest version is first.

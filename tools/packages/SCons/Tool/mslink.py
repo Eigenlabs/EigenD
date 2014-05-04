@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,7 +31,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/mslink.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/mslink.py  2014/03/02 14:18:15 garyo"
 
 import os.path
 
@@ -103,7 +103,7 @@ def _dllEmitter(target, source, env, paramtp):
     no_import_lib = env.get('no_import_lib', 0)
 
     if not dll:
-        raise SCons.Errors.UserError, 'A shared library should have exactly one target with the suffix: %s' % env.subst('$%sSUFFIX' % paramtp)
+        raise SCons.Errors.UserError('A shared library should have exactly one target with the suffix: %s' % env.subst('$%sSUFFIX' % paramtp))
 
     insert_def = env.subst("$WINDOWS_INSERT_DEF")
     if not insert_def in ['', '0', 0] and \
@@ -116,14 +116,15 @@ def _dllEmitter(target, source, env, paramtp):
                             "WINDOWSDEFPREFIX", "WINDOWSDEFSUFFIX"))
 
     version_num, suite = SCons.Tool.msvs.msvs_parse_version(env.get('MSVS_VERSION', '6.0'))
-    if version_num >= 8.0 and env.get('WINDOWS_INSERT_MANIFEST', 0):
-        # MSVC 8 automatically generates .manifest files that must be installed
+    if version_num >= 8.0 and \
+            (env.get('WINDOWS_INSERT_MANIFEST', 0) or env.get('WINDOWS_EMBED_MANIFEST', 0)):
+        # MSVC 8 and above automatically generate .manifest files that must be installed
         extratargets.append(
             env.ReplaceIxes(dll,
                             '%sPREFIX' % paramtp, '%sSUFFIX' % paramtp,
                             "WINDOWSSHLIBMANIFESTPREFIX", "WINDOWSSHLIBMANIFESTSUFFIX"))
 
-    if env.has_key('PDB') and env['PDB']:
+    if 'PDB' in env and env['PDB']:
         pdb = env.arg2nodes('$PDB', target=target, source=source)[0]
         extratargets.append(pdb)
         target[0].attributes.pdb = pdb
@@ -158,42 +159,90 @@ def prog_emitter(target, source, env):
     SCons.Tool.msvc.validate_vars(env)
 
     extratargets = []
+    extrasources = []
 
     exe = env.FindIxes(target, "PROGPREFIX", "PROGSUFFIX")
     if not exe:
-        raise SCons.Errors.UserError, "An executable should have exactly one target with the suffix: %s" % env.subst("$PROGSUFFIX")
+        raise SCons.Errors.UserError("An executable should have exactly one target with the suffix: %s" % env.subst("$PROGSUFFIX"))
 
     version_num, suite = SCons.Tool.msvs.msvs_parse_version(env.get('MSVS_VERSION', '6.0'))
-    if version_num >= 8.0 and env.get('WINDOWS_INSERT_MANIFEST', 0):
-        # MSVC 8 automatically generates .manifest files that have to be installed
+    if version_num >= 8.0 and \
+            (env.get('WINDOWS_INSERT_MANIFEST', 0) or env.get('WINDOWS_EMBED_MANIFEST', 0)):
+        # MSVC 8 and above automatically generate .manifest files that have to be installed
         extratargets.append(
             env.ReplaceIxes(exe,
                             "PROGPREFIX", "PROGSUFFIX",
                             "WINDOWSPROGMANIFESTPREFIX", "WINDOWSPROGMANIFESTSUFFIX"))
 
-    if env.has_key('PDB') and env['PDB']:
+    if 'PDB' in env and env['PDB']:
         pdb = env.arg2nodes('$PDB', target=target, source=source)[0]
         extratargets.append(pdb)
         target[0].attributes.pdb = pdb
 
-    return (target+extratargets,source)
+    if version_num >= 11.0 and env.get('PCH', 0):
+        # MSVC 11 and above need the PCH object file to be added to the link line,
+        # otherwise you get link error LNK2011.
+        pchobj = SCons.Util.splitext(str(env['PCH']))[0] + '.obj'
+        # print "prog_emitter, version %s, appending pchobj %s"%(version_num, pchobj)
+        if pchobj not in extrasources:
+            extrasources.append(pchobj)
+
+    return (target+extratargets,source+extrasources)
 
 def RegServerFunc(target, source, env):
-    if env.has_key('register') and env['register']:
+    if 'register' in env and env['register']:
         ret = regServerAction([target[0]], [source[0]], env)
         if ret:
-            raise SCons.Errors.UserError, "Unable to register %s" % target[0]
+            raise SCons.Errors.UserError("Unable to register %s" % target[0])
         else:
             print "Registered %s sucessfully" % target[0]
         return ret
     return 0
 
+# These are the actual actions run to embed the manifest.
+# They are only called from the Check versions below.
+embedManifestExeAction = SCons.Action.Action('$MTEXECOM')
+embedManifestDllAction = SCons.Action.Action('$MTSHLIBCOM')
+
+def embedManifestDllCheck(target, source, env):
+    """Function run by embedManifestDllCheckAction to check for existence of manifest
+    and other conditions, and embed the manifest by calling embedManifestDllAction if so."""
+    if env.get('WINDOWS_EMBED_MANIFEST', 0):
+        manifestSrc = target[0].abspath + '.manifest'
+        if os.path.exists(manifestSrc):
+            ret = (embedManifestDllAction) ([target[0]],None,env)        
+            if ret:
+                raise SCons.Errors.UserError, "Unable to embed manifest into %s" % (target[0])
+            return ret
+        else:
+            print '(embed: no %s.manifest found; not embedding.)'%str(target[0])
+    return 0
+
+def embedManifestExeCheck(target, source, env):
+    """Function run by embedManifestExeCheckAction to check for existence of manifest
+    and other conditions, and embed the manifest by calling embedManifestExeAction if so."""
+    if env.get('WINDOWS_EMBED_MANIFEST', 0):
+        manifestSrc = target[0].abspath + '.manifest'
+        if os.path.exists(manifestSrc):
+            ret = (embedManifestExeAction) ([target[0]],None,env)
+            if ret:
+                raise SCons.Errors.UserError, "Unable to embed manifest into %s" % (target[0])
+            return ret
+        else:
+            print '(embed: no %s.manifest found; not embedding.)'%str(target[0])
+    return 0
+
+embedManifestDllCheckAction = SCons.Action.Action(embedManifestDllCheck, None)
+embedManifestExeCheckAction = SCons.Action.Action(embedManifestExeCheck, None)
+
 regServerAction = SCons.Action.Action("$REGSVRCOM", "$REGSVRCOMSTR")
 regServerCheck = SCons.Action.Action(RegServerFunc, None)
-shlibLinkAction = SCons.Action.Action('${TEMPFILE("$SHLINK $SHLINKFLAGS $_SHLINK_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_SHLINK_SOURCES")}')
-compositeShLinkAction = shlibLinkAction + regServerCheck
-ldmodLinkAction = SCons.Action.Action('${TEMPFILE("$LDMODULE $LDMODULEFLAGS $_LDMODULE_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_LDMODULE_SOURCES")}')
-compositeLdmodAction = ldmodLinkAction + regServerCheck
+shlibLinkAction = SCons.Action.Action('${TEMPFILE("$SHLINK $SHLINKFLAGS $_SHLINK_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_SHLINK_SOURCES")}', '$SHLINKCOMSTR')
+compositeShLinkAction = shlibLinkAction + regServerCheck + embedManifestDllCheckAction
+ldmodLinkAction = SCons.Action.Action('${TEMPFILE("$LDMODULE $LDMODULEFLAGS $_LDMODULE_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_LDMODULE_SOURCES")}', '$LDMODULECOMSTR')
+compositeLdmodAction = ldmodLinkAction + regServerCheck + embedManifestDllCheckAction
+exeLinkAction = SCons.Action.Action('${TEMPFILE("$LINK $LINKFLAGS /OUT:$TARGET.windows $_LIBDIRFLAGS $_LIBFLAGS $_PDB $SOURCES.windows")}', '$LINKCOMSTR')
+compositeLinkAction = exeLinkAction + embedManifestExeCheckAction
 
 def generate(env):
     """Add Builders and construction variables for ar to an Environment."""
@@ -209,7 +258,7 @@ def generate(env):
     env['LINK']        = 'link'
     env['LINKFLAGS']   = SCons.Util.CLVar('/nologo')
     env['_PDB'] = pdbGenerator
-    env['LINKCOM'] = '${TEMPFILE("$LINK $LINKFLAGS /OUT:$TARGET.windows $_LIBDIRFLAGS $_LIBFLAGS $_PDB $SOURCES.windows")}'
+    env['LINKCOM'] = compositeLinkAction
     env.Append(PROGEMITTER = [prog_emitter])
     env['LIBDIRPREFIX']='/LIBPATH:'
     env['LIBDIRSUFFIX']=''
@@ -237,6 +286,18 @@ def generate(env):
     env['REGSVR'] = os.path.join(SCons.Platform.win32.get_system_root(),'System32','regsvr32')
     env['REGSVRFLAGS'] = '/s '
     env['REGSVRCOM'] = '$REGSVR $REGSVRFLAGS ${TARGET.windows}'
+
+    env['WINDOWS_EMBED_MANIFEST'] = 0
+    env['MT'] = 'mt'
+    #env['MTFLAGS'] = ['-hashupdate']
+    env['MTFLAGS'] = SCons.Util.CLVar('/nologo')
+    # Note: use - here to prevent build failure if no manifest produced.
+    # This seems much simpler than a fancy system using a function action to see
+    # if the manifest actually exists before trying to run mt with it.
+    env['MTEXECOM']   = '-$MT $MTFLAGS -manifest ${TARGET}.manifest $_MANIFEST_SOURCES -outputresource:$TARGET;1'
+    env['MTSHLIBCOM'] = '-$MT $MTFLAGS -manifest ${TARGET}.manifest $_MANIFEST_SOURCES -outputresource:$TARGET;2'
+    # Future work garyo 27-Feb-11
+    env['_MANIFEST_SOURCES'] = None # _windowsManifestSources
 
     # Set-up ms tools paths
     msvc_setup_env_once(env)

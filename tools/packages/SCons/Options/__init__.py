@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,7 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Options/__init__.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Options/__init__.py  2014/03/02 14:18:15 garyo"
 
 __doc__ = """Place-holder for the old SCons.Options module hierarchy
 
@@ -48,24 +48,17 @@ class Options(SCons.Variables.Variables):
             msg = "The Options class is deprecated; use the Variables class instead."
             SCons.Warnings.warn(SCons.Warnings.DeprecatedOptionsWarning, msg)
             warned = True
-        apply(SCons.Variables.Variables.__init__,
-              (self,) + args,
-              kw)
+        SCons.Variables.Variables.__init__(self, *args, **kw)
 
     def AddOptions(self, *args, **kw):
-        return apply(SCons.Variables.Variables.AddVariables,
-                     (self,) + args,
-                     kw)
+        return SCons.Variables.Variables.AddVariables(self, *args, **kw)
 
     def UnknownOptions(self, *args, **kw):
-        return apply(SCons.Variables.Variables.UnknownVariables,
-                     (self,) + args,
-                     kw)
+        return SCons.Variables.Variables.UnknownVariables(self, *args, **kw)
 
     def FormatOptionHelpText(self, *args, **kw):
-        return apply(SCons.Variables.Variables.FormatVariableHelpText,
-                     (self,) + args,
-                     kw)
+        return SCons.Variables.Variables.FormatVariableHelpText(self, *args,
+                     **kw)
 
 # Local Variables:
 # tab-width:4

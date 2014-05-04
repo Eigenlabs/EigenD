@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -19,30 +19,29 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
-__revision__ = "src/engine/SCons/Scanner/Dir.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Scanner/Dir.py  2014/03/02 14:18:15 garyo"
 
 import SCons.Node.FS
 import SCons.Scanner
 
 def only_dirs(nodes):
     is_Dir = lambda n: isinstance(n.disambiguate(), SCons.Node.FS.Dir)
-    return filter(is_Dir, nodes)
+    return list(filter(is_Dir, nodes))
 
 def DirScanner(**kw):
     """Return a prototype Scanner instance for scanning
     directories for on-disk files"""
     kw['node_factory'] = SCons.Node.FS.Entry
     kw['recursive'] = only_dirs
-    return apply(SCons.Scanner.Base, (scan_on_disk, "DirScanner"), kw)
+    return SCons.Scanner.Base(scan_on_disk, "DirScanner", **kw)
 
 def DirEntryScanner(**kw):
     """Return a prototype Scanner instance for "scanning"
     directory Nodes for their in-memory entries"""
     kw['node_factory'] = SCons.Node.FS.Entry
     kw['recursive'] = None
-    return apply(SCons.Scanner.Base, (scan_in_memory, "DirEntryScanner"), kw)
+    return SCons.Scanner.Base(scan_in_memory, "DirEntryScanner", **kw)
 
 skip_entry = {}
 
@@ -67,7 +66,7 @@ for skip in skip_entry_list:
     skip_entry[skip] = 1
     skip_entry[SCons.Node.FS._my_normcase(skip)] = 1
 
-do_not_scan = lambda k: not skip_entry.has_key(k)
+do_not_scan = lambda k: k not in skip_entry
 
 def scan_on_disk(node, env, path=()):
     """
@@ -100,9 +99,8 @@ def scan_in_memory(node, env, path=()):
         # mixed Node types (Dirs and Files, for example) has a Dir as
         # the first entry.
         return []
-    entry_list = filter(do_not_scan, entries.keys())
-    entry_list.sort()
-    return map(lambda n, e=entries: e[n], entry_list)
+    entry_list = sorted(filter(do_not_scan, list(entries.keys())))
+    return [entries[n] for n in entry_list]
 
 # Local Variables:
 # tab-width:4

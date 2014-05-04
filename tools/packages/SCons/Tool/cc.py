@@ -8,7 +8,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,7 +30,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/cc.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/cc.py  2014/03/02 14:18:15 garyo"
 
 import SCons.Tool
 import SCons.Defaults
@@ -45,7 +45,7 @@ def add_common_cc_variables(env):
     Add underlying common "C compiler" variables that
     are used by multiple tools (specifically, c++).
     """
-    if not env.has_key('_CCCOMCOM'):
+    if '_CCCOMCOM' not in env:
         env['_CCCOMCOM'] = '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS'
         # It's a hack to test for darwin here, but the alternative
         # of creating an applecc.py to contain this seems overkill.
@@ -56,10 +56,10 @@ def add_common_cc_variables(env):
         if env['PLATFORM'] == 'darwin':
             env['_CCCOMCOM'] = env['_CCCOMCOM'] + ' $_FRAMEWORKPATH'
 
-    if not env.has_key('CCFLAGS'):
+    if 'CCFLAGS' not in env:
         env['CCFLAGS']   = SCons.Util.CLVar('')
 
-    if not env.has_key('SHCCFLAGS'):
+    if 'SHCCFLAGS' not in env:
         env['SHCCFLAGS'] = SCons.Util.CLVar('$CCFLAGS')
 
 def generate(env):
@@ -73,15 +73,6 @@ def generate(env):
         shared_obj.add_action(suffix, SCons.Defaults.ShCAction)
         static_obj.add_emitter(suffix, SCons.Defaults.StaticObjectEmitter)
         shared_obj.add_emitter(suffix, SCons.Defaults.SharedObjectEmitter)
-
-#    env['_CCCOMCOM'] = '$CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS'
-#    # It's a hack to test for darwin here, but the alternative of creating
-#    # an applecc.py to contain this seems overkill.  Maybe someday the Apple
-#    # platform will require more setup and this logic will be moved.
-#    env['FRAMEWORKS'] = SCons.Util.CLVar('')
-#    env['FRAMEWORKPATH'] = SCons.Util.CLVar('')
-#    if env['PLATFORM'] == 'darwin':
-#        env['_CCCOMCOM'] = env['_CCCOMCOM'] + ' $_FRAMEWORKPATH'
 
     add_common_cc_variables(env)
 

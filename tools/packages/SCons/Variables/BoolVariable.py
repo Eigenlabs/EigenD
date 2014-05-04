@@ -12,7 +12,7 @@ Usage example:
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -34,11 +34,9 @@ Usage example:
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Variables/BoolVariable.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Variables/BoolVariable.py  2014/03/02 14:18:15 garyo"
 
 __all__ = ['BoolVariable',]
-
-import string
 
 import SCons.Errors
 
@@ -57,7 +55,7 @@ def _text2bool(val):
 
     This is usable as 'converter' for SCons' Variables.
     """
-    lval = string.lower(val)
+    lval = val.lower()
     if lval in __true_strings: return True
     if lval in __false_strings: return False
     raise ValueError("Invalid value for boolean option: %s" % val)

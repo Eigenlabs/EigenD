@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,11 +31,10 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/swig.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/swig.py  2014/03/02 14:18:15 garyo"
 
 import os.path
 import re
-import string
 import subprocess
 
 import SCons.Action
@@ -54,7 +53,8 @@ def swigSuffixEmitter(env, source):
 
 # Match '%module test', as well as '%module(directors="1") test'
 # Also allow for test to be quoted (SWIG permits double quotes, but not single)
-_reModule = re.compile(r'%module(\s*\(.*\))?\s+("?)(.+)\2')
+# Also allow for the line to have spaces after test if not quoted
+_reModule = re.compile(r'%module(\s*\(.*\))?\s+("?)(\S+)\2')
 
 def _find_modules(src):
     """Find all modules referenced by %module lines in `src`, a SWIG .i file.
@@ -66,13 +66,13 @@ def _find_modules(src):
     try:
         matches = _reModule.findall(open(src).read())
     except IOError:
-        # If the file's not yet generated, guess the module name from the filename
+        # If the file's not yet generated, guess the module name from the file stem
         matches = []
-        mnames.append(os.path.splitext(src)[0])
+        mnames.append(os.path.splitext(os.path.basename(src))[0])
 
     for m in matches:
         mnames.append(m[2])
-        directors = directors or string.find(m[0], 'directors') >= 0
+        directors = directors or m[0].find('directors') >= 0
     return mnames, directors
 
 def _add_director_header_targets(target, env):
@@ -97,29 +97,26 @@ def _swigEmitter(target, source, env):
                 mnames, directors = _find_modules(src)
             if directors:
                 _add_director_header_targets(target, env)
-            python_files = map(lambda m: m + ".py", mnames)
+            python_files = [m + ".py" for m in mnames]
             outdir = env.subst('$SWIGOUTDIR', target=target, source=source)
             # .py files should be generated in SWIGOUTDIR if specified,
             # otherwise in the same directory as the target
             if outdir:
-                python_files = map(lambda j, o=outdir, e=env:
-                                   e.fs.File(os.path.join(o, j)),
-                                   python_files)
+                python_files = [env.fs.File(os.path.join(outdir, j)) for j in python_files]
             else:
-                python_files = map(lambda m, d=target[0].dir:
-                                   d.File(m), python_files)
+                python_files = [target[0].dir.File(m) for m in python_files]
             target.extend(python_files)
         if "-java" in flags:
             if mnames is None:
                 mnames, directors = _find_modules(src)
             if directors:
                 _add_director_header_targets(target, env)
-            java_files = map(lambda m: [m + ".java", m + "JNI.java"], mnames)
+            java_files = [[m + ".java", m + "JNI.java"] for m in mnames]
             java_files = SCons.Util.flatten(java_files)
             outdir = env.subst('$SWIGOUTDIR', target=target, source=source)
             if outdir:
-                 java_files = map(lambda j, o=outdir: os.path.join(o, j), java_files)
-            java_files = map(env.fs.File, java_files)
+                 java_files = [os.path.join(outdir, j) for j in java_files]
+            java_files = list(map(env.fs.File, java_files))
             for jf in java_files:
                 t_from_s = lambda t, p, s, x: t.dir
                 SCons.Util.AddMethod(jf, t_from_s, 'target_from_source')

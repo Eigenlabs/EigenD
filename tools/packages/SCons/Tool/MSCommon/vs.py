@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 The SCons Foundation
+# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,7 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/MSCommon/vs.py 4577 2009/12/27 19:43:56 scons"
+__revision__ = "src/engine/SCons/Tool/MSCommon/vs.py  2014/03/02 14:18:15 garyo"
 
 __doc__ = """Module to detect Visual Studio and/or Visual C/C++
 """
@@ -40,7 +40,7 @@ from common import debug, \
 
 import SCons.Tool.MSCommon.vc
 
-class VisualStudio:
+class VisualStudio(object):
     """
     An abstract base class for trying to find installed versions of
     Visual Studio.
@@ -211,6 +211,60 @@ SupportedVSList = [
     #             default_dirname='TBD',
     #),
 
+    # Visual Studio 11
+    # The batch file we look for is in the VC directory,
+    # so the devenv.com executable is up in ..\..\Common7\IDE.
+    VisualStudio('11.0',
+                 sdk_version='6.1',
+                 hkeys=[r'Microsoft\VisualStudio\11.0\Setup\VS\ProductDir'],
+                 common_tools_var='VS110COMNTOOLS',
+                 executable_path=r'Common7\IDE\devenv.com',
+                 batch_file_path=r'Common7\Tools\vsvars32.bat',
+                 default_dirname='Microsoft Visual Studio 11',
+                 supported_arch=['x86', 'amd64'],
+    ),
+
+    # Visual C++ 11 Express Edition
+    # The batch file we look for is in the VC directory,
+    # so the VCExpress.exe executable is up in ..\..\Common7\IDE.
+    VisualStudio('11.0Exp',
+                 vc_version='11.0',
+                 sdk_version='6.1',
+                 hkeys=[r'Microsoft\VCExpress\11.0\Setup\VS\ProductDir'],
+                 common_tools_var='VS110COMNTOOLS',
+                 executable_path=r'Common7\IDE\VCExpress.exe',
+                 batch_file_path=r'Common7\Tools\vsvars32.bat',
+                 default_dirname='Microsoft Visual Studio 11',
+                 supported_arch=['x86'],
+    ),
+
+    # Visual Studio 2010
+    # The batch file we look for is in the VC directory,
+    # so the devenv.com executable is up in ..\..\Common7\IDE.
+    VisualStudio('10.0',
+                 sdk_version='6.1',
+                 hkeys=[r'Microsoft\VisualStudio\10.0\Setup\VS\ProductDir'],
+                 common_tools_var='VS100COMNTOOLS',
+                 executable_path=r'Common7\IDE\devenv.com',
+                 batch_file_path=r'Common7\Tools\vsvars32.bat',
+                 default_dirname='Microsoft Visual Studio 10',
+                 supported_arch=['x86', 'amd64'],
+    ),
+
+    # Visual C++ 2010 Express Edition
+    # The batch file we look for is in the VC directory,
+    # so the VCExpress.exe executable is up in ..\..\Common7\IDE.
+    VisualStudio('10.0Exp',
+                 vc_version='10.0',
+                 sdk_version='6.1',
+                 hkeys=[r'Microsoft\VCExpress\10.0\Setup\VS\ProductDir'],
+                 common_tools_var='VS100COMNTOOLS',
+                 executable_path=r'Common7\IDE\VCExpress.exe',
+                 batch_file_path=r'Common7\Tools\vsvars32.bat',
+                 default_dirname='Microsoft Visual Studio 10',
+                 supported_arch=['x86'],
+    ),
+
     # Visual Studio 2008
     # The batch file we look for is in the VC directory,
     # so the devenv.com executable is up in ..\..\Common7\IDE.
@@ -255,7 +309,7 @@ SupportedVSList = [
     # The batch file we look for is in the VC directory,
     # so the VCExpress.exe executable is up in ..\..\Common7\IDE.
     VisualStudio('8.0Exp',
-                 vc_version='8.0',
+                 vc_version='8.0Exp',
                  sdk_version='6.0A',
                  hkeys=[r'Microsoft\VCExpress\8.0\Setup\VS\ProductDir'],
                  common_tools_var='VS80COMNTOOLS',
@@ -384,12 +438,14 @@ def get_vs_by_version(msvs):
     global InstalledVSMap
     global SupportedVSMap
 
-    if not SupportedVSMap.has_key(msvs):
+    debug('vs.py:get_vs_by_version()')
+    if msvs not in SupportedVSMap:
         msg = "Visual Studio version %s is not supported" % repr(msvs)
-        raise SCons.Errors.UserError, msg
+        raise SCons.Errors.UserError(msg)
     get_installed_visual_studios()
     vs = InstalledVSMap.get(msvs)
     debug('InstalledVSMap:%s'%InstalledVSMap)
+    debug('vs.py:get_vs_by_version: found vs:%s'%vs)
     # Some check like this would let us provide a useful error message
     # if they try to set a Visual Studio version that's not installed.
     # However, we also want to be able to run tests (like the unit
@@ -413,15 +469,13 @@ def get_default_version(env):
     version: str
         the default version.
     """
-    if not env.has_key('MSVS') or not SCons.Util.is_Dict(env['MSVS']):
-        # TODO(1.5):
-        #versions = [vs.version for vs in get_installed_visual_studios()]
-        versions = map(lambda vs: vs.version, get_installed_visual_studios())
+    if 'MSVS' not in env or not SCons.Util.is_Dict(env['MSVS']):
+        versions = [vs.version for vs in get_installed_visual_studios()]
         env['MSVS'] = {'VERSIONS' : versions}
     else:
         versions = env['MSVS'].get('VERSIONS', [])
 
-    if not env.has_key('MSVS_VERSION'):
+    if 'MSVS_VERSION' not in env:
         if versions:
             env['MSVS_VERSION'] = versions[0] #use highest version by default
         else:
@@ -449,7 +503,7 @@ def get_default_arch(env):
         arch = 'x86'
     elif not arch in msvs.get_supported_arch():
         fmt = "Visual Studio version %s does not support architecture %s"
-        raise SCons.Errors.UserError, fmt % (env['MSVS_VERSION'], arch)
+        raise SCons.Errors.UserError(fmt % (env['MSVS_VERSION'], arch))
 
     return arch
 
@@ -471,11 +525,15 @@ def msvs_setup_env(env):
         vars = ('LIB', 'LIBPATH', 'PATH', 'INCLUDE')
 
         msvs_list = get_installed_visual_studios()
-        # TODO(1.5):
-        #vscommonvarnames = [ vs.common_tools_var for vs in msvs_list ]
-        vscommonvarnames = map(lambda vs: vs.common_tools_var, msvs_list)
-        nenv = normalize_env(env['ENV'], vscommonvarnames + ['COMSPEC'])
-        output = get_output(batfilename, arch, env=nenv)
+        vscommonvarnames = [vs.common_tools_var for vs in msvs_list]
+        save_ENV = env['ENV']
+        nenv = normalize_env(env['ENV'],
+                             ['COMSPEC'] + vscommonvarnames,
+                             force=True)
+        try:
+            output = get_output(batfilename, arch, env=nenv)
+        finally:
+            env['ENV'] = save_ENV
         vars = parse_output(output, vars)
 
         for k, v in vars.items():
@@ -485,9 +543,7 @@ def query_versions():
     """Query the system to get available versions of VS. A version is
     considered when a batfile is found."""
     msvs_list = get_installed_visual_studios()
-    # TODO(1.5)
-    #versions = [ msvs.version for msvs in msvs_list ]
-    versions = map(lambda msvs:  msvs.version, msvs_list)
+    versions = [msvs.version for msvs in msvs_list]
     return versions
 
 # Local Variables:
