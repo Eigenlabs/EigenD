@@ -39,7 +39,7 @@ if env['IS_WINDOWS']:
             modules/juce_gui_basics/juce_gui_basics.cpp
             modules/juce_gui_extra/juce_gui_extra.cpp
         """)
-    juce_env.Append(CCFLAGS='/D "WINDOWS=1" /D "_LIB" /D "WIN32" /D "_WINDOWS" /D "NDEBUG" /D "JUCE_DLL_BUILD=1" /arch:SSE')
+    juce_env.Append(CCFLAGS='/D "WINDOWS=1" /D "_LIB" /D "WIN32" /D "_WINDOWS" /D "NDEBUG" /D "JUCE_DLL_BUILD=1" /arch:SSE2')
     juce_env.Append(LINKFLAGS="/nodefaultlib:libcmt.lib")
     juce_env.Append(LINKFLAGS='WS2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib')
     juce_env.Append(LINKFLAGS='advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib')
