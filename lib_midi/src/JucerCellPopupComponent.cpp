@@ -392,7 +392,7 @@ CellPopupComponent::CellPopupComponent ()
     ok->setColour (TextButton::buttonColourId, Colour (0xffc1c1c1));
 
     addAndMakeVisible (boundslo = new Slider ("boundslo dial"));
-    boundslo->setRange (0, 100, 1);
+    boundslo->setRange (0, 100, 10);
     boundslo->setSliderStyle (Slider::Rotary);
     boundslo->setTextBoxStyle (Slider::NoTextBox, true, 45, 14);
     boundslo->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
@@ -404,9 +404,10 @@ CellPopupComponent::CellPopupComponent ()
     boundslo->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
     boundslo->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundslo->addListener (this);
+    boundslo->addMouseListener (this,false);
 
     addAndMakeVisible (boundsbase = new Slider ("boundsbase dial"));
-    boundsbase->setRange (-100, 100, 1);
+    boundsbase->setRange (-100, 100, 10);
     boundsbase->setSliderStyle (Slider::Rotary);
     boundsbase->setTextBoxStyle (Slider::NoTextBox, true, 45, 14);
     boundsbase->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
@@ -417,9 +418,10 @@ CellPopupComponent::CellPopupComponent ()
     boundsbase->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
     boundsbase->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundsbase->addListener (this);
+    boundsbase->addMouseListener (this,false);
 
     addAndMakeVisible (boundshi = new Slider ("boundshi dial"));
-    boundshi->setRange (0, 100, 1);
+    boundshi->setRange (0, 100, 10);
     boundshi->setSliderStyle (Slider::Rotary);
     boundshi->setTextBoxStyle (Slider::NoTextBox, true, 45, 14);
     boundshi->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
@@ -430,6 +432,7 @@ CellPopupComponent::CellPopupComponent ()
     boundshi->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
     boundshi->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundshi->addListener (this);
+    boundshi->addMouseListener (this,false);
 
     addAndMakeVisible (scale_factor_invert = new ToggleButton ("scale factor invert toggle button"));
     scale_factor_invert->setButtonText ("Invert");
@@ -776,6 +779,25 @@ void CellPopupComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     //[/UsercomboBoxChanged_Post]
 }
 
+void CellPopupComponent::mouseDrag (const MouseEvent& e)
+{
+    //[UserCode_mouseDrag] -- Add your code here...
+    Component * pComp=e.eventComponent;
+    bool ctrl=e.mods.isCtrlDown();
+    if (pComp==boundsbase || pComp==boundshi || pComp==boundslo)
+    {
+		// all above are sliders, so we get the check current interval and change if necessary
+    	Slider * pSlider=(Slider*) e.eventComponent;
+        int i=pSlider->getInterval();
+        int ni = ctrl ? 1 : 10;
+        if (ni!=i)
+        {
+            boundsbase->setRange(pSlider->getMinimum(),boundsbase->getMaximum(),ni);
+        }
+    }
+    //[/UserCode_mouseDrag]
+}
+
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
@@ -795,6 +817,9 @@ BEGIN_JUCER_METADATA
                  parentClasses="public Component, public MessageListener" constructorParams=""
                  variableInitialisers="" snapPixels="8" snapActive="1" snapShown="1"
                  overlayOpacity="0.330" fixedSize="1" initialWidth="208" initialHeight="550">
+  <METHODS>
+    <METHOD name="mouseDrag (const MouseEvent&amp; e)"/>
+  </METHODS>
   <BACKGROUND backgroundColour="0"/>
   <GROUPCOMPONENT name="bounds group" id="6d888bc9426a2e47" memberName="bounds_group"
                   virtualName="" explicitFocusOrder="0" pos="8 70 192 112" outlinecol="66eeeeee"
