@@ -64,6 +64,8 @@ public:
     void comboBoxChanged (ComboBox* comboBoxThatHasChanged);
     void mouseDrag (const MouseEvent& e);
 
+
+
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     midi::mapper_cell_editor_t *cell_editor_;

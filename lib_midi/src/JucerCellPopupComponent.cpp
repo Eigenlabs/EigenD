@@ -404,7 +404,6 @@ CellPopupComponent::CellPopupComponent ()
     boundslo->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
     boundslo->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundslo->addListener (this);
-    boundslo->addMouseListener (this,false);
 
     addAndMakeVisible (boundsbase = new Slider ("boundsbase dial"));
     boundsbase->setRange (-100, 100, 10);
@@ -418,7 +417,6 @@ CellPopupComponent::CellPopupComponent ()
     boundsbase->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
     boundsbase->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundsbase->addListener (this);
-    boundsbase->addMouseListener (this,false);
 
     addAndMakeVisible (boundshi = new Slider ("boundshi dial"));
     boundshi->setRange (0, 100, 10);
@@ -432,7 +430,6 @@ CellPopupComponent::CellPopupComponent ()
     boundshi->setColour (Slider::textBoxHighlightColourId, Colour (0x40000000));
     boundshi->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundshi->addListener (this);
-    boundshi->addMouseListener (this,false);
 
     addAndMakeVisible (scale_factor_invert = new ToggleButton ("scale factor invert toggle button"));
     scale_factor_invert->setButtonText ("Invert");
@@ -530,6 +527,10 @@ CellPopupComponent::CellPopupComponent ()
     }
     secondary_cc->setEnabled(false);
     control_scope_channel_number->setEnabled(false);
+
+    boundslo->addMouseListener (this,false);
+    boundsbase->addMouseListener (this,false);
+    boundshi->addMouseListener (this,false);
     //[/UserPreSize]
 
     setSize (208, 550);
@@ -902,19 +903,20 @@ BEGIN_JUCER_METADATA
           virtualName="" explicitFocusOrder="0" pos="21 88 40 40" thumbcol="ff8a8a8a"
           trackcol="7fffffff" rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff"
           textboxtext="ffeeeeee" textboxbkgd="ffffff" textboxhighlight="40000000"
-          textboxoutline="0" min="0" max="100" int="1" style="Rotary" textBoxPos="NoTextBox"
-          textBoxEditable="0" textBoxWidth="45" textBoxHeight="14" skewFactor="1"/>
+          textboxoutline="0" min="0" max="100" int="10" style="Rotary"
+          textBoxPos="NoTextBox" textBoxEditable="0" textBoxWidth="45"
+          textBoxHeight="14" skewFactor="1"/>
   <SLIDER name="boundsbase dial" id="2db1da6e8c60e90c" memberName="boundsbase"
           virtualName="" explicitFocusOrder="0" pos="85 88 40 40" thumbcol="ff8a8a8a"
           rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff" textboxtext="ffeeeeee"
           textboxbkgd="ffffff" textboxhighlight="40000000" textboxoutline="0"
-          min="-100" max="100" int="1" style="Rotary" textBoxPos="NoTextBox"
+          min="-100" max="100" int="10" style="Rotary" textBoxPos="NoTextBox"
           textBoxEditable="0" textBoxWidth="45" textBoxHeight="14" skewFactor="1"/>
   <SLIDER name="boundshi dial" id="1c37d364908c9764" memberName="boundshi"
           virtualName="" explicitFocusOrder="0" pos="149 88 40 40" thumbcol="ff8a8a8a"
           rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff" textboxtext="ffeeeeee"
           textboxbkgd="ffffff" textboxhighlight="40000000" textboxoutline="0"
-          min="0" max="100" int="1" style="Rotary" textBoxPos="NoTextBox"
+          min="0" max="100" int="10" style="Rotary" textBoxPos="NoTextBox"
           textBoxEditable="0" textBoxWidth="45" textBoxHeight="14" skewFactor="1"/>
   <TOGGLEBUTTON name="scale factor invert toggle button" id="a30c500f267f6636"
                 memberName="scale_factor_invert" virtualName="" explicitFocusOrder="0"
