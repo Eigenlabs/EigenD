@@ -24,6 +24,9 @@
 #include <lib_midi/control_mapper_gui.h>
 
 #include "juce.h"
+
+#include "SliderEx.h"
+
 //[/Headers]
 
 
@@ -62,7 +65,6 @@ public:
     void sliderValueChanged (Slider* sliderThatWasMoved);
     void buttonClicked (Button* buttonThatWasClicked);
     void comboBoxChanged (ComboBox* comboBoxThatHasChanged);
-    void mouseDrag (const MouseEvent& e);
 
 
 
@@ -91,9 +93,9 @@ private:
     ScopedPointer<Label> hi_label;
     ScopedPointer<Label> hi;
     ScopedPointer<TextButton> ok;
-    ScopedPointer<Slider> boundslo;
-    ScopedPointer<Slider> boundsbase;
-    ScopedPointer<Slider> boundshi;
+    ScopedPointer<SliderEx> boundslo;
+    ScopedPointer<SliderEx> boundsbase;
+    ScopedPointer<SliderEx> boundshi;
     ScopedPointer<ToggleButton> scale_factor_invert;
     ScopedPointer<GroupComponent> data_decimation_group;
     ScopedPointer<Slider> data_decimation;

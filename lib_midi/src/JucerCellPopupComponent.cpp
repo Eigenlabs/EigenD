@@ -391,7 +391,7 @@ CellPopupComponent::CellPopupComponent ()
     ok->addListener (this);
     ok->setColour (TextButton::buttonColourId, Colour (0xffc1c1c1));
 
-    addAndMakeVisible (boundslo = new Slider ("boundslo dial"));
+    addAndMakeVisible (boundslo = new SliderEx ("boundslo dial"));
     boundslo->setRange (0, 100, 0.5);
     boundslo->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     boundslo->setTextBoxStyle (Slider::NoTextBox, true, 45, 14);
@@ -405,7 +405,7 @@ CellPopupComponent::CellPopupComponent ()
     boundslo->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundslo->addListener (this);
 
-    addAndMakeVisible (boundsbase = new Slider ("boundsbase dial"));
+    addAndMakeVisible (boundsbase = new SliderEx ("boundsbase dial"));
     boundsbase->setRange (-100, 100, 1);
     boundsbase->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     boundsbase->setTextBoxStyle (Slider::NoTextBox, true, 45, 14);
@@ -418,7 +418,7 @@ CellPopupComponent::CellPopupComponent ()
     boundsbase->setColour (Slider::textBoxOutlineColourId, Colour (0x00000000));
     boundsbase->addListener (this);
 
-    addAndMakeVisible (boundshi = new Slider ("boundshi dial"));
+    addAndMakeVisible (boundshi = new SliderEx ("boundshi dial"));
     boundshi->setRange (0, 100, 0.5);
     boundshi->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     boundshi->setTextBoxStyle (Slider::NoTextBox, true, 45, 14);
@@ -776,12 +776,6 @@ void CellPopupComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     //[/UsercomboBoxChanged_Post]
 }
 
-void CellPopupComponent::mouseDrag (const MouseEvent& e)
-{
-    //[UserCode_mouseDrag] -- Add your code here...
-    //[/UserCode_mouseDrag]
-}
-
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
@@ -801,9 +795,6 @@ BEGIN_JUCER_METADATA
                  parentClasses="public Component, public MessageListener" constructorParams=""
                  variableInitialisers="" snapPixels="8" snapActive="1" snapShown="1"
                  overlayOpacity="0.330" fixedSize="1" initialWidth="208" initialHeight="550">
-  <METHODS>
-    <METHOD name="mouseDrag (const MouseEvent&amp; e)"/>
-  </METHODS>
   <BACKGROUND backgroundColour="0"/>
   <GROUPCOMPONENT name="bounds group" id="6d888bc9426a2e47" memberName="bounds_group"
                   virtualName="" explicitFocusOrder="0" pos="8 70 192 112" outlinecol="66eeeeee"
@@ -883,24 +874,24 @@ BEGIN_JUCER_METADATA
               explicitFocusOrder="0" pos="152 24R 48 24" bgColOff="ffc1c1c1"
               buttonText="Ok" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <SLIDER name="boundslo dial" id="7b019cec9fcb7ea1" memberName="boundslo"
-          virtualName="" explicitFocusOrder="0" pos="21 88 40 40" thumbcol="ff8a8a8a"
-          trackcol="7fffffff" rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff"
-          textboxtext="ffeeeeee" textboxbkgd="ffffff" textboxhighlight="40000000"
-          textboxoutline="0" min="0" max="100" int="0.2000000000000000111"
-          style="RotaryHorizontalVerticalDrag" textBoxPos="NoTextBox" textBoxEditable="0"
-          textBoxWidth="45" textBoxHeight="14" skewFactor="1"/>
+          virtualName="SliderEx" explicitFocusOrder="0" pos="21 88 40 40"
+          thumbcol="ff8a8a8a" trackcol="7fffffff" rotarysliderfill="ddffffff"
+          rotaryslideroutline="66ffffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
+          textboxhighlight="40000000" textboxoutline="0" min="0" max="100"
+          int="0.5" style="RotaryHorizontalVerticalDrag" textBoxPos="NoTextBox"
+          textBoxEditable="0" textBoxWidth="45" textBoxHeight="14" skewFactor="1"/>
   <SLIDER name="boundsbase dial" id="2db1da6e8c60e90c" memberName="boundsbase"
-          virtualName="" explicitFocusOrder="0" pos="85 88 40 40" thumbcol="ff8a8a8a"
-          rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff" textboxtext="ffeeeeee"
-          textboxbkgd="ffffff" textboxhighlight="40000000" textboxoutline="0"
-          min="-100" max="100" int="0.2000000000000000111" style="RotaryHorizontalVerticalDrag"
+          virtualName="SliderEx" explicitFocusOrder="0" pos="85 88 40 40"
+          thumbcol="ff8a8a8a" rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff"
+          textboxtext="ffeeeeee" textboxbkgd="ffffff" textboxhighlight="40000000"
+          textboxoutline="0" min="-100" max="100" int="1" style="RotaryHorizontalVerticalDrag"
           textBoxPos="NoTextBox" textBoxEditable="0" textBoxWidth="45"
           textBoxHeight="14" skewFactor="1"/>
   <SLIDER name="boundshi dial" id="1c37d364908c9764" memberName="boundshi"
-          virtualName="" explicitFocusOrder="0" pos="149 88 40 40" thumbcol="ff8a8a8a"
-          rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff" textboxtext="ffeeeeee"
-          textboxbkgd="ffffff" textboxhighlight="40000000" textboxoutline="0"
-          min="0" max="100" int="0.2000000000000000111" style="RotaryHorizontalVerticalDrag"
+          virtualName="SliderEx" explicitFocusOrder="0" pos="149 88 40 40"
+          thumbcol="ff8a8a8a" rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff"
+          textboxtext="ffeeeeee" textboxbkgd="ffffff" textboxhighlight="40000000"
+          textboxoutline="0" min="0" max="100" int="0.5" style="RotaryHorizontalVerticalDrag"
           textBoxPos="NoTextBox" textBoxEditable="0" textBoxWidth="45"
           textBoxHeight="14" skewFactor="1"/>
   <TOGGLEBUTTON name="scale factor invert toggle button" id="a30c500f267f6636"

@@ -26,6 +26,7 @@ midilib_files=Split("""
 	control_mapper_gui.cpp midi_converter.cpp control_mapping.cpp
     control_params.cpp JucerPopupDialogComponent.cpp
     JucerCellPopupComponent.cpp JucerGlobalSettingsComponent.cpp JucerHelpComponent.cpp
+	SliderEx.cpp
     """)
 
 midilib_env=env.Clone()
