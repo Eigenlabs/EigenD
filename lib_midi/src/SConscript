@@ -31,6 +31,6 @@ midilib_files=Split("""
 
 midilib_env=env.Clone()
 
-midilib_env.PiSharedLibrary('midilib',midilib_files,libraries=Split('pia pic pie piw pijuce'),package='eigend')
+midilib_env.PiSharedLibrary('midilib',midilib_files,libraries=Split('pia pic pie piw pijuce'),package='eigend',public=True,locked=True)
 
 env.PiPipBinding('midilib_native',env.Pipfile('midilib.pip'),libraries=Split('midilib pic pia pie piw pijuce'),package='eigend')

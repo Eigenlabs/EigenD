@@ -13,5 +13,8 @@ eigend-gpl
 steinberg
 xcuserdata
 contents.xcworkspacedata
+.cproject
+.project
+.settings
 lib_juce/EigenD/JuceLibraryCode
 lib_juce/EigenD/Builds
