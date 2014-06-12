@@ -12,6 +12,17 @@ Contributor Agreement before we can accept anything from you.
 Please go to the Developer Wiki for the Contributors Agreement.
 
      http://www.eigenlabs.com/wiki/Developers/
+     
+Issues
+------
+If you have any issues either building or running EigenD, 
+please report these on the eigenlabs forum
+     http://www.eigenlabs.com/forum/
+     
+The forum is read by many eigenharp players (as well as Eigenlabs),
+and you will get a faster response than, posting to issues on github
+which is only subscribed to by a small number.
+
 
 Building EigenD
 ---------------
