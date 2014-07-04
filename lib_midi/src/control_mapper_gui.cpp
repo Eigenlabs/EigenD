@@ -938,7 +938,8 @@ namespace midi
 
     void mapper_tablelistbox_t::delegatedMouseWheelMove(const MouseEvent& e, const juce::MouseWheelDetails &d)
     {
-        if(d.deltaX != 0 || d.deltaY != 0)
+        if((d.deltaX != 0 && getViewport()->getHorizontalScrollBar()->isVisible()) ||
+           (d.deltaY != 0 && getViewport()->getVerticalScrollBar()->isVisible()))
         {
             juce::TableListBox::mouseWheelMove(e, d);
         }
