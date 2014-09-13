@@ -743,7 +743,7 @@ struct ItemSorter
 {
     static int compareElements (const ValueTree& first, const ValueTree& second)
     {
-        return first [Ids::name].toString().compareIgnoreCase (second [Ids::name].toString());
+        return first [Ids::name].toString().compareNatural (second [Ids::name].toString());
     }
 };
 
@@ -755,7 +755,7 @@ struct ItemSorterWithGroupsAtStart
         const bool secondIsGroup = second.hasType (Ids::GROUP);
 
         if (firstIsGroup == secondIsGroup)
-            return first [Ids::name].toString().compareIgnoreCase (second [Ids::name].toString());
+            return first [Ids::name].toString().compareNatural (second [Ids::name].toString());
 
         return firstIsGroup ? -1 : 1;
     }
@@ -835,7 +835,7 @@ void Project::Item::addFileUnchecked (const File& file, int insertIndex, const b
     Item item (project, ValueTree (Ids::FILE));
     item.initialiseMissingProperties();
     item.getNameValue() = file.getFileName();
-    item.getShouldCompileValue() = shouldCompile && file.hasFileExtension ("cpp;mm;c;m;cc;cxx;r");
+    item.getShouldCompileValue() = shouldCompile && file.hasFileExtension (fileTypesToCompileByDefault);
     item.getShouldAddToResourceValue() = project.shouldBeAddedToBinaryResourcesByDefault (file);
 
     if (canContain (item))
