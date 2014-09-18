@@ -140,7 +140,7 @@ namespace
             if(!legato_mode_)
             {
                 list_.remove(c);
-                list_.push_front(c);
+                list_.push_back(c);
             }
         }
 
