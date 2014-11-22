@@ -670,7 +670,7 @@ namespace midi
 
     midi_from_belcanto_t::impl_t::impl_t(const piw::cookie_t &cookie, piw::clockdomain_ctl_t *clk_domain):
         root_t(0), piw::event_data_source_real_t(piw::pathnull(0)),
-        upstream_clk_(0), downstream_clk_(0), output_buffer_(1,4*PIW_DATAQUEUE_SIZE_NORM),
+        upstream_clk_(0), downstream_clk_(0), output_buffer_(1, 16*PIW_DATAQUEUE_SIZE_NORM),
         clk_state_(CLKSTATE_IDLE), clk_domain_(clk_domain),
         channel_(1), poly_(false), omni_(false), time_(0ULL),
         resend_current_(midi::resend_current_t::method(this,&midi_from_belcanto_t::impl_t::dummy)),

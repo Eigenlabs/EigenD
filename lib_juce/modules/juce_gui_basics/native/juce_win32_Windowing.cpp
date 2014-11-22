@@ -177,6 +177,7 @@ static void setWindowZOrder (HWND hwnd, HWND insertAfter)
 //==============================================================================
 static void setDPIAwareness()
 {
+   #if ! JUCE_DISABLE_WIN32_DPI_AWARENESS
     if (JUCEApplicationBase::isStandaloneApp())
     {
         if (setProcessDPIAwareness == nullptr)
@@ -203,6 +204,7 @@ static void setDPIAwareness()
             }
         }
     }
+   #endif
 }
 
 static double getGlobalDPI()
@@ -1747,10 +1749,13 @@ private:
 
         doMouseMove (position);
 
-        updateModifiersFromWParam (wParam);
-        isDragging = true;
+        if (isValidPeer (this))
+        {
+            updateModifiersFromWParam (wParam);
+            isDragging = true;
 
-        doMouseEvent (position);
+            doMouseEvent (position);
+        }
     }
 
     void doMouseUp (Point<float> position, const WPARAM wParam)

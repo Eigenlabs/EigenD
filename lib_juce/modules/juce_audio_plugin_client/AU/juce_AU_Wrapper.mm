@@ -482,6 +482,8 @@ public:
             outParameterInfo.minValue = 0.0f;
             outParameterInfo.maxValue = 1.0f;
             outParameterInfo.defaultValue = juceFilter->getParameterDefaultValue (index);
+            jassert (outParameterInfo.defaultValue >= outParameterInfo.minValue
+                      && outParameterInfo.defaultValue <= outParameterInfo.maxValue);
             outParameterInfo.unit = kAudioUnitParameterUnit_Generic;
 
             return noErr;
@@ -561,7 +563,6 @@ public:
         info.editOriginTime = 0;
         info.ppqPositionOfLastBarStart = 0;
         info.isRecording = false;
-        info.isLooping = false;
         info.ppqLoopStart = 0;
         info.ppqLoopEnd = 0;
 
@@ -598,7 +599,7 @@ public:
         }
 
         double outCurrentSampleInTimeLine, outCycleStartBeat, outCycleEndBeat;
-        Boolean playing = false, playchanged, looping;
+        Boolean playing = false, looping = false, playchanged;
 
         if (CallHostTransportState (&playing,
                                     &playchanged,
@@ -614,6 +615,7 @@ public:
         info.isPlaying = playing;
         info.timeInSamples = (int64) (outCurrentSampleInTimeLine + 0.5);
         info.timeInSeconds = info.timeInSamples / getSampleRate();
+        info.isLooping = looping;
 
         return true;
     }
@@ -645,7 +647,9 @@ public:
 
     void audioProcessorChanged (AudioProcessor*)
     {
-        PropertyChanged (kAudioUnitProperty_Latency, kAudioUnitScope_Global, 0);
+        PropertyChanged (kAudioUnitProperty_Latency,       kAudioUnitScope_Global, 0);
+        PropertyChanged (kAudioUnitProperty_ParameterList, kAudioUnitScope_Global, 0);
+        PropertyChanged (kAudioUnitProperty_ParameterInfo, kAudioUnitScope_Global, 0);
     }
 
     bool StreamFormatWritable (AudioUnitScope, AudioUnitElement) override
@@ -662,9 +666,9 @@ public:
     ComponentResult Initialize() override
     {
        #if ! JucePlugin_IsSynth
-        const int numIns  = GetInput(0)  != 0 ? (int) GetInput(0)->GetStreamFormat().mChannelsPerFrame : 0;
+        const int numIns  = findNumInputChannels();
        #endif
-        const int numOuts = GetOutput(0) != 0 ? (int) GetOutput(0)->GetStreamFormat().mChannelsPerFrame : 0;
+        const int numOuts = findNumOutputChannels();
 
         bool isValidChannelConfig = false;
 
@@ -708,19 +712,32 @@ public:
         return JuceAUBaseClass::Reset (inScope, inElement);
     }
 
+    int findNumInputChannels()
+    {
+       #if ! JucePlugin_IsSynth
+        if (AUInputElement* e = GetInput(0))
+            return (int) e->GetStreamFormat().mChannelsPerFrame;
+       #endif
+
+        return 0;
+    }
+
+    int findNumOutputChannels()
+    {
+        if (AUOutputElement* e = GetOutput(0))
+            return (int) e->GetStreamFormat().mChannelsPerFrame;
+
+        return 0;
+    }
+
     void prepareToPlay()
     {
         if (juceFilter != nullptr)
         {
-            juceFilter->setPlayConfigDetails (
-                 #if ! JucePlugin_IsSynth
-                  (int) GetInput(0)->GetStreamFormat().mChannelsPerFrame,
-                 #else
-                  0,
-                 #endif
-                  (int) GetOutput(0)->GetStreamFormat().mChannelsPerFrame,
-                  getSampleRate(),
-                  (int) GetMaxFramesPerSlice());
+            juceFilter->setPlayConfigDetails (findNumInputChannels(),
+                                              findNumOutputChannels(),
+                                              getSampleRate(),
+                                              (int) GetMaxFramesPerSlice());
 
             bufferSpace.setSize (juceFilter->getNumInputChannels() + juceFilter->getNumOutputChannels(),
                                  (int) GetMaxFramesPerSlice() + 32);
@@ -1330,7 +1347,7 @@ public:
             }
             else
             {
-                jassertfalse // can't get a pointer to our effect
+                jassertfalse; // can't get a pointer to our effect
             }
         }
 
