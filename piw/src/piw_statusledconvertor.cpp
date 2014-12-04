@@ -24,7 +24,7 @@
 #include <picross/pic_fastalloc.h>
 #include <picross/pic_ref.h>
 
-#define MAX_COLUMNS 10
+#define MAX_COLUMNS 50
 
 namespace
 {
@@ -81,6 +81,9 @@ struct piw::statusledconvertor_t::impl_t: virtual pic::tracked_t, virtual pic::l
 {
     impl_t(unsigned num_columns, const unsigned *column_len): num_columns_(num_columns), column_len_(column_len)
     {
+
+		PIC_ASSERT(num_columns <= MAX_COLUMNS);
+
         num_keys_ = 0;
 
         for(unsigned i=0;i<num_columns_;i++)
