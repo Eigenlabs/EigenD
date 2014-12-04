@@ -325,7 +325,10 @@ class Backend(eigend_native.c2p):
 
             self.collector = GarbageCollector(self.scaffold,self.garbage_context)
             self.collector.start()
-            self.latest_release.start(cookie,info)
+			
+            if os.getenv('PI_NOCHECK') is None:
+                self.latest_release.start(cookie,info)
+
             self.run_background(bginit)
         except:
             print >>sys.__stdout__,'Initialisation failure'
