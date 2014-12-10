@@ -1,0 +1,24 @@
+
+<<<
+#include "post_install.h"
+>>>
+
+from piagent_native[piagent/piagent.pip] import scaffold_gui
+
+class c2p[post_install::c2p_t]
+{
+    c2p()
+    virtual void set_args(const char *) = 0
+    virtual void initialise(p2c *, scaffold_gui *) = 0
+    virtual stdstr get_new_version() = 0
+
+    inline token(self,args)
+    <<<
+        return PyCObject_FromVoidPtr(self,0);
+    >>>
+}
+
+class p2c[post_install::p2c_t]
+{
+    p2c()
+}

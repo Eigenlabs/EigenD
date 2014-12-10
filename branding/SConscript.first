@@ -1,0 +1,3 @@
+Import('master_env')
+
+master_env.PiBranding(bmp='generic.bmp',ico='generic.ico',icn='generic.icns',bg='generic.tiff',license='license.rtf')

@@ -1,0 +1,3 @@
+#!/bin/sh
+su $USER -c "$PI_PREFIX/Applications/PostInstall.app/Contents/MacOS/PostInstall" &
+
