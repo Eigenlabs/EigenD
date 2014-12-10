@@ -20,5 +20,5 @@
 
 Import('env')
 
-env.PiPythonPackage(per_agent='plg_strummer')
+env.PiPythonPackage(package='eigend',per_agent='plg_strummer')
 env.PiAgent('strummer','plg_strummer','strummer_plg',cversion='1.0.0')

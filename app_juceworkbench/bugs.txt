@@ -1,0 +1,172 @@
+---------------------------------------------------------------------------------------------------------
+No.   Date added    Description                                             Type    Resolution  Res Date
+---------------------------------------------------------------------------------------------------------
+RESOLVED
+---------------------------------------------------------------------------------------------------------
+1    29/06/2010     Delete wire causes crash                                Bug      Fixed    29/06/2010
+15   29/06/2010     Capital letters for tooltips                            Bug     Fixed    29/06/2010
+13   29/06/2010     Very short trunks are not drawn correctly               Bug     Fixed   29/06/2010
+21   30/06/2010     Use proper mousepointers                                Feature Fixed   30/06/2010
+9    29/06/2010     resize tool merged into trunk tool                      Feature Fixed   30/06/2010
+22   30/06/2010     Pop up menu delete selects create tool                  Bug     Fixed   1/07/2010
+23   01/07/2010     Trunk ids are not unique - different id generator needed  Bug   Fixed   2/7/2010 
+4    29/06/2010     Add autoscrolling for trunk drawing                     Feature Fixed   7/7/2010
+8    29/06/2010     Draw trunk assemblies directly                          Feature Fixed  7/7/2010
+14   29/06/2010     change orientation of dummy trunk when zero length      Feature Fixed  7/7/2010
+18   29/06/2010     Wires drooping behnd trunk look untidy                  Bug    Wont fix   6/7/2010
+25   08/07/2010     Deleting a loose wire does not remove trunk inputs      Bug     Fixed     13/7/2010
+26   08/07/2010     Trunk inputs can also be left if make identical connection through trunk (like 25) Bug Fixed 13/7/2010
+20   30/06/2010     Delete pointer disappears over trunkinputs              Bug     Fixed     13/7/2010
+29   08/07/2010     Drag trunk inputs/outputs round corners in trunk assemblies      Feature
+28   08/07/2010     Dragging a trunk input should cause whole wire to be selected    Bug   Fixed 13/7/2010
+17   29/06/2010     Trunks and hooks should be under agent boxes            Bug      Fixed      13/7/2010
+24   08/07/2010     Can create invisible trunk - should be deleted          Bug      Fixed      14/7/2010
+7    29/06/2010     Trunk corners are not shown                             Bug                 14/7/2010
+30   14/07/2010     Trunk corners should be saved                           Feature  Fixed      15/7/2010
+16   29/06/2010     Trunk can be left with long blank end                   Bug      Fixed      15/7/2010
+32   15/07/2010     Trunk inputs must correspond to apertures always        Bug      Fixed      15/7/2010 
+27   08/07/2010     Resizing of trunk assemblies                            Feature  Fixed      15/7/2010
+3    29/06/2010     WorkbenchFrame drawing goes wrong if no scroll bars     Bug      Fixed      15/7/2010
+38   15/07/2010     UnHooking bug. temp hook goes to wrong end of routing list when unhooking in some cases      Bug  Fixed 16/7/2010
+36   15/07/2010     Resize trunks which are not ends of assembly            Feature    Fixed   16/07/2010
+31   14/07/2010     Trunk corners need correct shape                        Feature    Fixed   20/07/2010
+11   29/06/2010     Agent boxes to have proper L and F                      Feature    Fixed   04/08/2010
+12   29/06/2010     Propagation of child connections when open/close boxes  Feature    Fixed   09/08/2010
+5    29/06/2010     Display tooltip on wires showing connections            Feature    Fixed   10/08/2010
+10   29/06/2010     Improve direct trunk wiring                             Feature    Fixed   10/08/2010
+40   16/07/2010     If dragging loose wire through trunk- colour in trunk should be light blue  Bug Fixed 10/08/2010
+45   10/08/2010     Crash on start up if trunk with connection from child pins included   Bug   Fixed 11/8/2010
+6    29/06/2010     Toggle selected wire on and off                         Feature     Fixed    11/08/2010
+47   12/08/2010     Wire should go red when over trunk input - dont show arrow pointer    Fixed  12/08/2010
+53   13/08/2010     Trunk inputs can appear twice when dragging them         Bug          Fixed 13/08/2010
+46   12/08/2010     Shrink trunks round corners                             Bug           Fixed 13/08/2010
+49   12/08/2010     Arrow mouse pointer should not appear over trunk corners  Bug         Fixed 31/08/2010
+52   13/08/2010     Should be able to move trunk assemblies by dragging corners Bug       Fixed 31/08/2010
+51   12/08/2010     Arrow mouse pointer appears over child boxes             Bug          Fixed 31/08/2010
+58   07/10/2010     Make real connections                                   Feature       Fixed 08/10/2010
+60   07/10/2010     move multiple wires over hooks into trunks etc          Feature       Added 05/11/2010
+65   02/11/2010     change trunk inputs when trunks loaded                  Feature/Bug   Fixed 05/11/2010
+61   11/10/2010     Crash when deleting trunk with wires in                 Bug           Fixed 05/11/2010 
+66   04/11/2010     moving a wire into a trunk should use nearest input and output        Fixed 08/11/2010
+70   08/11/2010     Drawing straight trunks when zoomed out is hard (extra corners can be created by mistake)  Bug   Fixed 09/11/2010
+71   09/11/2010     Trunks created when zoomed out do no align correctly at corners      Bug Fixed 09/11/2010 
+37   15/07/2010     Auto scrolling not working on trunk resizing            Bug             Fixed  10/11/2010
+33   15/07/2010     Removing wire from trunk by making input=output not working  Bug        Fixed  10/11/2010
+54   13/08/2010     Need to be able to extend trunk assemblies round corners  Feature      Fixed   16/11/2010
+74   16/11/2010     Zoomcursor changes to hand over trunks and corners      Bug           Fixed 16/11/2010
+63   11/10/2010     Wires connected to LoosePins dont move down the box tree properly Bug  Cant reproduce 16/11/2010
+77   16/11/2010     LoosePins don't highlight correctly for moving          Bug        Fixed 17/11/2010
+76   16/11/2010     Loosepins blue whilst wire grey                         Bug        Fixed 17/11/2010
+75   16/11/2010     Crash when connecting a loosepin when agent box has been collapsed and expanded  Bug   Fixed 18/11/2010
+78   18/11/2010     Disconnecting a routed wire when dst has been collapsed looses routing info    Bug Fixed   18/11/2010
+59   07/10/2010     create/delete agents                                    Feature     Fixed 29/11/2010
+84   29/11/2010     Create tool to remember last selection                  Bug         Fixed 30/11/2010
+82   29/11/2010     crash when deleting keygroups                           Bug         Fixed 30/11/2010
+83   29/11/2010     tart up create tool dialog                              Feature     Fixed 30/11/2010 
+86   30/11/2010     delete agent with attached loose wire leaves loose pin behind    Bug Fixed 1/12/2010
+81   29/11/2010     Start zoomed out                                        Bug          Fixed 1/12/2010
+67   05/11/2010     Not all pending wires drawn                             Bug         Fixed 2/12/2010
+72   10/11/2010     Sometimes a wire is only drawn when selected (red) ie not in normal_wires  Bug  Fixed 2/12/2010
+68   05/11/2010     Subsystem connections not displayed properly (eg. console mixer) Bug Fixed 6/12/2010
+87   06/12/2010     if eigend started after workbench subsystem connections dont expand/contract correctly    Bug Fixed 6/12/2010
+85   29/11/2010     Blank setup in factory setups                           Feature     Fixed 15/12/2010
+88   12/01/2011     loose wires not included in wireMoveList                Bug         Fixed 12/01/2011
+90   13/01/2011     Agents placed off canvas by default (alpha)             Bug         Fixed 13/01/2011
+91   17/01/2011     Crash when move expanded box after disconnecting and connecting something Bug    Fixed 17/01/2011
+99   20/01/2011     crash when change from std pico to other pico setup     Bug       Fixed 20/01/2011
+98   20/01/2011     remove drawing wire (this should not occur message appearing)  Bug  Fixed 20/01/2011
+80   23/11/2010     No progress bar whilst loading                          Bug    Fixed 20/01/2011
+101  24/01/2011     Hide metronome outputs                                  Feature  Fixed  24/1/2011
+100  24/01/2011     Find should centre view on chosen agent                 Feature    Fixed  24/01/2011
+103  25/01/2011     Display and set using for inputs and outputs            Feature    Fixed  10/02/2011
+35   15/07/2010     Wires become stepped when zoom out                      Bug        Fixed by Juce upgrade 10/02/2011
+107  14/02/2011     Wires from talkers not expanding/contracting properly   Bug       Fixed (dst box was not present because it wasn't named)  15/2/2011
+94   20/01/2011     Progress bar should have eigenlabs style                Bug
+95   20/01/2011     Find dialog should have eigenlabs style                 Bug
+92   18/01/2011     Find dialog could have dropdown list of agents         Feature Idea  
+93   18/01/2011     Highlighting (finding) agent should highlight box as well as outputs   Feature
+109  16/02/2011     Wires should be different colour (lighter?) than box outlines    
+110  16/02/2011     Toggled and selected wire colours must be the same inside and outside trunks
+111  16/02/2011     Toggled wires should indicate when mouse is over
+105  25/01/2011     button and text position on boxes incorrect after 4-5 levels of expansion    Bug
+112  18/02/2011     Moving a box should bring it to front                   Bug
+113  18/02/2011     Wires on moving box should come to front ?              Bug
+117  22/02/2011     When moving trunk input, wire in trunk red, wire outside is dark grey      Bug
+114  22/02/2011     Toggled and moving wires show on trunkcorners           Bug
+116  22/02/2011     Trunks and pegs should be highlighted when drag wire over them      Bug
+19   30/06/2010     Feedback when mouse over something which can be deleted Feature
+115  22/02/2011     Crash moving trunk input across trunk sections          Bug 
+79   23/11/2010     Wires can easily fall out of trunks whilst wiring       Bug
+119  28/02/2011     Crash after routing through trunk and then deleting wire   Bug
+121  01/03/2011     In wiring tool box under pointer should highlight before drag starts     Bug
+118  28/02/2011     When make new connection inputbox should become expandable and single innput box appear if expanded.     Bug
+120  28/02/2011     When delete wire, single input box should be removed and input box contracted if necessary    Bug
+104  25/01/2011     Child boxes should be ordered correctly (eg mixer channels numerically)     Bug
+122  04/03/2011     Feedback when edit tool over something that can be edited  Bug
+128  09/03/2011     If shrink trunk section till it just disappears and release mouse, Trunk assembly is left apparently with corner at end.  invisible trunk section is not deleted.    Bug
+130  10/03/2011     Trunk can be left with corner at end if drawing stopped on corner     Bug
+126  09/03/2011     Combo box buttons on Find dialog should have grey background      Bug
+73   16/11/2010     Trunk resize cursors needed for user feedback           Bug
+43   04/08/2010     Agent box display problem on zooming                    Bug 
+69   05/11/2010     Should be able to make meaningful connections at whatever level wire is dragged from agent box. Bug
+135  12/04/2011     Log files required
+137  15/04/2011     Hidden metronome connections should appear if metronome selected or is user makes connection from metronome.
+142  15/04/2011     cmd-H doesn't hide workbench
+138  15/04/2011     Hard to use hooks and trunk inputs when zoomed out (hand tool completely covers target)
+136  13/04/2011     Deleted agents still in properties                    Bug
+140  15/04/2011     Agent tree collapses after renaming a port 
+134  12/04/2011     Properties dialog caption should change if name is changed
+139  15/04/2011     controller outputs need to be hidden
+144  12/04/2011     Need a way to change using of a whole bunch of connections at once (eg keygroup to recorder)
+57   07/10/2010     click on a wire containing multiple connections displays details of connections Feature idea
+150  05/05/2011     Wires do not highlight if mouse is over transparent part of agent box
+148  05/05/2011     Properties dialog of child atom should show its value as well as those of children
+147  05/05/2011     viewport should scroll when moving trunk input
+149  05/05/2011     Crash in windows when move talker (daves new pico setup)
+56   07/10/2010     Should be able to select and move groups of agents/ hooks etc     Feature idea
+133  7/04/2011      Properties for Console mixer are not loaded into dialog correctly     Bug
+134  12/04/2011     Properties dialog should vary in size according to number of properties displayed in it
+151  05/05/2011     unconnected inputs and outputs can get left in trunks 
+132  5/04/2011      Crash when close browser - can't reproduce
+
+---------------------------------------------------------------------------------------------------------
+IDEAS
+---------------------------------------------------------------------------------------------------------
+108  16/02/2011     Could draw toggled wires using paintOverChildren        Idea
+124  09/03/2011     Pins at ends of selected wire should should be brighter  Idea
+125  09/03/2011     Connected pins should be distinquishable from non connected ones  Idea
+146  12/04/2011     Cut and paste (export import) groups of agents (patches?)  Idea
+154  15/06/2011     overview panel to show where you are when zoomed in.  Idea
+
+---------------------------------------------------------------------------------------------------------
+BUGS
+---------------------------------------------------------------------------------------------------------
+2    29/06/2010     Use JUCE auto scrolling                                 Feature
+39   16/07/2010     Hooking a wire over a peg does not yet use fully correct algorithm   Feature
+41   04/08/2010     Top level agent boxes should be larger than child boxes  Bug
+42   04/08/2010     Should be able to make pins longer and shorter.         Feature
+44   10/08/2010     Display internals of rigs on seperate workspace/maincomponent  Feature
+48   12/08/2010     Zone of action of mouse pointer should be larger - configurable? Bug
+62   11/10/2010     Dont draw duplicated toggled wires              Bug
+64   02/11/2010     Change to factory state does not call state_changed     Bug
+89   13/01/2011     Zoom still slow (tau and alpha)                         Bug
+96   20/01/2011     dispatch messages during unload (as with loading but without progress bar) Bug
+97   20/01/2011     do missing src pins better to speed up                  Bug
+143  15/04/2011     Need to be able to create controllers
+
+---------------------------------------------------------------------------------------------------------
+TRAC
+---------------------------------------------------------------------------------------------------------
+153  10/05/2011     if create kgroup 2 and rename to kgroup 99 when try to create new kgroup2 it says number already in use.
+152  09/05/2011     Allignment of wires and trunk inputs slightly incorrect after loading setup (repaint corrects it)
+106  09/02/2011     Tooltips not working (dll hiding problem?)              Bug
+34   15/07/2010     Loose pins/wires are not saved                          Bug
+55   13/08/2010     Should be able to shrink trunks round multiple corners in a single drag   Bug
+102  24/01/2011     Shortcuts needed for menu items                         Feature
+123  09/03/2011     Wire tooltips show id if atom has no name                    Bug
+127  09/03/2011     Logo should read workbench rather than eigend           Bug
+145  12/04/2011     Pointer turns into text edit pointer     (can't reproduce this)
+141  15/04/2011     Multiple items with same name in edit window (eg channel count in audio units)
+155  21/06/2011     Workbench crash when idle
+129  09/03/2011     Create trunk assembly resize at end to make smaller - new corner is created    Bug
+131  10/03/2011     Possible to create trunk assembly starting with corner. Messes up resizing and causes crash on delete.     Bug

@@ -20,5 +20,5 @@
 
 Import('env')
 
-env.PiPythonPackage(resources=Split('audio.png'),per_agent='plg_audio')
+env.PiPythonPackage(package='eigend',resources=Split('audio.png'),per_agent='plg_audio')
 env.PiAgent('audio','plg_audio','audio_plg',cversion='1.0.0')

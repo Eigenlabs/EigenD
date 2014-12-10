@@ -20,6 +20,6 @@
 
 Import('env')
 
-env.PiPythonPackage(per_agent='plg_conductor')
+env.PiPythonPackage(package='eigend',per_agent='plg_conductor')
 env.PiAgent('conductor','plg_conductor','conductor_plg',cversion='1.0.0')
 env.PiAgent('clip_manager','plg_conductor','clip_manager_plg',cversion='1.0.0')

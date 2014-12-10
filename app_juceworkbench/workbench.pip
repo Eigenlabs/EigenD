@@ -1,0 +1,124 @@
+<<<
+#include "workbench.h"
+>>>
+
+class c2p0[workbench::c2p0_t]
+{
+    c2p0()
+
+    virtual void set_args(const char *) = 0
+    virtual stdstr get_logfile() = 0
+
+    inline token(self,args)
+    <<<
+        return PyCObject_FromVoidPtr(self,0);
+    >>>
+}
+
+class c2p[workbench::c2p_t]
+{
+    c2p()
+    virtual void initialise(p2c *,const stdstr &) = 0
+    virtual void quit() = 0
+    virtual strset get_parent(const stdstr &)=0
+    virtual stdstr get_name(const stdstr &)=0
+    virtual stdstr get_scope(const stdstr &)=0
+    virtual stdstr get_absoluteID(const stdstr &)=0
+    virtual stdstr get_desc(const stdstr &)=0
+    virtual stdstr get_fulldesc(const stdstr &)=0
+    virtual strset get_connections(const stdstr &)=0
+    virtual strset get_using_inputs(const stdstr &)=0
+    virtual int get_numInputs(const stdstr &)=0
+    virtual strset get_children(const stdstr &)=0
+    virtual strset get_child_props(const stdstr &, bool)=0
+    virtual strset get_descendants(const stdstr &)=0
+    virtual void connect(const stdstr &, const stdstr &)=0
+    virtual void connect_check(const stdstr &, const stdstr &)=0
+    virtual void connect_test(const stdstr &, const stdstr &, int,const stdstr &, const stdstr & )=0
+
+    virtual void disconnect(const stdstr &, const stdstr &, int,const stdstr &, const stdstr &)=0
+
+    virtual void set_state(const stdstr &)=0
+    virtual void get_agents()=0
+    virtual void get_ordinals_used(const stdstr &)=0
+    virtual void create_agent(const stdstr &, int)=0
+    virtual void delete_agent(const stdstr &)=0
+    virtual stdstr get_value(const stdstr &)=0
+    virtual stdstr get_domain(const stdstr &)=0
+    virtual bool has_property(const stdstr&, const stdstr&)=0
+    virtual stdstr get_property(const stdstr&, const stdstr&)=0
+    virtual bool hasEditableValue(const stdstr &)=0
+    virtual bool has_master(const stdstr &)=0
+    virtual bool has_non_controller_master(const stdstr &)=0
+    virtual void set_boolvalue(const stdstr&, bool)=0
+    virtual void set_stringvalue(const stdstr&, const stdstr&)=0
+    virtual void set_intvalue(const stdstr&,int)=0
+    virtual void set_floatvalue(const stdstr&, float)=0
+    virtual stdstr get_inputs(const stdstr &, const stdstr &)=0
+    virtual int child_count(const stdstr &)=0
+    virtual bool is_input(const stdstr &)=0
+    virtual bool is_output(const stdstr &)=0
+    virtual stdstr get_master_filter(const stdstr &, const stdstr &)=0
+    virtual stdstr get_master_control(const stdstr &, const stdstr &)=0
+    virtual bool has_protocol(const stdstr &, const stdstr &)=0
+    virtual void get_instances(const stdstr &)=0
+    virtual void get_instanceName(const stdstr &)=0
+    virtual void create_instance(const stdstr &, int)=0
+    virtual void delete_instance(const stdstr &, const stdstr &)=0
+    virtual int get_ordinal(const stdstr &)=0
+    virtual void setName(const stdstr &, const stdstr &)=0
+
+    virtual void enumerate(const stdstr&,const stdstr&)=0
+    virtual void cinfo(const stdstr&,const stdstr&, int,int)=0
+    virtual void finfo(const stdstr&, const stdstr&)=0
+    virtual void activate(const stdstr&, const stdstr&, const stdstr&)=0
+    virtual void current(const stdstr&)=0
+    virtual bool is_slave_of(const stdstr&, const stdstr&)=0
+    virtual void stop_progress()=0
+
+    virtual stdstr get_tooltip(const stdstr&)=0
+    virtual stdstr get_helptext(const stdstr&)=0
+    virtual stdstr get_tooltip_by_id(const stdstr&)=0
+    virtual stdstr get_helptext_by_id(const stdstr&)=0
+    virtual bool is_rig(const stdstr &)=0
+    virtual void invoke(const stdstr &, const stdstr&,int)=0
+    virtual void get_sourcekeys(const stdstr &, const stdstr&)=0
+    virtual stdstr get_child(const stdstr &, const stdstr&)=0
+    virtual void monitor_on(const stdstr &)=0
+    virtual void monitor_off(const stdstr &)=0
+    virtual void get_test_string(int)=0
+    inline token(self,args)
+    <<<
+        return PyCObject_FromVoidPtr(self,0);
+    >>>
+}
+
+class p2c[workbench::p2c_t]
+{
+    p2c()
+    virtual void agentAdded(const stdstr &)=0
+    virtual void agentRemoved(const stdstr &)=0
+    virtual void agentChanged(const stdstr &)=0
+
+    virtual void instanceRemoved(const stdstr &)=0
+    virtual void portRemoved(const stdstr &)=0
+    virtual void report_error(const stdstr &, const stdstr &)=0
+    virtual void nameChanged(const stdstr &)=0
+    virtual void connectionAdded(const stdstr &)=0
+    virtual void stateChanged(const char *)=0
+    virtual void test_string(const char *)=0
+    virtual void instanceName(const stdstr &, const stdstr &)=0
+    virtual void agents_updated(const strset &)=0
+    virtual void instances_updated(const strset &)=0
+    virtual void sourcekeys_updated(const stdstr &, const stdstr &)=0
+
+    virtual void cinfo_updated(const stdstr &,const stdstr &,const strset &)=0
+    virtual void finfo_updated(const stdstr &,const stdstr &,const strset &)=0
+    virtual void enumerate_updated(const stdstr &, const stdstr &,int, int)=0
+    virtual void activated(const stdstr &)=0
+    virtual void current(const stdstr &,const stdstr &)=0
+
+    virtual void loaded(float)=0
+    virtual void value_changed(const stdstr &)=0;
+    virtual void connectionPossible(const stdstr &, const stdstr &, bool)=0
+}

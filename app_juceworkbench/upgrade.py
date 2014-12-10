@@ -18,10 +18,12 @@
 # along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-Import('env')
+from app_juceworkbench import version as workbench_version
 
-env.PiPythonPackage(package='eigend',per_agent='plg_finger',resources=('Factory Fingerings.txt','User Fingerings.txt'))
-env.PiAgent('fingerer','plg_finger','finger_plg',cversion='1.0.0')
-env.PiResources('fingerer','User Fingerings.txt')
+class Signature:
+    plugin = 'workbench'
+    version = workbench_version.version
+    cversion = '1.0.0'
 
-#env.PiResources('fingerer','Factory Fingerings.txt',package='eigend-nongpl')
+
+

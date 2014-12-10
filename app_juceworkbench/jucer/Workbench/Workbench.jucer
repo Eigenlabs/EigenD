@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="oumsGF" name="Workbench" projectType="guiapp" version="2.1.0"
+              bundleIdentifier="com.yourcompany.Workbench" includeBinaryInAppConfig="1"
+              jucerVersion="3.1.0" companyName="Eigenlabs" companyWebsite="eigenlabs.com">
+  <MAINGROUP id="HdgxUw" name="Workbench">
+    <GROUP id="{97F25622-D3DD-A787-A11A-DB41F8F23F52}" name="Headers">
+      <FILE id="cRiGTX" name="AboutComponent.h" compile="0" resource="0"
+            file="../../AboutComponent.h"/>
+      <FILE id="U6TZpv" name="BoolPropertyEditor.h" compile="0" resource="0"
+            file="../../BoolPropertyEditor.h"/>
+      <FILE id="VhMetY" name="BrowseEditor.h" compile="0" resource="0" file="../../BrowseEditor.h"/>
+      <FILE id="EtbALv" name="CoursePanel.h" compile="0" resource="0" file="../../CoursePanel.h"/>
+      <FILE id="q2XxWZ" name="CoursesPropertyEditor.h" compile="0" resource="0"
+            file="../../CoursesPropertyEditor.h"/>
+      <FILE id="rEFBgv" name="CreateInstanceComponent.h" compile="0" resource="0"
+            file="../../CreateInstanceComponent.h"/>
+      <FILE id="A8hhjM" name="CreateToolComponent.h" compile="0" resource="0"
+            file="../../CreateToolComponent.h"/>
+      <FILE id="zDenhp" name="DeleteAgentConfirmation.h" compile="0" resource="0"
+            file="../../DeleteAgentConfirmation.h"/>
+      <FILE id="LR67cy" name="DeleteInstanceComponent.h" compile="0" resource="0"
+            file="../../DeleteInstanceComponent.h"/>
+      <FILE id="iUs9bn" name="DeleteInstanceConfirmation.h" compile="0" resource="0"
+            file="../../DeleteInstanceConfirmation.h"/>
+      <FILE id="DWQfr7" name="DeleteMapConfirmation.h" compile="0" resource="0"
+            file="../../DeleteMapConfirmation.h"/>
+      <FILE id="kKxq91" name="DeletePegConfirmation.h" compile="0" resource="0"
+            file="../../DeletePegConfirmation.h"/>
+      <FILE id="u8fTLp" name="DeleteRouteConfirmation.h" compile="0" resource="0"
+            file="../../DeleteRouteConfirmation.h"/>
+      <FILE id="NIYaqC" name="DeleteTrunkConfirmation.h" compile="0" resource="0"
+            file="../../DeleteTrunkConfirmation.h"/>
+      <FILE id="ufFuTj" name="DeleteWireConfirmation.h" compile="0" resource="0"
+            file="../../DeleteWireConfirmation.h"/>
+      <FILE id="v6tXib" name="DialogComponent.h" compile="0" resource="0"
+            file="../../DialogComponent.h"/>
+      <FILE id="g2FQXy" name="DuplicatePanel.h" compile="0" resource="0"
+            file="../../DuplicatePanel.h"/>
+      <FILE id="j5SXJ3" name="EditMapConfirmation.h" compile="0" resource="0"
+            file="../../EditMapConfirmation.h"/>
+      <FILE id="rv3SCf" name="EnumPropertyEditor.h" compile="0" resource="0"
+            file="../../EnumPropertyEditor.h"/>
+      <FILE id="SfUKEE" name="ErrorReportComponent.h" compile="0" resource="0"
+            file="../../ErrorReportComponent.h"/>
+      <FILE id="lzFHHH" name="FindComponent.h" compile="0" resource="0" file="../../FindComponent.h"/>
+      <FILE id="DZS4VK" name="FloatPropertyEditor.h" compile="0" resource="0"
+            file="../../FloatPropertyEditor.h"/>
+      <FILE id="V753nM" name="HeadPhoneWarningComponent.h" compile="0" resource="0"
+            file="../../HeadPhoneWarningComponent.h"/>
+      <FILE id="OwgIzk" name="HelpComponent.h" compile="0" resource="0" file="../../HelpComponent.h"/>
+      <FILE id="S7gpQr" name="HelpViewComponent.h" compile="0" resource="0"
+            file="../../HelpViewComponent.h"/>
+      <FILE id="HMXaev" name="IntPropertyEditor.h" compile="0" resource="0"
+            file="../../IntPropertyEditor.h"/>
+      <FILE id="nNmraM" name="KeyToCourseEditor.h" compile="0" resource="0"
+            file="../../KeyToCourseEditor.h"/>
+      <FILE id="wADotk" name="KeyToCoursePropertyEditor.h" compile="0" resource="0"
+            file="../../KeyToCoursePropertyEditor.h"/>
+      <FILE id="j9wIvA" name="MappingEditor.h" compile="0" resource="0" file="../../MappingEditor.h"/>
+      <FILE id="SQlWOF" name="MappingPanel.h" compile="0" resource="0" file="../../MappingPanel.h"/>
+      <FILE id="z9bNww" name="MusicalMappingComponent.h" compile="0" resource="0"
+            file="../../MusicalMappingComponent.h"/>
+      <FILE id="Uq0MbT" name="NameEditor.h" compile="0" resource="0" file="../../NameEditor.h"/>
+      <FILE id="dxyS0m" name="NamePropertyEditor.h" compile="0" resource="0"
+            file="../../NamePropertyEditor.h"/>
+      <FILE id="jls2cs" name="PreferenceComponent.h" compile="0" resource="0"
+            file="../../PreferenceComponent.h"/>
+      <FILE id="sOyFAl" name="ProgressLayer.h" compile="0" resource="0" file="../../ProgressLayer.h"/>
+      <FILE id="RF6CnA" name="PropertiesComponent.h" compile="0" resource="0"
+            file="../../PropertiesComponent.h"/>
+      <FILE id="bsLGTm" name="PropertySeparator.h" compile="0" resource="0"
+            file="../../PropertySeparator.h"/>
+      <FILE id="HnQa79" name="SingleInputEditor.h" compile="0" resource="0"
+            file="../../SingleInputEditor.h"/>
+      <FILE id="MzfatI" name="StringMappingPropertyEditor.h" compile="0"
+            resource="0" file="../../StringMappingPropertyEditor.h"/>
+      <FILE id="IWnIAl" name="StringPropertyEditor.h" compile="0" resource="0"
+            file="../../StringPropertyEditor.h"/>
+      <FILE id="LDzYr0" name="StrummerEditor.h" compile="0" resource="0"
+            file="../../StrummerEditor.h"/>
+      <FILE id="HP1gzK" name="TabsFrameBox.h" compile="0" resource="0" file="../../TabsFrameBox.h"/>
+      <FILE id="VhFJv1" name="TreeDisplayComponent.h" compile="0" resource="0"
+            file="../../TreeDisplayComponent.h"/>
+      <FILE id="GidEe7" name="WireEditor.h" compile="0" resource="0" file="../../WireEditor.h"/>
+      <FILE id="I45hlg" name="WorkbenchFrame.h" compile="0" resource="0"
+            file="../../WorkbenchFrame.h"/>
+      <FILE id="gbIBEy" name="XYComponent.h" compile="0" resource="0" file="../../XYComponent.h"/>
+      <FILE id="ctwpri" name="XYMapComponent.h" compile="0" resource="0"
+            file="../../XYMapComponent.h"/>
+      <FILE id="i9HJGX" name="XYToZComponent.h" compile="0" resource="0"
+            file="../../XYToZComponent.h"/>
+    </GROUP>
+    <GROUP id="{9E3AFF27-ED06-C1AE-4CC4-7849D9E42F8F}" name="Source">
+      <FILE id="OA87yV" name="AboutComponent.cpp" compile="1" resource="0"
+            file="../../AboutComponent.cpp"/>
+      <FILE id="dT58fr" name="BoolPropertyEditor.cpp" compile="1" resource="0"
+            file="../../BoolPropertyEditor.cpp"/>
+      <FILE id="dw2Yyz" name="BrowseEditor.cpp" compile="1" resource="0"
+            file="../../BrowseEditor.cpp"/>
+      <FILE id="TOuYXW" name="CoursePanel.cpp" compile="1" resource="0" file="../../CoursePanel.cpp"/>
+      <FILE id="rDmS47" name="CoursesPropertyEditor.cpp" compile="1" resource="0"
+            file="../../CoursesPropertyEditor.cpp"/>
+      <FILE id="kuS3LE" name="CreateInstanceComponent.cpp" compile="1" resource="0"
+            file="../../CreateInstanceComponent.cpp"/>
+      <FILE id="XjM8NA" name="CreateToolComponent.cpp" compile="1" resource="0"
+            file="../../CreateToolComponent.cpp"/>
+      <FILE id="AIrEuk" name="DeleteAgentConfirmation.cpp" compile="1" resource="0"
+            file="../../DeleteAgentConfirmation.cpp"/>
+      <FILE id="vRPHZI" name="DeleteInstanceComponent.cpp" compile="1" resource="0"
+            file="../../DeleteInstanceComponent.cpp"/>
+      <FILE id="Wq4c7W" name="DeleteInstanceConfirmation.cpp" compile="1"
+            resource="0" file="../../DeleteInstanceConfirmation.cpp"/>
+      <FILE id="KPdFsr" name="DeleteMapConfirmation.cpp" compile="1" resource="0"
+            file="../../DeleteMapConfirmation.cpp"/>
+      <FILE id="YSzFNK" name="DeletePegConfirmation.cpp" compile="1" resource="0"
+            file="../../DeletePegConfirmation.cpp"/>
+      <FILE id="nuaZjO" name="DeleteRouteConfirmation.cpp" compile="1" resource="0"
+            file="../../DeleteRouteConfirmation.cpp"/>
+      <FILE id="JlqvQl" name="DeleteTrunkConfirmation.cpp" compile="1" resource="0"
+            file="../../DeleteTrunkConfirmation.cpp"/>
+      <FILE id="IwYHGi" name="DeleteWireConfirmation.cpp" compile="1" resource="0"
+            file="../../DeleteWireConfirmation.cpp"/>
+      <FILE id="A4R4ej" name="DialogComponent.cpp" compile="1" resource="0"
+            file="../../DialogComponent.cpp"/>
+      <FILE id="E57JzW" name="DuplicatePanel.cpp" compile="1" resource="0"
+            file="../../DuplicatePanel.cpp"/>
+      <FILE id="vCX1jT" name="EditMapConfirmation.cpp" compile="1" resource="0"
+            file="../../EditMapConfirmation.cpp"/>
+      <FILE id="tbF5DD" name="EnumPropertyEditor.cpp" compile="1" resource="0"
+            file="../../EnumPropertyEditor.cpp"/>
+      <FILE id="zlB4mQ" name="ErrorReportComponent.cpp" compile="1" resource="0"
+            file="../../ErrorReportComponent.cpp"/>
+      <FILE id="uXy1e4" name="FindComponent.cpp" compile="1" resource="0"
+            file="../../FindComponent.cpp"/>
+      <FILE id="QU3f7M" name="FloatPropertyEditor.cpp" compile="1" resource="0"
+            file="../../FloatPropertyEditor.cpp"/>
+      <FILE id="mKFmdO" name="HeadPhoneWarningComponent.cpp" compile="1"
+            resource="0" file="../../HeadPhoneWarningComponent.cpp"/>
+      <FILE id="HZOYyK" name="HelpComponent.cpp" compile="1" resource="0"
+            file="../../HelpComponent.cpp"/>
+      <FILE id="thPMRR" name="HelpViewComponent.cpp" compile="1" resource="0"
+            file="../../HelpViewComponent.cpp"/>
+      <FILE id="VEqFjL" name="IntPropertyEditor.cpp" compile="1" resource="0"
+            file="../../IntPropertyEditor.cpp"/>
+      <FILE id="O5yxX0" name="KeyToCourseEditor.cpp" compile="1" resource="0"
+            file="../../KeyToCourseEditor.cpp"/>
+      <FILE id="NUyQ0V" name="KeyToCoursePropertyEditor.cpp" compile="1"
+            resource="0" file="../../KeyToCoursePropertyEditor.cpp"/>
+      <FILE id="nZVR6f" name="MappingEditor.cpp" compile="1" resource="0"
+            file="../../MappingEditor.cpp"/>
+      <FILE id="N19LTW" name="MappingPanel.cpp" compile="1" resource="0"
+            file="../../MappingPanel.cpp"/>
+      <FILE id="GdNxnI" name="MusicalMappingComponent.cpp" compile="1" resource="0"
+            file="../../MusicalMappingComponent.cpp"/>
+      <FILE id="eXriH3" name="NameEditor.cpp" compile="1" resource="0" file="../../NameEditor.cpp"/>
+      <FILE id="wrsreH" name="NamePropertyEditor.cpp" compile="1" resource="0"
+            file="../../NamePropertyEditor.cpp"/>
+      <FILE id="akaZJX" name="PreferenceComponent.cpp" compile="1" resource="0"
+            file="../../PreferenceComponent.cpp"/>
+      <FILE id="KpVeUz" name="ProgressLayer.cpp" compile="1" resource="0"
+            file="../../ProgressLayer.cpp"/>
+      <FILE id="KBIHOV" name="PropertiesComponent.cpp" compile="1" resource="0"
+            file="../../PropertiesComponent.cpp"/>
+      <FILE id="QGnytn" name="PropertySeparator.cpp" compile="1" resource="0"
+            file="../../PropertySeparator.cpp"/>
+      <FILE id="IUku4W" name="SingleInputEditor.cpp" compile="1" resource="0"
+            file="../../SingleInputEditor.cpp"/>
+      <FILE id="mmkXD3" name="StringMappingPropertyEditor.cpp" compile="1"
+            resource="0" file="../../StringMappingPropertyEditor.cpp"/>
+      <FILE id="xinSyj" name="StringPropertyEditor.cpp" compile="1" resource="0"
+            file="../../StringPropertyEditor.cpp"/>
+      <FILE id="Em1wfv" name="StrummerEditor.cpp" compile="1" resource="0"
+            file="../../StrummerEditor.cpp"/>
+      <FILE id="fBMbIa" name="TabsFrameBox.cpp" compile="1" resource="0"
+            file="../../TabsFrameBox.cpp"/>
+      <FILE id="fAo7vl" name="TreeDisplayComponent.cpp" compile="1" resource="0"
+            file="../../TreeDisplayComponent.cpp"/>
+      <FILE id="NRQKCz" name="WireEditor.cpp" compile="1" resource="0" file="../../WireEditor.cpp"/>
+      <FILE id="smKuxG" name="WorkbenchFrame.cpp" compile="1" resource="0"
+            file="../../WorkbenchFrame.cpp"/>
+      <FILE id="yhzvU3" name="XYComponent.cpp" compile="1" resource="0" file="../../XYComponent.cpp"/>
+      <FILE id="SCLIIO" name="XYMapComponent.cpp" compile="1" resource="0"
+            file="../../XYMapComponent.cpp"/>
+      <FILE id="QPuh0e" name="XYToZComponent.cpp" compile="1" resource="0"
+            file="../../XYToZComponent.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
+                       isDebug="1" optimisation="1" targetName="Workbench"/>
+        <CONFIGURATION name="Release" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
+                       isDebug="0" optimisation="2" targetName="Workbench"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_events" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_video" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../eigend-gpl/lib_juce/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULES id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_audio_formats" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_core" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_cryptography" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_events" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_opengl" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_video" showAllCode="1" useLocalCopy="0"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>
