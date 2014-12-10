@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SET>
+<ARRANGEMENT name="Arrangement 1">
+<SCENE name="Scene 1">
+<CLIP name="Hip Hop cello chorus">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Hip Hop" category="Style"></TAG>
+<TAG name="Cello" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Talker Clip">
+<TAG name="Talker" category="Type"></TAG>
+</CLIP>
+</SCENE>
+<SCENE name="Scene 2">
+<CLIP name="Clip 1">
+<TAG name="Audio" category="Type"></TAG>
+</CLIP>
+</SCENE>
+</ARRANGEMENT>
+<ARRANGEMENT name="Arrangement 2">
+<SCENE name="Scene 1">
+<CLIP name="Hip Hop cello chorus">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Hip Hop" category="Style"></TAG>
+<TAG name="Cello" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Talker Clip">
+<TAG name="Talker" category="Type"></TAG>
+</CLIP>
+</SCENE>
+<SCENE name="Scene 2">
+<CLIP name="Clip 1">
+<TAG name="Audio" category="Type"></TAG>
+</CLIP>
+</SCENE>
+</ARRANGEMENT>
+</SET>

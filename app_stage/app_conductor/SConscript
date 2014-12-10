@@ -1,0 +1,37 @@
+Import('env')
+
+demo_files = Split("""
+    Main.cpp
+    ClipManagerWidget.cpp
+    ClipManagerPanel.cpp
+    ClipEditorPanel.cpp
+    EditAttributePanel.cpp
+    ClipBox.cpp
+    TagTable.cpp
+    Conductor.cpp
+    Backend.cpp
+    Clip.cpp
+    ClipPoolWidget.cpp
+    DummyStageTab.cpp
+    SceneViewWidget.cpp
+    ArrangementViewWidget.cpp
+    ClipPoolFactory.cpp
+    ImageResources.cpp
+    SceneList.cpp
+    ArrangementList.cpp
+    Cliplist.cpp
+    ClipPoolList.cpp
+    ClipManagerList.cpp
+    SceneToolbarItemFactory.cpp
+    ClipPanel.cpp
+    ScenePanel.cpp
+    SetViewWidget.cpp
+    SetList.cpp
+""")
+
+if env['IS_MACOSX']:
+    widget_libs = Split('pijuce')
+    env.Append(CPPPATH='.')
+    env.Append(CCFLAGS="-DNDEBUG")
+    #env.PiGuiProgram('Demo',demo_files,libraries=widget_libs,package='eigend-pro')
+    #env.PiPythonPackage(package='eigend-pro')

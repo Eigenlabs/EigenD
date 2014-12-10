@@ -1,0 +1,32 @@
+<<<
+#include "conductor.h"
+#include "widget.h"
+#include "clip_manager_backend.h"
+>>>
+
+from piw[piw/piw.pip] import clockdomain_ctl, cookie, change, data
+
+class conductor[cdtr::conductor_t]
+{
+    conductor(const cookie &, clockdomain_ctl *, const stdstr &)
+    cookie audio_input_cookie(unsigned)
+    cookie metronome_cookie()
+    void remove_audio_input(unsigned)
+    void clear_controller_input(unsigned)
+    void start_recording()
+    void stop_recording()
+    void shutdown()
+}
+
+class widget[cdtr::widget_t]
+{
+    widget(const change &)
+    void change_value(const data &)
+    bool invoke_rpc(int, const data &, const change &)
+}
+
+class clip_manager[cdtr::clip_manager_t]
+{
+    clip_manager(const stdstr &)
+    void initialise_widget(widget *);
+}

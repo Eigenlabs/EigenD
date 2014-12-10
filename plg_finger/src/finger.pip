@@ -1,0 +1,42 @@
+<<<
+#include <plg_finger/src/fng_finger.h>
+>>>
+
+from piw[piw/piw.pip] import clockdomain_ctl,cookie
+
+class fingering[fng::fingering_t]
+{
+    fingering()
+    fingering(const fingering &)
+    void add_key(unsigned,unsigned,unsigned)
+    void add_fingering_pattern(unsigned,float)
+    void add_modifier_key(unsigned,unsigned,unsigned)
+    void add_modifier_pattern(unsigned,float)
+    void add_addition_key(unsigned,unsigned,unsigned)
+    void add_addition_pattern(unsigned,float)
+    void add_polyphony_key(unsigned,unsigned,unsigned)
+    void add_polyphony_pattern(unsigned,float)
+    void set_range(float,float)
+    void set_open()
+    void set_breath_threshold(float)
+    void evaluate_table()
+    void clear_table()
+    int get_poly()
+    void set_poly(unsigned)
+}
+
+class finger[fng::finger_t]
+{
+    finger(clockdomain_ctl *, const cookie &)
+    cookie cookie()
+    void set_fingering(const fingering &)
+}
+
+
+class cfinger[fng::cfinger_t]
+{
+    finger(clockdomain_ctl *, const cookie &)
+    cookie cookie()
+    void set_fingering(const fingering &)
+}
+

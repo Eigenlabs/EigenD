@@ -1,0 +1,72 @@
+#User Fingering definition file
+#
+#The file is re-read every time you set a fingering in a fingerer, so
+# to reload it while the system is running just 'set' the fingering that
+#you are working on again using the commander
+#
+#It is read _after_ the Factory Fingerings file - if you define a fingering in here
+#with the same name as a Factory fingering it will override the original, so
+#be careful unless you want this behaviour. A syntax error in this file will cause all 
+#of the fingerings in here to be ignored. You will get a pop up notification
+#of this on your screen with an error message that may (emphasis on may) tell
+#you which line the problem is on. Your mileage may vary.
+#
+#
+#
+#Basic example fingering - a basic 4 key binary pattern of keys with a couple of
+#modifiers and polyphonic additions as examples. Just repeat this to add 
+#new fingerings
+#
+#First entry is the Belcanto name of the fingering, in [] brackets.
+#This must be valid Belcanto
+[programmer]
+#
+#Fingering patterns
+#
+#From left to right:
+#finger X - name of pattern, must be unique and contain the word 'finger'
+#'=' - you must have this 
+# '1,1' etc - a space seperated list of keys from left to right in course,key pairs
+#'*' - you must have this
+#'+1.0' - an offset for that fingering to produce. 
+#           This is a key offset and is floating point so you can say '+2.3' if you want.
+#           The key offset will be used in things wired after the fingerer in just the 
+#           same way as the key number in a keygroup so setting it to 2.0 will make 
+#           the scaler set the second interval in a scale
+finger 1 =     1,1                  *    +1.0
+finger 2 =     1,2                  *    +2.0
+finger 3 =     1,1 1,2              *    +3.0
+finger 4 =     1,3                  *    +4.0
+finger 5 =     1,1 1,3              *    +5.0
+finger 6 =     1,2 1,3              *    +6.0
+finger 7 =     1,1 1,2 1,3          *    +7.0
+finger 8 =     1,4                  *    +8.0
+finger 9 =     1,1 1,4              *    +9.0
+finger 10 =    1,2 1,4              *    +10.0
+finger 11 =    1,1 1,2 1,4          *    +11.0
+finger 12 =    1,3 1,4              *    +12.0
+finger 13 =    1,1 1,3 1,4          *    +13.0
+finger 14 =    1,2 1,3 1,4          *    +14.0
+finger 15 =    1,1 1,2 1,3 1,4      *    +15.0
+#
+#Modifier
+#
+#These are auxilary keys where the key offset is added to the main keyed note
+#They are the same as fingerings apart from the fact that they must contain 
+#the word 'modifier in the first field. They do not start notes when they are keyed.
+#They use the modifier increment for a particular scale, which is usually a semitone.
+modifier 1 =     2,1                *    +12.0
+modifier 2 =     2,2                *    -12.0
+modifier 3 =     2,1 2,2            *    +24.0
+#
+#Polyphony modifiers
+#
+#These are single keys that can add a new note on top of the original keyed note. 
+#They do not start notes on their own, they are stricly auxillary to the main keyed
+#note. You can only define one key offset for each one, and you can only define 
+#one key at a time - multiple key fingerings are not possible here.
+#The pressure from each is passed on in the outgoing note, so if wired
+#appropriately the volume can be independently modulated from the main note.
+polyphony 1 =  2,3                  *   +3.0
+polyphony 2 =  2,4                  *   +5.0
+#

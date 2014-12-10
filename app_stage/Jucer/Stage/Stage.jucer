@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="EmyhmO" name="Stage" projectType="guiapp" version="2.1.0"
+              bundleIdentifier="com.yourcompany.Stage" includeBinaryInAppConfig="1"
+              jucerVersion="3.1.0" companyName="Eigenlabs" companyWebsite="eigenlabs.com">
+  <MAINGROUP id="aCsh1F" name="Stage">
+    <GROUP id="{F5B12AFB-25DA-0B41-34A2-ACA9641D014F}" name="Conductor">
+      <FILE id="OOzNOB" name="ArrangementViewWidget.cpp" compile="1" resource="0"
+            file="../../app_conductor/ArrangementViewWidget.cpp"/>
+      <FILE id="CR5OV8" name="ArrangementViewWidget.h" compile="0" resource="0"
+            file="../../app_conductor/ArrangementViewWidget.h"/>
+      <FILE id="IAzb0m" name="ClipBox.cpp" compile="1" resource="0" file="../../app_conductor/ClipBox.cpp"/>
+      <FILE id="XNLHm7" name="ClipBox.h" compile="0" resource="0" file="../../app_conductor/ClipBox.h"/>
+      <FILE id="u42RUd" name="ClipEditorPanel.cpp" compile="1" resource="0"
+            file="../../app_conductor/ClipEditorPanel.cpp"/>
+      <FILE id="CP9PK5" name="ClipEditorPanel.h" compile="0" resource="0"
+            file="../../app_conductor/ClipEditorPanel.h"/>
+      <FILE id="bWOXdG" name="ClipManagerPanel.cpp" compile="1" resource="0"
+            file="../../app_conductor/ClipManagerPanel.cpp"/>
+      <FILE id="NSlxsy" name="ClipManagerPanel.h" compile="0" resource="0"
+            file="../../app_conductor/ClipManagerPanel.h"/>
+      <FILE id="FkLrCS" name="ClipManagerWidget.cpp" compile="1" resource="0"
+            file="../../app_conductor/ClipManagerWidget.cpp"/>
+      <FILE id="RboKGV" name="ClipManagerWidget.h" compile="0" resource="0"
+            file="../../app_conductor/ClipManagerWidget.h"/>
+      <FILE id="e4Wv8e" name="ClipPanel.cpp" compile="1" resource="0" file="../../app_conductor/ClipPanel.cpp"/>
+      <FILE id="e3BCTc" name="ClipPanel.h" compile="0" resource="0" file="../../app_conductor/ClipPanel.h"/>
+      <FILE id="oO39d0" name="ClipPoolWidget.cpp" compile="1" resource="0"
+            file="../../app_conductor/ClipPoolWidget.cpp"/>
+      <FILE id="FVS12i" name="ClipPoolWidget.h" compile="0" resource="0"
+            file="../../app_conductor/ClipPoolWidget.h"/>
+      <FILE id="JRAxHS" name="DummyStageTab.cpp" compile="1" resource="0"
+            file="../../app_conductor/DummyStageTab.cpp"/>
+      <FILE id="BF1wE5" name="DummyStageTab.h" compile="0" resource="0" file="../../app_conductor/DummyStageTab.h"/>
+      <FILE id="adbJ0t" name="EditAttributePanel.cpp" compile="1" resource="0"
+            file="../../app_conductor/EditAttributePanel.cpp"/>
+      <FILE id="i3bjjV" name="EditAttributePanel.h" compile="0" resource="0"
+            file="../../app_conductor/EditAttributePanel.h"/>
+      <FILE id="DAulbc" name="ScenePanel.cpp" compile="1" resource="0" file="../../app_conductor/ScenePanel.cpp"/>
+      <FILE id="dMs0Z2" name="ScenePanel.h" compile="0" resource="0" file="../../app_conductor/ScenePanel.h"/>
+      <FILE id="BcBYZ6" name="SceneViewWidget.cpp" compile="1" resource="0"
+            file="../../app_conductor/SceneViewWidget.cpp"/>
+      <FILE id="wXwkON" name="SceneViewWidget.h" compile="0" resource="0"
+            file="../../app_conductor/SceneViewWidget.h"/>
+      <FILE id="BRXsUi" name="SetViewWidget.cpp" compile="1" resource="0"
+            file="../../app_conductor/SetViewWidget.cpp"/>
+      <FILE id="L3X9IT" name="SetViewWidget.h" compile="0" resource="0" file="../../app_conductor/SetViewWidget.h"/>
+    </GROUP>
+    <GROUP id="{8E00A297-8FFC-FF2F-A6AC-D8395F62C77A}" name="Headers">
+      <FILE id="zKCHQR" name="AlertDialogComponent.h" compile="0" resource="0"
+            file="../../AlertDialogComponent.h"/>
+      <FILE id="DgJsyB" name="BackgroundComponent.h" compile="0" resource="0"
+            file="../../BackgroundComponent.h"/>
+      <FILE id="TCzh9t" name="DeleteDialogComponent.h" compile="0" resource="0"
+            file="../../DeleteDialogComponent.h"/>
+      <FILE id="k1hJix" name="DialogButtonComponent.h" compile="0" resource="0"
+            file="../../DialogButtonComponent.h"/>
+      <FILE id="alBg6Y" name="DialogFrameworkComponent.h" compile="0" resource="0"
+            file="../../DialogFrameworkComponent.h"/>
+      <FILE id="E7tpLL" name="HelpViewComponent.h" compile="0" resource="0"
+            file="../../HelpViewComponent.h"/>
+      <FILE id="ohgWhM" name="NetworkPreferencesComponent.h" compile="0"
+            resource="0" file="../../NetworkPreferencesComponent.h"/>
+      <FILE id="BYZXEi" name="PreferencesDialogComponent.h" compile="0" resource="0"
+            file="../../PreferencesDialogComponent.h"/>
+      <FILE id="vka57L" name="StatusDialogComponent.h" compile="0" resource="0"
+            file="../../StatusDialogComponent.h"/>
+      <FILE id="xeButt" name="TabDialogComponent.h" compile="0" resource="0"
+            file="../../TabDialogComponent.h"/>
+      <FILE id="J3ffud" name="TabsFrameBox.h" compile="0" resource="0" file="../../TabsFrameBox.h"/>
+      <FILE id="SHi8om" name="TabViewPreferencesComponent.h" compile="0"
+            resource="0" file="../../TabViewPreferencesComponent.h"/>
+      <FILE id="rz5N3c" name="ViewPreferencesComponent.h" compile="0" resource="0"
+            file="../../ViewPreferencesComponent.h"/>
+      <FILE id="ANFjXl" name="WidgetDialogComponent.h" compile="0" resource="0"
+            file="../../WidgetDialogComponent.h"/>
+    </GROUP>
+    <GROUP id="{CA098753-39E3-8FF3-FE12-B61C65BC6019}" name="Source">
+      <FILE id="Zf6B3x" name="AlertDialogComponent.cpp" compile="1" resource="0"
+            file="../../AlertDialogComponent.cpp"/>
+      <FILE id="tLMrfz" name="BackgroundComponent.cpp" compile="1" resource="0"
+            file="../../BackgroundComponent.cpp"/>
+      <FILE id="CNlyuv" name="DeleteDialogComponent.cpp" compile="1" resource="0"
+            file="../../DeleteDialogComponent.cpp"/>
+      <FILE id="ztv3ce" name="DialogButtonComponent.cpp" compile="1" resource="0"
+            file="../../DialogButtonComponent.cpp"/>
+      <FILE id="cDU22f" name="DialogFrameworkComponent.cpp" compile="1" resource="0"
+            file="../../DialogFrameworkComponent.cpp"/>
+      <FILE id="lI71uC" name="HelpViewComponent.cpp" compile="1" resource="0"
+            file="../../HelpViewComponent.cpp"/>
+      <FILE id="jPd1bU" name="NetworkPreferencesComponent.cpp" compile="1"
+            resource="0" file="../../NetworkPreferencesComponent.cpp"/>
+      <FILE id="Z390Rn" name="PreferencesDialogComponent.cpp" compile="1"
+            resource="0" file="../../PreferencesDialogComponent.cpp"/>
+      <FILE id="FzsMFN" name="StatusDialogComponent.cpp" compile="1" resource="0"
+            file="../../StatusDialogComponent.cpp"/>
+      <FILE id="YzaT6E" name="TabDialogComponent.cpp" compile="1" resource="0"
+            file="../../TabDialogComponent.cpp"/>
+      <FILE id="j6wRSs" name="TabsFrameBox.cpp" compile="1" resource="0"
+            file="../../TabsFrameBox.cpp"/>
+      <FILE id="PJUJ6z" name="TabViewPreferencesComponent.cpp" compile="1"
+            resource="0" file="../../TabViewPreferencesComponent.cpp"/>
+      <FILE id="OoMJIX" name="ViewPreferencesComponent.cpp" compile="1" resource="0"
+            file="../../ViewPreferencesComponent.cpp"/>
+      <FILE id="nqJEKF" name="WidgetDialogComponent.cpp" compile="1" resource="0"
+            file="../../WidgetDialogComponent.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
+                       isDebug="1" optimisation="1" targetName="Stage"/>
+        <CONFIGURATION name="Release" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
+                       isDebug="0" optimisation="2" targetName="Stage"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_events" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_video" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../eigend-gpl/lib_juce/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULES id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_audio_formats" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_core" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_cryptography" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_events" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_opengl" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_video" showAllCode="1" useLocalCopy="0"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>

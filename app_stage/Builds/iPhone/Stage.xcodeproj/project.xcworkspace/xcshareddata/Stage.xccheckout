@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>1529E725-8329-43E1-B684-111E6BCE7FBC</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Stage</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>0D3D2FCF8E79EEE2DD4FC67E9E3E0616F45A8BAA</key>
+		<string>github.com:Eigenlabs/EigenD-nonfree.git</string>
+		<key>37A7B164107B6B0282F0E0B95B3708547385FA1B</key>
+		<string>github.com:Eigenlabs/EigenD.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>app_stage/Builds/iPhone/Stage.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>0D3D2FCF8E79EEE2DD4FC67E9E3E0616F45A8BAA</key>
+		<string>../../../../..</string>
+		<key>37A7B164107B6B0282F0E0B95B3708547385FA1B</key>
+		<string>../../../../..eigend-gpl</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>github.com:Eigenlabs/EigenD-nonfree.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>0D3D2FCF8E79EEE2DD4FC67E9E3E0616F45A8BAA</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>0D3D2FCF8E79EEE2DD4FC67E9E3E0616F45A8BAA</string>
+			<key>IDESourceControlWCCName</key>
+			<string>eigend-2.1</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>37A7B164107B6B0282F0E0B95B3708547385FA1B</string>
+			<key>IDESourceControlWCCName</key>
+			<string>eigend-2.1eigend-gpl</string>
+		</dict>
+	</array>
+</dict>
+</plist>

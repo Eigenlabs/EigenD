@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 13.0.2, SVG Export Plug-In . SVG Version: 6.00 Build 14948)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+]>
+<svg version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="44.568px"
+	 height="15.19px" viewBox="0 0 44.568 15.19" enable-background="new 0 0 44.568 15.19" xml:space="preserve">
+<switch>
+	<g i:extraneous="self">
+		<g>
+			<polygon fill-rule="evenodd" clip-rule="evenodd" fill="#808080" points="0.998,13.486 0.998,1.696 11.603,7.564 0.998,13.486 
+							"/>
+			<path fill="#E6E6E6" d="M0.5,0.848l12.135,6.714L0.5,14.338V0.848 M1.5,2.544v10.09l9.077-5.069L1.5,2.544L1.5,2.544z"/>
+		</g>
+		<g id="line">
+			<g>
+				<rect x="8.698" y="6.593" fill-rule="evenodd" clip-rule="evenodd" fill="#808080" width="35.87" height="2"/>
+			</g>
+		</g>
+	</g>
+</switch>
+</svg>

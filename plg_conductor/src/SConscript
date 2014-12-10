@@ -1,0 +1,32 @@
+#
+# Copyright 2012 Eigenlabs Ltd.  http://www.eigenlabs.com
+#
+# This file is part of EigenD.
+#
+# EigenD is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EigenD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('env')
+
+import os
+
+conductor_files = Split("""
+        aiff_format.cpp audio_channel.cpp audio_recording.cpp audio_wire.cpp
+        clip_manager.cpp clip_manager_backend.cpp clip_manager_impl.cpp
+        clip_scanner.cpp conductor.cpp conductor_impl.cpp conductor_library.cpp
+        data_channel.cpp data_wire.cpp metronome_input.cpp recorded_data.cpp
+        recording.cpp recording_consumer.cpp sqlite_utils.cpp widget.cpp
+    """)
+
+env.PiPipBinding('conductor_native','conductor.pip',libraries=Split('piw pia pic pijuce pisqlite'),sources=conductor_files,package='eigend',per_agent='plg_conductor',locked=True)

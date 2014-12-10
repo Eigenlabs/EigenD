@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CLIPS>
+<CLIP name="Clip 1">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Blues" category="Style"></TAG>
+</CLIP>
+<CLIP name="Clip 2">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Ambient" category="Style"></TAG>
+<TAG name="Drums" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Hip Hop cello chorus">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Hip Hop" category="Style"></TAG>
+<TAG name="Cello" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Talker Clip">
+<TAG name="Talker" category="Type"></TAG>
+</CLIP>
+<CLIP name="Talker Clip 2">
+<TAG name="Talker" category="Type"></TAG>
+</CLIP>
+<CLIP name="Instrument Clip">
+<TAG name="Instrument" category="Type"></TAG>
+<TAG name="Synth" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Clip 3">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Rock" category="Style"></TAG>
+</CLIP>
+<CLIP name="Clip 4">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Country" category="Style"></TAG>
+<TAG name="Violin" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Clip 5">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Country" category="Style"></TAG>
+<TAG name="Drums" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Instrument Clip 2">
+<TAG name="Instrument" category="Type"></TAG>
+<TAG name="Guitar" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Instrument Clip 3">
+<TAG name="Instrument" category="Type"></TAG>
+<TAG name="Guitar" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Instrument Clip 4">
+<TAG name="Instrument" category="Type"></TAG>
+<TAG name="Guitar" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Instrument Clip 5">
+<TAG name="Instrument" category="Type"></TAG>
+<TAG name="Guitar" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Clip 6">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Country" category="Style"></TAG>
+<TAG name="Drums" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Clip 7">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Country" category="Style"></TAG>
+<TAG name="Drums" category="Instrument"></TAG>
+</CLIP>
+<CLIP name="Clip 8">
+<TAG name="Audio" category="Type"></TAG>
+<TAG name="Country" category="Style"></TAG>
+<TAG name="Drums" category="Instrument"></TAG>
+</CLIP>
+
+
+
+
+</CLIPS>

@@ -1,0 +1,91 @@
+import os
+
+Import('env')
+
+stage_files = Split("""
+    AgentViewComponent.cpp
+    AlertDialogComponent.cpp
+    BackgroundComponent.cpp
+    CustomCursor.cpp
+    DesktopMainComponent.cpp
+    DesktopPreferences.cpp
+    DeleteDialogComponent.cpp
+    DialogButtonComponent.cpp
+    DialogFrameworkComponent.cpp
+    EigenLookAndFeel.cpp
+    EigenWidgets.cpp
+    HelpViewComponent.cpp
+    Main.cpp
+    Network.cpp
+    NetworkPreferencesComponent.cpp
+    ProgressBarSync.cpp
+    PreferencesDialogComponent.cpp
+    ResizableLabel.cpp
+    StatusDialogComponent.cpp
+    TabbedButtonBar2.cpp
+    TabbedComponent2.cpp
+    TabDialogComponent.cpp
+    TabsFrameBox.cpp
+    TabViewPreferencesComponent.cpp
+    ToolManager.cpp
+    ToolbarIcons.cpp
+    TreeTestData.cpp
+    ViewPreferencesComponent.cpp
+    WidgetComponent.cpp
+    WidgetDialogComponent.cpp
+    WidgetImages.cpp
+    WidgetOverlayComponent.cpp
+    WidgetTabbedComponent.cpp
+    WidgetViewComponent.cpp
+    AgentTreeView.cpp
+    WidgetFactory.cpp
+    ComboWidget.cpp
+    ConductorWidgets.cpp
+    lib_xmlrpc++/XmlRpcClient.cpp
+    lib_xmlrpc++/XmlRpcDispatch.cpp
+    lib_xmlrpc++/XmlRpcMutex.cpp
+    lib_xmlrpc++/XmlRpcServer.cpp
+    lib_xmlrpc++/XmlRpcServerConnection.cpp
+    lib_xmlrpc++/XmlRpcServerMethod.cpp
+    lib_xmlrpc++/XmlRpcSocket.cpp
+    lib_xmlrpc++/XmlRpcSource.cpp
+    lib_xmlrpc++/XmlRpcThread.cpp
+    lib_xmlrpc++/XmlRpcThreadedServer.cpp
+    lib_xmlrpc++/XmlRpcUtil.cpp
+    lib_xmlrpc++/XmlRpcValue.cpp
+    Terms.cpp
+""")
+
+
+lo_files=Split("""
+    lib_lo/address.c
+    lib_lo/blob.c
+    lib_lo/bundle.c
+    lib_lo/message.c
+    lib_lo/method.c
+    lib_lo/pattern_match.c
+    lib_lo/send.c
+    lib_lo/server.c
+    lib_lo/timetag.c
+""")
+
+env.Append(CPPDEFINES=[['STAGE_BUILD','DESKTOP']])
+env.Append(CPPPATH='.')
+
+if env['IS_WINDOWS']:
+    env.Append(CCFLAGS='/D_WINDOWS /DNDEBUG /arch:SSE2')
+    env.Append(LINKFLAGS="/nodefaultlib:libcmt.lib")
+    env.Append(LINKFLAGS=' WS2_32.Lib ')
+    stage_files.append('guicon.cpp')
+
+if env['IS_LINUX']:
+    env.Append(CCFLAGS='-DLINUX -DNDEBUG')
+    env.Append(CPPPATH='/usr/include/freetype2')
+    env.Append(LIBS=Split('asound X11 freetype Xext'))
+
+if env['IS_MACOSX']:
+    env.Append(CCFLAGS="-DNDEBUG")
+    env.Append(PI_HIRES=True)
+
+stage_files.extend(lo_files)    
+env.PiGuiProgram('Stage',stage_files,libraries=Split('pijuce'),appname='Stage',package='eigend')

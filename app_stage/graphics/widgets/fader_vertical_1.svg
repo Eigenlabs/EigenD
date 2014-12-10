@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 13.0.2, SVG Export Plug-In . SVG Version: 6.00 Build 14948)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+]>
+<svg version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="67.992px"
+	 height="256.968px" viewBox="0 0 67.992 256.968" enable-background="new 0 0 67.992 256.968" xml:space="preserve">
+<switch>
+	<g i:extraneous="self">
+		<g id="frame__x2B__label_copy_4">
+			<g>
+				<path fill-rule="evenodd" clip-rule="evenodd" fill="#E6E6E6" d="M54.993,224.972h-6.999V14.999C47.994,6.715,41.279,0,32.996,0
+					S17.998,6.715,17.998,14.999v209.973h-5C5.819,224.972,0,230.792,0,237.971v5.999c0,7.179,5.819,12.998,12.998,12.998h41.995
+					c7.179,0,12.999-5.819,12.999-12.998v-5.999C67.992,230.792,62.171,224.972,54.993,224.972z"/>
+			</g>
+		</g>
+		<g>
+			<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="25.1523" y1="116.5527" x2="41.1519" y2="116.5527">
+				<stop  offset="0" style="stop-color:#FFFFFF"/>
+				<stop  offset="1" style="stop-color:#B3B3B3"/>
+			</linearGradient>
+			<path fill-rule="evenodd" clip-rule="evenodd" fill="url(#SVGID_1_)" d="M33.152,226.541c-4.411,0-8-3.589-8-8V14.565
+				c0-4.411,3.589-8,8-8c4.412,0,8,3.589,8,8v203.976C41.152,222.952,37.564,226.541,33.152,226.541L33.152,226.541z"/>
+			<path d="M33.152,5.567c4.971,0,8.999,4.029,8.999,8.999V218.54c0,4.971-4.028,8.999-8.999,8.999c-4.97,0-8.998-4.028-8.998-8.999
+				V14.565C24.154,9.596,28.182,5.567,33.152,5.567 M33.152,7.567c-3.859,0-6.998,3.14-6.998,6.999V218.54
+				c0,3.859,3.139,6.999,6.998,6.999c3.859,0,6.999-3.14,6.999-6.999V14.565C40.151,10.707,37.011,7.567,33.152,7.567L33.152,7.567z
+				"/>
+		</g>
+	</g>
+</switch>
+</svg>

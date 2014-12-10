@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SCENE name =" Scene 2">
+<CLIP name="Clip 1">
+<TAG name="Audio" category="Type"></TAG>
+</CLIP>
+<CLIP name="Instrument Clip">
+<TAG name="Instrument" category="Type"></TAG>
+</CLIP>
+</SCENE>

@@ -1,0 +1,63 @@
+<<<
+#include <plg_strummer/src/strummer.h>
+>>>
+
+from piw[piw/piw.pip] import clockdomain_ctl,cookie
+
+class strumconfig[strm::strumconfig_t]
+{
+    strumconfig()
+    void enable(bool)
+    void set_trigger_window(unsigned)
+    void set_course_pressure_scale(float)
+    void set_course_roll_scale(float)
+    void set_course_yaw_scale(float)
+    void set_strum_breath_scale(float)
+    void set_strum_pressure_scale(float)
+    void set_strum_roll_scale(float)
+    void set_strum_roll_pressure_mix(float)
+    void set_strum_yaw_scale(float)
+    void set_strum_yaw_pressure_mix(float)
+    void set_strum_note_end(bool)
+    void set_poly_courses_enable(bool)
+    void set_course_mute_threshold(float)
+    void set_course_mute_interval(unsigned)
+    void set_course_mute_enable(bool)
+    void set_strum_mute_threshold(float)
+    void set_strum_mute_interval(unsigned)
+    void set_strum_mute_enable(bool)
+    void set_pulloff_threshold(float)
+    void set_pulloff_interval(unsigned)
+    void set_pulloff_enable(bool)
+    void open_course_enable(bool)
+    void open_course_pressure_default(float)
+    void open_course_roll_default(float)
+    void open_course_yaw_default(float)
+    void clear_breath_courses()
+    void add_breath_course(int)
+    void remove_breath_course(int)
+    void clear_key_courses()
+    void add_key_course(int,int,int)
+    void clear_key_course(int)
+    void clear_open_courses_info()
+    void set_open_course_info(int,int,int,int)
+    void set_open_course_key(int,int)
+    void set_open_course_physical(int,int,int)
+    void clear_open_course_info(int)
+
+    stdstr encode_courses()
+}
+
+class strummer[strm::strummer_t]
+{
+    strummer(const cookie &, clockdomain_ctl *)
+    cookie cookie()
+    void set_strumconfig(const strumconfig &)
+}
+
+class cstrummer[strm::cstrummer_t]
+{
+    cstrummer(const cookie &, clockdomain_ctl *)
+    cookie cookie()
+    void set_strumconfig(const strumconfig &)
+}

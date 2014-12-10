@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TAGS>
+    <TAG name="Audio" category="Type"/>
+    <TAG name="Instrument" category="Type"/>
+    <TAG name="Scene" category="Type"/>
+    <TAG name="Arrangement" category="Type"/>
+    <TAG name="Talker" category="Type"/>
+    <TAG name="Ambient" category="Style"/>
+    <TAG name="Blues" category="Style"/>
+    <TAG name="Rock" category="Style"/>
+    <TAG name="Country" category="Style"/>
+    <TAG name="Hip Hop" category="Style"/>
+    <TAG name="Dubstep" category="Style"/>
+    <TAG name="Bass" category="Instrument"/>
+    <TAG name="Guitar" category="Instrument"/>
+    <TAG name="Cello" category="Instrument"/>
+    <TAG name="Synth" category="Instrument"/>
+    <TAG name="Drums" category="Instrument"/>
+    <TAG name="Violin" category="Instrument"/>
+    <TAG name="Vocals" category="Instrument"/>
+    <TAG name="Trumpet" category="Instrument"/>
+    <TAG name="Sax" category="Instrument"/>
+    <TAG name="Clarinet" category="Instrument"/>
+    <TAG name="French Horn" category="Instrument"/>
+    <TAG name="Banjo" category="Instrument"/>
+    <TAG name="Picolo" category="Instrument"/>
+    <TAG name="Best" category="Favorite"/>
+</TAGS>    

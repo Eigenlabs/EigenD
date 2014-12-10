@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 13.0.2, SVG Export Plug-In . SVG Version: 6.00 Build 14948)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+]>
+<svg version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="250.138px"
+	 height="44.656px" viewBox="0 0 250.138 44.656" enable-background="new 0 0 250.138 44.656" xml:space="preserve">
+<switch>
+	<g i:extraneous="self">
+		<g id="frame">
+			<g>
+				<path fill-rule="evenodd" clip-rule="evenodd" fill="#E6E6E6" d="M228.971,6.662H3.999c-2.208,0-3.999,1.791-3.999,4v29.996
+					c0,2.209,1.791,3.999,3.999,3.999h224.972c2.209,0,4-1.79,4-3.999V10.661C232.971,8.452,231.18,6.662,228.971,6.662z"/>
+			</g>
+		</g>
+		<g id="i_bg">
+			<g>
+				<path fill-rule="evenodd" clip-rule="evenodd" fill="#E6E6E6" d="M246.138,14.572H232.14c-2.209,0-3.999,1.791-3.999,4V32.57
+					c0,2.209,1.79,3.999,3.999,3.999h13.998c2.209,0,4-1.79,4-3.999V18.572C250.138,16.363,248.347,14.572,246.138,14.572z"/>
+			</g>
+		</g>
+		<g id="i">
+			<g>
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M241.202,22.789c1.198,0,2.17-0.972,2.17-2.17c0-1.197-0.972-2.169-2.17-2.169
+					c-1.199,0-2.17,0.972-2.17,2.169C239.032,21.817,240.003,22.789,241.202,22.789z M244.138,25.571v-2h-5.999v2h1v3.999h-1v2
+					h5.999v-2h-0.999v-3.999H244.138z"/>
+			</g>
+		</g>
+		<g>
+			<path fill-rule="evenodd" clip-rule="evenodd" fill="#CCCCCC" d="M224.474,36.658H8.5c-0.552,0-1.001-0.45-1.001-1.002V15.659
+				c0-0.552,0.45-1,1.001-1h215.974c0.552,0,0.999,0.448,0.999,1v19.997C225.473,36.208,225.025,36.658,224.474,36.658
+				L224.474,36.658z"/>
+			<path d="M224.473,13.661c1.104,0,2,0.895,2,1.999v19.997c0,1.105-0.896,2-2,2H8.499c-1.104,0-2-0.895-2-2V15.66
+				c0-1.104,0.896-1.999,2-1.999H224.473 M224.473,15.66L224.473,15.66L8.499,15.661v19.996h215.974V15.66L224.473,15.66z"/>
+		</g>
+		<g>
+			<polygon fill-rule="evenodd" clip-rule="evenodd" fill="#808080" points="116.141,11.604 110.218,1 122.008,1 116.141,11.604 			
+				"/>
+			<path fill="#E6E6E6" d="M122.856,0.5l-6.714,12.135L109.366,0.5H122.856 M121.16,1.5h-10.09l5.069,9.077L121.16,1.5L121.16,1.5z"
+				/>
+		</g>
+		<g id="line">
+			<g>
+				<rect x="115.111" y="8.698" fill-rule="evenodd" clip-rule="evenodd" fill="#808080" width="2" height="35.87"/>
+			</g>
+		</g>
+	</g>
+</switch>
+</svg>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 13.0.2, SVG Export Plug-In . SVG Version: 6.00 Build 14948)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+]>
+<svg version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="67.87px"
+	 height="40.05px" viewBox="0 0 67.87 40.05" enable-background="new 0 0 67.87 40.05" xml:space="preserve">
+<switch>
+	<g i:extraneous="self">
+		<g id="label_copy_3_1_">
+					</g>
+		<g>
+			<path fill="#333333" d="M66.872,39.05h-0.996H20.023c-10.492,0-19.026-8.534-19.026-19.026c0-10.492,8.535-19.026,19.026-19.026
+				h45.853h0.996v0.996v36.06V39.05L66.872,39.05z"/>
+			<path fill="#333333" d="M65.875,1.994v36.06H20.023c-9.957,0-18.029-8.072-18.029-18.03c0-9.957,8.072-18.03,18.029-18.03H65.875
+				 M67.869,0h-1.994H20.023C8.982,0,0,8.982,0,20.024s8.982,20.024,20.023,20.024h45.852h1.994v-1.994V1.994V0L67.869,0z"/>
+		</g>
+		<g>
+			<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="34.4624" y1="1.9941" x2="34.4624" y2="38.0542">
+				<stop  offset="0" style="stop-color:#FFFFFF"/>
+				<stop  offset="1" style="stop-color:#B3B3B3"/>
+				<stop  offset="1" style="stop-color:#8C8C8C"/>
+			</linearGradient>
+			<path fill="url(#SVGID_1_)" d="M1.994,20.024c0,9.958,8.206,18.03,18.328,18.03h46.61V1.994h-46.61
+				C10.2,1.994,1.994,10.067,1.994,20.024L1.994,20.024z"/>
+		</g>
+		<g id="Shape_1_1_">
+			<g>
+				<rect x="29.729" y="18.027" fill-rule="evenodd" clip-rule="evenodd" width="11.999" height="4"/>
+			</g>
+		</g>
+	</g>
+</switch>
+</svg>

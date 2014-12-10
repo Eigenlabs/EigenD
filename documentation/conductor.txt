@@ -1,0 +1,21 @@
+* lots of different UIs
+* very strict MVC approach
+* central conductor object off of which you can create taps
+* wire/receiver class that receives data and events
+* logically belong to a tap
+* might not need a tap class
+* variable number of taps and variable number of inputs
+* createInput inputNr and (tapNr) sourceNr
+* recording kicks off for all inputs of a tap
+* tap ID is just to correlate inputs together
+* choose which input can kick off your recording
+* kick off over a certain audio level
+* each input should be separate, no correlation, all vector inputs
+* no grouping of inputs into correlators
+* keep track of which wires have events running on them
+* maybe a bit of history?
+* separate thread queue for disc flushing while recording
+* clip manager, session prefix for conductor, ie. pattern where to put each file
+* register the clip when the recording finishes
+* read in 4k block because of disk file boundaries, but data might not be on these boundaries
+* recordings should be wav files
