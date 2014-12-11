@@ -1,0 +1,17 @@
+
+<<<
+#include "scale_illuminator.h"
+>>>
+
+
+from piw[piw/piw.pip] import change,change_nb,data_nb,cookie,clockdomain_ctl,clockref
+
+class scale_illuminator[scale_illuminator_plg::scale_illuminator_t]
+{
+    scale_illuminator(clockdomain_ctl *, const cookie &)
+    cookie cookie()
+    void reference_scale(const stdstr &)
+    void reference_tonic(float)
+    void inverted(bool)
+    void root_light(bool)    
+}

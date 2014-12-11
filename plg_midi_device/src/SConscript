@@ -1,0 +1,14 @@
+Import('env')
+#
+# Build a shared library called mididevice_plg.
+#
+env.PiSharedLibrary('midi_device_plg', 
+	Split('midi_device.cpp'),
+	libraries=Split('pic piw pia midilib'), 
+	package='eigend', per_agent='plg_midi_device')
+
+#
+# Build a Python native module as described by midi_device_plg.pip, called midi_device_plg_native.
+# Link it against our new shared library and other base libraries
+#
+env.PiPipBinding('midi_device_plg_native', 'midi_device_plg.pip', libraries=Split('midi_device_plg pic piw midilib'), package='eigend', per_agent='plg_midi_device')

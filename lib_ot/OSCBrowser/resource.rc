@@ -1,0 +1,7 @@
+// Microsoft Visual C++ generated resource script.
+
+#include "resource.h"
+
+OSCBROWSER                  ICON                    "resource/oscbrowser.ico"
+
+#include "wx/msw/wx.rc"

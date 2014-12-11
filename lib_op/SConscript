@@ -1,0 +1,28 @@
+Import('master_env')
+
+env = master_env.Clone()
+
+import os,glob
+
+op_dirs = Split("ip osc .")
+
+op_files = Split("""
+    osc/OscOutboundPacketStream.cpp  osc/OscPrintReceivedElements.cpp osc/OscReceivedElements.cpp  osc/OscTypes.cpp
+    ip/IpEndpointName.cpp
+""")
+
+op_env = env.Clone()
+op_env.Append(CPPPATH=op_dirs)
+
+if env['IS_MACOSX']:
+    op_dirs=op_dirs+Split('ip/posix')
+    op_files=op_files+Split('ip/posix/NetworkingUtils.cpp ip/posix/UdpSocket.cpp')
+
+if env['IS_WINDOWS']:
+    op_dirs=op_dirs+Split('ip/win32')
+    op_files=op_files+Split('ip/win32/NetworkingUtils.cpp ip/win32/UdpSocket.cpp')
+    op_env.Append(LINKFLAGS=' WS2_32.Lib Winmm.lib')
+
+#op_env.PiProgram('oscsend','oscsend.c',libraries=Split('piop'))
+#op_env.PiProgram('oscdump','oscdump.c',libraries=Split('piop'))
+op_env.PiSharedLibrary('piop',op_files,package='eigend',hidden=False,deffile='piop.def')

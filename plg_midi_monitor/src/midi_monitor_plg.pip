@@ -1,0 +1,26 @@
+
+<<<
+#include "midi_monitor.h"
+>>>
+
+
+from piw[piw/piw.pip] import change,change_nb,data_nb,cookie,clockdomain_ctl,clockref
+
+class midi_monitor[midi_monitor_plg::midi_monitor_t]
+{
+    midi_monitor(clockdomain_ctl *, const cookie &)
+  	change_nb control()
+    cookie cookie()
+    
+    void enable_notes(bool)
+    void enable_poly_pressure(bool)    
+    void enable_cc_as_key(bool)
+    void enable_cc_as_course(bool)    
+    void channel(unsigned)
+    void nearest_match(bool)    
+    void first_match(bool)
+    void use_velocity_as_state(bool)    
+    void use_channel_as_state(bool)
+    void use_physical_mapping(bool)
+    void control_offset(unsigned)
+}

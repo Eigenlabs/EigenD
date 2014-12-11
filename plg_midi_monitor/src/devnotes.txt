@@ -1,0 +1,74 @@
+A general collection of notes about implementation and other stuff...
+
+================================================================================
+Contents:
+================================================================================
+a. Agent implementation
+b. Workaround and issues
+c.
+
+
+
+================================================================================
+a. agent implementation
+================================================================================
+
+this was the basic algorithm, i thought of using ... in practice i probably improved on it during implementation,
+... as i usually rethink as i go along
+
+	// basic algo
+	// base = playing_octave * 12  (starting point)
+	// base+= playing tonic ( as C = 0)
+	// base+= playing base note (offset from tonic)
+	// course[0]=base
+	// for i = 1 to # courses
+	// 		course[i]=course[i-1]+courseoffset(i-1) // see above re scaleoffset
+
+	// for any given midi note we now just have to go thru each course
+	// for c = 0 to # courses
+	// 		if midinote < course[c] continue; // its below this course
+	//      midioffset= midinote-course[c];
+	//
+	//      if courselen[c] * max_in_scale  < midioffset  continue;  //  midinote > course length
+	//
+	//      scalemuliple = midioffset / max_in_scale  (usually 12, so octave, but might not be)
+	//      inscaleoffset = midioffset % max_in_scale
+	//      for p = 0 to scale.length
+	//          inscaleoffset-scale(p)
+	//          if inscaleoffset==0
+	//                  n=p + scalemuliple*scale.length
+	//		            light (c,n)
+	//                  break;
+	//          if inscaleoffset < 0
+	//					break;  // note did not exist, e.g. C# on C Major scale
+	//
+	//      --  next p
+	//  --  next c
+	//
+
+
+
+ASSUMPTIONS
+there is a course length for every course
+courselen(i) equates to semioffset(i) equates to scaleoffset(i)
+exceptions
+there can be less offsets than courselen, in which case offset = 0
+there can be both a semitoneoffset and scaleoffset (though in practice eigenD doesnt support this)
+courses are continous i.e. [1,1] [1,2] [1,3] NOT [1,1] [1,3]
+
+
+
+================================================================================
+b. workaround and issues
+================================================================================
+EigenD has a number of assumptions about both physical and musical mappings
+In particular the control output, only sends info about course and column lengths and offsets.
+so it assumes that they are 'contigous' which obviously is not always the case.
+In fairness, usually EigenD can deal with non-contigous mappings, but it does create oddities for some agents.
+(scaler and my scale illuminator and this one)
+Its not a 'big deal' and only really becomes noticible if you create layouts where the number of entries in the map is less
+than the highest entry.
+
+
+
+

@@ -1,0 +1,4 @@
+Import('env')
+
+env.PiPythonPackage(package='eigend', per_agent='plg_livepad')
+env.PiAgent('live_pad', 'plg_livepad','live_pad_plg', cversion='0.0.10')

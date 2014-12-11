@@ -1,0 +1,69 @@
+A general collection of notes about implementation and other stuff...
+
+================================================================================
+Contents:
+================================================================================
+a. LiveOSC usage/limitations
+b. Agent implementation
+c. lib_lo/OSC implementation
+d. Live OSC agent implementation
+
+
+
+
+================================================================================
+a. LiveOSC usage/limitations
+================================================================================
+limitations
+- live osc does not have a RECORDING state, so i use a track/info event instead, but this is not good, as we get it immediately on track creation, 
+rather than when the recording starts
+- live osc does not tell you when live starts or loads a new project, so we need to manually refresh
+
+LiveOSC is based on a 'hidden' api that was present in live 8, which has the limitations above - but thankfully still works in 9 !!!!
+Live 9 now has alot of Midi remote scripts, which deal with the above, I think the way forward would be to rewrite/adapt
+liveOSC to the newer remote api, then the above could be overcome - but this needs a fair amount of digging in Ableton
+(decompiled midi remote scripts are available)
+
+liveosc : http://livecontrol.q3f.org/ableton-liveapi/liveosc/
+main liveosc messages: http://monome.q3f.org/browser/trunk/LiveOSC/OSCAPI.txt - its generally good, but a bit out of date, check source for definitive
+live 8 hidden api: http://relivethefuture.com/code/live/apidocs/
+decompile live 9 scripts: http://github.com/gluon/AbletonLive9_RemoteScripts
+
+
+
+
+================================================================================
+b. Agent implementation
+================================================================================
+This is based on the most basic root_ agents, which basically gets all events.
+the reason for this, is that cfilter/ufilter can only react to events e.g.  the do something when you press a key etc
+but we are responding to osc messages i.e. events outside eigenD
+root_t is seen in many places, and ive used the latch agent as my starting point, as its pretty clear, 
+especially about responding to things like key events
+light_wire_t is required to work on events outside eigenD, so ive borrowed techniques used in midi_input
+
+
+
+================================================================================
+c. lib_lo/OSC implementation
+================================================================================
+initially I used, the plg_osc as a starting point, but realised early on that this agent is quite different, 
+so really just when back to the lib_lo documentation, which is very clear, sometime I go back to plg_osc to see how its done 
+as an example, but its not that helpful really.
+
+
+
+
+================================================================================
+d. Live OSC agent implementation
+================================================================================
+Threading - THE MODEL IS OWNED BY THE FAST THREAD!!!!!
+we get eigenD events on the fast thread (key events), and we need to update the lights on the fast thread.
+so that it means it needs access, sometimes write access.
+but we also need to update the model when we receive messages on the oscread thread, so we transfer these to the fast thread for processing,
+no big deal as we need to be there most of the time for updating the lights anyway!
+
+I need to tidy this up and perhaps consider using things like flipflip 
+
+limitations
+- id like blinking light for trigger record, and trigger launch

@@ -1,0 +1,14 @@
+Import('env')
+#
+# Build a shared library called oscpad_plg.
+#
+env.PiSharedLibrary('livepad_plg', 
+	Split('live_pad.cpp osc_server.cpp osc_client.cpp live_osc.cpp live_model.cpp'),
+	libraries=Split('pic piw pia pilo'), 
+	package='eigend', per_agent='plg_livepad')
+
+#
+# Build a Python native module as described by oscpad_plg.pip, called oscpad_plg_native.
+# Link it against our new shared library and other base libraries
+#
+env.PiPipBinding('livepad_plg_native', 'livepad_plg.pip', libraries=Split('livepad_plg pic piw'), package='eigend', per_agent='plg_livepad')

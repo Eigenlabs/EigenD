@@ -1,0 +1,45 @@
+
+<<<
+#include "t3d_output.h"
+#include "t3d_device.h"
+>>>
+
+
+from piw[piw/piw.pip] import clockdomain_ctl,cookie,data,change_nb
+
+class t3d_output[t3d_output_plg::t3d_output_t]
+{
+    t3d_output(clockdomain_ctl *, const stdstr &, unsigned)
+    void stop()
+    cookie create_output(const stdstr &,bool,unsigned)
+    change_nb control()
+    void connect(const stdstr &, unsigned)
+    void set_max_voice_count(unsigned)
+    void set_data_freq(unsigned)
+    void set_kyma_mode(bool)
+    void set_continuous_mode(bool)
+}
+
+
+
+class t3d_device[t3d_device_plg::t3d_device_t]
+{
+    t3d_device(clockdomain_ctl *, const cookie &)
+    cookie cookie()
+    
+    void stop()
+    
+    void connect(unsigned,unsigned)
+        
+    void col_size(int)
+    void row_size(int)
+ 
+    data get_columnlen()
+    data get_columnoffset()
+    data get_courselen()
+    data get_courseoffset()
+    void whole_roll(bool)
+    void whole_yaw(bool)
+    void continuous_key(bool)
+    void touch_mode(bool)
+ }

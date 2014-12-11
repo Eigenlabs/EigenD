@@ -1,0 +1,37 @@
+
+<<<
+#include "midi_device.h"
+>>>
+
+
+from piw[piw/piw.pip] import change,change_nb,data_nb,cookie,clockdomain_ctl,clockref,data
+
+class midi_device[midi_device_plg::midi_device_t]
+{
+    midi_device(clockdomain_ctl *, const cookie &)
+    cookie cookie()
+    
+    void enable_hires_cc(bool)
+    void enable_notes(bool)
+    void enable_velocity(bool)
+    void enable_poly_at(unsigned,bool)
+    void enable_chan_at(unsigned,bool)
+    void set_data_freq(int)
+    void set_cc_map(unsigned,int)
+    void set_pb_map(unsigned,int)
+    void set_note_cc(int)
+    void set_note_cc_pressure(int)
+    void channel(unsigned)
+    void velocity_sample(unsigned)
+    void set_relative_map(unsigned,bool)
+    void set_bipolar_map(unsigned,bool)
+    void set_release_map(unsigned,bool)
+    void set_hires_cc_map(unsigned,int)
+    void set_hires_pb_map(unsigned,int)
+ 
+    data get_columnlen()
+    data get_columnoffset()
+    data get_courselen()
+    data get_courseoffset()
+ 
+ }

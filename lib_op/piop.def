@@ -1,0 +1,21 @@
+LIBRARY   PIOP
+EXPORTS
+	??6OutboundPacketStream@osc@@QAEAAV01@J@Z @1
+	?GetHostByName@IpEndpointName@@CAKPBD@Z @2
+	??1UdpSocket@@UAE@XZ @3
+	?Connect@UdpSocket@@QAEXABVIpEndpointName@@@Z @4
+	??0UdpSocket@@QAE@XZ @5
+	??1OutboundPacketStream@osc@@QAE@XZ @6
+	?Send@UdpSocket@@QAEXPBDI@Z @7
+	?Data@OutboundPacketStream@osc@@QBEPBDXZ @8
+	?Size@OutboundPacketStream@osc@@QBEIXZ @9
+	??6OutboundPacketStream@osc@@QAEAAV01@ABUBundleTerminator@1@@Z @10
+	??6OutboundPacketStream@osc@@QAEAAV01@ABUBundleInitiator@1@@Z @11
+	?EndBundle@osc@@3UBundleTerminator@1@A @12
+	??6OutboundPacketStream@osc@@QAEAAV01@ABUMessageTerminator@1@@Z @13
+	??6OutboundPacketStream@osc@@QAEAAV01@ABUBeginMessage@1@@Z @14
+	?BeginBundleImmediate@osc@@3UBundleInitiator@1@A @15
+	??0OutboundPacketStream@osc@@QAE@PADI@Z @16
+	?EndMessage@osc@@3UMessageTerminator@1@A @17
+	??6OutboundPacketStream@osc@@QAEAAV01@ABUBlob@1@@Z @18
+	??6OutboundPacketStream@osc@@QAEAAV01@M@Z @19

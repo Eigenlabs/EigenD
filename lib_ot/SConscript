@@ -1,0 +1,14 @@
+Import('env')
+
+import os,glob
+
+ot_dirs = Split(". zeroconf")
+
+ot_files = Split("""
+ zeroconf/CriticalSection.cpp zeroconf/NetService.cpp zeroconf/NetServiceBrowser.cpp zeroconf/NetServiceThread.cpp zeroconf/Thread.cpp
+""")
+
+ot_env = env.Clone()
+ot_env.Append(CPPPATH=ot_dirs)
+
+ot_env.PiSharedLibrary('piot',ot_files,package='eigend',hidden=False,deffile='piot.def')

@@ -1,0 +1,4 @@
+# Unfortunately not all EigenD headers are exported, this means that we cannot use utility functioins
+# this directory contains useful parts of EigenD, that there is no need to rewrite.
+# this code is under open source so is free to use
+# NOTE: the code may have been modified slightly, so that it can work outside the EigenD build context

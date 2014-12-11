@@ -1,0 +1,3 @@
+Import('env')
+env.PiPythonPackage(package='eigend', per_agent='plg_scale_illuminator')
+env.PiAgent('scale_illuminator', 'plg_scale_illuminator','scale_illuminator_plg', cversion='0.1.7')

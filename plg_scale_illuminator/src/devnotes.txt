@@ -1,0 +1,27 @@
+A general collection of notes about implementation and other stuff...
+
+================================================================================
+Contents:
+================================================================================
+a. Agent implementation
+b. Workaround and issues
+c.
+
+
+
+================================================================================
+a. agent implementation
+================================================================================
+
+
+================================================================================
+b. workaround and issues
+================================================================================
+In some setups (alpha 2 & 3) it appears that some keygroups dont have scales set,
+(they should be defaulted to major), this caused issues as it was a basic assumption
+so now i check - i do not at present make the same assumption though, which means
+tonic lights are not shown until a scale is selected
+
+there is no way to get course layout information from the control input, it only has length
+this means we have to assume key nums in a course are consecutive, which they dont have to be
+this causes problem when the key num exceeds number of entries in course.

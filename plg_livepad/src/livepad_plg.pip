@@ -1,0 +1,21 @@
+
+<<<
+#include "live_pad.h"
+>>>
+
+
+from piw[piw/piw.pip] import clockdomain_ctl,cookie
+
+class live_pad[livepad_plg::live_pad_t]
+{
+    live_pad(clockdomain_ctl *, const cookie &, const stdstr &, const stdstr &, const stdstr &)
+    cookie cookie()
+    void refresh()
+    void play()
+    void stop()
+    void set_window(unsigned, unsigned, unsigned, unsigned)
+	void play_scene(int)
+	void shutdown()
+    void undo()
+    void redo()
+}
