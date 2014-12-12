@@ -73,9 +73,7 @@ class Agent(agent.Agent):
  
         self[8] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__set_continuous_mode),names='continuous')
   
-        print "connect ", self[2][1].get_value(), " port ", self[2][2].get_value()
         self.t3d_output.connect(self[2][1].get_value(), self[2][2].get_value())
-        print "connect b ", self[2][1].get_value(), " port ", self[2][2].get_value()
   
     def close_server(self):
         agent.Agent.close_server(self)

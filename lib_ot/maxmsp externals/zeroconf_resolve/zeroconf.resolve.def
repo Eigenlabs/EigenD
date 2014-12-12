@@ -1,4 +1,0 @@
-LIBRARY zeroconf.resolve.mxe
-
-EXPORTS
-	main

@@ -17,7 +17,6 @@
 #include <lib_op/osc/OscPacketListener.h>
 #include <lib_op/ip/UdpSocket.h>
 #include <lib_op/osc/OscOutboundPacketStream.h>
-#include <lib_ot/zeroconf/NetService.h>
 
 
 // t3d messages - quickino
@@ -115,9 +114,6 @@
 #define MAX_TOUCHES MAX_KEYS
 
 
-#define DEFAULT_PORT 3999
-
-
 
 namespace t3d_device_plg
 {
@@ -183,23 +179,6 @@ namespace t3d_device_plg
 		t3d_listener_t* listener_;
 	};
 
-
-
-	class ZeroConfServiceListener : public ZeroConf::NetServiceListener
-	{
-	public:
-	  void willPublish(ZeroConf::NetService *pNetService) { LOG_SINGLE(pic::logmsg() << "ZeroConfServiceListener::willPublish";)}
-	  void didNotPublish(ZeroConf::NetService *pNetService) { LOG_SINGLE(pic::logmsg() << "ZeroConfServiceListener::didNotPublish";)}
-	  void didPublish(ZeroConf::NetService *pNetService)
-	  {
-		  LOG_SINGLE(pic::logmsg() << "didPublish " << "name: " << pNetService->getName() << " port: " << pNetService->getPort();)
-	  }
-	  void willResolve(ZeroConf::NetService *pNetService) { LOG_SINGLE(pic::logmsg() << "ZeroConfServiceListener::willResolve";)}
-	  void didNotResolve(ZeroConf::NetService *NetService) { LOG_SINGLE(pic::logmsg() << "ZeroConfServiceListener::didNotResolve";)}
-	  void didResolveAddress(ZeroConf::NetService *pNetService) { LOG_SINGLE(pic::logmsg() << "ZeroConfServiceListener::didResolveAddress";)}
-	  void didUpdateTXTRecordData(ZeroConf::NetService *pNetService) { LOG_SINGLE(pic::logmsg() << "ZeroConfServiceListener::didUpdateTXTRecordData";)}
-	  void didStop(ZeroConf::NetService *pNetService) { LOG_SINGLE(pic::logmsg() << "ZeroConfServiceListener::didStop";)}
-	};
 
 	struct light_wire_t:
 		piw::wire_t,
@@ -1274,18 +1253,12 @@ t3d_server_t::~t3d_server_t()
 
 void t3d_server_t::thread_main()
 {
-	ZeroConfServiceListener listener;
 	LOG_SINGLE(pic::logmsg() << "t3d_server_t::thread_main() " << port_;)
 	socket_=new UdpListeningReceiveSocket (
             IpEndpointName( IpEndpointName::ANY_ADDRESS, port_),
             listener_);
 
-	ZeroConf::NetService eigenService("local", "_osc._udp", "EigenD", port_);
-
-	eigenService.setListener(&listener);
-	eigenService.publish(true);
 	socket_->Run();
-	eigenService.stop();
 }
 
 void t3d_server_t::thread_init()

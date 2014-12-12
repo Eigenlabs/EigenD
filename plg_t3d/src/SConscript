@@ -1,14 +1,11 @@
 Import('env')
 
-ot_dirs = Split("../../lib_ot")
-env.Append(CPPPATH=ot_dirs)
-
 #
 # Build a shared library called t3d_plg.
 #
 env.PiSharedLibrary('t3d_plg', 
 	Split('t3d_output.cpp t3d_device.cpp Madrona/SoundplaneOSCOutput.cpp'),
-	libraries=Split('pic piw pia piop piot'), 
+	libraries=Split('pic piw pia piop'), 
 	package='eigend', per_agent='plg_t3d')
 
 #

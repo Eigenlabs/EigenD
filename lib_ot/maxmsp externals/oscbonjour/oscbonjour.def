@@ -1,6 +1,0 @@
-;oscbonjour.def
-
-LIBRARY oscbonjour
-
-EXPORTS
-	main

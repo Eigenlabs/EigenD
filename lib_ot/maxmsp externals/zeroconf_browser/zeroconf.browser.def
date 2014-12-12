@@ -1,4 +1,0 @@
-LIBRARY zeroconf.browser.mxe
-
-EXPORTS
-	main

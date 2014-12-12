@@ -80,7 +80,7 @@ class Agent(agent.Agent):
         self[4] = atom.Atom(domain=domain.BoundedInt(1,5),init=5,policy=atom.default_policy(self.__col_size),names='col size')
         self[5] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__whole_roll),names='whole roll')
         self[6] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__whole_yaw),names='whole yaw')
-        self[7] = atom.Atom(domain=domain.BoundedInt(0,9999),init=3100,policy=atom.default_policy(self.__server_port),names='server port')
+        self[7] = atom.Atom(domain=domain.BoundedInt(0,9999),init=3123,policy=atom.default_policy(self.__server_port),names='server port')
 
         self.input = bundles.VectorInput(self.device.cookie(), self.domain, signals=(IN_LIGHT,))
         self[8] = atom.Atom(domain=domain.BoundedInt(0,9999),init=0,policy=atom.default_policy(self.__light_port),names='light port')

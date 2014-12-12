@@ -1,4 +1,0 @@
-LIBRARY zeroconf.service.mxe
-
-EXPORTS
-	main
