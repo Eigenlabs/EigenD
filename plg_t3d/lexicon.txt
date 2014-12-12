@@ -1,7 +1,0 @@
-7   2   4   1  : Device            : Noun            : None
-7   2   2   1  : SoundPlane        : Noun            : None
-7   2   2   2  : Kyma		       : Noun            : None
-7   2   2   3  : t3d		       : Noun            : None
-7   2   2   4  : touch		       : Noun            : None
-
-

@@ -1,3 +1,0 @@
-7   2   4   1  : Device        : Noun            : None
-7   2   4   2  : Unipolar      : Noun            : None
-7   2   4   3  : Bipolar       : Noun            : None
