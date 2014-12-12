@@ -1,4 +1,4 @@
 Import('env')
 
 env.PiPythonPackage(package='eigend', per_agent='plg_midi_device')
-env.PiAgent('midi_device', 'plg_midi_device','midi_device_plg', cversion='0.0.5', lexicon='lexicon.txt')
+env.PiAgent('midi_device', 'plg_midi_device','midi_device_plg', cversion='0.0.5')
