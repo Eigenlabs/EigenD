@@ -792,7 +792,7 @@ void t3d_device_t::whole_yaw(bool v)
 
 static int continuous_key__(void *i_, void * v_)
 {
-	t3d_device_t::t3d_device_t::impl_t *i = (t3d_device_plg::t3d_device_t::impl_t *)i_;
+	t3d_device_plg::t3d_device_t::impl_t *i = (t3d_device_plg::t3d_device_t::impl_t *)i_;
 	bool v= *((bool*) v_);
 	if(v!=i->continuous_key_)
 	{
@@ -813,7 +813,7 @@ void t3d_device_t::continuous_key(bool v)
 
 static int touch_mode__(void *i_, void * v_)
 {
-	t3d_device_t::t3d_device_t::impl_t *i = (t3d_device_plg::t3d_device_t::impl_t *)i_;
+	t3d_device_plg::t3d_device_t::impl_t *i = (t3d_device_plg::t3d_device_t::impl_t *)i_;
 	bool v= *((bool*) v_);
 	if(v!=i->touch_mode_)
 	{
@@ -871,7 +871,7 @@ piw::data_t  t3d_device_t::get_courseoffset()
 
 static int stopper__(void *i_, void *)
 {
-	t3d_device_t::t3d_device_t::impl_t *i = (t3d_device_plg::t3d_device_t::impl_t *)i_;
+	t3d_device_plg::t3d_device_t::impl_t *i = (t3d_device_plg::t3d_device_t::impl_t *)i_;
 	i->stop();
     return 0;
 }

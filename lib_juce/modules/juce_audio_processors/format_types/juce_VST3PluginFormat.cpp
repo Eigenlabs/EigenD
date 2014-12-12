@@ -2095,6 +2095,7 @@ private:
         return stream;
     }
 
+public:
     //==============================================================================
     class ParameterChangeList  : public Vst::IParameterChanges
     {
@@ -2124,7 +2125,6 @@ private:
             return q;
         }
 
-    private:
         struct ParamValueQueue  : public Vst::IParamValueQueue
         {
             ParamValueQueue (Vst::ParamID parameterID) : paramID (parameterID)
