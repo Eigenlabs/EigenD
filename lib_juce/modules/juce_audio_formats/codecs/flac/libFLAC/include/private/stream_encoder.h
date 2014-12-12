@@ -1,5 +1,6 @@
 /* libFLAC - Free Lossless Audio Codec library
- * Copyright (C) 2012-2014  Xiph.org Foundation
+ * Copyright (C) 2000-2009  Josh Coalson
+ * Copyright (C) 2011-2014  Xiph.Org Foundation
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,50 +30,38 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* It is assumed that this header will be included after "config.h". */
+#ifndef FLAC__PRIVATE__STREAM_ENCODER_H
+#define FLAC__PRIVATE__STREAM_ENCODER_H
 
-#if HAVE_BSWAP32			/* GCC and Clang */
-
-/* GCC prior to 4.8 didn't provide bswap16 on x86_64 */
-#if ! HAVE_BSWAP16
-static inline unsigned short __builtin_bswap16(unsigned short a)
-{
-	return (a<<8)|(a>>8);
-}
+#ifdef HAVE_CONFIG_H
+#include <config.h>
 #endif
 
-#define	ENDSWAP_16(x)		(__builtin_bswap16 (x))
-#define	ENDSWAP_32(x)		(__builtin_bswap32 (x))
+/*
+ * This is used to avoid overflow with unusual signals in 32-bit
+ * accumulator in the *precompute_partition_info_sums_* functions.
+ */
+#define FLAC__MAX_EXTRA_RESIDUAL_BPS 4
 
-#elif defined _MSC_VER		/* Windows. Apparently in <stdlib.h>. */
+#if (defined FLAC__CPU_IA32 || defined FLAC__CPU_X86_64) && defined FLAC__HAS_X86INTRIN
+#include "cpu.h"
+#include "../../../format.h"
 
-#define	ENDSWAP_16(x)		(_byteswap_ushort (x))
-#define	ENDSWAP_32(x)		(_byteswap_ulong (x))
-
-#elif defined HAVE_BYTESWAP_H		/* Linux */
-
-#include <byteswap.h>
-
-#define	ENDSWAP_16(x)		(bswap_16 (x))
-#define	ENDSWAP_32(x)		(bswap_32 (x))
-
-#else
-
-#define	ENDSWAP_16(x)		((((x) >> 8) & 0xFF) | (((x) & 0xFF) << 8))
-#define	ENDSWAP_32(x)		((((x) >> 24) & 0xFF) | (((x) >> 8) & 0xFF00) | (((x) & 0xFF00) << 8) | (((x) & 0xFF) << 24))
-
+#ifdef FLAC__SSE2_SUPPORTED
+extern void FLAC__precompute_partition_info_sums_intrin_sse2(const FLAC__int32 residual[], FLAC__uint64 abs_residual_partition_sums[],
+			unsigned residual_samples, unsigned predictor_order, unsigned min_partition_order, unsigned max_partition_order, unsigned bps);
 #endif
 
+#ifdef FLAC__SSSE3_SUPPORTED
+extern void FLAC__precompute_partition_info_sums_intrin_ssse3(const FLAC__int32 residual[], FLAC__uint64 abs_residual_partition_sums[],
+			unsigned residual_samples, unsigned predictor_order, unsigned min_partition_order, unsigned max_partition_order, unsigned bps);
+#endif
 
-/* Host to little-endian byte swapping. */
-#if CPU_IS_BIG_ENDIAN
+#ifdef FLAC__AVX2_SUPPORTED
+extern void FLAC__precompute_partition_info_sums_intrin_avx2(const FLAC__int32 residual[], FLAC__uint64 abs_residual_partition_sums[],
+			unsigned residual_samples, unsigned predictor_order, unsigned min_partition_order, unsigned max_partition_order, unsigned bps);
+#endif
 
-#define H2LE_16(x)		ENDSWAP_16 (x)
-#define H2LE_32(x)		ENDSWAP_32 (x)
-
-#else
-
-#define H2LE_16(x)		(x)
-#define H2LE_32(x)		(x)
+#endif
 
 #endif
