@@ -195,19 +195,19 @@
                        isDebug="0" optimisation="2" targetName="Workbench"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_events" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_graphics" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_video" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../eigend-gpl/lib_juce/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../../../eigend-gpl/lib_juce/modules"/>
+        <MODULEPATH id="juce_core" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_events" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_video" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../lib_juce/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../lib_juce/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>
