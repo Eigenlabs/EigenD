@@ -20,10 +20,10 @@
 #define JUCE_DLL 1
 
 #include "AppConfig.h"
-#include "../eigend-gpl/lib_juce/modules/juce_core/juce_core.h"
-#include "../eigend-gpl/lib_juce/modules/juce_data_structures/juce_data_structures.h"
-#include "../eigend-gpl/lib_juce/modules/juce_events/juce_events.h"
-#include "../eigend-gpl/lib_juce/modules/juce_graphics/juce_graphics.h"
-#include "../eigend-gpl/lib_juce/modules/juce_gui_basics/juce_gui_basics.h"
+#include "../lib_juce/modules/juce_core/juce_core.h"
+#include "../lib_juce/modules/juce_data_structures/juce_data_structures.h"
+#include "../lib_juce/modules/juce_events/juce_events.h"
+#include "../lib_juce/modules/juce_graphics/juce_graphics.h"
+#include "../lib_juce/modules/juce_gui_basics/juce_gui_basics.h"
 
 using namespace juce;
