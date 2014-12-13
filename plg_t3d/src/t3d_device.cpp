@@ -75,7 +75,8 @@
 
 
 // turn logging by setting LOG_SINGLE(x) x
-#define  LOG_SINGLE(x) x
+#define  LOG_SINGLE(x) 
+//#define  LOG_SINGLE(x) x
 
 //input signals
 #define IN_LIGHT 1
@@ -276,7 +277,6 @@ namespace t3d_device_plg
 
         // behavioural controls
         unsigned long update_period_;
-        unsigned long long last_event_t_;
         unsigned int row_size_;
         unsigned int col_size_;
         bool whole_roll_;
@@ -588,7 +588,6 @@ void t3d_device_t::impl_t::root_latency()
 void t3d_device_t::impl_t::handle_message(unsigned long long t, const piw::data_nb_t &d)
 {
 //	LOG_SINGLE(pic::logmsg() << "handle_message t " << t;)
-	last_event_t_=t;
 	t3d_message_t *pMsg = (t3d_message_t *)(d.as_blob());
 
 	switch (pMsg->type_)
@@ -599,10 +598,9 @@ void t3d_device_t::impl_t::handle_message(unsigned long long t, const piw::data_
 		case T_BREATH:
 		case T_STRIP1:
 		case T_STRIP2:
-			handle_control(t,pMsg->type_,pMsg->y);
+			handle_control(t,pMsg->type_,pMsg->x);
 			break;
 	}
-	last_event_t_=0;
 }
 
 void t3d_device_t::impl_t::clear_touches()
@@ -681,8 +679,9 @@ void t3d_device_t::impl_t::handle_touch(unsigned long long t, unsigned touch, fl
     }
 }
 
-void t3d_device_t::impl_t::handle_control(unsigned long long t, enum t3d_ctrl_t type, float x)
+void t3d_device_t::impl_t::handle_control(unsigned long long t, enum t3d_ctrl_t type, float absx)
 {
+	float x= (absx*2.0) - 1.0;
 	switch (type)
 	{
 		case T_TOUCH:
@@ -969,7 +968,7 @@ void kwire_t::updateKey(unsigned long long t, bool a, unsigned touch, float note
     	}
     	else // updates
     	{
-    	    if( t < (last_update_ + device_->updatePeriod()))
+    	    if( device_->updatePeriod() > 0 &&  t < (last_update_ + device_->updatePeriod()))
     	    {
     	    	LOG_SINGLE(pic::logmsg() << "kwire_t::updateKey:no update t" << t << " lu " << last_update_ << " up " << device_->updatePeriod();)
     	    	return;
@@ -1063,7 +1062,7 @@ void kwire_t::updateTouch(unsigned long long t, bool a, unsigned touch, float no
     	}
     	else // updates
     	{
-    	    if( t < (last_update_ + device_->updatePeriod()))
+    	    if( device_->updatePeriod() > 0 &&  t < (last_update_ + device_->updatePeriod()))
     	    {
     	    	LOG_SINGLE(pic::logmsg() << "kwire_t::updateTouch:no update t" << t << " lu " << last_update_ << " up " << device_->updatePeriod();)
     	    	return;
@@ -1131,7 +1130,7 @@ void strip_t::update( unsigned long long t, float v)
 	if(cur_val==v)
 		return;
 
-	if(t < (last_update_ + device_->updatePeriod()))
+	if( device_->updatePeriod() > 0 && t < (last_update_ + device_->updatePeriod()))
 	{
 		LOG_SINGLE(pic::logmsg() << "strip update :ignoring " << t << " next "<< last_update_ + device_->updatePeriod() <<" up " << last_update_ <<  " per " << device_->updatePeriod();)
 		return;
@@ -1185,7 +1184,7 @@ void breath_t::update(unsigned long long t,float v)
 	if(cur_val==v)
 		return;
 
-	if(t < (last_update_ + device_->updatePeriod()))
+	if( device_->updatePeriod() > 0 && t < (last_update_ + device_->updatePeriod()))
 	{
 		LOG_SINGLE(pic::logmsg() << "breath update :ignoring " << t << " next "<< last_update_ + device_->updatePeriod() <<" up " << last_update_ <<  " per " << device_->updatePeriod();)
 		return;
@@ -1232,7 +1231,7 @@ void pedal_t::update(unsigned long long t, float v)
 	if(cur_val==v)
 		return;
 
-	if(t < (last_update_ + device_->updatePeriod()))
+	if( device_->updatePeriod() > 0 &&  t < (last_update_ + device_->updatePeriod()))
 		return;
 
 	cur_val=v;
@@ -1241,7 +1240,7 @@ void pedal_t::update(unsigned long long t, float v)
 }
 
 
-t3d_server_t::t3d_server_t(t3d_listener_t* listener) : port_(0),socket_(NULL),listener_(listener)
+t3d_server_t::t3d_server_t(t3d_listener_t* listener) : thread_t(PIC_THREAD_PRIORITY_HIGH), port_(0),socket_(NULL),listener_(listener)
 {
 	listener_=listener;
 }
