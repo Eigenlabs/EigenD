@@ -19,3 +19,20 @@ EXPORTS
 	?EndMessage@osc@@3UMessageTerminator@1@A @17
 	??6OutboundPacketStream@osc@@QAEAAV01@ABUBlob@1@@Z @18
 	??6OutboundPacketStream@osc@@QAEAAV01@M@Z @19
+	?IsBundle@ReceivedPacket@osc@@QBE_NXZ @20
+	?AsInt32@ReceivedMessageArgument@osc@@QBEJXZ @21
+	?Advance@ReceivedMessageArgumentIterator@osc@@AAEXXZ @22
+	??0ReceivedMessage@osc@@QAE@ABVReceivedPacket@1@@Z @23
+	??0ReceivedMessage@osc@@QAE@ABVReceivedBundleElement@1@@Z @24
+	??0SocketReceiveMultiplexer@@QAE@XZ @25
+	?AttachSocketListener@SocketReceiveMultiplexer@@QAEXPAVUdpSocket@@PAVPacketListener@@@Z @26
+	?Run@SocketReceiveMultiplexer@@QAEXXZ @27
+	?AsynchronousBreak@SocketReceiveMultiplexer@@QAEXXZ @28
+	?AsFloat@ReceivedMessageArgument@osc@@QBEMXZ @29
+	?IsBundle@ReceivedBundleElement@osc@@QBE_NXZ @30
+	?Size@ReceivedBundleElement@osc@@QBEJXZ @31
+	??0ReceivedBundle@osc@@QAE@ABVReceivedPacket@1@@Z @32
+	??1SocketReceiveMultiplexer@@QAE@XZ @33
+	?DetachSocketListener@SocketReceiveMultiplexer@@QAEXPAVUdpSocket@@PAVPacketListener@@@Z @34
+    ??0ReceivedBundle@osc@@QAE@ABVReceivedBundleElement@1@@Z @35
+	?Bind@UdpSocket@@QAEXABVIpEndpointName@@@Z @36
