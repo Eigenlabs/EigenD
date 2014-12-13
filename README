@@ -36,9 +36,9 @@ to build full package (including stage/workbench and installer)
 make mpkg
 
 Windows:
-to build application and eigend (tmp/bin/eigend.exe)
+to build application and eigend (tmp\bin\eigend.exe)
 bld.cmd 
-to build full package (including stage/workbench and installer)
+to build full package (including Stage, Workbench and installer)
 bld.cmd target-mpkg
 
 
