@@ -29,14 +29,22 @@ which is only subscribed to by a small number.
 Building EigenD
 ---------------
 
-In order to build EigenD, simply type 'make' in this directory,
-or './bld.cmd' on windows.  All build products will be placed
-in a tmp/ directory off the top level.
+MAC OSX:
+to build application and eigend (tmp/app/EigenD.app)
+make 
+to build full package (including stage/workbench and installer)
+make mpkg
 
-Under windows, EigenD is tmp/bin/eigend.exe, under MacOS it's
-an application bundle in tmp/app/EigenD.app
+Windows:
+to build application and eigend (tmp/bin/eigend.exe)
+./bld.cmd 
+to build full package (including stage/workbench and installer)
+./bld.cmd target-mpkg
 
-In order to build, you will need the following:
+
+
+Build requirements
+==================
 
 Runtime Files
 -------------
@@ -47,10 +55,13 @@ Windows device drivers.
 
 Steinberg SDK
 -------------
+obtains from : http://www.steinberg.net/en/company/developers.html
+you will need to register a developer account buts its free
 
 You will need to obtain the VST headers from the
-Steinberg site.  Place these in a directory called
-'steinberg' as follows:
+Steinberg site.  
+Place these in a directory called 'steinberg' as follows:
+(under mac osx, its easier just to create a symbolic link to to the steinberg SDK directory)
 
     ...
     pluginterfaces/base/*
@@ -61,18 +72,23 @@ Steinberg site.  Place these in a directory called
 
 Windows
 -------
+Visual Studio 2012, including Express - (http://www.microsoft.com/en-us/download/details.aspx?id=34673)
+NSIS v2.94 - (http://sourceforge.net/projects/nsis)
+WiX 3.9- (wixtoolset.org)
+Direct X SDK (June 2010) - (https://www.microsoft.com/en-us/download/details.aspx?id=6812)
 
-Visual Studio 2012, including Express
-(http://www.microsoft.com/en-us/download/details.aspx?id=34673)
+note: links are subject to change
 
-NSIS
-WiX
-Direct X SDK (June 2010)
+general notes:
+currently EigenD is using an older version of python, hence the reason we use the runtime supplied
+currently the build is using a version of SCons that is not compatible with VS2013
+
 
 MacOSX
 ------
 
-The Apple development kit, with the 10.4 build support installed.
+XCode 5 or Xcode command line tools (https://developer.apple.com/xcode/downloads/) 
+
 
 Linux
 -----
@@ -89,24 +105,3 @@ libasound2-dev
 libxinerama-dev
 mesa-common-dev
 
-Non GPL Agents
----------------
-
-As of Release 2.0.35, Agents are deployed into their own directories.
-Certain Agents are not currently GPL'd and are not included in this
-tree.   Currently, only the Audio agent is not GPL'ed.
-
-You can still run setups which use these agents by copying the Agent
-directory from a release into your tmp/plugins directory.
-
-On a Mac:
-
-  cp -r /usr/pi/release-2.0.35-experimental/plugins/plg_audio tmp/plugins
-
-On Windows:
-
-  Use whatever method to copy the plg_audio directory to tmp/plugins.
-  The plg_audio directory will be found at:
-
-  Program Files (x86)\Eigenlabs\release-2.0.35\plugins (64 bit systems)
-  Program Files\Eigenlabs\release-2.0.35\plugins (32 bit systems)
