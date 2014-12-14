@@ -85,7 +85,7 @@ class Agent(agent.Agent):
         self.input = bundles.VectorInput(self.device.cookie(), self.domain, signals=(IN_LIGHT,))
         self[8] = atom.Atom(domain=domain.BoundedInt(0,9999),init=0,policy=atom.default_policy(self.__light_port),names='light port')
         self[9] = atom.Atom(domain=domain.Aniso(), protocols='revconnect', policy=self.input.vector_policy(IN_LIGHT,False,clocked=False), names="light input")
-        self[10] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__continuous_key),names='continuous_key')
+        self[10] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__continuous_key),names='continuous key')
         self[11] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__touch_mode),names='touch mode')
          
         print "connect ", self[7], "," , self[8]
@@ -121,7 +121,7 @@ class Agent(agent.Agent):
 
     def __whole_yaw(self,value):
         self[6].set_value(value)
-        self.device.column_continuous(value)
+        self.device.whole_yaw(value)
         return True
 
     def __server_port(self,value):
@@ -135,7 +135,7 @@ class Agent(agent.Agent):
         return True
 
     def __continuous_key(self,value):
-    	if value == true and self[11].get_value() == false:
+    	if value is True and self[11].get_value() is False:
     		self[11].set_value(true)
     		
         self[10].set_value(value)
