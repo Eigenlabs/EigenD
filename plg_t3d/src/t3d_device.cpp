@@ -463,14 +463,19 @@ void t3d_device_t::impl_t::connect(unsigned server_port,unsigned light_port)
 
 void t3d_device_t::impl_t::sendLED(unsigned key, unsigned value)
 {
+	LOG_SINGLE(pic::logmsg() << "t3d_device_t::impl_t::sendLED k " << key << " v " << value;)
 	static const int BS=128;
 	if(t3d_led_socket==NULL) return;
     char buffer[BS];
     osc::OutboundPacketStream p( buffer, BS );
 
-    // col/row are from 1, and we want zero BUT, we also want the mid point
-   float x=float(kwires_[key]->row_-0.5)/row_size_;
-   float y=float(kwires_[key]->column_-0.5)/col_size_;
+    int row=key % row_size_;
+    int col=key / row_size_;
+
+	LOG_SINGLE(pic::logmsg() << "t3d_device_t::impl_t::sendLED col" << col << " row " << row;)
+    // want to send mid point of key
+    float x=float(row+0.5)/row_size_;
+    float y=float(col+0.5)/col_size_;
 
     p << osc::BeginBundleImmediate
       << osc::BeginMessage( "/t3d/led" )
@@ -642,7 +647,7 @@ void t3d_device_t::impl_t::calculateKey(float x, float y, int& key,int& row,int&
 	column = column>col_size_ ? col_size_ : column; // y=1.0
 
 	key= ((column-1) * row_size_ ) + (row-1);
-	course_key=key;
+	course_key=key+1;
 }
 
 void t3d_device_t::impl_t::handle_touch(unsigned long long t, unsigned touch, float note, float x, float y, float z)
@@ -671,7 +676,7 @@ void t3d_device_t::impl_t::handle_touch(unsigned long long t, unsigned touch, fl
 		{
 			int row, column,course_key;
 			calculateKey(x,y,key,row,column,course_key);
-			LOG_SINGLE(pic::logmsg() << "t3d_device_t::impl_t::handle_touch key " << key << " row " << row << " c " << column  << " rs " << row_size_  << " cs " << col_size_;)
+			LOG_SINGLE(pic::logmsg() << "t3d_device_t::impl_t::handle_touch key " << key << " row " << row << " c " << column  << " ck " << course_key << " rs " << row_size_  << " cs " << col_size_;)
 			touch_map_[touch-1]=key;
 		}
 
@@ -970,7 +975,7 @@ void kwire_t::updateKey(unsigned long long t, bool a, unsigned touch, float note
     	}
 
 
-		LOG_SINGLE(pic::logmsg() << "kwire_t::updateKey update " << " a " << a << " touch " << touch <<  " note " << note << " absx " << absx << " absy " << absy << " z " << z <<  " c " << c << " r " << r <<  " roll " << x << " yaw " << y;)
+		LOG_SINGLE(pic::logmsg() << "kwire_t::updateKey update " << " a " << a << " touch " << touch <<  " note " << note << " absx " << absx << " absy " << absy << " z " << z <<  " c " << c << " r " << r << " ck " << cn << " roll " << x << " yaw " << y;)
 
     	float freq= 440.0*powf(2.0,(note-69.0)/12.0);
 
