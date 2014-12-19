@@ -148,7 +148,9 @@ namespace
         {
             unsigned i=(unsigned)f,j=(i+1)%size_;
             float frac=f-i;
-            float y=samples_[i];
+//            PIC_ASSERT(i<size_);
+//            PIC_ASSERT(j<size_);
+            float y=samples_[i%size_];
             return y+(frac*(samples_[j]-y));
         }
 
