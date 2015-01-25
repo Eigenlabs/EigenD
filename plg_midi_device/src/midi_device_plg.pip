@@ -28,6 +28,8 @@ class midi_device[midi_device_plg::midi_device_t]
     void set_release_map(unsigned,bool)
     void set_hires_cc_map(unsigned,int)
     void set_hires_pb_map(unsigned,int)
+    void enable_control_notes(bool)
+    void set_colour(unsigned,unsigned)
  
     data get_columnlen()
     data get_columnoffset()

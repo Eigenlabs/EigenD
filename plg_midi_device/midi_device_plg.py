@@ -135,6 +135,17 @@ class Agent(agent.Agent):
         self[3][28]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=-1,policy=atom.default_policy(self.__set_hires_roll_control),names='roll high control')
         self[3][29]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=-1,policy=atom.default_policy(self.__set_hires_yaw_control),names='yaw high control')
         self[3][30]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=-1,policy=atom.default_policy(self.__set_hires_pb_control),names='pitch bend high control')
+        
+        self[3][31]  = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__enable_control_notes),names='notes control enable')
+        self[3][32]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=-1,policy=atom.default_policy(self.__set_pedal_1_control),names='pedal 1 control')
+        self[3][33]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=-1,policy=atom.default_policy(self.__set_pedal_2_control),names='pedal 2 control')
+        self[3][34]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=-1,policy=atom.default_policy(self.__set_pedal_3_control),names='pedal 3 control')
+        self[3][35]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=-1,policy=atom.default_policy(self.__set_pedal_4_control),names='pedal 4 control')
+
+        self[3][36]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=0,policy=atom.default_policy(self.__set_off_colour),names='off colour')
+        self[3][37]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=4,policy=atom.default_policy(self.__set_red_colour),names='red colour')
+        self[3][38]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=87,policy=atom.default_policy(self.__set_orange_colour),names='orange colour')
+        self[3][39]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=124,policy=atom.default_policy(self.__set_green_colour),names='green colour')
 
 
     def controllerinit(self):
@@ -292,6 +303,51 @@ class Agent(agent.Agent):
         self[3][30].set_value(value)
         self.device.set_hires_pb_map(ROLL,value)
         return True
+
+    def __enable_control_notes(self,value):
+        self[3][31].set_value(value)
+        self.device.enable_control_notes(value)
+        return True
+
+    def __set_pedal_1_control(self,value):
+        self[3][32].set_value(value)
+        self.device.set_cc_map(PEDAL_1,value)
+        return True
+
+    def __set_pedal_2_control(self,value):
+        self[3][33].set_value(value)
+        self.device.set_cc_map(PEDAL_2,value)
+        return True
+
+    def __set_pedal_3_control(self,value):
+        self[3][34].set_value(value)
+        self.device.set_cc_map(PEDAL_3,value)
+        return True
+
+    def __set_pedal_4_control(self,value):
+        self[3][35].set_value(value)
+        self.device.set_cc_map(PEDAL_4,value)
+        return True
+
+    def __set_off_colour(self,value):
+        self[3][36].set_value(value)
+        self.device.set_colour(0,value)
+        return True
+
+    def __set_red_colour(self,value):
+        self[3][37].set_value(value)
+        self.device.set_colour(2,value)
+        return True
+
+    def __set_orange_colour(self,value):
+        self[3][38].set_value(value)
+        self.device.set_colour(3,value)
+        return True
+    def __set_green_colour(self,value):
+        self[3][39].set_value(value)
+        self.device.set_colour(1,value)
+        return True
+
 
 
 #

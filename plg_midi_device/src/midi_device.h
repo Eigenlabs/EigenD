@@ -15,7 +15,7 @@ namespace midi_device_plg
     {
         public:
     		midi_device_t(piw::clockdomain_ctl_t *, const piw::cookie_t &outputs);
-            ~midi_device_t();
+    		virtual ~midi_device_t();
             piw::change_nb_t control();
             piw::cookie_t cookie();
             void enable_hires_cc(bool);
@@ -36,6 +36,10 @@ namespace midi_device_plg
 
             void set_hires_cc_map(unsigned,int);
             void set_hires_pb_map(unsigned,int);
+
+            void enable_control_notes(bool);
+            void set_colour(unsigned,unsigned);
+
 
             piw::data_t get_columnlen();
             piw::data_t get_columnoffset();
