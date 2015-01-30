@@ -58,17 +58,17 @@ Steinberg SDK
 obtains from : http://www.steinberg.net/en/company/developers.html
 you will need to register a developer account buts its free
 
-You will need to obtain the VST headers from the
-Steinberg site.  
-Place these in a directory called 'steinberg' as follows:
-(under mac osx, its easier just to create a symbolic link to to the steinberg SDK directory)
+You will need to obtain the VST headers from the Steinberg site.  
+Then, place these in a sub directory under the EigenD directory called 'steinberg' e.g.
 
     ...
-    pluginterfaces/base/*
-    pluginterfaces/vst2.x/*
+    steinberg/pluginterfaces/base/*
+    steinberg/pluginterfaces/vst2.x/*
     ...
-    public.sdk/source/*
+    steinberg/public.sdk/source/*
     ...
+
+(under mac osx, its easier to create a symbolic link in the EigenD directory to the steinberg SDK directory)
 
 Windows
 -------
