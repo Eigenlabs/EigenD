@@ -42,4 +42,5 @@ class t3d_device[t3d_device_plg::t3d_device_t]
     void whole_yaw(bool)
     void continuous_key(bool)
     void touch_mode(bool)
+    void quantize(bool)
  }

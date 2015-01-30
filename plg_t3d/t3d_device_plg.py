@@ -87,6 +87,7 @@ class Agent(agent.Agent):
         self[9] = atom.Atom(domain=domain.Aniso(), protocols='revconnect', policy=self.input.vector_policy(IN_LIGHT,False,clocked=False), names="light input")
         self[10] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__continuous_key),names='continuous key')
         self[11] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__touch_mode),names='touch mode')
+        self[12] = atom.Atom(domain=domain.Bool(),init=True,policy=atom.default_policy(self.__quantize),names='quantize')
          
         print "connect ", self[7], "," , self[8]
         self.device.connect(self[7].get_value(),self[8].get_value())
@@ -145,6 +146,11 @@ class Agent(agent.Agent):
     def __touch_mode(self,value):
         self[11].set_value(value)
         self.device.touch_mode(value)
+        return True
+
+    def __quantize(self,value):
+        self[12].set_value(value)
+        self.device.quantize(value)
         return True
 
 #

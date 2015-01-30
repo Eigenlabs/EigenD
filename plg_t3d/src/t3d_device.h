@@ -28,6 +28,7 @@ namespace t3d_device_plg
             void whole_yaw(bool);
             void continuous_key(bool);
             void touch_mode(bool);
+            void quantize(bool);
 
             piw::data_t get_columnlen();
             piw::data_t get_columnoffset();

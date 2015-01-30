@@ -10,6 +10,7 @@
 #include <picross/pic_ref.h>
 #include <picross/pic_ref.h>
 #include <picross/pic_time.h>
+#include <picross/pic_float.h>
 
 #include <math.h>
 
@@ -70,6 +71,8 @@
 // agents may use the KEY event as 'note on', and so cause retriggering
 // scaler, I fear may not recalculate frequency on key event
 
+
+// quantize = uses the note freq as supplied over t3d to determine the course position
 
 // x= column (across)  y =row (vertical)
 
@@ -237,7 +240,7 @@ namespace t3d_device_plg
         void create_wires();
 
         void clear_touches();
-        void calculateKey(float x, float y,int& key,int& row,int& column,int& course_key);
+        void calculateKey(float x, float y,unsigned& key,unsigned& row,unsigned& column,unsigned& course_key);
         void handle_message(unsigned long long t, const piw::data_nb_t &d);
         void handle_touch(unsigned long long t, unsigned touch, float note, float x, float y, float z);
         void handle_control(unsigned long long t, enum t3d_ctrl_t type, float x);
@@ -284,6 +287,7 @@ namespace t3d_device_plg
         bool whole_yaw_;
         bool continuous_key_;
         bool touch_mode_;
+        bool quantize_;
 
         int touch_map_[MAX_TOUCHES]; // which touch is currently active on which key
     };
@@ -349,6 +353,7 @@ struct kwire_t: piw::wire_ctl_t, piw::event_data_source_real_t, virtual public p
 	piw::xevent_data_buffer_t output_;
 	float cur_pressure_, cur_roll_, cur_yaw_,cur_freq_;
 	unsigned long long last_update_;
+	int course_note_offset_;
 };
 
 
@@ -384,7 +389,7 @@ t3d_device_t::impl_t::impl_t(piw::clockdomain_ctl_t *cd,  const piw::cookie_t &o
     t3d_led_socket(NULL),
 	update_period_(0),
 	row_size_(MAX_ROWS), col_size_(MAX_COLS),
-	whole_roll_(false),whole_yaw_(false),continuous_key_(false),touch_mode_(false)
+	whole_roll_(false),whole_yaw_(false),continuous_key_(false),touch_mode_(false),quantize_(true)
 {
 	for(int i=0;i<MAX_TOUCHES;i++)
 	{
@@ -638,7 +643,7 @@ void t3d_device_t::impl_t::clear_touches()
 	createLEDConverter();
 }
 
-void t3d_device_t::impl_t::calculateKey(float x, float y, int& key,int& row,int& column, int& course_key)
+void t3d_device_t::impl_t::calculateKey(float x, float y, unsigned& key,unsigned& row,unsigned& column, unsigned & course_key)
 {
 	row = (x*row_size_)+1;
 	column =(y*col_size_)+1;
@@ -670,18 +675,19 @@ void t3d_device_t::impl_t::handle_touch(unsigned long long t, unsigned touch, fl
     }
     else
     {
-		int key=touch_map_[touch-1];
+		int mkey=touch_map_[touch-1];
 
-		if(key<0)
+		if(mkey<0)
 		{
-			int row, column,course_key;
+			unsigned key,row, column,course_key;
 			calculateKey(x,y,key,row,column,course_key);
 			LOG_SINGLE(pic::logmsg() << "t3d_device_t::impl_t::handle_touch key " << key << " row " << row << " c " << column  << " ck " << course_key << " rs " << row_size_  << " cs " << col_size_;)
 			touch_map_[touch-1]=key;
+			mkey=key;
 		}
 
 		LOG_SINGLE(pic::logmsg() << "t3d_device_t::impl_t::handle_touch key "<< key << " a " << a;)
-		kwires_[key]->updateKey(t,a,touch,note,x,y,z);
+		kwires_[mkey]->updateKey(t,a,touch,note,x,y,z);
 
 		if(!a)
 		{
@@ -841,6 +847,22 @@ void t3d_device_t::touch_mode(bool v)
 	piw::tsd_fastcall(touch_mode__,impl_,&v);
 }
 
+static int quantize__(void *i_, void * v_)
+{
+	t3d_device_plg::t3d_device_t::impl_t *i = (t3d_device_plg::t3d_device_t::impl_t *)i_;
+	bool v= *((bool*) v_);
+	if(v!=i->quantize_)
+	{
+		i->quantize_=v;
+	}
+    return 0;
+}
+
+void t3d_device_t::quantize(bool v)
+{
+	piw::tsd_fastcall(quantize__,impl_,&v);
+}
+
 
 
 piw::data_t  t3d_device_t::get_columnlen()
@@ -910,7 +932,8 @@ kwire_t::kwire_t(unsigned i, unsigned c, unsigned r, const piw::data_t &path, t3
 	device_(k), running_(false),
 	output_(OUT_KEY_MASK,PIW_DATAQUEUE_SIZE_NORM),
 	cur_pressure_(0), cur_roll_(0), cur_yaw_(0),cur_freq_(0),
-	last_update_(0)
+	last_update_(0),
+	course_note_offset_(0)
 {
     k->connect_wire(this,source());
 }
@@ -932,18 +955,30 @@ void kwire_t::updateKey(unsigned long long t, bool a, unsigned touch, float note
     }
     else
     {
-		int r=row_;
-		int c=column_;
-		int cn=course_note_;
-		int key=course_note_;
+		unsigned r=row_;
+		unsigned c=column_;
+		unsigned cn=course_note_;
+		unsigned key=course_note_;
 		piw::hardness_t h=piw::KEY_LIGHT;
 
 
 		// if this is the first event OR we are in continuous key update mode, then calc column, row and coursenote
-		if( !running_ || device_->continuous_key_)
+		if( !running_ || device_->continuous_key_ || device_->quantize_)
 		{
 	    	// calculate row and column, and course key  UpdateTouch
 			device_->calculateKey(absx,absy,key,r,c,cn);
+
+			if(!running_) // so starting note
+			{
+				course_note_=cn;
+				course_note_offset_=note-cn;
+			}
+			else
+			if(device_->quantize_)
+			{
+				// after initial press, use the note from t3d to determine course note position
+				cn = floorf(note + 0.5) - course_note_offset_;
+			}
 
 			//TODO pressure curve
 			h=piw::KEY_HARD;
@@ -960,10 +995,22 @@ void kwire_t::updateKey(unsigned long long t, bool a, unsigned touch, float note
     	float x=0.0,y=0.0,z=0.0;
     	z = ( absz < 0.00001 ? 0.0 : (absz > 1.0 ? 1.0 : absz));
 
-    	if(device_->whole_roll_)
-    		x = __clip(absx - ((float(r) - 1.0 + 0.5 )/device_->row_size_) ,1.0);
+    	if(!device_->quantize_)
+    	{
+			if(device_->whole_roll_)
+			{
+				x = __clip(absx - ((float(r) - 1.0 + 0.5 )/device_->row_size_) ,1.0);
+			}
+			else
+			{
+				x = __clip(((absx * device_->row_size_)  -  ( float(r) - 1.0 + 0.5)) * 2.0, 1.0);
+			}
+    	}
     	else
-    		x = __clip(((absx * device_->row_size_)  -  ( float(r) - 1.0 + 0.5)) * 2.0, 1.0);
+    	{
+    		// when quantize use the note freq to compare to active cell
+    		x=__clip( (note- float(cn+course_note_offset_) ), 1.0);
+    	}
 
     	if(device_->whole_yaw_)
     	{
@@ -975,9 +1022,10 @@ void kwire_t::updateKey(unsigned long long t, bool a, unsigned touch, float note
     	}
 
 
-		LOG_SINGLE(pic::logmsg() << "kwire_t::updateKey update " << " a " << a << " touch " << touch <<  " note " << note << " absx " << absx << " absy " << absy << " z " << z <<  " c " << c << " r " << r << " ck " << cn << " roll " << x << " yaw " << y;)
+		LOG_SINGLE(pic::logmsg() << "kwire_t::updateKey update " << " a " << a << " touch " << touch <<  " note " << note << " absx " << absx << " absy " << absy << " z " << z <<  " c " << c << " r " << r << " cn " << cn << " co " << course_note_offset_ << " roll " << x << " yaw " << y;)
 
-    	float freq= 440.0*powf(2.0,(note-69.0)/12.0);
+    	float freq= 440.0*pic::approx::pow2((note-69.0)/12.0);
+
 
     	if(!running_) // first event
     	{
@@ -999,10 +1047,10 @@ void kwire_t::updateKey(unsigned long long t, bool a, unsigned touch, float note
     	    	return;
     	    }
 
-    	    if( device_->continuous_key_)
+    	    if( course_note_ != cn)
     	    {
     	   		LOG_SINGLE(pic::logmsg() << "kwire_t::updateKey update key c " << c << " r " << c << " t " << t << " id " << id_;)
-    	    	if(row_!=r || column_!=c) output_.add_value(OUT_S_KEY,piw::makekey(c,r,1,cn,h,t));
+    	    	if(row_!=r || column_!=c || cn!=course_note_) output_.add_value(OUT_S_KEY,piw::makekey(c,r,1,cn,h,t));
     	    }
     	    if(cur_roll_!=x) output_.add_value(OUT_S_ROLL,piw::makefloat_bounded_nb(1,-1,0,x,t));
     	    if(cur_yaw_!=y) output_.add_value(OUT_S_YAW,piw::makefloat_bounded_nb(1,-1,0,y,t));

@@ -3970,9 +3970,9 @@ Notes            Word           Classification     Synonyms
 7   2   2   2  : Kyma		   : Noun              : None
 7   2   2   3  : t3d		   : Noun              : None
 7   2   2   4  : touch		   : Noun              : None
-7   2   2   5  : Unused        : Unused            : None
-7   2   2   6  : Unused        : Unused            : None
-7   2   2   7  : Unused        : Unused            : None
+7   2   2   5  : Quantize      : Noun              : None
+7   2   2   6  : Continuum     : Noun              : None
+7   2   2   7  : Push          : Noun              : None
 7   2   2   8  : Unused        : Unused            : None
 7   2   3   1  : Monitor       : Noun              : None
 7   2   3   2  : Unused        : Unused            : None
