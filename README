@@ -88,12 +88,12 @@ MacOSX
 ------
 
 XCode 5 or Xcode command line tools (https://developer.apple.com/xcode/downloads/) 
-
+updated ctags, not really required but will remove 'error' you see at end of build 
 
 Linux
 -----
 
-These packages
+you will need these packages
 
 build-essential
 libiw-dev
@@ -105,3 +105,5 @@ libasound2-dev
 libxinerama-dev
 mesa-common-dev
 
+please note: linux build is highly experimental, and libs required may be subject to change.
+It would be very much appeciated if you build for linux,and have better instructions on requirements. 
