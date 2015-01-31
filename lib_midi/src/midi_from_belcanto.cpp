@@ -966,6 +966,13 @@ namespace midi
         }
 
         unsigned channel_offset = MIDI_STATUS_MAX*(channel-1);
+		int idx=status+channel_offset;
+		if( idx>= (MIDI_STATUS_MAX*CHANNEL_MAX) || idx < 0)
+		{
+			pic::logmsg() << "FAILED check time status " << idx << " vs " << (MIDI_STATUS_MAX*CHANNEL_MAX) << " status " << status << " channel_offset " << channel_offset;
+        	return false;
+		}
+
         if(t>=last_time_status_[status+channel_offset]+ctrl_interval_)
         {
             last_time_status_[status+channel_offset]=t;
