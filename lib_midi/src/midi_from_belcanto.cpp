@@ -121,10 +121,12 @@ namespace
             pic::lcklist_t<unsigned>::nbtype::iterator i = list_.begin();
             if(i==list_.end()) return 1;
 
+            unsigned ch=*i;
             list_.erase(i);
-            list_.push_back(*i);
+            list_.push_back(ch);
 
-            return *i;
+//            if(ch<1 || ch>16) pic::logmsg() << "midi get() " << ch;
+            return ch;
         }
 
         unsigned num_channels()
@@ -966,16 +968,16 @@ namespace midi
         }
 
         unsigned channel_offset = MIDI_STATUS_MAX*(channel-1);
-		int idx=status+channel_offset;
-		if( idx>= (MIDI_STATUS_MAX*CHANNEL_MAX) || idx < 0)
-		{
-			pic::logmsg() << "FAILED check time status " << idx << " vs " << (MIDI_STATUS_MAX*CHANNEL_MAX) << " status " << status << " channel_offset " << channel_offset;
-        	return false;
-		}
+		unsigned idx=status+channel_offset;
+//		if( idx>= (MIDI_STATUS_MAX*CHANNEL_MAX) || idx == 0)
+//		{
+//			pic::logmsg() << "FAILED check time status " << idx << " vs " << (MIDI_STATUS_MAX*CHANNEL_MAX) << " status " << status << " channel_offset " << channel_offset << "channel " << channel;
+//        	return false;
+//		}
 
-        if(t>=last_time_status_[status+channel_offset]+ctrl_interval_)
+        if(t>=last_time_status_[idx]+ctrl_interval_)
         {
-            last_time_status_[status+channel_offset]=t;
+            last_time_status_[idx]=t;
             return true;
         }
 
