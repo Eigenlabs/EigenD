@@ -28,4 +28,4 @@ plg_libs = Split("""
     pic piw pie pia pijuce
 """)
 
-env.PiPipBinding('audio_native','audio.pip',libraries=plg_libs,sources=plg_files,per_agent='plg_audio',locked=True)
+env.PiPipBinding('audio_native','audio.pip',libraries=plg_libs,sources=plg_files,package='eigend',per_agent='plg_audio',locked=True)
