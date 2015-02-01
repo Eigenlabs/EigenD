@@ -99,6 +99,7 @@ namespace
         unsigned long long last_processed_;
         int voiceId_;
         unsigned long long voiceTime_;
+//        float absx_, absy_,z_,note_;
     };
 };
 
@@ -403,7 +404,11 @@ void t3d_wire_t::ticked(unsigned long long from, unsigned long long to)
 		return;
 	}
 
-    send(to,s,false);
+	send(to,s,false);
+//	while(iterator_->next(IN_MASK,s,d,to))
+//	{
+//		send(t,s,false);
+//	}
 }
 
 SoundplaneOSCOutput * t3d_wire_t::t3d()
@@ -414,13 +419,7 @@ SoundplaneOSCOutput * t3d_wire_t::t3d()
 
 void t3d_wire_t::send(unsigned long long t,unsigned s, bool isStart)
 {
-	// TODO, this should be reconsidered!
-	// the reason we are getting only osc msg per buffer
-	// is because we are using latest, could get mutiple
-	// and send them on, we could even look at using latest + update period,
-	// and call multiple times below t.
-
-    piw::data_nb_t d;
+	piw::data_nb_t d;
 	MLSymbol type =MLS_nullSym, subtype = MLS_nullSym;
     if(output_->key_)
     {
@@ -443,18 +442,18 @@ void t3d_wire_t::send(unsigned long long t,unsigned s, bool isStart)
 				if(iterator_->latest(IN_ROLL,d,t))
 				{
 		//	    	pic::logmsg() << "x" << d;
-					x = (d.as_denorm_float()+1.0)/2.0;
+					x = d.as_denorm_float();
 				}
 				if(iterator_->latest(IN_YAW,d,t))
 				{
 		//	    	pic::logmsg() << "y" << d;
-					y = (d.as_denorm_float()+1.0)/2.0;
+					y = d.as_denorm_float();
 				}
 
 				if(output_->server_->continuous_)
 				{
-					absy= (row - 0.5 + (y * 0.5)) / output_->server_->num_rows_ ;
-					absx= (column - 0.5 + (x * 0.5)) / output_->server_->num_columns_ ;
+					absx= (row - 0.5 + (x * 0.5)) / output_->server_->num_rows_ ;
+					absy= (column - 0.5 + (y * 0.5)) / output_->server_->num_columns_ ;
 				}
 				else
 				{
