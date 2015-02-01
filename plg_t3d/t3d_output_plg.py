@@ -61,7 +61,7 @@ class Agent(agent.Agent):
         self[2][1] = atom.Atom(domain=domain.String(), init='localhost', names='name', policy=atom.default_policy(self.__set_host));
         self[2][2] = atom.Atom(domain=domain.BoundedInt(1,9999), init=3123, names='port', policy=atom.default_policy(self.__set_port), )
 
-        self[3] = atom.Atom(domain=domain.BoundedInt(1,1000), init=250, policy=atom.default_policy(self.__set_data_freq), names='data frequency')
+        self[3] = atom.Atom(domain=domain.BoundedInt(1,2000), init=250, policy=atom.default_policy(self.__set_data_freq), names='data frequency')
 
         self[5] = atom.Atom(domain=domain.BoundedInt(1,16), init=16, policy=atom.default_policy(self.__set_max_voice_count), names='max voice count')
         self[6] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__set_kyma_mode),names='kyma')

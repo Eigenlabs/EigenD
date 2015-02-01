@@ -84,8 +84,15 @@ namespace
         void event_start(unsigned seq, const piw::data_nb_t &id,const piw::xevent_data_buffer_t &b);
         bool event_end(unsigned long long);
         void event_buffer_reset(unsigned,unsigned long long, const piw::dataqueue_t &,const piw::dataqueue_t &);
+        void send_latest(unsigned long long t,bool state);
 
-        void send(unsigned long long time, unsigned signal, bool isStart);
+        void send(unsigned long long time, unsigned signal,const piw::data_nb_t& d, bool isStart);
+        void set_x(const piw::data_nb_t& d);
+        void set_y(const piw::data_nb_t& d);
+        void set_z(const piw::data_nb_t& d);
+        void set_note(const piw::data_nb_t& d);
+        void set_key(const piw::data_nb_t& d);
+
         SoundplaneOSCOutput * t3d();
 
         t3d_connection_t *output_;
@@ -99,7 +106,7 @@ namespace
         unsigned long long last_processed_;
         int voiceId_;
         unsigned long long voiceTime_;
-//        float absx_, absy_,z_,note_;
+        float absx_, absy_,x_,y_,z_,note_,column_,row_;
     };
 };
 
@@ -355,7 +362,8 @@ bool sendT3DControlMessage( SoundplaneOSCOutput *pOut,
 
 
 t3d_wire_t::t3d_wire_t(t3d_connection_t *output, unsigned index, const piw::event_data_source_t &es):
-		output_(output), index_(index), last_processed_(0), voiceId_(-1), voiceTime_(0)
+		output_(output), index_(index), last_processed_(0), voiceId_(-1), voiceTime_(0),
+		absx_(0.0), absy_(0.0),x_(0.0),y_(0.0),z_(0.0),note_(0.0)
 {
     output_->wires_[index_] = this;
 
@@ -386,148 +394,19 @@ void t3d_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::
     msg << id;
     id_string_.set_nb(piw::makestring_nb(msg.str().c_str(),id.time()));
 
+    last_processed_=id.time();
+    absx_=absy_=x_=y_=z_=note_=0.0;
     ::sendT3DMessage(t3d(),MLS_startFrameSym);
-    send(id.time(),1,true);
+    send_latest(last_processed_,true);
     ::sendT3DMessage(t3d(),MLS_endFrameSym);
 
+    iterator_->reset_all(last_processed_+1);
 }
-
-void t3d_wire_t::ticked(unsigned long long from, unsigned long long to)
-{
-    piw::data_nb_t d;
-    unsigned s=1;
-
-	if(voiceId()<0)
-	{
-		// voice has been deallocated clear all incoming events
-		iterator_->reset_all(to);
-		return;
-	}
-
-	send(to,s,false);
-//	while(iterator_->next(IN_MASK,s,d,to))
-//	{
-//		send(t,s,false);
-//	}
-}
-
-SoundplaneOSCOutput * t3d_wire_t::t3d()
-{
-	return output_->server_->t3d_;
-}
-
-
-void t3d_wire_t::send(unsigned long long t,unsigned s, bool isStart)
-{
-	piw::data_nb_t d;
-	MLSymbol type =MLS_nullSym, subtype = MLS_nullSym;
-    if(output_->key_)
-    {
-   	    float column, row, course, key;
-		piw::hardness_t hardness;
-		if(iterator_->latest(IN_KEY,d,t))
-		{
-			if(piw::decode_key(d,&column,&row,&course,&key,&hardness))
-			{
-		    	int voice = 0;
-				float note = 0.0f;
-				float absx=0.0f,absy=0.0f;
-				float x=0.0f,y=0.0f,z=0.0f;
-
-				if(iterator_->latest(IN_PRESSURE,d,t))
-				{
-		//	    	pic::logmsg() << "z" << d;
-					z= d.as_denorm_float();
-				}
-				if(iterator_->latest(IN_ROLL,d,t))
-				{
-		//	    	pic::logmsg() << "x" << d;
-					x = d.as_denorm_float();
-				}
-				if(iterator_->latest(IN_YAW,d,t))
-				{
-		//	    	pic::logmsg() << "y" << d;
-					y = d.as_denorm_float();
-				}
-
-				if(output_->server_->continuous_)
-				{
-					absx= (row - 0.5 + (x * 0.5)) / output_->server_->num_rows_ ;
-					absy= (column - 0.5 + (y * 0.5)) / output_->server_->num_columns_ ;
-				}
-				else
-				{
-					absx= (x+1.0)/2.0;
-					absy= (y+1.0)/2.0;
-				}
-				LOG_SINGLE(pic::logmsg() << "t3d_wire_t::send nr:" << output_->server_->num_rows_ << " nc " << output_->server_->num_columns_ << " r " << row << " c " << column <<  " x:" << x << " y:" << y << " ax " << absx << " ay " << absy;)
-
-
-				if(iterator_->latest(IN_FREQ,d,t))
-				{
-					voice=voiceId_;
-					float freq = d.as_denorm_float();
-					note = 12.0f * pic_log2(freq/440.0f) + 69.0f;
-					type=MLS_touchSym;
-					if(isStart)
-					{
-						subtype = MLS_onSym;
-					}
-					else
-					{
-						subtype = MLS_continueSym;
-					}
-		//	    	pic::logmsg() << "freq" << freq << " note" << note;
-				}
-
-				iterator_->reset(IN_KEY,t+1);
-				iterator_->reset(IN_PRESSURE,t+1);
-				iterator_->reset(IN_ROLL,t+1);
-				iterator_->reset(IN_YAW,t+1);
-				iterator_->reset(IN_FREQ,t+1);
-
-				::sendT3DTouchMessage(t3d(),type,subtype,voice,note,absx,absy,z);
-			}
-		}
-
-    }
-	else
-	{
-		type = MLS_controllerSym;
-		subtype = MLS_ySym;
-		float x=0.0f,y=0.0f,z=0.0f;
-		int zoneId=output_->ident_;
-		const char* zone =  output_->prefix_.c_str();
-
-		if(iterator_->latest(1,d,t))
-		{
-			y = d.as_denorm_float();
-		}
-
-		::sendT3DControlMessage(t3d(),type,subtype,zoneId,x,y,z,zone);
-		if(s>0) iterator_->reset(s,t+1);
-	}
-
-    
-    // store the last processing time for each wire
-    last_processed_ = t;
-}
-
 
 bool t3d_wire_t::event_end(unsigned long long t)
 {
 	// turn off, if the voice has not already been deallocated
-	if(voiceId()>=0 && output_->key_)
-	{
-		::sendT3DMessage(t3d(),MLS_startFrameSym);
-	    send(t,1,false);
-	    if (output_->key_)
-	    {
-	        ::sendT3DTouchMessage(t3d(),MLS_touchSym,MLS_offSym,voiceId_,0,0.0f,0.0f,0.0f);
-	    }
-
-	    ::sendT3DMessage(t3d(),MLS_endFrameSym);
-	}
+    send_latest(t,false);
 
     id_string_.clear_nb();
     iterator_.clear();
@@ -541,8 +420,185 @@ void t3d_wire_t::event_buffer_reset(unsigned s,unsigned long long t, const piw::
 {
     iterator_->set_signal(s,nq);
     iterator_->reset(s,t);
-    send(t,s,false);
+	::sendT3DMessage(t3d(),MLS_startFrameSym);
+    send_latest(t,false);
+    ::sendT3DMessage(t3d(),MLS_endFrameSym);
 }
+
+
+void t3d_wire_t::ticked(unsigned long long from, unsigned long long to)
+{
+    piw::data_nb_t d;
+    unsigned s=1;
+
+	if(voiceId()<0)
+	{
+		// voice has been deallocated clear all incoming events
+		iterator_->reset_all(to);
+		note_=absx_=absy_=z_=0.0;
+		return;
+	}
+
+	while(iterator_->next(IN_MASK,s,d,to))
+	{
+		send(to,s,d,false);
+	}
+    last_processed_ = to;
+}
+
+SoundplaneOSCOutput * t3d_wire_t::t3d()
+{
+	return output_->server_->t3d_;
+}
+
+void t3d_wire_t::set_key(const piw::data_nb_t& d)
+{
+	if(output_->server_->continuous_)
+	{
+		float course, key;
+		piw::hardness_t hardness;
+		if(piw::decode_key(d,&column_,&row_,&course,&key,&hardness))
+		{
+			absx_= (row_ - 0.5 + (x_ * 0.5)) / output_->server_->num_rows_ ;
+			absy_= (column_ - 0.5 + (y_ * 0.5)) / output_->server_->num_columns_ ;
+		}
+	}
+}
+
+void t3d_wire_t::set_y(const piw::data_nb_t& d)
+{
+	y_ =  d.as_denorm_float();
+	if(output_->server_->continuous_)
+	{
+		absy_= (column_ - 0.5 + (y_ * 0.5)) / output_->server_->num_columns_ ;
+	}
+	else
+	{
+		absy_= (y_+1.0)/2.0;
+	}
+}
+
+void t3d_wire_t::set_x(const piw::data_nb_t& d)
+{
+	x_ = d.as_denorm_float();
+	if(output_->server_->continuous_)
+	{
+		absx_= (row_ - 0.5 + (x_ * 0.5)) / output_->server_->num_rows_ ;
+	}
+	else
+	{
+		absx_= (x_+1.0)/2.0;
+	}
+}
+void t3d_wire_t::set_z(const piw::data_nb_t& d)
+{
+	z_ = d.as_denorm_float();
+}
+
+void t3d_wire_t::set_note(const piw::data_nb_t& d)
+{
+	float freq = d.as_denorm_float();
+	note_ = 12.0f * pic_log2(freq/440.0f) + 69.0f;
+}
+
+void t3d_wire_t::send_latest(unsigned long long t,bool state)
+{
+	if(output_->key_)
+	{
+		if(voiceId()>=0 )
+		{
+			piw::data_nb_t d;
+			if(iterator_->latest(IN_KEY,d,t)) set_key(d);
+			if(iterator_->latest(IN_ROLL,d,t)) set_x(d);
+			if(iterator_->latest(IN_YAW,d,t)) set_y(d);
+			if(iterator_->latest(IN_PRESSURE,d,t)) set_z(d);
+			if(iterator_->latest(IN_FREQ,d,t))
+			{
+				send(t,IN_FREQ,d,state);
+			}
+			::sendT3DTouchMessage(t3d(),MLS_touchSym,(state?MLS_onSym:MLS_offSym),voiceId_,0,0.0f,0.0f,0.0f);
+		}
+	}
+	else
+	{
+		MLSymbol type =MLS_nullSym, subtype = MLS_nullSym;
+		type = MLS_controllerSym;
+		subtype = MLS_ySym;
+		float x=0.0f,y=0.0f,z=0.0f;
+		int zoneId=output_->ident_;
+		const char* zone =  output_->prefix_.c_str();
+		::sendT3DControlMessage(t3d(),type,subtype,zoneId,x,y,z,zone);
+	}
+}
+
+
+void t3d_wire_t::send(unsigned long long t,unsigned s, const piw::data_nb_t& d, bool isStart)
+{
+	MLSymbol type =MLS_nullSym, subtype = MLS_nullSym;
+    if(output_->key_)
+    {
+    	switch(s){
+    		case IN_KEY:
+			{
+				set_key(d);
+			}
+			break;
+    		case IN_PRESSURE:
+			{
+	//	    	pic::logmsg() << "z" << d;
+				set_z(d);
+			}
+			break;
+    		case IN_ROLL:
+			{
+	//	    	pic::logmsg() << "x" << d;
+				set_x(d);
+			}
+			break;
+    		case IN_YAW:
+			{
+	//	    	pic::logmsg() << "y" << d;
+				set_y(d);
+			}
+			break;
+    		case IN_FREQ:
+			{
+				set_note(d);
+				//	    	pic::logmsg() << "freq" << freq << " note" << note;
+			}
+			break;
+    	}
+
+    	LOG_SINGLE(pic::logmsg() << "t3d_wire_t::send nr:" << output_->server_->num_rows_ << " nc " << output_->server_->num_columns_ << " r " << row_ << " c " << column_ <<  " x:" << x_ << " y:" << y_ << " ax " << absx_ << " ay " << absy_;)
+
+    	int voice=voiceId_;
+		type=MLS_touchSym;
+		if(isStart)
+		{
+			subtype = MLS_onSym;
+		}
+		else
+		{
+			subtype = MLS_continueSym;
+		}
+		::sendT3DTouchMessage(t3d(),type,subtype,voice,note_,absx_,absy_,z_);
+    }
+	else
+	{
+		if(s==1)
+		{
+			type = MLS_controllerSym;
+			subtype = MLS_ySym;
+			float x=0.0f,y=0.0f,z=0.0f;
+			int zoneId=output_->ident_;
+			const char* zone =  output_->prefix_.c_str();
+			y = d.as_denorm_float();
+			::sendT3DControlMessage(t3d(),type,subtype,zoneId,x,y,z,zone);
+		}
+	}
+}
+
+
 
 void t3d_wire_t::wire_closed()
 {
@@ -832,46 +888,41 @@ void t3d_output_plg::t3d_output_t::impl_t::deactivate_wire_fast(t3d_wire_t *w)
 
 void t3d_output_plg::t3d_output_t::impl_t::clocksink_ticked(unsigned long long f, unsigned long long t)
 {
-    const unsigned long long dataTime = 1000*1000 / (unsigned long long) t3d_->getDataFreq();
-
-    if (t > (last_tick_ + dataTime))
+	static const long retryTime = 15*1000*1000; // try to reconnect every 15 seconds
+	if (!t3d_->isActive())
 	{
-		static const long retryTime = 15*1000*1000; // try to reconnect every 15 seconds
-		if (!t3d_->isActive())
+		if(t > last_connect_time_+retryTime)
 		{
-			if(t > last_connect_time_+retryTime)
-			{
-				;
-				last_connect_time_=t;
-				if(!connect(host_.c_str(),port_,t))
-				{
-					return;
-				}
-			}
-			else
+			;
+			last_connect_time_=t;
+			if(!connect(host_.c_str(),port_,t))
 			{
 				return;
 			}
 		}
-
-
-		sendT3DMessage(t3d_, MLS_startFrameSym);
-
-		t3d_wire_t *w;
-		for(w=active_wires_.head(); w!=0; w=active_wires_.next(w))
+		else
 		{
-			w->ticked(f,t);
+			return;
 		}
-		sendT3DMessage(t3d_, MLS_endFrameSym);
-
-	    if (t > (last_infreq_ + (INFREQUENT_TIME) ))
-	    {
-	    	t3d_->doInfrequentTasks();
-	    	last_infreq_ = t;
-	    }
-
-		last_tick_=t;
 	}
+
+
+	sendT3DMessage(t3d_, MLS_startFrameSym);
+
+	t3d_wire_t *w;
+	for(w=active_wires_.head(); w!=0; w=active_wires_.next(w))
+	{
+		w->ticked(f,t);
+	}
+	sendT3DMessage(t3d_, MLS_endFrameSym);
+
+	if (t > (last_infreq_ + (INFREQUENT_TIME) ))
+	{
+		t3d_->doInfrequentTasks();
+		last_infreq_ = t;
+	}
+
+	last_tick_=t;
 }
 
 unsigned decode_unsigned(pic::lckvector_t<unsigned>::nbtype &vec, const piw::data_nb_t &inp)
@@ -916,7 +967,9 @@ void t3d_output_plg::t3d_output_t::impl_t::control_change(const piw::data_nb_t &
 	else
 	{
 		if(d.is_dict())
-			pic::logmsg() << "t3d_output_t::impl_t::control_change " << d;
+		{
+			LOG_SINGLE(pic::logmsg() << "t3d_output_t::impl_t::control_change " << d;)
+		}
 		else
 			pic::logmsg() << "t3d_output_t::impl_t::control_change (not dict)" << d;
 	}
