@@ -1,5 +1,5 @@
 Import('env')
 
 env.PiPythonPackage(package='eigend', per_agent='plg_t3d')
-env.PiAgent('t3d_output', 'plg_t3d','t3d_output_plg', cversion='0.0.6')
-env.PiAgent('t3d_device', 'plg_t3d','t3d_device_plg', cversion='0.0.1')
+env.PiAgent('t3d_output', 'plg_t3d','t3d_output_plg', cversion='0.0.7')
+env.PiAgent('t3d_device', 'plg_t3d','t3d_device_plg', cversion='0.0.2')

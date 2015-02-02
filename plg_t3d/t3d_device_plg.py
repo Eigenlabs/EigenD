@@ -86,10 +86,10 @@ class Agent(agent.Agent):
         self[8] = atom.Atom(domain=domain.BoundedInt(0,9999),init=0,policy=atom.default_policy(self.__light_port),names='light port')
         self[9] = atom.Atom(domain=domain.Aniso(), protocols='revconnect', policy=self.input.vector_policy(IN_LIGHT,False,clocked=False), names="light input")
         self[10] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__continuous_key),names='continuous key')
-        self[11] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__touch_mode),names='touch mode')
+        self[11] = atom.Atom(domain=domain.Bool(),init=True,policy=atom.default_policy(self.__touch_mode),names='touch mode')
         self[12] = atom.Atom(domain=domain.Bool(),init=True,policy=atom.default_policy(self.__quantize),names='quantize')
          
-        print "connect ", self[7], "," , self[8]
+        print "t3d device connect ", self[7], "," , self[8]
         self.device.connect(self[7].get_value(),self[8].get_value())
 
 

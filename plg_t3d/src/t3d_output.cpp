@@ -406,7 +406,13 @@ void t3d_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::
 bool t3d_wire_t::event_end(unsigned long long t)
 {
 	// turn off, if the voice has not already been deallocated
+    ::sendT3DMessage(t3d(),MLS_startFrameSym);
     send_latest(t,false);
+    if(output_->key_)
+    {
+    	::sendT3DTouchMessage(t3d(),MLS_touchSym,MLS_offSym,voiceId_,0,0.0f,0.0f,0.0f);
+    }
+    ::sendT3DMessage(t3d(),MLS_endFrameSym);
 
     id_string_.clear_nb();
     iterator_.clear();
@@ -435,7 +441,7 @@ void t3d_wire_t::ticked(unsigned long long from, unsigned long long to)
 	{
 		// voice has been deallocated clear all incoming events
 		iterator_->reset_all(to);
-		note_=absx_=absy_=z_=0.0;
+	    absx_=absy_=x_=y_=z_=note_=0.0;
 		return;
 	}
 
@@ -499,6 +505,7 @@ void t3d_wire_t::set_note(const piw::data_nb_t& d)
 {
 	float freq = d.as_denorm_float();
 	note_ = 12.0f * pic_log2(freq/440.0f) + 69.0f;
+  	LOG_SINGLE(pic::logmsg() << "t3d_wire_t::set_note freq " << freq << " note" << note_;)
 }
 
 void t3d_wire_t::send_latest(unsigned long long t,bool state)
@@ -516,7 +523,6 @@ void t3d_wire_t::send_latest(unsigned long long t,bool state)
 			{
 				send(t,IN_FREQ,d,state);
 			}
-			::sendT3DTouchMessage(t3d(),MLS_touchSym,(state?MLS_onSym:MLS_offSym),voiceId_,0,0.0f,0.0f,0.0f);
 		}
 	}
 	else
@@ -564,7 +570,6 @@ void t3d_wire_t::send(unsigned long long t,unsigned s, const piw::data_nb_t& d, 
     		case IN_FREQ:
 			{
 				set_note(d);
-				//	    	pic::logmsg() << "freq" << freq << " note" << note;
 			}
 			break;
     	}
@@ -929,7 +934,7 @@ unsigned decode_unsigned(pic::lckvector_t<unsigned>::nbtype &vec, const piw::dat
 {
     vec.clear();
 
-	pic::logmsg() << "t3d decode_unsigned " << inp;
+	LOG_SINGLE(pic::logmsg() << "t3d decode_unsigned " << inp;)
 	unsigned max = 0;
 
 	unsigned dictlen = inp.as_tuplelen();
