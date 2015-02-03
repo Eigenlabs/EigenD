@@ -373,9 +373,9 @@ midi_device_t::impl_t::impl_t(piw::clockdomain_ctl_t *cd,  const piw::cookie_t &
 	cc_[STRIP_1]=1;
 	pb_[ROLL]=true;
 	colour_map_[CLR_RED]=4;
-	colour_map_[CLR_ORANGE]=87;
+	colour_map_[CLR_ORANGE]=124;
 	colour_map_[CLR_OFF]=0;
-	colour_map_[CLR_GREEN]=124;
+	colour_map_[CLR_GREEN]=87;
 	colour_map_[CLR_MIXED]=colour_map_[CLR_ORANGE];
 
 	connect(outputs);
@@ -409,7 +409,8 @@ void midi_device_t::impl_t::create_wires()
 	{
 		for(unsigned k=0; k < MAX_KEYS ;k++)
 		{
-			kwires_[c][k] = pic::ref(new kwire_t(k+1,c+1,k+1,piw::pathtwo(OUT_KEY,(c*MAX_KEYS)+k+1,0),this));
+			unsigned i=(c*MAX_KEYS)+k+1;
+			kwires_[c][k] = pic::ref(new kwire_t(i,c+1,k+1,piw::pathtwo(OUT_KEY,i,0),this));
 		}
 	}
 
@@ -917,7 +918,7 @@ static void __updateLights(void* i, unsigned key, unsigned value)
 
 void midi_wire_t::processLights(unsigned s, piw::data_nb_t &d, unsigned long long t)
 {
-	light_t_=t;
+	if(light_t_<t) light_t_=t;
 	led_converter_.update_leds(d,this,__updateLights);
 }
 
@@ -935,7 +936,7 @@ void midi_wire_t::updateLights(unsigned key,unsigned value)
 	}
 	else
 	{
-		root_->sendMidiCC(t,key-127,colour);
+		root_->sendMidiCC(t,key-MAX_KEYS,colour);
 	}
 }
 
@@ -944,7 +945,7 @@ midi_output_wire_t::midi_output_wire_t(const piw::data_t &path, midi_device_t::i
 		piw::event_data_source_real_t(path), id_(piw::pathone_nb(1,0))
 {
     k->connect_wire(this,source());
-    output_ = piw::xevent_data_buffer_t(OUT_MASK,PIW_DATAQUEUE_SIZE_NORM);
+    output_ = piw::xevent_data_buffer_t(OUT_MASK,PIW_DATAQUEUE_SIZE_NORM*3);
     source_start(0,id_.restamp(piw::tsd_time()),output_);
 }
 
@@ -955,8 +956,7 @@ void midi_output_wire_t::sendNote(unsigned long long t, unsigned channel,unsigne
 	unsigned d2=velocity;
 
 	unsigned char *blob = 0;
-	piw::data_nb_t midi_data = piw::makeblob_nb(piw::tsd_time(),3,&blob);
-
+	piw::data_nb_t midi_data = piw::makeblob_nb(t,3,&blob);
 	blob[0] = (unsigned char)d0;
 	blob[1] = (unsigned char)d1;
 	blob[2] = (unsigned char)d2;
@@ -971,7 +971,7 @@ void midi_output_wire_t::sendCC(unsigned long long t, unsigned channel,unsigned 
 	unsigned d2=v;
 
 	unsigned char *blob = 0;
-	piw::data_nb_t midi_data = piw::makeblob_nb(piw::tsd_time(),3,&blob);
+	piw::data_nb_t midi_data = piw::makeblob_nb(t,3,&blob);
 
 	blob[0] = (unsigned char)d0;
 	blob[1] = (unsigned char)d1;
@@ -979,7 +979,6 @@ void midi_output_wire_t::sendCC(unsigned long long t, unsigned channel,unsigned 
 	LOG_SINGLE(pic::logmsg() << "midi_output_wire_t::sendCC d0=" << std::hex << (unsigned)d0 << " d1=" << (unsigned)d1 << " d2=" << (unsigned)d2 << " len=3 time=" << std::dec << t;)
 	output_.add_value(OUT_MIDI,midi_data);
 }
-
 
 //////////// midi_device_t
 midi_device_t::midi_device_t(piw::clockdomain_ctl_t *d, const piw::cookie_t &outputs)

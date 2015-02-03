@@ -144,8 +144,10 @@ class Agent(agent.Agent):
 
         self[3][36]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=0,policy=atom.default_policy(self.__set_off_colour),names='off colour')
         self[3][37]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=4,policy=atom.default_policy(self.__set_red_colour),names='red colour')
-        self[3][38]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=87,policy=atom.default_policy(self.__set_orange_colour),names='orange colour')
-        self[3][39]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=124,policy=atom.default_policy(self.__set_green_colour),names='green colour')
+        self[3][38]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=124,policy=atom.default_policy(self.__set_orange_colour),names='orange colour')
+        self[3][39]  = atom.Atom(domain=domain.BoundedInt(-1,127),init=87,policy=atom.default_policy(self.__set_green_colour),names='green colour')
+        self[3][40]  = atom.Atom(domain=domain.Bool(),init=True,policy=atom.default_policy(self.__enable_pb_strip_1),names='pitch bend strip 1 enable')
+        self[3][41]  = atom.Atom(domain=domain.Bool(),init=True,policy=atom.default_policy(self.__enable_pb_strip_2),names='pitch bend strip 2 enable')
 
 
     def controllerinit(self):
@@ -348,6 +350,15 @@ class Agent(agent.Agent):
         self.device.set_colour(1,value)
         return True
 
+    def __enable_pb_strip_1(self,value):
+        self[3][40].set_value(value)
+        self.device.set_pb_map(STRIP_1,value)
+        return True
+
+    def __enable_pb_strip_2(self,value):
+        self[3][41].set_value(value)
+        self.device.set_pb_map(STRIP_2,value)
+        return True
 
 
 #
