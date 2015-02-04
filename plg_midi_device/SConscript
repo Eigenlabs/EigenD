@@ -1,4 +1,7 @@
 Import('env')
 
 env.PiPythonPackage(package='eigend', per_agent='plg_midi_device')
-env.PiAgent('midi_device', 'plg_midi_device','midi_device_plg', cversion='0.0.6')
+env.PiAgent('midi_device', 'plg_midi_device','midi_device_plg', cversion='0.0.7')
+env.PiAgent('ableton_push', 'plg_midi_device','ableton_push_plg', cversion='0.0.1')
+env.PiAgent('continuum', 'plg_midi_device','continuum_plg', cversion='0.0.1')
+env.PiAgent('keyboard_controller', 'plg_midi_device','keyboard_controller_plg', cversion='0.0.1')

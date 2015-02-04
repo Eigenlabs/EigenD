@@ -2341,4 +2341,36 @@ A Console Mixer Effect Channel has the following Ports: </help>
       <help>The song beat input is used to indicate to the MIDI Clock Agent the current position of the song when the Metronome is running - as a consequence you have to connect the 'song beat output' of the Metronome to this input for recording to work correctly. </help>
     </port>
   </agent>
+  <agent name="continuum">
+    <tip>Set continuum up with extend pitchbend, pressure(Z) and yaw(Y) and using voice per channel midi</tip>
+    <help>Haken Continuum</help>
+    <port name="midi channel">
+      <tip>1-16 for midi channel, 0 = poly midi</tip>
+      <help>Midi channel of device</help>
+    </port>
+  </agent>
+  <agent name="keyboard controller">
+    <tip>Midi device, configured for common CC and pitchbend use</tip>
+    <help>Device for common keyboard controllers</help>
+    <port name="midi channel">
+      <tip>1-16 for midi channel, 0 = poly midi</tip>
+      <help>Midi channel of device</help>
+    </port>
+  </agent>
+  <agent name="ableton push">
+    <tip>Recieves input on midi channel 1 from the 'user port'</tip>
+    <help>Ableton Push</help>
+    <port name="midi input">
+      <tip>connect to midi input agent, which should be configured to the user port</tip>
+      <help>midi input stream</help>
+    </port>
+    <port name="midi output">
+      <tip>connect to midi output agent, which should be configured to the user port</tip>
+      <help>midi output stream</help>
+    </port>
+  </agent>
+  <agent name="soundplane">
+    <tip>soundplane should be configured to use a continous X/Y plane with 1 note</tip>
+    <help>Madrona Labs Soundplane</help>
+  </agent>
 </documentation>
