@@ -56,7 +56,23 @@ class Agent(agent.Agent):
         self.strippos2_output = self.t3d_output.create_output("d_strip2",False,3)
         self.strippos2_input = bundles.VectorInput(self.strippos2_output, self.domain,signals=(1,))
         self[1][10] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.strippos2_input.vector_policy(1,False), names='strip position input', ordinal=2)
-        
+
+        self.p1_output = self.t3d_output.create_output("pedal1",False,6)
+        self.p1_input = bundles.VectorInput(self.p1_output, self.domain,signals=(1,))
+        self[1][11] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.p1_input.vector_policy(1,False), names='pedal input', ordinal=1)
+
+        self.p2_output = self.t3d_output.create_output("pedal2",False,7)
+        self.p2_input = bundles.VectorInput(self.p2_output, self.domain,signals=(1,))
+        self[1][12] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.p2_input.vector_policy(1,False), names='pedal input', ordinal=2)        
+
+        self.p3_output = self.t3d_output.create_output("pedal3",False,8)
+        self.p3_input = bundles.VectorInput(self.p3_output, self.domain,signals=(1,)) 
+        self[1][13] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.p3_input.vector_policy(1,False), names='pedal input', ordinal=3)
+                
+        self.p4_output = self.t3d_output.create_output("pedal4",False,9)
+        self.p4_input = bundles.VectorInput(self.p4_output, self.domain,signals=(1,))
+        self[1][14] = atom.Atom(domain=domain.BoundedFloat(-1,1), policy=self.p4_input.vector_policy(1,False), names='pedal input', ordinal=4)        
+
         self[2] = atom.Atom(names="host")
         self[2][1] = atom.Atom(domain=domain.String(), init='localhost', names='name', policy=atom.default_policy(self.__set_host));
         self[2][2] = atom.Atom(domain=domain.BoundedInt(1,9999), init=3123, names='port', policy=atom.default_policy(self.__set_port), )
