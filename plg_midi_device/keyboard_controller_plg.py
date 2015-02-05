@@ -109,8 +109,9 @@ class Agent(agent.Agent):
         self.device.enable_chan_at(PRESSURE,True)
         self.device.enable_poly_at(PRESSURE,True)
 
-        self.device.set_pb_map(STRIP_1,True)
-        self.device.set_cc_map(STRIP_2,1)
+        self.device.set_pb_map(ROLL,True)
+        self.device.set_cc_map(STRIP_1,1)
+        self.device.set_cc_map(STRIP_2,3)
         self.device.set_cc_map(BREATH,2)
         self.device.set_cc_map(PEDAL_1,64) # sustain pedal
         self.device.set_cc_map(PEDAL_2,69) # hold pedal
