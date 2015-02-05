@@ -23,5 +23,4 @@ Import('env')
 env.PiPythonPackage(package='eigend',per_agent='plg_finger',resources=('Factory Fingerings.txt','User Fingerings.txt'))
 env.PiAgent('fingerer','plg_finger','finger_plg',cversion='1.0.0')
 env.PiResources('fingerer','User Fingerings.txt')
-
-#env.PiResources('fingerer','Factory Fingerings.txt',package='eigend-nongpl')
+env.PiResources('fingerer','Factory Fingerings.txt')
