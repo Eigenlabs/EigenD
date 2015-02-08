@@ -973,15 +973,15 @@ void kwire_t::updateKey(unsigned long long t, bool a, unsigned touch, float note
 
 
 		// if this is the first event OR we are in continuous key update mode, then calc column, row and coursenote
-		if( !running_ || device_->continuous_key_ || device_->quantize_)
+		if( !running_ || device_->continuous_key_)
 		{
-	    	// calculate row and column, and course key  UpdateTouch
+	    	// calculate row and column, and course key
 			device_->calculateKey(absx,absy,key,r,c,cn);
 
-			if(!running_) // so starting note
+			if(!running_) // so starting note, or we change columns (=big shift in freq)
 			{
 				course_note_=cn;
-				course_note_offset_=note-0.5-cn;
+				course_note_offset_=floorf(note+0.5-float(cn));
 				LOG_SINGLE(pic::logmsg() << "kwire_t::updateKey course offset " << course_note_offset_ << " course_note_" << course_note_ << " note " << note;);
 			}
 
@@ -990,6 +990,24 @@ void kwire_t::updateKey(unsigned long long t, bool a, unsigned touch, float note
 			// the sensitivity on the device needs to be calibrated, it may not follow the same curve as an eigenharp
 //			if(z>=.25) h=piw::KEY_SOFT;
 //			if(z>=.5) h=piw::KEY_HARD;
+		}
+		else
+		if (device_->quantize_)
+		{
+			// if we change column, then we need to recalculate the offset
+			// also we are likely to have moved out of the bend range
+			// which is usually 1 column, so we need to update the key
+			unsigned tmp_key,tmp_r,tmp_c,tmp_cn;
+			device_->calculateKey(absx,absy,tmp_key,tmp_r,tmp_c,tmp_cn);
+			if (tmp_c!=column_)
+			{
+				c=tmp_c;
+				r=tmp_r;
+				key=tmp_key;
+				cn=tmp_cn;
+				course_note_offset_=floorf(note+0.5-float(cn));
+				LOG_SINGLE(pic::logmsg() << "kwire_t::updateKey updating due to new column, course offset " << course_note_offset_ << " course_note_" << course_note_ << " note " << note;);
+			}
 		}
 
     	// calculate, such that 1 cell is the boundary for roll/yaw, like a discrete key
@@ -1031,7 +1049,7 @@ void kwire_t::updateKey(unsigned long long t, bool a, unsigned touch, float note
 //		{
 //			float n= cn+course_note_offset_+(x*device_->row_size_);
 //			float mn = (absx*device_->row_size_) - 0.5;
-//			LOG_SINGLE(pic::logmsg() << "kwire_t::updateKey DEBUG absxcomp  absx " " note " << note <<  " mn "  << mn << " n " << n);
+//			LOG_SINGLE(pic::logmsg() << "kwire_t::updateKey DEBUG absxcomp  absx " " note " << note <<  " mn "  << mn << " n " << n << " note-cn+co "<< (note-(float(cn+course_note_offset_)));)
 //
 //			float nfreq = 440*pic::approx::pow2((n-69.0)/12.0);
 //			float sfreq = 440*powf(2.0,(n-69.0)/12.0);
