@@ -651,6 +651,7 @@ void midi_device_t::impl_t::decoder_pitchbend(unsigned c, unsigned value)
 void midi_device_t::impl_t::decoder_cc(unsigned c, unsigned number, unsigned value)
 {
 	unsigned channel = c + 1;
+	int num=(int) number;
 	LOG_SINGLE(pic::logmsg() << "decoder_cc " << channel << " cc " << number << " value " << value;)
 
 	if(channel_!=channel && channel_!=0) return ;
@@ -664,19 +665,19 @@ void midi_device_t::impl_t::decoder_cc(unsigned c, unsigned number, unsigned val
 		{
 			if(kwires_[NOTE][key]->channel_==channel)
 			{
-				if(hires_cc_[PRESSURE]==number) kwires_[NOTE][key]->updateLsbP(t,value);
-				if(hires_cc_[YAW]==number)	  kwires_[NOTE][key]->updateLsbY(t,value);
-				if(hires_cc_[ROLL]==number)	  kwires_[NOTE][key]->updateLsbR(t,value);
+				if(hires_cc_[PRESSURE]==num) kwires_[NOTE][key]->updateLsbP(t,value);
+				if(hires_cc_[YAW]==num)	  kwires_[NOTE][key]->updateLsbY(t,value);
+				if(hires_cc_[ROLL]==num)	  kwires_[NOTE][key]->updateLsbR(t,value);
 			}
 		}
 
-		if(hires_cc_[BREATH]==number)  breath_->updateLsb(t,value);
-		if(hires_cc_[STRIP_1]==number) strip1_->updateLsb(t,value);
-		if(hires_cc_[STRIP_2]==number) strip2_->updateLsb(t,value);
-		if(hires_cc_[PEDAL_1]==number) pedal1_->updateLsb(t,value);
-		if(hires_cc_[PEDAL_2]==number) pedal2_->updateLsb(t,value);
-		if(hires_cc_[PEDAL_3]==number) pedal3_->updateLsb(t,value);
-		if(hires_cc_[PEDAL_4]==number) pedal4_->updateLsb(t,value);
+		if(hires_cc_[BREATH]==num)  breath_->updateLsb(t,value);
+		if(hires_cc_[STRIP_1]==num) strip1_->updateLsb(t,value);
+		if(hires_cc_[STRIP_2]==num) strip2_->updateLsb(t,value);
+		if(hires_cc_[PEDAL_1]==num) pedal1_->updateLsb(t,value);
+		if(hires_cc_[PEDAL_2]==num) pedal2_->updateLsb(t,value);
+		if(hires_cc_[PEDAL_3]==num) pedal3_->updateLsb(t,value);
+		if(hires_cc_[PEDAL_4]==num) pedal4_->updateLsb(t,value);
 	}
 
 	// handle normal cc for keys, and aux controls
@@ -684,19 +685,19 @@ void midi_device_t::impl_t::decoder_cc(unsigned c, unsigned number, unsigned val
 	{
 		if(kwires_[NOTE][key]->channel_==channel)
 		{
-			if(cc_[PRESSURE]==number) kwires_[NOTE][key]->updateP(t,value);
-			if(cc_[YAW]==number)	  kwires_[NOTE][key]->updateY(t,value);
-			if(cc_[ROLL]==number)	  kwires_[NOTE][key]->updateR(t,value);
+			if(cc_[PRESSURE]==num) kwires_[NOTE][key]->updateP(t,value);
+			if(cc_[YAW]==num)	  kwires_[NOTE][key]->updateY(t,value);
+			if(cc_[ROLL]==num)	  kwires_[NOTE][key]->updateR(t,value);
 		}
 	}
 
-	if(cc_[BREATH]==number)  breath_->update(t,value);
-	if(cc_[STRIP_1]==number) strip1_->update(t,value);
-	if(cc_[STRIP_2]==number) strip2_->update(t,value);
-	if(cc_[PEDAL_1]==number) pedal1_->update(t,value);
-	if(cc_[PEDAL_2]==number) pedal2_->update(t,value);
-	if(cc_[PEDAL_3]==number) pedal3_->update(t,value);
-	if(cc_[PEDAL_4]==number) pedal4_->update(t,value);
+	if(cc_[BREATH]==num)  breath_->update(t,value);
+	if(cc_[STRIP_1]==num) strip1_->update(t,value);
+	if(cc_[STRIP_2]==num) strip2_->update(t,value);
+	if(cc_[PEDAL_1]==num) pedal1_->update(t,value);
+	if(cc_[PEDAL_2]==num) pedal2_->update(t,value);
+	if(cc_[PEDAL_3]==num) pedal3_->update(t,value);
+	if(cc_[PEDAL_4]==num) pedal4_->update(t,value);
 
 	// handle CC as notes, where CC num = note, CC val = pressure/velocity
 	if(enable_control_notes_)
@@ -719,10 +720,10 @@ void midi_device_t::impl_t::decoder_cc(unsigned c, unsigned number, unsigned val
 	}
 
 	// CC as note!
-	if (note_cc==number)
+	if (note_cc==num)
 	{
 		LOG_SINGLE(pic::logmsg() << "detected note change " << number << " v " << value << "last_cc_note_pressure " << last_cc_note_pressure;)
-		if (last_cc_note !=value)
+		if (last_cc_note != (int) value)
 		{
 			 LOG_SINGLE(pic::logmsg() << "detected note change2 " << number << " v " << value;)
 			// note off for last note
@@ -755,7 +756,7 @@ void midi_device_t::impl_t::decoder_cc(unsigned c, unsigned number, unsigned val
 			last_cc_note=value;
 		}
 	}
-	if (note_pressure_cc==number)
+	if (note_pressure_cc==num)
 	{
 		last_cc_note_pressure=value;
 		LOG_SINGLE(pic::logmsg() << "pressure change " << number << " value " << value << "last_cc_note_pressure " << last_cc_note_pressure;)

@@ -26,6 +26,8 @@
 #include <picross/pic_tool.h>
 #include <picross/pic_resources.h>
 
+#include <string.h>
+
 namespace
 {
     struct porttester_t

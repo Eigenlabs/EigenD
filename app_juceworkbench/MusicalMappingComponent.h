@@ -41,7 +41,7 @@
 */
 
 #include <piw/piw_tsd.h>
-#include "workspace.h"
+#include "Workspace.h"
 #include "juce.h"
 #include "MappingPanel.h"
 //[/Headers]

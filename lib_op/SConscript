@@ -14,6 +14,10 @@ op_files = Split("""
 op_env = env.Clone()
 op_env.Append(CPPPATH=op_dirs)
 
+if env['IS_LINUX']:
+    op_dirs=op_dirs+Split('ip/posix')
+    op_files=op_files+Split('ip/posix/NetworkingUtils.cpp ip/posix/UdpSocket.cpp')
+
 if env['IS_MACOSX']:
     op_dirs=op_dirs+Split('ip/posix')
     op_files=op_files+Split('ip/posix/NetworkingUtils.cpp ip/posix/UdpSocket.cpp')

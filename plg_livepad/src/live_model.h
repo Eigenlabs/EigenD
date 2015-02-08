@@ -53,7 +53,7 @@ public:
 protected:
 	clip_t::state_t getState(int track, int clip);
 	void changeState(int track, int clip, clip_t::state_t state);
-	bool isRecording() { return current_recording_clip_ != NULL; }
+	bool isRecording() { return current_recording_clip_ != 0ULL; }
 	clip_t* getRecordingClip() { return current_recording_clip_;}
 	int armTrack(int track) { int prevT=armedTrack_; armedTrack_=track; return prevT;}
 	void clear();

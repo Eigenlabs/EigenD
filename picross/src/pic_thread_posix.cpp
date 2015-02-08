@@ -371,11 +371,11 @@ pic::mutex_t::mutex_t(bool recursive, bool inheritance)
 
     if(inheritance)
     {
-        pthread_mutexattr_setprotocol(&a,PTHREAD_PRIO_INHERIT_NP);
+        pthread_mutexattr_setprotocol(&a,PTHREAD_PRIO_INHERIT);
     }
     else
     {
-        pthread_mutexattr_setprotocol(&a,PTHREAD_PRIO_NONE_NP);
+        pthread_mutexattr_setprotocol(&a,PTHREAD_PRIO_NONE);
     }
 #endif
 

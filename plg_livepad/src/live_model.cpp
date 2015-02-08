@@ -9,7 +9,7 @@
 
 namespace live_model {
 
-live_model_t::live_model_t() : current_recording_clip_(NULL), armedTrack_(-1)
+live_model_t::live_model_t() : current_recording_clip_(0ULL), armedTrack_(-1)
 {
 }
 
@@ -66,7 +66,7 @@ void live_model_t::changeState(int track, int clip, clip_t::state_t state)
 
 void live_model_t::clear()
 {
-	current_recording_clip_=NULL;
+	current_recording_clip_=0ULL;
 	armedTrack_=-1;
 	std::map<std::pair<int,int>,clip_t* >::iterator c;
 	for(c=clips_.begin();c!=clips_.end();c++)

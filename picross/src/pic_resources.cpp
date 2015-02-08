@@ -40,6 +40,10 @@
 #define RES_PATH_MAX PATH_MAX
 #endif
 
+#ifdef PI_LINUX
+#include <unistd.h>
+#endif
+
 #include <picross/pic_resources.h>
 #include <string.h>
 #include <fcntl.h>
@@ -554,7 +558,7 @@ struct pic::lockfile_t::impl_t
     ~impl_t()
     {
         if(fd_>=0)
-            close(fd_);
+            ::close(fd_);
     }
 
     bool lock()

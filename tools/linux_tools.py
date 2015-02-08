@@ -39,7 +39,7 @@ class PiLinuxEnvironment(unix_tools.PiUnixEnvironment):
         unix_tools.PiUnixEnvironment.__init__(self,platform,'usr/pi','.belcanto','/usr/bin/python')
 
         self.Append(LIBS=Split('dl m pthread rt'))
-        self.Append(CCFLAGS=Split('-D_XOPEN_SOURCE=600 -D_GNU_SOURCE -D_REENTRANT -g -O0 -Wall -Werror -fmessage-length=0 -fno-strict-aliasing'))
+        self.Append(CCFLAGS=Split('-D_XOPEN_SOURCE=600 -D_GNU_SOURCE -D_REENTRANT -g -O0 -Wall -Werror -Wno-unused-but-set-variable -Wno-narrowing -Wno-deprecated-declarations -fmessage-length=0 -fno-strict-aliasing'))
         self.Append(LINKFLAGS=Split('-g -z origin -Wl,--rpath-link=tmp/bin -Wl,--rpath=\\$$ORIGIN/../bin'))
         self.Append(SHLINKFLAGS=Split('-g -z origin -Wl,--rpath-link=tmp/bin -Wl,--rpath=\\$$ORIGIN/../bin -Wl,-soname=lib${SHLIBNAME}.so'))
         self.Replace(PI_PLATFORMTYPE='linux')
@@ -105,7 +105,7 @@ class PiLinuxEnvironment(unix_tools.PiUnixEnvironment):
 
         template =["Package: %s" % debname,
                    "Version: %s" % v,
-                   "Maintainer: support@performance-instruments.com",
+                   "Maintainer: support@eigenlabs.com",
                    "Architecture: %s" % arch,
                    "Section: sound",
                    "Priority: optional",

@@ -6,6 +6,7 @@
 #include "SoundplaneOSCOutput.h"
 
 #include <stdexcept>
+#include <stdio.h>
 
 #include "c99compat.h"
 
@@ -28,7 +29,6 @@ OSCVoice::~OSCVoice()
 }
 
 // --------------------------------------------------------------------------------
-#pragma mark SoundplaneOSCOutput
 
 SoundplaneOSCOutput::SoundplaneOSCOutput() :
 	mDataFreq(250.),
@@ -167,12 +167,13 @@ void SoundplaneOSCOutput::processMessage(const SoundplaneDataMessage* msg)
     static const MLSymbol matrixSym=MLS_matrixSym;
     static const MLSymbol nullSym=MLS_nullSym;
     
-	if (!mActive) return;
+    if (!mActive) return;
     MLSymbol type = msg->mType;
     MLSymbol subtype = msg->mSubtype;
     
     int i;
-	float x, y, z, dz, note;
+    //float x, y, z, dz, note;
+    float x, y, z, note;
     
     if(type == startFrameSym)
     {
@@ -197,7 +198,7 @@ void SoundplaneOSCOutput::processMessage(const SoundplaneDataMessage* msg)
         x = msg->mData[1];
         y = msg->mData[2];
         z = msg->mData[3];
-        dz = msg->mData[4];
+        //dz = msg->mData[4];
         note = msg->mData[5];
         OSCVoice* pVoice = &mOSCVoices[i];        
         pVoice->x = x;
@@ -320,7 +321,7 @@ void SoundplaneOSCOutput::processMessage(const SoundplaneDataMessage* msg)
                         std::string address("/t3d/tch");
                         const int maxSize = 4;
                         char idBuf[maxSize];
-                        snprintf(idBuf, maxSize, "%d", touchID);                                 
+                        snprintf(idBuf, maxSize, "%d", (int) touchID);                                 
                         address += std::string(idBuf);
                         p << osc::BeginMessage( address.c_str() );
                         p << pVoice->x << pVoice->y << pVoice->z << pVoice->note;

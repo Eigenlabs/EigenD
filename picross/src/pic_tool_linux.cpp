@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <cstdlib>
+#include <unistd.h>
 
 struct pic::bgprocess_t::impl_t
 {

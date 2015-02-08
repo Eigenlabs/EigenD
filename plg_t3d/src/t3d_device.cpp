@@ -423,7 +423,7 @@ t3d_device_t::impl_t::impl_t(piw::clockdomain_ctl_t *cd,  const piw::cookie_t &o
 
 void t3d_device_t::impl_t::createLEDConverter()
 {
-	for(int i=0;i<col_size_;i++)
+	for(unsigned i=0;i<col_size_;i++)
 	{
 		ledcols_[i]=row_size_;
 	}
@@ -878,7 +878,7 @@ void t3d_device_t::quantize(bool v)
 piw::data_t  t3d_device_t::get_columnlen()
 {
 	piw::data_t courses = piw::tuplenull(0);
-	for(int i=0;i<impl_->col_size_;i++)
+	for(unsigned i=0;i<impl_->col_size_;i++)
 	{
 		courses = piw::tupleadd(courses, piw::makelong(impl_->row_size_,0));
 	}
@@ -888,7 +888,7 @@ piw::data_t  t3d_device_t::get_columnlen()
 piw::data_t  t3d_device_t::get_columnoffset()
 {
 	piw::data_t courses = piw::tuplenull(0);
-	for(int i=0;i<impl_->col_size_;i++)
+	for(unsigned i=0;i<impl_->col_size_;i++)
 	{
 	    courses = piw::tupleadd(courses, piw::makelong(0,0));
 	}
