@@ -93,7 +93,7 @@ updated ctags, not really required but will remove 'error' you see at end of bui
 Linux
 -----
 
-you will need these packages
+you will need these packages (it builds without Steinberg SDK)
 
 build-essential
 libiw-dev
@@ -104,6 +104,28 @@ libxcursor-dev
 libasound2-dev
 libxinerama-dev
 mesa-common-dev
+
+If running a 64-bit system copy the 64-bit version of libpico_decoder:
+  cp resources/libpico_decoder_1_0_0.so.64 resources/libpico_decoder_1_0_0.so
+
+To build EigenD, including Stage and Workbench:
+  make
+
+To run from the build dir:
+  tmp/bin/eigend
+
+Somehow this doesn't load python modules, a very hacky workaround:
+  mkdir tmp/lib
+  cd tmp/lib
+  cp -s ../plugins/Eigenlabs/*/*.so .
+  cd ../..
+  PYTHONPATH=$PWD/tmp/modules:$PWD/tmp/plugins/Eigenlabs LD_LIBRARY_PATH=$PWD/tmp/lib tmp/bin/eigend
+
+Now the first time it crashes after scanning plugins, after that it runs fine.
+(Ctrl-C to kill eigend, 'killall scanner' to kill the plugin scanner tool)
+
+To build an .deb package which installs to /usr/pi/ (needs package fakeroot):
+  make pkg
 
 please note: linux build is highly experimental, and libs required may be subject to change.
 It would be very much appeciated if you build for linux,and have better instructions on requirements. 
