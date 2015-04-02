@@ -41,6 +41,7 @@ if env['IS_MACOSX']:
 
 if env['IS_LINUX']:
     pic_files=pic_files+Split('pic_thread_posix.cpp pic_usb_linux.cpp pic_tool_linux.cpp pic_power_linux.cpp')
+    pic_env.Append(CCFLAGS='-Wno-error=int-to-pointer-cast')  # ignore error in picross/src/pic_usb_generic.cpp:289
     pic_env.PiSharedLibrary('pic',pic_files,package='eigend',public=True,locked=True)
 
 if env['IS_WINDOWS']:
