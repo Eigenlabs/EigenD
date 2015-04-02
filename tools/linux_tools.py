@@ -105,7 +105,7 @@ class PiLinuxEnvironment(unix_tools.PiUnixEnvironment):
 
         template =["Package: %s" % debname,
                    "Version: %s" % v,
-                   "Maintainer: support@eigenlabs.com",
+                   "Maintainer: EigenLabs support@eigenlabs.com",
                    "Architecture: %s" % arch,
                    "Section: sound",
                    "Priority: optional",
