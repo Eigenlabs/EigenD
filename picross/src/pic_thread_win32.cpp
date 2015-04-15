@@ -261,9 +261,10 @@ void pic_set_core_unlimited()
 
 pic::tsd_t pic::thread_t::genctx__;
 
-pic::thread_t::thread_t(int realtime)
+pic::thread_t::thread_t(int realtime,int affinity_mask)
 {
     realtime_=realtime;
+	affinity_mask_=affinity_mask;
     run_gate_.open();
     init_gate_.open();
 }

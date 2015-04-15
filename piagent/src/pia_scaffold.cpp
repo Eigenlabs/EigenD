@@ -393,7 +393,14 @@ void pia::scaffold_gui_t::process_ctx()
     impl_->scaffold_->process_ctx();
 }
 
-fastthread_t::fastthread_t(unsigned pri,pia::manager_t *m, usage_t *u): pic::thread_t(pri), manager_(m), shutdown_(false), usage(u)
+int affinity()
+{
+	const char* e=getenv("PI_FAST_THREAD_AFFINITY");
+	if(e==NULL) return 0;
+	return atoi(e);
+}
+
+fastthread_t::fastthread_t(unsigned pri,pia::manager_t *m, usage_t *u): pic::thread_t(pri,affinity()), manager_(m), shutdown_(false), usage(u)
 {
 }
 

@@ -92,6 +92,33 @@ static int __realtime(int pri)
     return 1;
 }
 
+static void __affinity(pthread_t thread, int affinity_mask)
+{
+	if(affinity_mask==0) return;
+
+	int mask=affinity_mask;
+	int num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+	cpu_set_t cpuset;
+	CPU_ZERO(&cpuset);
+	for(int core_id=0;core_id<num_cores;core_id++)
+	{
+		if(mask & 0x01)
+		{
+	   		CPU_SET(core_id, &cpuset);
+		}
+		mask = mask >> 1;
+	}
+
+	if(CPU_COUNT(&cpuset)>0)
+	{
+		int s;
+   		s=pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+	    if (s != 0) {
+		   printf("pthread_setaffinity_np error %d\n",s);
+		}
+	}
+}
+
 #endif
 
 #ifdef PI_MACOSX
@@ -265,6 +292,11 @@ void *pic::thread_t::run3__(void *t_)
     {
         __realtime(t->realtime_);
     }
+	
+	if(t->affinity_mask_>0)
+	{
+        __affinity(t->id_,t->affinity_mask_);
+	}
 #endif
 
     run__(t);
@@ -416,9 +448,10 @@ void pic::mutex_t::lock() { PIC_ASSERT(pthread_mutex_lock(&data_)==0); }
 void pic::mutex_t::unlock() { PIC_ASSERT(pthread_mutex_unlock(&data_)==0); }
 bool pic::mutex_t::trylock() { return (pthread_mutex_trylock(&data_)==0); }
 
-pic::thread_t::thread_t(int realtime)
+pic::thread_t::thread_t(int realtime,int affinity_mask)
 {
     realtime_=realtime;
+	affinity_mask_=affinity_mask;
     run_gate_.open();
     init_gate_.open();
 }

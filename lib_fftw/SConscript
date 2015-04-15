@@ -320,6 +320,7 @@ if env['IS_WINDOWS']:
     env.Append(CCFLAGS='-DCOMPILING_FFTW -DFFTW_DLL')
 
 if env['IS_LINUX']:
-    env.Append(CCFLAGS='-march=core2 -Wno-unused-but-set-variable')
+    env.Append(CCFLAGS='-v -march=core2 -Wno-unused-but-set-variable')
 
-env.PiSharedLibrary('pifftw3',fftw_files,package='eigend',hidden=False)
+if not env['IS_LINUX_ARMV7L']:
+	env.PiSharedLibrary('pifftw3',fftw_files,package='eigend',hidden=False)

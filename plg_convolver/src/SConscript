@@ -20,9 +20,19 @@
 
 Import('env')
 
+pc_env=env.Clone()
+
 plg_convolver_files=Split("""
     plg_convolver.cpp zita_convolver.cpp
 """)
 
-env.PiSharedLibrary('convolver',plg_convolver_files,libraries=Split('pisamplerate pifftw3 pic piw pie pia'),package='eigend',hidden=False,per_agent='plg_convolver')
-env.PiPipBinding('convolver_native','plg_convolver.pip',libraries=Split('convolver pisamplerate pifftw3 pic piw pie pia'),package='eigend',per_agent='plg_convolver')
+pc_libs=Split('pisamplerate pic piw pie pia');
+
+if env['IS_LINUX_ARMV7L']:
+   pc_env.Append(LIBS=Split('libfftw3'))
+   pc_libs=Split('pisamplerate pic piw pie pia');
+else:
+   pc_libs=Split('pifftw3 pisamplerate pic piw pie pia');
+
+pc_env.PiSharedLibrary('convolver',plg_convolver_files,libraries=pc_libs,package='eigend',hidden=False,per_agent='plg_convolver')
+pc_env.PiPipBinding('convolver_native','plg_convolver.pip',libraries=Split('convolver')+pc_libs,package='eigend',per_agent='plg_convolver')

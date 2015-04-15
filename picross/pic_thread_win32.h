@@ -184,7 +184,7 @@ namespace pic
     class PIC_DECLSPEC_CLASS thread_t
     {
         public:
-            thread_t(int priority=PIC_THREAD_PRIORITY_NORMAL);
+            thread_t(int priority=PIC_THREAD_PRIORITY_NORMAL,int affinity_mask=0);
             virtual ~thread_t();
             void run();
             void wait();
@@ -213,6 +213,7 @@ namespace pic
             pic_threadid_t id_;
             HANDLE handle_;
             int realtime_;
+			int affinity_mask_;
     };
 
     class PIC_DECLSPEC_CLASS xgate_t

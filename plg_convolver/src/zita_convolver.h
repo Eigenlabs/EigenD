@@ -34,7 +34,12 @@
 #endif
 
 #define CALLING_FFTW
+
+#ifdef PI_IS_LINUX_ARM7L
+#include <fftw3.h>
+#else
 #include <lib_fftw/fftw3.h>
+#endif
 
 
 class CONVOLVER_DECLSPEC_CLASS Inpnode

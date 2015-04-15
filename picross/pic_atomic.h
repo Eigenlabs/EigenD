@@ -309,6 +309,13 @@ inline static int pic_atomicptrcas(void *p_, void *oval, void *nval)
 }
 
 #endif
+
+
+#ifdef PI_LINUX_ARMV7L
+#include "pic_atomic_arm7.h"
+#endif
+
+
 #endif
 
 #ifdef PI_MACOSX
