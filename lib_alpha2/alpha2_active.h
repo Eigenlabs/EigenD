@@ -53,7 +53,7 @@ namespace alpha2
     class ALPHA2_DECLSPEC_CLASS active_t: virtual public pic::lckobject_t, public pic::pollable_t
     {
         public:
-            class impl_t;
+            struct impl_t;
 
         public:
             struct delegate_t
