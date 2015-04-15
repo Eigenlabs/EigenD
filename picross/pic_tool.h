@@ -29,7 +29,7 @@ namespace pic
     class PIC_DECLSPEC_CLASS tool_t
     {
         public:
-            class impl_t;
+            struct impl_t;
         public:
             tool_t(const char *dir,const char *name);
             tool_t(const std::string &dir,const char *name);
@@ -45,7 +45,7 @@ namespace pic
     class PIC_DECLSPEC_CLASS bgprocess_t
     {
         public:
-            class impl_t;
+            struct impl_t;
         public:
             bgprocess_t(const char *dir,const char *name,bool keeprunning = false);
             bgprocess_t(const std::string &dir,const char *name,bool keeprunning = false);

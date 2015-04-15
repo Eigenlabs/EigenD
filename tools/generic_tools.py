@@ -319,6 +319,7 @@ class PiGenericEnvironment(SCons.Environment.Environment):
 
         self.Replace(PILIBS=[])
 
+        self.Replace(IS_LINUX_ARMV7L=False)
         self.Replace(IS_LINUX_PPC32=False)
         self.Replace(IS_LINUX_PPC64=False)
         self.Replace(IS_LINUX_86=False)

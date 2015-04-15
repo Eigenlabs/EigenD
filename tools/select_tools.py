@@ -20,6 +20,13 @@
 
 import sys
 
+def posix_Linux_armv7l():
+    import linux_tools
+    env = linux_tools.PiLinuxEnvironment('linux-armv7l')
+    env.Replace(IS_LINUX_ARMV7L=True)
+#    env.Append(CCFLAGS=' -mno-unaligned-access ')
+    return env
+
 def posix_Linux_ppc64():
     import linux_tools
     env = linux_tools.PiLinuxEnvironment('linux-ppc32')

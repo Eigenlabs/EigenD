@@ -29,7 +29,7 @@ namespace alpha2
     class ALPHA2_DECLSPEC_CLASS passive_t
     {
         public:
-            class impl_t;
+            struct impl_t;
         public:
             passive_t(const char *name,unsigned decimate=1);
             ~passive_t();

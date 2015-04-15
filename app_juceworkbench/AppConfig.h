@@ -49,7 +49,13 @@
 #define JUCE_USE_DIRECTWRITE 0
 
 #define JUCE_ENABLE_REPAINT_DEBUGGING 0
+#ifdef PI_LINUX_ARMV7L
+#define JUCE_USE_XSHM 0
+#define JUCE_USE_XINERAMA 0
+#else
 #define JUCE_USE_XSHM 1
+#endif
+
 #define JUCE_USE_XRENDER 0
 #define JUCE_USE_XCURSOR 0
 

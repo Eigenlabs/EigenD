@@ -199,7 +199,7 @@ int main(int ac, char **av)
 
     try
     {
-        usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR_LEGACY,BCTKBD_USBPRODUCT).c_str();
+        usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,BCTKBD_USBPRODUCT).c_str();
     }
     catch(...)
     {
@@ -217,9 +217,11 @@ int main(int ac, char **av)
     pic_set_foreground(true);
 
     {
+    	try 
+    	{
         printer_t printer(key);
         pic::usbdevice_t device(usbdev.c_str(),0);
-        alpha2::active_t loop(&device, &printer,true);
+        alpha2::active_t loop(&device, &printer);
         printer.loop_ = &loop;
         loop.start();
         //loop.set_raw(true);
@@ -228,8 +230,13 @@ int main(int ac, char **av)
         {
             loop.poll(pic_microtime());
             loop.msg_flush();
-            pic_microsleep(10000);
+            pic_microsleep(5000);
         }
+		
+    	}
+    	catch(...){
+            fprintf(stderr,"exception during poll ");   
+    	}
 
     }
 

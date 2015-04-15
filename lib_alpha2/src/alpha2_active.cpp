@@ -190,6 +190,7 @@ struct alpha2::active_t::impl_t: pic::usbdevice_t::power_t, virtual public pic::
                 PIC_THROW("timed out waiting for config register");
             }
         }
+        return 0;
     }
 
     unsigned char hp_config_wait()  { return config_wait(A2_REG_HP_CONFIG,0x20); }

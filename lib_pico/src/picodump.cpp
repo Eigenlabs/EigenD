@@ -30,6 +30,13 @@
 #endif
 
 
+#ifndef PI_BIGENDIAN
+#define MY_NTOHS(X) (X)
+#else
+#define MY_NTOHS(X) ((((X)&0xff)<<8)|(((X)>>8)&0xff))
+#endif
+
+
 //#include <pikeyboard/performotron_usb.h>
 #include <lib_pico/pico_active.h>
 #include <picross/pic_usb.h>
@@ -57,13 +64,14 @@ struct printer_t: public  pico::active_t::delegate_t
     {
         
         const pico::active_t::rawkey_t *key = raw.keys;
-        const unsigned short *color = NULL; 
 
         for( int i = 0; i < 20; i++)
         {
-            color = key[i].c;
-            if(i==0) printf( "key: %02d c1:%04d, c2:%04d, c3:%04d, c4:%04d\n",i,color[0],color[1],color[2],color[3] ); 
-                
+	    unsigned short c0 = MY_NTOHS(key[i].c[0]);
+	    unsigned short c1 = MY_NTOHS(key[i].c[1]);
+	    unsigned short c2 = MY_NTOHS(key[i].c[2]);
+	    unsigned short c3 = MY_NTOHS(key[i].c[3]);
+            if(i==0) printf( "key: %02d c1:%04d, c2:%04d, c3:%04d, c4:%04d\n",i,c0,c1,c2,c3); 
         }
     
     }
@@ -93,17 +101,26 @@ int main(int ac, char **av)
 
     printer_t printer;
     pico::active_t loop(usbdev.c_str(), &printer);
-    loop.set_raw(false);
+    loop.set_raw(true);
 
     loop.load_calibration_from_device();
     pic_microsleep(1000000);
     loop.start();
-
+    unsigned long long t=0;
+    unsigned c=0;
+    
     while(1)
-    {       
+    {   
 		pic_microsleep(10000);
-        loop.poll(pic_microtime());
-	 }
+		t=pic_microtime();
+        loop.poll(t);
+        unsigned x=(t/1000000)%4;
+        if(x!=c)
+        {
+        	loop.set_led(1,x);
+        	c=x;
+        }
+	}
 
     return 0;
 }

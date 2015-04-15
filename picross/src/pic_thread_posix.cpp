@@ -310,10 +310,13 @@ void pic_thread_lck_free(void *ptr, unsigned size)
 void *pic_thread_lck_malloc(unsigned size)
 {
     void *ptr = valloc(size);
+    int r=0;
 
-    if(!ptr || mlock(ptr,size)!=0)
+    if(!ptr || (r=mlock(ptr,size))!=0)
     {
-        printf("mlock failed\n");
+	int en=errno;
+        perror("mlock failed");
+        printf("mlock failed %d %d %d\n",size, r,en );
         //return 0;
     }
 
@@ -607,6 +610,7 @@ unsigned pic::xgate_t::pass_and_shut_timed(unsigned long long t)
             return 0;
         }
     }
+    return 0;
 }
 
 unsigned pic::xgate_t::pass_and_shut()
@@ -632,6 +636,7 @@ unsigned pic::xgate_t::pass_and_shut()
 
         sem_.untimeddown();
     }
+    return 0;
 }
 
 pic::gate_t::gate_t()

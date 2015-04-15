@@ -36,6 +36,8 @@ if env['IS_MACOSX']:
     pia_env.Append(CCFLAGS='-DALIGN_16')
 if env['IS_LINUX']:
     pia_files=pia_files+Split('pia_udpnet_linux.cpp')
+if env['IS_LINUX_ARMV7L']:
+    pia_env.Append(CCFLAGS='-DALIGN_32')
 if env['IS_WINDOWS']:
     pia_files=pia_files+Split('pia_udpnet_windows.cpp')
     pia_env.Append(LINKFLAGS=' WS2_32.Lib ')

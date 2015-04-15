@@ -24,7 +24,8 @@
 extern "C" {
 #endif
 
-#define BCTPICO_USBVENDOR                    0xbeca
+#define BCTPICO_USBVENDOR_LEGACY             0xbeca
+#define BCTPICO_USBVENDOR                    0x2139
 #define BCTPICO_USBPRODUCT                   0x0101
 #define BCTPICO_INTERFACE                    0
 #define BCTPICO_SCANSIZE                     192

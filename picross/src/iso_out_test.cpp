@@ -49,7 +49,7 @@ int main(int ac, char **av)
     {
         try
         {
-            usbdev = pic::usbenumerator_t::find(0xbeca,0x0102).c_str();
+            usbdev = pic::usbenumerator_t::find(0x2139,0x0104).c_str();
         }
         catch(...)
         {
@@ -60,8 +60,9 @@ int main(int ac, char **av)
 
     printf("found device %s\n",usbdev);
 
-    //pic::usbdevice_t::iso_out_pipe_t pipe(6,128);
+    pic::usbdevice_t::iso_out_pipe_t pipe(6,128);
     pic::usbdevice_t loop(usbdev,0);
+	loop.set_iso_out(&pipe);
 
     loop.control_out(0x40,0xb1,0,0,0,0);
 

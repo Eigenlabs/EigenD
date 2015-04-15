@@ -898,7 +898,6 @@ void t3d_output_plg::t3d_output_t::impl_t::clocksink_ticked(unsigned long long f
 	{
 		if(t > last_connect_time_+retryTime)
 		{
-			;
 			last_connect_time_=t;
 			if(!connect(host_.c_str(),port_,t))
 			{
@@ -1077,16 +1076,32 @@ void t3d_output_plg::t3d_output_t::set_kyma_mode(bool kyma_mode)
 
 void t3d_output_plg::t3d_output_t::set_continuous_mode(bool mode)
 {
-	LOG_SINGLE(pic::logmsg() << "t3d_output_plg::t3d_output_t::set_continuous_mode( " << mode; )
+    LOG_SINGLE(pic::logmsg() << "t3d_output_plg::t3d_output_t::set_continuous_mode( " << mode; )
     piw::tsd_fastcall(__set_continuous_mode,impl_,&mode);
 }
 
+struct connect_t
+{
+     std::string host;
+     unsigned port;
+};
 
+static int __connect(void *i_, void *d_)
+{
+    t3d_output_plg::t3d_output_t::impl_t *i = (t3d_output_plg::t3d_output_t::impl_t *)i_;
+    connect_t *d=(connect_t*) d_;
+    LOG_SINGLE(pic::logmsg() << "__connect " << d->host << " port " << d->port; )
+    i->connect(d->host,d->port,piw::tsd_time());
+    return 0;
+}
 
 void t3d_output_plg::t3d_output_t::connect(const std::string &a, unsigned p)
 {
-	LOG_SINGLE(pic::logmsg() << "t3d_output_plg::t3d_output_t::connect " << a << " port " << p; )
-	impl_->connect(a,p,piw::tsd_time());
+     LOG_SINGLE(pic::logmsg() << "t3d_output_plg::t3d_output_t::connect " << a << " port " << p; )
+     connect_t d;
+     d.host=a;
+     d.port=p;
+     piw::tsd_fastcall(__connect,impl_,&d);
 }
 
 piw::change_nb_t t3d_output_plg::t3d_output_t::control()

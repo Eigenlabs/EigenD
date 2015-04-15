@@ -52,6 +52,10 @@
 #define PI_LINUX_8664
 #define __PI_ARCH "linux x86-64"
 #endif
+#if defined(__ARM_ARCH_6__) || defined( __ARM_ARCH_7__) || defined( __ARM_ARCH_7A__)
+#define PI_LINUX_ARMV7L
+#define __PI_ARCH "linux armv7l"
+#endif
 #endif
 
 #ifdef __APPLE__

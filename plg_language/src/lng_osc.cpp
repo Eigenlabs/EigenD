@@ -79,6 +79,10 @@ namespace
 
 
 };
+void osc_error_handler(int num, const char *msg, const char *path)
+{
+    pic::logmsg() << "lib_lo error: " << num  << " : " << msg << " path  " << path;
+}
 
 struct language::oscserver_t::impl_t: pic::thread_t
 {
@@ -227,10 +231,15 @@ language::oscserver_t::impl_t::~impl_t()
     }
 }
 
+
 void language::oscserver_t::impl_t::thread_init()
 {
     snapshot_.install();
-    receiver_ = lo_server_new(server_port_.c_str(),0);
+    receiver_ = lo_server_new(server_port_.c_str(),osc_error_handler);
+    if(receiver_==0)
+    {
+         pic::logmsg() << "language::oscserver_t::failed to create receiver for osc on port : " << server_port_;
+    }
 }
 
 void language::oscserver_t::impl_t::thread_term()
@@ -437,9 +446,21 @@ widget_t::~widget_t()
 service_broadcast_t::service_broadcast_t(language::oscserver_t::impl_t *impl) : impl_(impl)
 {
     pic::logmsg() << "start service broadcast server";
-    broadcast_server_ = lo_server_new(OSC_RENDEZVOUS_PORT, 0);
-    request_addr_ = lo_server_add_method(broadcast_server_,"/eigend","",request_addr__,this);
-    pic::logmsg() << "service broadcast server started";
+    const char *port=getenv("PI_RENDEZVOUS_PORT");
+    if(port==0)
+    {
+        port=OSC_RENDEZVOUS_PORT;
+    }
+    broadcast_server_ = lo_server_new(port, osc_error_handler);
+    if(broadcast_server_!=0)
+    {
+         request_addr_ = lo_server_add_method(broadcast_server_,"/eigend","",request_addr__,this);
+         pic::logmsg() << "service broadcast server started";
+    }
+    else
+    {
+         pic::logmsg() << "language::service_broadcast:: service broadcast server FAILED to start on port: " << port;
+    }
 }
 
 service_broadcast_t::~service_broadcast_t()

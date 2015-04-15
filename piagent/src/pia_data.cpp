@@ -71,9 +71,12 @@ struct rep_t: bct_data_s // rep_t         : 52
 #define PTRDEL(p,o) (((unsigned char *)(p))-(o))
 
 #define PAD16(p)           (((uintptr_t)(p)+0xf)&(~((uintptr_t)0xf)))
+#define PAD32(p)           (((uintptr_t)(p)+0x1f)&(~((uintptr_t)0x1f)))
 
 #ifdef ALIGN_16
 #define PTR_WIRE_HDR(p)    PTRDEL(PAD16(PTRADD(p,sizeof(rep_t)+25)),25)
+#elif ALIGN_32
+#define PTR_WIRE_HDR(p)    PTRDEL(PAD32(PTRADD(p,sizeof(rep_t)+25)),25)
 #else
 #define PTR_WIRE_HDR(p)    PTRADD(p,sizeof(rep_t))
 #endif
@@ -84,6 +87,8 @@ struct rep_t: bct_data_s // rep_t         : 52
 
 #ifdef ALIGN_16
 #define PTR_HOST_VECTOR(p) ((float *)(PAD16(PTRADD(PTR_WIRE_ZERO(p),1))))
+#elif ALIGN_32
+#define PTR_HOST_VECTOR(p) ((float *)(PAD32(PTRADD(PTR_WIRE_ZERO(p),1))))
 #else
 #define PTR_HOST_VECTOR(p) ((float *)(PTRADD(PTR_WIRE_ZERO(p),1)))
 #endif
@@ -245,6 +250,8 @@ bct_data_t allocate_host_raw(pic::nballocator_t *a, unsigned nb, unsigned long l
     }
 #ifdef ALIGN_16
     rl = rl+0xf+0xf;
+#elif ALIGN_32
+    rl = rl+0x1f+0x1f;
 #endif
     
     unsigned wl = 25+4*vl+sl;
@@ -344,6 +351,8 @@ bct_data_t allocate_wire_raw(pic::nballocator_t *a, unsigned nb, unsigned wl, co
     }
 #ifdef ALIGN_16
     rl = rl+0xf+0xf;
+#elif ALIGN_32
+    rl = rl+0x1f+0x1f;
 #endif
 
     r = (rep_t *)nb_malloc(nb,a,rl);

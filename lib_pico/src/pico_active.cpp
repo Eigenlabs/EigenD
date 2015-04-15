@@ -254,6 +254,19 @@ void pico::active_t::impl_t::decode_raw(void *self, int resync,const pico_rawkbd
 
 void pico::active_t::impl_t::in_pipe_data(const unsigned char *frame, unsigned length, unsigned long long hf, unsigned long long ht, unsigned long long pt)
 {
+#if 0
+    unsigned short* f=(unsigned short*) frame;
+    unsigned a1=(unsigned) (*(frame));
+    unsigned a2=(unsigned) (*(frame+1));
+    unsigned a3=(unsigned) (*(frame+2));
+    unsigned a4=(unsigned) (*(frame+3));
+    unsigned v=0,c=0;
+    for(c=0;c<length && v==0;c++)
+    {
+      v=(int) (*(frame+c));
+    }
+    printf("%d  : %04x %04x %04x %04x ... %x %x %x %x... %x %x\n",length, *(f), *(f+6), *(f+12), *(f+18),a1,a2,a3,a4,c,v);
+#endif
     if(raw_)
     {
         pico_decoder_raw(&decoder_,resync_?1:0,frame,length,ht,decode_raw,this);

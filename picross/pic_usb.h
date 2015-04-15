@@ -115,10 +115,10 @@ namespace pic
                 void bulk_write(const void *data, unsigned len, unsigned timeout=500);
                 void bulk_write(const std::string &data);
 
-                class impl_t;
+                struct impl_t;
 
             private:
-                friend class impl_t;
+                friend struct impl_t;
                 unsigned name_;
                 unsigned size_;
                 impl_t *impl_;
@@ -136,7 +136,9 @@ namespace pic
                 private:
                     usbdevice_t::impl_t *impl_;
                     unsigned char *current_;
+#ifndef PI_MACOSX
                     void *guard_;
+#endif
                     bool dirty_;
             };
 
