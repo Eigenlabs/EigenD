@@ -3,6 +3,7 @@
 #include <plg_midi/midi_clock.h>
 #include <plg_midi/midi_input.h>
 #include <plg_midi/midi_processor.h>
+#include <plg_midi/midi_pgm_chooser.h>
 >>>
 
 from piw[piw/piw.pip] import cookie,data,change_nb,clockdomain_ctl
@@ -57,3 +58,12 @@ class midi_processor[pi_midi::midi_processor_t]
     void set_channel_mapping(unsigned, unsigned)
     void activate_channel_mapping()
 }
+
+class midi_pgm_chooser[pi_midi::midi_pgm_chooser_t]
+{
+    midi_pgm_chooser(const cookie &, clockdomain_ctl *)
+    cookie cookie()
+    void reset()
+    change_nb control()
+}
+
