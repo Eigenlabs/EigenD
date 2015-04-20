@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>EFF63F40-FA81-47C2-A134-224227295193</string>
+	<key>IDESourceControlProjectName</key>
+	<string>EigenD</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>1FCC5A6A-FD11-471F-965C-72D7B121792B</key>
+		<string>https://github.com/TheTechnobear/EigenD.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Xcode/EigenD/EigenD.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>1FCC5A6A-FD11-471F-965C-72D7B121792B</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/TheTechnobear/EigenD.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>1FCC5A6A-FD11-471F-965C-72D7B121792B</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>1FCC5A6A-FD11-471F-965C-72D7B121792B</string>
+			<key>IDESourceControlWCCName</key>
+			<string>EigenD</string>
+		</dict>
+	</array>
+</dict>
+</plist>
