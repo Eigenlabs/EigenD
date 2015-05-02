@@ -1,6 +1,6 @@
 import piw
 from pi import action,agent,atom,bundles,domain,errors,logic
-from . import midi_pgm_chooser_version as version,midi_native
+from . import midi_program_chooser_version as version,midi_native
 
 class Agent(agent.Agent):
     def __init__(self, address, ordinal):
@@ -23,6 +23,8 @@ class Agent(agent.Agent):
 
         self[3] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__bank),names='bank')
         self[4] = atom.Atom(domain=domain.BoundedInt(0,127),init=0,policy=atom.default_policy(self.__current),names='current')
+        self[5] = atom.Atom(domain=domain.BoundedInt(0,16),init=1,policy=atom.default_policy(self.__channel),names='midi channel')
+        self[6] = atom.Atom(domain=domain.BoundedInt(0,127),init=0,policy=atom.default_policy(self.__window),names='window')
         
         self.add_verb2(1,'reset([],None)',callback=self.__reset)
 
@@ -38,6 +40,17 @@ class Agent(agent.Agent):
         self[4].set_value(value)
         self.chooser.current(self[4].get_value())
         return True
+
+    def __channel(self,value):
+        self[5].set_value(value)
+        self.chooser.channel(self[5].get_value())
+        return True
+
+    def __window(self,value):
+        self[6].set_value(value)
+        self.chooser.window(self[6].get_value())
+        return True
+
 
 agent.main(Agent)
 

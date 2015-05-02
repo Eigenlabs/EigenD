@@ -38,6 +38,8 @@ namespace pi_midi
             void reset();
             void current(unsigned);
             void bank_mode(bool);
+            void window(unsigned);
+            void channel(unsigned);
 
             class impl_t;
         private:

@@ -66,5 +66,7 @@ class midi_pgm_chooser[pi_midi::midi_pgm_chooser_t]
     void reset()
     void current(unsigned)
     void bank_mode(bool)
+    void window(unsigned)
+    void channel(unsigned)
 }
 
