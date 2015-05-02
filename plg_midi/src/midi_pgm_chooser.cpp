@@ -79,21 +79,15 @@ namespace pi_midi
         int bank() { return bank_;}
         void bank(int c)
         {
-            if(c!=bank_)
-            {
-                bank_=c;
-                changed(&SEND_BANK);
-            }
+            bank_=c;
+            changed(&SEND_BANK);
         }
 
         int program() { return program_;}
         void program(int c)
         {
-            if(c!=program_)
-            {
-                program_=c;
-                changed(&SEND_PROGRAM);
-            }
+            program_=c;
+            changed(&SEND_PROGRAM);
         }
 
         int window() { return window_;}
@@ -166,9 +160,10 @@ namespace
             }
         }
         
-        void output_program_change(piw::ufilterenv_t *env, int num, int channel)
+        void output_program_change(piw::ufilterenv_t *env, int num, int channel,unsigned long long t)
         {
-            unsigned t=piw::tsd_time();
+            if(num<0) return;
+
             unsigned d0= 0xC0+(channel-1);
             unsigned d1=num;
             
@@ -181,9 +176,10 @@ namespace
             env->ufilterenv_output(OUT_MIDI, d);
         }
         
-        void output_bank_change(piw::ufilterenv_t *env, int num, int channel)
+        void output_bank_change(piw::ufilterenv_t *env, int num, int channel,unsigned long long t)
         {
-            unsigned t=piw::tsd_time();
+            if(num<0) return;
+            
             unsigned d0= 0xB0+(channel-1);
             unsigned d1=0; //Bank CC
             unsigned d2=num;
@@ -214,6 +210,8 @@ namespace
             {
                 int bank=root_->bank();
                 int program=root_->program();
+
+                unsigned t=piw::tsd_time();
                 
                 if(mode!=REFRESH_DISPLAY)
                 {
@@ -221,9 +219,9 @@ namespace
                     {
                         if(mode==SEND_BANK)
                         {
-                            output_bank_change(env,bank,root_->channel());
+                            output_bank_change(env,bank,root_->channel(),t);
                         }
-                        output_program_change(env,program,root_->channel());
+                        output_program_change(env,program,root_->channel(),t+1);
                     }
                     else
                     {
@@ -231,9 +229,9 @@ namespace
                         {
                             if(mode==SEND_BANK)
                             {
-                                output_bank_change(env,bank,root_->channel());
+                                output_bank_change(env,bank,c,t+(c-1)*2);
                             }
-                            output_program_change(env,program,root_->channel());
+                            output_program_change(env,program,c,t+((c-1)*2)+1);
                         }
                     }
                 }
@@ -252,14 +250,17 @@ namespace
                     piw::hardness_t hardness;
                     if(piw::decode_key(d,&column,&row,&course,&key,&hardness))
                     {
-                        int v=((int(column)-1) * (root_->maxRow())) + (int) row - 1;
-                        if(root_->isBankMode())
+                        if(hardness == piw::KEY_HARD)
                         {
-                            root_->bank(v + root_->window());
-                        }
-                        else
-                        {
-                            root_->program(v + root_->window());
+                            int v=((int(column)-1) * (root_->maxRow())) + (int) row - 1;
+                            if(root_->isBankMode())
+                            {
+                                root_->bank(v + root_->window());
+                            }
+                            else
+                            {
+                                root_->program(v + root_->window());
+                            }
                         }
                     }
                     break;
