@@ -234,6 +234,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D7097E7D1AF50FAD00BCA0DF /* midi_pgm_chooser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = midi_pgm_chooser.cpp; sourceTree = "<group>"; };
 		D78C38851ADFFC1B00E020EC /* __init__.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = __init__.py; sourceTree = "<group>"; };
 		D78C38861ADFFC1B00E020EC /* belcanto_panel.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = belcanto_panel.py; sourceTree = "<group>"; };
 		D78C38871ADFFC1B00E020EC /* borders.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = borders.py; sourceTree = "<group>"; };
@@ -22144,6 +22145,7 @@
 		D78C4FA71ADFFC2400E020EC /* src */ = {
 			isa = PBXGroup;
 			children = (
+				D7097E7D1AF50FAD00BCA0DF /* midi_pgm_chooser.cpp */,
 				D78C4FA81ADFFC2400E020EC /* midi.pip */,
 				D78C4FA91ADFFC2400E020EC /* midi_clock.cpp */,
 				D78C4FAA1ADFFC2400E020EC /* midi_input.cpp */,

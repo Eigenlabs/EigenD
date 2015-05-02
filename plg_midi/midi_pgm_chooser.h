@@ -36,6 +36,8 @@ namespace pi_midi
             piw::change_nb_t control();
         
             void reset();
+            void current(unsigned);
+            void bank_mode(bool);
 
             class impl_t;
         private:

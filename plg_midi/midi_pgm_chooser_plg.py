@@ -15,22 +15,29 @@ class Agent(agent.Agent):
 
         self.chooser = midi_native.midi_pgm_chooser(self.output.cookie(), self.domain)
 
-        self.input = bundles.VectorInput(self.chooser.cookie(), self.domain, signals=(1,))
+        self.input = bundles.VectorInput(self.chooser.cookie(), self.domain, signals=(1,2,))
 
         self[2] = atom.Atom(names='inputs')
         self[2][1] = atom.Atom(domain=domain.Aniso(), policy=self.input.vector_policy(1,False), names='key input')
-            
-        self.ctlr_fb = piw.functor_backend(1,True)
-        self.ctlr_fb.set_functor(piw.pathnull(0),self.chooser.control())
-        self.ctlr_input = bundles.ScalarInput(self.ctlr_fb.cookie(),self.domain,signals=(2,))
-        self[2][2] = atom.Atom(domain=domain.Aniso(),policy=self.ctlr_input.policy(2,False),names='controller input')
+        self[2][2] = atom.Atom(domain=domain.Aniso(),policy=self.input.vector_policy(2,False),names='controller input')
 
-
+        self[3] = atom.Atom(domain=domain.Bool(),init=False,policy=atom.default_policy(self.__bank),names='bank')
+        self[4] = atom.Atom(domain=domain.BoundedInt(0,127),init=0,policy=atom.default_policy(self.__current),names='current')
+        
         self.add_verb2(1,'reset([],None)',callback=self.__reset)
 
     def __reset(self,*arg):
         self.chooser.reset()
 
+    def __bank(self,value):
+        self[3].set_value(value)
+        self.chooser.bank_mode(self[3].get_value())
+        return True
+
+    def __current(self,value):
+        self[4].set_value(value)
+        self.chooser.current(self[4].get_value())
+        return True
 
 agent.main(Agent)
 

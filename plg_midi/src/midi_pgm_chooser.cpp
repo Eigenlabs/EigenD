@@ -6,21 +6,22 @@
 #include <plg_midi/midi_pgm_chooser.h>
 
 #define IN_KEY 1
-#define IN_MASK SIG1(IN_KEY)
+#define IN_CONTROL 2
+#define IN_MASK SIG2(IN_KEY,IN_CONTROL)
 
 #define OUT_LIGHT 1
 #define OUT_MIDI 2
 #define OUT_MASK SIG2(OUT_LIGHT,OUT_MIDI)
 
-#define LOG_SINGLE(x) x
-//#define LOG_SINGLE(x)
+//#define LOG_SINGLE(x) x
+#define LOG_SINGLE(x)
 
 namespace pi_midi
 {
     struct midi_pgm_chooser_t::impl_t: piw::ufilterctl_t, piw::ufilter_t, virtual public pic::tracked_t
     {
         impl_t(const piw::cookie_t &output, piw::clockdomain_ctl_t *domain)
-        : ufilter_t(this, output), max_col_(5),max_row_(24),channel_(1),is_bank_change(false)
+        : ufilter_t(this, output), max_col_(5),max_row_(24),channel_(1),is_bank_mode(false),current_(-1)
         {
         }
 
@@ -36,12 +37,27 @@ namespace pi_midi
         int maxCol() { return max_col_;}
         int maxRow() { return max_row_;}
         int channel() { return channel_;}
-        bool isBankChange() { return is_bank_change;}
+        bool isBankMode() { return is_bank_mode;}
+        int current() { return current_;}
+        void current(int c)
+        {
+            if(c!=current_)
+            {
+                current_=c;
+                changed(&current_);
+            }
+        }
+        
+        void bank_mode(bool b)
+        {
+            is_bank_mode=b;
+        }
         
         int max_col_;
         int max_row_;
         int channel_;
-        bool is_bank_change;
+        bool is_bank_mode;
+        int current_;
         pic::lckvector_t<unsigned>::nbtype columnlen_;
     };
     
@@ -51,13 +67,18 @@ namespace
 {
     struct midi_pgm_chooser_func_t: piw::ufilterfunc_t
     {
-        midi_pgm_chooser_func_t(pi_midi::midi_pgm_chooser_t::impl_t *root) : root_(root),current_(0)
+        midi_pgm_chooser_func_t(pi_midi::midi_pgm_chooser_t::impl_t *root) : root_(root),control_wire_(false)
         {
         }
         
-        void output_light(piw::ufilterenv_t *env, int x, int y,unsigned long long t)
+        void output_light(piw::ufilterenv_t *env, int pgm)
         {
+            if(!control_wire_) return;
+            
             piw::statusset_t status;
+            int x = ( pgm / root_->maxRow()) + 1;
+            int y = ( pgm % root_->maxRow()) + 1;
+            LOG_SINGLE(pic::logmsg() << "midi_pgm_chooser_func_t:: output_light " << pgm << " x " << x << " y " << y << " r " << root_->maxRow();)
             for(int c=1;c<root_->maxCol()+1;c++)
             {
                 for(int r=1;r<root_->maxRow()+1;r++)
@@ -71,8 +92,9 @@ namespace
             env->ufilterenv_output(OUT_LIGHT, d);
         }
         
-        void output_program_change(piw::ufilterenv_t *env, int num, unsigned long long t)
+        void output_program_change(piw::ufilterenv_t *env, int num)
         {
+            unsigned t=piw::tsd_time();
             unsigned d0= 0xC0+(root_->channel()-1);
             unsigned d1=num;
             
@@ -85,8 +107,9 @@ namespace
             env->ufilterenv_output(OUT_MIDI, d);
         }
         
-        void output_bank_change(piw::ufilterenv_t *env, int num, unsigned long long t)
+        void output_bank_change(piw::ufilterenv_t *env, int num)
         {
+            unsigned t=piw::tsd_time();
             unsigned d0= 0xB0+(root_->channel()-1);
             unsigned d1=0; //Bank CC
             unsigned d2=num;
@@ -106,21 +129,27 @@ namespace
         void ufilterfunc_start(piw::ufilterenv_t *env, const piw::data_nb_t &id)
         {
             id_ = id;
-
             env->ufilterenv_start(id.time());
-
-            output_light(env, 1, 1, id.time());
-            if(root_->isBankChange())
-            {
-                output_bank_change(env,current_,id.time());
-            }
-            else
-            {
-                output_program_change(env,current_,id.time());
-            }
         }
 
 
+        void ufilterfunc_changed(piw::ufilterenv_t *env,void* ppgm)
+        {
+            int pgm =*((int*) ppgm);
+            if(control_wire_ && pgm>=0)
+            {
+                if(root_->isBankMode())
+                {
+                    output_bank_change(env,pgm);
+                }
+                else
+                {
+                    output_program_change(env,pgm);
+                }
+                output_light(env,pgm);
+            }
+        }
+        
         void ufilterfunc_data(piw::ufilterenv_t *env,unsigned sig,const piw::data_nb_t & d)
         {
             switch(sig)
@@ -131,21 +160,16 @@ namespace
                     piw::hardness_t hardness;
                     if(piw::decode_key(d,&column,&row,&course,&key,&hardness))
                     {
-                        int v=((int(column)-1) * (root_->maxCol()-1)) + (int) row;
-                        if(v!=current_)
-                        {
-                            output_light(env, (int) column, (int) row, d.time());
-                            if(root_->isBankChange())
-                            {
-                                output_bank_change(env,v,d.time());
-                            }
-                            else
-                            {
-                                output_program_change(env,v,d.time());
-                            }
-                            current_=v;
-                        }
+                        int v=((int(column)-1) * (root_->maxRow())) + (int) row - 1;
+                        root_->current(v);
                     }
+                    break;
+                }
+                case IN_CONTROL:
+                {
+                    control_wire_=true;
+                    root_->control_change(d);
+                    break;
                 }
             }
         }
@@ -157,7 +181,7 @@ namespace
 
         pi_midi::midi_pgm_chooser_t::impl_t *root_;
         piw::data_nb_t id_;
-        int current_;
+        bool control_wire_;
     };
 }
 
@@ -167,11 +191,6 @@ pi_midi::midi_pgm_chooser_t::midi_pgm_chooser_t(const piw::cookie_t &output, piw
 piw::cookie_t pi_midi::midi_pgm_chooser_t::cookie() { return impl_->cookie(); }
 pi_midi::midi_pgm_chooser_t::~midi_pgm_chooser_t() { delete impl_; }
 
-piw::change_nb_t pi_midi::midi_pgm_chooser_t::control()
-{
-    LOG_SINGLE(pic::logmsg() << "piw::change_nb_t pi_midi::midi_pgm_chooser_t::control()";)
-    return piw::change_nb_t::method(impl_,&pi_midi::midi_pgm_chooser_t::impl_t::control_change);
-}
 
 
 unsigned decode_unsigned(pic::lckvector_t<unsigned>::nbtype &vec, const piw::data_nb_t &inp)
@@ -234,6 +253,7 @@ void pi_midi::midi_pgm_chooser_t::impl_t::control_change(const piw::data_nb_t &d
         //			decode_unsigned(columnsoffset_,columnsoffset);
         //		}
     }
+    changed(&current_);
 }
 
 
@@ -249,5 +269,33 @@ void pi_midi::midi_pgm_chooser_t::reset()
 {
     piw::tsd_fastcall(__reset,impl_,(void *) 0L);
 }
+
+static int __current(void *i_, void *v_)
+{
+    pi_midi::midi_pgm_chooser_t::impl_t *i = (pi_midi::midi_pgm_chooser_t::impl_t *)i_;
+    unsigned v = *(unsigned *)v_;
+    i->current(v);
+    return 0;
+}
+
+void pi_midi::midi_pgm_chooser_t::current(unsigned pgm)
+{
+    piw::tsd_fastcall(__current,impl_,(void *) &pgm);
+}
+
+
+static int __bank_mode(void *i_, void *v_)
+{
+    pi_midi::midi_pgm_chooser_t::impl_t *i = (pi_midi::midi_pgm_chooser_t::impl_t *)i_;
+    bool v = *(bool *)v_;
+    i->bank_mode(v);
+    return 0;
+}
+
+void pi_midi::midi_pgm_chooser_t::bank_mode(bool v)
+{
+    piw::tsd_fastcall(__bank_mode,impl_,(void *) &v);
+}
+
 
 

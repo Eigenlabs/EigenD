@@ -64,6 +64,7 @@ class midi_pgm_chooser[pi_midi::midi_pgm_chooser_t]
     midi_pgm_chooser(const cookie &, clockdomain_ctl *)
     cookie cookie()
     void reset()
-    change_nb control()
+    void current(unsigned)
+    void bank_mode(bool)
 }
 
