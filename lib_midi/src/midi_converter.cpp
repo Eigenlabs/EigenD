@@ -430,7 +430,6 @@ namespace midi
     {
         if(midi_from_belcanto_.isvalid())
         {
-            midi_from_belcanto_->set_midi_channel(settings.midi_channel_);
             midi_from_belcanto_->set_min_midi_channel(settings.minimum_midi_channel_);
             midi_from_belcanto_->set_max_midi_channel(settings.maximum_midi_channel_);
             midi_from_belcanto_->set_send_notes(settings.send_notes_);
@@ -439,6 +438,7 @@ namespace midi
             midi_from_belcanto_->set_control_interval(settings.minimum_decimation_);
             midi_from_belcanto_->set_pitchbend_up(settings.pitchbend_semitones_up_);
             midi_from_belcanto_->set_pitchbend_down(settings.pitchbend_semitones_down_);
+            midi_from_belcanto_->set_midi_channel(settings.midi_channel_);
         }
     }
 

@@ -33,6 +33,11 @@
 #define CHANNEL_MPEa 19      // MPEa - splitA,  1  global, 2-max notes
 #define CHANNEL_MPEb 20      // MPEa - splitB,  16 global, min-15 notes
 
+
+// MPE TODO/Consider
+// pitchbend range, should not be float, but integers
+
+
 void GlobalSettingsComponent::initialize(midi::mapping_delegate_t *mapping_delegate)
 {
     mapping_delegate_ = 0;
@@ -85,8 +90,19 @@ void GlobalSettingsComponent::handleMessage(const Message &)
     if(!mapping_delegate_) return;
 
     unsigned midi_channel = active_channel->getSelectedId();
-    if(midi_channel>0)
+    midi_channel = (midi_channel==CHANNEL_POLY ? CHANNEL_POLY_LEGACY : midi_channel);
+    
+    bool send_notes = midi_notes->getToggleState();
+    bool send_pitchbend = midi_pitchbend->getToggleState();
+    bool send_hires_velocity = midi_hires_velocity->getToggleState();
+    unsigned pb_up = pitchbend_up->getValue();
+    unsigned pb_down = pitchbend_down->getValue();
+    unsigned min_chan_num=min_channel->getSelectedId();
+    unsigned max_chan_num=max_channel->getSelectedId();
+
+    if(midi_channel != mapping_delegate_->get_settings().midi_channel_)
     {
+        // MODE logical for MPE/POLY
         switch(midi_channel)
         {
             case CHANNEL_MPE:
@@ -103,7 +119,11 @@ void GlobalSettingsComponent::handleMessage(const Message &)
 
                 
                 // disabled min channel, it is 2 fixed, 1 is global
+                
                 min_channel->setSelectedId(2,sendNotificationSync);
+                min_chan_num = 2;
+                max_channel->setSelectedId(16,sendNotificationSync);
+                max_chan_num = 16;
                 min_channel->setEnabled(false);
                 max_channel->setEnabled(true);
                 break;
@@ -120,17 +140,16 @@ void GlobalSettingsComponent::handleMessage(const Message &)
                 midi_hires_velocity->setEnabled(false);
 
                 // disabled max channel, it is 15 fixed
+                min_channel->setSelectedId(1,sendNotificationSync);
+                min_chan_num = 1;
                 max_channel->setSelectedId(15,sendNotificationSync);
+                max_chan_num = 15;
                 max_channel->setEnabled(false);
                 min_channel->setEnabled(true);
                 break;
             }
+            case CHANNEL_POLY_LEGACY:
             case CHANNEL_POLY:
-            {
-                midi_channel = CHANNEL_POLY_LEGACY;
-            }
-            // fall through
-            default:
             {
                 pitchbend_down->setEnabled(true);
                 midi_notes->setEnabled(true);
@@ -138,16 +157,54 @@ void GlobalSettingsComponent::handleMessage(const Message &)
                 midi_hires_velocity->setEnabled(true);
                 min_channel->setEnabled(true);
                 max_channel->setEnabled(true);
+                min_channel->setSelectedId(1,sendNotificationSync);
+                max_channel->setSelectedId(16,sendNotificationSync);
+                min_chan_num = 1;
+                max_chan_num = 16;
+                break;
+            }
+            default:
+            {
+                // single channel mode
+                pitchbend_down->setEnabled(true);
+                midi_notes->setEnabled(true);
+                midi_pitchbend->setEnabled(true);
+                midi_hires_velocity->setEnabled(true);
+                min_channel->setEnabled(false);
+                max_channel->setEnabled(false);
+                min_channel->setSelectedId(midi_channel,sendNotificationSync);
+                max_channel->setSelectedId(midi_channel,sendNotificationSync);
+                min_chan_num = midi_channel;
+                max_chan_num = midi_channel;
             }
         }
     }
-    bool send_notes = midi_notes->getToggleState();
-    bool send_pitchbend = midi_pitchbend->getToggleState();
-    bool send_hires_velocity = midi_hires_velocity->getToggleState();
-    unsigned pb_up = pitchbend_up->getValue();
-    unsigned pb_down = pitchbend_down->getValue();
+    
+    bool mpe_active=(midi_channel== CHANNEL_MPE || midi_channel== CHANNEL_MPEa || midi_channel== CHANNEL_MPEb);
 
-    mapping_delegate_->change_settings(midi::global_settings_t(midi_channel, min_channel->getSelectedId(), max_channel->getSelectedId(), data_decimation->getValue(), send_notes, send_pitchbend, send_hires_velocity, pb_up, pb_down));
+    if (mpe_active)
+    {
+        pitchbend_down->setValue(pitchbend_up->getValue(),sendNotificationSync);
+        pb_down = pb_up;
+        send_notes=true;
+        send_pitchbend=true;
+        send_hires_velocity=true;
+        if(midi_channel!=CHANNEL_MPEb)
+        {
+            // MPE/MPEa
+            min_chan_num=2;
+        }
+        else
+        {
+            // MPEb
+            max_chan_num=15;
+        }
+    }
+
+    mapping_delegate_->change_settings(midi::global_settings_t(midi_channel, min_chan_num, max_chan_num,
+                                                               data_decimation->getValue(),
+                                                               send_notes, send_pitchbend, send_hires_velocity,
+                                                               pb_up, pb_down));
 }
 
 void GlobalSettingsComponent::updateSettings()

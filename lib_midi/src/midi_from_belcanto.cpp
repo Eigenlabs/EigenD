@@ -59,6 +59,9 @@ using namespace std;
 
 #define DEFAULT_CTRL_INTERVAL 10000ULL
 
+#define MIDI_MPE_MODE_CC 127
+
+
 // special midi channels, representing other modes
 
 // 17 and 0 are the same, 17 is how juce sees it, and makes sense for the future, with more modes, but 0 is used in current setups and also belcanto
@@ -69,7 +72,13 @@ using namespace std;
 #define CHANNEL_MPEb 20      // MPEa - splitB,  16 global, min-15 notes
 
 
-
+// MPE TODO:
+// 1. set CC, doesnt appear to send the lsb sometimes... split into separate cc's ?
+// 2. put pressure messages (ChPres) in here, so no matrix required... and ensure not sent when note is off, and force pressure=0 on note off
+// 3. put timbre messages (74) in here, so no matrix required... and ensure not sent when note is off
+// 4. ensure PB range is integer in GUI
+// 5. extra MPE messages when switching modes (this is due to the min/max channels changing, then the mode changing, so it doesnt know its changing modes yet)
+//    may be hard to avoid... but should make no difference to MPE spec
 
 // TODO:
 // 1. test unconnecting and event ending downstream
@@ -298,6 +307,12 @@ namespace midi
         void set_cc(bool global, bool continuous, unsigned channel, unsigned mid, unsigned lid, const unsigned d, unsigned long long t);
         void set_midi_clock(bool state, unsigned long long t);
 
+        // send mpe mode message
+        void set_mpe(bool b, int glob_chan,bool voice_change);
+        // send mpe pb message
+        void set_mpe_pb(float range);
+        
+        
         // set other status MIDI messages
         void set_poly_aftertouch(bool global, bool continuous, unsigned channel, const unsigned noteid, const unsigned value, unsigned long long t);
         void set_program_change(bool global, bool continuous, unsigned channel, const unsigned value, unsigned long long t);
@@ -857,7 +872,7 @@ namespace midi
             {
                 r->channel_ = 0;
                 r->poly_ = true;
-                r->mpe_=false;
+                r->set_mpe(false,0,false);
                 break;
             }
             case CHANNEL_MPE:
@@ -865,14 +880,14 @@ namespace midi
             {
                 r->channel_ = 0;
                 r->poly_ = true;
+                r->set_mpe(true,1,false);
                 break;
             }
             case CHANNEL_MPEb:
             {
                 r->channel_ = 0;
                 r->poly_ = true;
-                r->mpe_=true;
-                r->mpe_global_=16;
+                r->set_mpe(true,16,false);
                 break;
             }
             default:
@@ -880,7 +895,7 @@ namespace midi
                 // single change 1-16
                 r->channel_ = c;
                 r->poly_ = false;
-                r->mpe_=false;
+                r->set_mpe(false,0,false);
                 break;
             }
         }
@@ -1176,6 +1191,7 @@ namespace midi
             unsigned lsb = value&0x7f;
             if(!continuous || lsb!=last_cc_lsb_[lid+channel_offset])
             {
+//                pic::logmsg() << "send lsb" ;
                 // must increment the time to make sure both packets are sent
                 add_midi_data(global, 0xb0+channel,lid,lsb,t);
 
@@ -1188,6 +1204,7 @@ namespace midi
 
         if(!continuous || sent_lsb || msb!=last_cc_msb_[mid+channel_offset])
         {
+//            pic::logmsg() << "send msb" ;
             // send MSB second so MIDI learn will pick MSB
             add_midi_data(global, 0xb0+channel,mid,msb,t);
 
@@ -1406,12 +1423,72 @@ namespace midi
 #endif // MIDI_FROM_BELCANTO_DEBUG>0
         }
     }
+    
+    // send MPE status with voice count
+    void midi_from_belcanto_t::impl_t::set_mpe(bool mpe, int glob_chan, bool voice_change)
+    {
+        // voice change, or mpe is changing state
+        if(mpe_!=mpe || mpe_global_!=glob_chan || (voice_change && mpe_))
+        {
+            unsigned num_voices= channel_list_.max() - channel_list_.min() + 1;
+            unsigned long long t=piw::tsd_time();
+            t=std::max(time_+1,t);
+            
+            if (mpe == false) // turning off mpe
+            {
+                set_cc(false, false, mpe_global_, MIDI_MPE_MODE_CC, 0 , 0, t);
+                mpe_=mpe;
+                mpe_global_=glob_chan;
+            }
+            else if (voice_change) // changing number of voices
+            {
+                t=std::max(time_+1,t);
+                set_cc(false, false, mpe_global_, MIDI_MPE_MODE_CC, 0 , num_voices << 7, t);
+                mpe_=mpe;
+                mpe_global_=glob_chan;
+            }
+            else // entering mpe ,or changing mpe mode
+            {
+                // are we changing global channel ... ie modes
+                if(mpe_global_!=glob_chan)
+                {
+                    // turn off old channel
+                    set_cc(false, false, mpe_global_, MIDI_MPE_MODE_CC, 0 , 0, t);
+                }
+             
+                // now set up the new mode
+                mpe_=mpe;
+                mpe_global_=glob_chan;
+                
+                set_cc(false, false, mpe_global_, MIDI_MPE_MODE_CC, 0 , num_voices << 7, t);
+                // careful set_mpe_pb, currently assumes mpe_ is set
+                set_mpe_pb(pitchbend_semitones_up_);
+            } // entering mpe
+        }
+    }
+    
+    // send MPE pitchbend range
+    void midi_from_belcanto_t::impl_t::set_mpe_pb(float range)
+    {
+        if(mpe_)
+        {
+            unsigned ch = (mpe_global_ == 1 ? 2 : 15);
+            unsigned semis = unsigned(range);
+            unsigned long long t=piw::tsd_time();
+            t=std::max(time_+1,t);
+            set_cc(false, false, ch, 100, 101, 0, t);
+            t=std::max(time_+1,t++);
+            set_cc(false, false, ch, 6, 38, semis << 7, t);
+        }
+    }
 
     static int __set_min_midi_channel(void *i_, void *c_)
     {
         midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
         unsigned c = *(unsigned *)c_;
+        bool chg= c != i->channel_list_.min();
         i->channel_list_.set_min(c);
+        i->set_mpe(i->mpe_,i->mpe_global_,chg);
         return 0;
     }
 
@@ -1419,7 +1496,9 @@ namespace midi
     {
         midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
         unsigned c = *(unsigned *)c_;
+        bool chg= c != i->channel_list_.max();
         i->channel_list_.set_max(c);
+        i->set_mpe(i->mpe_,i->mpe_global_,chg);
         return 0;
     }
 
@@ -1443,6 +1522,13 @@ namespace midi
     {
         midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
         float semis = *(float *)semis_;
+        
+        // we only do up, and its symmetrical in MPE spec, and it also does not support
+        // floating point PB ranges
+        if (i->mpe_ && unsigned(i->pitchbend_semitones_up_) != unsigned(semis))
+        {
+            i->set_mpe_pb(semis);
+        }
         i->pitchbend_semitones_up_ = semis;
         return 0;
     }

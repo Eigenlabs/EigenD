@@ -211,7 +211,7 @@ namespace
                 int bank=root_->bank();
                 int program=root_->program();
 
-                unsigned t=piw::tsd_time();
+                unsigned long long t=piw::tsd_time();
                 
                 if(mode!=REFRESH_DISPLAY)
                 {
