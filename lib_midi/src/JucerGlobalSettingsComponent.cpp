@@ -24,6 +24,15 @@
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
+
+// special channels, these should match the active channel choices
+// note: traditionally POLY(17) has been mapped to 0
+#define CHANNEL_POLY_LEGACY 0 // CHANNEL CYCLING min to max
+#define CHANNEL_POLY 17      // CHANNEL CYCLING min to max
+#define CHANNEL_MPE  18      // MPE - normal,   1  global, 2-max notes
+#define CHANNEL_MPEa 19      // MPEa - splitA,  1  global, 2-max notes
+#define CHANNEL_MPEb 20      // MPEa - splitB,  16 global, min-15 notes
+
 void GlobalSettingsComponent::initialize(midi::mapping_delegate_t *mapping_delegate)
 {
     mapping_delegate_ = 0;
@@ -55,7 +64,7 @@ void GlobalSettingsComponent::updateComponent(midi::mapping_delegate_t *mapping_
     midi_hires_velocity->setToggleState(settings.send_hires_velocity_, false);
 
     unsigned midi_channel = settings.midi_channel_;
-    if(0==midi_channel) { midi_channel = 17; }
+    if(CHANNEL_POLY_LEGACY==midi_channel) { midi_channel = CHANNEL_POLY; }
 
     active_channel->setSelectedId(midi_channel);
     min_channel->setSelectedId(settings.minimum_midi_channel_);
@@ -78,9 +87,58 @@ void GlobalSettingsComponent::handleMessage(const Message &)
     unsigned midi_channel = active_channel->getSelectedId();
     if(midi_channel>0)
     {
-        if(17==midi_channel)
+        switch(midi_channel)
         {
-            midi_channel = 0;
+            case CHANNEL_MPE:
+            case CHANNEL_MPEa:
+            {
+                pitchbend_down->setValue(pitchbend_up->getValue(),sendNotificationSync);
+                midi_notes->setToggleState(true,sendNotificationSync);
+                midi_pitchbend->setToggleState(true,sendNotificationSync);
+                midi_hires_velocity->setToggleState(false,sendNotificationSync);
+                pitchbend_down->setEnabled(false);
+                midi_notes->setEnabled(false);
+                midi_pitchbend->setEnabled(false);
+                midi_hires_velocity->setEnabled(false);
+
+                
+                // disabled min channel, it is 2 fixed, 1 is global
+                min_channel->setSelectedId(2,sendNotificationSync);
+                min_channel->setEnabled(false);
+                max_channel->setEnabled(true);
+                break;
+            }
+            case CHANNEL_MPEb:
+            {
+                pitchbend_down->setValue(pitchbend_up->getValue(),sendNotificationSync);
+                midi_notes->setToggleState(true,sendNotificationSync);
+                midi_pitchbend->setToggleState(true,sendNotificationSync);
+                midi_hires_velocity->setToggleState(false,sendNotificationSync);
+                pitchbend_down->setEnabled(false);
+                midi_notes->setEnabled(false);
+                midi_pitchbend->setEnabled(false);
+                midi_hires_velocity->setEnabled(false);
+
+                // disabled max channel, it is 15 fixed
+                max_channel->setSelectedId(15,sendNotificationSync);
+                max_channel->setEnabled(false);
+                min_channel->setEnabled(true);
+                break;
+            }
+            case CHANNEL_POLY:
+            {
+                midi_channel = CHANNEL_POLY_LEGACY;
+            }
+            // fall through
+            default:
+            {
+                pitchbend_down->setEnabled(true);
+                midi_notes->setEnabled(true);
+                midi_pitchbend->setEnabled(true);
+                midi_hires_velocity->setEnabled(true);
+                min_channel->setEnabled(true);
+                max_channel->setEnabled(true);
+            }
         }
     }
     bool send_notes = midi_notes->getToggleState();
@@ -173,6 +231,9 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     active_channel->addItem (TRANS("15"), 15);
     active_channel->addItem (TRANS("16"), 16);
     active_channel->addItem (TRANS("Poly"), 17);
+    active_channel->addItem (TRANS("MPE"), 18);
+    active_channel->addItem (TRANS("MPEa"), 19);
+    active_channel->addItem (TRANS("MPEb"), 20);
     active_channel->addListener (this);
 
     addAndMakeVisible (min_channel_label = new Label ("min channel label",
@@ -263,7 +324,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     pitchbend_down_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (pitchbend_up = new Slider ("pitchbend up slider"));
-    pitchbend_up->setRange (0, 48, 0.1);
+    pitchbend_up->setRange (0, 96, 0.1);
     pitchbend_up->setSliderStyle (Slider::LinearBar);
     pitchbend_up->setTextBoxStyle (Slider::TextBoxLeft, true, 80, 20);
     pitchbend_up->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
@@ -275,7 +336,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     pitchbend_up->addListener (this);
 
     addAndMakeVisible (pitchbend_down = new Slider ("pitchbend down slider"));
-    pitchbend_down->setRange (0, 48, 0.1);
+    pitchbend_down->setRange (0, 96, 0.1);
     pitchbend_down->setSliderStyle (Slider::LinearBar);
     pitchbend_down->setTextBoxStyle (Slider::TextBoxLeft, true, 80, 20);
     pitchbend_down->setColour (Slider::thumbColourId, Colour (0xff8a8a8a));
@@ -507,7 +568,7 @@ BEGIN_JUCER_METADATA
          fontname="Default font" fontsize="15" bold="0" italic="0" justification="33"/>
   <COMBOBOX name="active channel combo box" id="cf5597acdc45560c" memberName="active_channel"
             virtualName="" explicitFocusOrder="0" pos="176 144 56 24" editable="0"
-            layout="34" items="1&#10;2&#10;3&#10;4&#10;5&#10;6&#10;7&#10;8&#10;9&#10;10&#10;11&#10;12&#10;13&#10;14&#10;15&#10;16&#10;Poly"
+            layout="34" items="1&#10;2&#10;3&#10;4&#10;5&#10;6&#10;7&#10;8&#10;9&#10;10&#10;11&#10;12&#10;13&#10;14&#10;15&#10;16&#10;Poly&#10;MPE&#10;MPEa&#10;MPEb"
             textWhenNonSelected="" textWhenNoItems="(no choices)"/>
   <LABEL name="min channel label" id="1b3bcc844c3b5b67" memberName="min_channel_label"
          virtualName="" explicitFocusOrder="0" pos="16 176 152 24" textCol="ffeeeeee"
@@ -545,13 +606,13 @@ BEGIN_JUCER_METADATA
           virtualName="" explicitFocusOrder="0" pos="16 272 224 24" thumbcol="ff8a8a8a"
           rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
           textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
-          max="48" int="0.10000000000000000555" style="LinearBar" textBoxPos="TextBoxLeft"
+          max="96" int="0.10000000000000000555" style="LinearBar" textBoxPos="TextBoxLeft"
           textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
   <SLIDER name="pitchbend down slider" id="44141a9a8275e444" memberName="pitchbend_down"
           virtualName="" explicitFocusOrder="0" pos="16 328 224 24" thumbcol="ff8a8a8a"
           rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
           textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
-          max="48" int="0.10000000000000000555" style="LinearBar" textBoxPos="TextBoxLeft"
+          max="96" int="0.10000000000000000555" style="LinearBar" textBoxPos="TextBoxLeft"
           textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
 </JUCER_COMPONENT>
 

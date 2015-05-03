@@ -111,7 +111,7 @@ class Agent(agent.Agent):
         self[2][2] = atom.Atom(domain=domain.Aniso(),policy=self.__kinpt.merge_nodefault_policy(2,False),names='frequency input')
 
          # input to set the MIDI channel
-        self[3] = atom.Atom(domain=domain.BoundedInt(0,16),init=0,names="midi channel",policy=atom.default_policy(self.set_midi_channel))
+        self[3] = atom.Atom(domain=domain.BoundedInt(0,20),init=0,names="midi channel",policy=atom.default_policy(self.set_midi_channel))
 
         # inputs to control the velocity curve
         self[4] = atom.Atom(names='velocity curve controls')
@@ -128,8 +128,8 @@ class Agent(agent.Agent):
         self[14] = atom.Atom(domain=domain.Bool(),init=True,names="notes enable",policy=atom.default_policy(self.set_midi_notes))
         self[15] = atom.Atom(domain=domain.Bool(),init=True,names="pitch bend enable",policy=atom.default_policy(self.set_midi_pitchbend))
         self[16] = atom.Atom(domain=domain.Bool(),init=False,names="high resolution velocity enable",policy=atom.default_policy(self.set_midi_hires_velocity))
-        self[17] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range upper",policy=atom.default_policy(self.set_pitchbend_up))
-        self[18] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range lower",policy=atom.default_policy(self.set_pitchbend_down))
+        self[17] = atom.Atom(domain=domain.BoundedInt(0,96),init=1,names="pitch bend range upper",policy=atom.default_policy(self.set_pitchbend_up))
+        self[18] = atom.Atom(domain=domain.BoundedInt(0,96),init=1,names="pitch bend range lower",policy=atom.default_policy(self.set_pitchbend_down))
 
         # parameter mapping
         self[12] = self.parameter_list

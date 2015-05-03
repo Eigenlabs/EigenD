@@ -59,6 +59,18 @@ using namespace std;
 
 #define DEFAULT_CTRL_INTERVAL 10000ULL
 
+// special midi channels, representing other modes
+
+// 17 and 0 are the same, 17 is how juce sees it, and makes sense for the future, with more modes, but 0 is used in current setups and also belcanto
+#define CHANNEL_POLY_LEGACY 0 // CHANNEL CYCLING min to max
+#define CHANNEL_POLY 17      // CHANNEL CYCLING min to max
+#define CHANNEL_MPE  18      // MPE - normal,   1  global, 2-max notes
+#define CHANNEL_MPEa 19      // MPEa - splitA,  1  global, 2-max notes
+#define CHANNEL_MPEb 20      // MPEa - splitB,  16 global, min-15 notes
+
+
+
+
 // TODO:
 // 1. test unconnecting and event ending downstream
 
@@ -322,6 +334,12 @@ namespace midi
         bool poly_;
         // omni mode - true: send to all channels, false: poly mode
         bool omni_;
+        // mpe - true - mpe mode, poly = true, channel cycling min to max
+        bool mpe_;
+        unsigned mpe_global_; // global channel for MPE
+        
+        
+        
         // monotonically increasing packet timestamp
         unsigned long long time_;
 
@@ -674,8 +692,9 @@ namespace midi
         root_t(0), piw::event_data_source_real_t(piw::pathnull(0)),
         upstream_clk_(0), downstream_clk_(0), output_buffer_(1, 16*PIW_DATAQUEUE_SIZE_NORM),
         clk_state_(CLKSTATE_IDLE), clk_domain_(clk_domain),
-        channel_(1), poly_(false), omni_(false), time_(0ULL),
-        resend_current_(midi::resend_current_t::method(this,&midi_from_belcanto_t::impl_t::dummy)),
+        channel_(1), poly_(false), omni_(false),
+        mpe_(false),mpe_global_(0),
+        time_(0ULL), resend_current_(midi::resend_current_t::method(this,&midi_from_belcanto_t::impl_t::dummy)),
         ctrl_interval_(DEFAULT_CTRL_INTERVAL), send_notes_(true), send_pitchbend_(true), send_hires_velocity_(false),
         pitchbend_semitones_up_(1), pitchbend_semitones_down_(1)
     {
@@ -831,15 +850,39 @@ namespace midi
     {
         midi_from_belcanto_t::impl_t *r = (midi_from_belcanto_t::impl_t *)r_;
         unsigned c = *(unsigned *)c_;
-        if(c==0)
+        switch(c)
         {
-            r->channel_ = 0;
-            r->poly_ = true;
-        }
-        else
-        {
-            r->channel_ = c;
-            r->poly_ = false;
+            case CHANNEL_POLY:
+            case CHANNEL_POLY_LEGACY:
+            {
+                r->channel_ = 0;
+                r->poly_ = true;
+                r->mpe_=false;
+                break;
+            }
+            case CHANNEL_MPE:
+            case CHANNEL_MPEa:
+            {
+                r->channel_ = 0;
+                r->poly_ = true;
+                break;
+            }
+            case CHANNEL_MPEb:
+            {
+                r->channel_ = 0;
+                r->poly_ = true;
+                r->mpe_=true;
+                r->mpe_global_=16;
+                break;
+            }
+            default:
+            {
+                // single change 1-16
+                r->channel_ = c;
+                r->poly_ = false;
+                r->mpe_=false;
+                break;
+            }
         }
         return 0;
     }
