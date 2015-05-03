@@ -1,20 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  23 Nov 2010 3:30:31pm
+  This is an automatically generated GUI class created by the Introjucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Introjucer version: 3.1.1
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Introjucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright 2004-13 by Raw Material Software Ltd.
 
   ==============================================================================
 */
@@ -30,8 +28,11 @@
 
 //==============================================================================
 PopupDialogComponent::PopupDialogComponent ()
-    : Component ("PopupDialog")
 {
+    //[Constructor_pre] You can add your own custom stuff here..
+    //[/Constructor_pre]
+
+    setName ("PopupDialog");
 
     //[UserPreSize]
     content_ = 0;
@@ -39,7 +40,8 @@ PopupDialogComponent::PopupDialogComponent ()
     y_offset_ = 0;
     //[/UserPreSize]
 
-    setSize (240, 176);
+    setSize (320, 176);
+
 
     //[Constructor] You can add your own custom stuff here..
     //[/Constructor]
@@ -62,6 +64,12 @@ void PopupDialogComponent::paint (Graphics& g)
     //[UserPrePaint] Add your own custom painting code here..
     //[/UserPrePaint]
 
+    g.setColour (Colour (0xcf000000));
+    g.fillRoundedRectangle (3.0f, 3.0f, static_cast<float> (getWidth() - 6), static_cast<float> (getHeight() - 6), 5.000f);
+
+    g.setColour (Colour (0xffa3a3a3));
+    g.drawRoundedRectangle (3.0f, 3.0f, static_cast<float> (getWidth() - 6), static_cast<float> (getHeight() - 6), 5.000f, 2.700f);
+
     //[UserPaint] Add your own custom painting code here..
     g.saveState();
 
@@ -77,6 +85,9 @@ void PopupDialogComponent::paint (Graphics& g)
 
 void PopupDialogComponent::resized()
 {
+    //[UserPreResize] Add your own custom resize code here..
+    //[/UserPreResize]
+
     //[UserResized] Add your own custom resize handling here..
     if(content_)
         content_->setBounds (16 + x_offset_, 16 + y_offset_, getWidth() - 32 - x_offset_, getHeight() - 32 - y_offset_);
@@ -110,23 +121,27 @@ void PopupDialogComponent::setContentComponent(Component* content, int x_offset,
 
 //==============================================================================
 #if 0
-/*  -- Jucer information section --
+/*  -- Introjucer information section --
 
-    This is where the Jucer puts all of its metadata, so don't change anything in here!
+    This is where the Introjucer stores the metadata that describe this GUI layout, so
+    make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="PopupDialogComponent" componentName="PopupDialog"
-                 parentClasses="public Component"
-                 constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
-                 snapShown="1" overlayOpacity="0.330000013" fixedSize="1" initialWidth="320"
-                 initialHeight="176">
+                 parentClasses="public Component" constructorParams="" variableInitialisers=""
+                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
+                 fixedSize="1" initialWidth="320" initialHeight="176">
   <BACKGROUND backgroundColour="0">
     <ROUNDRECT pos="3 3 6M 6M" cornerSize="5" fill="solid: cf000000" hasStroke="1"
-               stroke="2.70000005, mitered, butt" strokeColour="solid: ffa3a3a3"/>
+               stroke="2.7, mitered, butt" strokeColour="solid: ffa3a3a3"/>
   </BACKGROUND>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
 */
 #endif
+
+
+//[EndFile] You can add extra defines here...
+//[/EndFile]

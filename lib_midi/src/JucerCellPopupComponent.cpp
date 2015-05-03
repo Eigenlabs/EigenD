@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Introjucer version: 3.1.0
+  Created with Introjucer version: 3.1.1
 
   ------------------------------------------------------------------------------
 
@@ -255,6 +255,9 @@ void CellPopupComponent::updateMapping()
 //==============================================================================
 CellPopupComponent::CellPopupComponent ()
 {
+    //[Constructor_pre] You can add your own custom stuff here..
+    //[/Constructor_pre]
+
     setName ("CellPopup");
     addAndMakeVisible (bounds_group = new GroupComponent ("bounds group",
                                                           TRANS("Bounds (in %)")));
@@ -589,6 +592,9 @@ void CellPopupComponent::paint (Graphics& g)
 
 void CellPopupComponent::resized()
 {
+    //[UserPreResize] Add your own custom resize code here..
+    //[/UserPreResize]
+
     bounds_group->setBounds (8, 70, 192, 112);
     lo_label->setBounds (16, 123, 30, 24);
     base_label->setBounds (74, 123, 40, 24);
@@ -604,7 +610,7 @@ void CellPopupComponent::resized()
     resolution_14bit->setBounds (104, 436, 80, 24);
     secondary_cc->setBounds (24, 468, 160, 24);
     lo->setBounds (33, 123, 36, 24);
-    base->setBounds ((getWidth() / 2) + 16 - ((36) / 2), 123, 36, 24);
+    base->setBounds ((getWidth() / 2) + 16 - (36 / 2), 123, 36, 24);
     hi_label->setBounds (141, 123, 32, 24);
     hi->setBounds (157, 123, 36, 24);
     ok->setBounds (152, getHeight() - 24, 48, 24);

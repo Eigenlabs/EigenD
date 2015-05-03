@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Introjucer version: 3.1.0
+  Created with Introjucer version: 3.1.1
 
   ------------------------------------------------------------------------------
 
@@ -29,8 +29,11 @@
 //==============================================================================
 HelpComponent::HelpComponent ()
 {
+    //[Constructor_pre] You can add your own custom stuff here..
+    //[/Constructor_pre]
+
     addAndMakeVisible (title = new Label ("title label",
-                                          "Dialog Title"));
+                                          TRANS("Dialog Title")));
     title->setFont (Font (25.20f, Font::bold));
     title->setJustificationType (Justification::centred);
     title->setEditable (false, false, false);
@@ -38,7 +41,7 @@ HelpComponent::HelpComponent ()
     title->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (ok_button = new TextButton ("ok button"));
-    ok_button->setButtonText ("OK");
+    ok_button->setButtonText (TRANS("OK"));
     ok_button->addListener (this);
     ok_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
@@ -150,8 +153,11 @@ void HelpComponent::paint (Graphics& g)
 
 void HelpComponent::resized()
 {
-    title->setBounds ((getWidth() / 2) - ((320) / 2), 112, 320, 24);
-    ok_button->setBounds ((getWidth() / 2) - ((35) / 2), getHeight() - 60, 35, 24);
+    //[UserPreResize] Add your own custom resize code here..
+    //[/UserPreResize]
+
+    title->setBounds ((getWidth() / 2) - (320 / 2), 112, 320, 24);
+    ok_button->setBounds ((getWidth() / 2) - (35 / 2), getHeight() - 60, 35, 24);
     label->setBounds (24, 160, getWidth() - 45, getHeight() - 236);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]

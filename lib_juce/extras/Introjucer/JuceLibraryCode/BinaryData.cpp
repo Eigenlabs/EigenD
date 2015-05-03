@@ -137,6 +137,10 @@ static const unsigned char temp_binary_data_1[] =
 "        // Your audio-processing code goes here!\r\n"
 "\r\n"
 "        // For more details, see the help for AudioProcessor::getNextAudioBlock()\r\n"
+"\r\n"
+"        // Right now we are not producing any data, in which case we need to clear the buffer\r\n"
+"        // (to prevent the output of random noise)\r\n"
+"        bufferToFill.clearActiveBufferRegion();\r\n"
 "    }\r\n"
 "\r\n"
 "    void releaseResources() override\r\n"
@@ -578,6 +582,9 @@ static const unsigned char temp_binary_data_6[] =
 "//==============================================================================\r\n"
 "%%className%%::%%className%% (%%constructorParams%%)\r\n"
 "%%initialisers%%{\r\n"
+"    //[Constructor_pre] You can add your own custom stuff here..\r\n"
+"    //[/Constructor_pre]\r\n"
+"\r\n"
 "    %%constructor%%\r\n"
 "\r\n"
 "    //[Constructor] You can add your own custom stuff here..\r\n"
@@ -4069,12 +4076,12 @@ const char* getNamedResource (const char* resourceNameUTF8, int& numBytes) throw
     switch (hash)
     {
         case 0x6cf2645e:  numBytes = 1949; return jucer_AnimatedComponentTemplate_cpp;
-        case 0xafccbd3f:  numBytes = 2991; return jucer_AudioComponentTemplate_cpp;
+        case 0xafccbd3f:  numBytes = 3189; return jucer_AudioComponentTemplate_cpp;
         case 0x27c5a93a:  numBytes = 1180; return jucer_AudioPluginEditorTemplate_cpp;
         case 0x4d0721bf:  numBytes = 1012; return jucer_AudioPluginEditorTemplate_h;
         case 0x51b49ac5:  numBytes = 5039; return jucer_AudioPluginFilterTemplate_cpp;
         case 0x488afa0a:  numBytes = 2727; return jucer_AudioPluginFilterTemplate_h;
-        case 0xabad7041:  numBytes = 2083; return jucer_ComponentTemplate_cpp;
+        case 0xabad7041:  numBytes = 2177; return jucer_ComponentTemplate_cpp;
         case 0xfc72fe86:  numBytes = 2156; return jucer_ComponentTemplate_h;
         case 0x0b66646c:  numBytes = 886; return jucer_ContentCompTemplate_cpp;
         case 0x6fa10171:  numBytes = 924; return jucer_ContentCompTemplate_h;

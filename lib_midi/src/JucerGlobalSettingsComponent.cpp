@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Introjucer version: 3.1.0
+  Created with Introjucer version: 3.1.1
 
   ------------------------------------------------------------------------------
 
@@ -101,29 +101,32 @@ void GlobalSettingsComponent::updateSettings()
 //==============================================================================
 GlobalSettingsComponent::GlobalSettingsComponent ()
 {
+    //[Constructor_pre] You can add your own custom stuff here..
+    //[/Constructor_pre]
+
     setName ("GlobalSettings");
     addAndMakeVisible (midi_group = new GroupComponent ("midi group",
-                                                        "MIDI"));
+                                                        TRANS("MIDI")));
     midi_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
     midi_group->setColour (GroupComponent::textColourId, Colour (0xffeeeeee));
 
     addAndMakeVisible (ok = new TextButton ("ok button"));
-    ok->setButtonText ("Ok");
+    ok->setButtonText (TRANS("Ok"));
     ok->addListener (this);
     ok->setColour (TextButton::buttonColourId, Colour (0xffc1c1c1));
 
     addAndMakeVisible (midi_notes = new ToggleButton ("midi notes toggle button"));
-    midi_notes->setButtonText ("send notes");
+    midi_notes->setButtonText (TRANS("send notes"));
     midi_notes->addListener (this);
     midi_notes->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
     addAndMakeVisible (midi_pitchbend = new ToggleButton ("midi pitchbend toggle button"));
-    midi_pitchbend->setButtonText ("send pitchbend");
+    midi_pitchbend->setButtonText (TRANS("send pitchbend"));
     midi_pitchbend->addListener (this);
     midi_pitchbend->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
     addAndMakeVisible (min_data_decimation_group = new GroupComponent ("min data decimation group",
-                                                                       "Minimum data decimation (in ms)"));
+                                                                       TRANS("Minimum data decimation (in ms)")));
     min_data_decimation_group->setColour (GroupComponent::outlineColourId, Colour (0x66eeeeee));
     min_data_decimation_group->setColour (GroupComponent::textColourId, Colour (0xffeeeeee));
 
@@ -140,7 +143,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     data_decimation->addListener (this);
 
     addAndMakeVisible (active_channel_label = new Label ("active channel label",
-                                                         "Active midi channel"));
+                                                         TRANS("Active midi channel")));
     active_channel_label->setFont (Font (15.00f, Font::plain));
     active_channel_label->setJustificationType (Justification::centredLeft);
     active_channel_label->setEditable (false, false, false);
@@ -152,28 +155,28 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     active_channel->setEditableText (false);
     active_channel->setJustificationType (Justification::centredRight);
     active_channel->setTextWhenNothingSelected (String::empty);
-    active_channel->setTextWhenNoChoicesAvailable ("(no choices)");
-    active_channel->addItem ("1", 1);
-    active_channel->addItem ("2", 2);
-    active_channel->addItem ("3", 3);
-    active_channel->addItem ("4", 4);
-    active_channel->addItem ("5", 5);
-    active_channel->addItem ("6", 6);
-    active_channel->addItem ("7", 7);
-    active_channel->addItem ("8", 8);
-    active_channel->addItem ("9", 9);
-    active_channel->addItem ("10", 10);
-    active_channel->addItem ("11", 11);
-    active_channel->addItem ("12", 12);
-    active_channel->addItem ("13", 13);
-    active_channel->addItem ("14", 14);
-    active_channel->addItem ("15", 15);
-    active_channel->addItem ("16", 16);
-    active_channel->addItem ("Poly", 17);
+    active_channel->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
+    active_channel->addItem (TRANS("1"), 1);
+    active_channel->addItem (TRANS("2"), 2);
+    active_channel->addItem (TRANS("3"), 3);
+    active_channel->addItem (TRANS("4"), 4);
+    active_channel->addItem (TRANS("5"), 5);
+    active_channel->addItem (TRANS("6"), 6);
+    active_channel->addItem (TRANS("7"), 7);
+    active_channel->addItem (TRANS("8"), 8);
+    active_channel->addItem (TRANS("9"), 9);
+    active_channel->addItem (TRANS("10"), 10);
+    active_channel->addItem (TRANS("11"), 11);
+    active_channel->addItem (TRANS("12"), 12);
+    active_channel->addItem (TRANS("13"), 13);
+    active_channel->addItem (TRANS("14"), 14);
+    active_channel->addItem (TRANS("15"), 15);
+    active_channel->addItem (TRANS("16"), 16);
+    active_channel->addItem (TRANS("Poly"), 17);
     active_channel->addListener (this);
 
     addAndMakeVisible (min_channel_label = new Label ("min channel label",
-                                                      "Minimum poly channel"));
+                                                      TRANS("Minimum poly channel")));
     min_channel_label->setFont (Font (15.00f, Font::plain));
     min_channel_label->setJustificationType (Justification::centredLeft);
     min_channel_label->setEditable (false, false, false);
@@ -185,27 +188,27 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     min_channel->setEditableText (false);
     min_channel->setJustificationType (Justification::centredRight);
     min_channel->setTextWhenNothingSelected (String::empty);
-    min_channel->setTextWhenNoChoicesAvailable ("(no choices)");
-    min_channel->addItem ("1", 1);
-    min_channel->addItem ("2", 2);
-    min_channel->addItem ("3", 3);
-    min_channel->addItem ("4", 4);
-    min_channel->addItem ("5", 5);
-    min_channel->addItem ("6", 6);
-    min_channel->addItem ("7", 7);
-    min_channel->addItem ("8", 8);
-    min_channel->addItem ("9", 9);
-    min_channel->addItem ("10", 10);
-    min_channel->addItem ("11", 11);
-    min_channel->addItem ("12", 12);
-    min_channel->addItem ("13", 13);
-    min_channel->addItem ("14", 14);
-    min_channel->addItem ("15", 15);
-    min_channel->addItem ("16", 16);
+    min_channel->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
+    min_channel->addItem (TRANS("1"), 1);
+    min_channel->addItem (TRANS("2"), 2);
+    min_channel->addItem (TRANS("3"), 3);
+    min_channel->addItem (TRANS("4"), 4);
+    min_channel->addItem (TRANS("5"), 5);
+    min_channel->addItem (TRANS("6"), 6);
+    min_channel->addItem (TRANS("7"), 7);
+    min_channel->addItem (TRANS("8"), 8);
+    min_channel->addItem (TRANS("9"), 9);
+    min_channel->addItem (TRANS("10"), 10);
+    min_channel->addItem (TRANS("11"), 11);
+    min_channel->addItem (TRANS("12"), 12);
+    min_channel->addItem (TRANS("13"), 13);
+    min_channel->addItem (TRANS("14"), 14);
+    min_channel->addItem (TRANS("15"), 15);
+    min_channel->addItem (TRANS("16"), 16);
     min_channel->addListener (this);
 
     addAndMakeVisible (max_channel_label = new Label ("max channel label",
-                                                      "Maximum poly channel"));
+                                                      TRANS("Maximum poly channel")));
     max_channel_label->setFont (Font (15.00f, Font::plain));
     max_channel_label->setJustificationType (Justification::centredLeft);
     max_channel_label->setEditable (false, false, false);
@@ -217,32 +220,32 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     max_channel->setEditableText (false);
     max_channel->setJustificationType (Justification::centredRight);
     max_channel->setTextWhenNothingSelected (String::empty);
-    max_channel->setTextWhenNoChoicesAvailable ("(no choices)");
-    max_channel->addItem ("1", 1);
-    max_channel->addItem ("2", 2);
-    max_channel->addItem ("3", 3);
-    max_channel->addItem ("4", 4);
-    max_channel->addItem ("5", 5);
-    max_channel->addItem ("6", 6);
-    max_channel->addItem ("7", 7);
-    max_channel->addItem ("8", 8);
-    max_channel->addItem ("9", 9);
-    max_channel->addItem ("10", 10);
-    max_channel->addItem ("11", 11);
-    max_channel->addItem ("12", 12);
-    max_channel->addItem ("13", 13);
-    max_channel->addItem ("14", 14);
-    max_channel->addItem ("15", 15);
-    max_channel->addItem ("16", 16);
+    max_channel->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
+    max_channel->addItem (TRANS("1"), 1);
+    max_channel->addItem (TRANS("2"), 2);
+    max_channel->addItem (TRANS("3"), 3);
+    max_channel->addItem (TRANS("4"), 4);
+    max_channel->addItem (TRANS("5"), 5);
+    max_channel->addItem (TRANS("6"), 6);
+    max_channel->addItem (TRANS("7"), 7);
+    max_channel->addItem (TRANS("8"), 8);
+    max_channel->addItem (TRANS("9"), 9);
+    max_channel->addItem (TRANS("10"), 10);
+    max_channel->addItem (TRANS("11"), 11);
+    max_channel->addItem (TRANS("12"), 12);
+    max_channel->addItem (TRANS("13"), 13);
+    max_channel->addItem (TRANS("14"), 14);
+    max_channel->addItem (TRANS("15"), 15);
+    max_channel->addItem (TRANS("16"), 16);
     max_channel->addListener (this);
 
     addAndMakeVisible (midi_hires_velocity = new ToggleButton ("midi hires velocity toggle button"));
-    midi_hires_velocity->setButtonText ("send high resolution velocity");
+    midi_hires_velocity->setButtonText (TRANS("send high resolution velocity"));
     midi_hires_velocity->addListener (this);
     midi_hires_velocity->setColour (ToggleButton::textColourId, Colour (0xffeeeeee));
 
     addAndMakeVisible (pitchbend_up_label = new Label ("pitchbend up label",
-                                                       "Pitch bend up range (semis)"));
+                                                       TRANS("Pitch bend up range (semis)")));
     pitchbend_up_label->setFont (Font (15.00f, Font::plain));
     pitchbend_up_label->setJustificationType (Justification::centred);
     pitchbend_up_label->setEditable (false, false, false);
@@ -251,7 +254,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     pitchbend_up_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (pitchbend_down_label = new Label ("pitchbend down label",
-                                                         "Pitch bend down range (semis)"));
+                                                         TRANS("Pitch bend down range (semis)")));
     pitchbend_down_label->setFont (Font (15.00f, Font::plain));
     pitchbend_down_label->setJustificationType (Justification::centred);
     pitchbend_down_label->setEditable (false, false, false);
@@ -336,6 +339,9 @@ void GlobalSettingsComponent::paint (Graphics& g)
 
 void GlobalSettingsComponent::resized()
 {
+    //[UserPreResize] Add your own custom resize code here..
+    //[/UserPreResize]
+
     midi_group->setBounds (8, 72, 240, 296);
     ok->setBounds (200, getHeight() - 24, 48, 24);
     midi_notes->setBounds (16, 88, 104, 24);

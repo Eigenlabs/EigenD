@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="M70qfTRRk" name="The Introjucer" projectType="guiapp" juceLinkage="amalg_multi"
-              juceFolder="../../juce" jucerVersion="3.1.0" version="3.1.0"
+              juceFolder="../../juce" jucerVersion="3.1.1" version="3.1.1"
               buildVST="1" buildRTAS="0" buildAU="1" vstFolderMac="~/SDKs/vstsdk2.4"
               vstFolderPC="c:\SDKs\vstsdk2.4" rtasFolderMac="~/SDKs/PT_80_SDK"
               rtasFolderPC="c:\SDKs\PT_80_SDK" pluginName="The Introjucer"
@@ -15,7 +15,7 @@
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX" vstFolder="~/SDKs/vstsdk2.4" rtasFolder="~/SDKs/PT_80_SDK"
                documentExtensions=".jucer" objCExtraSuffix="zNNCr" bigIcon="rVgowdy"
-               extraCompilerFlags="-Wall -Wshadow -Wno-missing-field-initializers -Wshadow -Wshorten-64-to-32 -Wstrict-aliasing -Wuninitialized -Wunused-parameter">
+               extraCompilerFlags="-Wall -Wshadow -Wno-missing-field-initializers -Wshadow -Wshorten-64-to-32 -Wstrict-aliasing -Wuninitialized -Wunused-parameter -Wconversion -Wsign-compare -Wint-conversion -Woverloaded-virtual -Wreorder -Wconstant-conversion -Wsign-conversion">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Introjucer"
                        osxSDK="default" osxCompatibility="default" osxArchitecture="Native"/>
@@ -69,12 +69,12 @@
       </MODULEPATHS>
     </VS2008>
     <LINUX_MAKE targetFolder="Builds/Linux" vstFolder="~/SDKs/vstsdk2.4" bigIcon="rVgowdy"
-                extraCompilerFlags="-std=gnu++0x">
+                extraCompilerFlags="-std=gnu++0x&#10;-Wreorder -Wuninitialized -Wunused-parameter -Wstrict-aliasing -Wshadow -Wsign-compare">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Introjucer"
-                       libraryPath="/usr/X11R6/lib/"/>
+                       libraryPath="/usr/X11R6/lib/" linuxArchitecture=""/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Introjucer"
-                       libraryPath="/usr/X11R6/lib/"/>
+                       libraryPath="/usr/X11R6/lib/" linuxArchitecture=""/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_gui_extra" path="../../modules"/>
