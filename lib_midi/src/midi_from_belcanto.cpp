@@ -566,7 +566,7 @@ namespace
         }
 
         // the range is 0x80 to 0x3fff to ensure a note on velocity 0 (=note off) is not sent
-        note_velocity_ = (0x3fff-0x80)*fabsf(velocity) + 0x80;
+        note_velocity_ = (0x3fff-0x80)*std::abs(velocity) + 0x80;
 
         bool sendnote = false;
         if(note_pitch_>=0)
