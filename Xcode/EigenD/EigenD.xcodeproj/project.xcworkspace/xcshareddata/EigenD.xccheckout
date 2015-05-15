@@ -10,29 +10,29 @@
 	<string>EigenD</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>D181E452-7515-47C4-96A4-30786D1966BA</key>
+		<key>37A7B164107B6B0282F0E0B95B3708547385FA1B</key>
 		<string>https://github.com/TheTechnobear/EigenD.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>Xcode/EigenD/EigenD.xcodeproj/project.xcworkspace</string>
+	<string>Xcode/EigenD/EigenD.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>D181E452-7515-47C4-96A4-30786D1966BA</key>
+		<key>37A7B164107B6B0282F0E0B95B3708547385FA1B</key>
 		<string>../../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/TheTechnobear/EigenD.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>D181E452-7515-47C4-96A4-30786D1966BA</string>
+	<string>37A7B164107B6B0282F0E0B95B3708547385FA1B</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>D181E452-7515-47C4-96A4-30786D1966BA</string>
+			<string>37A7B164107B6B0282F0E0B95B3708547385FA1B</string>
 			<key>IDESourceControlWCCName</key>
 			<string>EigenD</string>
 		</dict>

@@ -113,6 +113,9 @@ struct scale_illuminator_t::impl_t :
 
     bool root_light_;
     bool inverted_;
+    // previous states
+    piw::data_nb_t prev_tonic_,prev_base_,prev_octave_,prev_scale_,prev_course_offset_,prev_course_len_,prev_lights_;
+
 };
 
 
@@ -351,55 +354,75 @@ void scale_illuminator_t::impl_t::control_change(const piw::data_nb_t &d)
 
     if(!d.is_null() && d.is_dict())
     {
+        bool changed=false;
+        
 		piw::data_nb_t t,b,o,s,co,cl;
+        
 
 		t = d.as_dict_lookup("tonic");
-		if(!t.is_null())
+		if(!t.is_null() && t.compare(prev_tonic_,false)!=0 )
 		{
 			LOG_SINGLE(	pic::logmsg() << "tonic " << t;)
 			playing_tonic_ = t.as_renorm_float(0,12,0);
+            prev_tonic_=t;
+            changed=true;
 		}
 
 		b = d.as_dict_lookup("base");
-		if(!b.is_null())
+		if(!b.is_null() && b.compare(prev_base_,false)!=0 )
 		{
 			LOG_SINGLE(	pic::logmsg() << "base " << b;)
 			playing_base_note_ = b.as_renorm_float(-20,20,0);
-		}
+            prev_base_=b;
+            changed=true;
+        }
 
 		o = d.as_dict_lookup("octave");
-		if(!o.is_null())
+		if(!o.is_null() && o.compare(prev_octave_,false)!=0 )
 		{
 			LOG_SINGLE(	pic::logmsg() << "octave " << o;)
 			playing_octave_ = o.as_renorm_float(-1,9,0);
+            prev_octave_=o;
+            // we dont use the octave for lights, so dont update the lights for it
+            // changed=true;
 		}
 
 		s = d.as_dict_lookup("scale");
-		if(s.is_string())
+		if(s.is_string() && s.compare(prev_scale_,false)!=0 )
 		{
 			LOG_SINGLE(	pic::logmsg() << "scale "<< s ;)
 			playing_max_note_=decode_scale(playing_scale_,s.as_stdstr());
+            prev_scale_=s;
+            changed=true;
 		}
 		else if (playing_scale_.size()==0)
 		{
 			LOG_SINGLE( pic::logmsg() << "defaulting to major scale";)
 			//default input to major, just in case its not specified on KG
 			playing_max_note_=decode_scale(playing_scale_,"[0,2,4,5,7,9,11,12]");
+            changed=true;
 		}
 
 		co = d.as_dict_lookup("courseoffset");
-		if(!co.is_null())
+		if(!co.is_null() && co.compare(prev_course_offset_,false)!=0)
 		{
 			LOG_SINGLE(	pic::logmsg() << "courseoffset " << co;)
 			decode_courseoffset(scaleoffset_,semitoneoffset_, co);
+            prev_course_offset_=co;
+            changed=true;
 		}
 		cl = d.as_dict_lookup("courselen");
-		if(!cl.is_null())
+		if(!cl.is_null() && cl.compare(prev_course_len_,false)!=0 )
 		{
 			LOG_SINGLE( pic::logmsg() << "courselen " << cl;)
 			decode_courses(courselen_,cl);
+            prev_course_len_=cl;
+            changed=true;
 		}
-		light_wire_->updateLights();
+        if(changed)
+        {
+            light_wire_->updateLights();
+        }
     }
 }
 
@@ -578,7 +601,11 @@ void updateLightBuffer(scale_illuminator_t::impl_t& impl,piw::xevent_data_buffer
     	course++;
 	}
     piw::data_nb_t buffer = piw::statusbuffer_t::make_statusbuffer(status);
-    outputbuffer.add_value(OUT_LIGHT,buffer);
+    if(buffer.compare(impl.prev_lights_,false)!=0)
+    {
+        impl.prev_lights_=buffer;
+        outputbuffer.add_value(OUT_LIGHT,buffer);
+    }
     LOG_SINGLE( pic::logmsg() << "updateLightBuffer d= "<< buffer;)
 }
 
