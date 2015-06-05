@@ -1147,6 +1147,10 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
         midi_from_belcanto_->set_midi(midi);
     }
 
+    bool  is_mpe_mode()
+    {
+        return midi_from_belcanto_->is_mpe_mode();
+    }
     unsigned get_active_midi_channel(const piw::data_nb_t &id)
     {
         return midi_from_belcanto_->get_active_midi_channel(id);

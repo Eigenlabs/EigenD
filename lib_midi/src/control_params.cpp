@@ -191,6 +191,11 @@ namespace midi
     {
         return params_delegate_->get_active_midi_channel(id);
     }
+    
+    bool param_input_t::is_mpe_mode()
+    {
+        return params_delegate_->is_mpe_mode();
+    }
 
     void param_input_t::started(param_wire_t *w)
     {
@@ -204,10 +209,18 @@ namespace midi
     {
         if(!w->processed_data_ || !active_.head() || w->ended_) return;
 
+        if(is_mpe_mode())
+        {
+            // check to see if channel is still active ... i.e. no note off!
+            unsigned ch=get_active_midi_channel(w->get_id());
+            
+            if(ch==0) return; // channel is already closed
+        }
+        
         // send last data on this wire before it ends
         pic::lckvector_t<param_data_t>::nbtype params;
         pic::lckvector_t<midi_data_t>::nbtype midi;
-
+        
         process_wire(w, params, midi, to, (w==active_.head()), true);
 
         if(!params.empty()) params_delegate_->set_parameters(params);

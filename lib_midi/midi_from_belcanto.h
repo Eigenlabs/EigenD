@@ -63,6 +63,7 @@ namespace midi
         void set_pitchbend_up(float semis);
         void set_pitchbend_down(float semis);
         unsigned get_active_midi_channel(const piw::data_nb_t &);
+        bool is_mpe_mode();
         void set_velocity_samples(unsigned);
         void set_velocity_curve(float);
         void set_velocity_scale(float);

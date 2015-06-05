@@ -70,6 +70,7 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     DialogWindow* window_;
     midi::mapping_delegate_t *mapping_delegate_;
+    double pb_min,pb_max,pb_interval;
     //[/UserVariables]
 
     //==============================================================================

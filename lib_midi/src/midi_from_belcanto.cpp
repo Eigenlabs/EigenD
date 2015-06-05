@@ -60,7 +60,16 @@ using namespace std;
 #define DEFAULT_CTRL_INTERVAL 10000ULL
 
 #define MIDI_MPE_MODE_CC 127
+#define MIDI_HI_VEL_CC 0x58
 
+#define MIDI_NOTE_OFF   0x80
+#define MIDI_NOTE_ON    0x90
+#define MIDI_POLY_AT    0xA0
+#define MIDI_CC         0xB0
+#define MIDI_PRG_CHANGE 0xC0
+#define MIDI_CHAN_PRES  0xD0
+#define MIDI_PITCHBEND  0xE0
+#define MIDI_SYSEX      0xF0
 
 // special midi channels, representing other modes
 
@@ -72,13 +81,13 @@ using namespace std;
 #define CHANNEL_MPEb 20      // MPEa - splitB,  16 global, min-15 notes
 
 
-// MPE TODO:
-// 1. set CC, doesnt appear to send the lsb sometimes... split into separate cc's ?
-// 2. put pressure messages (ChPres) in here, so no matrix required... and ensure not sent when note is off, and force pressure=0 on note off
-// 3. put timbre messages (74) in here, so no matrix required... and ensure not sent when note is off
-// 4. ensure PB range is integer in GUI
-// 5. extra MPE messages when switching modes (this is due to the min/max channels changing, then the mode changing, so it doesnt know its changing modes yet)
-//    may be hard to avoid... but should make no difference to MPE spec
+// MPE Notes:
+// a. extra MPE messages when switching modes (this is due to the min/max channels changing, then the mode changing, so it doesnt know its changing modes yet)
+//    may be hard to avoid (as we need to be able to still edit the channels for MPCa/b mode)... but should make no difference to MPE spec
+// b. user has to setup channel pressure and CC 74, I (Mark) did originally 'force' this, by having a pressure/yaw on belcanto wire, but this would not allow flexible scaling etc
+//    so decided against... also we cannot set up a matrix in code, as we dont know which params are mapped to pressure/yaw... so I think its best the MPE is a default factory setup
+//    (its not bad, as a default matrix having CC 74/Channel pressure)  ... later if we get get around to a template for the matrix, then this could be a template
+
 
 // TODO:
 // 1. test unconnecting and event ending downstream
@@ -312,7 +321,6 @@ namespace midi
         // send mpe pb message
         void set_mpe_pb(float range);
         
-        
         // set other status MIDI messages
         void set_poly_aftertouch(bool global, bool continuous, unsigned channel, const unsigned noteid, const unsigned value, unsigned long long t);
         void set_program_change(bool global, bool continuous, unsigned channel, const unsigned value, unsigned long long t);
@@ -545,11 +553,11 @@ namespace
 
             if(root_->send_hires_velocity_)
             {
-                root_->add_midi_data(false, 0xb0+channel_-1,(unsigned)0x58,vel_lsb,t);
+                root_->add_midi_data(false, MIDI_CC+channel_-1,(unsigned)MIDI_HI_VEL_CC,vel_lsb,t);
                 root_->time_ = std::max(root_->time_+1,t++);
                 t = root_->time_;
             }
-            root_->add_midi_data(false, 0x90+channel_-1,(unsigned)note_id_,vel_msb,t);
+            root_->add_midi_data(false, MIDI_NOTE_ON+channel_-1,(unsigned)note_id_,vel_msb,t);
         }
     }
 
@@ -591,7 +599,7 @@ namespace
             send_note(t);
         }
     }
-
+    
     void belcanto_note_wire_t::set_frequency(const piw::data_nb_t &d, unsigned long long t)
     {
         float f = d.as_renorm_float(BCTUNIT_HZ,0,96000,0);
@@ -667,15 +675,23 @@ namespace
         {
             root_->time_ = std::max(root_->time_+1,t);
             t = root_->time_;
+            if(root_->mpe_)
+            {
+                pic::logmsg() << "belcanto_note_wire_t::event_end send aftertouch";
+                root_->set_channel_aftertouch(false, true, channel_, 0, t);
+            }
+            
+            root_->time_ = std::max(root_->time_+1,t);
+            t = root_->time_;
             if(root_->send_notes_ && channel_>0)
             {
                 if(root_->send_hires_velocity_)
                 {
-                    root_->add_midi_data(false, 0xb0+channel_-1,(unsigned)0x58,0x0,t);
+                    root_->add_midi_data(false, MIDI_CC+channel_-1,(unsigned)MIDI_HI_VEL_CC,0x0,t);
                     root_->time_ = std::max(root_->time_+1,t++);
                     t = root_->time_;
                 }
-                root_->add_midi_data(false, 0x80+channel_-1,(unsigned)note_id_,0x40,t);
+                root_->add_midi_data(false, MIDI_NOTE_OFF+channel_-1,(unsigned)note_id_,0x40,t);
             }
         }
 
@@ -1193,7 +1209,7 @@ namespace midi
             {
 //                pic::logmsg() << "send lsb" ;
                 // must increment the time to make sure both packets are sent
-                add_midi_data(global, 0xb0+channel,lid,lsb,t);
+                add_midi_data(global, MIDI_CC+channel,lid,lsb,t);
 
                 last_cc_lsb_[lid+channel_offset] = lsb;
                 sent_lsb = true;
@@ -1206,7 +1222,7 @@ namespace midi
         {
 //            pic::logmsg() << "send msb" ;
             // send MSB second so MIDI learn will pick MSB
-            add_midi_data(global, 0xb0+channel,mid,msb,t);
+            add_midi_data(global, MIDI_CC+channel,mid,msb,t);
 
             last_cc_msb_[mid+channel_offset] = msb;
         }
@@ -1241,7 +1257,7 @@ namespace midi
         if(!continuous || composite_value!=last_status_[POLY_AFTERTOUCH+channel_offset])
         {
 
-            add_midi_data(global, 0xa0+channel, noteid, msb, t);
+            add_midi_data(global, MIDI_POLY_AT+channel, noteid, msb, t);
             last_status_[POLY_AFTERTOUCH+channel_offset] = composite_value;
         }
     }
@@ -1254,7 +1270,7 @@ namespace midi
 
         if(!continuous || msb!=last_status_[PROGRAM_CHANGE+channel_offset])
         {
-            add_midi_data(global, 0xc0+channel, msb, t);
+            add_midi_data(global, MIDI_PRG_CHANGE+channel, msb, t);
             last_status_[PROGRAM_CHANGE+channel_offset] = msb;
         }
     }
@@ -1267,7 +1283,7 @@ namespace midi
 
         if(!continuous || msb!=last_status_[CHANNEL_AFTERTOUCH+channel_offset])
         {
-            add_midi_data(global, 0xd0+channel, msb, t);
+            add_midi_data(global, MIDI_CHAN_PRES+channel, msb, t);
             last_status_[CHANNEL_AFTERTOUCH+channel_offset] = msb;
         }
     }
@@ -1288,7 +1304,7 @@ namespace midi
             unsigned msb = (value&0x3fff)>>7;
             unsigned lsb = value&0x7f;
 
-            add_midi_data(global, 0xe0+channel, lsb, msb, t);
+            add_midi_data(global, MIDI_PITCHBEND+channel, lsb, msb, t);
             last_status_[PITCH_WHEEL+channel_offset] = value;
         }
     }
@@ -1432,7 +1448,9 @@ namespace midi
         {
             unsigned num_voices= channel_list_.max() - channel_list_.min() + 1;
             unsigned long long t=piw::tsd_time();
-            t=std::max(time_+1,t);
+            
+            time_ = std::max(time_+1,t);
+            t = time_;
             
             if (mpe == false) // turning off mpe
             {
@@ -1442,7 +1460,6 @@ namespace midi
             }
             else if (voice_change) // changing number of voices
             {
-                t=std::max(time_+1,t);
                 set_cc(false, false, mpe_global_, MIDI_MPE_MODE_CC, 0 , num_voices << 7, t);
                 mpe_=mpe;
                 mpe_global_=glob_chan;
@@ -1475,9 +1492,11 @@ namespace midi
             unsigned ch = (mpe_global_ == 1 ? 2 : 15);
             unsigned semis = unsigned(range);
             unsigned long long t=piw::tsd_time();
-            t=std::max(time_+1,t);
+            time_ = std::max(time_+1,t);
+            t = time_;
             set_cc(false, false, ch, 100, 101, 0, t);
-            t=std::max(time_+1,t++);
+            time_ = std::max(time_+1,t++);
+            t = time_;
             set_cc(false, false, ch, 6, 38, semis << 7, t);
         }
     }
@@ -1556,6 +1575,12 @@ namespace midi
         return i->channel_list_.get_channel(d);
     }
 
+    static int __is_mpe_mode(void *i_, void *)
+    {
+        midi_from_belcanto_t::impl_t *i = (midi_from_belcanto_t::impl_t *)i_;
+        return i->mpe_;
+    }
+
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // midi from belcanto interface class
@@ -1588,6 +1613,7 @@ namespace midi
     void midi_from_belcanto_t::set_pitchbend_up(float semis) { piw::tsd_fastcall(__set_pitchbend_up,impl_,&semis); }
     void midi_from_belcanto_t::set_pitchbend_down(float semis) { piw::tsd_fastcall(__set_pitchbend_down,impl_,&semis); }
     unsigned midi_from_belcanto_t::get_active_midi_channel(const piw::data_nb_t &id) { return piw::tsd_fastcall(__get_channel,impl_,(void *)&id); }
+    bool midi_from_belcanto_t::is_mpe_mode() { return piw::tsd_fastcall(__is_mpe_mode,impl_,(void *) 0)==1; }
     void midi_from_belcanto_t::set_velocity_samples(unsigned n) { impl_->velocity_config_.set_samples(n); }
     void midi_from_belcanto_t::set_velocity_curve(float n) { impl_->velocity_config_.set_curve(n); }
     void midi_from_belcanto_t::set_velocity_scale(float n) { impl_->velocity_config_.set_scale(n); }

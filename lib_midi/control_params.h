@@ -78,6 +78,7 @@ namespace midi
             virtual void set_parameters(pic::lckvector_t<param_data_t>::nbtype &) {};
             virtual void set_midi(pic::lckvector_t<midi_data_t>::nbtype &) {};
             virtual unsigned get_active_midi_channel(const piw::data_nb_t &) { return 0; };
+            virtual bool     is_mpe_mode() { return false; }
     };
 
     class MIDILIB_DECLSPEC_CLASS input_root_t: public piw::root_t, virtual public pic::lckobject_t
@@ -95,7 +96,8 @@ namespace midi
             virtual void ending(param_wire_t *, unsigned long long) {}
             virtual void ended(param_wire_t *) {}
             virtual unsigned get_active_midi_channel(const piw::data_nb_t &) { return 0; };
-
+            virtual bool     is_mpe_mode() { return false; }
+        
         protected:
             friend class param_wire_t;
 
@@ -116,7 +118,8 @@ namespace midi
             virtual long calculate_midi_value(const piw::data_nb_t &, const piw::data_nb_t &, const mapping_data_t&);
             virtual bool wiredata_processed(param_wire_t *, const piw::data_nb_t &);
             virtual unsigned get_active_midi_channel(const piw::data_nb_t &);
-
+            virtual bool     is_mpe_mode();
+        
             void started(param_wire_t *);
             void ending(param_wire_t *, unsigned long long);
             void ended(param_wire_t *);

@@ -34,9 +34,6 @@
 #define CHANNEL_MPEb 20      // MPEa - splitB,  16 global, min-15 notes
 
 
-// MPE TODO/Consider
-// pitchbend range, should not be float, but integers
-
 
 void GlobalSettingsComponent::initialize(midi::mapping_delegate_t *mapping_delegate)
 {
@@ -45,6 +42,7 @@ void GlobalSettingsComponent::initialize(midi::mapping_delegate_t *mapping_deleg
     updateComponent(mapping_delegate);
 
     mapping_delegate_ = mapping_delegate;
+    
 }
 
 void GlobalSettingsComponent::setDialogWindow(DialogWindow *window)
@@ -76,6 +74,27 @@ void GlobalSettingsComponent::updateComponent(midi::mapping_delegate_t *mapping_
     max_channel->setSelectedId(settings.maximum_midi_channel_);
     pitchbend_up->setValue((int)settings.pitchbend_semitones_up_,sendNotificationSync);
     pitchbend_down->setValue((int)settings.pitchbend_semitones_down_,sendNotificationSync);
+    
+    if(midi_channel== CHANNEL_MPE || midi_channel== CHANNEL_MPEa || midi_channel== CHANNEL_MPEb)
+    {
+        pitchbend_down->setEnabled(false);
+        midi_notes->setEnabled(false);
+        midi_pitchbend->setEnabled(false);
+        midi_hires_velocity->setEnabled(false);
+        pitchbend_up->setRange (pb_min, pb_max, 12.0);
+        pitchbend_down->setRange (pb_min, pb_max, 12.0);
+        
+        if(midi_channel== CHANNEL_MPEb)
+        {
+            min_channel->setEnabled(true);
+            max_channel->setEnabled(false);
+        }
+        else
+        {
+            min_channel->setEnabled(false);
+            max_channel->setEnabled(true);
+        }
+    }
 }
 
 void GlobalSettingsComponent::setFocusOrder()
@@ -117,9 +136,10 @@ void GlobalSettingsComponent::handleMessage(const Message &)
                 midi_pitchbend->setEnabled(false);
                 midi_hires_velocity->setEnabled(false);
 
+                pitchbend_up->setRange (pb_min, pb_max, 12.0);
+                pitchbend_down->setRange (pb_min, pb_max, 12.0);
                 
                 // disabled min channel, it is 2 fixed, 1 is global
-                
                 min_channel->setSelectedId(2,sendNotificationSync);
                 min_chan_num = 2;
                 max_channel->setSelectedId(16,sendNotificationSync);
@@ -138,6 +158,8 @@ void GlobalSettingsComponent::handleMessage(const Message &)
                 midi_notes->setEnabled(false);
                 midi_pitchbend->setEnabled(false);
                 midi_hires_velocity->setEnabled(false);
+                pitchbend_up->setRange (pb_min, pb_max, 12.0);
+                pitchbend_down->setRange (pb_min, pb_max, 12.0);
 
                 // disabled max channel, it is 15 fixed
                 min_channel->setSelectedId(1,sendNotificationSync);
@@ -151,6 +173,8 @@ void GlobalSettingsComponent::handleMessage(const Message &)
             case CHANNEL_POLY_LEGACY:
             case CHANNEL_POLY:
             {
+                pitchbend_up->setRange (pb_min, pb_max, pb_interval);
+                pitchbend_down->setRange (pb_min, pb_max, pb_interval);
                 pitchbend_down->setEnabled(true);
                 midi_notes->setEnabled(true);
                 midi_pitchbend->setEnabled(true);
@@ -176,6 +200,8 @@ void GlobalSettingsComponent::handleMessage(const Message &)
                 max_channel->setSelectedId(midi_channel,sendNotificationSync);
                 min_chan_num = midi_channel;
                 max_chan_num = midi_channel;
+                pitchbend_up->setRange (pb_min, pb_max, pb_interval);
+                pitchbend_down->setRange (pb_min, pb_max, pb_interval);
             }
         }
     }
@@ -188,7 +214,7 @@ void GlobalSettingsComponent::handleMessage(const Message &)
         pb_down = pb_up;
         send_notes=true;
         send_pitchbend=true;
-        send_hires_velocity=true;
+        send_hires_velocity=false;
         if(midi_channel!=CHANNEL_MPEb)
         {
             // MPE/MPEa
@@ -414,6 +440,9 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     //[Constructor] You can add your own custom stuff here..
     window_ = 0;
     mapping_delegate_ = 0;
+    pb_min=pitchbend_up->getMinimum();
+    pb_max=pitchbend_up->getMaximum();
+    pb_interval=pitchbend_up->getInterval();
     //[/Constructor]
 }
 

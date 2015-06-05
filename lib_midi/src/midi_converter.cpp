@@ -97,6 +97,7 @@ namespace midi
         void set_parameters(pic::lckvector_t<param_data_t>::nbtype &);
         void set_midi(pic::lckvector_t<midi_data_t>::nbtype &);
         unsigned get_active_midi_channel(const piw::data_nb_t &);
+        bool is_mpe_mode();
         void set_title(const std::string &title);
 
         std::auto_ptr<param_input_t> param_input_[32];
@@ -560,6 +561,15 @@ namespace midi
         return 0;
     }
 
+    bool midi_converter_t::impl_t::is_mpe_mode()
+    {
+        if(midi_from_belcanto_.isvalid())
+        {
+            return midi_from_belcanto_->is_mpe_mode();
+        }
+        return false;
+    }
+    
     /*
      * midi_converter_t
      */
