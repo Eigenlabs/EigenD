@@ -317,7 +317,7 @@ namespace midi
         void set_midi_clock(bool state, unsigned long long t);
 
         // send mpe mode message
-        void set_mpe(bool b, int glob_chan,bool voice_change);
+        void set_mpe(bool b, unsigned glob_chan,bool voice_change);
         // send mpe pb message
         void set_mpe_pb(float range);
         
@@ -1441,7 +1441,7 @@ namespace midi
     }
     
     // send MPE status with voice count
-    void midi_from_belcanto_t::impl_t::set_mpe(bool mpe, int glob_chan, bool voice_change)
+    void midi_from_belcanto_t::impl_t::set_mpe(bool mpe, unsigned glob_chan, bool voice_change)
     {
         // voice change, or mpe is changing state
         if(mpe_!=mpe || mpe_global_!=glob_chan || (voice_change && mpe_))
