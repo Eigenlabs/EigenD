@@ -717,7 +717,7 @@ public:
     int getNumRowsInTree() const;
 
     /** Returns the item on a particular row of the tree.
-        If the index is out of range, this will return nullptr.
+        If the index is out of range, this will return 0.
         @see getNumRowsInTree, TreeViewItem::getRowNumberInTree()
     */
     TreeViewItem* getItemOnRow (int index) const;

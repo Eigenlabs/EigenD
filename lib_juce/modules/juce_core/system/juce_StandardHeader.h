@@ -50,8 +50,6 @@
 
 
 //==============================================================================
-#include <vector>  // included before platform defs to provide a definition of _LIBCPP_VERSION
-
 #include "juce_PlatformDefs.h"
 #include "juce_CompilerSupport.h"
 
@@ -73,6 +71,7 @@
 #include <cstring>
 #include <cstdio>
 #include <iostream>
+#include <vector>
 #include <algorithm>
 #include <functional>
 
@@ -105,7 +104,7 @@
 #endif
 
 #if JUCE_ANDROID
- #include <atomic>
+ #include <sys/atomics.h>
  #include <byteswap.h>
 #endif
 

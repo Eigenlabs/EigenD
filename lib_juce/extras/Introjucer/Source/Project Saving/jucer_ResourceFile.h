@@ -46,11 +46,9 @@ public:
     String getSizeVariableFor (const File& file) const;
 
     int getNumFiles() const                 { return files.size(); }
-    const File& getFile (int index) const   { return files.getReference (index); }
-
     int64 getTotalDataSize() const;
 
-    Result write (Array<File>& filesCreated, int maxFileSize);
+    bool write (Array<File>& filesCreated, int maxFileSize);
 
     //==============================================================================
 private:
@@ -59,8 +57,8 @@ private:
     Project& project;
     String className;
 
-    Result writeHeader (MemoryOutputStream&);
-    Result writeCpp (MemoryOutputStream&, const File& headerFile, int& index, int maxFileSize);
+    bool writeHeader (MemoryOutputStream&);
+    bool writeCpp (MemoryOutputStream&, const File& headerFile, int& index, int maxFileSize);
     void addResourcesFromProjectItem (const Project::Item& node);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ResourceFile)

@@ -24,14 +24,14 @@
 
 ResamplingAudioSource::ResamplingAudioSource (AudioSource* const inputSource,
                                               const bool deleteInputWhenDeleted,
-                                              const int channels)
+                                              const int numChannels_)
     : input (inputSource, deleteInputWhenDeleted),
       ratio (1.0),
       lastRatio (1.0),
       bufferPos (0),
       sampsInBuffer (0),
       subSampleOffset (0),
-      numChannels (channels)
+      numChannels (numChannels_)
 {
     jassert (input != nullptr);
     zeromem (coefficients, sizeof (coefficients));
@@ -51,10 +51,9 @@ void ResamplingAudioSource::prepareToPlay (int samplesPerBlockExpected, double s
 {
     const SpinLock::ScopedLockType sl (ratioLock);
 
-    const int scaledBlockSize = roundToInt (samplesPerBlockExpected * ratio);
-    input->prepareToPlay (scaledBlockSize, sampleRate * ratio);
+    input->prepareToPlay (samplesPerBlockExpected, sampleRate);
 
-    buffer.setSize (numChannels, scaledBlockSize + 32);
+    buffer.setSize (numChannels, roundToInt (samplesPerBlockExpected * ratio) + 32);
 
     filterStates.calloc ((size_t) numChannels);
     srcBuffers.calloc ((size_t) numChannels);

@@ -28,9 +28,6 @@
 //==============================================================================
 %%className%%::%%className%% (%%constructorParams%%)
 %%initialisers%%{
-    //[Constructor_pre] You can add your own custom stuff here..
-    //[/Constructor_pre]
-
     %%constructor%%
 
     //[Constructor] You can add your own custom stuff here..

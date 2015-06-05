@@ -421,10 +421,8 @@ public:
     /** Compares this string with another one. */
     int compareIgnoreCase (const CharPointer_UTF8 other) const noexcept
     {
-       #if JUCE_MSVC
+       #if JUCE_WINDOWS
         return stricmp (data, other.data);
-       #elif JUCE_MINGW
-        return CharacterFunctions::compareIgnoreCase (*this, other);
        #else
         return strcasecmp (data, other.data);
        #endif
@@ -458,9 +456,9 @@ public:
     }
 
     /** Returns true if the first character of this string is whitespace. */
-    bool isWhitespace() const noexcept      { const CharType c = *data; return c == ' ' || (c <= 13 && c >= 9); }
+    bool isWhitespace() const noexcept      { return *data == ' ' || (*data <= 13 && *data >= 9); }
     /** Returns true if the first character of this string is a digit. */
-    bool isDigit() const noexcept           { const CharType c = *data; return c >= '0' && c <= '9'; }
+    bool isDigit() const noexcept           { return *data >= '0' && *data <= '9'; }
     /** Returns true if the first character of this string is a letter. */
     bool isLetter() const noexcept          { return CharacterFunctions::isLetter (operator*()) != 0; }
     /** Returns true if the first character of this string is a letter or digit. */
@@ -481,7 +479,7 @@ public:
     /** Parses this string as a 64-bit integer. */
     int64 getIntValue64() const noexcept
     {
-       #if JUCE_LINUX || JUCE_ANDROID || JUCE_MINGW
+       #if JUCE_LINUX || JUCE_ANDROID
         return atoll (data);
        #elif JUCE_WINDOWS
         return _atoi64 (data);
@@ -511,7 +509,7 @@ public:
 
             if (byte < 0)
             {
-                int bit = 0x40;
+                uint8 bit = 0x40;
                 int numExtraValues = 0;
 
                 while ((byte & bit) != 0)

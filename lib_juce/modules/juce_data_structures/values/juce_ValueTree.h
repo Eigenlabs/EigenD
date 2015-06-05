@@ -403,8 +403,7 @@ public:
             just check the parentTree parameter to make sure it's the one that you're interested in.
         */
         virtual void valueTreeChildRemoved (ValueTree& parentTree,
-                                            ValueTree& childWhichHasBeenRemoved,
-                                            int indexFromWhichChildWasRemoved) = 0;
+                                            ValueTree& childWhichHasBeenRemoved) = 0;
 
         /** This method is called when a tree's children have been re-shuffled.
 
@@ -413,8 +412,7 @@ public:
             If your tree has sub-trees but you only want to know about changes to the top level tree,
             just check the parameter to make sure it's the tree that you're interested in.
         */
-        virtual void valueTreeChildOrderChanged (ValueTree& parentTreeWhoseChildrenHaveMoved,
-                                                 int oldIndex, int newIndex) = 0;
+        virtual void valueTreeChildOrderChanged (ValueTree& parentTreeWhoseChildrenHaveMoved) = 0;
 
         /** This method is called when a tree has been added or removed from a parent node.
 
@@ -484,7 +482,7 @@ public:
         {
             OwnedArray<ValueTree> sortedList;
             createListOfChildren (sortedList);
-            ComparatorAdapter<ElementComparator> adapter (comparator);
+            ComparatorAdapter <ElementComparator> adapter (comparator);
             sortedList.sort (adapter, retainOrderOfEquivalentItems);
             reorderChildren (sortedList, undoManager);
         }

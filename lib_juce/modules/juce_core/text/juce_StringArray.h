@@ -86,10 +86,6 @@ public:
     */
     StringArray (const wchar_t* const* strings, int numberOfStrings);
 
-   #if JUCE_COMPILER_SUPPORTS_INITIALIZER_LISTS
-    StringArray (const std::initializer_list<const char*>& strings);
-   #endif
-
     /** Destructor. */
     ~StringArray();
 

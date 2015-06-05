@@ -82,17 +82,13 @@ protected:
             setValueIfVoid (getLibrarySearchPathValue(), "/usr/X11R6/lib/");
         }
 
-        Value getArchitectureType()             { return getValue (Ids::linuxArchitecture); }
-        var getArchitectureTypeVar() const      { return config [Ids::linuxArchitecture]; }
-
-        var getDefaultOptimisationLevel() const override    { return var ((int) (isDebug() ? gccO0 : gccO3)); }
+        Value getArchitectureType()                 { return getValue (Ids::linuxArchitecture); }
+        String getArchitectureTypeString() const    { return config [Ids::linuxArchitecture]; }
 
         void createConfigProperties (PropertyListBuilder& props) override
         {
-            addGCCOptimisationProperty (props);
-
-            static const char* const archNames[] = { "(Default)", "<None>",       "32-bit (-m32)", "64-bit (-m64)", "ARM v6",       "ARM v7" };
-            const var archFlags[]                = { var(),       var (String()), "-m32",         "-m64",           "-march=armv6", "-march=armv7" };
+            static const char* const archNames[] = { "(Default)", "32-bit (-m32)", "64-bit (-m64)", "ARM v6", "ARM v7" };
+            const var archFlags[] = { var(), "-m32", "-m64", "-march=armv6", "-march=armv7" };
 
             props.add (new ChoicePropertyComponent (getArchitectureType(), "Architecture",
                                                     StringArray (archNames, numElementsInArray (archNames)),
@@ -150,7 +146,7 @@ private:
         searchPaths.removeDuplicates (false);
 
         for (int i = 0; i < searchPaths.size(); ++i)
-            out << " -I " << escapeSpaces (FileHelpers::unixStylePath (replacePreprocessorTokens (config, searchPaths[i])));
+            out << " -I " << addQuotesIfContainsSpaces (FileHelpers::unixStylePath (replacePreprocessorTokens (config, searchPaths[i])));
     }
 
     void writeCppFlags (OutputStream& out, const BuildConfiguration& config) const
@@ -228,6 +224,10 @@ private:
 
         writeLinkerFlags (out, config);
 
+        out << "  LDDEPS :=" << newLine
+            << "  RESFLAGS := ";
+        writeDefineFlags (out, config);
+        writeHeaderPathFlags (out, config);
         out << newLine;
 
         String targetName (replacePreprocessorTokens (config, config.getTargetBinaryNameString()));
@@ -283,7 +283,7 @@ private:
         out << ".PHONY: clean" << newLine
             << newLine;
 
-        out << "$(OUTDIR)/$(TARGET): $(OBJECTS) $(RESOURCES)" << newLine
+        out << "$(OUTDIR)/$(TARGET): $(OBJECTS) $(LDDEPS) $(RESOURCES)" << newLine
             << "\t@echo Linking " << projectName << newLine
             << "\t-@mkdir -p $(BINDIR)" << newLine
             << "\t-@mkdir -p $(LIBDIR)" << newLine
@@ -323,8 +323,8 @@ private:
     String getArchFlags (const BuildConfiguration& config) const
     {
         if (const MakeBuildConfiguration* makeConfig = dynamic_cast<const MakeBuildConfiguration*> (&config))
-            if (! makeConfig->getArchitectureTypeVar().isVoid())
-                return makeConfig->getArchitectureTypeVar();
+            if (makeConfig->getArchitectureTypeString().isNotEmpty())
+                return makeConfig->getArchitectureTypeString();
 
         return "-march=native";
     }

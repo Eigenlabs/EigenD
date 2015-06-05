@@ -45,6 +45,5 @@ namespace juce
 #include "encryption/juce_RSAKey.cpp"
 #include "hashing/juce_MD5.cpp"
 #include "hashing/juce_SHA256.cpp"
-#include "hashing/juce_Whirlpool.cpp"
 
 }

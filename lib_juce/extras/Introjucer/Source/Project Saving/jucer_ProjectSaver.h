@@ -119,7 +119,7 @@ public:
         if (! generatedCodeFolder.createDirectory())
         {
             addError ("Couldn't create folder: " + generatedCodeFolder.getFullPathName());
-            return Project::Item (project, ValueTree());
+            return Project::Item (project, ValueTree::invalid);
         }
 
         const File file (generatedCodeFolder.getChildFile (filePath));
@@ -127,7 +127,7 @@ public:
         if (replaceFileIfDifferent (file, newData))
             return addFileToGeneratedGroup (file);
 
-        return Project::Item (project, ValueTree());
+        return Project::Item (project, ValueTree::invalid);
     }
 
     Project::Item addFileToGeneratedGroup (const File& file)
@@ -176,11 +176,6 @@ public:
         return true;
     }
 
-    static bool shouldFolderBeIgnoredWhenCopying (const File& f)
-    {
-        return f.getFileName() == ".git" || f.getFileName() == ".svn" || f.getFileName() == ".cvs";
-    }
-
     bool copyFolder (const File& source, const File& dest)
     {
         if (source.isDirectory() && dest.createDirectory())
@@ -190,25 +185,18 @@ public:
 
             for (int i = 0; i < subFiles.size(); ++i)
             {
-                const File f (subFiles.getReference(i));
-                const File target (dest.getChildFile (f.getFileName()));
+                const File target (dest.getChildFile (subFiles.getReference(i).getFileName()));
                 filesCreated.add (target);
-
-                if (! f.copyFileTo (target))
+                if (! subFiles.getReference(i).copyFileTo (target))
                     return false;
             }
 
-            Array<File> subFolders;
-            source.findChildFiles (subFolders, File::findDirectories, false);
+            subFiles.clear();
+            source.findChildFiles (subFiles, File::findDirectories, false);
 
-            for (int i = 0; i < subFolders.size(); ++i)
-            {
-                const File f (subFolders.getReference(i));
-
-                if (! shouldFolderBeIgnoredWhenCopying (f))
-                    if (! copyFolder (f, dest.getChildFile (f.getFileName())))
-                        return false;
-            }
+            for (int i = 0; i < subFiles.size(); ++i)
+                if (! copyFolder (subFiles.getReference(i), dest.getChildFile (subFiles.getReference(i).getFileName())))
+                    return false;
 
             return true;
         }
@@ -363,21 +351,6 @@ private:
 
         out << newLine;
 
-        {
-            int isStandaloneApplication = 1;
-            const ProjectType& type = project.getProjectType();
-
-            if (type.isAudioPlugin() || type.isDynamicLibrary() || type.isBrowserPlugin())
-                isStandaloneApplication = 0;
-
-            out << "//==============================================================================" << newLine;
-            out << "#ifndef    JUCE_STANDALONE_APPLICATION" << newLine;
-            out << " #define   JUCE_STANDALONE_APPLICATION " << isStandaloneApplication << newLine;
-            out << "#endif" << newLine;
-        }
-
-        out << newLine;
-
         for (int j = 0; j < modules.size(); ++j)
         {
             LibraryModule* const m = modules.getUnchecked(j);
@@ -495,9 +468,7 @@ private:
             if (maxSize <= 0)
                 maxSize = 10 * 1024 * 1024;
 
-            Result r (resourceFile.write (binaryDataFiles, maxSize));
-
-            if (r.wasOk())
+            if (resourceFile.write (binaryDataFiles, maxSize))
             {
                 hasBinaryData = true;
 
@@ -511,7 +482,8 @@ private:
             }
             else
             {
-                addError (r.getErrorMessage());
+                addError ("Can't create binary resources file: "
+                            + project.getBinaryDataCppFile(0).getFullPathName());
             }
         }
         else

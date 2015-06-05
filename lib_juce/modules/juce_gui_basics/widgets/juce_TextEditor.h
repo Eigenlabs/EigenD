@@ -569,7 +569,7 @@ public:
     void setInputFilter (InputFilter* newFilter, bool takeOwnership);
 
     /** Returns the current InputFilter, as set by setInputFilter(). */
-    InputFilter* getInputFilter() const noexcept                { return inputFilter; }
+    InputFilter* getInputFilter() const noexcept            { return inputFilter; }
 
     /** Sets limits on the characters that can be entered.
         This is just a shortcut that passes an instance of the LengthAndCharacterRestriction
@@ -582,8 +582,6 @@ public:
     */
     void setInputRestrictions (int maxTextLength,
                                const String& allowedCharacters = String::empty);
-
-    void setKeyboardType (VirtualKeyboardType type) noexcept    { keyboardType = type; }
 
     //==============================================================================
     /** This abstract base class is implemented by LookAndFeel classes to provide
@@ -633,9 +631,7 @@ public:
     /** @internal */
     bool isTextInputActive() const override;
     /** @internal */
-    void setTemporaryUnderlining (const Array<Range<int> >&) override;
-    /** @internal */
-    VirtualKeyboardType getKeyboardType() override    { return keyboardType; }
+    void setTemporaryUnderlining (const Array <Range<int> >&) override;
 
 protected:
     //==============================================================================
@@ -696,7 +692,6 @@ private:
     juce_wchar passwordCharacter;
     OptionalScopedPointer<InputFilter> inputFilter;
     Value textValue;
-    VirtualKeyboardType keyboardType;
 
     enum
     {
@@ -705,8 +700,8 @@ private:
         draggingSelectionEnd
     } dragType;
 
-    ListenerList<Listener> listeners;
-    Array<Range<int> > underlinedSections;
+    ListenerList <Listener> listeners;
+    Array <Range<int> > underlinedSections;
 
     void moveCaret (int newCaretPos);
     void moveCaretTo (int newPosition, bool isSelecting);

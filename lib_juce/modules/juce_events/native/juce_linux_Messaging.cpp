@@ -37,8 +37,8 @@ typedef void (*SelectionRequestCallback) (XSelectionRequestEvent&);
 SelectionRequestCallback handleSelectionRequest = nullptr;
 
 //==============================================================================
-ScopedXLock::ScopedXLock()       { if (display != nullptr) XLockDisplay (display); }
-ScopedXLock::~ScopedXLock()      { if (display != nullptr) XUnlockDisplay (display); }
+ScopedXLock::ScopedXLock()       { XLockDisplay (display); }
+ScopedXLock::~ScopedXLock()      { XUnlockDisplay (display); }
 
 //==============================================================================
 class InternalMessageQueue
@@ -101,7 +101,7 @@ public:
         if (! isEmpty())
             return true;
 
-        if (display != nullptr)
+        if (display != 0)
         {
             ScopedXLock xlock;
             if (XPending (display))
@@ -118,7 +118,7 @@ public:
         FD_ZERO (&readset);
         FD_SET (fd0, &readset);
 
-        if (display != nullptr)
+        if (display != 0)
         {
             ScopedXLock xlock;
             int fd1 = XConnectionNumber (display);
@@ -154,7 +154,7 @@ private:
 
     static bool dispatchNextXEvent()
     {
-        if (display == nullptr)
+        if (display == 0)
             return false;
 
         XEvent evt;
@@ -235,8 +235,6 @@ namespace LinuxErrorHandling
 
     int errorHandler (Display* display, XErrorEvent* event)
     {
-        (void) display; (void) event;
-
        #if JUCE_DEBUG_XERRORS
         char errorStr[64] = { 0 };
         char requestStr[64] = { 0 };
@@ -321,7 +319,7 @@ void MessageManager::doPlatformSpecificInitialisation()
 
     display = XOpenDisplay (displayName.toUTF8());
 
-    if (display != nullptr)  // This is not fatal! we can run headless.
+    if (display != 0)  // This is not fatal! we can run headless.
     {
         // Create a context to store user data associated with Windows we create
         windowHandleXContext = XUniqueContext();
@@ -343,7 +341,7 @@ void MessageManager::doPlatformSpecificShutdown()
 {
     InternalMessageQueue::deleteInstance();
 
-    if (display != nullptr && ! LinuxErrorHandling::errorOccurred)
+    if (display != 0 && ! LinuxErrorHandling::errorOccurred)
     {
         XDestroyWindow (display, juce_messageWindowHandle);
         XCloseDisplay (display);

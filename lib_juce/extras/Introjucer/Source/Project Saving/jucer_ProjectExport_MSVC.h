@@ -63,13 +63,6 @@ public:
     {
     }
 
-    enum OptimisationLevel
-    {
-        optimisationOff = 1,
-        optimiseMinSize = 2,
-        optimiseMaxSpeed = 3
-    };
-
 protected:
     String projectGUID;
     mutable File rcFile, iconFile;
@@ -98,7 +91,7 @@ protected:
 
             if (oldStylePrebuildCommand.isNotEmpty())
                 for (ConfigIterator config (*this); config.next();)
-                    dynamic_cast<MSVCBuildConfiguration&> (*config).getPrebuildCommand() = oldStylePrebuildCommand;
+                    dynamic_cast <MSVCBuildConfiguration&> (*config).getPrebuildCommand() = oldStylePrebuildCommand;
         }
 
         {
@@ -138,9 +131,6 @@ protected:
         Value getWarningLevelValue()                { return getValue (Ids::winWarningLevel); }
         int getWarningLevel() const                 { return config [Ids::winWarningLevel]; }
 
-        Value getWarningsTreatedAsErrors()          { return getValue (Ids::warningsAreErrors); }
-        bool areWarningsTreatedAsErrors() const     { return config [Ids::warningsAreErrors]; }
-
         Value getPrebuildCommand()                  { return getValue (Ids::prebuildCommand); }
         String getPrebuildCommandString() const     { return config [Ids::prebuildCommand]; }
         Value getPostbuildCommand()                 { return getValue (Ids::postbuildCommand); }
@@ -174,18 +164,8 @@ protected:
             return target;
         }
 
-        var getDefaultOptimisationLevel() const override    { return var ((int) (isDebug() ? optimisationOff : optimiseMaxSpeed)); }
-
         void createConfigProperties (PropertyListBuilder& props) override
         {
-            static const char* optimisationLevels[] = { "No optimisation", "Minimise size", "Maximise speed", 0 };
-            const int optimisationLevelValues[]     = { optimisationOff, optimiseMinSize, optimiseMaxSpeed, 0 };
-
-            props.add (new ChoicePropertyComponent (getOptimisationLevel(), "Optimisation",
-                                                    StringArray (optimisationLevels),
-                                                    Array<var> (optimisationLevelValues)),
-                       "The optimisation level for this configuration");
-
             props.add (new TextPropertyComponent (getIntermediatesPathValue(), "Intermediates path", 2048, false),
                        "An optional path to a folder to use for the intermediate build files. Note that Visual Studio allows "
                        "you to use macros in this path, e.g. \"$(TEMP)\\MyAppBuildFiles\\$(Configuration)\", which is a handy way to "
@@ -196,8 +176,6 @@ protected:
 
             props.add (new ChoicePropertyComponent (getWarningLevelValue(), "Warning Level",
                                                     StringArray (warningLevelNames), Array<var> (warningLevels, numElementsInArray (warningLevels))));
-
-            props.add (new BooleanPropertyComponent (getWarningsTreatedAsErrors(), "Warnings", "Treat warnings as errors"));
 
             {
                 static const char* runtimeNames[] = { "(Default)", "Use static runtime", "Use DLL runtime", nullptr };
@@ -243,7 +221,7 @@ protected:
     {
         const String binaryPath (config.getTargetBinaryRelativePathString().trim());
         if (binaryPath.isEmpty())
-            return binaryPath;
+            return prependDot (File::createLegalFileName (config.getName().trim()));
 
         RelativePath binaryRelPath (binaryPath, RelativePath::projectFolder);
 
@@ -730,9 +708,7 @@ protected:
         const bool isDebug = config.isDebug();
 
         xml.setAttribute ("Name", createConfigName (config));
-
-        if (getConfigTargetPath (config).isNotEmpty())
-            xml.setAttribute ("OutputDirectory", FileHelpers::windowsStylePath (getConfigTargetPath (config)));
+        xml.setAttribute ("OutputDirectory", FileHelpers::windowsStylePath (getConfigTargetPath (config)));
 
         if (config.getIntermediatesPath().isNotEmpty())
             xml.setAttribute ("IntermediateDirectory", FileHelpers::windowsStylePath (config.getIntermediatesPath()));
@@ -905,7 +881,7 @@ protected:
     {
         for (ConstConfigIterator config (*this); config.next();)
             createConfig (*xml.createNewChildElement ("Configuration"),
-                          dynamic_cast<const MSVCBuildConfiguration&> (*config));
+                          dynamic_cast <const MSVCBuildConfiguration&> (*config));
     }
 
     static const char* getOptimisationLevelString (int level)
@@ -1173,7 +1149,6 @@ protected:
             {
                 const VC2010BuildConfiguration& config = dynamic_cast<const VC2010BuildConfiguration&> (*i);
 
-                if (getConfigTargetPath (config).isNotEmpty())
                 {
                     XmlElement* outdir = props->createNewChildElement ("OutDir");
                     setConditionAttribute (*outdir, config);
@@ -1266,9 +1241,6 @@ protected:
                 const String extraFlags (replacePreprocessorTokens (config, getExtraCompilerFlagsString()).trim());
                 if (extraFlags.isNotEmpty())
                     cl->createNewChildElement ("AdditionalOptions")->addTextElement (extraFlags + " %(AdditionalOptions)");
-
-                if (config.areWarningsTreatedAsErrors())
-                    cl->createNewChildElement ("TreatWarningAsError")->addTextElement ("true");
             }
 
             {
@@ -1564,8 +1536,8 @@ public:
     {
         MSVCProjectExporterBase::createExporterProperties (props);
 
-        static const char* toolsetNames[] = { "(default)", "v110", "v110_xp", "Windows7.1SDK", "CTP_Nov2013", nullptr };
-        const var toolsets[]              = { var(),       "v110", "v110_xp", "Windows7.1SDK", "CTP_Nov2013" };
+        static const char* toolsetNames[] = { "(default)", "v110", "v110_xp", "Windows7.1SDK", nullptr };
+        const var toolsets[]              = { var(),       "v110", "v110_xp", "Windows7.1SDK" };
 
         props.add (new ChoicePropertyComponent (getPlatformToolsetValue(), "Platform Toolset",
                                                 StringArray (toolsetNames),
@@ -1616,8 +1588,8 @@ public:
     {
         MSVCProjectExporterBase::createExporterProperties (props);
 
-        static const char* toolsetNames[] = { "(default)", "v120", "v120_xp", "Windows7.1SDK", "CTP_Nov2013", nullptr };
-        const var toolsets[]              = { var(),       "v120", "v120_xp", "Windows7.1SDK", "CTP_Nov2013" };
+        static const char* toolsetNames[] = { "(default)", "v120", "v120_xp", nullptr };
+        const var toolsets[]              = { var(),       "v120", "v120_xp" };
 
         props.add (new ChoicePropertyComponent (getPlatformToolsetValue(), "Platform Toolset",
                                                 StringArray (toolsetNames),

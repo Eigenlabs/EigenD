@@ -149,10 +149,6 @@ struct JavascriptEngine::RootObject   : public DynamicObject
                     if (const var* prop = getPropertyPointer (p, functionName))
                         return *prop;
                 }
-
-                // if there's a class with an overridden DynamicObject::hasMethod, this avoids an error
-                if (o->hasMethod (functionName))
-                    return var();
             }
 
             if (targetObject.isString())
@@ -702,11 +698,6 @@ struct JavascriptEngine::RootObject   : public DynamicObject
 
             if (FunctionObject* fo = dynamic_cast<FunctionObject*> (function.getObject()))
                 return fo->invoke (s, args);
-
-            if (DotOperator* dot = dynamic_cast<DotOperator*> (object.get()))
-                if (DynamicObject* o = thisObject.getDynamicObject())
-                    if (o->hasMethod (dot->child)) // allow an overridden DynamicObject::invokeMethod to accept a method call.
-                        return o->invokeMethod (dot->child, args);
 
             location.throwError ("This expression is not a function!"); return var();
         }
@@ -1462,12 +1453,12 @@ struct JavascriptEngine::RootObject   : public DynamicObject
         ObjectClass()
         {
             setMethod ("dump",  dump);
-            setMethod ("clone", cloneFn);
+            setMethod ("clone", clone);
         }
 
         static Identifier getClassName()   { static const Identifier i ("Object"); return i; }
         static var dump  (Args a)          { DBG (JSON::toString (a.thisObject)); (void) a; return var::undefined(); }
-        static var cloneFn (Args a)        { return a.thisObject.clone(); }
+        static var clone (Args a)          { return a.thisObject.clone(); }
     };
 
     //==============================================================================

@@ -35,7 +35,6 @@ namespace juce
 #include "undomanager/juce_UndoManager.h"
 #include "values/juce_Value.h"
 #include "values/juce_ValueTree.h"
-#include "values/juce_ValueTreeSynchroniser.h"
 #include "app_properties/juce_PropertiesFile.h"
 #include "app_properties/juce_ApplicationProperties.h"
 

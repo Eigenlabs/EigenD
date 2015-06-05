@@ -680,7 +680,7 @@ void MidiKeyboardComponent::resetAnyKeysInUse()
 
 void MidiKeyboardComponent::updateNoteUnderMouse (const MouseEvent& e, bool isDown)
 {
-    updateNoteUnderMouse (e.getEventRelativeTo (this).getPosition(), isDown, e.source.getIndex());
+    updateNoteUnderMouse (e.getPosition(), isDown, e.source.getIndex());
 }
 
 void MidiKeyboardComponent::updateNoteUnderMouse (Point<int> pos, bool isDown, int fingerNum)
@@ -696,7 +696,7 @@ void MidiKeyboardComponent::updateNoteUnderMouse (Point<int> pos, bool isDown, i
         mouseOverNotes.set (fingerNum, newNote);
     }
 
-    const int oldNoteDown = mouseDownNotes.getUnchecked (fingerNum);
+    int oldNoteDown = mouseDownNotes.getUnchecked (fingerNum);
 
     if (isDown)
     {
@@ -710,7 +710,7 @@ void MidiKeyboardComponent::updateNoteUnderMouse (Point<int> pos, bool isDown, i
                     state.noteOff (midiChannel, oldNoteDown);
             }
 
-            if (newNote >= 0 && ! mouseDownNotes.contains (newNote))
+            if (newNote >= 0)
             {
                 if (! useMousePositionForVelocity)
                     mousePositionVelocity = 1.0f;
@@ -813,8 +813,7 @@ void MidiKeyboardComponent::timerCallback()
         const Array<MouseInputSource>& mouseSources = Desktop::getInstance().getMouseSources();
 
         for (MouseInputSource* mi = mouseSources.begin(), * const e = mouseSources.end(); mi != e; ++mi)
-            if (mi->getComponentUnderMouse() == this || isParentOf (mi->getComponentUnderMouse()))
-                updateNoteUnderMouse (getLocalPoint (nullptr, mi->getScreenPosition()).roundToInt(), mi->isDragging(), mi->getIndex());
+            updateNoteUnderMouse (getLocalPoint (nullptr, mi->getScreenPosition()).roundToInt(), mi->isDragging(), mi->getIndex());
     }
 }
 
@@ -826,7 +825,8 @@ void MidiKeyboardComponent::clearKeyMappings()
     keyPresses.clear();
 }
 
-void MidiKeyboardComponent::setKeyPressForNote (const KeyPress& key, int midiNoteOffsetFromC)
+void MidiKeyboardComponent::setKeyPressForNote (const KeyPress& key,
+                                                const int midiNoteOffsetFromC)
 {
     removeKeyPressForNote (midiNoteOffsetFromC);
 
@@ -882,11 +882,6 @@ bool MidiKeyboardComponent::keyStateChanged (const bool /*isKeyDown*/)
     }
 
     return keyPressUsed;
-}
-
-bool MidiKeyboardComponent::keyPressed (const KeyPress& key)
-{
-    return keyPresses.contains (key);
 }
 
 void MidiKeyboardComponent::focusLost (FocusChangeType)

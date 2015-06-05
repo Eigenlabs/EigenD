@@ -256,7 +256,6 @@ public:
          isProcessing (false),
          isBypassed (false),
          hasShutdown (false),
-         isInSizeWindow (false),
          firstProcessCallback (true),
          shouldDeleteEditor (false),
         #if JUCE_64BIT
@@ -282,6 +281,7 @@ public:
         canProcessReplacing (true);
 
         isSynth ((JucePlugin_IsSynth) != 0);
+        noTail (filter->getTailLengthSeconds() <= 0);
         setInitialDelay (filter->getLatencySamples());
         programsAreChunks (true);
 
@@ -846,22 +846,6 @@ public:
         }
     }
 
-    bool string2parameter (VstInt32 index, char* text) override
-    {
-        if (filter != nullptr)
-        {
-            jassert (isPositiveAndBelow (index, filter->getNumParameters()));
-
-            if (AudioProcessorParameter* p = filter->getParameters()[index])
-            {
-                filter->setParameter (index, p->getValueForText (String::fromUTF8 (text)));
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     void getParameterName (VstInt32 index, char* text) override
     {
         if (filter != nullptr)
@@ -923,7 +907,7 @@ public:
     {
         short channelConfigs[][2] = { JucePlugin_PreferredChannelConfigurations };
 
-        Array<short*> channelConfigsSorted;
+        Array <short*> channelConfigsSorted;
         ChannelConfigComparator comp;
 
         for (int i = 0; i < numElementsInArray (channelConfigs); ++i)
@@ -1201,8 +1185,6 @@ public:
               #elif JUCE_LINUX
                 editorComp->addToDesktop (0, ptr);
                 hostWindow = (Window) ptr;
-                Window editorWnd = (Window) editorComp->getWindowHandle();
-                XReparentWindow (display, editorWnd, hostWindow, 0, 0);
               #else
                 hostWindow = attachComponentToWindowRef (editorComp, ptr, useNSView);
               #endif
@@ -1246,16 +1228,7 @@ public:
     {
         if (editorComp != nullptr)
         {
-            bool sizeWasSuccessful = false;
-
-            if (canHostDo (const_cast<char*> ("sizeWindow")))
-            {
-                isInSizeWindow = true;
-                sizeWasSuccessful = sizeWindow (newWidth, newHeight);
-                isInSizeWindow = false;
-            }
-
-            if (! sizeWasSuccessful)
+            if (! (canHostDo (const_cast <char*> ("sizeWindow")) && sizeWindow (newWidth, newHeight)))
             {
                 // some hosts don't support the sizeWindow call, so do it manually..
                #if JUCE_MAC
@@ -1311,10 +1284,7 @@ public:
             }
 
             if (ComponentPeer* peer = editorComp->getPeer())
-            {
                 peer->handleMovedOrResized();
-                peer->getComponent().repaint();
-            }
         }
     }
 
@@ -1385,30 +1355,27 @@ public:
 
         void childBoundsChanged (Component* child) override
         {
-            if (! wrapper.isInSizeWindow)
-            {
-                child->setTopLeftPosition (0, 0);
+            child->setTopLeftPosition (0, 0);
 
-                const int cw = child->getWidth();
-                const int ch = child->getHeight();
+            const int cw = child->getWidth();
+            const int ch = child->getHeight();
 
-               #if JUCE_MAC
-                if (wrapper.useNSView)
-                    setTopLeftPosition (0, getHeight() - ch);
-               #endif
+           #if JUCE_MAC
+            if (wrapper.useNSView)
+                setTopLeftPosition (0, getHeight() - ch);
+           #endif
 
-                wrapper.resizeHostWindow (cw, ch);
+            wrapper.resizeHostWindow (cw, ch);
 
-               #if ! JUCE_LINUX // setSize() on linux causes renoise and energyxt to fail.
-                setSize (cw, ch);
-               #else
-                XResizeWindow (display, (Window) getWindowHandle(), cw, ch);
-               #endif
+           #if ! JUCE_LINUX // setSize() on linux causes renoise and energyxt to fail.
+            setSize (cw, ch);
+           #else
+            XResizeWindow (display, (Window) getWindowHandle(), cw, ch);
+           #endif
 
-               #if JUCE_MAC
-                wrapper.resizeHostWindow (cw, ch);  // (doing this a second time seems to be necessary in tracktion)
-               #endif
-            }
+           #if JUCE_MAC
+            wrapper.resizeHostWindow (cw, ch);  // (doing this a second time seems to be necessary in tracktion)
+           #endif
         }
 
         void handleAsyncUpdate() override
@@ -1455,7 +1422,7 @@ private:
     VSTMidiEventList outgoingEvents;
     VstSpeakerArrangementType speakerIn, speakerOut;
     int numInChans, numOutChans;
-    bool isProcessing, isBypassed, hasShutdown, isInSizeWindow, firstProcessCallback;
+    bool isProcessing, isBypassed, hasShutdown, firstProcessCallback;
     bool shouldDeleteEditor, useNSView;
     HeapBlock<float*> channels;
     Array<float*> tempChannels;  // see note in processReplacing()

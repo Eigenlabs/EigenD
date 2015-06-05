@@ -88,8 +88,6 @@ private:
     uint32 lastGarbageCollectionTime;
 
     void garbageCollectIfNeeded();
-
-    JUCE_DECLARE_NON_COPYABLE (StringPool)
 };
 
 

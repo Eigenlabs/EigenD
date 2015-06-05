@@ -810,26 +810,47 @@ private:
         //==============================================================================
         tresult PLUGIN_API setInt (AttrID id, Steinberg::int64 value) override
         {
-            addMessageToQueue (id, value);
+            jassert (id != nullptr);
+
+            if (! setValueForId (id, value))
+                owner->messageQueue.add (ComSmartPtr<Message> (new Message (*owner, this, id, value)));
+
             return kResultTrue;
         }
 
         tresult PLUGIN_API setFloat (AttrID id, double value) override
         {
-            addMessageToQueue (id, value);
+            jassert (id != nullptr);
+
+            if (! setValueForId (id, value))
+                owner->messageQueue.add (ComSmartPtr<Message> (new Message (*owner, this, id, value)));
+
             return kResultTrue;
         }
 
         tresult PLUGIN_API setString (AttrID id, const Vst::TChar* string) override
         {
-            addMessageToQueue (id, toString (string));
+            jassert (id != nullptr);
+            jassert (string != nullptr);
+
+            const String text (toString (string));
+
+            if (! setValueForId (id, text))
+                owner->messageQueue.add (ComSmartPtr<Message> (new Message (*owner, this, id, text)));
+
             return kResultTrue;
         }
 
         tresult PLUGIN_API setBinary (AttrID id, const void* data, Steinberg::uint32 size) override
         {
-            jassert (size >= 0 && (data != nullptr || size == 0));
-            addMessageToQueue (id, MemoryBlock (data, (size_t) size));
+            jassert (id != nullptr);
+            jassert (data != nullptr && size > 0);
+
+            MemoryBlock block (data, (size_t) size);
+
+            if (! setValueForId (id, block))
+                owner->messageQueue.add (ComSmartPtr<Message> (new Message (*owner, this, id, block)));
+
             return kResultTrue;
         }
 
@@ -838,7 +859,7 @@ private:
         {
             jassert (id != nullptr);
 
-            if (findMessageOnQueueWithID (id, result))
+            if (fetchValueForId (id, result))
                 return kResultTrue;
 
             jassertfalse;
@@ -849,7 +870,7 @@ private:
         {
             jassert (id != nullptr);
 
-            if (findMessageOnQueueWithID (id, result))
+            if (fetchValueForId (id, result))
                 return kResultTrue;
 
             jassertfalse;
@@ -861,7 +882,7 @@ private:
             jassert (id != nullptr);
 
             String stringToFetch;
-            if (findMessageOnQueueWithID (id, stringToFetch))
+            if (fetchValueForId (id, stringToFetch))
             {
                 Steinberg::String str (stringToFetch.toRawUTF8());
                 str.copyTo (result, 0, (Steinberg::int32) jmin (length, (Steinberg::uint32) std::numeric_limits<Steinberg::int32>::max()));
@@ -901,7 +922,7 @@ private:
 
         //==============================================================================
         template<typename Type>
-        void addMessageToQueue (AttrID id, const Type& value)
+        bool setValueForId (AttrID id, const Type& value)
         {
             jassert (id != nullptr);
 
@@ -912,15 +933,15 @@ private:
                 if (std::strcmp (message->getMessageID(), id) == 0)
                 {
                     message->value = value;
-                    return;
+                    return true;
                 }
             }
 
-            owner->messageQueue.add (ComSmartPtr<Message> (new Message (*owner, this, id, value)));
+            return false; // No message found with that Id
         }
 
         template<typename Type>
-        bool findMessageOnQueueWithID (AttrID id, Type& value)
+        bool fetchValueForId (AttrID id, Type& value)
         {
             jassert (id != nullptr);
 
@@ -1583,8 +1604,8 @@ public:
       : module (handle),
         numInputAudioBusses (0),
         numOutputAudioBusses (0),
-        inputParameterChanges (new ParamValueQueueList()),
-        outputParameterChanges (new ParamValueQueueList()),
+        inputParameterChanges (new ParameterChangeList()),
+        outputParameterChanges (new ParameterChangeList()),
         midiInputs (new MidiEventList()),
         midiOutputs (new MidiEventList()),
         isComponentInitialised (false),
@@ -1798,8 +1819,6 @@ public:
             processor->process (data);
 
             MidiEventList::toMidiBuffer (midiMessages, *midiOutputs);
-
-            inputParameterChanges->clearAllQueues();
         }
     }
 
@@ -1930,11 +1949,8 @@ public:
     {
         if (editController != nullptr)
         {
-            const uint32 paramID = getParameterInfoForIndex (parameterIndex).id;
-            editController->setParamNormalized (paramID, (double) newValue);
-
-            Steinberg::int32 index;
-            inputParameterChanges->addParameterData (paramID, index)->addPoint (0, newValue, index);
+            const uint32 id = getParameterInfoForIndex (parameterIndex).id;
+            editController->setParamNormalized (id, (double) newValue);
         }
     }
 
@@ -2012,11 +2028,11 @@ public:
     //==============================================================================
     // NB: this class and its subclasses must be public to avoid problems in
     // DLL builds under MSVC.
-    class ParamValueQueueList  : public Vst::IParameterChanges
+    class ParameterChangeList  : public Vst::IParameterChanges
     {
     public:
-        ParamValueQueueList() {}
-        virtual ~ParamValueQueueList() {}
+        ParameterChangeList() {}
+        virtual ~ParameterChangeList() {}
 
         JUCE_DECLARE_VST3_COM_REF_METHODS
         JUCE_DECLARE_VST3_COM_QUERY_METHODS
@@ -2035,14 +2051,9 @@ public:
                 }
             }
 
-            index = getParameterCount();
-            return queues.add (new ParamValueQueue (id));
-        }
-
-        void clearAllQueues() noexcept
-        {
-            for (int i = queues.size(); --i >= 0;)
-                queues.getUnchecked (i)->clear();
+            ParamValueQueue* q = queues.add (new ParamValueQueue (id));
+            index = getParameterCount() - 1;
+            return q;
         }
 
         struct ParamValueQueue  : public Vst::IParamValueQueue
@@ -2064,8 +2075,6 @@ public:
                                                     Steinberg::int32& sampleOffset,
                                                     Steinberg::Vst::ParamValue& value) override
             {
-                const ScopedLock sl (pointLock);
-
                 if (isPositiveAndBelow ((int) index, points.size()))
                 {
                     ParamPoint e (points.getUnchecked ((int) index));
@@ -2083,18 +2092,11 @@ public:
                                                     Steinberg::Vst::ParamValue value,
                                                     Steinberg::int32& index) override
             {
+                // XXX this may need to be made thread-safe..
                 ParamPoint p = { sampleOffset, value };
-
-                const ScopedLock sl (pointLock);
-                index = (Steinberg::int32) points.size();
                 points.add (p);
+                index = (Steinberg::int32) points.size();
                 return kResultTrue;
-            }
-
-            void clear() noexcept
-            {
-                const ScopedLock sl (pointLock);
-                points.clearQuick();
             }
 
         private:
@@ -2107,7 +2109,6 @@ public:
             Atomic<int> refCount;
             const Vst::ParamID paramID;
             Array<ParamPoint> points;
-            CriticalSection pointLock;
 
             JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParamValueQueue)
         };
@@ -2115,7 +2116,7 @@ public:
         Atomic<int> refCount;
         OwnedArray<ParamValueQueue> queues;
 
-        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParamValueQueueList)
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterChangeList)
     };
 
 private:
@@ -2163,7 +2164,7 @@ private:
 
             if (object->getState (&stream) == kResultTrue)
             {
-                MemoryBlock info (stream.getData(), (size_t) stream.getSize());
+                MemoryBlock info (stream.getData(), (std::size_t) stream.getSize());
                 head.createNewChildElement (identifier)->addTextElement (info.toBase64Encoding());
             }
         }
@@ -2188,7 +2189,7 @@ private:
         return stream;
     }
 
-    ComSmartPtr<ParamValueQueueList> inputParameterChanges, outputParameterChanges;
+    ComSmartPtr<ParameterChangeList> inputParameterChanges, outputParameterChanges;
     ComSmartPtr<MidiEventList> midiInputs, midiOutputs;
     Vst::ProcessContext timingInfo; //< Only use this in processBlock()!
     bool isComponentInitialised, isControllerInitialised, isActive;

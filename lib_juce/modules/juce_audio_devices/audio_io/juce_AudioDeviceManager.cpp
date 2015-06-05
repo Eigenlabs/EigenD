@@ -92,6 +92,7 @@ AudioDeviceManager::AudioDeviceManager()
     : numInputChansNeeded (0),
       numOutputChansNeeded (2),
       listNeedsScanning (true),
+      useInputNames (false),
       inputLevel (0),
       testSoundPosition (0),
       cpuUsageMs (0),
@@ -153,8 +154,7 @@ static void addIfNotNull (OwnedArray<AudioIODeviceType>& list, AudioIODeviceType
 
 void AudioDeviceManager::createAudioDeviceTypes (OwnedArray<AudioIODeviceType>& list)
 {
-    addIfNotNull (list, AudioIODeviceType::createAudioIODeviceType_WASAPI (false));
-    addIfNotNull (list, AudioIODeviceType::createAudioIODeviceType_WASAPI (true));
+    addIfNotNull (list, AudioIODeviceType::createAudioIODeviceType_WASAPI());
     addIfNotNull (list, AudioIODeviceType::createAudioIODeviceType_DirectSound());
     addIfNotNull (list, AudioIODeviceType::createAudioIODeviceType_ASIO());
     addIfNotNull (list, AudioIODeviceType::createAudioIODeviceType_CoreAudio());
@@ -175,17 +175,6 @@ void AudioDeviceManager::addAudioDeviceType (AudioIODeviceType* newDeviceType)
 
         newDeviceType->addListener (callbackHandler);
     }
-}
-
-static bool deviceListContains (AudioIODeviceType* type, bool isInput, const String& name)
-{
-    StringArray devices (type->getDeviceNames (isInput));
-
-    for (int i = devices.size(); --i >= 0;)
-        if (devices[i].trim().equalsIgnoreCase (name.trim()))
-            return true;
-
-    return false;
 }
 
 //==============================================================================
@@ -374,8 +363,8 @@ AudioIODeviceType* AudioDeviceManager::findType (const String& inputName, const 
     {
         AudioIODeviceType* const type = availableDeviceTypes.getUnchecked(i);
 
-        if ((inputName.isNotEmpty() && deviceListContains (type, true, inputName))
-             || (outputName.isNotEmpty() && deviceListContains (type, false, outputName)))
+        if ((inputName.isNotEmpty() && type->getDeviceNames (true).contains (inputName, true))
+            || (outputName.isNotEmpty() && type->getDeviceNames (false).contains (outputName, true)))
         {
             return type;
         }
@@ -469,11 +458,17 @@ String AudioDeviceManager::setAudioDeviceSetup (const AudioDeviceSetup& newSetup
         deleteCurrentDevice();
         scanDevicesIfNeeded();
 
-        if (newOutputDeviceName.isNotEmpty() && ! deviceListContains (type, false, newOutputDeviceName))
+        if (newOutputDeviceName.isNotEmpty()
+             && ! type->getDeviceNames (false).contains (newOutputDeviceName))
+        {
             return "No such device: " + newOutputDeviceName;
+        }
 
-        if (newInputDeviceName.isNotEmpty() && ! deviceListContains (type, true, newInputDeviceName))
+        if (newInputDeviceName.isNotEmpty()
+             && ! type->getDeviceNames (true).contains (newInputDeviceName))
+        {
             return "No such device: " + newInputDeviceName;
+        }
 
         currentAudioDevice = type->createDevice (newOutputDeviceName, newInputDeviceName);
 
@@ -550,11 +545,6 @@ double AudioDeviceManager::chooseBestSampleRate (double rate) const
     jassert (currentAudioDevice != nullptr);
 
     const Array<double> rates (currentAudioDevice->getAvailableSampleRates());
-
-    if (rate > 0 && rates.contains (rate))
-        return rate;
-
-    rate = currentAudioDevice->getCurrentSampleRate();
 
     if (rate > 0 && rates.contains (rate))
         return rate;

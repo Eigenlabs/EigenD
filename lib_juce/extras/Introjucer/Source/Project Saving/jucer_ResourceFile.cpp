@@ -109,7 +109,7 @@ static String getComment()
     return comment;
 }
 
-Result ResourceFile::writeHeader (MemoryOutputStream& header)
+bool ResourceFile::writeHeader (MemoryOutputStream& header)
 {
     const String headerGuard ("BINARYDATA_H_" + String (project.getProjectUID().hashCode() & 0x7ffffff) + "_INCLUDED");
 
@@ -126,10 +126,6 @@ Result ResourceFile::writeHeader (MemoryOutputStream& header)
     for (int i = 0; i < files.size(); ++i)
     {
         const File& file = files.getReference(i);
-
-        if (! file.existsAsFile())
-            return Result::fail ("Can't open resource file: " + file.getFullPathName());
-
         const int64 dataSize = file.getSize();
 
         const String variableName (variableNames[i]);
@@ -159,10 +155,10 @@ Result ResourceFile::writeHeader (MemoryOutputStream& header)
            << newLine
            << "#endif" << newLine;
 
-    return Result::ok();
+    return true;
 }
 
-Result ResourceFile::writeCpp (MemoryOutputStream& cpp, const File& headerFile, int& i, const int maxFileSize)
+bool ResourceFile::writeCpp (MemoryOutputStream& cpp, const File& headerFile, int& i, const int maxFileSize)
 {
     const bool isFirstFile = (i == 0);
 
@@ -251,22 +247,17 @@ Result ResourceFile::writeCpp (MemoryOutputStream& cpp, const File& headerFile, 
     cpp << newLine
         << "}" << newLine;
 
-    return Result::ok();
+    return true;
 }
 
-Result ResourceFile::write (Array<File>& filesCreated, const int maxFileSize)
+bool ResourceFile::write (Array<File>& filesCreated, const int maxFileSize)
 {
     const File headerFile (project.getBinaryDataHeaderFile());
 
     {
         MemoryOutputStream mo;
-        Result r (writeHeader (mo));
-
-        if (r.failed())
-            return r;
-
-        if (! FileHelpers::overwriteFileWithNewDataIfDifferent (headerFile, mo))
-            return Result::fail ("Can't write to file: " + headerFile.getFullPathName());
+        if (! (writeHeader (mo) && FileHelpers::overwriteFileWithNewDataIfDifferent (headerFile, mo)))
+            return false;
 
         filesCreated.add (headerFile);
     }
@@ -279,14 +270,8 @@ Result ResourceFile::write (Array<File>& filesCreated, const int maxFileSize)
         File cpp (project.getBinaryDataCppFile (fileIndex));
 
         MemoryOutputStream mo;
-
-        Result r (writeCpp (mo, headerFile, i, maxFileSize));
-
-        if (r.failed())
-            return r;
-
-        if (! FileHelpers::overwriteFileWithNewDataIfDifferent (cpp, mo))
-            return Result::fail ("Can't write to file: " + cpp.getFullPathName());
+        if (! (writeCpp (mo, headerFile, i, maxFileSize) && FileHelpers::overwriteFileWithNewDataIfDifferent (cpp, mo)))
+            return false;
 
         filesCreated.add (cpp);
         ++fileIndex;
@@ -295,5 +280,5 @@ Result ResourceFile::write (Array<File>& filesCreated, const int maxFileSize)
             break;
     }
 
-    return Result::ok();
+    return true;
 }

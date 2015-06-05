@@ -40,8 +40,8 @@ class XCodeProjectExporter  : public ProjectExporter
 {
 public:
     //==============================================================================
-    static const char* getNameMac()                         { return "Xcode (MacOSX)"; }
-    static const char* getNameiOS()                         { return "Xcode (iOS)"; }
+    static const char* getNameMac()                         { return "XCode (MacOSX)"; }
+    static const char* getNameiOS()                         { return "XCode (iOS)"; }
     static const char* getValueTreeTypeName (bool iOS)      { return iOS ? "XCODE_IPHONE" : "XCODE_MAC"; }
 
     //==============================================================================
@@ -154,9 +154,6 @@ public:
         }
 
         writeInfoPlistFile();
-
-        // Deleting the .rsrc files can be needed to force Xcode to update the version number.
-        deleteRsrcFiles();
     }
 
 protected:
@@ -204,12 +201,8 @@ protected:
         Value  getLinkTimeOptimisationValue()          { return getValue (Ids::linkTimeOptimisation); }
         bool   isLinkTimeOptimisationEnabled() const   { return config   [Ids::linkTimeOptimisation]; }
 
-        var getDefaultOptimisationLevel() const override    { return var ((int) (isDebug() ? gccO0 : gccO3)); }
-
         void createConfigProperties (PropertyListBuilder& props)
         {
-            addGCCOptimisationProperty (props);
-
             if (iOS)
             {
                 const char* iosVersions[]      = { "Use Default",     "3.2", "4.0", "4.1", "4.2", "4.3", "5.0", "5.1", "6.0", "6.1", "7.0", "7.1", 0 };
@@ -292,11 +285,6 @@ private:
             return "$(HOME)" + path.substring (1);
 
         return path;
-    }
-
-    static String addQuotesIfContainsSpace (const String& s)
-    {
-        return s.containsChar (' ') ? s.quoted() : s;
     }
 
     File getProjectBundle() const                 { return getTargetFolder().getChildFile (project.getProjectFilenameRoot()).withFileExtension (".xcodeproj"); }
@@ -606,25 +594,6 @@ private:
         if (settings ["UIStatusBarHidden"])
             addPlistDictionaryKeyBool (dict, "UIStatusBarHidden", true);
 
-        if (iOS)
-        {
-            static const char* kDefaultiOSOrientationStrings[] =
-            {
-                "UIInterfaceOrientationPortrait",
-                "UIInterfaceOrientationLandscapeLeft",
-                "UIInterfaceOrientationLandscapeRight",
-                nullptr
-            };
-
-            StringArray iOSOrientations (kDefaultiOSOrientationStrings);
-
-            dict->createNewChildElement ("key")->addTextElement ("UISupportedInterfaceOrientations");
-            XmlElement* plistStringArray = dict->createNewChildElement ("array");
-
-            for (int i = 0; i < iOSOrientations.size(); ++i)
-                plistStringArray->createNewChildElement ("string")->addTextElement (iOSOrientations[i]);
-        }
-
         for (int i = 0; i < xcodeExtraPListEntries.size(); ++i)
             dict->addChildElement (new XmlElement (xcodeExtraPListEntries.getReference(i)));
 
@@ -632,12 +601,6 @@ private:
         plist->writeToStream (mo, "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
 
         overwriteFileIfDifferentOrThrow (infoPlistFile, mo);
-    }
-
-    void deleteRsrcFiles() const
-    {
-        for (DirectoryIterator di (getTargetFolder().getChildFile ("build"), true, "*.rsrc", File::findFiles); di.next();)
-            di.getFile().deleteFile();
     }
 
     String getHeaderSearchPaths (const BuildConfiguration& config) const
@@ -663,17 +626,11 @@ private:
         return "(" + paths.joinIntoString (", ") + ")";
     }
 
-    static String getLinkerFlagForLib (String library)
-    {
-        if (library.substring (0, 3) == "lib")
-            library = library.substring (3);
-
-        return "-l" + library.upToLastOccurrenceOf (".", false, false);
-    }
-
     void getLinkerFlagsForStaticLibrary (const RelativePath& library, StringArray& flags, StringArray& librarySearchPaths) const
     {
-        flags.add (getLinkerFlagForLib (library.getFileNameWithoutExtension()));
+        jassert (library.getFileNameWithoutExtension().substring (0, 3) == "lib");
+
+        flags.add ("-l" + library.getFileNameWithoutExtension().substring (3));
 
         String searchPath (library.toUnixStyle().upToLastOccurrenceOf ("/", false, false));
 
@@ -704,11 +661,7 @@ private:
         flags.add (replacePreprocessorTokens (config, getExtraLinkerFlagsString()));
         flags.add (getExternalLibraryFlags (config));
 
-        for (int i = 0; i < xcodeLibs.size(); ++i)
-            flags.add (getLinkerFlagForLib (xcodeLibs[i]));
-
         flags.removeEmptyStrings (true);
-        flags.removeDuplicates (false);
     }
 
     StringArray getProjectSettings (const XcodeBuildConfiguration& config) const
@@ -801,8 +754,8 @@ private:
             RelativePath binaryPath (config.getTargetBinaryRelativePathString(), RelativePath::projectFolder);
             binaryPath = binaryPath.rebased (projectFolder, getTargetFolder(), RelativePath::buildTargetFolder);
 
-            s.add ("DSTROOT = " + addQuotesIfContainsSpace (sanitisePath (binaryPath.toUnixStyle())));
-            s.add ("SYMROOT = " + addQuotesIfContainsSpace (sanitisePath (binaryPath.toUnixStyle())));
+            s.add ("DSTROOT = " + sanitisePath (binaryPath.toUnixStyle()));
+            s.add ("SYMROOT = " + sanitisePath (binaryPath.toUnixStyle()));
         }
         else
         {
@@ -1351,7 +1304,7 @@ private:
         };
 
         const ImageType types[] = { { "portrait",  "iphone", "full-screen", "2x" },
-                                    { "landscape", "iphone", "full-screen", "2x" },
+                                    { "portrait",  "iphone", "full-screen", "2x" },
                                     { "portrait",  "ipad",   "full-screen", "1x" },
                                     { "landscape", "ipad",   "full-screen", "1x" },
                                     { "portrait",  "ipad",   "full-screen", "2x" },
@@ -1364,7 +1317,7 @@ private:
             d->setProperty ("orientation", types[i].orientation);
             d->setProperty ("idiom", types[i].idiom);
             d->setProperty ("extent",  types[i].extent);
-            d->setProperty ("minimum-system-version", "7.0");
+            d->setProperty ("minimum-system-version",  "7.0");
             d->setProperty ("scale", types[i].scale);
             images.append (var (d));
         }

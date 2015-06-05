@@ -282,11 +282,6 @@ ConcertinaPanel::ConcertinaPanel()
 
 ConcertinaPanel::~ConcertinaPanel() {}
 
-int ConcertinaPanel::getNumPanels() const noexcept
-{
-    return holders.size();
-}
-
 Component* ConcertinaPanel::getPanel (int index) const noexcept
 {
     if (PanelHolder* h = holders[index])

@@ -81,6 +81,11 @@ bool MessageManager::MessageBase::post()
 
 //==============================================================================
 #if JUCE_MODAL_LOOPS_PERMITTED && ! (JUCE_MAC || JUCE_IOS)
+void MessageManager::runDispatchLoop()
+{
+    runDispatchLoopUntil (-1);
+}
+
 bool MessageManager::runDispatchLoopUntil (int millisecondsToRunFor)
 {
     jassert (isThisTheMessageThread()); // must only be called by the message thread
@@ -102,9 +107,7 @@ bool MessageManager::runDispatchLoopUntil (int millisecondsToRunFor)
 
     return ! quitMessageReceived;
 }
-#endif
 
-#if ! (JUCE_MAC || JUCE_IOS || JUCE_ANDROID)
 class MessageManager::QuitMessage   : public MessageManager::MessageBase
 {
 public:
@@ -118,21 +121,6 @@ public:
 
     JUCE_DECLARE_NON_COPYABLE (QuitMessage)
 };
-
-void MessageManager::runDispatchLoop()
-{
-    jassert (isThisTheMessageThread()); // must only be called by the message thread
-
-    while (! quitMessageReceived)
-    {
-        JUCE_TRY
-        {
-            if (! dispatchNextMessageOnSystemQueue (false))
-                Thread::sleep (1);
-        }
-        JUCE_CATCH_EXCEPTION
-    }
-}
 
 void MessageManager::stopDispatchLoop()
 {

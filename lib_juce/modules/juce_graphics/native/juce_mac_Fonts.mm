@@ -385,7 +385,7 @@ namespace CoreTextTypeLayout
 
     static void createLayout (TextLayout& glyphLayout, const AttributedString& text)
     {
-        const CGFloat boundsHeight = glyphLayout.getHeight();
+        const CGFloat boundsHeight = 1.0e6f;
         CTFrameRef frame = createCTFrame (text, CGRectMake (0, 0, glyphLayout.getWidth(), boundsHeight));
 
         CFArrayRef lines = CTFrameGetLines (frame);

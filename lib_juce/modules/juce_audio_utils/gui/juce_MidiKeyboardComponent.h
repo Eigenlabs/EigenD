@@ -281,8 +281,6 @@ public:
     /** @internal */
     bool keyStateChanged (bool isKeyDown) override;
     /** @internal */
-    bool keyPressed (const KeyPress&) override;
-    /** @internal */
     void focusLost (FocusChangeType) override;
     /** @internal */
     void handleNoteOn (MidiKeyboardState*, int midiChannel, int midiNoteNumber, float velocity) override;

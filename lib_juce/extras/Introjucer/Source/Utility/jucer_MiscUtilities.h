@@ -37,7 +37,6 @@ String createGCCPreprocessorFlags (const StringPairArray& defs);
 String replacePreprocessorDefs (const StringPairArray& definitions, String sourceString);
 
 StringArray getSearchPathsFromString (const String& searchPath);
-StringArray getCommaOrWhitespaceSeparatedItems (const String&);
 
 void setValueIfVoid (Value value, const var& defaultValue);
 

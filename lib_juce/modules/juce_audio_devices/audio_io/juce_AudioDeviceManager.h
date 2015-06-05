@@ -450,6 +450,7 @@ private:
     BigInteger inputChannels, outputChannels;
     ScopedPointer<XmlElement> lastExplicitSettings;
     mutable bool listNeedsScanning;
+    bool useInputNames;
     Atomic<int> inputLevelMeasurementEnabledCount;
     double inputLevel;
     ScopedPointer<AudioSampleBuffer> testSound;

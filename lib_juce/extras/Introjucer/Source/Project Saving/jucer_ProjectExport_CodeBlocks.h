@@ -80,12 +80,9 @@ private:
         {
         }
 
-        void createConfigProperties (PropertyListBuilder& props) override
+        void createConfigProperties (PropertyListBuilder&)
         {
-            addGCCOptimisationProperty (props);
         }
-
-        var getDefaultOptimisationLevel() const override    { return var ((int) (isDebug() ? gccO0 : gccO3)); }
     };
 
     BuildConfiguration::Ptr createBuildConfig (const ValueTree& tree) const override

@@ -86,10 +86,12 @@ void SlidingPanelComponent::addTab (const String& tabName,
 
 void SlidingPanelComponent::goToTab (int targetTabIndex)
 {
+    const int xTranslation = (currentIndex - targetTabIndex) * getWidth();
+
     currentIndex = targetTabIndex;
 
     Desktop::getInstance().getAnimator()
-        .animateComponent (&pageHolder, pageHolder.getBounds().withX (-targetTabIndex * getWidth()),
+        .animateComponent (&pageHolder, pageHolder.getBounds().translated (xTranslation, 0),
                            1.0f, 600, false, 0.0, 0.0);
 
     repaint();

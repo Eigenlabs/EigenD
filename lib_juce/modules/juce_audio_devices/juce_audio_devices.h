@@ -43,20 +43,11 @@
 #endif
 
 /** Config: JUCE_WASAPI
-    Enables WASAPI audio devices (Windows Vista and above). See also the
-    JUCE_WASAPI_EXCLUSIVE flag.
+    Enables WASAPI audio devices (Windows Vista and above).
 */
 #ifndef JUCE_WASAPI
  #define JUCE_WASAPI 1
 #endif
-
-/** Config: JUCE_WASAPI_EXCLUSIVE
-    Enables WASAPI audio devices in exclusive mode (Windows Vista and above).
-*/
-#ifndef JUCE_WASAPI_EXCLUSIVE
- #define JUCE_WASAPI_EXCLUSIVE 0
-#endif
-
 
 /** Config: JUCE_DIRECTSOUND
     Enables DirectSound audio (MS Windows only).

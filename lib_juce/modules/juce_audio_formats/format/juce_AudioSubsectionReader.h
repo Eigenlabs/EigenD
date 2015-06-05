@@ -68,7 +68,8 @@ public:
                       int64 startSampleInFile, int numSamples) override;
 
     void readMaxLevels (int64 startSample, int64 numSamples,
-                        Range<float>* results, int numChannelsToRead) override;
+                        float& lowestLeft,  float& highestLeft,
+                        float& lowestRight, float& highestRight) override;
 
 
 private:

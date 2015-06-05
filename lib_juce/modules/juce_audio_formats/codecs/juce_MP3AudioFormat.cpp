@@ -426,8 +426,9 @@ struct VBRTagData
 
         if (flags & 4)
         {
-            for (int i = 0; i < 100; ++i)
-                toc[i] = data[i];
+            if (toc != nullptr)
+                for (int i = 0; i < 100; ++i)
+                    toc[i] = data[i];
 
             data += 100;
         }
