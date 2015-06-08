@@ -286,7 +286,7 @@ void pic::bulk_queue_t::impl_t::flush()
     {
         if(count_>0)
         {
-            add(writer__,this,buffer_,(void *)count_,0);
+            add(writer__,this,buffer_,(void *)(long) count_,0);
             buffer_ = (unsigned char *)nb_malloc(PIC_ALLOC_NB,size_);
             count_ = 0;
             if(buffer_)

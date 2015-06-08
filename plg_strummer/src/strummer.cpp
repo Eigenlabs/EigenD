@@ -361,7 +361,7 @@ struct strm::strumconfig_t::impl_t
     void add_breath_course(int course)
     {
         breath_courses_.insert(course);
-        if(course > int(max_course_))
+        if(course > long(max_course_))
         {
             max_course_ = course;
         }
@@ -394,7 +394,7 @@ struct strm::strumconfig_t::impl_t
         }
 
         key_courses_.insert(std::make_pair(coordinate,course));
-        if(course > int(max_course_))
+        if(course > long(max_course_))
         {
             max_course_ = course;
         }
@@ -423,7 +423,7 @@ struct strm::strumconfig_t::impl_t
     {
         open_courses_info_.erase(course);
         open_courses_info_.insert(std::make_pair(course, info));
-        if(course > int(max_course_))
+        if(course > long(max_course_))
         {
             max_course_ = course;
         }
@@ -824,7 +824,7 @@ void data_wire_t::handle_data(int signal, piw::data_nb_t &d)
 
 void *data_wire_t::get_context()
 {
-    return (void *)course_;
+    return (void *) (long) course_;
 }
 
 void data_wire_t::wire_ticked(unsigned long long f, unsigned long long t)
@@ -1263,7 +1263,7 @@ bool strum_wire_t::event_end(unsigned long long t)
 
 bool strum_wire_t::applies_to_consumer(consumer_t *c, bool allow_similar)
 {
-    int consumer_course = int(c->get_context());
+    int consumer_course = long(c->get_context());
     bool consumer_applies = false;
     if(key_started_)
     {
@@ -1287,7 +1287,7 @@ bool strum_wire_t::applies_to_consumer(consumer_t *c, bool allow_similar)
         }
     }
 
-    if(consumer_applies && !allow_similar && producer_.has_similar_consumers((void *)consumer_course))
+    if(consumer_applies && !allow_similar && producer_.has_similar_consumers((void *) (long) consumer_course))
     {
         consumer_applies = false;
     }
@@ -1297,8 +1297,8 @@ bool strum_wire_t::applies_to_consumer(consumer_t *c, bool allow_similar)
 
 bool strum_wire_t::is_similar_consumer(consumer_t *c, void *data)
 {
-    int course = int(data);
-    return int(c->get_context()) == course;
+    int course = long(data);
+    return long(c->get_context()) == course;
 }
 
 
@@ -1703,7 +1703,7 @@ void strm::strummer_t::impl_t::add_consumer(consumer_t *c, unsigned long long t)
 
     if(!is_open_course(c))
     {
-        int course = int(c->get_context());
+        int course = long(c->get_context());
 
         data_wire_t *wire = (data_wire_t *)c;
 
@@ -1733,7 +1733,7 @@ void strm::strummer_t::impl_t::add_consumer(consumer_t *c, unsigned long long t)
                 data_wire_t *other = (data_wire_t *)ic->second;
                 if(other == wire) continue;
 
-                if(other->is_output_active() && int(other->get_context()) == course)
+                if(other->is_output_active() && long(other->get_context()) == course)
                 {
                     if(other->key_ < wire->key_)
                     {
@@ -1772,7 +1772,7 @@ void strm::strummer_t::impl_t::muting_consumer(consumer_t *c, unsigned long long
 {
     if(!is_open_course(c))
     {
-        int course = int(c->get_context());
+        int course = long(c->get_context());
 
         // mute open courses
         pic::flipflop_t<pic::lckmap_t<int,data_wire_t *>::lcktype>::guard_t goc(open_course_wires_);
@@ -1804,7 +1804,7 @@ void strm::strummer_t::impl_t::find_del_beneficiary(data_wire_t *w, unsigned lon
        w->is_output_active() &&
        t-w->last_pulloff_ <= config_.pulloff_interval_)
     {
-        int course = int(w->get_context());
+        int course = long(w->get_context());
 
         if(!config_.poly_courses_enable_)
         {
@@ -1819,7 +1819,7 @@ void strm::strummer_t::impl_t::find_del_beneficiary(data_wire_t *w, unsigned lon
             for(;ic!=ec;ic++)
             {
                 data_wire_t *o = (data_wire_t *)ic->second;
-                int other_course = int(o->get_context());
+                int other_course = long(o->get_context());
 
                 if(other_course == course)
                 {
