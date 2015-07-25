@@ -22,7 +22,7 @@ Import('master_env')
 
 import os.path
 
-release = '2.1.1'
+release = '2.1.2'
 compatible = '2.1'
 
 status = {
