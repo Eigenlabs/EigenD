@@ -2,7 +2,7 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2015 - ROLI Ltd.
 
    Permission is granted to use this software under the terms of either:
    a) the GPL v2 (or any later version)
@@ -22,10 +22,37 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_COMMONHEADERS_JUCEHEADER__
-#define __JUCER_COMMONHEADERS_JUCEHEADER__
+#ifndef JUCER_COMMONHEADERS_H_INCLUDED
+#define JUCER_COMMONHEADERS_H_INCLUDED
 
+//==============================================================================
+struct TargetOS
+{
+    enum OS
+    {
+        windows = 0,
+        osx,
+        linux,
+        unknown
+    };
 
+    static OS getThisOS() noexcept
+    {
+       #if JUCE_WINDOWS
+        return windows;
+       #elif JUCE_MAC
+        return osx;
+       #elif JUCE_LINUX
+        return linux;
+       #else
+        return unknown;
+       #endif
+    }
+};
+
+typedef TargetOS::OS DependencyPathOS;
+
+//==============================================================================
 #include "../Utility/jucer_StoredSettings.h"
 #include "../Utility/jucer_Icons.h"
 #include "../Utility/jucer_MiscUtilities.h"
@@ -55,4 +82,4 @@ enum ColourIds
     mainBackgroundColourId          = 0x2340000,
 };
 
-#endif   // __JUCER_COMMONHEADERS_JUCEHEADER__
+#endif   // JUCER_COMMONHEADERS_H_INCLUDED

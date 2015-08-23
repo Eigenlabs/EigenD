@@ -714,7 +714,7 @@ pi_audio::audioctl_t::impl_t::impl_t(const piw::cookie_t &o, piw::clockdomain_ct
     add_type("Core Audio",juce::AudioIODeviceType::createAudioIODeviceType_CoreAudio());
     add_type("ALSA",juce::AudioIODeviceType::createAudioIODeviceType_ALSA());
     add_type("Jack",juce::AudioIODeviceType::createAudioIODeviceType_JACK());
-    add_type("DirectX 10",juce::AudioIODeviceType::createAudioIODeviceType_WASAPI());
+    add_type("DirectX 10",juce::AudioIODeviceType::createAudioIODeviceType_WASAPI(false));
     add_type("ASIO",juce::AudioIODeviceType::createAudioIODeviceType_ASIO());
     //add_type("DirectX 9",juce::AudioIODeviceType::createAudioIODeviceType_DirectSound());
 

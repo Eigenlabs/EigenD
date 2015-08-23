@@ -233,7 +233,7 @@ namespace
                 break;
 
             case 2:
-                if(abs((double)s-last_)<200 && s>threshold_)
+                if(std::abs(long(s-last_))<200 && s>threshold_)
                 {
                     int o = origin_;
                     o -= s;

@@ -2,7 +2,7 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2015 - ROLI Ltd.
 
    Permission is granted to use this software under the terms of either:
    a) the GPL v2 (or any later version)
@@ -87,6 +87,7 @@ public:
 
         exporter.msvcIsWindowsSubsystem = true;
         exporter.msvcTargetSuffix = ".exe";
+        exporter.msvcExtraPreprocessorDefs.set ("_CRT_SECURE_NO_WARNINGS", "");
     }
 };
 
@@ -118,6 +119,7 @@ public:
         exporter.msvcIsWindowsSubsystem = false;
         exporter.msvcTargetSuffix = ".exe";
         exporter.msvcExtraPreprocessorDefs.set ("_CONSOLE", "");
+        exporter.msvcExtraPreprocessorDefs.set ("_CRT_SECURE_NO_WARNINGS", "");
     }
 };
 
@@ -147,6 +149,7 @@ public:
         exporter.makefileTargetSuffix = ".a";
         exporter.msvcTargetSuffix = ".lib";
         exporter.msvcExtraPreprocessorDefs.set ("_LIB", "");
+        exporter.msvcExtraPreprocessorDefs.set ("_CRT_SECURE_NO_WARNINGS", "");
     }
 };
 
@@ -177,6 +180,7 @@ public:
         exporter.makefileTargetSuffix = ".so";
         exporter.msvcTargetSuffix = ".dll";
         exporter.msvcExtraPreprocessorDefs.set ("_LIB", "");
+        exporter.msvcExtraPreprocessorDefs.set ("_CRT_SECURE_NO_WARNINGS", "");
     }
 };
 
@@ -203,7 +207,7 @@ public:
         setValueIfVoid (getPluginDesc (project),                   project.getTitle());
         setValueIfVoid (getPluginManufacturer (project),           "yourcompany");
         setValueIfVoid (getPluginManufacturerCode (project),       "Manu");
-        setValueIfVoid (getPluginCode (project),                   "Plug");
+        setValueIfVoid (getPluginCode (project),                   makeValid4CC (project.getProjectUID() + project.getProjectUID()));
         setValueIfVoid (getPluginChannelConfigs (project),         "{1, 1}, {2, 2}");
         setValueIfVoid (getPluginIsSynth (project),                false);
         setValueIfVoid (getPluginWantsMidiInput (project),         false);
@@ -301,8 +305,16 @@ public:
 
         exporter.msvcTargetSuffix = ".dll";
         exporter.msvcIsDLL = true;
-
+        exporter.msvcExtraPreprocessorDefs.set ("_CRT_SECURE_NO_WARNINGS", "");
         exporter.makefileIsDLL = true;
+    }
+
+    static String makeValid4CC (const String& seed)
+    {
+        String s (CodeHelpers::makeValidIdentifier (seed, false, true, false) + "xxxx");
+
+        return s.substring (0, 1).toUpperCase()
+             + s.substring (1, 4).toLowerCase();
     }
 };
 
@@ -344,6 +356,7 @@ public:
 
         exporter.msvcTargetSuffix = ".dll";
         exporter.msvcIsDLL = true;
+        exporter.msvcExtraPreprocessorDefs.set ("_CRT_SECURE_NO_WARNINGS", "");
 
         exporter.makefileIsDLL = true;
     }
