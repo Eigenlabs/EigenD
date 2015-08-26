@@ -108,7 +108,7 @@ def mycopytree(src, dst, symlinks=False, ignore=None):
 class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
 
     def __init__(self,platform):
-        unix_tools.PiUnixEnvironment.__init__(self,platform,'usr/pi','Library/Eigenlabs',python='/usr/pi/bin/python')
+        unix_tools.PiUnixEnvironment.__init__(self,platform,'usr/local/pi','Library/Eigenlabs',python='/usr/local/pi/bin/python')
         os_major=uname()[2].split('.')[0]
         self.Append(LIBS=Split('dl m pthread'))
         self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\" -mmacosx-version-min=10.6'))
@@ -465,7 +465,7 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         if not self.PiRelease('contrib',compatible,compatible,organisation):
             return
 
-        root = '/usr/pi'
+        root = '/usr/local/pi'
         dist = os.path.join(root,'release-%s' % version)
         self.Append(LIBPATH=[os.path.join(dist,'bin')])
         self.Append(CPPPATH=[os.path.join(dist,'include')])
