@@ -2,7 +2,7 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2015 - ROLI Ltd.
 
    Permission is granted to use this software under the terms of either:
    a) the GPL v2 (or any later version)
@@ -75,6 +75,7 @@
  #include <pluginterfaces/vst/ivstprocesscontext.h>
  #include <pluginterfaces/vst/vsttypes.h>
  #include <pluginterfaces/vst/ivstunits.h>
+ #include <pluginterfaces/vst/ivstmidicontrollers.h>
  #include <public.sdk/source/common/memorystream.h>
 #else
  #include <base/source/baseiids.cpp>
@@ -92,6 +93,7 @@
  #include <pluginterfaces/base/ipluginbase.h>
  #include <pluginterfaces/base/ustring.cpp>
  #include <pluginterfaces/gui/iplugview.h>
+ #include <pluginterfaces/vst/ivstmidicontrollers.h>
  #include <public.sdk/source/common/memorystream.cpp>
  #include <public.sdk/source/common/pluginview.cpp>
  #include <public.sdk/source/vst/vsteditcontroller.cpp>
@@ -110,7 +112,6 @@ namespace Steinberg
     DEF_CLASS_IID (IPlugView)
     DEF_CLASS_IID (IPlugFrame)
     DEF_CLASS_IID (IBStream)
-    DEF_CLASS_IID (ISizeableStream)
     DEF_CLASS_IID (IPluginFactory)
     DEF_CLASS_IID (IPluginFactory2)
     DEF_CLASS_IID (IPluginFactory3)

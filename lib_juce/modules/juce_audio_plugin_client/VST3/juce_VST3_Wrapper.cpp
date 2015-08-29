@@ -2,7 +2,7 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2015 - ROLI Ltd.
 
    Permission is granted to use this software under the terms of either:
    a) the GPL v2 (or any later version)
@@ -195,9 +195,29 @@ public:
             return false;
         }
 
-        void toString (Vst::ParamValue, Vst::String128 result) const override
+        void toString (Vst::ParamValue value, Vst::String128 result) const override
         {
-            toString128 (result, owner.getParameterText (paramIndex, 128));
+            if (AudioProcessorParameter* p = owner.getParameters()[paramIndex])
+                toString128 (result, p->getText ((float) value, 128));
+            else
+                // remain backward-compatible with old JUCE code
+                toString128 (result, owner.getParameterText (paramIndex, 128));
+        }
+
+        bool fromString (const Vst::TChar* text, Vst::ParamValue& outValueNormalized) const override
+        {
+            if (AudioProcessorParameter* p = owner.getParameters()[paramIndex])
+            {
+                outValueNormalized = p->getValueForText (getStringFromVstTChars (text));
+                return true;
+            }
+
+            return false;
+        }
+
+        static String getStringFromVstTChars (const Vst::TChar* text)
+        {
+            return juce::String (juce::CharPointer_UTF16 (reinterpret_cast<const juce::CharPointer_UTF16::CharType*> (text)));
         }
 
         Vst::ParamValue toPlain (Vst::ParamValue v) const override       { return v; }
@@ -211,6 +231,18 @@ public:
     };
 
     //==============================================================================
+    tresult PLUGIN_API setComponentState (IBStream* stream) override
+    {
+        // Cubase and Nuendo need to inform the host of the current parameter values
+        if (AudioProcessor* const pluginInstance = getPluginInstance())
+        {
+            for (int i = 0; i < pluginInstance->getNumParameters(); ++i)
+                setParamNormalized ((Vst::ParamID) i, (double) pluginInstance->getParameter (i));
+        }
+
+        return Vst::EditController::setComponentState (stream);
+    }
+
     void setAudioProcessor (JuceAudioProcessor* audioProc)
     {
         if (audioProcessor != audioProc)
@@ -239,13 +271,32 @@ public:
     }
 
     //==============================================================================
-    tresult PLUGIN_API getMidiControllerAssignment (Steinberg::int32, Steinberg::int16,
-                                                    Vst::CtrlNumber,
-                                                    Vst::ParamID& id) override
+    tresult PLUGIN_API getMidiControllerAssignment (Steinberg::int32 /*busIndex*/, Steinberg::int16 channel,
+                                                    Vst::CtrlNumber midiControllerNumber, Vst::ParamID& resultID) override
     {
-        //TODO
-        id = 0;
-        return kNotImplemented;
+        resultID = midiControllerToParameter[channel][midiControllerNumber];
+
+        return kResultTrue; // Returning false makes some hosts stop asking for further MIDI Controller Assignments
+    }
+
+    // Converts an incoming parameter index to a MIDI controller:
+    bool getMidiControllerForParameter (int index, int& channel, int& ctrlNumber)
+    {
+        const int mappedIndex = index - parameterToMidiControllerOffset;
+
+        if (isPositiveAndBelow (mappedIndex, numElementsInArray (parameterToMidiController)))
+        {
+            const MidiController& mc = parameterToMidiController[mappedIndex];
+
+            if (mc.channel != -1 && mc.ctrlNumber != -1)
+            {
+                channel    = jlimit (1, 16, mc.channel + 1);
+                ctrlNumber = mc.ctrlNumber;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //==============================================================================
@@ -265,13 +316,20 @@ public:
 
     //==============================================================================
     void audioProcessorParameterChangeGestureBegin (AudioProcessor*, int index) override        { beginEdit ((Vst::ParamID) index); }
-    void audioProcessorParameterChanged (AudioProcessor*, int index, float newValue) override   { performEdit ((Vst::ParamID) index, (double) newValue); }
+
+    void audioProcessorParameterChanged (AudioProcessor*, int index, float newValue) override
+    {
+        // NB: Cubase has problems if performEdit is called without setParamNormalized
+        EditController::setParamNormalized ((Vst::ParamID) index, (double) newValue);
+        performEdit ((Vst::ParamID) index, (double) newValue);
+    }
+
     void audioProcessorParameterChangeGestureEnd (AudioProcessor*, int index) override          { endEdit ((Vst::ParamID) index); }
 
     void audioProcessorChanged (AudioProcessor*) override
     {
         if (componentHandler != nullptr)
-            componentHandler->restartComponent (Vst::kLatencyChanged & Vst::kParamValuesChanged);
+            componentHandler->restartComponent (Vst::kLatencyChanged | Vst::kParamValuesChanged);
     }
 
     //==============================================================================
@@ -288,6 +346,18 @@ private:
     ComSmartPtr<JuceAudioProcessor> audioProcessor;
     ScopedJuceInitialiser_GUI libraryInitialiser;
 
+    struct MidiController
+    {
+        MidiController() noexcept  : channel (-1), ctrlNumber (-1) {}
+
+        int channel, ctrlNumber;
+    };
+
+    enum { numMIDIChannels = 16 };
+    int parameterToMidiControllerOffset;
+    MidiController parameterToMidiController[numMIDIChannels * Vst::kCountCtrlNumber];
+    int midiControllerToParameter[numMIDIChannels][Vst::kCountCtrlNumber];
+
     //==============================================================================
     void setupParameters()
     {
@@ -299,7 +369,27 @@ private:
                 for (int i = 0; i < pluginInstance->getNumParameters(); ++i)
                     parameters.addParameter (new Param (*pluginInstance, i));
 
+            initialiseMidiControllerMappings (pluginInstance->getNumParameters());
             audioProcessorChanged (pluginInstance);
+        }
+    }
+
+    void initialiseMidiControllerMappings (const int numParameters)
+    {
+        parameterToMidiControllerOffset = numParameters;
+
+        for (int c = 0, p = 0; c < numMIDIChannels; ++c)
+        {
+            for (int i = 0; i < Vst::kCountCtrlNumber; ++i, ++p)
+            {
+                midiControllerToParameter[c][i] = p + parameterToMidiControllerOffset;
+                parameterToMidiController[p].channel = c;
+                parameterToMidiController[p].ctrlNumber = i;
+
+                parameters.addParameter (new Vst::Parameter (toString ("MIDI CC " + String (c) + "|" + String (i)),
+                                         p + parameterToMidiControllerOffset, 0, 0, 0,
+                                         Vst::ParameterInfo::kCanAutomate, Vst::kRootUnitId));
+            }
         }
     }
 
@@ -421,12 +511,12 @@ private:
 
         tresult PLUGIN_API canResize() override         { return kResultTrue; }
 
-        tresult PLUGIN_API checkSizeConstraint (ViewRect* rect) override
+        tresult PLUGIN_API checkSizeConstraint (ViewRect* rectToCheck) override
         {
-            if (rect != nullptr && component != nullptr)
+            if (rectToCheck != nullptr && component != nullptr)
             {
-                rect->right  = rect->left + component->getWidth();
-                rect->bottom = rect->top  + component->getHeight();
+                rectToCheck->right  = rectToCheck->left + component->getWidth();
+                rectToCheck->bottom = rectToCheck->top  + component->getHeight();
                 return kResultTrue;
             }
 
@@ -1048,7 +1138,7 @@ public:
     bool getCurrentPosition (CurrentPositionInfo& info) override
     {
         info.timeInSamples              = jmax ((juce::int64) 0, processContext.projectTimeSamples);
-        info.timeInSeconds              = processContext.projectTimeMusic;
+        info.timeInSeconds              = processContext.systemTime / 1000000000.0;
         info.bpm                        = jmax (1.0, processContext.tempo);
         info.timeSigNumerator           = jmax (1, (int) processContext.timeSigNumerator);
         info.timeSigDenominator         = jmax (1, (int) processContext.timeSigDenominator);
@@ -1211,10 +1301,33 @@ public:
                 if (paramQueue->getPoint (numPoints - 1,  offsetSamples, value) == kResultTrue)
                 {
                     const int id = (int) paramQueue->getParameterId();
-                    jassert (isPositiveAndBelow (id, pluginInstance->getNumParameters()));
-                    pluginInstance->setParameter (id, (float) value);
+
+                    if (isPositiveAndBelow (id, pluginInstance->getNumParameters()))
+                        pluginInstance->setParameter (id, (float) value);
+                    else
+                        addParameterChangeToMidiBuffer (offsetSamples, id, value);
                 }
             }
+        }
+    }
+
+    void addParameterChangeToMidiBuffer (const Steinberg::int32 offsetSamples, const int id, const double value)
+    {
+        // If the parameter is mapped to a MIDI CC message then insert it into the midiBuffer.
+        int channel, ctrlNumber;
+
+        if (juceVST3EditController->getMidiControllerForParameter (id, channel, ctrlNumber))
+        {
+            if (ctrlNumber == Vst::kAfterTouch)
+                midiBuffer.addEvent (MidiMessage::channelPressureChange (channel,
+                                                                         jlimit (0, 127, (int) (value * 128.0))), offsetSamples);
+            else if (ctrlNumber == Vst::kPitchBend)
+                midiBuffer.addEvent (MidiMessage::pitchWheel (channel,
+                                                              jlimit (0, 0x3fff, (int) (value * 0x4000))), offsetSamples);
+            else
+                midiBuffer.addEvent (MidiMessage::controllerEvent (channel,
+                                                                   jlimit (0, 127, ctrlNumber),
+                                                                   jlimit (0, 127, (int) (value * 128.0))), offsetSamples);
         }
     }
 
@@ -1346,7 +1459,7 @@ private:
 
     void addEventBusTo (Vst::BusList& busList, const juce::String& name)
     {
-        addBusTo (busList, new Vst::EventBus (toString (name), 16, Vst::kMain, Vst::BusInfo::kDefaultActive));
+        addBusTo (busList, new Vst::EventBus (toString (name), Vst::kMain, Vst::BusInfo::kDefaultActive, 16));
     }
 
     Vst::BusList* getBusListFor (Vst::MediaType type, Vst::BusDirection dir)
@@ -1398,7 +1511,7 @@ private:
  #pragma warning (disable: 4310)
 #elif JUCE_CLANG
  #pragma clang diagnostic push
- #pragma clang diagnostic ignored "-w"
+ #pragma clang diagnostic ignored "-Wall"
 #endif
 
 DECLARE_CLASS_IID (JuceAudioProcessor, 0x0101ABAB, 0xABCDEF01, JucePlugin_ManufacturerCode, JucePlugin_PluginCode)

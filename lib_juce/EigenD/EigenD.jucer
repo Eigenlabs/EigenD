@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="prKya6" name="EigenD" projectType="guiapp" version="1.0.0"
               bundleIdentifier="com.yourcompany.EigenD" includeBinaryInAppConfig="1"
-              jucerVersion="3.1.1">
+              jucerVersion="3.1.0">
   <MAINGROUP id="W7UutC" name="EigenD">
     <GROUP id="{6DC53E4C-84CE-CDD8-AB5D-809B9E1F52A3}" name="Source">
       <FILE id="VH0Cr5" name="JucerCellPopupComponent.cpp" compile="1" resource="0"

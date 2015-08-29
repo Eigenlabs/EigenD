@@ -2,7 +2,7 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2015 - ROLI Ltd.
 
    Permission is granted to use this software under the terms of either:
    a) the GPL v2 (or any later version)
@@ -151,7 +151,7 @@ public:
             for (int i = 0; i < fc.getResults().size(); ++i)
                 files.add (fc.getResults().getReference(i).getFullPathName());
 
-            addFiles (files, 0);
+            addFilesRetainingSortOrder (files);
         }
     }
 
@@ -167,10 +167,16 @@ public:
         }
     }
 
-    virtual void addFiles (const StringArray& files, int insertIndex)
+    virtual void addFilesAtIndex (const StringArray& files, int insertIndex)
     {
         if (ProjectTreeItemBase* p = getParentProjectItem())
-            p->addFiles (files, insertIndex);
+            p->addFilesAtIndex (files, insertIndex);
+    }
+
+    virtual void addFilesRetainingSortOrder (const StringArray& files)
+    {
+        if (ProjectTreeItemBase* p = getParentProjectItem())
+            p->addFilesRetainingSortOrder (files);
     }
 
     virtual void moveSelectedItemsTo (OwnedArray <Project::Item>&, int /*insertIndex*/)
@@ -222,9 +228,9 @@ public:
             repaintItem();
     }
 
-    void valueTreeChildAdded (ValueTree& parentTree, ValueTree&) override    { treeChildrenChanged (parentTree); }
-    void valueTreeChildRemoved (ValueTree& parentTree, ValueTree&) override  { treeChildrenChanged (parentTree); }
-    void valueTreeChildOrderChanged (ValueTree& parentTree) override         { treeChildrenChanged (parentTree); }
+    void valueTreeChildAdded (ValueTree& parentTree, ValueTree&) override         { treeChildrenChanged (parentTree); }
+    void valueTreeChildRemoved (ValueTree& parentTree, ValueTree&, int) override  { treeChildrenChanged (parentTree); }
+    void valueTreeChildOrderChanged (ValueTree& parentTree, int, int) override    { treeChildrenChanged (parentTree); }
     void valueTreeParentChanged (ValueTree&) override {}
 
     //==============================================================================
@@ -264,7 +270,7 @@ public:
         if (files.size() == 1 && File (files[0]).hasFileExtension (Project::projectFileExtension))
             IntrojucerApp::getApp().openFile (files[0]);
         else
-            addFiles (files, insertIndex);
+            addFilesAtIndex (files, insertIndex);
     }
 
     bool isInterestedInDragSource (const DragAndDropTarget::SourceDetails& dragSourceDetails) override
