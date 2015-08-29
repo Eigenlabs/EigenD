@@ -568,6 +568,6 @@ def patch_releases(sfname,releases,value):
 
     posix.close(sf)
 
-patch_releases('/usr/pi/soundfont/Black Grand Medium.sf2',bg_releases,-1200)
-patch_releases('/usr/pi/soundfont/Tubed Wurli.sf2',tw_releases,-1200)
+patch_releases('/usr/local/pi/soundfont/Black Grand Medium.sf2',bg_releases,-1200)
+patch_releases('/usr/local/pi/soundfont/Tubed Wurli.sf2',tw_releases,-1200)
 

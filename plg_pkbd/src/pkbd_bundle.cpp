@@ -37,7 +37,7 @@
 
 #include "pkbd_bundle.h"
 
-#include <cmath>
+#include <math.h>
 #include <fstream>
 #include <sstream>
 #include <iterator>
@@ -233,7 +233,7 @@ namespace
                 break;
 
             case 2:
-                if(std::abs((double)s-last_)<200 && s>threshold_)
+                if(std::abs(long(s-last_))<200 && s>threshold_)
                 {
                     int o = origin_;
                     o -= s;
@@ -298,7 +298,7 @@ namespace
             return;
         }
 
-        int d = std::abs(zero_-(int)b);
+        int d = abs(zero_-(int)b);
         if(d>20 && d<800)
         {
             stuck_min_=std::min(stuck_min_,(int)b);

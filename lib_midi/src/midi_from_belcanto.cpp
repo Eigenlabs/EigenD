@@ -34,6 +34,7 @@
 
 #include <lib_midi/midi_gm.h>
 #include <lib_midi/midi_from_belcanto.h>
+#include "channelbucket.h"
 
 #include <cmath>
 #include <limits.h>
@@ -101,7 +102,7 @@ namespace
 
     struct channel_list_t
     {
-        channel_list_t(): legato_mode_(false), legato_initial_(false), min_(CHANNEL_MIN), max_(CHANNEL_MAX)
+        channel_list_t(): legato_mode_(false), legato_channel_(0), min_(CHANNEL_MIN), max_(CHANNEL_MAX)
         {
             refresh_available_channels();
         }
@@ -118,12 +119,14 @@ namespace
 
         void refresh_available_channels()
         {
-            list_.clear();
+            pic::mutex_t::guard_t g(bucket_lock_);
+
+            bucket_.clear();
             unsigned mn = min();
             unsigned mx = max();
             for(unsigned i=mn; i<=mx; i++)
             {
-                list_.push_back(i);
+                bucket_.add(i);
             }
         }
 
@@ -132,28 +135,33 @@ namespace
             if(legato_mode_ != mode)
             {
                 legato_mode_ = mode;
-                legato_initial_ = true;
+                legato_channel_ = 0;
             }
         }
 
         unsigned get()
         {
-            if(legato_mode_ && !legato_initial_)
+            pic::mutex_t::guard_t g(bucket_lock_);
+
+            byte ch = 0;
+            if(legato_mode_ && legato_channel_ != 0)
             {
-                return list_.back();
+                ch = bucket_.take(legato_channel_);
+            }
+            else
+            {
+                ch = bucket_.take();
             }
 
-            if(legato_mode_ && legato_initial_)
+            if(ch == 0)
             {
-                legato_initial_ = false;
+                ch = 1;
             }
 
-            pic::lcklist_t<unsigned>::nbtype::iterator i = list_.begin();
-            if(i==list_.end()) return 1;
-
-            unsigned ch=*i;
-            list_.erase(i);
-            list_.push_back(ch);
+            if(legato_mode_ && legato_channel_ == 0)
+            {
+                legato_channel_ = ch;
+            }
 
 //            if(ch<1 || ch>16) pic::logmsg() << "midi get() " << ch;
             return ch;
@@ -166,14 +174,12 @@ namespace
 
         void put(unsigned c)
         {
+            pic::mutex_t::guard_t g(bucket_lock_);
+
             if(c < min() || c > max()) return;
 
             //pic::logmsg() << "midi put " << c;
-            if(!legato_mode_)
-            {
-                list_.remove(c);
-                list_.push_front(c);
-            }
+            bucket_.release(c);
         }
 
         void set_min(unsigned c)
@@ -228,9 +234,10 @@ namespace
 
         public:
 
-            pic::lcklist_t<unsigned>::nbtype list_;
+            pic::mutex_t bucket_lock_;
+            ChannelBucket bucket_;
             bool legato_mode_;
-            bool legato_initial_;
+            unsigned legato_channel_;
             pic::lckmap_t<piw::data_nb_t,unsigned>::lcktype assignments_;
 
         private:

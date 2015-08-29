@@ -36,7 +36,7 @@ from SCons.Util import Split
 class PiLinuxEnvironment(unix_tools.PiUnixEnvironment):
 
     def __init__(self,platform):
-        unix_tools.PiUnixEnvironment.__init__(self,platform,'usr/pi','.belcanto','/usr/bin/python')
+        unix_tools.PiUnixEnvironment.__init__(self,platform,'usr/local/pi','.belcanto','/usr/bin/python')
 
         self.Append(LIBS=Split('dl m pthread rt'))
         self.Append(CCFLAGS=Split('-D_XOPEN_SOURCE=600 -D_GNU_SOURCE -D_REENTRANT -g -O0 -Wall -Werror -Wno-unused-function -Wno-unused-but-set-variable -Wno-narrowing -Wno-deprecated-declarations -fmessage-length=0 -fno-strict-aliasing '))

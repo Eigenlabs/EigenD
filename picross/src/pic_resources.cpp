@@ -146,7 +146,7 @@ namespace
     {
         if(is_debug())
         {
-            strcpy(buffer,"/usr/pi");
+            strcpy(buffer,"/usr/local/pi");
         }
         else
         {
@@ -234,7 +234,7 @@ namespace
     {
         if(is_debug())
         {
-            strcpy(buffer,"/usr/pi");
+            strcpy(buffer,"/usr/local/pi");
         }
         else
         {
