@@ -373,8 +373,8 @@ class Agent(agent.Agent):
         self[21] = atom.Atom(domain=domain.Bool(),init=True,names="notes enable",policy=atom.default_policy(self.set_midi_notes))
         self[22] = atom.Atom(domain=domain.Bool(),init=True,names="pitch bend enable",policy=atom.default_policy(self.set_midi_pitchbend))
         self[23] = atom.Atom(domain=domain.Bool(),init=False,names="high resolution velocity enable",policy=atom.default_policy(self.set_midi_hires_velocity))
-        self[24] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range upper",policy=atom.default_policy(self.set_pitchbend_up))
-        self[25] = atom.Atom(domain=domain.BoundedInt(0,48),init=1,names="pitch bend range lower",policy=atom.default_policy(self.set_pitchbend_down))
+        self[24] = atom.Atom(domain=domain.BoundedInt(0,96),init=1,names="pitch bend range upper",policy=atom.default_policy(self.set_pitchbend_up))
+        self[25] = atom.Atom(domain=domain.BoundedInt(0,96),init=1,names="pitch bend range lower",policy=atom.default_policy(self.set_pitchbend_down))
 
         # status output to drive the talker lights
         self[13] = bundles.Output(1,False,names='status output')
