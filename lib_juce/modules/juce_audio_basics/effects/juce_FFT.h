@@ -83,8 +83,8 @@ public:
     /** Returns the number of data points that this FFT was created to work with. */
     int getSize() const noexcept            { return size; }
 
-private:
     struct FFTConfig;
+private:
     ScopedPointer<FFTConfig> config;
     const int size;
 
