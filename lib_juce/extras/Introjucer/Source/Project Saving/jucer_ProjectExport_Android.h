@@ -264,7 +264,7 @@ protected:
         }
     };
 
-    BuildConfiguration::Ptr createBuildConfig (const ValueTree& v) const
+    BuildConfiguration::Ptr createBuildConfig (const ValueTree& v) const override
     {
         return new AndroidBuildConfiguration (project, v);
     }
@@ -660,7 +660,7 @@ private:
             executable->setAttribute ("dir", "${basedir}");
             executable->setAttribute ("failonerror", "true");
 
-            executable->createNewChildElement ("arg")->setAttribute ("value", "--jobs=2");
+            executable->createNewChildElement ("arg")->setAttribute ("value", "--jobs=4");
             executable->createNewChildElement ("arg")->setAttribute ("value", "CONFIG=${makefileConfig}");
             executable->createNewChildElement ("arg")->setAttribute ("value", "${ndkDebugValue}");
             executable->createNewChildElement ("arg")->setAttribute ("value", "APP_ABI=${app_abis}");

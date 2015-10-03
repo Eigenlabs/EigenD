@@ -507,23 +507,39 @@ public:
     UInt32 GetAudioChannelLayout (AudioUnitScope scope,
                                   AudioUnitElement element,
                                   AudioChannelLayout *outLayoutPtr,
-                                  Boolean &outWritable)
+                                  Boolean &outWritable) override
     {
-        if (element == 0)
+        // fallback to old code if this plug-in does not have multi channel IO
+        if (! hasMultiChannelConfiguration())
+            return 0;
+
+        if (element == 0 && (scope == kAudioUnitScope_Output || scope == kAudioUnitScope_Input))
         {
-            outWritable = true;
-            if (scope == kAudioUnitScope_Output)
+            outWritable = false;
+
+            const int numChannels = (scope == kAudioUnitScope_Output) ? findNumOutputChannels()
+                                                                      : findNumInputChannels();
+
+            const size_t sizeInBytes = (sizeof (AudioChannelLayout) - sizeof (AudioChannelDescription)) +
+                                       (static_cast<size_t> (numChannels) * sizeof (AudioChannelDescription));
+
+            if (outLayoutPtr != nullptr)
             {
-                return static_cast<UInt32> (findNumOutputChannels());
+                zeromem (outLayoutPtr, sizeInBytes);
+
+                outLayoutPtr->mChannelLayoutTag = kAudioChannelLayoutTag_UseChannelDescriptions;
+                outLayoutPtr->mNumberChannelDescriptions = static_cast<UInt32> (numChannels);
+
+                for (int i = 0; i < numChannels; ++i)
+                {
+                    AudioChannelDescription& layoutDescr = outLayoutPtr->mChannelDescriptions [i];
+
+                    layoutDescr.mChannelLabel = kAudioChannelLabel_Unused;
+                    layoutDescr.mChannelFlags = kAudioChannelFlags_AllOff;
+                }
             }
-            else if (scope == kAudioUnitScope_Input)
-            {
-               #if JucePlugin_IsSynth
-                return 0;
-               #else
-                return static_cast<UInt32> (findNumInputChannels());
-               #endif
-            }
+
+            return static_cast<UInt32> (sizeInBytes);
         }
 
         return JuceAUBaseClass::GetAudioChannelLayout(scope, element, outLayoutPtr, outWritable);
@@ -1390,6 +1406,21 @@ private:
         currentPreset.presetName = currentProgramName.toCFString();
 
         SetAFactoryPresetAsCurrent (currentPreset);
+    }
+
+    //==============================================================================
+    bool hasMultiChannelConfiguration () noexcept
+    {
+        for (int i = 0; i < numChannelConfigs; ++i)
+        {
+           #if !JucePlugin_IsSynth
+            if (channelConfigs[i][0] > 2)
+                return true;
+           #endif
+            if (channelConfigs[i][1] > 2)
+                return true;
+        }
+        return false;
     }
 
     JUCE_DECLARE_NON_COPYABLE (JuceAU)
