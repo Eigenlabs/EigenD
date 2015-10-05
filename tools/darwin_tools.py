@@ -114,7 +114,7 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\" -mmacosx-version-min=10.6'))
         self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate -Wl,-rpath,@executable_path/ -mmacosx-version-min=10.6'))
 
-        self.Append(CCFLAGS=Split('-ggdb -Werror -Wall -Wno-deprecated-declarations -Wno-format -Wno-unused-function -Wno-unused-private-field -Wno-c++11-extensions -Os -fmessage-length=0 -msse3'))
+        self.Append(CCFLAGS=Split('-ggdb -Werror -Wall -Wno-empty-body -Wno-deprecated-declarations -Wno-format -Wno-unused-function -Wno-unused-private-field -Wno-c++11-extensions -Os -fmessage-length=0 -msse3'))
 
         self.Replace(PI_DLLENVNAME='DYLD_LIBRARY_PATH')
         self.Replace(IS_MACOSX=os_major)

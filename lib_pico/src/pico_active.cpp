@@ -70,6 +70,8 @@ static void __shutdown()
             for(unsigned k=0; k<22; ++k)
                 i->set_led(k,0);
             i->control_out(TYPE_VENDOR,BCTPICO_USBCOMMAND_STOP,0,0,0,0);
+            i->stop();
+            i->close();
         }
         catch(...)
         {
