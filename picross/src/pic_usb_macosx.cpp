@@ -908,18 +908,36 @@ macosx_usbpipe_out_t::~macosx_usbpipe_out_t()
 {
 }
 
-void macosx_usbpipe_out_t::completed(usburb_t *u, IOReturn e)
+void macosx_usbpipe_out_t::completed(usburb_t *u, IOReturn result)
 {
     --inflight_;
     impl_->dec_inflight();
 
     if((impl_->state_&PIPES_STATE_MASK)==PIPES_RUNNING)
     {
-        if(e!=kIOReturnSuccess)
-        {
-            impl_->pipe_kill(PIPE_OK);
-            return;
-        }
+      switch(result)
+      {
+          case kIOReturnSuccess:
+          case kIOReturnUnderrun:
+          case kIOReturnOverrun:
+          case kIOReturnAborted:
+              break;
+
+          case kIOReturnIsoTooOld:
+          case kIOReturnNoBandwidth:
+              pic::logmsg() << "urb ignored with error 0x" << std::hex << result;
+              break;
+
+          case kIOUSBWrongPIDErr:
+              pic::logmsg() << "pipe stall 0x" << std::hex << result;
+              impl_->pipe_idle();
+              break;
+
+          default:
+              pic::logmsg() << "urb completed with error 0x" << std::hex << result;
+	            impl_->pipe_kill(PIPE_OK);
+              break;
+      }
     }
     
     submit(u);
