@@ -240,8 +240,13 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
             pname=join(d,'Contents','MacOS',name)
             try: os.unlink(pname)
             except: pass
-            os.symlink(program,pname)
-            
+            shutil.copyfile(program,pname)
+            os.chmod(pname,0755)
+
+            incmd = 'install_name_tool -add_rpath %s/bin %s' % (env.subst('$INSTALLDIR'), pname)
+            print incmd
+            os.system(incmd)
+
             bgs = "<false/>"
             di_active = "<false/>"
             
@@ -294,6 +299,8 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
                     print 'copy',r,'to',res_dir
                     mycopytree(r,join(res_dir,basename(r)))
 
+            env.sign(d)
+        
         return self.Command(self.Dir(app,self.Dir(dir)),[],make_app)
 
     def make_package(self,name):
@@ -355,6 +362,7 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
             cmd = 'pkgbuild --identifier com.eigenlabs.%s-%s --component-plist %s --scripts %s --version %s --root %s %s' % (name.capitalize(),v,infonode[0].abspath,scriptdir.abspath,v,source[0].abspath,target[0].abspath)
             print cmd
             os.system(cmd)
+            env.sign(target[0].abspath);
 
         pkgnode = env.Command(pkgfile,env.Dir(env.subst('$STAGEDIR')),make_pkg)
         env.Depends(pkgnode,scriptnode)
@@ -455,6 +463,7 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
             cmd = 'productbuild --resources %s --distribution %s %s %s' % (resdir.abspath,infonode[0].abspath,pp,d)
             print cmd
             os.system(cmd)
+            env.sign(d);
 
         mpkgname = '%s-%s.pkg' % (name,v)
         mpkgnode = self.Command(self.File(mpkgname,self.subst('$PKGDIR')),infonode+included_pkgnodes.values(),pkg_file)
@@ -469,6 +478,13 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         dist = os.path.join(root,'release-%s' % version)
         self.Append(LIBPATH=[os.path.join(dist,'bin')])
         self.Append(CPPPATH=[os.path.join(dist,'include')])
+
+    def sign(self,tgt):
+        cert = self.get('PI_CERTFILE')
+        if cert:
+            cmd = 'codesign -s "Eigenlabs Ltd" "%s"' % (tgt)
+            print cmd
+            os.system(cmd)
 
 fastmark_template = """
 static const __attribute((section("__DATA,__fastdata"))) __attribute__((used)) unsigned fastmark__ = 0;
