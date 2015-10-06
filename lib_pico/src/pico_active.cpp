@@ -59,6 +59,7 @@ static pic::ilist_t<pico::active_t::impl_t> *kbds__;
 
 static void __shutdown()
 {
+    //shutdown no longer used, as agent closes correctly
     fprintf(stderr,"shutdown handler\n");
 
     pico::active_t::impl_t *i = kbds__->head();
@@ -92,7 +93,8 @@ pico::active_t::impl_t::impl_t(const char *name, pico::active_t::delegate_t *del
     if(!kbds__)
     {
         kbds__=new pic::ilist_t<pico::active_t::impl_t>;
-        atexit(__shutdown);
+        //TODO: remove shutdown handler, now unncessary
+        //atexit(__shutdown);
     }
 
     kbds__->append(this);
