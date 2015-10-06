@@ -528,7 +528,7 @@ void macosx_usbpipe_t::clear_stall()
 
     if((e=(*intf)->ClearPipeStallBothEnds(intf,piperef_)) != kIOReturnSuccess)
     {
-        pic::logmsg() << "clear stall failed: " << std::hex << e;
+        pic::logmsg() << "clear stall failed: 0x" << std::hex << e;
     }
 }
 
@@ -550,7 +550,7 @@ void macosx_usbpipe_in_t::init_urb(usburb_t *u)
 
     if (e!=kIOReturnSuccess)
     {
-        pic::msg() << "LowLatencyCreateBuffer: allocing frame list: " << requests*sizeof(IOUSBLowLatencyIsocFrame) << ' ' << std::hex << e << pic::hurl;
+        pic::msg() << "LowLatencyCreateBuffer: allocing frame list: " << requests*sizeof(IOUSBLowLatencyIsocFrame) << " 0x" << std::hex << e << pic::hurl;
     }
 
     e=(*i)->LowLatencyCreateBuffer(i,(void **)&u->buffer,requests*size_,kUSBLowLatencyReadBuffer);
@@ -558,7 +558,7 @@ void macosx_usbpipe_in_t::init_urb(usburb_t *u)
     if (e!=kIOReturnSuccess)
     {
         (*i)->LowLatencyDestroyBuffer(i,u->frame);
-        pic::msg() << "LowLatencyCreateBuffer: allocing read buffer: " << requests*size_ << ' ' << std::hex << e << pic::hurl;
+        pic::msg() << "LowLatencyCreateBuffer: allocing read buffer: " << requests*size_ << " 0x" << std::hex << e << pic::hurl;
     }
 
     u->pipe=this;
@@ -574,7 +574,7 @@ void macosx_usbpipe_out_t::init_urb(usburb_t *u)
 
     if (e!=kIOReturnSuccess)
     {
-        pic::msg() << "LowLatencyCreateBuffer: allocing frame list: " << ISO_OUT_FRAMES_PER_URB*uframe_per_frame_*sizeof(IOUSBLowLatencyIsocFrame) << ' ' << std::hex << e << pic::hurl;
+        pic::msg() << "LowLatencyCreateBuffer: allocing frame list: " << ISO_OUT_FRAMES_PER_URB*uframe_per_frame_*sizeof(IOUSBLowLatencyIsocFrame) << " 0x" << std::hex << e << pic::hurl;
     }
 
     e=(*i)->LowLatencyCreateBuffer(i,(void **)&u->buffer,ISO_OUT_FRAMES_PER_URB*uframe_per_frame_*size_,kUSBLowLatencyWriteBuffer);
@@ -582,7 +582,7 @@ void macosx_usbpipe_out_t::init_urb(usburb_t *u)
     if (e!=kIOReturnSuccess)
     {
         (*i)->LowLatencyDestroyBuffer(i,u->frame);
-        pic::msg() << "LowLatencyCreateBuffer: allocing write buffer: " << ISO_OUT_FRAMES_PER_URB*uframe_per_frame_*size_ << ' ' << std::hex << e << pic::hurl;
+        pic::msg() << "LowLatencyCreateBuffer: allocing write buffer: " << ISO_OUT_FRAMES_PER_URB*uframe_per_frame_*size_ << " 0x" << std::hex << e << pic::hurl;
     }
 
     u->pipe=this;
@@ -649,12 +649,12 @@ restart:
         }
         else if(e==kIOReturnNoBandwidth)
         {
+            pic::logmsg() << "can't submit read request due to unsufficient bandwidth 0x" << std::hex << e;
             impl_->pipe_kill(PIPE_NO_BANDWIDTH);
-            pic::logmsg() << "can't submit read request due to unsufficient bandwidth " << std::hex << e;
             return;
         }
 
-        pic::logmsg() << "can't submit read request " << std::hex << e;
+        pic::logmsg() << "can't submit read request 0x" << std::hex << e;
         impl_->pipe_kill(PIPE_UNKNOWN_ERROR);
         return;
     }
@@ -860,16 +860,16 @@ void macosx_usbpipe_in_t::completed(usburb_t *urb, IOReturn result)
             case kIOUSBNotSent1Err:
             case kIOUSBNotSent2Err:
             case kIOReturnNoBandwidth:
-                pic::logmsg() << "urb ignored with error " << std::hex << result;
+                pic::logmsg() << "urb ignored with error 0x" << std::hex << result;
                 break;
 
             case kIOUSBWrongPIDErr:
-                pic::logmsg() << "pipe stall " << std::hex << result;
+                pic::logmsg() << "pipe stall 0x" << std::hex << result;
                 impl_->pipe_idle();
                 break;
 
             default:
-                pic::logmsg() << "urb completed with error " << std::hex << result;
+                pic::logmsg() << "urb completed with error 0x" << std::hex << result;
                 impl_->pipe_kill(PIPE_UNKNOWN_ERROR);
                 break;
         }
@@ -908,18 +908,36 @@ macosx_usbpipe_out_t::~macosx_usbpipe_out_t()
 {
 }
 
-void macosx_usbpipe_out_t::completed(usburb_t *u, IOReturn e)
+void macosx_usbpipe_out_t::completed(usburb_t *u, IOReturn result)
 {
     --inflight_;
     impl_->dec_inflight();
 
     if((impl_->state_&PIPES_STATE_MASK)==PIPES_RUNNING)
     {
-        if(e!=kIOReturnSuccess)
-        {
-            impl_->pipe_kill(PIPE_OK);
-            return;
-        }
+      switch(result)
+      {
+          case kIOReturnSuccess:
+          case kIOReturnUnderrun:
+          case kIOReturnOverrun:
+          case kIOReturnAborted:
+              break;
+
+          case kIOReturnIsoTooOld:
+          case kIOReturnNoBandwidth:
+              pic::logmsg() << "urb ignored with error 0x" << std::hex << result;
+              break;
+
+          case kIOUSBWrongPIDErr:
+              pic::logmsg() << "pipe stall 0x" << std::hex << result;
+              impl_->pipe_idle();
+              break;
+
+          default:
+              pic::logmsg() << "urb completed with error 0x" << std::hex << result;
+	            impl_->pipe_kill(PIPE_OK);
+              break;
+      }
     }
     
     submit(u);
@@ -974,13 +992,13 @@ restart:
 
         if(e==kIOReturnNoBandwidth)
         {
-            pic::logmsg() << "can't submit write request due to unsufficient bandwidth " << std::hex << e;
+            pic::logmsg() << "can't submit write request due to unsufficient bandwidth 0x" << std::hex << e;
             impl_->pipe_kill(PIPE_NO_BANDWIDTH);
             return;
         }
 
+        pic::logmsg() << "can't submit write request 0x" << std::hex << e << " 0x" << std::hex << kIOReturnIsoTooOld;
         impl_->pipe_kill(PIPE_UNKNOWN_ERROR);
-        pic::logmsg() << "can't submit write request " << std::hex << e;
         return;
     }
 
@@ -1128,7 +1146,7 @@ void pic::usbdevice_t::impl_t::call_pipe_stopped()
 
 void pic::usbdevice_t::impl_t::call_pipe_running()
 {
-    pic::logmsg() << "pipe_running " << std::hex << state_ << " woke pipe";
+    pic::logmsg() << "pipe_running 0x" << std::hex << state_ << " woke pipe";
 
     {
         pipe_flipflop_t::guard_t g(inpipes_);
@@ -1355,7 +1373,7 @@ void pic::usbdevice_t::impl_t::stop_pipes()
         }
 
         pic_microsleep(1000000);
-        pic::logmsg() << "usb shutdown continues: " << std::hex << state_;
+        pic::logmsg() << "usb shutdown continues: 0x" << std::hex << state_;
     }
 
     stop();
@@ -1376,7 +1394,7 @@ void pic::usbdevice_t::impl_t::reset_device()
 
     if((e=(*device.device)->ResetDevice(device.device)) != kIOReturnSuccess)
     {
-        pic::logmsg() << "can't reset device: " << std::hex << e;
+        pic::logmsg() << "can't reset device: 0x" << std::hex << e;
     }
     else
     {
@@ -1477,7 +1495,7 @@ void pic::usbdevice_t::control_in(unsigned char req_type, unsigned char req, uns
 
     if((e=(*impl_->device.device)->DeviceRequestTO(impl_->device.device,&ctrl)))
     {
-        pic::msg() << "control_in err=" << std::hex << e << " req " << (int)req_type << ":" << (int)req << pic::hurl;
+        pic::msg() << "control_in err=0x" << std::hex << e << " req " << (int)req_type << ":" << (int)req << pic::hurl;
     }
 }
 
@@ -1497,7 +1515,7 @@ void pic::usbdevice_t::control_out(unsigned char req_type, unsigned char req, un
 
     if((e=(*impl_->device.device)->DeviceRequestTO(impl_->device.device,&ctrl)))
     {
-        pic::msg() << "control_out err=" << std::hex << e << " req " << (int)req_type << ":" << (int)req << pic::hurl;
+        pic::msg() << "control_out err=0x" << std::hex << e << " req " << (int)req_type << ":" << (int)req << pic::hurl;
     }
 }
 
@@ -1517,7 +1535,7 @@ void pic::usbdevice_t::control(unsigned char req_type, unsigned char req, unsign
 
     if((e=(*impl_->device.device)->DeviceRequestTO(impl_->device.device,&ctrl)))
     {
-        pic::msg() << "control err=" << std::hex << e << " req " << (int)req_type << ":" << (int)req << pic::hurl;
+        pic::msg() << "control err=0x" << std::hex << e << " req " << (int)req_type << ":" << (int)req << pic::hurl;
     }
 }
 
@@ -1529,7 +1547,7 @@ void pic::usbdevice_t::bulk_out_pipe_t::impl_t::bulk_write(const void *data, uns
 
     if(e!=0)
     {
-        pic::msg() << "write pipe err=" << std::hex << e << pic::hurl;
+        pic::msg() << "write pipe err=0x" << std::hex << e << pic::hurl;
     }
 }
 
@@ -1687,7 +1705,7 @@ void pic::usbenumerator_t::impl_t::runloop_init()
 
     if((e=IOMasterPort(MACH_PORT_NULL,&master_port)))
     {
-        pic::msg() << "can't create IO master port: " << std::hex << e << pic::hurl;
+        pic::msg() << "can't create IO master port: 0x" << std::hex << e << pic::hurl;
     }
 
     matching_dict = IOServiceMatching(kIOUSBDeviceClassName);
@@ -1708,7 +1726,7 @@ void pic::usbenumerator_t::impl_t::runloop_init()
     if((e=IOServiceAddMatchingNotification(notification_port_, kIOFirstMatchNotification, matching_dict, device_attached, this, &iterator_)))
     {
         mach_port_deallocate(mach_task_self(), master_port);
-        pic::msg() << "can't create IO iterator: " << std::hex << e << pic::hurl;
+        pic::msg() << "can't create IO iterator: 0x" << std::hex << e << pic::hurl;
     }
 
 }

@@ -50,6 +50,8 @@ void addPlistDictionaryKey (XmlElement* xml, const String& key, const String& va
 void addPlistDictionaryKeyBool (XmlElement* xml, const String& key, bool value);
 void addPlistDictionaryKeyInt (XmlElement* xml, const String& key, int value);
 
+bool fileNeedsCppSyntaxHighlighting (const File& file);
+
 //==============================================================================
 int indexOfLineStartingWith (const StringArray& lines, const String& text, int startIndex);
 
@@ -212,7 +214,7 @@ public:
         setSize (300, 400);
     }
 
-    void resized()
+    void resized() override
     {
         if (defaultButton.isVisible())
         {
@@ -286,7 +288,7 @@ public:
         colourValue.addListener (this);
     }
 
-    void paint (Graphics& g)
+    void paint (Graphics& g) override
     {
         const Colour colour (getColour());
 
