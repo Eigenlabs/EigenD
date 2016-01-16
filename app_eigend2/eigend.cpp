@@ -919,7 +919,7 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
 
     std::string setup = backend->get_default_setup(true);
 
-    if(setup.length())
+    if(setup.length() &&  !ModifierKeys::getCurrentModifiersRealtime().isShiftDown() )
     {
         if(select_setup(setup.c_str()))
         {
