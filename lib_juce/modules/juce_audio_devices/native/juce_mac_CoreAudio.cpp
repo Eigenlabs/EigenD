@@ -155,9 +155,7 @@ public:
          outputLatency (0),
          bitDepth (32),
          callback (nullptr),
-        #if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
          audioProcID (0),
-        #endif
          deviceID (id),
          started (false),
          sampleRate (0),
@@ -233,7 +231,7 @@ public:
 
                 for (int i = 0; i < numStreams; ++i)
                 {
-                    const AudioBuffer& b = bufList->mBuffers[i];
+                    const ::AudioBuffer& b = bufList->mBuffers[i];
 
                     for (unsigned int j = 0; j < b.mNumberChannels; ++j)
                     {
@@ -352,14 +350,20 @@ public:
 
     int getLatencyFromDevice (AudioObjectPropertyScope scope) const
     {
-        UInt32 lat = 0;
-        UInt32 size = sizeof (lat);
+        UInt32 latency = 0;
+        UInt32 size = sizeof (latency);
         AudioObjectPropertyAddress pa;
         pa.mElement = kAudioObjectPropertyElementMaster;
         pa.mSelector = kAudioDevicePropertyLatency;
         pa.mScope = scope;
-        AudioObjectGetPropertyData (deviceID, &pa, 0, nullptr, &size, &lat);
-        return (int) lat;
+        AudioObjectGetPropertyData (deviceID, &pa, 0, nullptr, &size, &latency);
+
+        UInt32 safetyOffset = 0;
+        size = sizeof (safetyOffset);
+        pa.mSelector = kAudioDevicePropertySafetyOffset;
+        AudioObjectGetPropertyData (deviceID, &pa, 0, nullptr, &size, &safetyOffset);
+
+        return (int) (latency + safetyOffset);
     }
 
     int getBitDepthFromDevice (AudioObjectPropertyScope scope) const
@@ -397,11 +401,9 @@ public:
         if (OK (AudioObjectGetPropertyData (deviceID, &pa, 0, nullptr, &size, &isAlive)) && isAlive == 0)
             return;
 
-        Float64 sr;
-        size = sizeof (sr);
-        pa.mSelector = kAudioDevicePropertyNominalSampleRate;
-        if (OK (AudioObjectGetPropertyData (deviceID, &pa, 0, nullptr, &size, &sr)))
-            sampleRate = sr;
+        const double currentRate = getNominalSampleRate();
+        if (currentRate > 0)
+            sampleRate = currentRate;
 
         UInt32 framesPerBuf = (UInt32) bufferSize;
         size = sizeof (framesPerBuf);
@@ -525,6 +527,30 @@ public:
         }
     }
 
+    double getNominalSampleRate() const
+    {
+        AudioObjectPropertyAddress pa;
+        pa.mSelector = kAudioDevicePropertyNominalSampleRate;
+        pa.mScope = kAudioObjectPropertyScopeGlobal;
+        pa.mElement = kAudioObjectPropertyElementMaster;
+        Float64 sr = 0;
+        UInt32 size = (UInt32) sizeof (sr);
+        return OK (AudioObjectGetPropertyData (deviceID, &pa, 0, nullptr, &size, &sr)) ? (double) sr : 0.0;
+    }
+
+    bool setNominalSampleRate (double newSampleRate) const
+    {
+        if (std::abs (getNominalSampleRate() - newSampleRate) < 1.0)
+            return true;
+
+        AudioObjectPropertyAddress pa;
+        pa.mSelector = kAudioDevicePropertyNominalSampleRate;
+        pa.mScope = kAudioObjectPropertyScopeGlobal;
+        pa.mElement = kAudioObjectPropertyElementMaster;
+        Float64 sr = newSampleRate;
+        return OK (AudioObjectSetPropertyData (deviceID, &pa, 0, 0, sizeof (sr), &sr));
+    }
+
     //==============================================================================
     String reopen (const BigInteger& inputChannels,
                    const BigInteger& outputChannels,
@@ -549,25 +575,23 @@ public:
         numInputChans = activeInputChans.countNumberOfSetBits();
         numOutputChans = activeOutputChans.countNumberOfSetBits();
 
-        // set sample rate
-        AudioObjectPropertyAddress pa;
-        pa.mSelector = kAudioDevicePropertyNominalSampleRate;
-        pa.mScope = kAudioObjectPropertyScopeGlobal;
-        pa.mElement = kAudioObjectPropertyElementMaster;
-        Float64 sr = newSampleRate;
-
-        if (! OK (AudioObjectSetPropertyData (deviceID, &pa, 0, 0, sizeof (sr), &sr)))
+        if (! setNominalSampleRate (newSampleRate))
         {
+            updateDetailsFromDevice();
             error = "Couldn't change sample rate";
         }
         else
         {
             // change buffer size
-            UInt32 framesPerBuf = (UInt32) bufferSizeSamples;
+            AudioObjectPropertyAddress pa;
             pa.mSelector = kAudioDevicePropertyBufferFrameSize;
+            pa.mScope = kAudioObjectPropertyScopeGlobal;
+            pa.mElement = kAudioObjectPropertyElementMaster;
+            UInt32 framesPerBuf = (UInt32) bufferSizeSamples;
 
             if (! OK (AudioObjectSetPropertyData (deviceID, &pa, 0, 0, sizeof (framesPerBuf), &framesPerBuf)))
             {
+                updateDetailsFromDevice();
                 error = "Couldn't change buffer size";
             }
             else
@@ -599,11 +623,7 @@ public:
 
             if (deviceID != 0)
             {
-               #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-                if (OK (AudioDeviceAddIOProc (deviceID, audioIOProc, this)))
-               #else
                 if (OK (AudioDeviceCreateIOProcID (deviceID, audioIOProc, this, &audioProcID)))
-               #endif
                 {
                     if (OK (AudioDeviceStart (deviceID, audioIOProc)))
                     {
@@ -611,12 +631,8 @@ public:
                     }
                     else
                     {
-                       #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-                        OK (AudioDeviceRemoveIOProc (deviceID, audioIOProc));
-                       #else
                         OK (AudioDeviceDestroyIOProcID (deviceID, audioProcID));
                         audioProcID = 0;
-                       #endif
                     }
                 }
             }
@@ -643,13 +659,8 @@ public:
              && ! leaveInterruptRunning)
         {
             OK (AudioDeviceStop (deviceID, audioIOProc));
-
-           #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-            OK (AudioDeviceRemoveIOProc (deviceID, audioIOProc));
-           #else
             OK (AudioDeviceDestroyIOProcID (deviceID, audioProcID));
             audioProcID = 0;
-           #endif
 
             started = false;
 
@@ -767,9 +778,7 @@ public:
     Array<double> sampleRates;
     Array<int> bufferSizes;
     AudioIODeviceCallback* callback;
-   #if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
     AudioDeviceIOProcID audioProcID;
-   #endif
 
 private:
     CriticalSection callbackLock;
@@ -1925,7 +1934,7 @@ private:
 
                 for (int i = 0; i < numStreams; ++i)
                 {
-                    const AudioBuffer& b = bufList->mBuffers[i];
+                    const ::AudioBuffer& b = bufList->mBuffers[i];
                     total += b.mNumberChannels;
                 }
             }
