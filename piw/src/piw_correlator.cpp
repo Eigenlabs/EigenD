@@ -274,8 +274,8 @@ void piw::correlator_t::impl_t::check_time(correlator_source_t *s, unsigned long
     long long et = (long long)t;
     long long ct = (long long)current_tick();
     long dt = (et-ct)/1000LL;
-    if(abs(dt)>50)
-        pic::logmsg() << "******** correlator: signal " << s->signame_ << " start " << abs(dt) << "ms " << ((dt>0)?"after":"before") << " tick" << " (start " << et << " tick " << ct << ")";
+    if(std::abs(dt)>50)
+        pic::logmsg() << "******** correlator: signal " << s->signame_ << " start " << std::abs(dt) << "ms " << ((dt>0)?"after":"before") << " tick" << " (start " << et << " tick " << ct << ")";
 }
 
 void piw::correlator_t::impl_t::clocksink_ticked(unsigned long long f, unsigned long long t)

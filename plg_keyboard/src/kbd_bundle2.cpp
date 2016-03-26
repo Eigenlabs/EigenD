@@ -410,7 +410,7 @@ namespace
                 return;
             }
 
-            if(abs(((long)p)-first_)<=10)
+            if(std::abs(((long)p)-first_)<=10)
             {
                 return;
             }
@@ -419,7 +419,7 @@ namespace
             init_=true;
         }
 
-        if(abs((long)p-(long)last_)<2)
+        if(std::abs((long)p-(long)last_)<2)
         {
             return;
         }

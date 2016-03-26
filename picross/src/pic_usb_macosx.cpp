@@ -298,7 +298,7 @@ namespace
     static void __finder(void *impl_, IOUSBDeviceInterface197 **device)
     {
         __finderdata *f = (__finderdata *)impl_;
-        unsigned long dl;
+        UInt32 dl;
 
         (*device)->GetLocationID(device,&dl);
 
@@ -1780,7 +1780,7 @@ void pic::usbenumerator_t::impl_t::device_attached(void *impl_, io_iterator_t i)
     IOCFPlugInInterface **plug;
     IOUSBDeviceInterface **device;
     char name[10];
-    unsigned long location;
+    UInt32 location;
 
     while((s=IOIteratorNext(i)))
     {
@@ -1800,7 +1800,7 @@ void pic::usbenumerator_t::impl_t::device_attached(void *impl_, io_iterator_t i)
             continue;
         }
         (*device)->GetLocationID(device,&location);
-        sprintf(name,"%08lx",location);
+        sprintf(name,"%08x",location);
 
         notify_context_t *n = new notify_context_t(impl,name);
         e=IOServiceAddInterestNotification(impl->notification_port_,s,kIOGeneralInterest,&notify_context_t::notify,n,&(n->obj_));
@@ -1827,10 +1827,10 @@ void pic::usbenumerator_t::impl_t::device_attached(void *impl_, io_iterator_t i)
 static void _enumerate_visitor_(void *callback_, IOUSBDeviceInterface197 **device)
 {
     char buffer[10];
-    unsigned long name;
+    UInt32 name;
 
     (*device)->GetLocationID(device,&name);
-    sprintf(buffer,"%08lx",name);
+    sprintf(buffer,"%08x",name);
 
     try
     {
