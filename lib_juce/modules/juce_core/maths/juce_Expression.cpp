@@ -397,7 +397,7 @@ struct Expression::Helpers
             JUCE_DECLARE_NON_COPYABLE (SymbolRenamingVisitor)
         };
 
-        SymbolTerm* getSymbol() const  { return static_cast <SymbolTerm*> (left.get()); }
+        SymbolTerm* getSymbol() const  { return static_cast<SymbolTerm*> (left.get()); }
 
         JUCE_DECLARE_NON_COPYABLE (DotOperator)
     };
@@ -958,13 +958,13 @@ Expression& Expression::operator= (const Expression& other)
 
 #if JUCE_COMPILER_SUPPORTS_MOVE_SEMANTICS
 Expression::Expression (Expression&& other) noexcept
-    : term (static_cast <ReferenceCountedObjectPtr<Term>&&> (other.term))
+    : term (static_cast<ReferenceCountedObjectPtr<Term>&&> (other.term))
 {
 }
 
 Expression& Expression::operator= (Expression&& other) noexcept
 {
-    term = static_cast <ReferenceCountedObjectPtr<Term>&&> (other.term);
+    term = static_cast<ReferenceCountedObjectPtr<Term>&&> (other.term);
     return *this;
 }
 #endif
@@ -992,7 +992,8 @@ double Expression::evaluate() const
 
 double Expression::evaluate (const Expression::Scope& scope) const
 {
-    return term->resolve (scope, 0)->toDouble();
+    String err;
+    return evaluate (scope, err);
 }
 
 double Expression::evaluate (const Scope& scope, String& evaluationError) const
@@ -1038,20 +1039,16 @@ Expression Expression::adjustedToGiveNewResult (const double targetValue, const 
 
     jassert (termToAdjust != nullptr);
 
-    const Term* const parent = Helpers::findDestinationFor (newTerm, termToAdjust);
-
-    if (parent == nullptr)
+    if (const Term* parent = Helpers::findDestinationFor (newTerm, termToAdjust))
     {
-        termToAdjust->value = targetValue;
+        if (const Helpers::TermPtr reverseTerm = parent->createTermToEvaluateInput (scope, termToAdjust, targetValue, newTerm))
+            termToAdjust->value = Expression (reverseTerm).evaluate (scope);
+        else
+            return Expression (targetValue);
     }
     else
     {
-        const Helpers::TermPtr reverseTerm (parent->createTermToEvaluateInput (scope, termToAdjust, targetValue, newTerm));
-
-        if (reverseTerm == nullptr)
-            return Expression (targetValue);
-
-        termToAdjust->value = reverseTerm->resolve (scope, 0)->toDouble();
+        termToAdjust->value = targetValue;
     }
 
     return Expression (newTerm.release());

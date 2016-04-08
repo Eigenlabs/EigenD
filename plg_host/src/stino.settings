@@ -1,0 +1,16 @@
+{
+    "arduino_folder": "/Applications/Arduino.app", 
+    "baudrate": 10, 
+    "board": 0, 
+    "build_folder": "/Users/gbevin/Workspace/linnstrument-firmware/build", 
+    "display_mode": 0, 
+    "full_compilation": true, 
+    "line_ending": 2, 
+    "platform": 2, 
+    "platform_name": "Arduino ARM (32-bits) Boards", 
+    "serial_port": 0, 
+    "set_bare_gcc_only": false, 
+    "show_compilation_output": false, 
+    "show_upload_output": true, 
+    "verify_code": false
+}

@@ -370,7 +370,13 @@ namespace
     }
 
     //==============================================================================
-    static bool cleanWhitespace (const File& file, bool replaceTabs)
+    struct CleanupOptions
+    {
+        bool removeTabs;
+        bool fixDividerComments;
+    };
+
+    static bool cleanWhitespace (const File& file, CleanupOptions options)
     {
         const String content (file.loadFileAsString());
 
@@ -385,7 +391,7 @@ namespace
         {
             String& line = lines.getReference(i);
 
-            if (replaceTabs && line.containsChar ('\t'))
+            if (options.removeTabs && line.containsChar ('\t'))
             {
                 anyTabsRemoved = true;
 
@@ -401,10 +407,28 @@ namespace
                 }
             }
 
+            if (options.fixDividerComments)
+            {
+                String afterIndent (line.trim());
+
+                if (afterIndent.startsWith ("//") && afterIndent.length() > 20)
+                {
+                    afterIndent = afterIndent.substring (2);
+
+                    if (afterIndent.containsOnly ("=")
+                          || afterIndent.containsOnly ("/")
+                          || afterIndent.containsOnly ("-"))
+                    {
+                        line = line.substring (0, line.indexOfChar ('/'))
+                                  + "//" + String::repeatedString ("=", 78);
+                    }
+                }
+            }
+
             line = line.trimEnd();
         }
 
-        if (replaceTabs && ! anyTabsRemoved)
+        if (options.removeTabs && ! anyTabsRemoved)
             return true;
 
         while (lines.size() > 10 && lines [lines.size() - 1].isEmpty())
@@ -416,8 +440,8 @@ namespace
         if (newText == content || newText == content + lineEnding)
             return true;
 
-        std::cout << (replaceTabs ? "Removing tabs in: "
-                                  : "Cleaning file: ") << file.getFullPathName() << std::endl;
+        std::cout << (options.removeTabs ? "Removing tabs in: "
+                                         : "Cleaning file: ") << file.getFullPathName() << std::endl;
 
         TemporaryFile temp (file);
 
@@ -436,7 +460,7 @@ namespace
         return true;
     }
 
-    static int cleanWhitespace (const StringArray& args, bool replaceTabs)
+    static int scanFilesForCleanup (const StringArray& args, CleanupOptions options)
     {
         if (! checkArgumentCount (args, 2))
             return 1;
@@ -452,16 +476,28 @@ namespace
         if (targetFolder.isDirectory())
         {
             for (DirectoryIterator di (targetFolder, true, "*.cpp;*.h;*.hpp;*.c;*.cc;*.mm;*.m", File::findFiles); di.next();)
-                if (! cleanWhitespace (di.getFile(), replaceTabs))
+                if (! cleanWhitespace (di.getFile(), options))
                     return 1;
         }
         else
         {
-            if (! cleanWhitespace (targetFolder, replaceTabs))
+            if (! cleanWhitespace (targetFolder, options))
                 return 1;
         }
 
         return 0;
+    }
+
+    static int cleanWhitespace (const StringArray& args, bool replaceTabs)
+    {
+        CleanupOptions options = { replaceTabs, false };
+        return scanFilesForCleanup (args, options);
+    }
+
+    static int tidyDividerComments (const StringArray& args)
+    {
+        CleanupOptions options = { false, true };
+        return scanFilesForCleanup (args, options);
     }
 
     //==============================================================================
@@ -469,39 +505,44 @@ namespace
     {
         hideDockIcon();
 
-        std::cout << "The Introjucer!" << std::endl
+        const String appName (JUCEApplication::getInstance()->getApplicationName());
+
+        std::cout << appName << std::endl
                   << std::endl
                   << "Usage: " << std::endl
                   << std::endl
-                  << " introjucer --resave project_file" << std::endl
+                  << " " << appName << " --resave project_file" << std::endl
                   << "    Resaves all files and resources in a project." << std::endl
                   << std::endl
-                  << " introjucer --resave-resources project_file" << std::endl
+                  << " " << appName << " --resave-resources project_file" << std::endl
                   << "    Resaves just the binary resources for a project." << std::endl
                   << std::endl
-                  << " introjucer --set-version version_number project_file" << std::endl
+                  << " " << appName << " --set-version version_number project_file" << std::endl
                   << "    Updates the version number in a project." << std::endl
                   << std::endl
-                  << " introjucer --bump-version project_file" << std::endl
+                  << " " << appName << " --bump-version project_file" << std::endl
                   << "    Updates the minor version number in a project by 1." << std::endl
                   << std::endl
-                  << " introjucer --git-tag-version project_file" << std::endl
+                  << " " << appName << " --git-tag-version project_file" << std::endl
                   << "    Invokes 'git tag' to attach the project's version number to the current git repository." << std::endl
                   << std::endl
-                  << " introjucer --status project_file" << std::endl
+                  << " " << appName << " --status project_file" << std::endl
                   << "    Displays information about a project." << std::endl
                   << std::endl
-                  << " introjucer --buildmodule target_folder module_folder" << std::endl
+                  << " " << appName << " --buildmodule target_folder module_folder" << std::endl
                   << "    Zips a module into a downloadable file format." << std::endl
                   << std::endl
-                  << " introjucer --buildallmodules target_folder module_folder" << std::endl
+                  << " " << appName << " --buildallmodules target_folder module_folder" << std::endl
                   << "    Zips all modules in a given folder and creates an index for them." << std::endl
                   << std::endl
-                  << " introjucer --trim-whitespace target_folder" << std::endl
+                  << " " << appName << " --trim-whitespace target_folder" << std::endl
                   << "    Scans the given folder for C/C++ source files, and trims any trailing whitespace from their lines, as well as normalising their line-endings to CR-LF." << std::endl
                   << std::endl
-                  << " introjucer --remove-tabs target_folder" << std::endl
+                  << " " << appName << " --remove-tabs target_folder" << std::endl
                   << "    Scans the given folder for C/C++ source files, and replaces any tab characters with 4 spaces." << std::endl
+                  << std::endl
+                  << " " << appName << " --tidy-divider-comments target_folder" << std::endl
+                  << "    Scans the given folder for C/C++ source files, and normalises any juce-style comment division lines (i.e. any lines that look like //===== or //------- or /////////// will be replaced)." << std::endl
                   << std::endl;
 
         return 0;
@@ -517,18 +558,19 @@ int performCommandLine (const String& commandLine)
 
     String command (args[0]);
 
-    if (matchArgument (command, "help"))                return showHelp();
-    if (matchArgument (command, "h"))                   return showHelp();
-    if (matchArgument (command, "resave"))              return resaveProject (args, false);
-    if (matchArgument (command, "resave-resources"))    return resaveProject (args, true);
-    if (matchArgument (command, "set-version"))         return setVersion (args);
-    if (matchArgument (command, "bump-version"))        return bumpVersion (args);
-    if (matchArgument (command, "git-tag-version"))     return gitTag (args);
-    if (matchArgument (command, "buildmodule"))         return buildModules (args, false);
-    if (matchArgument (command, "buildallmodules"))     return buildModules (args, true);
-    if (matchArgument (command, "status"))              return showStatus (args);
-    if (matchArgument (command, "trim-whitespace"))     return cleanWhitespace (args, false);
-    if (matchArgument (command, "remove-tabs"))         return cleanWhitespace (args, true);
+    if (matchArgument (command, "help"))                    return showHelp();
+    if (matchArgument (command, "h"))                       return showHelp();
+    if (matchArgument (command, "resave"))                  return resaveProject (args, false);
+    if (matchArgument (command, "resave-resources"))        return resaveProject (args, true);
+    if (matchArgument (command, "set-version"))             return setVersion (args);
+    if (matchArgument (command, "bump-version"))            return bumpVersion (args);
+    if (matchArgument (command, "git-tag-version"))         return gitTag (args);
+    if (matchArgument (command, "buildmodule"))             return buildModules (args, false);
+    if (matchArgument (command, "buildallmodules"))         return buildModules (args, true);
+    if (matchArgument (command, "status"))                  return showStatus (args);
+    if (matchArgument (command, "trim-whitespace"))         return cleanWhitespace (args, false);
+    if (matchArgument (command, "remove-tabs"))             return cleanWhitespace (args, true);
+    if (matchArgument (command, "tidy-divider-comments"))   return tidyDividerComments (args);
 
     return commandLineNotPerformed;
 }
