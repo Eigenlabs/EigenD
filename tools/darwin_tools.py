@@ -240,13 +240,8 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
             pname=join(d,'Contents','MacOS',name)
             try: os.unlink(pname)
             except: pass
-            shutil.copyfile(program,pname)
-            os.chmod(pname,0755)
-
-            incmd = 'install_name_tool -add_rpath %s/bin %s' % (env.subst('$INSTALLDIR'), pname)
-            print incmd
-            os.system(incmd)
-
+            os.symlink(program,pname)
+            
             bgs = "<false/>"
             di_active = "<false/>"
             
@@ -299,8 +294,6 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
                     print 'copy',r,'to',res_dir
                     mycopytree(r,join(res_dir,basename(r)))
 
-            env.sign(d)
-        
         return self.Command(self.Dir(app,self.Dir(dir)),[],make_app)
 
     def make_package(self,name):
