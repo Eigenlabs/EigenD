@@ -300,8 +300,6 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
                     print 'copy',r,'to',res_dir
                     mycopytree(r,join(res_dir,basename(r)))
 
-            env.sign(d)
-        
         return self.Command(self.Dir(app,self.Dir(dir)),[],make_app)
 
     def make_package(self,name):

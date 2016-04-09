@@ -1036,7 +1036,7 @@ struct host::plugin_instance_t::impl_t: midi::params_delegate_t, midi::mapping_o
             float *f;
             float *fs;
             piw::data_nb_t d = piw::makenorm_nb(to,buffer_size_,&f,&fs);
-            memcpy(f,audio_buffer_.getReadPointer(c),buffer_size_*sizeof(float));
+            memcpy(f,audio_buffer_.getWritePointer(c),buffer_size_*sizeof(float));
             *fs = f[buffer_size_-1];
             audio_output_.buffer_.add_value(c+1,d);
             for(unsigned i=(buffer_size_/2); i<buffer_size_; ++i)
