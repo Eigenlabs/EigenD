@@ -25,15 +25,15 @@
 #include <picross/pic_functor.h>
 #include <cmath>
 
-#define SIG_STRUM_BREATH 1 
-#define SIG_STRUM_KEY 2 
-#define SIG_STRUM_PRESSURE 3 
+#define SIG_STRUM_BREATH 1
+#define SIG_STRUM_KEY 2
+#define SIG_STRUM_PRESSURE 3
 #define SIG_STRUM_ROLL 4
 #define SIG_STRUM_YAW 5
 #define SIG_STRUM_FIRST SIG_STRUM_BREATH
 #define SIG_STRUM_LAST SIG_STRUM_YAW
 
-#define SIG_KEY 1 
+#define SIG_KEY 1
 #define SIG_PRESSURE 2
 #define SIG_ROLL 3
 #define SIG_YAW 4
@@ -47,7 +47,7 @@ namespace
     struct consumer_t;
 
     typedef pic::functor_t<bool(consumer_t *, bool)> valid_consumer_check_t;
-    typedef pic::functor_t<bool(consumer_t *, void *)> similar_consumer_check_t;
+    typedef pic::functor_t<bool(consumer_t *, int )> similar_consumer_check_t;
 
     struct producer_t: virtual pic::tracked_t
     {
@@ -66,7 +66,7 @@ namespace
             unsigned long long last_event_start() { return last_event_start_; }
 
             bool applies_to_consumer(consumer_t *c, bool allow_similar);
-            bool has_similar_consumers(void *data);
+            bool has_similar_consumers(int data);
 
         private:
             friend class strm::strummer_t::impl_t;
@@ -95,7 +95,7 @@ namespace
             const piw::data_nb_t id() { return id_; }
             producer_t *producer() { return producer_; }
 
-            virtual void *get_context() { return 0; }
+            virtual int get_context() { return 0; }
             virtual void producer_start(unsigned long long t, const piw::xevent_data_buffer_t &buffer) {}
             virtual void producer_join(unsigned long long t, const piw::xevent_data_buffer_t &buffer) {}
             virtual void producer_end(unsigned long long t) {}
@@ -139,7 +139,7 @@ namespace
         bool event_end(unsigned long long t);
         void wire_ticked(unsigned long long f, unsigned long long t);
         bool applies_to_consumer(consumer_t *, bool);
-        bool is_similar_consumer(consumer_t *, void *);
+        bool is_similar_consumer(consumer_t *, int );
 
         producer_t producer_;
         strm::strummer_t::impl_t *input_;
@@ -153,7 +153,7 @@ namespace
         unsigned long long signal_index;
         unsigned long long last_signal_time_;
     };
-    
+
     struct output_wire_t: virtual pic::lckobject_t, piw::wire_ctl_t, piw::event_data_source_real_t
     {
         output_wire_t(strm::strummer_t::impl_t *i, const piw::data_t &);
@@ -184,7 +184,7 @@ namespace
         bool event_end(unsigned long long t);
         void end_event(unsigned long long t);
         void source_ended(unsigned);
-        void *get_context();
+        int get_context();
         void producer_start(unsigned long long t, const piw::xevent_data_buffer_t &buffer);
         void producer_join(unsigned long long t, const piw::xevent_data_buffer_t &buffer);
         void producer_end(unsigned long long t);
@@ -822,9 +822,9 @@ void data_wire_t::handle_data(int signal, piw::data_nb_t &d)
     }
 }
 
-void *data_wire_t::get_context()
+int data_wire_t::get_context()
 {
-    return (void *)course_;
+    return course_;
 }
 
 void data_wire_t::wire_ticked(unsigned long long f, unsigned long long t)
@@ -887,7 +887,7 @@ void data_wire_t::wire_ticked(unsigned long long f, unsigned long long t)
                 }
             }
         }
-        
+
         if((!strum_valid || !strum_read) && (!data_valid || !data_read))
         {
             break;
@@ -1287,7 +1287,7 @@ bool strum_wire_t::applies_to_consumer(consumer_t *c, bool allow_similar)
         }
     }
 
-    if(consumer_applies && !allow_similar && producer_.has_similar_consumers((void *)consumer_course))
+    if(consumer_applies && !allow_similar && producer_.has_similar_consumers(consumer_course))
     {
         consumer_applies = false;
     }
@@ -1295,7 +1295,7 @@ bool strum_wire_t::applies_to_consumer(consumer_t *c, bool allow_similar)
     return consumer_applies;
 }
 
-bool strum_wire_t::is_similar_consumer(consumer_t *c, void *data)
+bool strum_wire_t::is_similar_consumer(consumer_t *c, int data)
 {
     int course = int(data);
     return int(c->get_context()) == course;
@@ -1945,7 +1945,7 @@ bool producer_t::applies_to_consumer(consumer_t *c, bool allow_similar)
     return valid_consumer_check_(c, allow_similar);
 }
 
-bool producer_t::has_similar_consumers(void *data)
+bool producer_t::has_similar_consumers(int data)
 {
     for(consumer_t *c = consumers_.head(); c!=0; c=consumers_.next(c))
     {
