@@ -101,8 +101,8 @@ class InfoPanel(wx.Window):
         self.scroll_both(1,v,mouse=True)
 
     def onPaint(self,evt):
-        #dc=wx.PaintDC(self)
-	dc=self.__getClientDC()
+        dc=wx.AutoBufferedPaintDC(self)
+	#dc=self.__getClientDC()
         self.doPaint(dc)
         evt.Skip()
 

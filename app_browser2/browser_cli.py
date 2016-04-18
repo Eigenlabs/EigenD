@@ -33,7 +33,7 @@ from pigui import fonts,language,scroller
 from app_browser2 import browse,mainframe,history,upgrade
 
 def active():
-    print '**************************** active'
+    #print '**************************** active'
     picross.display_active()
     picross.to_front()
 

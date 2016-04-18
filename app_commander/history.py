@@ -206,6 +206,7 @@ class HistoryPanel(wx.Window):
     def OnIdle(self,evt):
         if self.redrawRequired:
             self.historyUpdate()
+            self.Refresh();
         self.redrawRequired=False
 
     def OnPaint(self,evt):

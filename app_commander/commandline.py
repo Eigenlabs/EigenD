@@ -447,7 +447,7 @@ class StaffPanel(wx.Window):
 
 
     def OnPaint(self,evt):
-        dc=self.__getClientDC()
+        dc=wx.AutoBufferedPaintDC(self)
         dc.SetFont(self.font)
         dc.Clear()
         self.draw(dc)
@@ -863,7 +863,7 @@ class CommandPanel(wx.Window):
         self.__borderDrawing(dc)
 
     def OnPaint(self,evt):
-        dc=self.__getClientDC()
+        dc=wx.AutoBufferedPaintDC(self)
         dc.SetFont(self.font)
         self.drawText(dc)
         evt.Skip()

@@ -86,7 +86,7 @@ class PathPanel(wx.Window):
                     self.__scrolldraw()
  
     def onPaint(self,evt):
-	dc=self.__getClientDC()
+        dc=wx.AutoBufferedPaintDC(self)
         self.doPaint(dc)
         evt.Skip()
 

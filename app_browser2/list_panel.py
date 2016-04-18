@@ -25,7 +25,7 @@ from app_browser2 import displayutils
 class ListPanel(wx.Window):
     def __init__(self,parent,size,agent,style=wx.BORDER_NONE | wx.VSCROLL):
         wx.Window.__init__(self,parent,-1,size=size,style=style)  
-	self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
+        self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.SetBackgroundColour(colours.borderGradient1)
         self.model=agent[8].model
         self.model.addListListener(self)
@@ -38,7 +38,7 @@ class ListPanel(wx.Window):
         self.Bind(wx.EVT_IDLE,self.onIdle)
         self.offset=0
 
-	# XXX
+    # XXX
         #self.font=wx.Font(13,wx.FONTFAMILY_MODERN,wx.FONTSTYLE_NORMAL,weight=wx.FONTWEIGHT_LIGHT)
 
         self.font=wx.SystemSettings_GetFont(wx.SYS_DEFAULT_GUI_FONT)
@@ -81,6 +81,7 @@ class ListPanel(wx.Window):
     def onIdle(self,evt):
         if self.__drawRequired:
             self.scrollDrawFiles()
+            self.Refresh()
             
     def onScroll(self,evt):
         if self.fl:
@@ -162,8 +163,7 @@ class ListPanel(wx.Window):
 
     def update(self):
         print 'ListPanel:update'
-
-	dc=self.__getClientDC()
+        dc=self.__getClientDC()
         self.doPaint(dc)
         self.__borderDrawing(dc)
     
@@ -178,11 +178,11 @@ class ListPanel(wx.Window):
 #        self.__agent.reset1(1,v)
  
     def onPaint(self,evt):
-	bdc=self.__getClientDC()
+        bdc=wx.AutoBufferedPaintDC(self)
         bdc.Clear()
-	brush=bdc.GetBrush()
-	brush.SetColour(colours.borderGradient1)
-	bdc.SetBackground(brush)
+        brush=bdc.GetBrush()
+        brush.SetColour(colours.borderGradient1)
+        bdc.SetBackground(brush)
 
         bdc.SetFont(self.font)
         self.doPaint(bdc)
@@ -191,17 +191,15 @@ class ListPanel(wx.Window):
     def doPaint(self,dc):
         if self.refresh:
             self.__history=[]
-	self.__backgroundDrawing(dc)
+        self.__backgroundDrawing(dc)
         self.doDrawing(dc)
         self.__borderDrawing(dc)
 
     def __backgroundDrawing(self,dc):
-	size=self.GetClientSize()
-	drawutils.setPenColour(dc,colours.borderGradient1)
-	drawutils.setBrushColour(dc,colours.borderGradient1)
+        size=self.GetClientSize()
+        drawutils.setPenColour(dc,colours.borderGradient1)
+        drawutils.setBrushColour(dc,colours.borderGradient1)
         dc.DrawRectangle(0,0,size[0],size[1])
-
-
 
     def __borderDrawing(self,dc):
         size=self.GetClientSize()
@@ -216,7 +214,7 @@ class ListPanel(wx.Window):
         dc.SetPen(pen)
     
     def doDrawing(self,dc):
-        print 'list_panel:doDrawing',self.model.numFiles,self.model.numCollections
+        #print 'list_panel:doDrawing',self.model.numFiles,self.model.numCollections
         if self.model.numFiles==0 and self.model.numCollections==0:
             self.SetScrollbar(wx.VERTICAL,0,0,0)
             self.__drawIcon(dc)
@@ -272,13 +270,13 @@ class ListPanel(wx.Window):
         return selection>= self.model.numCollections
 
     def __getDisplayList(self,browseType,offset,maxOffset):
-       print '__getDisplayList:browseType=',browseType, maxOffset
+       #print '__getDisplayList:browseType=',browseType, maxOffset
        return displayutils.BrowseList(self,offset,maxOffset,position=(0,0),margins=(10,0),width=self.GetSize()[0],height=self.GetSize()[1],selected=self.topSelection)
 
     def __doTopSelection(self,force=False):
 #        print '__doTopSelection: force=',force,'scrolling',self.__scrolling,'selection_changed',self.__selection_changed
         if force or((not self.__scrolling) and self.__selection_changed):
-            print 'TopPanel:onTimer',self.topSelection
+            #print 'TopPanel:onTimer',self.topSelection
             
             if self.__isFile(self.topSelection):
                 self.model.setSelectedFile(self.topSelection+1-self.numColDisp)
@@ -416,7 +414,6 @@ class ListPanel(wx.Window):
                 self.__selection_changed=True
             self.topSelection=selection
 
-
             if inc==1:
                sel_crit=self.offset+(self.__numItemsDisplayed-2)
                if self.topSelection>sel_crit:
@@ -432,25 +429,24 @@ class ListPanel(wx.Window):
             self.SetScrollbar(wx.VERTICAL,self.offset,self.__numItemsDisplayed,numFiles+1)
  
     def scrollDrawFiles(self):
-#        print 'scrollDrawFiles'
         self.__drawRequired=False
         if self.fl:
-	    dc=self.__getClientDC()
-	    self.__backgroundDrawing(dc)
+            dc=self.__getClientDC()
+            self.__backgroundDrawing(dc)
             self.__doScrollDrawFiles(dc)
             self.__borderDrawing(dc)
 
     def __getClientDC(self):
-	if self.IsDoubleBuffered():
-           dc=wx.ClientDC(self)
-	else:
-	   dc=wx.BufferedDC(wx.ClientDC(self))
-        dc.Clear()
-        brush=dc.GetBrush()
-        brush.SetColour(colours.borderGradient1)
-        dc.SetBackground(brush)
-        dc.SetFont(self.font)
-	return dc
+        if self.IsDoubleBuffered():
+            dc=wx.ClientDC(self)
+        else:
+            dc=wx.BufferedDC(wx.ClientDC(self))
+            dc.Clear()
+            brush=dc.GetBrush()
+            brush.SetColour(colours.borderGradient1)
+            dc.SetBackground(brush)
+            dc.SetFont(self.font)
+        return dc
 
     def __doScrollDrawFiles(self,dc):
         if self.fl:

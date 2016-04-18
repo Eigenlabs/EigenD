@@ -212,6 +212,7 @@ class DictionaryPanel(wx.Window):
         self.staveManager.clear()
         dc.Clear()
         self.doPaint(dc)
+        self.Refresh()
 
     def onPaint(self,evt):
         dc=self.__getClientDC()

@@ -37,7 +37,7 @@ class LowerLeftSidePanel(wx.Window):
         evt.Skip()
 
     def doPaint(self):
-        dc=wx.PaintDC(self)
+        dc=wx.AutoBufferedPaintDC(self)
         size=self.GetClientSize()
         dc.GradientFillLinear(wx.Rect(0,0,size[0],size[1]),colours.horPanelGradient2,colours.horPanelGradient1,wx.SOUTH)
 
@@ -58,7 +58,7 @@ class LowerRightSidePanel(wx.Window):
         evt.Skip()
 
     def doPaint(self):
-        dc=wx.PaintDC(self)
+        dc=wx.AutoBufferedPaintDC(self)
         size=self.GetClientSize()
         dc.GradientFillLinear(wx.Rect(0,0,size[0],size[1]),colours.horPanelGradient2,colours.horPanelGradient1,wx.SOUTH)
 
@@ -78,7 +78,7 @@ class LeftSidePanel(wx.Window):
         evt.Skip()
 
     def doPaint(self):
-        dc=wx.PaintDC(self)
+        dc=wx.AutoBufferedPaintDC(self)
         size=self.GetClientSize()
         dc.GradientFillLinear(wx.Rect(0,0,size[0],size[1]),colours.horPanelGradient2,colours.horPanelGradient1,wx.SOUTH)
 
@@ -99,7 +99,7 @@ class RightSidePanel(wx.Window):
         evt.Skip()
 
     def doPaint(self):
-        dc=wx.PaintDC(self)
+        dc=wx.AutoBufferedPaintDC(self)
         size=self.GetClientSize()
         dc.GradientFillLinear(wx.Rect(0,0,size[0],size[1]),colours.horPanelGradient2,colours.horPanelGradient1,wx.SOUTH)
 
@@ -122,7 +122,7 @@ class BottomPanel(wx.Window):
     def doPaint(self):
         size=self.GetClientSize()
         position=self.GetPosition()
-        dc=wx.PaintDC(self)
+        dc=wx.AutoBufferedPaintDC(self)
         dc.Clear()
         dc.GradientFillLinear(wx.Rect(0,0,size[0],size[1]),colours.horPanelGradient1,colours.horPanelGradient2,wx.SOUTH)
 
@@ -159,7 +159,7 @@ class TopPanel(wx.Window):
         self.setLabel(title)
 
     def onPaint(self,evt):
-        dc=wx.PaintDC(self)
+        dc=wx.AutoBufferedPaintDC(self)
         self.doPaint(dc)
         evt.Skip()
 
@@ -204,7 +204,7 @@ class HorDivPanel(wx.Window):
         pass
 
     def onPaint(self,evt):
-        dc=wx.PaintDC(self)
+        dc=wx.AutoBufferedPaintDC(self)
         self.doPaint(dc)
         evt.Skip()
 
@@ -225,7 +225,7 @@ class VertDivPanel(wx.Window):
         pass
 
     def onPaint(self,evt):
-        dc=wx.PaintDC(self)
+        dc=wx.AutoBufferedPaintDC(self)
         self.doPaint(dc)
         evt.Skip()
 

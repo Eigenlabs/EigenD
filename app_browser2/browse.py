@@ -68,7 +68,7 @@ class BrowseAgent(atom.Null):
         self.__t=id
         self.__setup_target()
 
-        print 'BrowseAgent.__target_changed:', d.as_string()
+        #print 'BrowseAgent.__target_changed:', d.as_string()
         self.model.change_target(id)
 
     def __setup_target(self):
@@ -611,7 +611,7 @@ class BrowseModel:
 
     def setSelectedFile(self,selected):
         if selected>0 and selected<=len(self.finfo):
-            print 'browseModel:setSelectedFile: No. in browser list=',selected,'uid=',self.finfo[selected-1]
+            #print 'browseModel:setSelectedFile: No. in browser list=',selected,'uid=',self.finfo[selected-1]
             self.selected_file=self.finfo[selected-1][0] 
             args=logic.render_term((tuple(self.path),self.selected_file))
             rpc.invoke_rpc(self.getTargetId(),'setselected',args)
