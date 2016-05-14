@@ -77,6 +77,7 @@ namespace
         void voiceId(int v) { voiceId_=v;}
         unsigned long long voiceTime() { return voiceTime_;}
         void voiceTime(unsigned long long t) { voiceTime_=t;}
+        bool valid() { return voiceId_ >=0;}
 
         void wire_closed();
 
@@ -396,23 +397,28 @@ void t3d_wire_t::event_start(unsigned seq, const piw::data_nb_t &id, const piw::
 
     last_processed_=id.time();
     absx_=absy_=x_=y_=z_=note_=0.0;
-    ::sendT3DMessage(t3d(),MLS_startFrameSym);
-    send_latest(last_processed_,true);
-    ::sendT3DMessage(t3d(),MLS_endFrameSym);
-
+    if(voiceId() > 0)
+    {
+        ::sendT3DMessage(t3d(),MLS_startFrameSym);
+        send_latest(last_processed_,true);
+        ::sendT3DMessage(t3d(),MLS_endFrameSym);
+    }
     iterator_->reset_all(last_processed_+1);
 }
 
 bool t3d_wire_t::event_end(unsigned long long t)
 {
 	// turn off, if the voice has not already been deallocated
-    ::sendT3DMessage(t3d(),MLS_startFrameSym);
-    send_latest(t,false);
-    if(output_->key_)
+    if(valid())
     {
-    	::sendT3DTouchMessage(t3d(),MLS_touchSym,MLS_offSym,voiceId_,0,0.0f,0.0f,0.0f);
+        ::sendT3DMessage(t3d(),MLS_startFrameSym);
+        send_latest(t,false);
+        if(output_->key_)
+        {
+            ::sendT3DTouchMessage(t3d(),MLS_touchSym,MLS_offSym,voiceId_,0,0.0f,0.0f,0.0f);
+        }
+        ::sendT3DMessage(t3d(),MLS_endFrameSym);
     }
-    ::sendT3DMessage(t3d(),MLS_endFrameSym);
 
     id_string_.clear_nb();
     iterator_.clear();
@@ -426,9 +432,12 @@ void t3d_wire_t::event_buffer_reset(unsigned s,unsigned long long t, const piw::
 {
     iterator_->set_signal(s,nq);
     iterator_->reset(s,t);
-	::sendT3DMessage(t3d(),MLS_startFrameSym);
-    send_latest(t,false);
-    ::sendT3DMessage(t3d(),MLS_endFrameSym);
+    if(valid())
+    {
+        ::sendT3DMessage(t3d(),MLS_startFrameSym);
+        send_latest(t,false);
+        ::sendT3DMessage(t3d(),MLS_endFrameSym);
+    }
 }
 
 
@@ -437,18 +446,19 @@ void t3d_wire_t::ticked(unsigned long long from, unsigned long long to)
     piw::data_nb_t d;
     unsigned s=1;
 
-	if(voiceId()<0)
+    if(!valid())
 	{
 		// voice has been deallocated clear all incoming events
 		iterator_->reset_all(to);
 	    absx_=absy_=x_=y_=z_=note_=0.0;
-		return;
 	}
-
-	while(iterator_->next(IN_MASK,s,d,to))
-	{
-		send(to,s,d,false);
-	}
+    else
+    {
+        while(iterator_->next(IN_MASK,s,d,to))
+        {
+            send(to,s,d,false);
+        }
+    }
     last_processed_ = to;
 }
 
@@ -512,7 +522,7 @@ void t3d_wire_t::send_latest(unsigned long long t,bool state)
 {
 	if(output_->key_)
 	{
-		if(voiceId()>=0 )
+		if(valid())
 		{
 			piw::data_nb_t d;
 			if(iterator_->latest(IN_KEY,d,t)) set_key(d);
@@ -875,7 +885,7 @@ void t3d_output_plg::t3d_output_t::impl_t::deactivate_wire_fast(t3d_wire_t *w)
 {
     if(w->output_->key_ == false)
     {
-    	w->voiceId(0);
+    	w->voiceId(-1);
     	w->voiceTime(0);
         active_wires_.remove(w);
     	return;
@@ -884,7 +894,7 @@ void t3d_output_plg::t3d_output_t::impl_t::deactivate_wire_fast(t3d_wire_t *w)
 
 	int v=w->voiceId();
 	voices_[v]=0;
-	w->voiceId(0);
+	w->voiceId(-1);
 	w->voiceTime(0);
 //	pic::logmsg() << "deallocate voice:" << v;
     active_wires_.remove(w);
