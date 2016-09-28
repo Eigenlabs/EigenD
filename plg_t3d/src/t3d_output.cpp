@@ -819,7 +819,8 @@ static int remover__(void *impl__, void *wire__)
 {
     t3d_output_plg::t3d_output_t::impl_t *impl = (t3d_output_plg::t3d_output_t::impl_t *)impl__;
     t3d_wire_t *wire = (t3d_wire_t *)wire__;
-    impl->active_wires_.remove(wire);
+    impl->deactivate_wire_fast(wire);
+//    impl->active_wires_.remove(wire);
     return 0;
 }
 
