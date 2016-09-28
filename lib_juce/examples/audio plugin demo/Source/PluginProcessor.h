@@ -50,23 +50,16 @@ public:
     //==============================================================================
     const String getName() const override                                       { return JucePlugin_Name; }
 
-    const String getInputChannelName (int channelIndex) const override          { return String (channelIndex + 1); }
-    const String getOutputChannelName (int channelIndex) const override         { return String (channelIndex + 1); }
-
-    bool isInputChannelStereoPair (int /*index*/) const override                { return true; }
-    bool isOutputChannelStereoPair (int /*index*/) const override               { return true; }
-
     bool acceptsMidi() const override                                           { return true; }
     bool producesMidi() const override                                          { return true; }
 
-    bool silenceInProducesSilenceOut() const override                           { return false; }
     double getTailLengthSeconds() const override                                { return 0.0; }
 
     //==============================================================================
-    int getNumPrograms() override                                               { return 1; }
+    int getNumPrograms() override                                               { return 0; }
     int getCurrentProgram() override                                            { return 0; }
     void setCurrentProgram (int /*index*/) override                             {}
-    const String getProgramName (int /*index*/) override                        { return "Default"; }
+    const String getProgramName (int /*index*/) override                        { return String(); }
     void changeProgramName (int /*index*/, const String& /*name*/) override     {}
 
     //==============================================================================

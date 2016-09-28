@@ -1,9 +1,23 @@
 /*
  ==============================================================================
 
- MultiOutSynth.cpp
- Created: 23 Nov 2015 3:08:33pm
- Author:  Fabian Renn
+ This file is part of the JUCE library.
+ Copyright (c) 2015 - ROLI Ltd.
+
+ Permission is granted to use this software under the terms of either:
+ a) the GPL v2 (or any later version)
+ b) the Affero GPL v3
+
+ Details of these licenses can be found at: www.gnu.org/licenses
+
+ JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
+ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+ ------------------------------------------------------------------------------
+
+ To release a closed-source product which uses JUCE, commercial licenses are
+ available: visit www.juce.com for more information.
 
  ==============================================================================
  */
@@ -34,7 +48,6 @@ public:
         for (int busNr = 1; busNr < maxMidiChannel; ++busNr)
             busArrangement.outputBuses.add (AudioProcessorBus (String ("Output #") += String (busNr + 1), AudioChannelSet::disabled()));
 
-
         // initialize other stuff (not related to buses)
         formatManager.registerBasicFormats();
 
@@ -64,7 +77,6 @@ public:
         // only support mono or stereo (or disabling) buses
         if (numChannels > 2) return false;
 
-
         // pass the call on to the base class
         return AudioProcessor::setPreferredBusArrangement (isInputBus, busIndex, preferred);
     }
@@ -82,14 +94,13 @@ public:
 
     void processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiBuffer) override
     {
-        buffer.clear();
-
         for (int busNr = 0; busNr < maxMidiChannel; ++busNr)
         {
             MidiBuffer midiChannelBuffer = filterMidiMessagesForChannel (midiBuffer, busNr + 1);
             AudioSampleBuffer audioBusBuffer = busArrangement.getBusBuffer (buffer, false, busNr);
 
-            synth [busNr]->renderNextBlock (audioBusBuffer, midiChannelBuffer, 0, audioBusBuffer.getNumSamples());
+            if (! busArrangement.outputBuses.getReference (busNr).channels.isDisabled())
+                synth [busNr]->renderNextBlock (audioBusBuffer, midiChannelBuffer, 0, audioBusBuffer.getNumSamples());
         }
     }
 
@@ -101,7 +112,6 @@ public:
     const String getName() const override               { return "Gain PlugIn"; }
     bool acceptsMidi() const override                   { return false; }
     bool producesMidi() const override                  { return false; }
-    bool silenceInProducesSilenceOut() const override   { return true; }
     double getTailLengthSeconds() const override        { return 0; }
     int getNumPrograms() override                          { return 1; }
     int getCurrentProgram() override                       { return 0; }
