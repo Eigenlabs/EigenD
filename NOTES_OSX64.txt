@@ -1,0 +1,21 @@
+NOTES
+====
+- tools/darwin_tools , change i386 to x86_64
+
+- python 
+we need 64 bit version of 2.7.10  ... from python.org
+I assume I copied site-packages from /usr/pi/Python.Framework to  /Library/Python.Framework
+I then link /usr/local/pi/Python.Framework to /Library/Python.Framework (so you can rename the EigenLabs supplied ones)
+
+lib_juce, cannot support carbon , so in appconfig  - JUCE_SUPPORT_CARBON 0
+
+
+
+TODO
+====
+reading setup files 
+change above to be OPTIONAL dependent on env variable
+
+research : looking into universal binary... this requires 2 builds, and we need to then see how to get it to link and package
+
+
