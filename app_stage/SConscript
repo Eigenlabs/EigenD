@@ -71,6 +71,7 @@ lo_files=Split("""
 
 env.Append(CPPDEFINES=[['STAGE_BUILD','DESKTOP']])
 env.Append(CPPPATH='.')
+env.Append(CPPPATH='../lib_juce/modules')
 
 if env['IS_WINDOWS']:
     env.Append(CCFLAGS='/D_WINDOWS /DNDEBUG /arch:SSE2')

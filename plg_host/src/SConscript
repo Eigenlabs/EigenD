@@ -20,6 +20,8 @@
 
 Import('env')
 
+env.Append(CPPPATH='../../lib_juce/modules')
+
 native_files = Split("""host.cpp""")
 env.PiSharedLibrary('pihost',native_files,libraries=Split('pijuce ejuce pia piw pic pie midilib'),package='eigend',per_agent='plg_host')
 env.PiPipBinding('host_native','host.pip',libraries=Split('pihost pijuce pia piw pic pie midilib'),package='eigend',per_agent='plg_host')

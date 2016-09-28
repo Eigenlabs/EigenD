@@ -17,6 +17,7 @@
  along with EigenD.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED 1
 #define JUCE_MODULE_AVAILABLE_juce_core                 1
 #define JUCE_MODULE_AVAILABLE_juce_data_structures      1
 #define JUCE_MODULE_AVAILABLE_juce_events               1

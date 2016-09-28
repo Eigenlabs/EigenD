@@ -27,6 +27,7 @@ widget_files = Split("""
 
 widget_libs = Split('pic pia piw pie ejuce epython pijuce')
 
+env.Append(CPPPATH='../lib_juce/modules')
 env.Append(CCFLAGS='-DPI_RELEASE=\\"$PI_RELEASE\\"')
 env.Append(CCFLAGS='-DPI_COLLECTION=\\"$PI_COLLECTION\\"')
 env.PiGuiProgram('post_install',widget_files,libraries=widget_libs,appname='PostInstall',package='eigend',private=True)

@@ -1,18 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated GUI class created by the Introjucer!
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Introjucer version: 3.1.1
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Introjucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-13 by Raw Material Software Ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
@@ -42,7 +42,7 @@ void GlobalSettingsComponent::initialize(midi::mapping_delegate_t *mapping_deleg
     updateComponent(mapping_delegate);
 
     mapping_delegate_ = mapping_delegate;
-    
+
 }
 
 void GlobalSettingsComponent::setDialogWindow(DialogWindow *window)
@@ -74,7 +74,7 @@ void GlobalSettingsComponent::updateComponent(midi::mapping_delegate_t *mapping_
     max_channel->setSelectedId(settings.maximum_midi_channel_);
     pitchbend_up->setValue((int)settings.pitchbend_semitones_up_,sendNotificationSync);
     pitchbend_down->setValue((int)settings.pitchbend_semitones_down_,sendNotificationSync);
-    
+
     if(midi_channel== CHANNEL_MPE || midi_channel== CHANNEL_MPEa || midi_channel== CHANNEL_MPEb)
     {
         pitchbend_down->setEnabled(false);
@@ -83,7 +83,7 @@ void GlobalSettingsComponent::updateComponent(midi::mapping_delegate_t *mapping_
         midi_hires_velocity->setEnabled(false);
         pitchbend_up->setRange (pb_min, pb_max, 12.0);
         pitchbend_down->setRange (pb_min, pb_max, 12.0);
-        
+
         if(midi_channel== CHANNEL_MPEb)
         {
             min_channel->setEnabled(true);
@@ -110,7 +110,7 @@ void GlobalSettingsComponent::handleMessage(const Message &)
 
     unsigned midi_channel = active_channel->getSelectedId();
     midi_channel = (midi_channel==CHANNEL_POLY ? CHANNEL_POLY_LEGACY : midi_channel);
-    
+
     bool send_notes = midi_notes->getToggleState();
     bool send_pitchbend = midi_pitchbend->getToggleState();
     bool send_hires_velocity = midi_hires_velocity->getToggleState();
@@ -138,7 +138,7 @@ void GlobalSettingsComponent::handleMessage(const Message &)
 
                 pitchbend_up->setRange (pb_min, pb_max, 12.0);
                 pitchbend_down->setRange (pb_min, pb_max, 12.0);
-                
+
                 // disabled min channel, it is 2 fixed, 1 is global
                 min_channel->setSelectedId(2,sendNotificationSync);
                 min_chan_num = 2;
@@ -205,7 +205,7 @@ void GlobalSettingsComponent::handleMessage(const Message &)
             }
         }
     }
-    
+
     bool mpe_active=(midi_channel== CHANNEL_MPE || midi_channel== CHANNEL_MPEa || midi_channel== CHANNEL_MPEb);
 
     if (mpe_active)
@@ -295,7 +295,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     addAndMakeVisible (active_channel = new ComboBox ("active channel combo box"));
     active_channel->setEditableText (false);
     active_channel->setJustificationType (Justification::centredRight);
-    active_channel->setTextWhenNothingSelected (String::empty);
+    active_channel->setTextWhenNothingSelected (String());
     active_channel->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     active_channel->addItem (TRANS("1"), 1);
     active_channel->addItem (TRANS("2"), 2);
@@ -331,7 +331,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     addAndMakeVisible (min_channel = new ComboBox ("min channel combo box"));
     min_channel->setEditableText (false);
     min_channel->setJustificationType (Justification::centredRight);
-    min_channel->setTextWhenNothingSelected (String::empty);
+    min_channel->setTextWhenNothingSelected (String());
     min_channel->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     min_channel->addItem (TRANS("1"), 1);
     min_channel->addItem (TRANS("2"), 2);
@@ -363,7 +363,7 @@ GlobalSettingsComponent::GlobalSettingsComponent ()
     addAndMakeVisible (max_channel = new ComboBox ("max channel combo box"));
     max_channel->setEditableText (false);
     max_channel->setJustificationType (Justification::centredRight);
-    max_channel->setTextWhenNothingSelected (String::empty);
+    max_channel->setTextWhenNothingSelected (String());
     max_channel->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     max_channel->addItem (TRANS("1"), 1);
     max_channel->addItem (TRANS("2"), 2);
@@ -611,9 +611,9 @@ void GlobalSettingsComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 
 //==============================================================================
 #if 0
-/*  -- Introjucer information section --
+/*  -- Projucer information section --
 
-    This is where the Introjucer stores the metadata that describe this GUI layout, so
+    This is where the Projucer stores the metadata that describe this GUI layout, so
     make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
@@ -646,7 +646,8 @@ BEGIN_JUCER_METADATA
           rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
           textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
           max="100" int="1" style="LinearBar" textBoxPos="TextBoxLeft"
-          textBoxEditable="0" textBoxWidth="45" textBoxHeight="20" skewFactor="1"/>
+          textBoxEditable="0" textBoxWidth="45" textBoxHeight="20" skewFactor="1"
+          needsCallback="1"/>
   <LABEL name="active channel label" id="d74fb4f0a0a61833" memberName="active_channel_label"
          virtualName="" explicitFocusOrder="0" pos="16 144 136 24" textCol="ffeeeeee"
          edTextCol="ff000000" edBkgCol="0" labelText="Active midi channel"
@@ -693,13 +694,15 @@ BEGIN_JUCER_METADATA
           rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
           textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
           max="96" int="0.10000000000000000555" style="LinearBar" textBoxPos="TextBoxLeft"
-          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"
+          needsCallback="1"/>
   <SLIDER name="pitchbend down slider" id="44141a9a8275e444" memberName="pitchbend_down"
           virtualName="" explicitFocusOrder="0" pos="16 328 224 24" thumbcol="ff8a8a8a"
           rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
           textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
           max="96" int="0.10000000000000000555" style="LinearBar" textBoxPos="TextBoxLeft"
-          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"
+          needsCallback="1"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

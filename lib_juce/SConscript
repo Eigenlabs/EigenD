@@ -24,6 +24,7 @@ juce_env = env.Clone()
 
 me = env.Dir('.').abspath
 
+juce_env.Append(CPPPATH='modules')
 if env['IS_WINDOWS']:
     juce_files = Split("""
             modules/juce_audio_basics/juce_audio_basics.cpp
@@ -61,7 +62,7 @@ if env['IS_LINUX']:
             modules/juce_gui_basics/juce_gui_basics.cpp
             modules/juce_gui_extra/juce_gui_extra.cpp
         """)
-    juce_env.Append(CCFLAGS='-Wno-sign-compare -DLINUX=1 -DNDEBUG -DJUCE_DLL_BUILD')
+    juce_env.Append(CCFLAGS='-Wno-sign-compare -DLINUX=1 -DNDEBUG -DJUCE_DLL_BUILD -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 -include AppConfig.h')
     juce_env.Append(CPPPATH='/usr/include/freetype2')
     juce_env.Append(LIBS=Split('X11 freetype Xext asound'))
 
@@ -80,7 +81,7 @@ if env['IS_MACOSX']:
             modules/juce_gui_basics/juce_gui_basics.mm
             modules/juce_gui_extra/juce_gui_extra.mm
         """)
-    juce_env.Append(CCFLAGS='-Wno-uninitialized -Wno-sign-compare -DNDEBUG -DJUCE_DLL_BUILD')
+    juce_env.Append(CCFLAGS='-Wno-uninitialized -Wno-sign-compare -DNDEBUG -DJUCE_DLL_BUILD -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 -include AppConfig.h')
     juce_env.Append(LINKFLAGS='-framework CoreAudio -framework CoreMIDI -framework AudioUnit -framework IOKit')
     juce_env.Append(LINKFLAGS='-framework Cocoa -framework Carbon -framework AppKit -framework QuartzCore')
     juce_env.Append(LINKFLAGS='-framework CoreFoundation -framework CoreAudioKit -framework AudioToolbox')
@@ -89,6 +90,7 @@ juce_env.Append(CPPPATH=me)
 juce_env.PiSharedLibrary('pijuce',juce_files,package='eigend')
 
 ejuce_env = env.Clone()
+ejuce_env.Append(CPPPATH='modules')
 ejuce_files = Split('ejuce.cpp ejuce_laf.cpp')
 ejuce_libraries = Split('pijuce pia pic')
 ejuce_env.PiSharedLibrary('ejuce',ejuce_files,libraries=ejuce_libraries,package='eigend')
