@@ -1474,7 +1474,7 @@ namespace midi
             else // entering mpe ,or changing mpe mode
             {
                 // are we changing global channel ... ie modes
-                if(mpe_global_!=glob_chan)
+                if(mpe_global_!=glob_chan && mpe_global_ != 0)
                 {
                     // turn off old channel
                     set_cc(false, false, mpe_global_, MIDI_MPE_MODE_CC, 0 , 0, t);
