@@ -19,6 +19,10 @@
 #
 
 import sys
+import os
+
+BUILD_TARGET =os.environ.get('BUILD_TARGET','i386')
+
 
 def posix_Linux_armv7l():
     import linux_tools
@@ -55,14 +59,21 @@ def posix_Linux_i686():
 
 def posix_Darwin_x86_64():
     import darwin_tools
-    env = darwin_tools.PiDarwinEnvironment('macosx-i386')
-    env.Replace(IS_MACOSX_86=True)
+    if BUILD_TARGET == 'x86_64':
+        env = darwin_tools.PiDarwinEnvironment('macosx-x86-64')
+        env.Replace(IS_MACOSX_86=True)
+        env.Replace(IS_MACOSX_8664=True)
+    else:
+        env = darwin_tools.PiDarwinEnvironment('macosx-i386')
+        env.Replace(IS_MACOSX_86=True)
+        env.Replace(IS_MACOSX_i386=True)
     return env
 
 def posix_Darwin_i386():
     import darwin_tools
     env = darwin_tools.PiDarwinEnvironment('macosx-i386')
     env.Replace(IS_MACOSX_86=True)
+    env.Replace(IS_MACOSX_i386=True)
     return env
 
 def posix_Darwin_Power_Macintosh():

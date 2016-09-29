@@ -71,6 +71,11 @@
 #define JUCE_USE_CAMERA 0
 
 #define DONT_SET_USING_JUCE_NAMESPACE 1
+
+#ifdef PI_MACOSX_8664
 #define JUCE_SUPPORT_CARBON 0
+#else
+#define JUCE_SUPPORT_CARBON 1
+#endif
 
 #define NDEBUG 1

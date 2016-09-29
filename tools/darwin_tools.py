@@ -111,10 +111,12 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         unix_tools.PiUnixEnvironment.__init__(self,platform,'usr/local/pi','Library/Eigenlabs',python='/usr/local/pi/bin/python')
         os_major=uname()[2].split('.')[0]
         self.Append(LIBS=Split('dl m pthread'))
-        self.Append(CCFLAGS=Split('-arch x86_64 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\" -mmacosx-version-min=10.6'))
-        self.Append(LINKFLAGS=Split('-arch x86_64 -framework Accelerate -Wl,-rpath,@executable_path/ -mmacosx-version-min=10.6'))
-        #self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\" -mmacosx-version-min=10.6'))
-        #self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate -Wl,-rpath,@executable_path/ -mmacosx-version-min=10.6'))
+        if platform == 'macosx-x86-64' :
+            self.Append(CCFLAGS=Split('-arch x86_64 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\" -mmacosx-version-min=10.6'))
+            self.Append(LINKFLAGS=Split('-arch x86_64 -framework Accelerate -Wl,-rpath,@executable_path/ -mmacosx-version-min=10.6'))
+        else:
+            self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\" -mmacosx-version-min=10.6'))
+            self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate -Wl,-rpath,@executable_path/ -mmacosx-version-min=10.6'))
 
         self.Append(CCFLAGS=Split('-ggdb -Werror -Wall -Wno-empty-body -Wno-deprecated-declarations -Wno-format -Wno-unused-function -Wno-unused-private-field -Wno-c++11-extensions -Os -fmessage-length=0 -msse3'))
 
