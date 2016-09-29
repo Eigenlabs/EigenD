@@ -15,6 +15,7 @@
 
 #include <picross/pic_config.h>
 
+#define JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED 1
 #define JUCE_MODULE_AVAILABLE_juce_audio_basics          1
 #define JUCE_MODULE_AVAILABLE_juce_audio_devices         1
 #define JUCE_MODULE_AVAILABLE_juce_audio_formats         1

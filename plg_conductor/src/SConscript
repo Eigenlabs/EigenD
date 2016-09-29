@@ -20,6 +20,7 @@
 Import('env')
 
 import os
+cenv = env.Clone()
 
 conductor_files = Split("""
         aiff_format.cpp audio_channel.cpp audio_recording.cpp audio_wire.cpp
@@ -29,4 +30,5 @@ conductor_files = Split("""
         recording.cpp recording_consumer.cpp sqlite_utils.cpp widget.cpp
     """)
 
-env.PiPipBinding('conductor_native','conductor.pip',libraries=Split('piw pia pic pijuce pisqlite'),sources=conductor_files,package='eigend',per_agent='plg_conductor',locked=True)
+cenv.Append(CPPPATH='../../lib_juce/modules')
+cenv.PiPipBinding('conductor_native','conductor.pip',libraries=Split('piw pia pic pijuce pisqlite'),sources=conductor_files,package='eigend',per_agent='plg_conductor',locked=True)

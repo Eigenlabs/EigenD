@@ -26,6 +26,7 @@ workbench_files = Split("""
 
 widget_libs = Split('pic pia piw pie pijuce')
 env.Append(CPPPATH='.')
+env.Append(CPPPATH='../lib_juce/modules')
 
 if env['IS_WINDOWS']:
     env.Append(CCFLAGS='/D_WINDOWS /DNDEBUG /arch:SSE2')

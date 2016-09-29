@@ -1,18 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated GUI class created by the Introjucer!
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Introjucer version: 3.1.1
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Introjucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-13 by Raw Material Software Ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
@@ -349,7 +349,7 @@ CellPopupComponent::CellPopupComponent ()
     addAndMakeVisible (secondary_cc = new ComboBox ("secondary cc combo box"));
     secondary_cc->setEditableText (false);
     secondary_cc->setJustificationType (Justification::centredLeft);
-    secondary_cc->setTextWhenNothingSelected (String::empty);
+    secondary_cc->setTextWhenNothingSelected (String());
     secondary_cc->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     secondary_cc->addListener (this);
 
@@ -465,7 +465,7 @@ CellPopupComponent::CellPopupComponent ()
     addAndMakeVisible (control_scope_channel_number = new ComboBox ("fixed channel combo box"));
     control_scope_channel_number->setEditableText (false);
     control_scope_channel_number->setJustificationType (Justification::centredRight);
-    control_scope_channel_number->setTextWhenNothingSelected (String::empty);
+    control_scope_channel_number->setTextWhenNothingSelected (String());
     control_scope_channel_number->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     control_scope_channel_number->addItem (TRANS("1"), 1);
     control_scope_channel_number->addItem (TRANS("2"), 2);
@@ -498,7 +498,7 @@ CellPopupComponent::CellPopupComponent ()
     addAndMakeVisible (curve = new ComboBox ("curve combo box"));
     curve->setEditableText (false);
     curve->setJustificationType (Justification::centredLeft);
-    curve->setTextWhenNothingSelected (String::empty);
+    curve->setTextWhenNothingSelected (String());
     curve->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     curve->addItem (TRANS("linear"), 1);
     curve->addItem (TRANS("cubic"), 2);
@@ -790,9 +790,9 @@ void CellPopupComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 
 //==============================================================================
 #if 0
-/*  -- Introjucer information section --
+/*  -- Projucer information section --
 
-    This is where the Introjucer stores the metadata that describe this GUI layout, so
+    This is where the Projucer stores the metadata that describe this GUI layout, so
     make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
@@ -826,7 +826,8 @@ BEGIN_JUCER_METADATA
           rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
           textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
           max="10" int="0.10000000000000000555" style="LinearBar" textBoxPos="TextBoxLeft"
-          textBoxEditable="0" textBoxWidth="45" textBoxHeight="20" skewFactor="1"/>
+          textBoxEditable="0" textBoxWidth="45" textBoxHeight="20" skewFactor="1"
+          needsCallback="1"/>
   <TOGGLEBUTTON name="enabled toggle button" id="9699df892a5ec5b4" memberName="mapping_enabled"
                 virtualName="" explicitFocusOrder="0" pos="64 24R 72 24" txtcol="ffeeeeee"
                 buttonText="Enabled" connectedEdges="0" needsCallback="1" radioGroupId="0"
@@ -885,21 +886,22 @@ BEGIN_JUCER_METADATA
           rotaryslideroutline="66ffffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
           textboxhighlight="40000000" textboxoutline="0" min="0" max="100"
           int="0.5" style="RotaryHorizontalVerticalDrag" textBoxPos="NoTextBox"
-          textBoxEditable="0" textBoxWidth="45" textBoxHeight="14" skewFactor="1"/>
+          textBoxEditable="0" textBoxWidth="45" textBoxHeight="14" skewFactor="1"
+          needsCallback="1"/>
   <SLIDER name="boundsbase dial" id="2db1da6e8c60e90c" memberName="boundsbase"
           virtualName="SliderEx" explicitFocusOrder="0" pos="85 88 40 40"
           thumbcol="ff8a8a8a" rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff"
           textboxtext="ffeeeeee" textboxbkgd="ffffff" textboxhighlight="40000000"
           textboxoutline="0" min="-100" max="100" int="1" style="RotaryHorizontalVerticalDrag"
           textBoxPos="NoTextBox" textBoxEditable="0" textBoxWidth="45"
-          textBoxHeight="14" skewFactor="1"/>
+          textBoxHeight="14" skewFactor="1" needsCallback="1"/>
   <SLIDER name="boundshi dial" id="1c37d364908c9764" memberName="boundshi"
           virtualName="SliderEx" explicitFocusOrder="0" pos="149 88 40 40"
           thumbcol="ff8a8a8a" rotarysliderfill="ddffffff" rotaryslideroutline="66ffffff"
           textboxtext="ffeeeeee" textboxbkgd="ffffff" textboxhighlight="40000000"
           textboxoutline="0" min="0" max="100" int="0.5" style="RotaryHorizontalVerticalDrag"
           textBoxPos="NoTextBox" textBoxEditable="0" textBoxWidth="45"
-          textBoxHeight="14" skewFactor="1"/>
+          textBoxHeight="14" skewFactor="1" needsCallback="1"/>
   <TOGGLEBUTTON name="scale factor invert toggle button" id="a30c500f267f6636"
                 memberName="scale_factor_invert" virtualName="" explicitFocusOrder="0"
                 pos="130 32 64 24" txtcol="ffeeeeee" buttonText="Invert" connectedEdges="0"
@@ -912,7 +914,8 @@ BEGIN_JUCER_METADATA
           rotarysliderfill="fff0ffff" textboxtext="ffeeeeee" textboxbkgd="ffffff"
           textboxhighlight="40000000" textboxoutline="66ffffff" min="0"
           max="100" int="1" style="LinearBar" textBoxPos="TextBoxLeft"
-          textBoxEditable="0" textBoxWidth="45" textBoxHeight="20" skewFactor="1"/>
+          textBoxEditable="0" textBoxWidth="45" textBoxHeight="20" skewFactor="1"
+          needsCallback="1"/>
   <TOGGLEBUTTON name="channel scope toggle button" id="601cb1dfa2e060cf" memberName="control_scope_channel"
                 virtualName="" explicitFocusOrder="0" pos="16 374 112 24" txtcol="ffeeeeee"
                 buttonText="Fixed channel" connectedEdges="0" needsCallback="1"

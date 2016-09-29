@@ -35,8 +35,8 @@ class MovieComponentWithFileBrowser  : public Component,
 public:
     MovieComponentWithFileBrowser()
         : isDragOver (false),
-          fileChooser ("movie", File::nonexistent, true, false, false,
-                       "*", String::empty, "(choose a video file to play)")
+          fileChooser ("movie", File(), true, false, false,
+                       "*", String(), "(choose a video file to play)")
     {
         addAndMakeVisible (videoComp);
 
@@ -113,13 +113,9 @@ private:
         }
         else
         {
-            AlertWindow::showMessageBox (AlertWindow::WarningIcon,
-                                         "Couldn't load the file!",
-                                        #if JUCE_QUICKTIME
-                                         "Sorry, QuickTime didn't manage to load that file!");
-                                        #elif JUCE_DIRECTSHOW
-                                         "Sorry, DirectShow didn't manage to load that file!");
-                                        #endif
+            AlertWindow::showMessageBoxAsync (AlertWindow::WarningIcon,
+                                              "Couldn't load the file!",
+                                              r.getErrorMessage());
         }
     }
 

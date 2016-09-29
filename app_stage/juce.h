@@ -19,6 +19,7 @@
 
 #define JUCE_DLL 1
 
+#define JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED 1
 #include "AppConfig.h"
 #include "../lib_juce/modules/juce_core/juce_core.h"
 #include "../lib_juce/modules/juce_data_structures/juce_data_structures.h"
