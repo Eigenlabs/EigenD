@@ -19,7 +19,15 @@
 #
 
 Import('env')
-env.PiSharedLibrary('micro',Split('micro_active.cpp micro_passive.cpp'),libraries=Split('pic pico_decoder_1_0_0'),package='eigend',locked=True)
+if env['IS_MACOSX']:
+    if env['IS_MACOSX_8664']:
+        plib=Split('pic pico_decoder_x86_64_1_0_0')
+    else:
+        plib=Split('pic pico_decoder_i386_1_0_0')
+else:
+    plib=Split('pic pico_decoder_1_0_0')
+
+env.PiSharedLibrary('micro',Split('micro_active.cpp micro_passive.cpp'),libraries=plib,package='eigend',locked=True)
 env.PiProgram('microraw','microraw.cpp',libraries=Split('pic micro'))
 env.PiProgram('ustripcal','stripcal.cpp',libraries=Split('pic micro'))
 env.PiPipBinding('micro_native','micro.pip',libraries=Split('pic micro'),package='eigend')

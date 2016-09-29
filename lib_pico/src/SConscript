@@ -20,7 +20,15 @@
 
 Import('env')
 
-env.PiSharedLibrary('pico',Split('pico_active.cpp pico_passive.cpp'),libraries=Split('pic pico_decoder_1_0_0'),package='eigend',locked=True)
+if env['IS_MACOSX']:
+    if env['IS_MACOSX_8664']:
+        plib=Split('pic pico_decoder_x86_64_1_0_0')
+    else:
+        plib=Split('pic pico_decoder_i386_1_0_0')
+else:
+    plib=Split('pic pico_decoder_1_0_0')
+
+env.PiSharedLibrary('pico',Split('pico_active.cpp pico_passive.cpp'),libraries=plib,package='eigend',locked=True)
 env.PiProgram('praw','praw.cpp',libraries=Split('pic pico'))
 env.PiProgram('pstripcal','stripcal.cpp',libraries=Split('pic pico'))
 env.PiProgram('picodump','picodump.cpp',libraries=Split('pic pico'))
