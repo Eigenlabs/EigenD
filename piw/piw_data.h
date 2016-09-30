@@ -205,7 +205,7 @@ namespace piw
             float as_renorm_float(float min, float max, float rest) const { return as_renorm(min,max,rest); }
             float as_renorm_double(float min, float max, float rest) const { if(units()==BCTUNIT_GLOBAL) { if(is_float()) return as_float(); if(is_double()) return as_double(); } return denormalise(max,min,rest,as_norm()); }
 
-            long as_long() const { PIC_ASSERT(is_long()); return *(long *)host_data(); }
+            long as_long() const { PIC_ASSERT(is_long()); return *(int32_t *)host_data(); }
             const char *as_string() const { PIC_ASSERT(is_string()); return (const char *)host_data(); }
             unsigned as_stringlen() const { PIC_ASSERT(is_string()); return host_length(); }
             bool as_bool() const { PIC_ASSERT(is_bool()); return *(char *)host_data(); }

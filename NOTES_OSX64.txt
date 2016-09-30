@@ -27,8 +27,6 @@ NOTES
 
 TODO
 ====
-reading setup files, some agents names get 'garbled', this confuses talkers
-
 we can't do a universal build, since most of eigenD is store in /usr/local/pi... 
 so to allow both to exist we would need separate directories for 64 and 32 build.
 need to consider if this is worth the 'overhead' since most users will use 32bit or 64bit
