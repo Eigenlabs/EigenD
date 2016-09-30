@@ -5,22 +5,140 @@
               jucerVersion="4.2.4">
   <MAINGROUP id="W7UutC" name="EigenD">
     <GROUP id="{6DC53E4C-84CE-CDD8-AB5D-809B9E1F52A3}" name="Source">
-      <FILE id="VH0Cr5" name="JucerCellPopupComponent.cpp" compile="1" resource="0"
-            file="../../lib_midi/src/JucerCellPopupComponent.cpp"/>
-      <FILE id="HUAO9Y" name="JucerCellPopupComponent.h" compile="0" resource="0"
-            file="../../lib_midi/src/JucerCellPopupComponent.h"/>
-      <FILE id="txPcgb" name="JucerGlobalSettingsComponent.cpp" compile="1"
-            resource="0" file="../../lib_midi/src/JucerGlobalSettingsComponent.cpp"/>
-      <FILE id="Kki9Hm" name="JucerGlobalSettingsComponent.h" compile="0"
-            resource="0" file="../../lib_midi/src/JucerGlobalSettingsComponent.h"/>
-      <FILE id="IL7PNt" name="JucerHelpComponent.cpp" compile="1" resource="0"
-            file="../../lib_midi/src/JucerHelpComponent.cpp"/>
-      <FILE id="GuzLsH" name="JucerHelpComponent.h" compile="0" resource="0"
-            file="../../lib_midi/src/JucerHelpComponent.h"/>
-      <FILE id="sB6QTQ" name="JucerPopupDialogComponent.cpp" compile="1"
-            resource="0" file="../../lib_midi/src/JucerPopupDialogComponent.cpp"/>
-      <FILE id="RcdxGU" name="JucerPopupDialogComponent.h" compile="0" resource="0"
-            file="../../lib_midi/src/JucerPopupDialogComponent.h"/>
+      <GROUP id="{0897850F-8A6A-57F5-DF00-94CAEBBFF9B1}" name="plg_host">
+        <FILE id="q4eOwP" name="JucerScanCompleteComponent.cpp" compile="1"
+              resource="0" file="../../plg_host/src/JucerScanCompleteComponent.cpp"/>
+        <FILE id="wuYT5y" name="JucerScanCompleteComponent.h" compile="0" resource="0"
+              file="../../plg_host/src/JucerScanCompleteComponent.h"/>
+        <FILE id="YWmPVj" name="JucerScanCtlComponent.cpp" compile="1" resource="0"
+              file="../../plg_host/src/JucerScanCtlComponent.cpp"/>
+        <FILE id="NzbwT0" name="JucerScanCtlComponent.h" compile="0" resource="0"
+              file="../../plg_host/src/JucerScanCtlComponent.h"/>
+        <FILE id="zdGaT3" name="JucerScanPrgComponent.cpp" compile="1" resource="0"
+              file="../../plg_host/src/JucerScanPrgComponent.cpp"/>
+        <FILE id="wBbX5K" name="JucerScanPrgComponent.h" compile="0" resource="0"
+              file="../../plg_host/src/JucerScanPrgComponent.h"/>
+      </GROUP>
+      <GROUP id="{1E374A70-86BC-597A-4622-A36A0FD67442}" name="plg_audio">
+        <FILE id="u0E4Sp" name="AudioDialogComponent.cpp" compile="1" resource="0"
+              file="../../plg_audio/src/AudioDialogComponent.cpp"/>
+        <FILE id="o4kYd3" name="AudioDialogComponent.h" compile="0" resource="0"
+              file="../../plg_audio/src/AudioDialogComponent.h"/>
+      </GROUP>
+      <GROUP id="{581CE136-0973-50DF-7F41-A8C37CDB0C77}" name="app_eigend2">
+        <FILE id="dVBXOz" name="AboutComponent.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/AboutComponent.cpp"/>
+        <FILE id="W2T1Db" name="AboutComponent.h" compile="0" resource="0"
+              file="../../app_eigend2/jucer/AboutComponent.h"/>
+        <FILE id="SUtYgk" name="AlertComponent1.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/AlertComponent1.cpp"/>
+        <FILE id="gLMmaq" name="AlertComponent1.h" compile="0" resource="0"
+              file="../../app_eigend2/jucer/AlertComponent1.h"/>
+        <FILE id="xCFFgG" name="AlertComponent2.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/AlertComponent2.cpp"/>
+        <FILE id="mWItGB" name="AlertComponent2.h" compile="0" resource="0"
+              file="../../app_eigend2/jucer/AlertComponent2.h"/>
+        <FILE id="Ge9iT1" name="BackgroundBox.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BackgroundBox.png"/>
+        <FILE id="pWEV3Y" name="BackgroundBoxB.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BackgroundBoxB.png"/>
+        <FILE id="eNIi93" name="BackgroundBoxBL.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BackgroundBoxBL.png"/>
+        <FILE id="dH6GY6" name="BackgroundBoxBR.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BackgroundBoxBR.png"/>
+        <FILE id="uHy77B" name="BackgroundBoxInner.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BackgroundBoxInner.png"/>
+        <FILE id="mEL55R" name="BackgroundBoxL.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BackgroundBoxL.png"/>
+        <FILE id="rqZTDx" name="BackgroundBoxR.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BackgroundBoxR.png"/>
+        <FILE id="u3Yp8H" name="BackgroundBoxT.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BackgroundBoxT.png"/>
+        <FILE id="qZkKIH" name="BackgroundBoxTL.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BackgroundBoxTL.png"/>
+        <FILE id="rtVhvI" name="BackgroundBoxTR.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BackgroundBoxTR.png"/>
+        <FILE id="Qakf0H" name="BoxesGraphics.psd" compile="0" resource="1"
+              file="../../app_eigend2/jucer/BoxesGraphics.psd"/>
+        <FILE id="X4aTPj" name="BugComponent.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/BugComponent.cpp"/>
+        <FILE id="UcfMZ4" name="BugComponent.h" compile="0" resource="0" file="../../app_eigend2/jucer/BugComponent.h"/>
+        <FILE id="aarMWF" name="EditDialogComponent.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/EditDialogComponent.cpp"/>
+        <FILE id="LO0wYC" name="EditDialogComponent.h" compile="0" resource="0"
+              file="../../app_eigend2/jucer/EditDialogComponent.h"/>
+        <FILE id="pGMhl7" name="eigenD.png" compile="0" resource="1" file="../../app_eigend2/jucer/eigenD.png"/>
+        <FILE id="faSsg0" name="eigenD@2x.png" compile="0" resource="1" file="../../app_eigend2/jucer/eigenD@2x.png"/>
+        <FILE id="lDHaSc" name="HelpComponent.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/HelpComponent.cpp"/>
+        <FILE id="XdAUIi" name="HelpComponent.h" compile="0" resource="0" file="../../app_eigend2/jucer/HelpComponent.h"/>
+        <FILE id="n2RDn4" name="InfoComponent.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/InfoComponent.cpp"/>
+        <FILE id="V4P6lh" name="InfoComponent.h" compile="0" resource="0" file="../../app_eigend2/jucer/InfoComponent.h"/>
+        <FILE id="FVz15G" name="InnerBox.png" compile="0" resource="1" file="../../app_eigend2/jucer/InnerBox.png"/>
+        <FILE id="vKaQCI" name="InnerBoxB.png" compile="0" resource="1" file="../../app_eigend2/jucer/InnerBoxB.png"/>
+        <FILE id="b0dSD3" name="InnerBoxBL.png" compile="0" resource="1" file="../../app_eigend2/jucer/InnerBoxBL.png"/>
+        <FILE id="HUS15F" name="InnerBoxBR.png" compile="0" resource="1" file="../../app_eigend2/jucer/InnerBoxBR.png"/>
+        <FILE id="UQpKLF" name="InnerBoxInner.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/InnerBoxInner.png"/>
+        <FILE id="klgGLB" name="InnerBoxL.png" compile="0" resource="1" file="../../app_eigend2/jucer/InnerBoxL.png"/>
+        <FILE id="KNGApC" name="InnerBoxR.png" compile="0" resource="1" file="../../app_eigend2/jucer/InnerBoxR.png"/>
+        <FILE id="KeeBtt" name="InnerBoxT.png" compile="0" resource="1" file="../../app_eigend2/jucer/InnerBoxT.png"/>
+        <FILE id="ZM99ML" name="InnerBoxTL.png" compile="0" resource="1" file="../../app_eigend2/jucer/InnerBoxTL.png"/>
+        <FILE id="lKdTR6" name="InnerBoxTR.png" compile="0" resource="1" file="../../app_eigend2/jucer/InnerBoxTR.png"/>
+        <FILE id="aOZ2FZ" name="juce.h" compile="0" resource="0" file="../../app_eigend2/jucer/juce.h"/>
+        <FILE id="Vi7bG9" name="LoadDialogComponent.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/LoadDialogComponent.cpp"/>
+        <FILE id="B2AOHS" name="LoadDialogComponent.h" compile="0" resource="0"
+              file="../../app_eigend2/jucer/LoadDialogComponent.h"/>
+        <FILE id="z243QB" name="LoadProgressComponent.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/LoadProgressComponent.cpp"/>
+        <FILE id="NoEklf" name="LoadProgressComponent.h" compile="0" resource="0"
+              file="../../app_eigend2/jucer/LoadProgressComponent.h"/>
+        <FILE id="xpmVI0" name="ModalComponent.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/ModalComponent.cpp"/>
+        <FILE id="j9z9M0" name="ModalComponent.h" compile="0" resource="0"
+              file="../../app_eigend2/jucer/ModalComponent.h"/>
+        <FILE id="PgAbIC" name="SaveDialogComponent.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/SaveDialogComponent.cpp"/>
+        <FILE id="GzQWeJ" name="SaveDialogComponent.h" compile="0" resource="0"
+              file="../../app_eigend2/jucer/SaveDialogComponent.h"/>
+        <FILE id="soEMvK" name="StatusComponent.cpp" compile="1" resource="0"
+              file="../../app_eigend2/jucer/StatusComponent.cpp"/>
+        <FILE id="ngRTdC" name="StatusComponent.h" compile="0" resource="0"
+              file="../../app_eigend2/jucer/StatusComponent.h"/>
+        <FILE id="pwfSTv" name="TextBoxB.png" compile="0" resource="1" file="../../app_eigend2/jucer/TextBoxB.png"/>
+        <FILE id="UXM1HF" name="TextBoxBL.png" compile="0" resource="1" file="../../app_eigend2/jucer/TextBoxBL.png"/>
+        <FILE id="CnDpWb" name="TextBoxBR.png" compile="0" resource="1" file="../../app_eigend2/jucer/TextBoxBR.png"/>
+        <FILE id="iv1SxX" name="TextBoxInner.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/TextBoxInner.png"/>
+        <FILE id="IRNy06" name="TextBoxL.png" compile="0" resource="1" file="../../app_eigend2/jucer/TextBoxL.png"/>
+        <FILE id="PtT2kw" name="TextBoxR.png" compile="0" resource="1" file="../../app_eigend2/jucer/TextBoxR.png"/>
+        <FILE id="Ps2n3w" name="TextBoxShort.png" compile="0" resource="1"
+              file="../../app_eigend2/jucer/TextBoxShort.png"/>
+        <FILE id="VA01zV" name="TextBoxT.png" compile="0" resource="1" file="../../app_eigend2/jucer/TextBoxT.png"/>
+        <FILE id="sqtJJn" name="TextBoxTall.png" compile="0" resource="1" file="../../app_eigend2/jucer/TextBoxTall.png"/>
+        <FILE id="BNWyl3" name="TextBoxTL.png" compile="0" resource="1" file="../../app_eigend2/jucer/TextBoxTL.png"/>
+        <FILE id="fBrx4c" name="TextBoxTR.png" compile="0" resource="1" file="../../app_eigend2/jucer/TextBoxTR.png"/>
+      </GROUP>
+      <GROUP id="{F3997421-102C-5A11-F921-FACA2CC09DF4}" name="libmidi">
+        <FILE id="VH0Cr5" name="JucerCellPopupComponent.cpp" compile="1" resource="0"
+              file="../../lib_midi/src/JucerCellPopupComponent.cpp"/>
+        <FILE id="HUAO9Y" name="JucerCellPopupComponent.h" compile="0" resource="0"
+              file="../../lib_midi/src/JucerCellPopupComponent.h"/>
+        <FILE id="txPcgb" name="JucerGlobalSettingsComponent.cpp" compile="1"
+              resource="0" file="../../lib_midi/src/JucerGlobalSettingsComponent.cpp"/>
+        <FILE id="Kki9Hm" name="JucerGlobalSettingsComponent.h" compile="0"
+              resource="0" file="../../lib_midi/src/JucerGlobalSettingsComponent.h"/>
+        <FILE id="IL7PNt" name="JucerHelpComponent.cpp" compile="1" resource="0"
+              file="../../lib_midi/src/JucerHelpComponent.cpp"/>
+        <FILE id="GuzLsH" name="JucerHelpComponent.h" compile="0" resource="0"
+              file="../../lib_midi/src/JucerHelpComponent.h"/>
+        <FILE id="sB6QTQ" name="JucerPopupDialogComponent.cpp" compile="1"
+              resource="0" file="../../lib_midi/src/JucerPopupDialogComponent.cpp"/>
+        <FILE id="RcdxGU" name="JucerPopupDialogComponent.h" compile="0" resource="0"
+              file="../../lib_midi/src/JucerPopupDialogComponent.h"/>
+      </GROUP>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
@@ -32,36 +150,39 @@
                        isDebug="0" optimisation="2" targetName="EigenD"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_events" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_graphics" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_video" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../../../juce/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../../../../../juce/modules"/>
+        <MODULEPATH id="juce_core" path="../modules"/>
+        <MODULEPATH id="juce_events" path="../modules"/>
+        <MODULEPATH id="juce_graphics" path="../modules"/>
+        <MODULEPATH id="juce_data_structures" path="../modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../modules"/>
+        <MODULEPATH id="juce_cryptography" path="../modules"/>
+        <MODULEPATH id="juce_video" path="../modules"/>
+        <MODULEPATH id="juce_opengl" path="../modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>
   <MODULES>
-    <MODULES id="juce_audio_basics" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_audio_devices" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_audio_formats" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_audio_processors" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_core" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_cryptography" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_data_structures" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_events" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_graphics" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_gui_basics" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_gui_extra" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_opengl" showAllCode="1" useLocalCopy="1"/>
-    <MODULES id="juce_video" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_audio_formats" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_core" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_cryptography" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_events" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_opengl" showAllCode="1" useLocalCopy="0"/>
+    <MODULES id="juce_video" showAllCode="1" useLocalCopy="0"/>
   </MODULES>
   <JUCEOPTIONS/>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
 </JUCERPROJECT>

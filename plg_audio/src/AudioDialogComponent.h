@@ -1,26 +1,24 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  24 Sep 2012 9:25:34pm
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_JUCERAUDIODIALOGCOMPONENT_AUDIODIALOGCOMPONENT_7258D17E__
-#define __JUCER_HEADER_JUCERAUDIODIALOGCOMPONENT_AUDIODIALOGCOMPONENT_7258D17E__
+#ifndef __JUCE_HEADER_7762AEBAF9998FC3__
+#define __JUCE_HEADER_7762AEBAF9998FC3__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -55,10 +53,10 @@ public:
     TextButton *getControlButton() { return control_button; }
     //[/UserMethods]
 
-    void paint (Graphics& g);
-    void resized();
-    void buttonClicked (Button* buttonThatWasClicked);
-    void comboBoxChanged (ComboBox* comboBoxThatHasChanged);
+    void paint (Graphics& g) override;
+    void resized() override;
+    void buttonClicked (Button* buttonThatWasClicked) override;
+    void comboBoxChanged (ComboBox* comboBoxThatHasChanged) override;
 
     // Binary resources:
     static const char* backgroundBoxT_png;
@@ -106,40 +104,69 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    Label* user_label;
-    Label* notes_label;
-    Label* notes_label2;
-    Label* notes_label3;
-    TextButton* ok_button;
-    TextButton* control_button;
-    ComboBox* chooser_device;
-    ComboBox* chooser_type;
-    ComboBox* chooser_rate;
-    ComboBox* chooser_buffer;
-    Image cachedImage_backgroundBoxInner_png;
-    Image cachedImage_backgroundBoxT_png;
-    Image cachedImage_backgroundBoxL_png;
-    Image cachedImage_backgroundBoxR_png;
-    Image cachedImage_backgroundBoxTl_png;
-    Image cachedImage_backgroundBoxTr_png;
-    Image cachedImage_backgroundBoxB_png;
-    Image cachedImage_backgroundBoxBr_png;
-    Image cachedImage_backgroundBoxBl_png;
-    Image cachedImage_eigenD_png;
-    Image cachedImage_textBoxInner_png;
-    Image cachedImage_textBoxBl_png;
-    Image cachedImage_textBoxB_png;
-    Image cachedImage_textBoxR_png;
-    Image cachedImage_textBoxBr_png;
-    Image cachedImage_textBoxTr_png;
-    Image cachedImage_textBoxT_png;
-    Image cachedImage_textBoxTl_png;
-    Image cachedImage_textBoxL_png;
+    ScopedPointer<Label> user_label;
+    ScopedPointer<Label> notes_label;
+    ScopedPointer<Label> notes_label2;
+    ScopedPointer<Label> notes_label3;
+    ScopedPointer<TextButton> ok_button;
+    ScopedPointer<TextButton> control_button;
+    ScopedPointer<ComboBox> chooser_device;
+    ScopedPointer<ComboBox> chooser_type;
+    ScopedPointer<ComboBox> chooser_rate;
+    ScopedPointer<ComboBox> chooser_buffer;
+    Image cachedImage_backgroundBoxInner_png_1;
+    Image cachedImage_backgroundBoxT_png_2;
+    Image cachedImage_backgroundBoxL_png_3;
+    Image cachedImage_backgroundBoxR_png_4;
+    Image cachedImage_backgroundBoxTl_png_5;
+    Image cachedImage_backgroundBoxTr_png_6;
+    Image cachedImage_backgroundBoxB_png_7;
+    Image cachedImage_backgroundBoxBr_png_8;
+    Image cachedImage_backgroundBoxBl_png_9;
+    Image cachedImage_eigenD_png_10;
+    Image cachedImage_textBoxInner_png_11;
+    Image cachedImage_textBoxInner_png_12;
+    Image cachedImage_textBoxInner_png_13;
+    Image cachedImage_textBoxInner_png_14;
+    Image cachedImage_textBoxBl_png_15;
+    Image cachedImage_textBoxB_png_16;
+    Image cachedImage_textBoxR_png_17;
+    Image cachedImage_textBoxBr_png_18;
+    Image cachedImage_textBoxTr_png_19;
+    Image cachedImage_textBoxT_png_20;
+    Image cachedImage_textBoxTl_png_21;
+    Image cachedImage_textBoxL_png_22;
+    Image cachedImage_textBoxB_png_23;
+    Image cachedImage_textBoxBl_png_24;
+    Image cachedImage_textBoxL_png_25;
+    Image cachedImage_textBoxTl_png_26;
+    Image cachedImage_textBoxT_png_27;
+    Image cachedImage_textBoxTr_png_28;
+    Image cachedImage_textBoxR_png_29;
+    Image cachedImage_textBoxBr_png_30;
+    Image cachedImage_textBoxTl_png_31;
+    Image cachedImage_textBoxL_png_32;
+    Image cachedImage_textBoxBl_png_33;
+    Image cachedImage_textBoxB_png_34;
+    Image cachedImage_textBoxR_png_35;
+    Image cachedImage_textBoxBr_png_36;
+    Image cachedImage_textBoxTr_png_37;
+    Image cachedImage_textBoxT_png_38;
+    Image cachedImage_textBoxL_png_39;
+    Image cachedImage_textBoxTl_png_40;
+    Image cachedImage_textBoxBl_png_41;
+    Image cachedImage_textBoxB_png_42;
+    Image cachedImage_textBoxBr_png_43;
+    Image cachedImage_textBoxR_png_44;
+    Image cachedImage_textBoxTr_png_45;
+    Image cachedImage_textBoxT_png_46;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucerAudioDialogComponent);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucerAudioDialogComponent)
 };
 
+//[EndFile] You can add extra defines here...
+//[/EndFile]
 
-#endif   // __JUCER_HEADER_JUCERAUDIODIALOGCOMPONENT_AUDIODIALOGCOMPONENT_7258D17E__
+#endif   // __JUCE_HEADER_7762AEBAF9998FC3__

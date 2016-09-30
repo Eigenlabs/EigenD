@@ -1,26 +1,24 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  24 Sep 2012 8:22:31pm
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_JUCERSCANCOMPLETECOMPONENT_JUCERSCANCOMPLETECOMPONENT_1434A79__
-#define __JUCER_HEADER_JUCERSCANCOMPLETECOMPONENT_JUCERSCANCOMPLETECOMPONENT_1434A79__
+#ifndef __JUCE_HEADER_30E7AB2CC343A7A4__
+#define __JUCE_HEADER_30E7AB2CC343A7A4__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -51,9 +49,9 @@ public:
     ListBox *failed_list_box() { return failed_list; }
     //[/UserMethods]
 
-    void paint (Graphics& g);
-    void resized();
-    void buttonClicked (Button* buttonThatWasClicked);
+    void paint (Graphics& g) override;
+    void resized() override;
+    void buttonClicked (Button* buttonThatWasClicked) override;
 
     // Binary resources:
     static const char* backgroundBoxB_png;
@@ -101,36 +99,56 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    Label* label;
-    TextButton* textButton;
-    Label* label2;
-    Label* label3;
-    ListBox* failed_list;
-    ListBox* good_list;
-    Image cachedImage_backgroundBoxInner_png;
-    Image cachedImage_backgroundBoxT_png;
-    Image cachedImage_backgroundBoxL_png;
-    Image cachedImage_backgroundBoxR_png;
-    Image cachedImage_backgroundBoxTl_png;
-    Image cachedImage_backgroundBoxTr_png;
-    Image cachedImage_backgroundBoxB_png;
-    Image cachedImage_backgroundBoxBr_png;
-    Image cachedImage_backgroundBoxBl_png;
-    Image cachedImage_eigenD_png;
-    Image cachedImage_innerBoxBr_png;
-    Image cachedImage_innerBoxInner_png;
-    Image cachedImage_innerBoxTl_png;
-    Image cachedImage_innerBoxTr_png;
-    Image cachedImage_innerBoxBl_png;
-    Image cachedImage_innerBoxT_png;
-    Image cachedImage_innerBoxB_png;
-    Image cachedImage_innerBoxL_png;
-    Image cachedImage_innerBoxR_png;
+    ScopedPointer<Label> label;
+    ScopedPointer<TextButton> textButton;
+    ScopedPointer<Label> label2;
+    ScopedPointer<Label> label3;
+    ScopedPointer<ListBox> failed_list;
+    ScopedPointer<ListBox> good_list;
+    Image cachedImage_backgroundBoxInner_png_1;
+    Image cachedImage_backgroundBoxT_png_2;
+    Image cachedImage_backgroundBoxL_png_3;
+    Image cachedImage_backgroundBoxR_png_4;
+    Image cachedImage_backgroundBoxTl_png_5;
+    Image cachedImage_backgroundBoxTr_png_6;
+    Image cachedImage_backgroundBoxB_png_7;
+    Image cachedImage_backgroundBoxBr_png_8;
+    Image cachedImage_backgroundBoxBl_png_9;
+    Image cachedImage_eigenD_png_10;
+    Image cachedImage_innerBoxBr_png_11;
+    Image cachedImage_innerBoxInner_png_12;
+    Image cachedImage_innerBoxTl_png_13;
+    Image cachedImage_innerBoxTr_png_14;
+    Image cachedImage_innerBoxBl_png_15;
+    Image cachedImage_innerBoxT_png_16;
+    Image cachedImage_innerBoxB_png_17;
+    Image cachedImage_innerBoxL_png_18;
+    Image cachedImage_innerBoxR_png_19;
+    Image cachedImage_innerBoxBr_png_20;
+    Image cachedImage_innerBoxR_png_21;
+    Image cachedImage_innerBoxTl_png_22;
+    Image cachedImage_innerBoxTr_png_23;
+    Image cachedImage_innerBoxBl_png_24;
+    Image cachedImage_innerBoxT_png_25;
+    Image cachedImage_innerBoxB_png_26;
+    Image cachedImage_innerBoxL_png_27;
+    Image cachedImage_innerBoxInner_png_28;
+    Image cachedImage_innerBoxBr_png_29;
+    Image cachedImage_innerBoxInner_png_30;
+    Image cachedImage_innerBoxTl_png_31;
+    Image cachedImage_innerBoxTr_png_32;
+    Image cachedImage_innerBoxBl_png_33;
+    Image cachedImage_innerBoxT_png_34;
+    Image cachedImage_innerBoxB_png_35;
+    Image cachedImage_innerBoxL_png_36;
+    Image cachedImage_innerBoxR_png_37;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucerScanCompleteComponent);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucerScanCompleteComponent)
 };
 
+//[EndFile] You can add extra defines here...
+//[/EndFile]
 
-#endif   // __JUCER_HEADER_JUCERSCANCOMPLETECOMPONENT_JUCERSCANCOMPLETECOMPONENT_1434A79__
+#endif   // __JUCE_HEADER_30E7AB2CC343A7A4__

@@ -1,26 +1,24 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  24 Sep 2012 6:39:01pm
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_MODALCOMPONENT_MODALCOMPONENT_EB195AFA__
-#define __JUCER_HEADER_MODALCOMPONENT_MODALCOMPONENT_EB195AFA__
+#ifndef __JUCE_HEADER_2CFBF8303D5624F0__
+#define __JUCE_HEADER_2CFBF8303D5624F0__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -51,9 +49,9 @@ public:
     void closeButtonPressed() { buttonClicked(ok_button); }
     //[/UserMethods]
 
-    void paint (Graphics& g);
-    void resized();
-    void buttonClicked (Button* buttonThatWasClicked);
+    void paint (Graphics& g) override;
+    void resized() override;
+    void buttonClicked (Button* buttonThatWasClicked) override;
 
     // Binary resources:
     static const char* backgroundBoxT_png;
@@ -83,24 +81,26 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    Label* title;
-    TextButton* ok_button;
-    Label* text;
-    Image cachedImage_backgroundBoxInner_png;
-    Image cachedImage_backgroundBoxT_png;
-    Image cachedImage_backgroundBoxL_png;
-    Image cachedImage_backgroundBoxR_png;
-    Image cachedImage_backgroundBoxTl_png;
-    Image cachedImage_backgroundBoxTr_png;
-    Image cachedImage_backgroundBoxB_png;
-    Image cachedImage_backgroundBoxBr_png;
-    Image cachedImage_backgroundBoxBl_png;
-    Image cachedImage_eigenD_png;
+    ScopedPointer<Label> title;
+    ScopedPointer<TextButton> ok_button;
+    ScopedPointer<Label> text;
+    Image cachedImage_backgroundBoxInner_png_1;
+    Image cachedImage_backgroundBoxT_png_2;
+    Image cachedImage_backgroundBoxL_png_3;
+    Image cachedImage_backgroundBoxR_png_4;
+    Image cachedImage_backgroundBoxTl_png_5;
+    Image cachedImage_backgroundBoxTr_png_6;
+    Image cachedImage_backgroundBoxB_png_7;
+    Image cachedImage_backgroundBoxBr_png_8;
+    Image cachedImage_backgroundBoxBl_png_9;
+    Image cachedImage_eigenD_png_10;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModalComponent);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModalComponent)
 };
 
+//[EndFile] You can add extra defines here...
+//[/EndFile]
 
-#endif   // __JUCER_HEADER_MODALCOMPONENT_MODALCOMPONENT_EB195AFA__
+#endif   // __JUCE_HEADER_2CFBF8303D5624F0__

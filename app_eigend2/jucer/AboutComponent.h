@@ -1,26 +1,24 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  28 Jan 2011 3:51:30pm
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_ABOUTCOMPONENT_ABOUTCOMPONENT_2DB36AAE__
-#define __JUCER_HEADER_ABOUTCOMPONENT_ABOUTCOMPONENT_2DB36AAE__
+#ifndef __JUCE_HEADER_6F5BC92BB0597534__
+#define __JUCE_HEADER_6F5BC92BB0597534__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -47,30 +45,29 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
     //[/UserMethods]
 
-    void paint (Graphics& g);
-    void resized();
+    void paint (Graphics& g) override;
+    void resized() override;
 
     // Binary resources:
     static const char* eigenD_png;
     static const int eigenD_pngSize;
 
-    //==============================================================================
-    juce_UseDebuggingNewOperator
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     //[/UserVariables]
 
     //==============================================================================
-    HyperlinkButton* hyperlinkButton;
-    Label* label;
-    Image cachedImage_eigenD_png;
+    ScopedPointer<HyperlinkButton> hyperlinkButton;
+    ScopedPointer<Label> label;
+    Image cachedImage_eigenD_png_1;
+
 
     //==============================================================================
-    // (prevent copy constructor and operator= being generated..)
-    AboutComponent (const AboutComponent&);
-    const AboutComponent& operator= (const AboutComponent&);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AboutComponent)
 };
 
+//[EndFile] You can add extra defines here...
+//[/EndFile]
 
-#endif   // __JUCER_HEADER_ABOUTCOMPONENT_ABOUTCOMPONENT_2DB36AAE__
+#endif   // __JUCE_HEADER_6F5BC92BB0597534__

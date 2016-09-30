@@ -1,20 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  24 Sep 2012 8:48:50pm
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
@@ -30,44 +28,10 @@
 
 //==============================================================================
 SaveDialogComponent::SaveDialogComponent ()
-    : description (0),
-      save_button (0),
-      summary (0),
-      chooser_notes (0),
-      chooser_words (0),
-      button_notes (0),
-      button_words (0),
-      button_user (0),
-      chooser_user (0),
-      new_button (0),
-      user_label (0),
-      notes_label (0),
-      words_label (0),
-      label (0),
-      label2 (0),
-      error_label (0),
-      help_button (0),
-      default_button (0),
-      cachedImage_backgroundBoxInner_png (0),
-      cachedImage_backgroundBoxT_png (0),
-      cachedImage_backgroundBoxL_png (0),
-      cachedImage_backgroundBoxR_png (0),
-      cachedImage_backgroundBoxTl_png (0),
-      cachedImage_backgroundBoxTr_png (0),
-      cachedImage_backgroundBoxB_png (0),
-      cachedImage_backgroundBoxBr_png (0),
-      cachedImage_backgroundBoxBl_png (0),
-      cachedImage_textBoxTl_png (0),
-      cachedImage_textBoxTr_png (0),
-      cachedImage_textBoxBr_png (0),
-      cachedImage_textBoxBl_png (0),
-      cachedImage_textBoxL_png (0),
-      cachedImage_textBoxT_png (0),
-      cachedImage_textBoxR_png (0),
-      cachedImage_textBoxB_png (0),
-      cachedImage_textBoxInner_png (0),
-      cachedImage_eigenD_png (0)
 {
+    //[Constructor_pre] You can add your own custom stuff here..
+    //[/Constructor_pre]
+
     addAndMakeVisible (description = new TextEditor ("new text editor"));
     description->setMultiLine (true);
     description->setReturnKeyStartsNewLine (true);
@@ -76,10 +40,10 @@ SaveDialogComponent::SaveDialogComponent ()
     description->setCaretVisible (true);
     description->setPopupMenuEnabled (false);
     description->setColour (TextEditor::textColourId, Colours::black);
-    description->setColour (TextEditor::backgroundColourId, Colour (0x363636));
+    description->setColour (TextEditor::backgroundColourId, Colour (0x00363636));
     description->setColour (TextEditor::highlightColourId, Colour (0x8c8b8b8b));
-    description->setColour (TextEditor::shadowColourId, Colour (0x0));
-    description->setText ("test text");
+    description->setColour (TextEditor::shadowColourId, Colour (0x00000000));
+    description->setText (TRANS("test text"));
 
     addAndMakeVisible (save_button = new TextButton ("Save"));
     save_button->addListener (this);
@@ -93,127 +57,163 @@ SaveDialogComponent::SaveDialogComponent ()
     summary->setCaretVisible (true);
     summary->setPopupMenuEnabled (true);
     summary->setColour (TextEditor::highlightColourId, Colour (0x8c8a8a8a));
-    summary->setColour (TextEditor::shadowColourId, Colour (0x0));
-    summary->setText (String::empty);
+    summary->setColour (TextEditor::shadowColourId, Colour (0x00000000));
+    summary->setText (String());
 
     addAndMakeVisible (chooser_notes = new ComboBox ("new combo box"));
     chooser_notes->setEditableText (true);
     chooser_notes->setJustificationType (Justification::centredLeft);
-    chooser_notes->setTextWhenNothingSelected (String::empty);
-    chooser_notes->setTextWhenNoChoicesAvailable ("(no choices)");
+    chooser_notes->setTextWhenNothingSelected (String());
+    chooser_notes->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     chooser_notes->addListener (this);
 
     addAndMakeVisible (chooser_words = new ComboBox ("new combo box"));
     chooser_words->setEditableText (true);
     chooser_words->setJustificationType (Justification::centredLeft);
-    chooser_words->setTextWhenNothingSelected (String::empty);
-    chooser_words->setTextWhenNoChoicesAvailable ("(no choices)");
+    chooser_words->setTextWhenNothingSelected (String());
+    chooser_words->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     chooser_words->addListener (this);
 
     addAndMakeVisible (button_notes = new ToggleButton ("new toggle button"));
-    button_notes->setButtonText (String::empty);
+    button_notes->setButtonText (String());
     button_notes->setRadioGroupId (1);
     button_notes->addListener (this);
 
     addAndMakeVisible (button_words = new ToggleButton ("new toggle button"));
-    button_words->setButtonText (String::empty);
+    button_words->setButtonText (String());
     button_words->setRadioGroupId (1);
     button_words->addListener (this);
 
     addAndMakeVisible (button_user = new ToggleButton ("new toggle button"));
-    button_user->setButtonText (String::empty);
+    button_user->setButtonText (String());
     button_user->setRadioGroupId (1);
     button_user->addListener (this);
 
     addAndMakeVisible (chooser_user = new ComboBox ("new combo box"));
     chooser_user->setEditableText (false);
     chooser_user->setJustificationType (Justification::centredLeft);
-    chooser_user->setTextWhenNothingSelected (String::empty);
-    chooser_user->setTextWhenNoChoicesAvailable ("(no choices)");
+    chooser_user->setTextWhenNothingSelected (String());
+    chooser_user->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
     chooser_user->addListener (this);
 
     addAndMakeVisible (new_button = new TextButton ("new button"));
-    new_button->setButtonText ("New");
+    new_button->setButtonText (TRANS("New"));
     new_button->addListener (this);
     new_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
     addAndMakeVisible (user_label = new Label ("new label",
-                                               "User Setup Number:"));
-    user_label->setFont (Font (15.0000f, Font::plain));
+                                               TRANS("User Setup Number:")));
+    user_label->setFont (Font (15.00f, Font::plain));
     user_label->setJustificationType (Justification::centredRight);
     user_label->setEditable (false, false, false);
     user_label->setColour (TextEditor::textColourId, Colours::black);
-    user_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    user_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (notes_label = new Label ("new label",
-                                                "Belcanto Name as Notes:"));
-    notes_label->setFont (Font (15.0000f, Font::plain));
+                                                TRANS("Belcanto Name as Notes:")));
+    notes_label->setFont (Font (15.00f, Font::plain));
     notes_label->setJustificationType (Justification::centredRight);
     notes_label->setEditable (false, false, false);
     notes_label->setColour (TextEditor::textColourId, Colours::black);
-    notes_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    notes_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (words_label = new Label ("new label",
-                                                "Belcanto Name as Words:"));
-    words_label->setFont (Font (15.0000f, Font::plain));
+                                                TRANS("Belcanto Name as Words:")));
+    words_label->setFont (Font (15.00f, Font::plain));
     words_label->setJustificationType (Justification::centredRight);
     words_label->setEditable (false, false, false);
     words_label->setColour (TextEditor::textColourId, Colours::black);
-    words_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    words_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (label = new Label ("new label",
-                                          "Short Tag:"));
-    label->setFont (Font (15.0000f, Font::plain));
+                                          TRANS("Short Tag:")));
+    label->setFont (Font (15.00f, Font::plain));
     label->setJustificationType (Justification::centredRight);
     label->setEditable (false, false, false);
     label->setColour (TextEditor::textColourId, Colours::black);
-    label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (label2 = new Label ("new label",
-                                           "Long Description:"));
-    label2->setFont (Font (15.0000f, Font::plain));
+                                           TRANS("Long Description:")));
+    label2->setFont (Font (15.00f, Font::plain));
     label2->setJustificationType (Justification::centredRight);
     label2->setEditable (false, false, false);
     label2->setColour (TextEditor::textColourId, Colours::black);
-    label2->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    label2->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (error_label = new Label ("new label",
-                                                "The Belcanto Name is invalid."));
-    error_label->setFont (Font (15.0000f, Font::plain));
+                                                TRANS("The Belcanto Name is invalid.")));
+    error_label->setFont (Font (15.00f, Font::plain));
     error_label->setJustificationType (Justification::centredLeft);
     error_label->setEditable (false, false, false);
     error_label->setColour (Label::textColourId, Colours::red);
     error_label->setColour (TextEditor::textColourId, Colours::black);
-    error_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    error_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (help_button = new TextButton ("new button"));
-    help_button->setButtonText ("About Setups");
+    help_button->setButtonText (TRANS("About Setups"));
     help_button->addListener (this);
     help_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
     addAndMakeVisible (default_button = new ToggleButton ("default button"));
-    default_button->setButtonText ("Make the default setup");
+    default_button->setButtonText (TRANS("Make the default setup"));
     default_button->addListener (this);
 
-    cachedImage_backgroundBoxInner_png = ImageCache::getFromMemory (backgroundBoxInner_png, backgroundBoxInner_pngSize);
-    cachedImage_backgroundBoxT_png = ImageCache::getFromMemory (backgroundBoxT_png, backgroundBoxT_pngSize);
-    cachedImage_backgroundBoxL_png = ImageCache::getFromMemory (backgroundBoxL_png, backgroundBoxL_pngSize);
-    cachedImage_backgroundBoxR_png = ImageCache::getFromMemory (backgroundBoxR_png, backgroundBoxR_pngSize);
-    cachedImage_backgroundBoxTl_png = ImageCache::getFromMemory (backgroundBoxTl_png, backgroundBoxTl_pngSize);
-    cachedImage_backgroundBoxTr_png = ImageCache::getFromMemory (backgroundBoxTr_png, backgroundBoxTr_pngSize);
-    cachedImage_backgroundBoxB_png = ImageCache::getFromMemory (backgroundBoxB_png, backgroundBoxB_pngSize);
-    cachedImage_backgroundBoxBr_png = ImageCache::getFromMemory (backgroundBoxBr_png, backgroundBoxBr_pngSize);
-    cachedImage_backgroundBoxBl_png = ImageCache::getFromMemory (backgroundBoxBl_png, backgroundBoxBl_pngSize);
-    cachedImage_textBoxTl_png = ImageCache::getFromMemory (textBoxTl_png, textBoxTl_pngSize);
-    cachedImage_textBoxTr_png = ImageCache::getFromMemory (textBoxTr_png, textBoxTr_pngSize);
-    cachedImage_textBoxBr_png = ImageCache::getFromMemory (textBoxBr_png, textBoxBr_pngSize);
-    cachedImage_textBoxBl_png = ImageCache::getFromMemory (textBoxBl_png, textBoxBl_pngSize);
-    cachedImage_textBoxL_png = ImageCache::getFromMemory (textBoxL_png, textBoxL_pngSize);
-    cachedImage_textBoxT_png = ImageCache::getFromMemory (textBoxT_png, textBoxT_pngSize);
-    cachedImage_textBoxR_png = ImageCache::getFromMemory (textBoxR_png, textBoxR_pngSize);
-    cachedImage_textBoxB_png = ImageCache::getFromMemory (textBoxB_png, textBoxB_pngSize);
-    cachedImage_textBoxInner_png = ImageCache::getFromMemory (textBoxInner_png, textBoxInner_pngSize);
-    cachedImage_eigenD_png = ImageCache::getFromMemory (eigenD_png, eigenD_pngSize);
+    cachedImage_backgroundBoxInner_png_1 = ImageCache::getFromMemory (backgroundBoxInner_png, backgroundBoxInner_pngSize);
+    cachedImage_backgroundBoxT_png_2 = ImageCache::getFromMemory (backgroundBoxT_png, backgroundBoxT_pngSize);
+    cachedImage_backgroundBoxL_png_3 = ImageCache::getFromMemory (backgroundBoxL_png, backgroundBoxL_pngSize);
+    cachedImage_backgroundBoxR_png_4 = ImageCache::getFromMemory (backgroundBoxR_png, backgroundBoxR_pngSize);
+    cachedImage_backgroundBoxTl_png_5 = ImageCache::getFromMemory (backgroundBoxTl_png, backgroundBoxTl_pngSize);
+    cachedImage_backgroundBoxTr_png_6 = ImageCache::getFromMemory (backgroundBoxTr_png, backgroundBoxTr_pngSize);
+    cachedImage_backgroundBoxB_png_7 = ImageCache::getFromMemory (backgroundBoxB_png, backgroundBoxB_pngSize);
+    cachedImage_backgroundBoxBr_png_8 = ImageCache::getFromMemory (backgroundBoxBr_png, backgroundBoxBr_pngSize);
+    cachedImage_backgroundBoxBl_png_9 = ImageCache::getFromMemory (backgroundBoxBl_png, backgroundBoxBl_pngSize);
+    cachedImage_textBoxTl_png_10 = ImageCache::getFromMemory (textBoxTl_png, textBoxTl_pngSize);
+    cachedImage_textBoxTr_png_11 = ImageCache::getFromMemory (textBoxTr_png, textBoxTr_pngSize);
+    cachedImage_textBoxBr_png_12 = ImageCache::getFromMemory (textBoxBr_png, textBoxBr_pngSize);
+    cachedImage_textBoxBl_png_13 = ImageCache::getFromMemory (textBoxBl_png, textBoxBl_pngSize);
+    cachedImage_textBoxL_png_14 = ImageCache::getFromMemory (textBoxL_png, textBoxL_pngSize);
+    cachedImage_textBoxT_png_15 = ImageCache::getFromMemory (textBoxT_png, textBoxT_pngSize);
+    cachedImage_textBoxR_png_16 = ImageCache::getFromMemory (textBoxR_png, textBoxR_pngSize);
+    cachedImage_textBoxB_png_17 = ImageCache::getFromMemory (textBoxB_png, textBoxB_pngSize);
+    cachedImage_textBoxInner_png_18 = ImageCache::getFromMemory (textBoxInner_png, textBoxInner_pngSize);
+    cachedImage_textBoxTl_png_19 = ImageCache::getFromMemory (textBoxTl_png, textBoxTl_pngSize);
+    cachedImage_textBoxTr_png_20 = ImageCache::getFromMemory (textBoxTr_png, textBoxTr_pngSize);
+    cachedImage_textBoxBr_png_21 = ImageCache::getFromMemory (textBoxBr_png, textBoxBr_pngSize);
+    cachedImage_textBoxBl_png_22 = ImageCache::getFromMemory (textBoxBl_png, textBoxBl_pngSize);
+    cachedImage_textBoxL_png_23 = ImageCache::getFromMemory (textBoxL_png, textBoxL_pngSize);
+    cachedImage_textBoxT_png_24 = ImageCache::getFromMemory (textBoxT_png, textBoxT_pngSize);
+    cachedImage_textBoxR_png_25 = ImageCache::getFromMemory (textBoxR_png, textBoxR_pngSize);
+    cachedImage_textBoxB_png_26 = ImageCache::getFromMemory (textBoxB_png, textBoxB_pngSize);
+    cachedImage_textBoxInner_png_27 = ImageCache::getFromMemory (textBoxInner_png, textBoxInner_pngSize);
+    cachedImage_textBoxTl_png_28 = ImageCache::getFromMemory (textBoxTl_png, textBoxTl_pngSize);
+    cachedImage_textBoxTr_png_29 = ImageCache::getFromMemory (textBoxTr_png, textBoxTr_pngSize);
+    cachedImage_textBoxBr_png_30 = ImageCache::getFromMemory (textBoxBr_png, textBoxBr_pngSize);
+    cachedImage_textBoxBl_png_31 = ImageCache::getFromMemory (textBoxBl_png, textBoxBl_pngSize);
+    cachedImage_textBoxL_png_32 = ImageCache::getFromMemory (textBoxL_png, textBoxL_pngSize);
+    cachedImage_textBoxT_png_33 = ImageCache::getFromMemory (textBoxT_png, textBoxT_pngSize);
+    cachedImage_textBoxR_png_34 = ImageCache::getFromMemory (textBoxR_png, textBoxR_pngSize);
+    cachedImage_textBoxB_png_35 = ImageCache::getFromMemory (textBoxB_png, textBoxB_pngSize);
+    cachedImage_textBoxInner_png_36 = ImageCache::getFromMemory (textBoxInner_png, textBoxInner_pngSize);
+    cachedImage_textBoxTl_png_37 = ImageCache::getFromMemory (textBoxTl_png, textBoxTl_pngSize);
+    cachedImage_textBoxTr_png_38 = ImageCache::getFromMemory (textBoxTr_png, textBoxTr_pngSize);
+    cachedImage_textBoxBr_png_39 = ImageCache::getFromMemory (textBoxBr_png, textBoxBr_pngSize);
+    cachedImage_textBoxBl_png_40 = ImageCache::getFromMemory (textBoxBl_png, textBoxBl_pngSize);
+    cachedImage_textBoxL_png_41 = ImageCache::getFromMemory (textBoxL_png, textBoxL_pngSize);
+    cachedImage_textBoxT_png_42 = ImageCache::getFromMemory (textBoxT_png, textBoxT_pngSize);
+    cachedImage_textBoxR_png_43 = ImageCache::getFromMemory (textBoxR_png, textBoxR_pngSize);
+    cachedImage_textBoxB_png_44 = ImageCache::getFromMemory (textBoxB_png, textBoxB_pngSize);
+    cachedImage_textBoxInner_png_45 = ImageCache::getFromMemory (textBoxInner_png, textBoxInner_pngSize);
+    cachedImage_textBoxTl_png_46 = ImageCache::getFromMemory (textBoxTl_png, textBoxTl_pngSize);
+    cachedImage_textBoxTr_png_47 = ImageCache::getFromMemory (textBoxTr_png, textBoxTr_pngSize);
+    cachedImage_textBoxBr_png_48 = ImageCache::getFromMemory (textBoxBr_png, textBoxBr_pngSize);
+    cachedImage_textBoxBl_png_49 = ImageCache::getFromMemory (textBoxBl_png, textBoxBl_pngSize);
+    cachedImage_textBoxL_png_50 = ImageCache::getFromMemory (textBoxL_png, textBoxL_pngSize);
+    cachedImage_textBoxT_png_51 = ImageCache::getFromMemory (textBoxT_png, textBoxT_pngSize);
+    cachedImage_textBoxR_png_52 = ImageCache::getFromMemory (textBoxR_png, textBoxR_pngSize);
+    cachedImage_textBoxB_png_53 = ImageCache::getFromMemory (textBoxB_png, textBoxB_pngSize);
+    cachedImage_textBoxInner_png_54 = ImageCache::getFromMemory (textBoxInner_png, textBoxInner_pngSize);
+    cachedImage_eigenD_png_55 = ImageCache::getFromMemory (eigenD_png, eigenD_pngSize);
 
     //[UserPreSize]
     //[/UserPreSize]
@@ -230,24 +230,24 @@ SaveDialogComponent::~SaveDialogComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
-    deleteAndZero (description);
-    deleteAndZero (save_button);
-    deleteAndZero (summary);
-    deleteAndZero (chooser_notes);
-    deleteAndZero (chooser_words);
-    deleteAndZero (button_notes);
-    deleteAndZero (button_words);
-    deleteAndZero (button_user);
-    deleteAndZero (chooser_user);
-    deleteAndZero (new_button);
-    deleteAndZero (user_label);
-    deleteAndZero (notes_label);
-    deleteAndZero (words_label);
-    deleteAndZero (label);
-    deleteAndZero (label2);
-    deleteAndZero (error_label);
-    deleteAndZero (help_button);
-    deleteAndZero (default_button);
+    description = nullptr;
+    save_button = nullptr;
+    summary = nullptr;
+    chooser_notes = nullptr;
+    chooser_words = nullptr;
+    button_notes = nullptr;
+    button_words = nullptr;
+    button_user = nullptr;
+    chooser_user = nullptr;
+    new_button = nullptr;
+    user_label = nullptr;
+    notes_label = nullptr;
+    words_label = nullptr;
+    label = nullptr;
+    label2 = nullptr;
+    error_label = nullptr;
+    help_button = nullptr;
+    default_button = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -263,285 +263,285 @@ void SaveDialogComponent::paint (Graphics& g)
     g.fillAll (Colours::black);
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxInner_png,
+    g.drawImage (cachedImage_backgroundBoxInner_png_1,
                  26, 98, getWidth() - 49, getHeight() - 125,
-                 0, 0, cachedImage_backgroundBoxInner_png.getWidth(), cachedImage_backgroundBoxInner_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxInner_png_1.getWidth(), cachedImage_backgroundBoxInner_png_1.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxT_png,
+    g.drawImage (cachedImage_backgroundBoxT_png_2,
                  24, 84, getWidth() - 45, 15,
-                 0, 0, cachedImage_backgroundBoxT_png.getWidth(), cachedImage_backgroundBoxT_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxT_png_2.getWidth(), cachedImage_backgroundBoxT_png_2.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxL_png,
+    g.drawImage (cachedImage_backgroundBoxL_png_3,
                  12, 98, 15, getHeight() - 123,
-                 0, 0, cachedImage_backgroundBoxL_png.getWidth(), cachedImage_backgroundBoxL_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxL_png_3.getWidth(), cachedImage_backgroundBoxL_png_3.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxR_png,
+    g.drawImage (cachedImage_backgroundBoxR_png_4,
                  getWidth() - 28, 98, 15, getHeight() - 123,
-                 0, 0, cachedImage_backgroundBoxR_png.getWidth(), cachedImage_backgroundBoxR_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxR_png_4.getWidth(), cachedImage_backgroundBoxR_png_4.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxTl_png,
+    g.drawImage (cachedImage_backgroundBoxTl_png_5,
                  12, 84, 30, 15,
-                 0, 0, cachedImage_backgroundBoxTl_png.getWidth(), cachedImage_backgroundBoxTl_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxTl_png_5.getWidth(), cachedImage_backgroundBoxTl_png_5.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxTr_png,
+    g.drawImage (cachedImage_backgroundBoxTr_png_6,
                  getWidth() - 43, 84, 30, 15,
-                 0, 0, cachedImage_backgroundBoxTr_png.getWidth(), cachedImage_backgroundBoxTr_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxTr_png_6.getWidth(), cachedImage_backgroundBoxTr_png_6.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxB_png,
+    g.drawImage (cachedImage_backgroundBoxB_png_7,
                  36, getHeight() - 31, getWidth() - 75, 15,
-                 0, 0, cachedImage_backgroundBoxB_png.getWidth(), cachedImage_backgroundBoxB_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxB_png_7.getWidth(), cachedImage_backgroundBoxB_png_7.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxBr_png,
+    g.drawImage (cachedImage_backgroundBoxBr_png_8,
                  getWidth() - 43, getHeight() - 31, 30, 15,
-                 0, 0, cachedImage_backgroundBoxBr_png.getWidth(), cachedImage_backgroundBoxBr_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxBr_png_8.getWidth(), cachedImage_backgroundBoxBr_png_8.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxBl_png,
+    g.drawImage (cachedImage_backgroundBoxBl_png_9,
                  12, getHeight() - 31, 30, 15,
-                 0, 0, cachedImage_backgroundBoxBl_png.getWidth(), cachedImage_backgroundBoxBl_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxBl_png_9.getWidth(), cachedImage_backgroundBoxBl_png_9.getHeight());
 
     g.setColour (Colours::black);
-    g.setFont (Font (19.6000f, Font::plain));
-    g.drawText ("Save Setup",
-                106 - ((140) / 2), 123 - ((30) / 2), 140, 30,
+    g.setFont (Font (19.60f, Font::plain));
+    g.drawText (TRANS("Save Setup"),
+                106 - (140 / 2), 123 - (30 / 2), 140, 30,
                 Justification::centred, true);
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTl_png,
+    g.drawImage (cachedImage_textBoxTl_png_10,
                  220, 162, 12, 12,
-                 0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
+                 0, 0, cachedImage_textBoxTl_png_10.getWidth(), cachedImage_textBoxTl_png_10.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTr_png,
+    g.drawImage (cachedImage_textBoxTr_png_11,
                  436, 162, 12, 12,
-                 0, 0, cachedImage_textBoxTr_png.getWidth(), cachedImage_textBoxTr_png.getHeight());
+                 0, 0, cachedImage_textBoxTr_png_11.getWidth(), cachedImage_textBoxTr_png_11.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBr_png,
+    g.drawImage (cachedImage_textBoxBr_png_12,
                  436, 186, 12, 12,
-                 0, 0, cachedImage_textBoxBr_png.getWidth(), cachedImage_textBoxBr_png.getHeight());
+                 0, 0, cachedImage_textBoxBr_png_12.getWidth(), cachedImage_textBoxBr_png_12.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBl_png,
+    g.drawImage (cachedImage_textBoxBl_png_13,
                  220, 186, 12, 12,
-                 0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
+                 0, 0, cachedImage_textBoxBl_png_13.getWidth(), cachedImage_textBoxBl_png_13.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxL_png,
+    g.drawImage (cachedImage_textBoxL_png_14,
                  220, 174, 12, 12,
-                 0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
+                 0, 0, cachedImage_textBoxL_png_14.getWidth(), cachedImage_textBoxL_png_14.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxT_png,
+    g.drawImage (cachedImage_textBoxT_png_15,
                  232, 162, 204, 12,
-                 0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
+                 0, 0, cachedImage_textBoxT_png_15.getWidth(), cachedImage_textBoxT_png_15.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxR_png,
+    g.drawImage (cachedImage_textBoxR_png_16,
                  436, 174, 12, 12,
-                 0, 0, cachedImage_textBoxR_png.getWidth(), cachedImage_textBoxR_png.getHeight());
+                 0, 0, cachedImage_textBoxR_png_16.getWidth(), cachedImage_textBoxR_png_16.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxB_png,
+    g.drawImage (cachedImage_textBoxB_png_17,
                  232, 186, 204, 12,
-                 0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
+                 0, 0, cachedImage_textBoxB_png_17.getWidth(), cachedImage_textBoxB_png_17.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxInner_png,
+    g.drawImage (cachedImage_textBoxInner_png_18,
                  232, 174, 204, 12,
-                 0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
+                 0, 0, cachedImage_textBoxInner_png_18.getWidth(), cachedImage_textBoxInner_png_18.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTl_png,
+    g.drawImage (cachedImage_textBoxTl_png_19,
                  220, 218, 12, 12,
-                 0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
+                 0, 0, cachedImage_textBoxTl_png_19.getWidth(), cachedImage_textBoxTl_png_19.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTr_png,
+    g.drawImage (cachedImage_textBoxTr_png_20,
                  getWidth() - 141, 218, 12, 12,
-                 0, 0, cachedImage_textBoxTr_png.getWidth(), cachedImage_textBoxTr_png.getHeight());
+                 0, 0, cachedImage_textBoxTr_png_20.getWidth(), cachedImage_textBoxTr_png_20.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBr_png,
+    g.drawImage (cachedImage_textBoxBr_png_21,
                  getWidth() - 141, 242, 12, 12,
-                 0, 0, cachedImage_textBoxBr_png.getWidth(), cachedImage_textBoxBr_png.getHeight());
+                 0, 0, cachedImage_textBoxBr_png_21.getWidth(), cachedImage_textBoxBr_png_21.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBl_png,
+    g.drawImage (cachedImage_textBoxBl_png_22,
                  220, 242, 12, 12,
-                 0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
+                 0, 0, cachedImage_textBoxBl_png_22.getWidth(), cachedImage_textBoxBl_png_22.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxL_png,
+    g.drawImage (cachedImage_textBoxL_png_23,
                  220, 230, 12, 12,
-                 0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
+                 0, 0, cachedImage_textBoxL_png_23.getWidth(), cachedImage_textBoxL_png_23.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxT_png,
+    g.drawImage (cachedImage_textBoxT_png_24,
                  232, 218, getWidth() - 373, 12,
-                 0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
+                 0, 0, cachedImage_textBoxT_png_24.getWidth(), cachedImage_textBoxT_png_24.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxR_png,
+    g.drawImage (cachedImage_textBoxR_png_25,
                  getWidth() - 141, 230, 12, 12,
-                 0, 0, cachedImage_textBoxR_png.getWidth(), cachedImage_textBoxR_png.getHeight());
+                 0, 0, cachedImage_textBoxR_png_25.getWidth(), cachedImage_textBoxR_png_25.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxB_png,
+    g.drawImage (cachedImage_textBoxB_png_26,
                  232, 242, getWidth() - 373, 12,
-                 0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
+                 0, 0, cachedImage_textBoxB_png_26.getWidth(), cachedImage_textBoxB_png_26.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxInner_png,
+    g.drawImage (cachedImage_textBoxInner_png_27,
                  232, 230, getWidth() - 373, 12,
-                 0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
+                 0, 0, cachedImage_textBoxInner_png_27.getWidth(), cachedImage_textBoxInner_png_27.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTl_png,
+    g.drawImage (cachedImage_textBoxTl_png_28,
                  220, 274, 12, 12,
-                 0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
+                 0, 0, cachedImage_textBoxTl_png_28.getWidth(), cachedImage_textBoxTl_png_28.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTr_png,
+    g.drawImage (cachedImage_textBoxTr_png_29,
                  getWidth() - 141, 274, 12, 12,
-                 0, 0, cachedImage_textBoxTr_png.getWidth(), cachedImage_textBoxTr_png.getHeight());
+                 0, 0, cachedImage_textBoxTr_png_29.getWidth(), cachedImage_textBoxTr_png_29.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBr_png,
+    g.drawImage (cachedImage_textBoxBr_png_30,
                  getWidth() - 141, 298, 12, 12,
-                 0, 0, cachedImage_textBoxBr_png.getWidth(), cachedImage_textBoxBr_png.getHeight());
+                 0, 0, cachedImage_textBoxBr_png_30.getWidth(), cachedImage_textBoxBr_png_30.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBl_png,
+    g.drawImage (cachedImage_textBoxBl_png_31,
                  220, 298, 12, 12,
-                 0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
+                 0, 0, cachedImage_textBoxBl_png_31.getWidth(), cachedImage_textBoxBl_png_31.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxL_png,
+    g.drawImage (cachedImage_textBoxL_png_32,
                  220, 286, 12, 12,
-                 0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
+                 0, 0, cachedImage_textBoxL_png_32.getWidth(), cachedImage_textBoxL_png_32.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxT_png,
+    g.drawImage (cachedImage_textBoxT_png_33,
                  232, 274, getWidth() - 373, 12,
-                 0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
+                 0, 0, cachedImage_textBoxT_png_33.getWidth(), cachedImage_textBoxT_png_33.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxR_png,
+    g.drawImage (cachedImage_textBoxR_png_34,
                  getWidth() - 141, 286, 12, 12,
-                 0, 0, cachedImage_textBoxR_png.getWidth(), cachedImage_textBoxR_png.getHeight());
+                 0, 0, cachedImage_textBoxR_png_34.getWidth(), cachedImage_textBoxR_png_34.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxB_png,
+    g.drawImage (cachedImage_textBoxB_png_35,
                  232, 298, getWidth() - 373, 12,
-                 0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
+                 0, 0, cachedImage_textBoxB_png_35.getWidth(), cachedImage_textBoxB_png_35.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxInner_png,
+    g.drawImage (cachedImage_textBoxInner_png_36,
                  232, 286, getWidth() - 373, 12,
-                 0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
+                 0, 0, cachedImage_textBoxInner_png_36.getWidth(), cachedImage_textBoxInner_png_36.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTl_png,
+    g.drawImage (cachedImage_textBoxTl_png_37,
                  196, 354, 12, 12,
-                 0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
+                 0, 0, cachedImage_textBoxTl_png_37.getWidth(), cachedImage_textBoxTl_png_37.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTr_png,
+    g.drawImage (cachedImage_textBoxTr_png_38,
                  getWidth() - 43, 354, 12, 12,
-                 0, 0, cachedImage_textBoxTr_png.getWidth(), cachedImage_textBoxTr_png.getHeight());
+                 0, 0, cachedImage_textBoxTr_png_38.getWidth(), cachedImage_textBoxTr_png_38.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBr_png,
+    g.drawImage (cachedImage_textBoxBr_png_39,
                  getWidth() - 43, 378, 12, 12,
-                 0, 0, cachedImage_textBoxBr_png.getWidth(), cachedImage_textBoxBr_png.getHeight());
+                 0, 0, cachedImage_textBoxBr_png_39.getWidth(), cachedImage_textBoxBr_png_39.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBl_png,
+    g.drawImage (cachedImage_textBoxBl_png_40,
                  196, 378, 12, 12,
-                 0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
+                 0, 0, cachedImage_textBoxBl_png_40.getWidth(), cachedImage_textBoxBl_png_40.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxL_png,
+    g.drawImage (cachedImage_textBoxL_png_41,
                  196, 366, 12, 12,
-                 0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
+                 0, 0, cachedImage_textBoxL_png_41.getWidth(), cachedImage_textBoxL_png_41.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxT_png,
+    g.drawImage (cachedImage_textBoxT_png_42,
                  208, 354, getWidth() - 251, 12,
-                 0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
+                 0, 0, cachedImage_textBoxT_png_42.getWidth(), cachedImage_textBoxT_png_42.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxR_png,
+    g.drawImage (cachedImage_textBoxR_png_43,
                  getWidth() - 43, 366, 12, 12,
-                 0, 0, cachedImage_textBoxR_png.getWidth(), cachedImage_textBoxR_png.getHeight());
+                 0, 0, cachedImage_textBoxR_png_43.getWidth(), cachedImage_textBoxR_png_43.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxB_png,
+    g.drawImage (cachedImage_textBoxB_png_44,
                  208, 378, getWidth() - 251, 12,
-                 0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
+                 0, 0, cachedImage_textBoxB_png_44.getWidth(), cachedImage_textBoxB_png_44.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxInner_png,
+    g.drawImage (cachedImage_textBoxInner_png_45,
                  208, 366, getWidth() - 251, 12,
-                 0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
+                 0, 0, cachedImage_textBoxInner_png_45.getWidth(), cachedImage_textBoxInner_png_45.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTl_png,
+    g.drawImage (cachedImage_textBoxTl_png_46,
                  196, 406, 12, 12,
-                 0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
+                 0, 0, cachedImage_textBoxTl_png_46.getWidth(), cachedImage_textBoxTl_png_46.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTr_png,
+    g.drawImage (cachedImage_textBoxTr_png_47,
                  getWidth() - 43, 406, 12, 12,
-                 0, 0, cachedImage_textBoxTr_png.getWidth(), cachedImage_textBoxTr_png.getHeight());
+                 0, 0, cachedImage_textBoxTr_png_47.getWidth(), cachedImage_textBoxTr_png_47.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBr_png,
+    g.drawImage (cachedImage_textBoxBr_png_48,
                  getWidth() - 43, getHeight() - 104, 12, 12,
-                 0, 0, cachedImage_textBoxBr_png.getWidth(), cachedImage_textBoxBr_png.getHeight());
+                 0, 0, cachedImage_textBoxBr_png_48.getWidth(), cachedImage_textBoxBr_png_48.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBl_png,
+    g.drawImage (cachedImage_textBoxBl_png_49,
                  196, getHeight() - 104, 12, 12,
-                 0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
+                 0, 0, cachedImage_textBoxBl_png_49.getWidth(), cachedImage_textBoxBl_png_49.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxL_png,
+    g.drawImage (cachedImage_textBoxL_png_50,
                  196, 418, 12, getHeight() - 522,
-                 0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
+                 0, 0, cachedImage_textBoxL_png_50.getWidth(), cachedImage_textBoxL_png_50.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxT_png,
+    g.drawImage (cachedImage_textBoxT_png_51,
                  208, 406, getWidth() - 251, 12,
-                 0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
+                 0, 0, cachedImage_textBoxT_png_51.getWidth(), cachedImage_textBoxT_png_51.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxR_png,
+    g.drawImage (cachedImage_textBoxR_png_52,
                  getWidth() - 43, 418, 12, getHeight() - 522,
-                 0, 0, cachedImage_textBoxR_png.getWidth(), cachedImage_textBoxR_png.getHeight());
+                 0, 0, cachedImage_textBoxR_png_52.getWidth(), cachedImage_textBoxR_png_52.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxB_png,
+    g.drawImage (cachedImage_textBoxB_png_53,
                  208, getHeight() - 104, getWidth() - 251, 12,
-                 0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
+                 0, 0, cachedImage_textBoxB_png_53.getWidth(), cachedImage_textBoxB_png_53.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxInner_png,
+    g.drawImage (cachedImage_textBoxInner_png_54,
                  208, 418, getWidth() - 251, getHeight() - 522,
-                 0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
+                 0, 0, cachedImage_textBoxInner_png_54.getWidth(), cachedImage_textBoxInner_png_54.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_eigenD_png,
+    g.drawImage (cachedImage_eigenD_png_55,
                  getWidth() - 177, 12, 146, 60,
-                 0, 0, cachedImage_eigenD_png.getWidth(), cachedImage_eigenD_png.getHeight());
+                 0, 0, cachedImage_eigenD_png_55.getWidth(), cachedImage_eigenD_png_55.getHeight());
 
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
@@ -549,8 +549,11 @@ void SaveDialogComponent::paint (Graphics& g)
 
 void SaveDialogComponent::resized()
 {
+    //[UserPreResize] Add your own custom resize code here..
+    //[/UserPreResize]
+
     description->setBounds (204, 415, getWidth() - 243, getHeight() - 516);
-    save_button->setBounds ((getWidth() / 2) - ((50) / 2), getHeight() - 67, 50, 24);
+    save_button->setBounds ((getWidth() / 2) - (50 / 2), getHeight() - 67, 50, 24);
     summary->setBounds (204, 362, getWidth() - 243, 20);
     chooser_notes->setBounds (227, 224, getWidth() - 363, 24);
     chooser_words->setBounds (227, 280, getWidth() - 363, 24);
@@ -565,7 +568,7 @@ void SaveDialogComponent::resized()
     label->setBounds (182 - 150, 360, 150, 24);
     label2->setBounds (182 - 150, 408, 150, 24);
     error_label->setBounds (224, 320, 520, 24);
-    help_button->setBounds (getWidth() - 127, 124 - ((24) / 2), 96, 24);
+    help_button->setBounds (getWidth() - 127, 124 - (24 / 2), 96, 24);
     default_button->setBounds ((getWidth() / 2) + -49 - 166, getHeight() - 67, 166, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
@@ -649,15 +652,16 @@ void SaveDialogComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 
 //==============================================================================
 #if 0
-/*  -- Jucer information section --
+/*  -- Projucer information section --
 
-    This is where the Jucer puts all of its metadata, so don't change anything in here!
+    This is where the Projucer stores the metadata that describe this GUI layout, so
+    make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SaveDialogComponent" componentName=""
                  parentClasses="public Component" constructorParams="" variableInitialisers=""
-                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
+                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="600" initialHeight="600">
   <BACKGROUND backgroundColour="ff000000">
     <IMAGE pos="26 98 49M 125M" resource="backgroundBoxInner_png" opacity="1"
@@ -679,7 +683,8 @@ BEGIN_JUCER_METADATA
     <IMAGE pos="12 31R 30 15" resource="backgroundBoxBl_png" opacity="1"
            mode="0"/>
     <TEXT pos="106c 123c 140 30" fill="solid: ff000000" hasStroke="0" text="Save Setup"
-          fontname="Default font" fontsize="19.6" bold="0" italic="0" justification="36"/>
+          fontname="Default font" fontsize="19.600000000000001421" bold="0"
+          italic="0" justification="36"/>
     <IMAGE pos="220 162 12 12" resource="textBoxTl_png" opacity="1" mode="0"/>
     <IMAGE pos="436 162 12 12" resource="textBoxTr_png" opacity="1" mode="0"/>
     <IMAGE pos="436 186 12 12" resource="textBoxBr_png" opacity="1" mode="0"/>
@@ -1336,3 +1341,7 @@ static const unsigned char resource_SaveDialogComponent_eigenD_png[] = { 137,80,
 
 const char* SaveDialogComponent::eigenD_png = (const char*) resource_SaveDialogComponent_eigenD_png;
 const int SaveDialogComponent::eigenD_pngSize = 3575;
+
+
+//[EndFile] You can add extra defines here...
+//[/EndFile]

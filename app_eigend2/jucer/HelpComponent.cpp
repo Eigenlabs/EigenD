@@ -1,20 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  24 Sep 2012 6:37:23pm
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
@@ -30,30 +28,20 @@
 
 //==============================================================================
 HelpComponent::HelpComponent ()
-    : title (0),
-      ok_button (0),
-      label (0),
-      cachedImage_backgroundBoxInner_png (0),
-      cachedImage_backgroundBoxT_png (0),
-      cachedImage_backgroundBoxL_png (0),
-      cachedImage_backgroundBoxR_png (0),
-      cachedImage_backgroundBoxTl_png (0),
-      cachedImage_backgroundBoxTr_png (0),
-      cachedImage_backgroundBoxB_png (0),
-      cachedImage_backgroundBoxBr_png (0),
-      cachedImage_backgroundBoxBl_png (0),
-      cachedImage_eigenD_png (0)
 {
+    //[Constructor_pre] You can add your own custom stuff here..
+    //[/Constructor_pre]
+
     addAndMakeVisible (title = new Label ("new label",
-                                          "Dialog Title"));
-    title->setFont (Font (25.2000f, Font::bold));
+                                          TRANS("Dialog Title")));
+    title->setFont (Font (25.20f, Font::bold));
     title->setJustificationType (Justification::centred);
     title->setEditable (false, false, false);
     title->setColour (TextEditor::textColourId, Colours::black);
-    title->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    title->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (ok_button = new TextButton ("new button"));
-    ok_button->setButtonText ("OK");
+    ok_button->setButtonText (TRANS("OK"));
     ok_button->addListener (this);
     ok_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
@@ -64,18 +52,18 @@ HelpComponent::HelpComponent ()
     label->setScrollbarsShown (true);
     label->setCaretVisible (false);
     label->setPopupMenuEnabled (false);
-    label->setText (String::empty);
+    label->setText (String());
 
-    cachedImage_backgroundBoxInner_png = ImageCache::getFromMemory (backgroundBoxInner_png, backgroundBoxInner_pngSize);
-    cachedImage_backgroundBoxT_png = ImageCache::getFromMemory (backgroundBoxT_png, backgroundBoxT_pngSize);
-    cachedImage_backgroundBoxL_png = ImageCache::getFromMemory (backgroundBoxL_png, backgroundBoxL_pngSize);
-    cachedImage_backgroundBoxR_png = ImageCache::getFromMemory (backgroundBoxR_png, backgroundBoxR_pngSize);
-    cachedImage_backgroundBoxTl_png = ImageCache::getFromMemory (backgroundBoxTl_png, backgroundBoxTl_pngSize);
-    cachedImage_backgroundBoxTr_png = ImageCache::getFromMemory (backgroundBoxTr_png, backgroundBoxTr_pngSize);
-    cachedImage_backgroundBoxB_png = ImageCache::getFromMemory (backgroundBoxB_png, backgroundBoxB_pngSize);
-    cachedImage_backgroundBoxBr_png = ImageCache::getFromMemory (backgroundBoxBr_png, backgroundBoxBr_pngSize);
-    cachedImage_backgroundBoxBl_png = ImageCache::getFromMemory (backgroundBoxBl_png, backgroundBoxBl_pngSize);
-    cachedImage_eigenD_png = ImageCache::getFromMemory (eigenD_png, eigenD_pngSize);
+    cachedImage_backgroundBoxInner_png_1 = ImageCache::getFromMemory (backgroundBoxInner_png, backgroundBoxInner_pngSize);
+    cachedImage_backgroundBoxT_png_2 = ImageCache::getFromMemory (backgroundBoxT_png, backgroundBoxT_pngSize);
+    cachedImage_backgroundBoxL_png_3 = ImageCache::getFromMemory (backgroundBoxL_png, backgroundBoxL_pngSize);
+    cachedImage_backgroundBoxR_png_4 = ImageCache::getFromMemory (backgroundBoxR_png, backgroundBoxR_pngSize);
+    cachedImage_backgroundBoxTl_png_5 = ImageCache::getFromMemory (backgroundBoxTl_png, backgroundBoxTl_pngSize);
+    cachedImage_backgroundBoxTr_png_6 = ImageCache::getFromMemory (backgroundBoxTr_png, backgroundBoxTr_pngSize);
+    cachedImage_backgroundBoxB_png_7 = ImageCache::getFromMemory (backgroundBoxB_png, backgroundBoxB_pngSize);
+    cachedImage_backgroundBoxBr_png_8 = ImageCache::getFromMemory (backgroundBoxBr_png, backgroundBoxBr_pngSize);
+    cachedImage_backgroundBoxBl_png_9 = ImageCache::getFromMemory (backgroundBoxBl_png, backgroundBoxBl_pngSize);
+    cachedImage_eigenD_png_10 = ImageCache::getFromMemory (eigenD_png, eigenD_pngSize);
 
     //[UserPreSize]
     //[/UserPreSize]
@@ -92,9 +80,9 @@ HelpComponent::~HelpComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
-    deleteAndZero (title);
-    deleteAndZero (ok_button);
-    deleteAndZero (label);
+    title = nullptr;
+    ok_button = nullptr;
+    label = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -110,54 +98,54 @@ void HelpComponent::paint (Graphics& g)
     g.fillAll (Colours::black);
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxInner_png,
+    g.drawImage (cachedImage_backgroundBoxInner_png_1,
                  26, 98, getWidth() - 49, getHeight() - 125,
-                 0, 0, cachedImage_backgroundBoxInner_png.getWidth(), cachedImage_backgroundBoxInner_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxInner_png_1.getWidth(), cachedImage_backgroundBoxInner_png_1.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxT_png,
+    g.drawImage (cachedImage_backgroundBoxT_png_2,
                  24, 84, getWidth() - 45, 15,
-                 0, 0, cachedImage_backgroundBoxT_png.getWidth(), cachedImage_backgroundBoxT_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxT_png_2.getWidth(), cachedImage_backgroundBoxT_png_2.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxL_png,
+    g.drawImage (cachedImage_backgroundBoxL_png_3,
                  12, 98, 15, getHeight() - 123,
-                 0, 0, cachedImage_backgroundBoxL_png.getWidth(), cachedImage_backgroundBoxL_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxL_png_3.getWidth(), cachedImage_backgroundBoxL_png_3.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxR_png,
+    g.drawImage (cachedImage_backgroundBoxR_png_4,
                  getWidth() - 28, 98, 15, getHeight() - 123,
-                 0, 0, cachedImage_backgroundBoxR_png.getWidth(), cachedImage_backgroundBoxR_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxR_png_4.getWidth(), cachedImage_backgroundBoxR_png_4.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxTl_png,
+    g.drawImage (cachedImage_backgroundBoxTl_png_5,
                  12, 84, 30, 15,
-                 0, 0, cachedImage_backgroundBoxTl_png.getWidth(), cachedImage_backgroundBoxTl_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxTl_png_5.getWidth(), cachedImage_backgroundBoxTl_png_5.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxTr_png,
+    g.drawImage (cachedImage_backgroundBoxTr_png_6,
                  getWidth() - 43, 84, 30, 15,
-                 0, 0, cachedImage_backgroundBoxTr_png.getWidth(), cachedImage_backgroundBoxTr_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxTr_png_6.getWidth(), cachedImage_backgroundBoxTr_png_6.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxB_png,
+    g.drawImage (cachedImage_backgroundBoxB_png_7,
                  36, getHeight() - 31, getWidth() - 75, 15,
-                 0, 0, cachedImage_backgroundBoxB_png.getWidth(), cachedImage_backgroundBoxB_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxB_png_7.getWidth(), cachedImage_backgroundBoxB_png_7.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxBr_png,
+    g.drawImage (cachedImage_backgroundBoxBr_png_8,
                  getWidth() - 43, getHeight() - 31, 30, 15,
-                 0, 0, cachedImage_backgroundBoxBr_png.getWidth(), cachedImage_backgroundBoxBr_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxBr_png_8.getWidth(), cachedImage_backgroundBoxBr_png_8.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxBl_png,
+    g.drawImage (cachedImage_backgroundBoxBl_png_9,
                  12, getHeight() - 31, 30, 15,
-                 0, 0, cachedImage_backgroundBoxBl_png.getWidth(), cachedImage_backgroundBoxBl_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxBl_png_9.getWidth(), cachedImage_backgroundBoxBl_png_9.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_eigenD_png,
+    g.drawImage (cachedImage_eigenD_png_10,
                  getWidth() - 177, 12, 146, 60,
-                 0, 0, cachedImage_eigenD_png.getWidth(), cachedImage_eigenD_png.getHeight());
+                 0, 0, cachedImage_eigenD_png_10.getWidth(), cachedImage_eigenD_png_10.getHeight());
 
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
@@ -165,8 +153,11 @@ void HelpComponent::paint (Graphics& g)
 
 void HelpComponent::resized()
 {
-    title->setBounds ((getWidth() / 2) - ((320) / 2), 112, 320, 24);
-    ok_button->setBounds ((getWidth() / 2) - ((35) / 2), getHeight() - 60, 35, 24);
+    //[UserPreResize] Add your own custom resize code here..
+    //[/UserPreResize]
+
+    title->setBounds ((getWidth() / 2) - (320 / 2), 112, 320, 24);
+    ok_button->setBounds ((getWidth() / 2) - (35 / 2), getHeight() - 60, 35, 24);
     label->setBounds (24, 160, getWidth() - 45, getHeight() - 236);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
@@ -195,15 +186,16 @@ void HelpComponent::buttonClicked (Button* buttonThatWasClicked)
 
 //==============================================================================
 #if 0
-/*  -- Jucer information section --
+/*  -- Projucer information section --
 
-    This is where the Jucer puts all of its metadata, so don't change anything in here!
+    This is where the Projucer stores the metadata that describe this GUI layout, so
+    make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="HelpComponent" componentName=""
                  parentClasses="public Component" constructorParams="" variableInitialisers=""
-                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
+                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="400" initialHeight="400">
   <BACKGROUND backgroundColour="ff000000">
     <IMAGE pos="26 98 49M 125M" resource="backgroundBoxInner_png" opacity="1"
@@ -230,7 +222,7 @@ BEGIN_JUCER_METADATA
          explicitFocusOrder="0" pos="0Cc 112 320 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Dialog Title" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="25.2" bold="1" italic="0" justification="36"/>
+         fontsize="25.199999999999999289" bold="1" italic="0" justification="36"/>
   <TEXTBUTTON name="new button" id="470aa5ee480a2171" memberName="ok_button"
               virtualName="" explicitFocusOrder="0" pos="-0.5Cc 60R 35 24"
               bgColOff="ffaeaeae" buttonText="OK" connectedEdges="0" needsCallback="1"
@@ -543,3 +535,7 @@ static const unsigned char resource_HelpComponent_eigenD_png[] = { 137,80,78,71,
 
 const char* HelpComponent::eigenD_png = (const char*) resource_HelpComponent_eigenD_png;
 const int HelpComponent::eigenD_pngSize = 3575;
+
+
+//[EndFile] You can add extra defines here...
+//[/EndFile]

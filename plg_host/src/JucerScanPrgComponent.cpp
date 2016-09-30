@@ -1,20 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  25 Sep 2012 9:49:43am
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
@@ -30,19 +28,10 @@
 
 //==============================================================================
 JucerScanPrgComponent::JucerScanPrgComponent ()
-    : slider (0),
-      plugin_label (0),
-      format_label (0),
-      cachedImage_textBoxTl_png (0),
-      cachedImage_textBoxTr_png (0),
-      cachedImage_textBoxBr_png (0),
-      cachedImage_textBoxBl_png (0),
-      cachedImage_textBoxL_png (0),
-      cachedImage_textBoxR_png (0),
-      cachedImage_textBoxB_png (0),
-      cachedImage_textBoxT_png (0),
-      cachedImage_textBoxInner_png (0)
 {
+    //[Constructor_pre] You can add your own custom stuff here..
+    //[/Constructor_pre]
+
     addAndMakeVisible (slider = new Slider ("new slider"));
     slider->setRange (0, 1, 0);
     slider->setSliderStyle (Slider::LinearBar);
@@ -51,31 +40,31 @@ JucerScanPrgComponent::JucerScanPrgComponent ()
     slider->addListener (this);
 
     addAndMakeVisible (plugin_label = new Label ("new label",
-                                                 String::empty));
-    plugin_label->setFont (Font (15.0000f, Font::plain));
+                                                 String()));
+    plugin_label->setFont (Font (15.00f, Font::plain));
     plugin_label->setJustificationType (Justification::centredLeft);
     plugin_label->setEditable (false, false, false);
-    plugin_label->setColour (Label::backgroundColourId, Colour (0xffffff));
+    plugin_label->setColour (Label::backgroundColourId, Colour (0x00ffffff));
     plugin_label->setColour (TextEditor::textColourId, Colours::black);
-    plugin_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    plugin_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (format_label = new Label ("new label",
-                                                 String::empty));
-    format_label->setFont (Font (15.0000f, Font::plain));
+                                                 String()));
+    format_label->setFont (Font (15.00f, Font::plain));
     format_label->setJustificationType (Justification::centredRight);
     format_label->setEditable (false, false, false);
     format_label->setColour (TextEditor::textColourId, Colours::black);
-    format_label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    format_label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    cachedImage_textBoxTl_png = ImageCache::getFromMemory (textBoxTl_png, textBoxTl_pngSize);
-    cachedImage_textBoxTr_png = ImageCache::getFromMemory (textBoxTr_png, textBoxTr_pngSize);
-    cachedImage_textBoxBr_png = ImageCache::getFromMemory (textBoxBr_png, textBoxBr_pngSize);
-    cachedImage_textBoxBl_png = ImageCache::getFromMemory (textBoxBl_png, textBoxBl_pngSize);
-    cachedImage_textBoxL_png = ImageCache::getFromMemory (textBoxL_png, textBoxL_pngSize);
-    cachedImage_textBoxR_png = ImageCache::getFromMemory (textBoxR_png, textBoxR_pngSize);
-    cachedImage_textBoxB_png = ImageCache::getFromMemory (textBoxB_png, textBoxB_pngSize);
-    cachedImage_textBoxT_png = ImageCache::getFromMemory (textBoxT_png, textBoxT_pngSize);
-    cachedImage_textBoxInner_png = ImageCache::getFromMemory (textBoxInner_png, textBoxInner_pngSize);
+    cachedImage_textBoxTl_png_1 = ImageCache::getFromMemory (textBoxTl_png, textBoxTl_pngSize);
+    cachedImage_textBoxTr_png_2 = ImageCache::getFromMemory (textBoxTr_png, textBoxTr_pngSize);
+    cachedImage_textBoxBr_png_3 = ImageCache::getFromMemory (textBoxBr_png, textBoxBr_pngSize);
+    cachedImage_textBoxBl_png_4 = ImageCache::getFromMemory (textBoxBl_png, textBoxBl_pngSize);
+    cachedImage_textBoxL_png_5 = ImageCache::getFromMemory (textBoxL_png, textBoxL_pngSize);
+    cachedImage_textBoxR_png_6 = ImageCache::getFromMemory (textBoxR_png, textBoxR_pngSize);
+    cachedImage_textBoxB_png_7 = ImageCache::getFromMemory (textBoxB_png, textBoxB_pngSize);
+    cachedImage_textBoxT_png_8 = ImageCache::getFromMemory (textBoxT_png, textBoxT_pngSize);
+    cachedImage_textBoxInner_png_9 = ImageCache::getFromMemory (textBoxInner_png, textBoxInner_pngSize);
 
     //[UserPreSize]
     //[/UserPreSize]
@@ -92,9 +81,9 @@ JucerScanPrgComponent::~JucerScanPrgComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
-    deleteAndZero (slider);
-    deleteAndZero (plugin_label);
-    deleteAndZero (format_label);
+    slider = nullptr;
+    plugin_label = nullptr;
+    format_label = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -110,56 +99,56 @@ void JucerScanPrgComponent::paint (Graphics& g)
     g.fillAll (Colours::black);
 
     g.setGradientFill (ColourGradient (Colours::black,
-                                       (float) ((getWidth() / 2)), 0.0f,
+                                       static_cast<float> ((getWidth() / 2)), 0.0f,
                                        Colour (0xff6c6c6c),
-                                       (float) ((getWidth() / 2)), (float) (getHeight()),
+                                       static_cast<float> ((getWidth() / 2)), static_cast<float> (getHeight()),
                                        false));
     g.fillRect (0, 0, proportionOfWidth (1.0000f), proportionOfHeight (1.0000f));
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTl_png,
+    g.drawImage (cachedImage_textBoxTl_png_1,
                  4, 4, 12, 12,
-                 0, 0, cachedImage_textBoxTl_png.getWidth(), cachedImage_textBoxTl_png.getHeight());
+                 0, 0, cachedImage_textBoxTl_png_1.getWidth(), cachedImage_textBoxTl_png_1.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxTr_png,
+    g.drawImage (cachedImage_textBoxTr_png_2,
                  getWidth() - 16, 4, 12, 12,
-                 0, 0, cachedImage_textBoxTr_png.getWidth(), cachedImage_textBoxTr_png.getHeight());
+                 0, 0, cachedImage_textBoxTr_png_2.getWidth(), cachedImage_textBoxTr_png_2.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBr_png,
+    g.drawImage (cachedImage_textBoxBr_png_3,
                  getWidth() - 16, getHeight() - 16, 12, 12,
-                 0, 0, cachedImage_textBoxBr_png.getWidth(), cachedImage_textBoxBr_png.getHeight());
+                 0, 0, cachedImage_textBoxBr_png_3.getWidth(), cachedImage_textBoxBr_png_3.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxBl_png,
+    g.drawImage (cachedImage_textBoxBl_png_4,
                  4, getHeight() - 16, 12, 12,
-                 0, 0, cachedImage_textBoxBl_png.getWidth(), cachedImage_textBoxBl_png.getHeight());
+                 0, 0, cachedImage_textBoxBl_png_4.getWidth(), cachedImage_textBoxBl_png_4.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxL_png,
+    g.drawImage (cachedImage_textBoxL_png_5,
                  4, 16, 12, getHeight() - 32,
-                 0, 0, cachedImage_textBoxL_png.getWidth(), cachedImage_textBoxL_png.getHeight());
+                 0, 0, cachedImage_textBoxL_png_5.getWidth(), cachedImage_textBoxL_png_5.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxR_png,
+    g.drawImage (cachedImage_textBoxR_png_6,
                  getWidth() - 16, 16, 12, getHeight() - 32,
-                 0, 0, cachedImage_textBoxR_png.getWidth(), cachedImage_textBoxR_png.getHeight());
+                 0, 0, cachedImage_textBoxR_png_6.getWidth(), cachedImage_textBoxR_png_6.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxB_png,
+    g.drawImage (cachedImage_textBoxB_png_7,
                  16, getHeight() - 16, getWidth() - 32, 12,
-                 0, 0, cachedImage_textBoxB_png.getWidth(), cachedImage_textBoxB_png.getHeight());
+                 0, 0, cachedImage_textBoxB_png_7.getWidth(), cachedImage_textBoxB_png_7.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxT_png,
+    g.drawImage (cachedImage_textBoxT_png_8,
                  16, 4, getWidth() - 32, 12,
-                 0, 0, cachedImage_textBoxT_png.getWidth(), cachedImage_textBoxT_png.getHeight());
+                 0, 0, cachedImage_textBoxT_png_8.getWidth(), cachedImage_textBoxT_png_8.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_textBoxInner_png,
+    g.drawImage (cachedImage_textBoxInner_png_9,
                  16, 16, getWidth() - 32, getHeight() - 32,
-                 0, 0, cachedImage_textBoxInner_png.getWidth(), cachedImage_textBoxInner_png.getHeight());
+                 0, 0, cachedImage_textBoxInner_png_9.getWidth(), cachedImage_textBoxInner_png_9.getHeight());
 
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
@@ -167,6 +156,9 @@ void JucerScanPrgComponent::paint (Graphics& g)
 
 void JucerScanPrgComponent::resized()
 {
+    //[UserPreResize] Add your own custom resize code here..
+    //[/UserPreResize]
+
     slider->setBounds (32, (getHeight() / 2) + -2, getWidth() - 64, 19);
     plugin_label->setBounds (144, (getHeight() / 2) + -7 - 15, getWidth() - 179, 15);
     format_label->setBounds (136 - 104, (getHeight() / 2) + -7 - 15, 104, 15);
@@ -197,15 +189,16 @@ void JucerScanPrgComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 
 //==============================================================================
 #if 0
-/*  -- Jucer information section --
+/*  -- Projucer information section --
 
-    This is where the Jucer puts all of its metadata, so don't change anything in here!
+    This is where the Projucer stores the metadata that describe this GUI layout, so
+    make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="JucerScanPrgComponent" componentName=""
                  parentClasses="public Component" constructorParams="" variableInitialisers=""
-                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
+                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="1" initialWidth="400" initialHeight="60">
   <BACKGROUND backgroundColour="ff000000">
     <RECT pos="0 0 100% 100%" fill="linear: 0C 0, 0C 0R, 0=ff000000, 1=ff6c6c6c"
@@ -223,7 +216,8 @@ BEGIN_JUCER_METADATA
   <SLIDER name="new slider" id="9d47438cfc1647a6" memberName="slider" virtualName=""
           explicitFocusOrder="0" pos="32 -2C 64M 19" thumbcol="ff8a8a8a"
           min="0" max="1" int="0" style="LinearBar" textBoxPos="NoTextBox"
-          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"
+          needsCallback="1"/>
   <LABEL name="new label" id="d01b8b9697256ad7" memberName="plugin_label"
          virtualName="" explicitFocusOrder="0" pos="144 -7Cr 179M 15"
          bkgCol="ffffff" edTextCol="ff000000" edBkgCol="0" labelText=""
@@ -471,3 +465,7 @@ static const unsigned char resource_JucerScanPrgComponent_textBoxTr_png[] = { 13
 
 const char* JucerScanPrgComponent::textBoxTr_png = (const char*) resource_JucerScanPrgComponent_textBoxTr_png;
 const int JucerScanPrgComponent::textBoxTr_pngSize = 1408;
+
+
+//[EndFile] You can add extra defines here...
+//[/EndFile]

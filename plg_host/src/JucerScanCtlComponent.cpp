@@ -1,20 +1,18 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  24 Sep 2012 8:22:30pm
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
@@ -30,109 +28,92 @@
 
 //==============================================================================
 JucerScanCtlComponent::JucerScanCtlComponent ()
-    : component (0),
-      label (0),
-      textButton (0),
-      textButton2 (0),
-      toggleButton (0),
-      label2 (0),
-      label3 (0),
-      add_text_button (0),
-      del_text_button (0),
-      path_box (0),
-      cachedImage_backgroundBoxInner_png (0),
-      cachedImage_backgroundBoxT_png (0),
-      cachedImage_backgroundBoxL_png (0),
-      cachedImage_backgroundBoxR_png (0),
-      cachedImage_backgroundBoxB_png (0),
-      cachedImage_backgroundBoxBr_png (0),
-      cachedImage_backgroundBoxBl_png (0),
-      cachedImage_eigenD_png (0),
-      cachedImage_backgroundBoxTl_png (0),
-      cachedImage_backgroundBoxTr_png (0),
-      cachedImage_innerBoxBr_png (0),
-      cachedImage_innerBoxL_png (0),
-      cachedImage_innerBoxR_png (0),
-      cachedImage_innerBoxInner_png (0),
-      cachedImage_innerBoxTl_png (0),
-      cachedImage_innerBoxT_png (0),
-      cachedImage_innerBoxTr_png (0),
-      cachedImage_innerBoxBl_png (0),
-      cachedImage_innerBoxB_png (0)
 {
+    //[Constructor_pre] You can add your own custom stuff here..
+    //[/Constructor_pre]
+
     addAndMakeVisible (component = new TableListBox ("table",0));
     component->setName ("new component");
 
     addAndMakeVisible (label = new Label ("new label",
-                                          "Scan your computer for new or updated plugins.  This may take a long time."));
-    label->setFont (Font (15.0000f, Font::plain));
+                                          TRANS("Scan your computer for new or updated plugins.  This may take a long time.")));
+    label->setFont (Font (15.00f, Font::plain));
     label->setJustificationType (Justification::topLeft);
     label->setEditable (false, false, false);
     label->setColour (TextEditor::textColourId, Colours::black);
-    label->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (textButton = new TextButton ("new button"));
-    textButton->setButtonText ("Cancel");
+    textButton->setButtonText (TRANS("Cancel"));
     textButton->addListener (this);
     textButton->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
     addAndMakeVisible (textButton2 = new TextButton ("new button"));
-    textButton2->setButtonText ("Scan");
+    textButton2->setButtonText (TRANS("Scan"));
     textButton2->addListener (this);
     textButton2->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
     addAndMakeVisible (toggleButton = new ToggleButton ("new toggle button"));
-    toggleButton->setButtonText ("Perform Full Scan");
+    toggleButton->setButtonText (TRANS("Perform Full Scan"));
     toggleButton->addListener (this);
 
     addAndMakeVisible (label2 = new Label ("new label",
-                                           "These plugins failed last time.  Select to rescan."));
-    label2->setFont (Font (15.0000f, Font::plain));
+                                           TRANS("These plugins failed last time.  Select to rescan.")));
+    label2->setFont (Font (15.00f, Font::plain));
     label2->setJustificationType (Justification::centredLeft);
     label2->setEditable (false, false, false);
     label2->setColour (TextEditor::textColourId, Colours::black);
-    label2->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    label2->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (label3 = new Label ("new label",
-                                           "VST Search Path:"));
-    label3->setFont (Font (15.0000f, Font::plain));
+                                           TRANS("VST Search Path:")));
+    label3->setFont (Font (15.00f, Font::plain));
     label3->setJustificationType (Justification::centredLeft);
     label3->setEditable (false, false, false);
     label3->setColour (TextEditor::textColourId, Colours::black);
-    label3->setColour (TextEditor::backgroundColourId, Colour (0x0));
+    label3->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (add_text_button = new TextButton ("new button"));
-    add_text_button->setButtonText ("Add");
+    add_text_button->setButtonText (TRANS("Add"));
     add_text_button->addListener (this);
     add_text_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
     addAndMakeVisible (del_text_button = new TextButton ("new button"));
-    del_text_button->setButtonText ("Remove");
+    del_text_button->setButtonText (TRANS("Remove"));
     del_text_button->addListener (this);
     del_text_button->setColour (TextButton::buttonColourId, Colour (0xffaeaeae));
 
     addAndMakeVisible (path_box = new ListBox());
     path_box->setName ("new component");
 
-    cachedImage_backgroundBoxInner_png = ImageCache::getFromMemory (backgroundBoxInner_png, backgroundBoxInner_pngSize);
-    cachedImage_backgroundBoxT_png = ImageCache::getFromMemory (backgroundBoxT_png, backgroundBoxT_pngSize);
-    cachedImage_backgroundBoxL_png = ImageCache::getFromMemory (backgroundBoxL_png, backgroundBoxL_pngSize);
-    cachedImage_backgroundBoxR_png = ImageCache::getFromMemory (backgroundBoxR_png, backgroundBoxR_pngSize);
-    cachedImage_backgroundBoxB_png = ImageCache::getFromMemory (backgroundBoxB_png, backgroundBoxB_pngSize);
-    cachedImage_backgroundBoxBr_png = ImageCache::getFromMemory (backgroundBoxBr_png, backgroundBoxBr_pngSize);
-    cachedImage_backgroundBoxBl_png = ImageCache::getFromMemory (backgroundBoxBl_png, backgroundBoxBl_pngSize);
-    cachedImage_eigenD_png = ImageCache::getFromMemory (eigenD_png, eigenD_pngSize);
-    cachedImage_backgroundBoxTl_png = ImageCache::getFromMemory (backgroundBoxTl_png, backgroundBoxTl_pngSize);
-    cachedImage_backgroundBoxTr_png = ImageCache::getFromMemory (backgroundBoxTr_png, backgroundBoxTr_pngSize);
-    cachedImage_innerBoxBr_png = ImageCache::getFromMemory (innerBoxBr_png, innerBoxBr_pngSize);
-    cachedImage_innerBoxL_png = ImageCache::getFromMemory (innerBoxL_png, innerBoxL_pngSize);
-    cachedImage_innerBoxR_png = ImageCache::getFromMemory (innerBoxR_png, innerBoxR_pngSize);
-    cachedImage_innerBoxInner_png = ImageCache::getFromMemory (innerBoxInner_png, innerBoxInner_pngSize);
-    cachedImage_innerBoxTl_png = ImageCache::getFromMemory (innerBoxTl_png, innerBoxTl_pngSize);
-    cachedImage_innerBoxT_png = ImageCache::getFromMemory (innerBoxT_png, innerBoxT_pngSize);
-    cachedImage_innerBoxTr_png = ImageCache::getFromMemory (innerBoxTr_png, innerBoxTr_pngSize);
-    cachedImage_innerBoxBl_png = ImageCache::getFromMemory (innerBoxBl_png, innerBoxBl_pngSize);
-    cachedImage_innerBoxB_png = ImageCache::getFromMemory (innerBoxB_png, innerBoxB_pngSize);
+    cachedImage_backgroundBoxInner_png_1 = ImageCache::getFromMemory (backgroundBoxInner_png, backgroundBoxInner_pngSize);
+    cachedImage_backgroundBoxT_png_2 = ImageCache::getFromMemory (backgroundBoxT_png, backgroundBoxT_pngSize);
+    cachedImage_backgroundBoxL_png_3 = ImageCache::getFromMemory (backgroundBoxL_png, backgroundBoxL_pngSize);
+    cachedImage_backgroundBoxR_png_4 = ImageCache::getFromMemory (backgroundBoxR_png, backgroundBoxR_pngSize);
+    cachedImage_backgroundBoxB_png_5 = ImageCache::getFromMemory (backgroundBoxB_png, backgroundBoxB_pngSize);
+    cachedImage_backgroundBoxBr_png_6 = ImageCache::getFromMemory (backgroundBoxBr_png, backgroundBoxBr_pngSize);
+    cachedImage_backgroundBoxBl_png_7 = ImageCache::getFromMemory (backgroundBoxBl_png, backgroundBoxBl_pngSize);
+    cachedImage_eigenD_png_8 = ImageCache::getFromMemory (eigenD_png, eigenD_pngSize);
+    cachedImage_backgroundBoxTl_png_9 = ImageCache::getFromMemory (backgroundBoxTl_png, backgroundBoxTl_pngSize);
+    cachedImage_backgroundBoxTr_png_10 = ImageCache::getFromMemory (backgroundBoxTr_png, backgroundBoxTr_pngSize);
+    cachedImage_innerBoxBr_png_11 = ImageCache::getFromMemory (innerBoxBr_png, innerBoxBr_pngSize);
+    cachedImage_innerBoxL_png_12 = ImageCache::getFromMemory (innerBoxL_png, innerBoxL_pngSize);
+    cachedImage_innerBoxR_png_13 = ImageCache::getFromMemory (innerBoxR_png, innerBoxR_pngSize);
+    cachedImage_innerBoxInner_png_14 = ImageCache::getFromMemory (innerBoxInner_png, innerBoxInner_pngSize);
+    cachedImage_innerBoxTl_png_15 = ImageCache::getFromMemory (innerBoxTl_png, innerBoxTl_pngSize);
+    cachedImage_innerBoxT_png_16 = ImageCache::getFromMemory (innerBoxT_png, innerBoxT_pngSize);
+    cachedImage_innerBoxTr_png_17 = ImageCache::getFromMemory (innerBoxTr_png, innerBoxTr_pngSize);
+    cachedImage_innerBoxBl_png_18 = ImageCache::getFromMemory (innerBoxBl_png, innerBoxBl_pngSize);
+    cachedImage_innerBoxB_png_19 = ImageCache::getFromMemory (innerBoxB_png, innerBoxB_pngSize);
+    cachedImage_innerBoxInner_png_20 = ImageCache::getFromMemory (innerBoxInner_png, innerBoxInner_pngSize);
+    cachedImage_innerBoxTr_png_21 = ImageCache::getFromMemory (innerBoxTr_png, innerBoxTr_pngSize);
+    cachedImage_innerBoxR_png_22 = ImageCache::getFromMemory (innerBoxR_png, innerBoxR_pngSize);
+    cachedImage_innerBoxBr_png_23 = ImageCache::getFromMemory (innerBoxBr_png, innerBoxBr_pngSize);
+    cachedImage_innerBoxB_png_24 = ImageCache::getFromMemory (innerBoxB_png, innerBoxB_pngSize);
+    cachedImage_innerBoxBl_png_25 = ImageCache::getFromMemory (innerBoxBl_png, innerBoxBl_pngSize);
+    cachedImage_innerBoxL_png_26 = ImageCache::getFromMemory (innerBoxL_png, innerBoxL_pngSize);
+    cachedImage_innerBoxTl_png_27 = ImageCache::getFromMemory (innerBoxTl_png, innerBoxTl_pngSize);
+    cachedImage_innerBoxT_png_28 = ImageCache::getFromMemory (innerBoxT_png, innerBoxT_pngSize);
 
     //[UserPreSize]
     //[/UserPreSize]
@@ -149,16 +130,16 @@ JucerScanCtlComponent::~JucerScanCtlComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
-    deleteAndZero (component);
-    deleteAndZero (label);
-    deleteAndZero (textButton);
-    deleteAndZero (textButton2);
-    deleteAndZero (toggleButton);
-    deleteAndZero (label2);
-    deleteAndZero (label3);
-    deleteAndZero (add_text_button);
-    deleteAndZero (del_text_button);
-    deleteAndZero (path_box);
+    component = nullptr;
+    label = nullptr;
+    textButton = nullptr;
+    textButton2 = nullptr;
+    toggleButton = nullptr;
+    label2 = nullptr;
+    label3 = nullptr;
+    add_text_button = nullptr;
+    del_text_button = nullptr;
+    path_box = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -174,144 +155,144 @@ void JucerScanCtlComponent::paint (Graphics& g)
     g.fillAll (Colours::black);
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxInner_png,
+    g.drawImage (cachedImage_backgroundBoxInner_png_1,
                  26, 97, getWidth() - 49, getHeight() - 128,
-                 0, 0, cachedImage_backgroundBoxInner_png.getWidth(), cachedImage_backgroundBoxInner_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxInner_png_1.getWidth(), cachedImage_backgroundBoxInner_png_1.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxT_png,
+    g.drawImage (cachedImage_backgroundBoxT_png_2,
                  42, 84, getWidth() - 85, 15,
-                 0, 0, cachedImage_backgroundBoxT_png.getWidth(), cachedImage_backgroundBoxT_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxT_png_2.getWidth(), cachedImage_backgroundBoxT_png_2.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxL_png,
+    g.drawImage (cachedImage_backgroundBoxL_png_3,
                  12, 97, 15, getHeight() - 128,
-                 0, 0, cachedImage_backgroundBoxL_png.getWidth(), cachedImage_backgroundBoxL_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxL_png_3.getWidth(), cachedImage_backgroundBoxL_png_3.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxR_png,
+    g.drawImage (cachedImage_backgroundBoxR_png_4,
                  getWidth() - 28, 97, 15, getHeight() - 128,
-                 0, 0, cachedImage_backgroundBoxR_png.getWidth(), cachedImage_backgroundBoxR_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxR_png_4.getWidth(), cachedImage_backgroundBoxR_png_4.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxB_png,
+    g.drawImage (cachedImage_backgroundBoxB_png_5,
                  42, getHeight() - 31, getWidth() - 85, 15,
-                 0, 0, cachedImage_backgroundBoxB_png.getWidth(), cachedImage_backgroundBoxB_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxB_png_5.getWidth(), cachedImage_backgroundBoxB_png_5.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxBr_png,
+    g.drawImage (cachedImage_backgroundBoxBr_png_6,
                  getWidth() - 43, getHeight() - 31, 30, 15,
-                 0, 0, cachedImage_backgroundBoxBr_png.getWidth(), cachedImage_backgroundBoxBr_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxBr_png_6.getWidth(), cachedImage_backgroundBoxBr_png_6.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxBl_png,
+    g.drawImage (cachedImage_backgroundBoxBl_png_7,
                  12, getHeight() - 31, 30, 15,
-                 0, 0, cachedImage_backgroundBoxBl_png.getWidth(), cachedImage_backgroundBoxBl_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxBl_png_7.getWidth(), cachedImage_backgroundBoxBl_png_7.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_eigenD_png,
+    g.drawImage (cachedImage_eigenD_png_8,
                  getWidth() - 177, 12, 146, 60,
-                 0, 0, cachedImage_eigenD_png.getWidth(), cachedImage_eigenD_png.getHeight());
+                 0, 0, cachedImage_eigenD_png_8.getWidth(), cachedImage_eigenD_png_8.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxTl_png,
+    g.drawImage (cachedImage_backgroundBoxTl_png_9,
                  12, 84, 30, 15,
-                 0, 0, cachedImage_backgroundBoxTl_png.getWidth(), cachedImage_backgroundBoxTl_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxTl_png_9.getWidth(), cachedImage_backgroundBoxTl_png_9.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_backgroundBoxTr_png,
+    g.drawImage (cachedImage_backgroundBoxTr_png_10,
                  getWidth() - 43, 84, 30, 15,
-                 0, 0, cachedImage_backgroundBoxTr_png.getWidth(), cachedImage_backgroundBoxTr_png.getHeight());
+                 0, 0, cachedImage_backgroundBoxTr_png_10.getWidth(), cachedImage_backgroundBoxTr_png_10.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxBr_png,
+    g.drawImage (cachedImage_innerBoxBr_png_11,
                  getWidth() - 175, 265, 15, 15,
-                 0, 0, cachedImage_innerBoxBr_png.getWidth(), cachedImage_innerBoxBr_png.getHeight());
+                 0, 0, cachedImage_innerBoxBr_png_11.getWidth(), cachedImage_innerBoxBr_png_11.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxL_png,
+    g.drawImage (cachedImage_innerBoxL_png_12,
                  56, 183, 15, 82,
-                 0, 0, cachedImage_innerBoxL_png.getWidth(), cachedImage_innerBoxL_png.getHeight());
+                 0, 0, cachedImage_innerBoxL_png_12.getWidth(), cachedImage_innerBoxL_png_12.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxR_png,
+    g.drawImage (cachedImage_innerBoxR_png_13,
                  getWidth() - 175, 183, 15, 82,
-                 0, 0, cachedImage_innerBoxR_png.getWidth(), cachedImage_innerBoxR_png.getHeight());
+                 0, 0, cachedImage_innerBoxR_png_13.getWidth(), cachedImage_innerBoxR_png_13.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxInner_png,
+    g.drawImage (cachedImage_innerBoxInner_png_14,
                  71, 183, getWidth() - 246, 82,
-                 0, 0, cachedImage_innerBoxInner_png.getWidth(), cachedImage_innerBoxInner_png.getHeight());
+                 0, 0, cachedImage_innerBoxInner_png_14.getWidth(), cachedImage_innerBoxInner_png_14.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxTl_png,
+    g.drawImage (cachedImage_innerBoxTl_png_15,
                  56, 168, 15, 15,
-                 0, 0, cachedImage_innerBoxTl_png.getWidth(), cachedImage_innerBoxTl_png.getHeight());
+                 0, 0, cachedImage_innerBoxTl_png_15.getWidth(), cachedImage_innerBoxTl_png_15.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxT_png,
+    g.drawImage (cachedImage_innerBoxT_png_16,
                  71, 168, getWidth() - 246, 15,
-                 0, 0, cachedImage_innerBoxT_png.getWidth(), cachedImage_innerBoxT_png.getHeight());
+                 0, 0, cachedImage_innerBoxT_png_16.getWidth(), cachedImage_innerBoxT_png_16.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxTr_png,
+    g.drawImage (cachedImage_innerBoxTr_png_17,
                  getWidth() - 175, 168, 15, 15,
-                 0, 0, cachedImage_innerBoxTr_png.getWidth(), cachedImage_innerBoxTr_png.getHeight());
+                 0, 0, cachedImage_innerBoxTr_png_17.getWidth(), cachedImage_innerBoxTr_png_17.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxBl_png,
+    g.drawImage (cachedImage_innerBoxBl_png_18,
                  56, 265, 15, 15,
-                 0, 0, cachedImage_innerBoxBl_png.getWidth(), cachedImage_innerBoxBl_png.getHeight());
+                 0, 0, cachedImage_innerBoxBl_png_18.getWidth(), cachedImage_innerBoxBl_png_18.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxB_png,
+    g.drawImage (cachedImage_innerBoxB_png_19,
                  71, 265, getWidth() - 246, 15,
-                 0, 0, cachedImage_innerBoxB_png.getWidth(), cachedImage_innerBoxB_png.getHeight());
+                 0, 0, cachedImage_innerBoxB_png_19.getWidth(), cachedImage_innerBoxB_png_19.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxInner_png,
+    g.drawImage (cachedImage_innerBoxInner_png_20,
                  71, 367, getWidth() - 134, getHeight() - 455,
-                 0, 0, cachedImage_innerBoxInner_png.getWidth(), cachedImage_innerBoxInner_png.getHeight());
+                 0, 0, cachedImage_innerBoxInner_png_20.getWidth(), cachedImage_innerBoxInner_png_20.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxTr_png,
+    g.drawImage (cachedImage_innerBoxTr_png_21,
                  getWidth() - 63, 352, 15, 15,
-                 0, 0, cachedImage_innerBoxTr_png.getWidth(), cachedImage_innerBoxTr_png.getHeight());
+                 0, 0, cachedImage_innerBoxTr_png_21.getWidth(), cachedImage_innerBoxTr_png_21.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxR_png,
+    g.drawImage (cachedImage_innerBoxR_png_22,
                  getWidth() - 63, 367, 15, getHeight() - 455,
-                 0, 0, cachedImage_innerBoxR_png.getWidth(), cachedImage_innerBoxR_png.getHeight());
+                 0, 0, cachedImage_innerBoxR_png_22.getWidth(), cachedImage_innerBoxR_png_22.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxBr_png,
+    g.drawImage (cachedImage_innerBoxBr_png_23,
                  getWidth() - 63, getHeight() - 88, 15, 15,
-                 0, 0, cachedImage_innerBoxBr_png.getWidth(), cachedImage_innerBoxBr_png.getHeight());
+                 0, 0, cachedImage_innerBoxBr_png_23.getWidth(), cachedImage_innerBoxBr_png_23.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxB_png,
+    g.drawImage (cachedImage_innerBoxB_png_24,
                  71, getHeight() - 88, getWidth() - 134, 15,
-                 0, 0, cachedImage_innerBoxB_png.getWidth(), cachedImage_innerBoxB_png.getHeight());
+                 0, 0, cachedImage_innerBoxB_png_24.getWidth(), cachedImage_innerBoxB_png_24.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxBl_png,
+    g.drawImage (cachedImage_innerBoxBl_png_25,
                  56, getHeight() - 88, 15, 15,
-                 0, 0, cachedImage_innerBoxBl_png.getWidth(), cachedImage_innerBoxBl_png.getHeight());
+                 0, 0, cachedImage_innerBoxBl_png_25.getWidth(), cachedImage_innerBoxBl_png_25.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxL_png,
+    g.drawImage (cachedImage_innerBoxL_png_26,
                  56, 367, 15, getHeight() - 455,
-                 0, 0, cachedImage_innerBoxL_png.getWidth(), cachedImage_innerBoxL_png.getHeight());
+                 0, 0, cachedImage_innerBoxL_png_26.getWidth(), cachedImage_innerBoxL_png_26.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxTl_png,
+    g.drawImage (cachedImage_innerBoxTl_png_27,
                  56, 352, 15, 15,
-                 0, 0, cachedImage_innerBoxTl_png.getWidth(), cachedImage_innerBoxTl_png.getHeight());
+                 0, 0, cachedImage_innerBoxTl_png_27.getWidth(), cachedImage_innerBoxTl_png_27.getHeight());
 
     g.setColour (Colours::black);
-    g.drawImage (cachedImage_innerBoxT_png,
+    g.drawImage (cachedImage_innerBoxT_png_28,
                  71, 352, getWidth() - 134, 15,
-                 0, 0, cachedImage_innerBoxT_png.getWidth(), cachedImage_innerBoxT_png.getHeight());
+                 0, 0, cachedImage_innerBoxT_png_28.getWidth(), cachedImage_innerBoxT_png_28.getHeight());
 
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
@@ -319,6 +300,9 @@ void JucerScanCtlComponent::paint (Graphics& g)
 
 void JucerScanCtlComponent::resized()
 {
+    //[UserPreResize] Add your own custom resize code here..
+    //[/UserPreResize]
+
     component->setBounds (70, 366, getWidth() - 130, getHeight() - 454);
     label->setBounds (40, 96, 536, 24);
     textButton->setBounds (getWidth() - 232, getHeight() - 60, 80, 24);
@@ -376,15 +360,16 @@ void JucerScanCtlComponent::buttonClicked (Button* buttonThatWasClicked)
 
 //==============================================================================
 #if 0
-/*  -- Jucer information section --
+/*  -- Projucer information section --
 
-    This is where the Jucer puts all of its metadata, so don't change anything in here!
+    This is where the Projucer stores the metadata that describe this GUI layout, so
+    make changes in here at your peril!
 
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="JucerScanCtlComponent" componentName=""
                  parentClasses="public Component" constructorParams="" variableInitialisers=""
-                 snapPixels="8" snapActive="0" snapShown="1" overlayOpacity="0.330000013"
+                 snapPixels="8" snapActive="0" snapShown="1" overlayOpacity="0.330"
                  fixedSize="1" initialWidth="640" initialHeight="700">
   <BACKGROUND backgroundColour="ff000000">
     <IMAGE pos="26 97 49M 128M" resource="backgroundBoxInner_png" opacity="1"
@@ -987,3 +972,7 @@ static const unsigned char resource_JucerScanCtlComponent_eigenD_png[] = { 137,8
 
 const char* JucerScanCtlComponent::eigenD_png = (const char*) resource_JucerScanCtlComponent_eigenD_png;
 const int JucerScanCtlComponent::eigenD_pngSize = 3575;
+
+
+//[EndFile] You can add extra defines here...
+//[/EndFile]

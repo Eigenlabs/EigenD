@@ -17,6 +17,9 @@ steinberg
 lib_juce/EigenD/JuceLibraryCode
 lib_juce/EigenD/Builds
 
+eigend.sublime-project
+eigend.sublime-workspace
+
 #Xcode 
 xcuserdata
 #contents.xcworkspacedata

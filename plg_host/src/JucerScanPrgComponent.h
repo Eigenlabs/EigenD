@@ -1,26 +1,24 @@
 /*
   ==============================================================================
 
-  This is an automatically generated file created by the Jucer!
-
-  Creation date:  25 Sep 2012 9:49:43am
+  This is an automatically generated GUI class created by the Projucer!
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Jucer version: 1.12
+  Created with Projucer version: 4.2.4
 
   ------------------------------------------------------------------------------
 
-  The Jucer is part of the JUCE library - "Jules' Utility Class Extensions"
-  Copyright 2004-6 by Raw Material Software ltd.
+  The Projucer is part of the JUCE library - "Jules' Utility Class Extensions"
+  Copyright (c) 2015 - ROLI Ltd.
 
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_JUCERSCANPRGCOMPONENT_JUCERSCANPRGCOMPONENT_6E93F4EA__
-#define __JUCER_HEADER_JUCERSCANPRGCOMPONENT_JUCERSCANPRGCOMPONENT_6E93F4EA__
+#ifndef __JUCE_HEADER_4AF8C7408AAAFAEC__
+#define __JUCE_HEADER_4AF8C7408AAAFAEC__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -51,9 +49,9 @@ public:
     Slider *getProgressBar() { return slider; }
     //[/UserMethods]
 
-    void paint (Graphics& g);
-    void resized();
-    void sliderValueChanged (Slider* sliderThatWasMoved);
+    void paint (Graphics& g) override;
+    void resized() override;
+    void sliderValueChanged (Slider* sliderThatWasMoved) override;
 
     // Binary resources:
     static const char* textBoxB_png;
@@ -81,23 +79,25 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    Slider* slider;
-    Label* plugin_label;
-    Label* format_label;
-    Image cachedImage_textBoxTl_png;
-    Image cachedImage_textBoxTr_png;
-    Image cachedImage_textBoxBr_png;
-    Image cachedImage_textBoxBl_png;
-    Image cachedImage_textBoxL_png;
-    Image cachedImage_textBoxR_png;
-    Image cachedImage_textBoxB_png;
-    Image cachedImage_textBoxT_png;
-    Image cachedImage_textBoxInner_png;
+    ScopedPointer<Slider> slider;
+    ScopedPointer<Label> plugin_label;
+    ScopedPointer<Label> format_label;
+    Image cachedImage_textBoxTl_png_1;
+    Image cachedImage_textBoxTr_png_2;
+    Image cachedImage_textBoxBr_png_3;
+    Image cachedImage_textBoxBl_png_4;
+    Image cachedImage_textBoxL_png_5;
+    Image cachedImage_textBoxR_png_6;
+    Image cachedImage_textBoxB_png_7;
+    Image cachedImage_textBoxT_png_8;
+    Image cachedImage_textBoxInner_png_9;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucerScanPrgComponent);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JucerScanPrgComponent)
 };
 
+//[EndFile] You can add extra defines here...
+//[/EndFile]
 
-#endif   // __JUCER_HEADER_JUCERSCANPRGCOMPONENT_JUCERSCANPRGCOMPONENT_6E93F4EA__
+#endif   // __JUCE_HEADER_4AF8C7408AAAFAEC__
