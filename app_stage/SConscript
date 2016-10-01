@@ -80,7 +80,7 @@ if env['IS_WINDOWS']:
     stage_files.append('guicon.cpp')
 
 if env['IS_LINUX']:
-    env.Append(CCFLAGS='-DLINUX -DNDEBUG')
+    env.Append(CCFLAGS='-DLINUX -DNDEBUG -Wno-format')
     env.Append(CPPPATH='/usr/include/freetype2')
     env.Append(LIBS=Split('asound X11 freetype Xext'))
 

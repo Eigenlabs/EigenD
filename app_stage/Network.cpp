@@ -18,6 +18,7 @@
 */
 
 #include "Network.h"
+#include <iostream>
 #include <signal.h>
 #include <time.h>
 #include "WidgetComponent.h"
@@ -181,7 +182,7 @@ int ConnectionManager::staticRendezvousHandler(const char *path, const char *typ
 void ConnectionManager::staticErrorHandler(int num, const char *msg, const char *path)
 {
     // error handler
-    printf("Connection manager OSC server error %d in path %s: %s\n", num, path, msg);
+    std::cout << "Connection manager OSC server error " << num << " in path " << path << " : " << msg << std::endl;
 }
 
 void ConnectionManager::hostListChanged()
@@ -906,14 +907,14 @@ int OSCManager::genericHandler(const char *path, const char *types, lo_arg **arg
 #if OSC_DEBUG==1
     int i;
 
-    printf("    recv path: <%s>\n", path);
+    //printf("    recv path: <%s>\n", path);
     for (i=0; i<argc; i++) 
     {
         printf("    arg %d '%c' ", i, types[i]);
         lo_arg_pp((lo_type)types[i], argv[i]);
         printf("\n");
     }
-    printf("\n");
+    //printf("\n");
     fflush(stdout);
 #endif // OSC_DEBUG==1
     
@@ -975,7 +976,7 @@ int OSCManager::staticGenericHandler(const char *path, const char *types, lo_arg
 void OSCManager::staticErrorHandler(int num, const char *msg, const char *path)
 {
     // error handler
-    printf("OSC server error %d in path %s: %s\n", num, path, msg);
+    std::cout << "OSC server error " << num << " in path " << path << " : " << msg << std::endl;
 }
 
 
