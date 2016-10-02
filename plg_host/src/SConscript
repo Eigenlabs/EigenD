@@ -20,6 +20,9 @@
 
 Import('env')
 
+if (env['IS_MACOSX_8664'] or env['IS_LINUX_8664']):
+    env.Append(CCFLAGS='-DPLUGSIN_64')
+
 env.Append(CPPPATH='../../lib_juce/modules')
 
 native_files = Split("""host.cpp""")

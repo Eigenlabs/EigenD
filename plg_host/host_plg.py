@@ -57,7 +57,11 @@ def plugin_id_escaped(plg):
 
 class PluginList:
 
-    __plugins_cache = os.path.join(resource.user_resource_dir(resource.plugins_dir,version=''),'plugins_cache')
+    __cacheFile = 'plugins_cache'
+    __is64bit = sys.maxsize > 2**32
+    if __is64bit:
+        __cacheFile += '_64'
+    __plugins_cache = os.path.join(resource.user_resource_dir(resource.plugins_dir,version=''),__cacheFile)
 
     def __init__(self):
         self.plugins_by_manufacturer = dict()

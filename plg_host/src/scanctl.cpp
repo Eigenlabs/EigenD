@@ -30,6 +30,14 @@
 
 #include <memory>
 
+#ifdef PLUGSIN_64
+    #define PLUGINS_CACHE "plugins_cache_64"
+    #define BAD_PLUGINS "bad_plugins_64"
+#else
+    #define PLUGINS_CACHE "plugins_cache"
+    #define BAD_PLUGINS "bad_plugins"
+#endif
+
 class EigenScanner;
 
 #define STATE_STARTING 0 // waiting for scanner process
@@ -82,7 +90,7 @@ namespace
                 cur_format_ = -1;
                 cur_plugin_ = -1;
 
-                juce::File f(getPluginsDir().getChildFile("plugins_cache"));
+                juce::File f(getPluginsDir().getChildFile(PLUGINS_CACHE));
 
                 if(f.existsAsFile() && f.getSize()>0)
                 {
@@ -343,14 +351,14 @@ namespace
 
             void save()
             {
-                juce::File f(getPluginsDir().getChildFile("plugins_cache"));
+                juce::File f(getPluginsDir().getChildFile(PLUGINS_CACHE));
 
                 std::auto_ptr<juce::XmlElement> el(plugin_list_.createXml());
                 std::cout << "writing " << f.getFullPathName() << std::endl;
                 if(!el->writeToFile(f,juce::String::empty)) std::cout << "oops, failed!" << std::cout;
                 std::cout << "done." << std::endl;
 
-                juce::File b(getPluginsDir().getChildFile("bad_plugins"));
+                juce::File b(getPluginsDir().getChildFile(BAD_PLUGINS));
                 std::cout << "writing " << b.getFullPathName() << std::endl;
                 if(!b.replaceWithText (bad_plugins_.joinIntoString ("\n"), true, true)) std::cout << "oops, failed!" << std::cout;
                 std::cout << "done." << std::endl;
@@ -480,7 +488,7 @@ namespace
 
                 paths()->setModel(&paths_);
 
-                File bad_file(getPluginsDir().getChildFile("bad_plugins"));
+                File bad_file(getPluginsDir().getChildFile(BAD_PLUGINS));
 
                 if(bad_file.exists())
                 {
@@ -493,7 +501,7 @@ namespace
                     bad_file.create();
                 }
 
-                juce::File plugin_file(getPluginsDir().getChildFile("plugins_cache"));
+                juce::File plugin_file(getPluginsDir().getChildFile(PLUGINS_CACHE));
                 if(!plugin_file.exists())
                 {
                     force_full_scan();
