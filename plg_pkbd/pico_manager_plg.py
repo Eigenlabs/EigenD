@@ -132,21 +132,23 @@ class KeyboardAgent(agent.Agent):
         self.add_enumerator.start()
 
     def cleanup(self):
-        print 'pico cleanup'
+        print 'pico cleanup - start'
         self.load_enumerator.stop()
         self.load_enumerator2.stop()
         self.add_enumerator.stop()
+        print 'pico cleanup - done'
 
-    def server_closed(self):
-        print 'pico server closed'
+    def close_server(self):
+        print 'pico close server'
         self.cleanup()
-        agent.Agent.server_closed(self)
+        agent.Agent.close_server(self)  
 
     def on_quit(self):
-        print 'pico on_quit'
+        print 'pico on_quit - start'
         for k in self.subsystem_keys():
             self.del_keyboard(k)
         self.cleanup()
+        print 'pico on_quit - done'
 
     def download_keyboard(self,usbname):
         firmware = ezload.firmware(ezload.vendor,ezload.product)

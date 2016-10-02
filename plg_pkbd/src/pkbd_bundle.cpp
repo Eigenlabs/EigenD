@@ -464,7 +464,14 @@ namespace
                 piw::tsd_alert(BWMSG_KLASS,BWMSG_TITLE,BWMSG_MSG);
             }
 
-            trigger_slow();
+            if(reason==PIPE_OK) 
+            {
+                shutdown();
+            } 
+            else 
+            {
+                trigger_slow();
+            }
         }
         
 
@@ -488,10 +495,16 @@ namespace
             kwires_[key]->key(t,a,p,r,y);
         }
 
-        void thing_trigger_slow()
+        void shutdown()
         {
+            pic::logmsg() << "shutdown pico bundle";
             root_ctl_t::disconnect();
             dead();
+        }
+
+        void thing_trigger_slow()
+        {
+            shutdown();
         }
 
         void create_kwires()
@@ -816,11 +829,18 @@ struct pkbd::bundle_t::impl_t : virtual pic::tracked_t, piw::thing_t, piw::clock
 
     ~impl_t()
     {
-        cancel_timer_slow();
-        tracked_invalidate();
         tick_disable();
-        loop_.stop();
+        cancel_timer_slow();
         quit();
+        tracked_invalidate();
+        loop_.stop();
+
+
+        // cancel_timer_slow();
+        // tracked_invalidate();
+        // tick_disable();
+        // loop_.stop();
+        // quit();
     }
 
     void thing_timer_slow()

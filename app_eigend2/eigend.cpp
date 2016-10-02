@@ -2015,7 +2015,7 @@ void EigenD::systemRequestedQuit()
         delete w;
     }
 
-    juce::MessageManager::getInstance()->runDispatchLoopUntil(500);
+    juce::MessageManager::getInstance()->runDispatchLoopUntil(2000);
     cleanup();
     ejuce::Application::quit();
 }

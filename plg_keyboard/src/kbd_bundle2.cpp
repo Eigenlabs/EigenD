@@ -525,7 +525,14 @@ namespace
             piw::tsd_alert(BWMSG_KLASS,BWMSG_TITLE,BWMSG_MSG);
         }
 
-        trigger_slow();
+        if(reason==PIPE_OK) 
+        {
+            shutdown();
+        } 
+        else 
+        {
+            trigger_slow();
+        }
     }
 
     void keyboard_t::set_midi_sink(void (*cb)(void *,const unsigned char *,unsigned),void *ctx)
