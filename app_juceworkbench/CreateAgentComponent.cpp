@@ -19,6 +19,38 @@
 
 #include "CreateAgentComponent.h"
 
+class AgentListBox : public ListBox 
+{
+public:
+    AgentListBox ( const String& componentName, ListBoxModel* model, StringArray& agentNames) 
+    : ListBox(componentName,model),agentNames_(agentNames)
+    {
+    }
+
+    bool keyPressed (const KeyPress& key) override 
+    {
+        juce_wchar kc = key.getTextCharacter();
+        if(CharacterFunctions::isLetter(kc)) 
+        {
+            juce_wchar lkc = CharacterFunctions::toLowerCase(kc);
+            juce_wchar ukc = CharacterFunctions::toUpperCase(kc);
+            for(int i=0;i<agentNames_.size();i++) 
+            {
+                if(agentNames_[i].startsWithChar(lkc) || agentNames_[i].startsWithChar(ukc)) 
+                {
+                    selectRow(i);
+                    return true;
+                }
+            }
+            return true;
+        }
+        return ListBox::keyPressed(key);
+    }
+
+ private:
+     StringArray& agentNames_;
+};
+
 CreateAgentComponent::CreateAgentComponent (const std::set<std::string>& agents, Workspace* workspace)
     : agents_(agents),
       ordinal_(1),
@@ -35,7 +67,7 @@ CreateAgentComponent::CreateAgentComponent (const std::set<std::string>& agents,
       createLabel(0),
       selectedAgentLabel(0)
 {
-    addAndMakeVisible(listBox = new ListBox("agentBox",this));
+    addAndMakeVisible(listBox = new AgentListBox("agentBox",this,agentNames_));
     addAndMakeVisible (textButton = new TextButton ("okButton"));
     textButton->setButtonText ("OK");
     textButton->addListener (this);
@@ -145,7 +177,13 @@ CreateAgentComponent::CreateAgentComponent (const std::set<std::string>& agents,
     setLowestAvailableOrdinal();
     txtOrdinal->setText (String(ordinal_));
 
+    setWantsKeyboardFocus(true);
+    grabKeyboardFocus();
+    toFront(true);
     setSize (300, 400);
+    listBox->toFront(true);
+    listBox->setWantsKeyboardFocus(true);
+    listBox->grabKeyboardFocus();
 }
 
 CreateAgentComponent::~CreateAgentComponent()
