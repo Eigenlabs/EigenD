@@ -1,0 +1,52 @@
+Notes on getting PI to run EigenD.
+==================================
+Thanks to Kai Drange for contributing this.
+
+
+I don't know anything about Linux, but with a lot of googling and asking Mark Harris for help when I got stuck I got things up and running. So the following might not be the optimal way to do things. Some steps might even be completely unnecessary. I just wrote down everything I did so others could do the same. I might have some details wrong, also, so I try to mention what each step is supposed to achieve in case something isn't accurate.
+
+INSTALLING OS USING WINDOWS
+Format SD card using SDFormatter (included in zip). Set FORMAT SIZE ADJUSTMENT (in options) to ON.
+
+Install the included Win32DiskImager.
+
+Unzip the raspuntu image.
+
+Burn the raspuntu image by running Win32DiskImager as Administrator (right click icon and select run as admin).
+
+Copy "eigend.desktop", "linux_eigend.sh" and the eigenpi .deb file to a memory stick.
+
+CONFIGURING THE OS
+On the Raspberry, insert the sd card, boot, and select user linaro, with linaro as password as well. You should see a graphical desktop at this point.
+
+Note: for some reason my first sd card did not work. This OS would not start properly. The card was not faulty or anything, and some other OSes worked just fine. A recommended sd card was "Sandisk Extreme Pro 8GB", so I bought that instead and it worked as expected.
+
+From this point on, I used xterm selected from the start menu as a terminal. So when I typed something, this is where I did so. Whenever I edited a text file I started that with admin rights from the terminal by typing "sudo leafpad". 
+
+If the desktop borders are outside your tv screen (mine were) open boot/config.txt. Remove the "#" before the overscan_left 16, right, etc to uncomment those lines. Save and reboot by clicking bottom right, select log off, and then back at the user logon screen select Quit -> reboot.
+
+To change keyboard layout, type "sudo dpkg-reconfigure keyboard-configuration" and go through the setup.
+
+To autologin as linaro user, open /etc/lxdm/default.conf, uncomment the autologin line and set it to "autologin=linaro".
+
+INSTALLING EIGENPI
+Plug the memory stick into the Raspberry. You should get an error message you can ignore. To access the memory stick first create a new folder by typing "sudo mkdir /media/usb". Then mount it with "sudo mount /dev/sda1 /media/usb". This last line is worth remembering since you will need to to this again if you later want to mount your memory stick again. Your stick contents should now be available in /media/usb.
+
+To install EigenPi, type "cd /media/usb" and then "sudo dpkg -i pi-eigend_2.1.1-community-raspberryPI2.deb". EigenD should now reside in /usr/pi/release-2.1.1-community
+
+
+Copy the startup script linux_eigend.sh to the EigenD folder by typing "sudo cp /media/usb/linux_eigend.sh /usr/pi/release-2.1.1-community
+
+".
+
+To make EigenD automatically run on startup, copy the eigend.desktop file to /etc/xdg/autostart in the same way.
+
+Set some file access rights needed by EigenD by typing "sudo chmod 666 /dev/bus/usb/*/*". I also typed "sudo chmod 755 /usr/pi/release-2.1.1-community
+
+/linux_eigend.sh", but I'm not sure if this is needed.
+
+...and that should be it! The VST plugin scanning will hang, but still try to do it once so you won't be asked again. Cancel the big factory preset when it tries to load as it will crash. Select a small one as default instead.
+
+User setups are stored at "/home/linaro/.Eigenlabs/2.1.1-community/Setups
+
+" so I just copied mine there after first saving a blank one. Not sure if the user presets folder was already there or was created first time I saved a user setup. The ".Eigenlabs" folder is hidden, but you can still see it in the file manager if you set "view hidden files" or something similar. Selected midi devices were remembered from my PC setup, btw, so my midi setup worked right out of the box.
