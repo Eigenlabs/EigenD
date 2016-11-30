@@ -483,7 +483,7 @@ String SystemClipboard::getTextFromClipboard()
 
 void Process::setDockIconVisible (bool isVisible)
 {
-    ProcessSerialNumber psn { 0, kCurrentProcess };
+    ProcessSerialNumber psn = { 0, kCurrentProcess };
     ProcessApplicationTransformState state = isVisible
         ? kProcessTransformToForegroundApplication
         : kProcessTransformToUIElementApplication;

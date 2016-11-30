@@ -2807,7 +2807,7 @@ void VST3PluginFormat::createPluginInstance (const PluginDescription& descriptio
 
         if (const VST3Classes::VST3ModuleHandle::Ptr module = VST3Classes::VST3ModuleHandle::findOrCreateModule (file, description))
         {
-            ScopedPointer<VST3Classes::VST3ComponentHolder> holder = new VST3Classes::VST3ComponentHolder (module);
+            ScopedPointer<VST3Classes::VST3ComponentHolder> holder ( new VST3Classes::VST3ComponentHolder (module));
             if (holder->initialise())
             {
                 result = new VST3Classes::VST3PluginInstance (holder.release());
