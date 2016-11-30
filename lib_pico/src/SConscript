@@ -20,9 +20,17 @@
 
 Import('env')
 
+#assumption mac = dylib, win = dll , linux =s so
 if env['IS_MACOSX']:
     if env['IS_MACOSX_8664']:
         plib=Split('pic pico_decoder_x86_64_1_0_0')
+    else:
+        plib=Split('pic pico_decoder_i386_1_0_0')
+elif env['IS_LINUX']:
+    if env['IS_LINUX_8664']:
+        plib=Split('pic pico_decoder_x86_64_1_0_0')
+    elif env['IS_LINUX_ARMV7L']:
+        plib=Split('pic pico_decoder_arm7_1_0_0')
     else:
         plib=Split('pic pico_decoder_i386_1_0_0')
 else:
