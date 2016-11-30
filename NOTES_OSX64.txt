@@ -5,12 +5,15 @@ running :
 download Python 2.7.10 i386/x86_64, from python.org and install Python 2.7.10 (see notes for why)
 (note: this will work with both 64 and 32 bit version of eigenD)
 
-cd /usr/local/pi
-mv Python.Framework Python.Framework.eigenlabs
-ln -s /Library/Frameworks/Python.framework .
-cp -R /usr/local/pi/Python.framework.eigenlabs/Versions/2.7/lib/python2.7/site-packages/* /usr/local/pi/Python.framework/Versions/2.7/lib/python2.7/site-packages
+cp -R /usr/local/pi/Python.framework/Versions/2.7/lib/python2.7/site-packages/* /Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages
 
-to build:
+
+building... 
+python has its path encoded... so we need to becareful which we pick up
+the eigenlabs python is prefixed to /usr/local/pi/Python , for the 64 bit build we want /Library/Framework/Python.framework
+
+for a 64bit build
+export PI_PYTHON=/Library/Frameworks/Python.framework/Versions/2.7/bin/python
 export BUILD_TARGET=x86_64
 make
 
