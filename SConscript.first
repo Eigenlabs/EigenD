@@ -43,7 +43,7 @@ master_env.PiBuildSystem(package='eigend-build')
 
 if master_env['IS_WINDOWS']:
     prereq = [
-        ('runtime-1.0.1',"Please install the EigenD Support package before installing EigenD.")
+        ('runtime-1.0.0',"Please install the EigenD Support package before installing EigenD.")
     ]
 
 if master_env['IS_MACOSX']:
