@@ -62,7 +62,7 @@ class PiLinuxEnvironment(unix_tools.PiUnixEnvironment):
 
         if package:
             env.set_package(package)
-            inst_library_1 = env.Install(env['BINSTAGEDIR'],f1)
+            inst_library_1 = env.Install(env.subst('$BINSTAGEDIR'),f1)
 
         return env.addlibname(run_library1[0],target)
 
