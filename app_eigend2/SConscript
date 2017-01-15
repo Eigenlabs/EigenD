@@ -42,6 +42,11 @@ widget_libs = Split('pic pia piw pie ejuce epython pijuce')
 echo_files = Split('echo.cpp')
 echo_libs = Split('pic pia piw pie')
 
+
+if (env['IS_MACOSX_8664'] or env['IS_LINUX_8664']):
+    env.Append(CCFLAGS='-DPLUGSIN_64')
+
+
 env.Append(CPPPATH='../lib_juce/modules')
 env.Append(CCFLAGS='-DPI_RELEASE=\\"$PI_RELEASE\\"')
 env.Append(CCFLAGS='-DPI_COLLECTION=\\"$PI_COLLECTION\\"')

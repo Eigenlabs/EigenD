@@ -103,6 +103,16 @@ class EigenLoadComponent;
 class EigenBugComponent;
 class EigenMainWindow;
 
+
+#ifdef PLUGSIN_64
+    #define PLUGINS_CACHE "plugins_cache_64"
+    #define BAD_PLUGINS "bad_plugins_64"
+#else
+    #define PLUGINS_CACHE "plugins_cache"
+    #define BAD_PLUGINS "bad_plugins"
+#endif
+
+
 namespace
 {
     enum EigenDMessageTypes
@@ -928,7 +938,7 @@ EigenMainWindow::EigenMainWindow(ApplicationCommandManager *mgr, pia::scaffold_g
         }
     }
 
-    juce::File plugin_file(getPluginsDir().getChildFile("plugins_cache"));
+    juce::File plugin_file(getPluginsDir().getChildFile(PLUGINS_CACHE));
     if(!plugin_file.exists())
     {
         pic::logmsg() << "starting plugin scan..";
