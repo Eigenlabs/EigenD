@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -40,11 +40,11 @@ Textfile/Substfile builder for SCons.
     expanded (its keys are not expanded).  If a value of SUBST_DICT is
     a python callable function, it is called and the result is expanded
     as the value.  Values are substituted in a "random" order; if any
-    substitution could be further expanded by another subsitition, it
-    is unpredictible whether the expansion will occur.
+    substitution could be further expanded by another substitution, it
+    is unpredictable whether the expansion will occur.
 """
 
-__revision__ = "src/engine/SCons/Tool/textfile.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/textfile.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import SCons
 

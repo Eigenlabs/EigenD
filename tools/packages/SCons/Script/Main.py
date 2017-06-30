@@ -10,10 +10,10 @@ some other module.  If it's specific to the "scons" script invocation,
 it goes here.
 """
 
-unsupported_python_version = (2, 3, 0)
+unsupported_python_version = (2, 6, 0)
 deprecated_python_version = (2, 7, 0)
 
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -34,7 +34,7 @@ deprecated_python_version = (2, 7, 0)
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__revision__ = "src/engine/SCons/Script/Main.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Script/Main.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import SCons.compat
 
@@ -42,15 +42,6 @@ import os
 import sys
 import time
 import traceback
-
-# Strip the script directory from sys.path() so on case-insensitive
-# (Windows) systems Python doesn't think that the "scons" script is the
-# "SCons" package.  Replace it with our own version directory so, if
-# if they're there, we pick up the right version of the build engine
-# modules.
-#sys.path = [os.path.join(sys.prefix,
-#                         'lib',
-#                         'scons-%d' % SCons.__version__)] + sys.path[1:]
 
 import SCons.CacheDir
 import SCons.Debug
@@ -74,7 +65,7 @@ def fetch_win32_parallel_msg():
     # so we don't have to pull it in on all platforms, and so that an
     # in-line "import" statement in the _main() function below doesn't
     # cause warnings about local names shadowing use of the 'SCons'
-    # globl in nest scopes and UnboundLocalErrors and the like in some
+    # global in nest scopes and UnboundLocalErrors and the like in some
     # versions (2.1) of Python.
     import SCons.Platform.win32
     return SCons.Platform.win32.parallel_msg
@@ -214,7 +205,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
         if self.top and not t.has_builder() and not t.side_effect:
             if not t.exists():
                 if t.__class__.__name__ in ('File', 'Dir', 'Entry'):
-                    errstr="Do not know how to make %s target `%s' (%s)." % (t.__class__.__name__, t, t.abspath)
+                    errstr="Do not know how to make %s target `%s' (%s)." % (t.__class__.__name__, t, t.get_abspath())
                 else: # Alias or Python or ...
                     errstr="Do not know how to make %s target `%s'." % (t.__class__.__name__, t)
                 sys.stderr.write("scons: *** " + errstr)
@@ -312,7 +303,7 @@ class BuildTask(SCons.Taskmaster.OutOfDateTask):
 
 class CleanTask(SCons.Taskmaster.AlwaysTask):
     """An SCons clean task."""
-    def fs_delete(self, path, pathstr, remove=1):
+    def fs_delete(self, path, pathstr, remove=True):
         try:
             if os.path.lexists(path):
                 if os.path.isfile(path) or os.path.islink(path):
@@ -339,37 +330,41 @@ class CleanTask(SCons.Taskmaster.AlwaysTask):
         except (IOError, OSError), e:
             print "scons: Could not remove '%s':" % pathstr, e.strerror
 
-    def show(self):
+    def _get_files_to_clean(self):
+        result = []
         target = self.targets[0]
-        if (target.has_builder() or target.side_effect) and not target.noclean:
-            for t in self.targets:
-                if not t.isdir():
-                    display("Removed " + str(t))
+        if target.has_builder() or target.side_effect:
+            result = [t for t in self.targets if not t.noclean]
+        return result
+
+    def _clean_targets(self, remove=True):
+        target = self.targets[0]
         if target in SCons.Environment.CleanTargets:
             files = SCons.Environment.CleanTargets[target]
             for f in files:
-                self.fs_delete(f.abspath, str(f), 0)
+                self.fs_delete(f.get_abspath(), str(f), remove)
+
+    def show(self):
+        for t in self._get_files_to_clean():
+            if not t.isdir():
+                display("Removed " + str(t))
+        self._clean_targets(remove=False)
 
     def remove(self):
-        target = self.targets[0]
-        if (target.has_builder() or target.side_effect) and not target.noclean:
-            for t in self.targets:
-                try:
-                    removed = t.remove()
-                except OSError, e:
-                    # An OSError may indicate something like a permissions
-                    # issue, an IOError would indicate something like
-                    # the file not existing.  In either case, print a
-                    # message and keep going to try to remove as many
-                    # targets aa possible.
-                    print "scons: Could not remove '%s':" % str(t), e.strerror
-                else:
-                    if removed:
-                        display("Removed " + str(t))
-        if target in SCons.Environment.CleanTargets:
-            files = SCons.Environment.CleanTargets[target]
-            for f in files:
-                self.fs_delete(f.abspath, str(f))
+        for t in self._get_files_to_clean():
+            try:
+                removed = t.remove()
+            except OSError, e:
+                # An OSError may indicate something like a permissions
+                # issue, an IOError would indicate something like
+                # the file not existing.  In either case, print a
+                # message and keep going to try to remove as many
+                # targets as possible.
+                print "scons: Could not remove '%s':" % str(t), e.strerror
+            else:
+                if removed:
+                    display("Removed " + str(t))
+        self._clean_targets(remove=True)
 
     execute = remove
 
@@ -379,7 +374,7 @@ class CleanTask(SCons.Taskmaster.AlwaysTask):
     # we don't want, like store .sconsign information.
     executed = SCons.Taskmaster.Task.executed_without_callbacks
 
-    # Have the taskmaster arrange to "execute" all of the targets, because
+    # Have the Taskmaster arrange to "execute" all of the targets, because
     # we'll figure out ourselves (in remove() or show() above) whether
     # anything really needs to be done.
     make_ready = SCons.Taskmaster.Task.make_ready_all
@@ -480,7 +475,9 @@ def GetOption(name):
 def SetOption(name, value):
     return OptionsParser.values.set_option(name, value)
 
-#
+def PrintHelp(file=None):
+    OptionsParser.print_help(file=file)
+
 class Stats(object):
     def __init__(self):
         self.stats = []
@@ -668,7 +665,7 @@ def _set_debug_values(options):
     if "prepare" in debug_values:
         SCons.Taskmaster.print_prepare = 1
     if "duplicate" in debug_values:
-        SCons.Node.FS.print_duplicate = 1
+        SCons.Node.print_duplicate = 1
 
 def _create_path(plist):
     path = '.'
@@ -704,7 +701,6 @@ def _load_site_scons_dir(topdir, site_dir_name=None):
     site_tools_dir = os.path.join(site_dir, site_tools_dirname)
     if os.path.exists(site_init_file):
         import imp, re
-        # TODO(2.4): turn this into try:-except:-finally:
         try:
             try:
                 fp, pathname, description = imp.find_module(site_init_modname,
@@ -942,12 +938,20 @@ def _main(parser):
         progress_display.set_mode(0)
 
     if options.site_dir:
-        _load_site_scons_dir(d.path, options.site_dir)
+        _load_site_scons_dir(d.get_internal_path(), options.site_dir)
     elif not options.no_site_dir:
-        _load_all_site_scons_dirs(d.path)
+        _load_all_site_scons_dirs(d.get_internal_path())
 
     if options.include_dir:
         sys.path = options.include_dir + sys.path
+
+    # If we're about to start SCons in the interactive mode,
+    # inform the FS about this right here. Else, the release_target_info
+    # method could get called on some nodes, like the used "gcc" compiler,
+    # when using the Configure methods within the SConscripts.
+    # This would then cause subtle bugs, as already happened in #2971.
+    if options.interactive:
+        SCons.Node.interactive = True
 
     # That should cover (most of) the options.  Next, set up the variables
     # that hold command-line arguments, so the SConscript files that we
@@ -1009,7 +1013,7 @@ def _main(parser):
     # the SConscript file.
     #
     # We delay enabling the PythonVersionWarning class until here so that,
-    # if they explicity disabled it in either in the command line or in
+    # if they explicitly disabled it in either in the command line or in
     # $SCONSFLAGS, or in the SConscript file, then the search through
     # the list of deprecated warning classes will find that disabling
     # first and not issue the warning.
@@ -1021,13 +1025,17 @@ def _main(parser):
     # in case they disabled the warning in the SConscript files.
     if python_version_deprecated():
         msg = "Support for pre-%s Python version (%s) is deprecated.\n" + \
-              "    If this will cause hardship, contact dev@scons.tigris.org."
+              "    If this will cause hardship, contact scons-dev@scons.org"
         deprecated_version_string = ".".join(map(str, deprecated_python_version))
         SCons.Warnings.warn(SCons.Warnings.PythonVersionWarning,
                             msg % (deprecated_version_string, python_version_string()))
 
     if not options.help:
-        SCons.SConf.CreateConfigHBuilder(SCons.Defaults.DefaultEnvironment())
+        # [ ] Clarify why we need to create Builder here at all, and
+        #     why it is created in DefaultEnvironment
+        # https://bitbucket.org/scons/scons/commits/d27a548aeee8ad5e67ea75c2d19a7d305f784e30
+        if SCons.SConf.NeedConfigHBuilder():
+            SCons.SConf.CreateConfigHBuilder(SCons.Defaults.DefaultEnvironment())
 
     # Now re-parse the command-line options (any to the left of a '--'
     # argument, that is) with any user-defined command-line options that
@@ -1074,7 +1082,6 @@ def _main(parser):
     platform = SCons.Platform.platform_module()
 
     if options.interactive:
-        SCons.Node.interactive = True
         SCons.Script.Interactive.interact(fs, OptionsParser, options,
                                           targets, target_top)
 
@@ -1096,7 +1103,6 @@ def _build_targets(fs, options, targets, target_top):
     display.set_mode(not options.silent)
     SCons.Action.print_actions          = not options.silent
     SCons.Action.execute_actions        = not options.no_exec
-    SCons.Node.FS.do_store_info         = not options.no_exec
     SCons.Node.do_store_info            = not options.no_exec
     SCons.SConf.dryrun                  = options.no_exec
 
@@ -1215,13 +1221,8 @@ def _build_targets(fs, options, targets, target_top):
         def order(dependencies):
             """Randomize the dependencies."""
             import random
-            # This is cribbed from the implementation of
-            # random.shuffle() in Python 2.X.
-            d = dependencies
-            for i in range(len(d)-1, 0, -1):
-                j = int(random.random() * (i+1))
-                d[i], d[j] = d[j], d[i]
-            return d
+            random.shuffle(dependencies)
+            return dependencies
     else:
         def order(dependencies):
             """Leave the order of dependencies alone."""
@@ -1299,18 +1300,6 @@ def _exec_main(parser, values):
         # compat layer imports "cProfile" for us if it's available.
         from profile import Profile
 
-        # Some versions of Python 2.4 shipped a profiler that had the
-        # wrong 'c_exception' entry in its dispatch table.  Make sure
-        # we have the right one.  (This may put an unnecessary entry
-        # in the table in earlier versions of Python, but its presence
-        # shouldn't hurt anything).
-        try:
-            dispatch = Profile.dispatch
-        except AttributeError:
-            pass
-        else:
-            dispatch['c_exception'] = Profile.trace_dispatch_return
-
         prof = Profile()
         try:
             prof.runcall(_main, parser)
@@ -1343,7 +1332,7 @@ def main():
         pass
     parts.append(version_string("engine", SCons))
     parts.append(path_string("engine", SCons))
-    parts.append("Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation")
+    parts.append("Copyright (c) 2001 - 2016 The SCons Foundation")
     version = ''.join(parts)
 
     import SConsOptions

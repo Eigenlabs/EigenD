@@ -8,7 +8,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,7 +30,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/cc.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/cc.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import SCons.Tool
 import SCons.Defaults
@@ -62,6 +62,8 @@ def add_common_cc_variables(env):
     if 'SHCCFLAGS' not in env:
         env['SHCCFLAGS'] = SCons.Util.CLVar('$CCFLAGS')
 
+compilers = ['cc']
+
 def generate(env):
     """
     Add Builders and construction variables for C compilers to an Environment.
@@ -76,7 +78,8 @@ def generate(env):
 
     add_common_cc_variables(env)
 
-    env['CC']        = 'cc'
+    if 'CC' not in env:
+        env['CC']    = env.Detect(compilers) or compilers[0]
     env['CFLAGS']    = SCons.Util.CLVar('')
     env['CCCOM']     = '$CC -o $TARGET -c $CFLAGS $CCFLAGS $_CCCOMCOM $SOURCES'
     env['SHCC']      = '$CC'
@@ -93,7 +96,7 @@ def generate(env):
     env['CFILESUFFIX'] = '.c'
 
 def exists(env):
-    return env.Detect('cc')
+    return env.Detect(env.get('CC', compilers))
 
 # Local Variables:
 # tab-width:4

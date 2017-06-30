@@ -6,7 +6,7 @@ files.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -28,7 +28,7 @@ files.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from __future__ import division
 
-__revision__ = "src/engine/SCons/Script/SConscript.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Script/SConscript.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import SCons
 import SCons.Action
@@ -51,16 +51,6 @@ import os.path
 import re
 import sys
 import traceback
-
-# The following variables used to live in this module.  Some
-# SConscript files out there may have referred to them directly as
-# SCons.Script.SConscript.*.  This is now supported by some special
-# handling towards the bottom of the SConscript.__init__.py module.
-#Arguments = {}
-#ArgList = []
-#BuildTargets = TargetList()
-#CommandLineTargets = []
-#DefaultTargets = []
 
 class SConscriptReturn(Exception):
     pass
@@ -265,7 +255,7 @@ def _SConscript(fs, *files, **kw):
                             call_stack[-1].globals.update({__file__:old_file})
                 else:
                     SCons.Warnings.warn(SCons.Warnings.MissingSConscriptWarning,
-                             "Ignoring missing SConscript '%s'" % f.path)
+                             "Ignoring missing SConscript '%s'" % f.get_internal_path())
 
         finally:
             SCons.Script.sconscript_reading = SCons.Script.sconscript_reading - 1
@@ -438,7 +428,7 @@ class SConsEnvironment(SCons.Environment.Base):
                     fname = fn.get_path(src_dir)
                     files = [os.path.join(str(variant_dir), fname)]
                 else:
-                    files = [fn.abspath]
+                    files = [fn.get_abspath()]
                 kw['src_dir'] = variant_dir
             self.fs.VariantDir(variant_dir, src_dir, duplicate)
 
@@ -446,7 +436,7 @@ class SConsEnvironment(SCons.Environment.Base):
 
     #
     # Public methods of an SConsEnvironment.  These get
-    # entry points in the global name space so they can be called
+    # entry points in the global namespace so they can be called
     # as global functions.
     #
 
@@ -461,6 +451,11 @@ class SConsEnvironment(SCons.Environment.Base):
 
     def EnsureSConsVersion(self, major, minor, revision=0):
         """Exit abnormally if the SCons version is not late enough."""
+        # split string to avoid replacement during build process
+        if SCons.__version__ == '__' + 'VERSION__':
+            SCons.Warnings.warn(SCons.Warnings.DevelopmentVersionWarning,
+                "EnsureSConsVersion is ignored for development version")
+            return
         scons_ver = self._get_major_minor_revision(SCons.__version__)
         if scons_ver < (major, minor, revision):
             if revision:
@@ -494,9 +489,9 @@ class SConsEnvironment(SCons.Environment.Base):
         name = self.subst(name)
         return SCons.Script.Main.GetOption(name)
 
-    def Help(self, text):
+    def Help(self, text, append=False):
         text = self.subst(text, raw=1)
-        SCons.Script.HelpFunction(text)
+        SCons.Script.HelpFunction(text, append=append)
 
     def Import(self, *vars):
         try:

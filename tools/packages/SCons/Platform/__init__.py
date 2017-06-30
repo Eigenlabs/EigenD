@@ -12,7 +12,7 @@ environment.  Consequently, we'll examine both sys.platform and os.name
 (and anything else that might come in to play) in order to return some
 specification which is unique enough for our purposes.
 
-Note that because this subsysem just *selects* a callable that can
+Note that because this subsystem just *selects* a callable that can
 modify a construction environment, it's possible for people to define
 their own "platform specification" in an arbitrary callable function.
 No one needs to use or tie in to this subsystem in order to roll
@@ -20,7 +20,7 @@ their own platform definition.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 # 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -42,7 +42,7 @@ their own platform definition.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Platform/__init__.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Platform/__init__.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import SCons.compat
 
@@ -139,7 +139,7 @@ class TempFileMunge(object):
 
     Example usage:
     env["TEMPFILE"] = TempFileMunge
-    env["LINKCOM"] = "${TEMPFILE('$LINK $TARGET $SOURCES')}"
+    env["LINKCOM"] = "${TEMPFILE('$LINK $TARGET $SOURCES','$LINKCOMSTR')}"
 
     By default, the name of the temporary file used begins with a
     prefix of '@'.  This may be configred for other tool chains by
@@ -148,8 +148,9 @@ class TempFileMunge(object):
     env["TEMPFILEPREFIX"] = '-@'        # diab compiler
     env["TEMPFILEPREFIX"] = '-via'      # arm tool chain
     """
-    def __init__(self, cmd):
+    def __init__(self, cmd, cmdstr = None):
         self.cmd = cmd
+        self.cmdstr = cmdstr
 
     def __call__(self, target, source, env, for_signature):
         if for_signature:
@@ -173,9 +174,18 @@ class TempFileMunge(object):
         length = 0
         for c in cmd:
             length += len(c)
+        length += len(cmd) - 1
         if length <= maxline:
             return self.cmd
 
+        # Check if we already created the temporary file for this target
+        # It should have been previously done by Action.strfunction() call
+        node = target[0] if SCons.Util.is_List(target) else target
+        cmdlist = getattr(node.attributes, 'tempfile_cmdlist', None) \
+                    if node is not None else None
+        if cmdlist is not None : 
+            return cmdlist
+        
         # We do a normpath because mktemp() has what appears to be
         # a bug in Windows that will use a forward slash as a path
         # delimiter.  Windows's link mistakes that for a command line
@@ -187,7 +197,7 @@ class TempFileMunge(object):
         (fd, tmp) = tempfile.mkstemp('.lnk', text=True)
         native_tmp = SCons.Util.get_native_path(os.path.normpath(tmp))
 
-        if env['SHELL'] and env['SHELL'] == 'sh':
+        if env.get('SHELL',None) == 'sh':
             # The sh shell will try to escape the backslashes in the
             # path, so unescape them.
             native_tmp = native_tmp.replace('\\', r'\\\\')
@@ -223,9 +233,22 @@ class TempFileMunge(object):
         # purity get in the way of just being helpful, so we'll
         # reach into SCons.Action directly.
         if SCons.Action.print_actions:
-            print("Using tempfile "+native_tmp+" for command line:\n"+
-                  str(cmd[0]) + " " + " ".join(args))
-        return [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
+            cmdstr = env.subst(self.cmdstr, SCons.Subst.SUBST_RAW, target, 
+                               source) if self.cmdstr is not None else ''
+            # Print our message only if XXXCOMSTR returns an empty string
+            if len(cmdstr) == 0 :
+                print("Using tempfile "+native_tmp+" for command line:\n"+
+                      str(cmd[0]) + " " + " ".join(args))
+            
+        # Store the temporary file command list into the target Node.attributes 
+        # to avoid creating two temporary files one for print and one for execute.
+        cmdlist = [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
+        if node is not None:
+            try :
+                setattr(node.attributes, 'tempfile_cmdlist', cmdlist)
+            except AttributeError:
+                pass
+        return cmdlist
     
 def Platform(name = platform_default()):
     """Select a canned Platform specification.

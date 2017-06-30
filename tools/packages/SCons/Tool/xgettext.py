@@ -3,7 +3,7 @@
 Tool specific initialization of `xgettext` tool.
 """
 
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 # 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -24,7 +24,7 @@ Tool specific initialization of `xgettext` tool.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__revision__ = "src/engine/SCons/Tool/xgettext.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/xgettext.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 #############################################################################
 class _CmdRunner(object):
@@ -76,7 +76,7 @@ def _update_pot_file(target, source, env):
   nop = lambda target, source, env : 0
 
   # Save scons cwd and os cwd (NOTE: they may be different. After the job, we
-  # revert ech one to its original state).
+  # revert each one to its original state).
   save_cwd = env.fs.getcwd()
   save_os_cwd = os.getcwd()
   chdir = target[0].dir
@@ -134,7 +134,7 @@ def _update_pot_file(target, source, env):
       explain = "new file"
   if needs_update:
     # Print message employing SCons.Action.Action for that.
-    msg = "Writting " + repr(str(target[0])) + " (" + explain + ")"
+    msg = "Writing " + repr(str(target[0])) + " (" + explain + ")"
     env.Execute(SCons.Action.Action(nop, msg))
     f = open(str(target[0]),"w")
     f.write(new_content)
@@ -142,7 +142,7 @@ def _update_pot_file(target, source, env):
     return 0
   else:
     # Print message employing SCons.Action.Action for that.
-    msg = "Not writting " + repr(str(target[0])) + " (" + explain + ")"
+    msg = "Not writing " + repr(str(target[0])) + " (" + explain + ")"
     env.Execute(SCons.Action.Action(nop, msg))
     return 0 
 #############################################################################

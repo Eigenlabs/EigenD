@@ -5,7 +5,7 @@ Stuff for processing Fortran, common to all fortran dialects.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@ Stuff for processing Fortran, common to all fortran dialects.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/FortranCommon.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/FortranCommon.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import re
 import os.path
@@ -247,6 +247,21 @@ def add_f03_to_env(env):
     DialectAddToEnv(env, "F03", F03Suffixes, F03PPSuffixes,
                     support_module = 1)
 
+def add_f08_to_env(env):
+    """Add Builders and construction variables for f08 to an Environment."""
+    try:
+        F08Suffixes = env['F08FILESUFFIXES']
+    except KeyError:
+        F08Suffixes = ['.f08']
+
+    try:
+        F08PPSuffixes = env['F08PPFILESUFFIXES']
+    except KeyError:
+        F08PPSuffixes = []
+
+    DialectAddToEnv(env, "F08", F08Suffixes, F08PPSuffixes,
+                    support_module = 1)
+
 def add_all_to_env(env):
     """Add builders and construction variables for all supported fortran
     dialects."""
@@ -255,6 +270,7 @@ def add_all_to_env(env):
     add_f90_to_env(env)
     add_f95_to_env(env)
     add_f03_to_env(env)
+    add_f08_to_env(env)
 
 # Local Variables:
 # tab-width:4

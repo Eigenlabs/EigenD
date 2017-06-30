@@ -76,7 +76,7 @@ way for wrapping up the functions.
 
 """
 
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -97,9 +97,7 @@ way for wrapping up the functions.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__revision__ = "src/engine/SCons/Action.py  2014/03/02 14:18:15 garyo"
-
-import SCons.compat
+__revision__ = "src/engine/SCons/Action.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import dis
 import os
@@ -112,7 +110,6 @@ import subprocess
 import SCons.Debug
 from SCons.Debug import logInstanceCreation
 import SCons.Errors
-import SCons.Executor
 import SCons.Util
 import SCons.Subst
 
@@ -238,11 +235,7 @@ def _code_contents(code):
     # The code contents depends on the number of local variables
     # but not their actual names.
     contents.append("%s,%s" % (code.co_argcount, len(code.co_varnames)))
-    try:
-        contents.append(",%s,%s" % (len(code.co_cellvars), len(code.co_freevars)))
-    except AttributeError:
-        # Older versions of Python do not support closures.
-        contents.append(",0,0")
+    contents.append(",%s,%s" % (len(code.co_cellvars), len(code.co_freevars)))
 
     # The code contents depends on any constants accessed by the
     # function. Note that we have to call _object_contents on each
@@ -279,11 +272,7 @@ def _function_contents(func):
         contents.append(',()')
 
     # The function contents depends on the closure captured cell values.
-    try:
-        closure = func.func_closure or []
-    except AttributeError:
-        # Older versions of Python do not support closures.
-        closure = []
+    closure = func.func_closure or []
 
     #xxx = [_object_contents(x.cell_contents) for x in closure]
     try:
@@ -337,7 +326,7 @@ def _do_create_keywords(args, kw):
                 'You must either pass a string or a callback which '
                 'accepts (target, source, env) as parameters.')
         if len(args) > 1:
-            kw['varlist'] = args[1:] + kw['varlist']
+            kw['varlist'] = tuple(SCons.Util.flatten(args[1:])) + kw['varlist']
     if kw.get('strfunction', _null) is not _null \
                       and kw.get('cmdstr', _null) is not _null:
         raise SCons.Errors.UserError(
@@ -357,21 +346,6 @@ def _do_create_action(act, kw):
     if isinstance(act, ActionBase):
         return act
 
-    if is_List(act):
-        return CommandAction(act, **kw)
-
-    if callable(act):
-        try:
-            gen = kw['generator']
-            del kw['generator']
-        except KeyError:
-            gen = 0
-        if gen:
-            action_type = CommandGeneratorAction
-        else:
-            action_type = FunctionAction
-        return action_type(act, kw)
-
     if is_String(act):
         var=SCons.Util.get_environment_var(act)
         if var:
@@ -388,6 +362,22 @@ def _do_create_action(act, kw):
         # The list of string commands may include a LazyAction, so we
         # reprocess them via _do_create_list_action.
         return _do_create_list_action(commands, kw)
+    
+    if is_List(act):
+        return CommandAction(act, **kw)
+
+    if callable(act):
+        try:
+            gen = kw['generator']
+            del kw['generator']
+        except KeyError:
+            gen = 0
+        if gen:
+            action_type = CommandGeneratorAction
+        else:
+            action_type = FunctionAction
+        return action_type(act, kw)
+
     # Catch a common error case with a nice message:
     if isinstance(act, int) or isinstance(act, float):
         raise TypeError("Don't know how to create an Action from a number (%s)"%act)
@@ -542,7 +532,7 @@ class _ActionAction(ActionBase):
         if chdir:
             save_cwd = os.getcwd()
             try:
-                chdir = str(chdir.abspath)
+                chdir = str(chdir.get_abspath())
             except AttributeError:
                 if not is_String(chdir):
                     if executor:
@@ -679,12 +669,13 @@ def _subproc(scons_env, cmd, error = 'ignore', **kw):
         # return a dummy Popen instance that only returns error
         class dummyPopen(object):
             def __init__(self, e): self.exception = e
-            def communicate(self): return ('','')
+            def communicate(self,input=None): return ('','')
             def wait(self): return -self.exception.errno
             stdin = None
             class f(object):
                 def read(self): return ''
                 def readline(self): return ''
+                def __iter__(self): return iter(())
             stdout = stderr = f()
         return dummyPopen(e)
 
@@ -947,7 +938,6 @@ class LazyAction(CommandGeneratorAction, CommandAction):
 
     def __init__(self, var, kw):
         if SCons.Debug.track_instances: logInstanceCreation(self, 'Action.LazyAction')
-        #FUTURE CommandAction.__init__(self, '${'+var+'}', **kw)
         CommandAction.__init__(self, '${'+var+'}', **kw)
         self.var = SCons.Util.to_String(var)
         self.gen_kw = kw

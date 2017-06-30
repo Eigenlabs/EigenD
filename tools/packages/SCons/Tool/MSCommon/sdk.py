@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -19,9 +19,9 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
 
-__revision__ = "src/engine/SCons/Tool/MSCommon/sdk.py  2014/03/02 14:18:15 garyo"
+
+__revision__ = "src/engine/SCons/Tool/MSCommon/sdk.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 __doc__ = """Module to detect the Platform/Windows SDK
 
@@ -80,7 +80,7 @@ class SDKDefinition(object):
 
         try:
             sdk_dir = common.read_reg(hkey)
-        except WindowsError, e:
+        except SCons.Util.WinError, e:
             debug('find_sdk_dir(): no SDK registry key %s' % repr(hkey))
             return None
 
@@ -168,10 +168,30 @@ SDK70VCSetupScripts =    { 'x86'      : r'bin\vcvars32.bat',
 #
 # The first SDK found in the list is the one used by default if there
 # are multiple SDKs installed.  Barring good reasons to the contrary,
-# this means we should list SDKs with from most recent to oldest.
+# this means we should list SDKs from most recent to oldest.
 #
 # If you update this list, update the documentation in Tool/mssdk.xml.
 SupportedSDKList = [
+    WindowsSDK('7.1',
+               sanity_check_file=r'bin\SetEnv.Cmd',
+               include_subdir='include',
+               lib_subdir={
+                   'x86'       : ['lib'],
+                   'x86_64'    : [r'lib\x64'],
+                   'ia64'      : [r'lib\ia64'],
+               },
+               vc_setup_scripts = SDK70VCSetupScripts,
+              ),
+    WindowsSDK('7.0A',
+               sanity_check_file=r'bin\SetEnv.Cmd',
+               include_subdir='include',
+               lib_subdir={
+                   'x86'       : ['lib'],
+                   'x86_64'    : [r'lib\x64'],
+                   'ia64'      : [r'lib\ia64'],
+               },
+               vc_setup_scripts = SDK70VCSetupScripts,
+              ),
     WindowsSDK('7.0',
                sanity_check_file=r'bin\SetEnv.Cmd',
                include_subdir='include',
@@ -286,29 +306,6 @@ def set_sdk_by_directory(env, sdk_dir):
     for variable, directory in env_tuple_list:
         env.PrependENVPath(variable, directory)
 
-
-# TODO(sgk):  currently unused; remove?
-def get_cur_sdk_dir_from_reg():
-    """Try to find the platform sdk directory from the registry.
-
-    Return None if failed or the directory does not exist"""
-    if not SCons.Util.can_read_reg:
-        debug('SCons cannot read registry')
-        return None
-
-    try:
-        val = common.read_reg(_CURINSTALLED_SDK_HKEY_ROOT)
-        debug("Found current sdk dir in registry: %s" % val)
-    except WindowsError, e:
-        debug("Did not find current sdk in registry")
-        return None
-
-    if not os.path.exists(val):
-        debug("Current sdk dir %s not on fs" % val)
-        return None
-
-    return val
-
 def get_sdk_by_version(mssdk):
     if mssdk not in SupportedSDKMap:
         msg = "SDK version %s is not supported" % repr(mssdk)
@@ -323,9 +320,6 @@ def get_default_sdk():
         return None
     return InstalledSDKList[0]
 
-
-
-
 def mssdk_setup_env(env):
     debug('sdk.py:mssdk_setup_env()')
     if 'MSSDK_DIR' in env:
@@ -337,10 +331,13 @@ def mssdk_setup_env(env):
     elif 'MSSDK_VERSION' in env:
         sdk_version = env['MSSDK_VERSION']
         if sdk_version is None:
-            msg = "SDK version %s is not installed" % repr(mssdk)
+            msg = "SDK version is specified as None"  
             raise SCons.Errors.UserError(msg)
         sdk_version = env.subst(sdk_version)
         mssdk = get_sdk_by_version(sdk_version)
+        if mssdk is None:
+            msg = "SDK version %s is not installed" % sdk_version 
+            raise SCons.Errors.UserError(msg)
         sdk_dir = mssdk.get_sdk_dir()
         debug('sdk.py:mssdk_setup_env: Using MSSDK_VERSION:%s'%sdk_dir)
     elif 'MSVS_VERSION' in env:

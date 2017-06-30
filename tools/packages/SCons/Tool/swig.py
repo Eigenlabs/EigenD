@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,7 +31,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/swig.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/swig.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import os.path
 import re
@@ -39,9 +39,13 @@ import subprocess
 
 import SCons.Action
 import SCons.Defaults
-import SCons.Scanner
 import SCons.Tool
 import SCons.Util
+import SCons.Node
+
+verbose = False
+
+swigs = [ 'swig', 'swig3.0', 'swig2.0' ]
 
 SwigAction = SCons.Action.Action('$SWIGCOM', '$SWIGCOMSTR')
 
@@ -117,24 +121,32 @@ def _swigEmitter(target, source, env):
             if outdir:
                  java_files = [os.path.join(outdir, j) for j in java_files]
             java_files = list(map(env.fs.File, java_files))
+            def t_from_s(t, p, s, x):
+                return t.dir
+            tsm = SCons.Node._target_from_source_map
+            tkey = len(tsm)
+            tsm[tkey] = t_from_s
             for jf in java_files:
-                t_from_s = lambda t, p, s, x: t.dir
-                SCons.Util.AddMethod(jf, t_from_s, 'target_from_source')
+                jf._func_target_from_source = tkey
             target.extend(java_files)
     return (target, source)
 
-def _get_swig_version(env):
+def _get_swig_version(env, swig):
     """Run the SWIG command line tool to get and return the version number"""
-    pipe = SCons.Action._subproc(env, [env['SWIG'], '-version'],
+    swig = env.subst(swig)
+    pipe = SCons.Action._subproc(env, SCons.Util.CLVar(swig) + ['-version'],
                                  stdin = 'devnull',
                                  stderr = 'devnull',
                                  stdout = subprocess.PIPE)
     if pipe.wait() != 0: return
 
     out = pipe.stdout.read()
-    match = re.search(r'SWIG Version\s+(\S+)$', out, re.MULTILINE)
+    match = re.search(r'SWIG Version\s+(\S+).*', out, re.MULTILINE)
     if match:
+        if verbose: print "Version is:%s"%match.group(1)
         return match.group(1)
+    else:
+        if verbose: print "Unable to detect version: [%s]"%out
 
 def generate(env):
     """Add Builders and construction variables for swig to an Environment."""
@@ -155,8 +167,9 @@ def generate(env):
     java_file.add_action('.i', SwigAction)
     java_file.add_emitter('.i', _swigEmitter)
 
-    env['SWIG']              = 'swig'
-    env['SWIGVERSION']       = _get_swig_version(env)
+    if 'SWIG' not in env:
+        env['SWIG'] = env.Detect(swigs) or swigs[0]
+    env['SWIGVERSION']       = _get_swig_version(env, env['SWIG'])
     env['SWIGFLAGS']         = SCons.Util.CLVar('')
     env['SWIGDIRECTORSUFFIX'] = '_wrap.h'
     env['SWIGCFILESUFFIX']   = '_wrap$CFILESUFFIX'
@@ -168,13 +181,9 @@ def generate(env):
     env['_SWIGINCFLAGS']     = '$( ${_concat(SWIGINCPREFIX, SWIGPATH, SWIGINCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)'
     env['SWIGCOM']           = '$SWIG -o $TARGET ${_SWIGOUTDIR} ${_SWIGINCFLAGS} $SWIGFLAGS $SOURCES'
 
-    expr = '^[ \t]*%[ \t]*(?:include|import|extern)[ \t]*(<|"?)([^>\s"]+)(?:>|"?)'
-    scanner = SCons.Scanner.ClassicCPP("SWIGScan", ".i", "SWIGPATH", expr)
-
-    env.Append(SCANNERS = scanner)
-
 def exists(env):
-    return env.Detect(['swig'])
+    swig = env.get('SWIG') or env.Detect(['swig'])
+    return swig
 
 # Local Variables:
 # tab-width:4

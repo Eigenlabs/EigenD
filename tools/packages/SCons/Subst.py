@@ -5,7 +5,7 @@ SCons string substitution.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -26,7 +26,7 @@ SCons string substitution.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__revision__ = "src/engine/SCons/Subst.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Subst.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import collections
 import re
@@ -344,7 +344,6 @@ _remove = re.compile(r'\$\([^\$]*(\$[^\)][^\$]*)*\$\)')
 _regex_remove = [ _rm, None, _remove ]
 
 def _rm_list(list):
-    #return [ l for l in list if not l in ('$(', '$)') ]
     return [l for l in list if not l in ('$(', '$)')]
 
 def _remove_list(list):
@@ -580,8 +579,6 @@ def scons_subst(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={
 
     return result
 
-#Subst_List_Strings = {}
-
 def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gvars={}, lvars={}, conv=None):
     """Substitute construction variables in a string (or list or other
     object) and separate the arguments into a command list.
@@ -590,12 +587,6 @@ def scons_subst_list(strSubst, env, mode=SUBST_RAW, target=None, source=None, gv
     substitutions within strings, so see that function instead
     if that's what you're looking for.
     """
-#    try:
-#        Subst_List_Strings[strSubst] = Subst_List_Strings[strSubst] + 1
-#    except KeyError:
-#        Subst_List_Strings[strSubst] = 1
-#    import SCons.Debug
-#    SCons.Debug.caller_trace(1)
     class ListSubber(collections.UserList):
         """A class to construct the results of a scons_subst_list() call.
 

@@ -11,7 +11,7 @@ Usage example:
   Examples:
       x11=no   (disables X11 support)
       x11=yes  (will search for the package installation dir)
-      x11=/usr/local/X11 (will check this path for existance)
+      x11=/usr/local/X11 (will check this path for existence)
 
   To replace autoconf's --with-xxx=yyy 
 
@@ -28,7 +28,7 @@ Usage example:
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -50,7 +50,7 @@ Usage example:
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Variables/PackageVariable.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Variables/PackageVariable.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 __all__ = ['PackageVariable',]
 
@@ -70,10 +70,10 @@ def _converter(val):
 
 
 def _validator(key, val, env, searchfunc):
-    # NB: searchfunc is currenty undocumented and unsupported
+    # NB: searchfunc is currently undocumented and unsupported
     """
     """
-    # todo: write validator, check for path
+    # TODO write validator, check for path
     import os
     if env[key] is True:
         if searchfunc:
@@ -84,14 +84,14 @@ def _validator(key, val, env, searchfunc):
 
 
 def PackageVariable(key, help, default, searchfunc=None):
-    # NB: searchfunc is currenty undocumented and unsupported
+    # NB: searchfunc is currently undocumented and unsupported
     """
     The input parameters describe a 'package list' option, thus they
     are returned with the correct converter and validator appended. The
     result is usable for input to opts.Add() .
 
     A 'package list' option may either be 'all', 'none' or a list of
-    package names (seperated by space).
+    package names (separated by space).
     """
     help = '\n    '.join(
         (help, '( yes | no | /path/to/%s )' % key))

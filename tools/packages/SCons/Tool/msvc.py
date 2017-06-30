@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,7 +31,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/msvc.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/msvc.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import os.path
 import re
@@ -224,17 +224,17 @@ def generate(env):
     env['CC']         = 'cl'
     env['CCFLAGS']    = SCons.Util.CLVar('/nologo')
     env['CFLAGS']     = SCons.Util.CLVar('')
-    env['CCCOM']      = '${TEMPFILE("$CC $_MSVC_OUTPUT_FLAG /c $CHANGED_SOURCES $CFLAGS $CCFLAGS $_CCCOMCOM")}'
+    env['CCCOM']      = '${TEMPFILE("$CC $_MSVC_OUTPUT_FLAG /c $CHANGED_SOURCES $CFLAGS $CCFLAGS $_CCCOMCOM","$CCCOMSTR")}'
     env['SHCC']       = '$CC'
     env['SHCCFLAGS']  = SCons.Util.CLVar('$CCFLAGS')
     env['SHCFLAGS']   = SCons.Util.CLVar('$CFLAGS')
-    env['SHCCCOM']    = '${TEMPFILE("$SHCC $_MSVC_OUTPUT_FLAG /c $CHANGED_SOURCES $SHCFLAGS $SHCCFLAGS $_CCCOMCOM")}'
+    env['SHCCCOM']    = '${TEMPFILE("$SHCC $_MSVC_OUTPUT_FLAG /c $CHANGED_SOURCES $SHCFLAGS $SHCCFLAGS $_CCCOMCOM","$SHCCCOMSTR")}'
     env['CXX']        = '$CC'
     env['CXXFLAGS']   = SCons.Util.CLVar('$( /TP $)')
-    env['CXXCOM']     = '${TEMPFILE("$CXX $_MSVC_OUTPUT_FLAG /c $CHANGED_SOURCES $CXXFLAGS $CCFLAGS $_CCCOMCOM")}'
+    env['CXXCOM']     = '${TEMPFILE("$CXX $_MSVC_OUTPUT_FLAG /c $CHANGED_SOURCES $CXXFLAGS $CCFLAGS $_CCCOMCOM","$CXXCOMSTR")}'
     env['SHCXX']      = '$CXX'
     env['SHCXXFLAGS'] = SCons.Util.CLVar('$CXXFLAGS')
-    env['SHCXXCOM']   = '${TEMPFILE("$SHCXX $_MSVC_OUTPUT_FLAG /c $CHANGED_SOURCES $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM")}'
+    env['SHCXXCOM']   = '${TEMPFILE("$SHCXX $_MSVC_OUTPUT_FLAG /c $CHANGED_SOURCES $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM","$SHCXXCOMSTR")}'
     env['CPPDEFPREFIX']  = '/D'
     env['CPPDEFSUFFIX']  = ''
     env['INCPREFIX']  = '/I'

@@ -10,7 +10,7 @@ Environment
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,7 +31,7 @@ Environment
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__revision__ = "src/engine/SCons/Environment.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Environment.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 
 import copy
@@ -365,9 +365,6 @@ class SubstitutionEnvironment(object):
     class actually becomes useful.)
     """
 
-    if SCons.Memoize.use_memoizer:
-        __metaclass__ = SCons.Memoize.Memoized_Metaclass
-
     def __init__(self, **kw):
         """Initialization of an underlying SubstitutionEnvironment class.
         """
@@ -615,7 +612,7 @@ class SubstitutionEnvironment(object):
 
     def Override(self, overrides):
         """
-        Produce a modified environment whose variables are overriden by
+        Produce a modified environment whose variables are overridden by
         the overrides dictionaries.  "overrides" is a dictionary that
         will override the variables of this environment.
 
@@ -719,6 +716,9 @@ class SubstitutionEnvironment(object):
                        t = ('-isysroot', arg)
                        dict['CCFLAGS'].append(t)
                        dict['LINKFLAGS'].append(t)
+                   elif append_next_arg_to == '-isystem':
+                       t = ('-isystem', arg)
+                       dict['CCFLAGS'].append(t)
                    elif append_next_arg_to == '-arch':
                        t = ('-arch', arg)
                        dict['CCFLAGS'].append(t)
@@ -791,7 +791,7 @@ class SubstitutionEnvironment(object):
                 elif arg[0] == '+':
                     dict['CCFLAGS'].append(arg)
                     dict['LINKFLAGS'].append(arg)
-                elif arg in ['-include', '-isysroot', '-arch']:
+                elif arg in ['-include', '-isysroot', '-isystem', '-arch']:
                     append_next_arg_to = arg
                 else:
                     dict['CCFLAGS'].append(arg)
@@ -857,25 +857,6 @@ class SubstitutionEnvironment(object):
             self[key] = t
         return self
 
-#     def MergeShellPaths(self, args, prepend=1):
-#         """
-#         Merge the dict in args into the shell environment in env['ENV'].
-#         Shell path elements are appended or prepended according to prepend.
-
-#         Uses Pre/AppendENVPath, so it always appends or prepends uniquely.
-
-#         Example: env.MergeShellPaths({'LIBPATH': '/usr/local/lib'})
-#         prepends /usr/local/lib to env['ENV']['LIBPATH'].
-#         """
-
-#         for pathname, pathval in args.items():
-#             if not pathval:
-#                 continue
-#             if prepend:
-#                 self.PrependENVPath(pathname, pathval)
-#             else:
-#                 self.AppendENVPath(pathname, pathval)
-
 
 def default_decide_source(dependency, target, prev_ni):
     f = SCons.Defaults.DefaultEnvironment().decide_source
@@ -898,8 +879,6 @@ class Base(SubstitutionEnvironment):
     is created are construction variables used to initialize the
     Environment.
     """
-
-    memoizer_counters = []
 
     #######################################################################
     # This is THE class for interacting with the SCons build engine,
@@ -1068,8 +1047,7 @@ class Base(SubstitutionEnvironment):
             factory = getattr(self.fs, name)
         return factory
 
-    memoizer_counters.append(SCons.Memoize.CountValue('_gsm'))
-
+    @SCons.Memoize.CountMethodCall
     def _gsm(self):
         try:
             return self._memo['_gsm']
@@ -1206,7 +1184,13 @@ class Base(SubstitutionEnvironment):
                     # based on what we think the value looks like.
                     if SCons.Util.is_List(val):
                         if key == 'CPPDEFINES':
-                            orig = orig.items()
+                            tmp = []
+                            for (k, v) in orig.iteritems():
+                                if v is not None:
+                                    tmp.append((k, v))
+                                else:
+                                    tmp.append((k,))
+                            orig = tmp
                             orig += val
                             self._dict[key] = orig
                         else:
@@ -1286,8 +1270,15 @@ class Base(SubstitutionEnvironment):
                         else:
                             tmp.append((i,))
                     val = tmp
+                    # Construct a list of (key, value) tuples.
                     if SCons.Util.is_Dict(dk):
-                        dk = dk.items()
+                        tmp = []
+                        for (k, v) in dk.iteritems():
+                            if v is not None:
+                                tmp.append((k, v))
+                            else:
+                                tmp.append((k,))
+                        dk = tmp
                     elif SCons.Util.is_String(dk):
                         dk = [(dk,)]
                     else:
@@ -1327,8 +1318,15 @@ class Base(SubstitutionEnvironment):
                             else:
                                 tmp.append((i,))
                         dk = tmp
+                        # Construct a list of (key, value) tuples.
                         if SCons.Util.is_Dict(val):
-                            val = val.items()
+                            tmp = []
+                            for (k, v) in val.iteritems():
+                                if v is not None:
+                                    tmp.append((k, v))
+                                else:
+                                    tmp.append((k,))
+                            val = tmp
                         elif SCons.Util.is_String(val):
                             val = [(val,)]
                         if delete_existing:
@@ -1351,7 +1349,13 @@ class Base(SubstitutionEnvironment):
                         if SCons.Util.is_String(dk):
                             dk = [dk]
                         elif SCons.Util.is_Dict(dk):
-                            dk = dk.items()
+                            tmp = []
+                            for (k, v) in dk.iteritems():
+                                if v is not None:
+                                    tmp.append((k, v))
+                                else:
+                                    tmp.append((k,))
+                            dk = tmp
                         if SCons.Util.is_String(val):
                             if val in dk:
                                 val = []
@@ -1378,10 +1382,8 @@ class Base(SubstitutionEnvironment):
         (like a function).  There are no references to any mutable
         objects in the original Environment.
         """
-        try:
-            builders = self._dict['BUILDERS']
-        except KeyError:
-            pass
+
+        builders = self._dict.get('BUILDERS', {})
 
         clone = copy.copy(self)
         # BUILDERS is not safe to do a simple copy
@@ -1501,8 +1503,8 @@ class Base(SubstitutionEnvironment):
 
     def Dump(self, key = None):
         """
-        Using the standard Python pretty printer, dump the contents of the
-        scons build environment to stdout.
+        Using the standard Python pretty printer, return the contents of the
+        scons build environment as a string.
 
         If the key passed in is anything other than None, then that will
         be used as an index into the build environment dictionary and
@@ -1775,7 +1777,7 @@ class Base(SubstitutionEnvironment):
         self.Replace(**kw)
 
     def _find_toolpath_dir(self, tp):
-        return self.fs.Dir(self.subst(tp)).srcnode().abspath
+        return self.fs.Dir(self.subst(tp)).srcnode().get_abspath()
 
     def Tool(self, tool, toolpath=None, **kw):
         if SCons.Util.is_String(tool):
@@ -1803,8 +1805,8 @@ class Base(SubstitutionEnvironment):
                 pass
         elif SCons.Util.is_String(pathext):
             pathext = self.subst(pathext)
-        prog = self.subst(prog)
-        path = SCons.Util.WhereIs(prog, path, pathext, reject)
+        prog = SCons.Util.CLVar(self.subst(prog)) # support "program --with-args"
+        path = SCons.Util.WhereIs(prog[0], path, pathext, reject)
         if path: return path
         return None
 
@@ -2053,8 +2055,8 @@ class Base(SubstitutionEnvironment):
         else:
             return result[0]
 
-    def Glob(self, pattern, ondisk=True, source=False, strings=False):
-        return self.fs.Glob(self.subst(pattern), ondisk, source, strings)
+    def Glob(self, pattern, ondisk=True, source=False, strings=False, exclude=None):
+        return self.fs.Glob(self.subst(pattern), ondisk, source, strings, exclude)
 
     def Ignore(self, target, dependency):
         """Ignore a dependency."""
@@ -2149,7 +2151,7 @@ class Base(SubstitutionEnvironment):
     def SourceCode(self, entry, builder):
         """Arrange for a source code builder for (part of) a tree."""
         msg = """SourceCode() has been deprecated and there is no replacement.
-\tIf you need this function, please contact dev@scons.tigris.org."""
+\tIf you need this function, please contact scons-dev@scons.org"""
         SCons.Warnings.warn(SCons.Warnings.DeprecatedSourceCodeWarning, msg)
         entries = self.arg2nodes(entry, self.fs.Entry)
         for entry in entries:

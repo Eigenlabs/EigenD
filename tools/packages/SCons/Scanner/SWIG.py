@@ -1,5 +1,11 @@
+"""SCons.Scanner.SWIG
+
+This module implements the dependency scanner for SWIG code. 
+
+"""
+
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,22 +27,16 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__doc__ = """
-io compatibility module for older (pre-2.6) Python versions
+__revision__ = "src/engine/SCons/Scanner/SWIG.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
-This does not not NOT (repeat, *NOT*) provide complete io
-functionality.  It only wraps the portions of io functionality used
-by SCons, in an interface that looks enough like io for our purposes.
-"""
+import SCons.Scanner
 
-__revision__ = "src/engine/SCons/compat/_scons_io.py  2014/03/02 14:18:15 garyo"
+SWIGSuffixes = [ '.i' ]
 
-# Use the "imp" module to protect the imports below from fixers.
-import imp
-
-_cStringIO = imp.load_module('cStringIO', *imp.find_module('cStringIO'))
-StringIO = _cStringIO.StringIO
-del _cStringIO
+def SWIGScanner():
+    expr = '^[ \t]*%[ \t]*(?:include|import|extern)[ \t]*(<|"?)([^>\s"]+)(?:>|"?)'
+    scanner = SCons.Scanner.ClassicCPP("SWIGScanner", ".i", "SWIGPATH", expr)
+    return scanner
 
 # Local Variables:
 # tab-width:4

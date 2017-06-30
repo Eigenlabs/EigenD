@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,7 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Scanner/Prog.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Scanner/Prog.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import SCons.Node
 import SCons.Node.FS
@@ -38,6 +38,24 @@ def ProgramScanner(**kw):
     ps = SCons.Scanner.Base(scan, "ProgramScanner", **kw)
     return ps
 
+def _subst_libs(env, libs):
+    """
+    Substitute environment variables and split into list.
+    """
+    if SCons.Util.is_String(libs):
+        libs = env.subst(libs)
+        if SCons.Util.is_String(libs):
+            libs = libs.split()
+    elif SCons.Util.is_Sequence(libs):
+        _libs = []
+        for l in libs:
+            _libs += _subst_libs(env, l)
+        libs = _libs
+    else:
+        # libs is an object (Node, for example)
+        libs = [libs]
+    return libs
+
 def scan(node, env, libpath = ()):
     """
     This scanner scans program files for static-library
@@ -50,10 +68,8 @@ def scan(node, env, libpath = ()):
     except KeyError:
         # There are no LIBS in this environment, so just return a null list:
         return []
-    if SCons.Util.is_String(libs):
-        libs = libs.split()
-    else:
-        libs = SCons.Util.flatten(libs)
+
+    libs = _subst_libs(env, libs)
 
     try:
         prefix = env['LIBPREFIXES']
@@ -83,7 +99,6 @@ def scan(node, env, libpath = ()):
     adjustixes = SCons.Util.adjustixes
     for lib in libs:
         if SCons.Util.is_String(lib):
-            lib = env.subst(lib)
             for pref, suf in pairs:
                 l = adjustixes(lib, pref, suf)
                 l = find_file(l, libpath, verbose=print_find_libs)

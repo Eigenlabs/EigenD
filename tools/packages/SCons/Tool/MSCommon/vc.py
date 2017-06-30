@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,11 +30,12 @@
 #   * test on 64 bits XP +  VS 2005 (and VS 6 if possible)
 #   * SDK
 #   * Assembly
-__revision__ = "src/engine/SCons/Tool/MSCommon/vc.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/MSCommon/vc.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 __doc__ = """Module for Visual C/C++ detection and configuration.
 """
 import SCons.compat
+import SCons.Util
 
 import os
 import platform
@@ -89,6 +90,7 @@ _ARCH_TO_CANONICAL = {
 _HOST_TARGET_ARCH_TO_BAT_ARCH = {
     ("x86", "x86"): "x86",
     ("x86", "amd64"): "x86_amd64",
+    ("x86", "x86_amd64"): "x86_amd64",
     ("amd64", "x86_amd64"): "x86_amd64", # This is present in (at least) VS2012 express
     ("amd64", "amd64"): "amd64",
     ("amd64", "x86"): "x86",
@@ -131,31 +133,55 @@ def get_host_target(env):
 
     return (host, target,req_target_platform)
 
-_VCVER = ["11.0", "11.0Exp", "10.0", "10.0Exp", "9.0", "9.0Exp","8.0", "8.0Exp","7.1", "7.0", "6.0"]
+# If you update this, update SupportedVSList in Tool/MSCommon/vs.py, and the
+# MSVC_VERSION documentation in Tool/msvc.xml.
+_VCVER = ["14.0", "14.0Exp", "12.0", "12.0Exp", "11.0", "11.0Exp", "10.0", "10.0Exp", "9.0", "9.0Exp","8.0", "8.0Exp","7.1", "7.0", "6.0"]
 
 _VCVER_TO_PRODUCT_DIR = {
-        '11.0': [
-            r'Microsoft\VisualStudio\11.0\Setup\VC\ProductDir'],
-        '11.0Exp' : [
-            r'Microsoft\VCExpress\11.0\Setup\VC\ProductDir'],
-        '10.0': [
-            r'Microsoft\VisualStudio\10.0\Setup\VC\ProductDir'],
-        '10.0Exp' : [
-            r'Microsoft\VCExpress\10.0\Setup\VC\ProductDir'],
-        '9.0': [
-            r'Microsoft\VisualStudio\9.0\Setup\VC\ProductDir'],
-        '9.0Exp' : [
-            r'Microsoft\VCExpress\9.0\Setup\VC\ProductDir'],
-        '8.0': [
-            r'Microsoft\VisualStudio\8.0\Setup\VC\ProductDir'],
-        '8.0Exp': [
-            r'Microsoft\VCExpress\8.0\Setup\VC\ProductDir'],
-        '7.1': [
-            r'Microsoft\VisualStudio\7.1\Setup\VC\ProductDir'],
-        '7.0': [
-            r'Microsoft\VisualStudio\7.0\Setup\VC\ProductDir'],
-        '6.0': [
-            r'Microsoft\VisualStudio\6.0\Setup\Microsoft Visual C++\ProductDir']
+    '14.0' : [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VisualStudio\14.0\Setup\VC\ProductDir')],
+    '14.0Exp' : [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VCExpress\14.0\Setup\VC\ProductDir')],
+    '12.0' : [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VisualStudio\12.0\Setup\VC\ProductDir'),
+        ],
+    '12.0Exp' : [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VCExpress\12.0\Setup\VC\ProductDir'),
+        ],
+    '11.0': [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VisualStudio\11.0\Setup\VC\ProductDir'),
+        ],
+    '11.0Exp' : [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VCExpress\11.0\Setup\VC\ProductDir'),
+        ],
+    '10.0': [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VisualStudio\10.0\Setup\VC\ProductDir'),
+        ],
+    '10.0Exp' : [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VCExpress\10.0\Setup\VC\ProductDir'),
+        ],
+    '9.0': [
+        (SCons.Util.HKEY_CURRENT_USER, r'Microsoft\DevDiv\VCForPython\9.0\installdir',),
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VisualStudio\9.0\Setup\VC\ProductDir',),
+        ],
+    '9.0Exp' : [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VCExpress\9.0\Setup\VC\ProductDir'),
+        ],
+    '8.0': [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VisualStudio\8.0\Setup\VC\ProductDir'),
+        ],
+    '8.0Exp': [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VCExpress\8.0\Setup\VC\ProductDir'),
+        ],
+    '7.1': [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VisualStudio\7.1\Setup\VC\ProductDir'),
+        ],
+    '7.0': [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VisualStudio\7.0\Setup\VC\ProductDir'),
+        ],
+    '6.0': [
+        (SCons.Util.HKEY_LOCAL_MACHINE, r'Microsoft\VisualStudio\6.0\Setup\Microsoft Visual C++\ProductDir'),
+        ]
 }
         
 def msvc_version_to_maj_min(msvc_version):
@@ -205,19 +231,26 @@ def find_vc_pdir(msvc_version):
     If for some reason the requested version could not be found, an
     exception which inherits from VisualCException will be raised."""
     root = 'Software\\'
-    if common.is_win64():
-        root = root + 'Wow6432Node\\'
     try:
         hkeys = _VCVER_TO_PRODUCT_DIR[msvc_version]
     except KeyError:
         debug("Unknown version of MSVC: %s" % msvc_version)
         raise UnsupportedVersion("Unknown version %s" % msvc_version)
 
-    for key in hkeys:
-        key = root + key
+    for hkroot, key in hkeys:
         try:
-            comps = common.read_reg(key)
-        except WindowsError, e:
+            comps = None
+            if common.is_win64():
+                try:
+                    # ordinally at win64, try Wow6432Node first.
+                    comps = common.read_reg(root + 'Wow6432Node\\' + key, hkroot)
+                except SCons.Util.WinError, e:
+                    # at Microsoft Visual Studio for Python 2.7, value is not in Wow6432Node
+                    pass
+            if not comps:
+                # not Win64, or Microsoft Visual Studio for Python 2.7
+                comps = common.read_reg(root + key, hkroot)
+        except SCons.Util.WinError, e:
             debug('find_vc_dir(): no VC registry key %s' % repr(key))
         else:
             debug('find_vc_dir(): found VC in registry: %s' % comps)
@@ -298,8 +331,21 @@ def reset_installed_vcs():
     """Make it try again to find VC.  This is just for the tests."""
     __INSTALLED_VCS_RUN = None
 
+# Running these batch files isn't cheap: most of the time spent in
+# msvs.generate() is due to vcvars*.bat.  In a build that uses "tools='msvs'"
+# in multiple environments, for example:
+#    env1 = Environment(tools='msvs')
+#    env2 = Environment(tools='msvs')
+# we can greatly improve the speed of the second and subsequent Environment
+# (or Clone) calls by memoizing the environment variables set by vcvars*.bat.
+script_env_stdout_cache = {}
 def script_env(script, args=None):
-    stdout = common.get_output(script, args)
+    cache_key = (script, args)
+    stdout = script_env_stdout_cache.get(cache_key, None)
+    if stdout is None:
+        stdout = common.get_output(script, args)
+        script_env_stdout_cache[cache_key] = stdout
+
     # Stupid batch files do not set return code: we take a look at the
     # beginning of the output for an error message instead
     olines = stdout.splitlines()
@@ -416,7 +462,7 @@ def msvc_find_valid_batch_script(env,version):
         if not vc_script and sdk_script:
             debug('vc.py:msvc_find_valid_batch_script() use_script 4: trying sdk script: %s'%(sdk_script))
             try:
-                d = script_env(sdk_script,args=[])
+                d = script_env(sdk_script)
             except BatchFileExecutionError,e:
                 debug('vc.py:msvc_find_valid_batch_script() use_script 5: failed running SDK script %s: Error:%s'%(repr(sdk_script),e))
                 continue

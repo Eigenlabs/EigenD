@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -21,7 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/MSCommon/vs.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/MSCommon/vs.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 __doc__ = """Module to detect Visual Studio and/or Visual C/C++
 """
@@ -52,8 +52,6 @@ class VisualStudio(object):
         self.__dict__.update(kw)
         self._cache = {}
 
-    #
-
     def find_batch_file(self):
         vs_dir = self.get_vs_dir()
         if not vs_dir:
@@ -73,7 +71,7 @@ class VisualStudio(object):
             debug('find_vs_dir():  no installed VC %s' % self.vc_version)
             return None
         return dir
-        
+
     def find_vs_dir_by_reg(self):
         root = 'Software\\'
 
@@ -85,19 +83,19 @@ class VisualStudio(object):
             key = root + key
             try:
                 comps = read_reg(key)
-            except WindowsError, e:
+            except SCons.Util.WinError, e:
                 debug('find_vs_dir_by_reg(): no VS registry key %s' % repr(key))
             else:
                 debug('find_vs_dir_by_reg(): found VS in registry: %s' % comps)
                 return comps
         return None
-    
+
     def find_vs_dir(self):
         """ Can use registry or location of VC to find vs dir
         First try to find by registry, and if that fails find via VC dir
         """
-        
-        
+
+
         if True:
             vs_dir=self.find_vs_dir_by_reg()
             return vs_dir
@@ -115,8 +113,6 @@ class VisualStudio(object):
             debug('find_executable():  %s not on file system' % executable)
             return None
         return executable
-    
-    #
 
     def get_batch_file(self):
         try:
@@ -199,102 +195,118 @@ class VisualStudio(object):
 # good money for in preference to whatever Microsoft makes available
 # for free.
 #
-# If you update this list, update the documentation in Tool/msvs.xml.
+# If you update this list, update _VCVER and _VCVER_TO_PRODUCT_DIR in
+# Tool/MSCommon/vc.py, and the MSVC_VERSION documentation in Tool/msvc.xml.
 
 SupportedVSList = [
-    # Visual Studio 2010
-    # TODO: find the settings, perhaps from someone with a CTP copy?
-    #VisualStudio('TBD',
-    #             hkey_root=r'TBD',
-    #             common_tools_var='TBD',
-    #             executable_path=r'TBD',
-    #             default_dirname='TBD',
-    #),
+    # Visual Studio 2015
+    VisualStudio('14.0',
+                 vc_version='14.0',
+                 sdk_version='10.0A',
+                 hkeys=[r'Microsoft\VisualStudio\14.0\Setup\VS\ProductDir'],
+                 common_tools_var='VS140COMNTOOLS',
+                 executable_path=r'Common7\IDE\devenv.com',
+                 batch_file_path=r'Common7\Tools\vsvars32.bat',
+                 supported_arch=['x86', 'amd64', "arm"],
+    ),
+ 
+    # Visual C++ 2015 Express Edition (for Desktop)
+    VisualStudio('14.0Exp',
+                 vc_version='14.0',
+                 sdk_version='10.0A',
+                 hkeys=[r'Microsoft\VisualStudio\14.0\Setup\VS\ProductDir'],
+                 common_tools_var='VS140COMNTOOLS',
+                 executable_path=r'Common7\IDE\WDExpress.exe',
+                 batch_file_path=r'Common7\Tools\vsvars32.bat',
+                 supported_arch=['x86', 'amd64', "arm"],
+    ),
 
-    # Visual Studio 11
-    # The batch file we look for is in the VC directory,
-    # so the devenv.com executable is up in ..\..\Common7\IDE.
+    # Visual Studio 2013
+    VisualStudio('12.0',
+                 vc_version='12.0',
+                 sdk_version='8.1A',
+                 hkeys=[r'Microsoft\VisualStudio\12.0\Setup\VS\ProductDir'],
+                 common_tools_var='VS120COMNTOOLS',
+                 executable_path=r'Common7\IDE\devenv.com',
+                 batch_file_path=r'Common7\Tools\vsvars32.bat',
+                 supported_arch=['x86', 'amd64'],
+    ),
+
+    # Visual C++ 2013 Express Edition (for Desktop)
+    VisualStudio('12.0Exp',
+                 vc_version='12.0',
+                 sdk_version='8.1A',
+                 hkeys=[r'Microsoft\VisualStudio\12.0\Setup\VS\ProductDir'],
+                 common_tools_var='VS120COMNTOOLS',
+                 executable_path=r'Common7\IDE\WDExpress.exe',
+                 batch_file_path=r'Common7\Tools\vsvars32.bat',
+                 supported_arch=['x86', 'amd64'],
+    ),
+
+    # Visual Studio 2012
     VisualStudio('11.0',
-                 sdk_version='6.1',
+                 sdk_version='8.0A',
                  hkeys=[r'Microsoft\VisualStudio\11.0\Setup\VS\ProductDir'],
                  common_tools_var='VS110COMNTOOLS',
                  executable_path=r'Common7\IDE\devenv.com',
                  batch_file_path=r'Common7\Tools\vsvars32.bat',
-                 default_dirname='Microsoft Visual Studio 11',
                  supported_arch=['x86', 'amd64'],
     ),
 
-    # Visual C++ 11 Express Edition
-    # The batch file we look for is in the VC directory,
-    # so the VCExpress.exe executable is up in ..\..\Common7\IDE.
+    # Visual C++ 2012 Express Edition (for Desktop)
     VisualStudio('11.0Exp',
                  vc_version='11.0',
-                 sdk_version='6.1',
-                 hkeys=[r'Microsoft\VCExpress\11.0\Setup\VS\ProductDir'],
+                 sdk_version='8.0A',
+                 hkeys=[r'Microsoft\VisualStudio\11.0\Setup\VS\ProductDir'],
                  common_tools_var='VS110COMNTOOLS',
-                 executable_path=r'Common7\IDE\VCExpress.exe',
+                 executable_path=r'Common7\IDE\WDExpress.exe',
                  batch_file_path=r'Common7\Tools\vsvars32.bat',
-                 default_dirname='Microsoft Visual Studio 11',
-                 supported_arch=['x86'],
+                 supported_arch=['x86', 'amd64'],
     ),
 
     # Visual Studio 2010
-    # The batch file we look for is in the VC directory,
-    # so the devenv.com executable is up in ..\..\Common7\IDE.
     VisualStudio('10.0',
-                 sdk_version='6.1',
+                 sdk_version='7.0A',
                  hkeys=[r'Microsoft\VisualStudio\10.0\Setup\VS\ProductDir'],
                  common_tools_var='VS100COMNTOOLS',
                  executable_path=r'Common7\IDE\devenv.com',
                  batch_file_path=r'Common7\Tools\vsvars32.bat',
-                 default_dirname='Microsoft Visual Studio 10',
                  supported_arch=['x86', 'amd64'],
     ),
 
     # Visual C++ 2010 Express Edition
-    # The batch file we look for is in the VC directory,
-    # so the VCExpress.exe executable is up in ..\..\Common7\IDE.
     VisualStudio('10.0Exp',
                  vc_version='10.0',
-                 sdk_version='6.1',
+                 sdk_version='7.0A',
                  hkeys=[r'Microsoft\VCExpress\10.0\Setup\VS\ProductDir'],
                  common_tools_var='VS100COMNTOOLS',
                  executable_path=r'Common7\IDE\VCExpress.exe',
                  batch_file_path=r'Common7\Tools\vsvars32.bat',
-                 default_dirname='Microsoft Visual Studio 10',
                  supported_arch=['x86'],
     ),
 
     # Visual Studio 2008
-    # The batch file we look for is in the VC directory,
-    # so the devenv.com executable is up in ..\..\Common7\IDE.
     VisualStudio('9.0',
-                 sdk_version='6.1',
+                 sdk_version='6.0A',
                  hkeys=[r'Microsoft\VisualStudio\9.0\Setup\VS\ProductDir'],
                  common_tools_var='VS90COMNTOOLS',
                  executable_path=r'Common7\IDE\devenv.com',
                  batch_file_path=r'Common7\Tools\vsvars32.bat',
-                 default_dirname='Microsoft Visual Studio 9',
                  supported_arch=['x86', 'amd64'],
     ),
 
     # Visual C++ 2008 Express Edition
-    # The batch file we look for is in the VC directory,
-    # so the VCExpress.exe executable is up in ..\..\Common7\IDE.
     VisualStudio('9.0Exp',
                  vc_version='9.0',
-                 sdk_version='6.1',
+                 sdk_version='6.0A',
                  hkeys=[r'Microsoft\VCExpress\9.0\Setup\VS\ProductDir'],
                  common_tools_var='VS90COMNTOOLS',
                  executable_path=r'Common7\IDE\VCExpress.exe',
                  batch_file_path=r'Common7\Tools\vsvars32.bat',
-                 default_dirname='Microsoft Visual Studio 9',
                  supported_arch=['x86'],
     ),
 
     # Visual Studio 2005
-    # The batch file we look for is in the VC directory,
-    # so the devenv.com executable is up in ..\..\Common7\IDE.
     VisualStudio('8.0',
                  sdk_version='6.0A',
                  hkeys=[r'Microsoft\VisualStudio\8.0\Setup\VS\ProductDir'],
@@ -306,8 +318,6 @@ SupportedVSList = [
     ),
 
     # Visual C++ 2005 Express Edition
-    # The batch file we look for is in the VC directory,
-    # so the VCExpress.exe executable is up in ..\..\Common7\IDE.
     VisualStudio('8.0Exp',
                  vc_version='8.0Exp',
                  sdk_version='6.0A',
@@ -320,8 +330,6 @@ SupportedVSList = [
     ),
 
     # Visual Studio .NET 2003
-    # The batch file we look for is in the Common7\Tools directory,
-    # so the devenv.com executable is next door in ..\IDE.
     VisualStudio('7.1',
                  sdk_version='6.0',
                  hkeys=[r'Microsoft\VisualStudio\7.1\Setup\VS\ProductDir'],
@@ -333,8 +341,6 @@ SupportedVSList = [
     ),
 
     # Visual Studio .NET
-    # The batch file we look for is in the Common7\Tools directory,
-    # so the devenv.com executable is next door in ..\IDE.
     VisualStudio('7.0',
                  sdk_version='2003R2',
                  hkeys=[r'Microsoft\VisualStudio\7.0\Setup\VS\ProductDir'],
@@ -393,11 +399,11 @@ def reset_installed_visual_studios():
     InstalledVSMap  = None
     for vs in SupportedVSList:
         vs.reset()
-        
+
     # Need to clear installed VC's as well as they are used in finding
     # installed VS's
     SCons.Tool.MSCommon.vc.reset_installed_vcs()
-        
+
 
 # We may be asked to update multiple construction environments with
 # SDK information.  When doing this, we check on-disk for whether
@@ -461,8 +467,8 @@ def get_default_version(env):
     """Returns the default version string to use for MSVS.
 
     If no version was requested by the user through the MSVS environment
-    variable, query all the available the visual studios through
-    query_versions, and take the highest one.
+    variable, query all the available visual studios through
+    get_installed_visual_studios, and take the highest one.
 
     Return
     ------
@@ -470,6 +476,7 @@ def get_default_version(env):
         the default version.
     """
     if 'MSVS' not in env or not SCons.Util.is_Dict(env['MSVS']):
+        # get all versions, and remember them for speed later
         versions = [vs.version for vs in get_installed_visual_studios()]
         env['MSVS'] = {'VERSIONS' : versions}
     else:
@@ -479,6 +486,8 @@ def get_default_version(env):
         if versions:
             env['MSVS_VERSION'] = versions[0] #use highest version by default
         else:
+            debug('get_default_version: WARNING: no installed versions found, '
+                  'using first in SupportedVSList (%s)'%SupportedVSList[0].version)
             env['MSVS_VERSION'] = SupportedVSList[0].version
 
     env['MSVS']['VERSION'] = env['MSVS_VERSION']

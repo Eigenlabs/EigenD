@@ -11,7 +11,7 @@ tar.gz consisting of the source file and a specfile.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -33,7 +33,7 @@ tar.gz consisting of the source file and a specfile.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/rpm.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/rpm.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import os
 import re
@@ -51,11 +51,11 @@ def get_cmd(source, env):
     if SCons.Util.is_List(source):
         tar_file_with_included_specfile = source[0]
     return "%s %s %s"%(env['RPM'], env['RPMFLAGS'],
-                       tar_file_with_included_specfile.abspath )
+                       tar_file_with_included_specfile.get_abspath() )
 
 def build_rpm(target, source, env):
     # create a temporary rpm build root.
-    tmpdir = os.path.join( os.path.dirname( target[0].abspath ), 'rpmtemp' )
+    tmpdir = os.path.join( os.path.dirname( target[0].get_abspath() ), 'rpmtemp' )
     if os.path.exists(tmpdir):
         shutil.rmtree(tmpdir)
 
@@ -87,7 +87,7 @@ def build_rpm(target, source, env):
             expected   = os.path.basename(input.get_path())
 
             assert expected == rpm_output, "got %s but expected %s" % (rpm_output, expected)
-            shutil.copy( output, input.abspath )
+            shutil.copy( output, input.get_abspath() )
 
 
     # cleanup before leaving.

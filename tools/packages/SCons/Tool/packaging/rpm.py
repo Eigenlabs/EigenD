@@ -4,7 +4,7 @@ The rpm packager.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -25,7 +25,7 @@ The rpm packager.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__revision__ = "src/engine/SCons/Tool/packaging/rpm.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/packaging/rpm.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import os
 
@@ -72,7 +72,6 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
 
     # if no "SOURCE_URL" tag is given add a default one.
     if 'SOURCE_URL' not in kw:
-        #kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
         kw['SOURCE_URL']=(str(target[0])+".tar.gz").replace('.rpm', '')
 
     # mangle the source and target list for the rpmbuild
@@ -86,26 +85,21 @@ def package(env, target, source, PACKAGEROOT, NAME, VERSION,
 
 def collectintargz(target, source, env):
     """ Puts all source files into a tar.gz file. """
-    # the rpm tool depends on a source package, until this is chagned
+    # the rpm tool depends on a source package, until this is changed
     # this hack needs to be here that tries to pack all sources in.
     sources = env.FindSourceFiles()
 
     # filter out the target we are building the source list for.
-    #sources = [s for s in sources if not (s in target)]
     sources = [s for s in sources if s not in target]
 
     # find the .spec file for rpm and add it since it is not necessarily found
     # by the FindSourceFiles function.
-    #sources.extend( [s for s in source if str(s).rfind('.spec')!=-1] )
-    spec_file = lambda s: str(s).rfind('.spec') != -1
-    sources.extend( list(filter(spec_file, source)) )
+    sources.extend( [s for s in source if str(s).rfind('.spec')!=-1] )
 
     # as the source contains the url of the source package this rpm package
     # is built from, we extract the target name
-    #tarball = (str(target[0])+".tar.gz").replace('.rpm', '')
     tarball = (str(target[0])+".tar.gz").replace('.rpm', '')
     try:
-        #tarball = env['SOURCE_URL'].split('/')[-1]
         tarball = env['SOURCE_URL'].split('/')[-1]
     except KeyError, e:
         raise SCons.Errors.UserError( "Missing PackageTag '%s' for RPM packager" % e.args[0] )
@@ -130,8 +124,7 @@ def build_specfile(target, source, env):
     """ Builds a RPM specfile from a dictionary with string metadata and
     by analyzing a tree of nodes.
     """
-    file = open(target[0].abspath, 'w')
-    str  = ""
+    file = open(target[0].get_abspath(), 'w')
 
     try:
         file.write( build_specfile_header(env) )
@@ -169,7 +162,7 @@ def build_specfile_sections(spec):
         'X_RPM_POSTUNINSTALL' : '%%postun\n%s\n\n',
         'X_RPM_VERIFY'        : '%%verify\n%s\n\n',
 
-        # These are for internal use but could possibly be overriden
+        # These are for internal use but could possibly be overridden
         'X_RPM_PREP'          : '%%prep\n%s\n\n',
         'X_RPM_BUILD'         : '%%build\n%s\n\n',
         'X_RPM_INSTALL'       : '%%install\n%s\n\n',
@@ -182,7 +175,7 @@ def build_specfile_sections(spec):
         spec['X_RPM_PREP'] = '[ -n "$RPM_BUILD_ROOT" -a "$RPM_BUILD_ROOT" != / ] && rm -rf "$RPM_BUILD_ROOT"' + '\n%setup -q'
 
     if 'X_RPM_BUILD' not in spec:
-        spec['X_RPM_BUILD'] = 'mkdir "$RPM_BUILD_ROOT"'
+        spec['X_RPM_BUILD'] = '[ ! -e "$RPM_BUILD_ROOT" -a "$RPM_BUILD_ROOT" != / ] && mkdir "$RPM_BUILD_ROOT"'
 
     if 'X_RPM_INSTALL' not in spec:
         spec['X_RPM_INSTALL'] = 'scons --install-sandbox="$RPM_BUILD_ROOT" "$RPM_BUILD_ROOT"'
@@ -195,7 +188,7 @@ def build_specfile_sections(spec):
     return str
 
 def build_specfile_header(spec):
-    """ Builds all section but the %file of a rpm specfile
+    """ Builds all sections but the %file of a rpm specfile
     """
     str = ""
 
@@ -279,7 +272,9 @@ def build_specfile_filesection(spec, files):
         tags = {}
         for k in supported_tags.keys():
             try:
-                tags[k]=getattr(file, k)
+                v = file.GetTag(k)
+                if v:
+                    tags[k] = v
             except AttributeError:
                 pass
 
@@ -287,7 +282,7 @@ def build_specfile_filesection(spec, files):
         str = str + SimpleTagCompiler(supported_tags, mandatory=0).compile( tags )
 
         str = str + ' '
-        str = str + file.PACKAGING_INSTALL_LOCATION
+        str = str + file.GetTag('PACKAGING_INSTALL_LOCATION')
         str = str + '\n\n'
 
     return str
@@ -311,11 +306,10 @@ class SimpleTagCompiler(object):
         self.mandatory = mandatory
 
     def compile(self, values):
-        """ compiles the tagset and returns a str containing the result
+        """ Compiles the tagset and returns a str containing the result
         """
         def is_international(tag):
-            #return tag.endswith('_')
-            return tag[-1:] == '_'
+            return tag.endswith('_')
 
         def get_country_code(tag):
             return tag[-2:]
@@ -326,7 +320,6 @@ class SimpleTagCompiler(object):
         replacements = list(self.tagset.items())
 
         str = ""
-        #domestic = [ (k,v) for k,v in replacements if not is_international(k) ]
         domestic = [t for t in replacements if not is_international(t[0])]
         for key, replacement in domestic:
             try:
@@ -335,11 +328,9 @@ class SimpleTagCompiler(object):
                 if self.mandatory:
                     raise e
 
-        #international = [ (k,v) for k,v in replacements if is_international(k) ]
         international = [t for t in replacements if is_international(t[0])]
         for key, replacement in international:
             try:
-                #int_values_for_key = [ (get_country_code(k),v) for k,v in values.items() if strip_country_code(k) == key ]
                 x = [t for t in values.items() if strip_country_code(t[0]) == key]
                 int_values_for_key = [(get_country_code(t[0]),t[1]) for t in x]
                 for v in int_values_for_key:

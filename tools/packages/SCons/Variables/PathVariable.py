@@ -2,7 +2,7 @@
 
 This file defines an option type for SCons implementing path settings.
 
-To be used whenever a a user-specified path override should be allowed.
+To be used whenever a user-specified path override should be allowed.
 
 Arguments to PathVariable are:
   option-name  = name of this option on the command line (e.g. "prefix")
@@ -22,7 +22,7 @@ Arguments to PathVariable are:
                  is valid.  The arguments to the validator function
                  are: (key, val, env).  The key is the name of the
                  option, the val is the path specified for the option,
-                 and the env is the env to which the Otions have been
+                 and the env is the env to which the Options have been
                  added.
 
 Usage example:
@@ -46,7 +46,7 @@ Usage example:
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -68,7 +68,7 @@ Usage example:
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Variables/PathVariable.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Variables/PathVariable.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 __all__ = ['PathVariable',]
 
@@ -102,7 +102,7 @@ class _PathVariableClass(object):
             os.makedirs(val)
 
     def PathIsFile(self, key, val, env):
-        """validator to check if Path is a file"""
+        """Validator to check if Path is a file"""
         if not os.path.isfile(val):
             if os.path.isdir(val):
                 m = 'File path for option %s is a directory: %s'
@@ -111,13 +111,12 @@ class _PathVariableClass(object):
             raise SCons.Errors.UserError(m % (key, val))
 
     def PathExists(self, key, val, env):
-        """validator to check if Path exists"""
+        """Validator to check if Path exists"""
         if not os.path.exists(val):
             m = 'Path for option %s does not exist: %s'
             raise SCons.Errors.UserError(m % (key, val))
 
     def __call__(self, key, help, default, validator=None):
-        # NB: searchfunc is currenty undocumented and unsupported
         """
         The input parameters describe a 'path list' option, thus they
         are returned with the correct converter and validator appended. The

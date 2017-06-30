@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,7 +31,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/g++.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/g++.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import os.path
 import re
@@ -39,6 +39,8 @@ import subprocess
 
 import SCons.Tool
 import SCons.Util
+
+import gcc
 
 cplusplus = __import__('c++', globals(), locals(), [])
 
@@ -48,9 +50,10 @@ def generate(env):
     """Add Builders and construction variables for g++ to an Environment."""
     static_obj, shared_obj = SCons.Tool.createObjBuilders(env)
 
-    cplusplus.generate(env)
+    if 'CXX' not in env:
+        env['CXX']    = env.Detect(compilers) or compilers[0]
 
-    env['CXX']        = env.Detect(compilers)
+    cplusplus.generate(env)
 
     # platform specific settings
     if env['PLATFORM'] == 'aix':
@@ -62,26 +65,13 @@ def generate(env):
     elif env['PLATFORM'] == 'sunos':
         env['SHOBJSUFFIX'] = '.pic.o'
     # determine compiler version
-    if env['CXX']:
-        #pipe = SCons.Action._subproc(env, [env['CXX'], '-dumpversion'],
-        pipe = SCons.Action._subproc(env, [env['CXX'], '--version'],
-                                     stdin = 'devnull',
-                                     stderr = 'devnull',
-                                     stdout = subprocess.PIPE)
-        if pipe.wait() != 0: return
-        # -dumpversion was added in GCC 3.0.  As long as we're supporting
-        # GCC versions older than that, we should use --version and a
-        # regular expression.
-        #line = pipe.stdout.read().strip()
-        #if line:
-        #    env['CXXVERSION'] = line
-        line = pipe.stdout.readline()
-        match = re.search(r'[0-9]+(\.[0-9]+)+', line)
-        if match:
-            env['CXXVERSION'] = match.group(0)
+    version = gcc.detect_version(env, env['CXX'])
+    if version:
+        env['CXXVERSION'] = version
 
 def exists(env):
-    return env.Detect(compilers)
+    # is executable, and is a GNU compiler (or accepts '--version' at least)
+    return gcc.detect_version(env, env.Detect(env.get('CXX', compilers)))
 
 # Local Variables:
 # tab-width:4

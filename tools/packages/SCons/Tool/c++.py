@@ -8,7 +8,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,7 +30,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/c++.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/c++.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import os.path
 
@@ -72,7 +72,8 @@ def generate(env):
 
     SCons.Tool.cc.add_common_cc_variables(env)
 
-    env['CXX']        = 'c++'
+    if 'CXX' not in env:
+        env['CXX']    = env.Detect(compilers) or compilers[0]
     env['CXXFLAGS']   = SCons.Util.CLVar('')
     env['CXXCOM']     = '$CXX -o $TARGET -c $CXXFLAGS $CCFLAGS $_CCCOMCOM $SOURCES'
     env['SHCXX']      = '$CXX'
@@ -90,7 +91,7 @@ def generate(env):
     env['CXXFILESUFFIX'] = '.cc'
 
 def exists(env):
-    return env.Detect(compilers)
+    return env.Detect(env.get('CXX', compilers))
 
 # Local Variables:
 # tab-width:4

@@ -7,7 +7,7 @@ Phar Lap ETS tool chain.  Right now, this is linkloc and
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -29,7 +29,7 @@ Phar Lap ETS tool chain.  Right now, this is linkloc and
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/PharLapCommon.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/PharLapCommon.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import os
 import os.path
@@ -85,28 +85,6 @@ def getPharLapVersion():
     # Default return for Phar Lap 9.1
     return 910
 
-def addPathIfNotExists(env_dict, key, path, sep=os.pathsep):
-    """This function will take 'key' out of the dictionary
-    'env_dict', then add the path 'path' to that key if it is not
-    already there.  This treats the value of env_dict[key] as if it
-    has a similar format to the PATH variable...a list of paths
-    separated by tokens.  The 'path' will get added to the list if it
-    is not already there."""
-    try:
-        is_list = 1
-        paths = env_dict[key]
-        if not SCons.Util.is_List(env_dict[key]):
-            paths = paths.split(sep)
-            is_list = 0
-        if os.path.normcase(path) not in list(map(os.path.normcase, paths)):
-            paths = [ path ] + paths
-        if is_list:
-            env_dict[key] = paths
-        else:
-            env_dict[key] = sep.join(paths)
-    except KeyError:
-        env_dict[key] = path
-
 def addPharLapPaths(env):
     """This function adds the path to the Phar Lap binaries, includes,
     and libraries, if they are not already there."""
@@ -117,14 +95,14 @@ def addPharLapPaths(env):
     except KeyError:
         env_dict = {}
         env['ENV'] = env_dict
-    addPathIfNotExists(env_dict, 'PATH',
-                       os.path.join(ph_path, 'bin'))
-    addPathIfNotExists(env_dict, 'INCLUDE',
-                       os.path.join(ph_path, 'include'))
-    addPathIfNotExists(env_dict, 'LIB',
-                       os.path.join(ph_path, 'lib'))
-    addPathIfNotExists(env_dict, 'LIB',
-                       os.path.join(ph_path, os.path.normpath('lib/vclib')))
+    SCons.Util.AddPathIfNotExists(env_dict, 'PATH',
+                                  os.path.join(ph_path, 'bin'))
+    SCons.Util.AddPathIfNotExists(env_dict, 'INCLUDE',
+                                  os.path.join(ph_path, 'include'))
+    SCons.Util.AddPathIfNotExists(env_dict, 'LIB',
+                                  os.path.join(ph_path, 'lib'))
+    SCons.Util.AddPathIfNotExists(env_dict, 'LIB',
+                                  os.path.join(ph_path, os.path.normpath('lib/vclib')))
     
     env['PHARLAP_PATH'] = getPharLapPath()
     env['PHARLAP_VERSION'] = str(getPharLapVersion())

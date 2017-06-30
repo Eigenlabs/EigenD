@@ -8,7 +8,7 @@ selection method.
 
 """
 
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -29,7 +29,7 @@ selection method.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__revision__ = "src/engine/SCons/Tool/SCCS.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/SCCS.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import SCons.Action
 import SCons.Builder
@@ -46,7 +46,6 @@ def generate(env):
         act = SCons.Action.Action('$SCCSCOM', '$SCCSCOMSTR')
         return SCons.Builder.Builder(action = act, env = env)
 
-    #setattr(env, 'SCCS', SCCSFactory)
     env.SCCS = SCCSFactory
 
     env['SCCS']         = 'sccs'

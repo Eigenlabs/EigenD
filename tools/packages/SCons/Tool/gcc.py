@@ -9,7 +9,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -31,7 +31,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/gcc.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/gcc.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import cc
 import os
@@ -44,34 +44,54 @@ compilers = ['gcc', 'cc']
 
 def generate(env):
     """Add Builders and construction variables for gcc to an Environment."""
+
+    if 'CC' not in env:
+        env['CC'] = env.Detect(compilers) or compilers[0]
+
     cc.generate(env)
 
-    env['CC'] = env.Detect(compilers) or 'gcc'
     if env['PLATFORM'] in ['cygwin', 'win32']:
         env['SHCCFLAGS'] = SCons.Util.CLVar('$CCFLAGS')
     else:
         env['SHCCFLAGS'] = SCons.Util.CLVar('$CCFLAGS -fPIC')
     # determine compiler version
-    if env['CC']:
-        #pipe = SCons.Action._subproc(env, [env['CC'], '-dumpversion'],
-        pipe = SCons.Action._subproc(env, [env['CC'], '--version'],
-                                     stdin = 'devnull',
-                                     stderr = 'devnull',
-                                     stdout = subprocess.PIPE)
-        if pipe.wait() != 0: return
-        # -dumpversion was added in GCC 3.0.  As long as we're supporting
-        # GCC versions older than that, we should use --version and a
-        # regular expression.
-        #line = pipe.stdout.read().strip()
-        #if line:
-        #    env['CCVERSION'] = line
-        line = pipe.stdout.readline()
-        match = re.search(r'[0-9]+(\.[0-9]+)+', line)
-        if match:
-            env['CCVERSION'] = match.group(0)
+    version = detect_version(env, env['CC'])
+    if version:
+        env['CCVERSION'] = version
 
 def exists(env):
-    return env.Detect(compilers)
+    # is executable, and is a GNU compiler (or accepts '--version' at least)
+    return detect_version(env, env.Detect(env.get('CC', compilers)))
+
+def detect_version(env, cc):
+    """Return the version of the GNU compiler, or None if it is not a GNU compiler."""
+    cc = env.subst(cc)
+    if not cc:
+        return None
+    version = None
+    #pipe = SCons.Action._subproc(env, SCons.Util.CLVar(cc) + ['-dumpversion'],
+    pipe = SCons.Action._subproc(env, SCons.Util.CLVar(cc) + ['--version'],
+                                 stdin = 'devnull',
+                                 stderr = 'devnull',
+                                 stdout = subprocess.PIPE)
+    # -dumpversion was added in GCC 3.0.  As long as we're supporting
+    # GCC versions older than that, we should use --version and a
+    # regular expression.
+    #line = pipe.stdout.read().strip()
+    #if line:
+    #    version = line
+    line = pipe.stdout.readline()
+    match = re.search(r'[0-9]+(\.[0-9]+)+', line)
+    if match:
+        version = match.group(0)
+    # Non-GNU compiler's output (like AIX xlc's) may exceed the stdout buffer:
+    # So continue with reading to let the child process actually terminate.
+    while pipe.stdout.readline():
+        pass
+    ret = pipe.wait()
+    if ret != 0:
+        return None
+    return version
 
 # Local Variables:
 # tab-width:4

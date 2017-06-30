@@ -5,7 +5,7 @@ customizable variables to an SCons build.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -26,7 +26,7 @@ customizable variables to an SCons build.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__revision__ = "src/engine/SCons/Variables/__init__.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Variables/__init__.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import os.path
 import sys
@@ -50,12 +50,17 @@ class Variables(object):
     Holds all the options, updates the environment with the variables,
     and renders the help text.
     """
-    def __init__(self, files=[], args={}, is_global=1):
+    def __init__(self, files=None, args=None, is_global=1):
         """
         files - [optional] List of option configuration files to load
             (backward compatibility) If a single string is passed it is
                                      automatically placed in a file list
         """
+        # initialize arguments
+        if files is None:
+            files = []
+        if args is None:
+            args = {}
         self.options = []
         self.args = args
         if not SCons.Util.is_List(files):

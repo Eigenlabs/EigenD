@@ -8,7 +8,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,14 +30,13 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/aixlink.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/aixlink.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import os
 import os.path
 
 import SCons.Util
 
-import aixcc
 import link
 
 cplusplus = __import__('c++', globals(), locals(), [])
@@ -62,12 +61,14 @@ def generate(env):
     env['SHLIBSUFFIX']    = '.a'
 
 def exists(env):
-    path, _cc, _shcc, version = aixcc.get_xlc(env)
-    if path and _cc:
-        xlc = os.path.join(path, _cc)
-        if os.path.exists(xlc):
-            return xlc
-    return None
+    # TODO: sync with link.smart_link() to choose a linker
+    linkers = { 'CXX': ['aixc++'], 'CC': ['aixcc'] }
+    alltools = []
+    for langvar, linktools in linkers.items():
+        if langvar in env: # use CC over CXX when user specified CC but not CXX
+            return SCons.Tool.FindTool(linktools, env)
+        alltools.extend(linktools)
+    return SCons.Tool.FindTool(alltools, env)
 
 # Local Variables:
 # tab-width:4

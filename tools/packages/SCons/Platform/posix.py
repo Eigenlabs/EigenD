@@ -8,7 +8,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,7 +30,7 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Platform/posix.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Platform/posix.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import errno
 import os
@@ -48,15 +48,17 @@ exitvalmap = {
 }
 
 def escape(arg):
-    "escape shell special characters"
+    "escape shell special characters" 
     slash = '\\'
-    special = '"$()'
+    special = '"$'
 
     arg = arg.replace(slash, slash+slash)
     for c in special:
         arg = arg.replace(c, slash+c)
 
+    # print "ESCAPE RESULT: %s"%arg
     return '"' + arg + '"'
+
 
 def exec_subprocess(l, env):
     proc = subprocess.Popen(l, env = env, close_fds = True)
@@ -112,6 +114,10 @@ def generate(env):
 
     # This platform supports RPATH specifications.
     env['__RPATH'] = '$_RPATH'
+
+    # GDC is GCC family, but DMD and LDC have different options.
+    # Must be able to have GCC and DMD work in the same build, so:
+    env['__DRPATH'] = '$_DRPATH'
 
 # Local Variables:
 # tab-width:4

@@ -10,7 +10,7 @@ selection method.
 """
 
 #
-# Copyright (c) 2001-7,2010 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -242,7 +242,7 @@ def __xml_scan(node, env, path, arg):
 
     styledoc = libxml2.parseFile(xsl_file)
     style = libxslt.parseStylesheetDoc(styledoc)
-    doc = libxml2.parseFile(str(node))
+    doc = libxml2.readFile(str(node), None, libxml2.XML_PARSE_NOENT)
     result = style.applyStylesheet(doc, None)
 
     depfiles = []
@@ -348,7 +348,7 @@ def __xinclude_libxml2(target, source, env):
     Resolving XIncludes, using the libxml2 module.
     """
     doc = libxml2.readFile(str(source[0]), None, libxml2.XML_PARSE_NOENT)
-    doc.xincludeProcess()
+    doc.xincludeProcessFlags(libxml2.XML_PARSE_NOENT)
     doc.saveFile(str(target[0]))
     doc.freeDoc()
 
@@ -429,6 +429,11 @@ def DocbookEpub(env, target, source=None, *args, **kw):
         mime_file.close()
         zf.write(mime_file.name, compress_type = zipfile.ZIP_STORED)
         for s in source:
+            if os.path.isfile(str(s)):
+                head, tail = os.path.split(str(s))
+                if not head:
+                    continue
+                s = head
             for dirpath, dirnames, filenames in os.walk(str(s)):
                 for fname in filenames:
                     path = os.path.join(dirpath, fname)
@@ -443,7 +448,7 @@ def DocbookEpub(env, target, source=None, *args, **kw):
         Ensure all the resources in the manifest are present in the OEBPS directory.
         """
         hrefs = []
-        content_file = os.path.join(source[0].abspath, 'content.opf')
+        content_file = os.path.join(source[0].get_abspath(), 'content.opf')
         if not os.path.isfile(content_file):
             return
         
@@ -486,9 +491,9 @@ def DocbookEpub(env, target, source=None, *args, **kw):
         for href in hrefs:
             # If the resource was not already created by DocBook XSL itself, 
             # copy it into the OEBPS folder
-            referenced_file = os.path.join(source[0].abspath, href)
+            referenced_file = os.path.join(source[0].get_abspath(), href)
             if not os.path.exists(referenced_file):
-                shutil.copy(href, os.path.join(source[0].abspath, href))
+                shutil.copy(href, os.path.join(source[0].get_abspath(), href))
         
     # Init list of targets/sources
     target, source = __extend_targets_sources(target, source)
@@ -847,30 +852,16 @@ def generate(env):
         )
     _detect(env)
 
-    try:
-        env.AddMethod(DocbookEpub, "DocbookEpub")
-        env.AddMethod(DocbookHtml, "DocbookHtml")
-        env.AddMethod(DocbookHtmlChunked, "DocbookHtmlChunked")
-        env.AddMethod(DocbookHtmlhelp, "DocbookHtmlhelp")
-        env.AddMethod(DocbookPdf, "DocbookPdf")
-        env.AddMethod(DocbookMan, "DocbookMan")
-        env.AddMethod(DocbookSlidesPdf, "DocbookSlidesPdf")
-        env.AddMethod(DocbookSlidesHtml, "DocbookSlidesHtml")
-        env.AddMethod(DocbookXInclude, "DocbookXInclude")
-        env.AddMethod(DocbookXslt, "DocbookXslt")
-    except AttributeError:
-        # Looks like we use a pre-0.98 version of SCons...
-        from SCons.Script.SConscript import SConsEnvironment
-        SConsEnvironment.DocbookEpub = DocbookEpub        
-        SConsEnvironment.DocbookHtml = DocbookHtml
-        SConsEnvironment.DocbookHtmlChunked = DocbookHtmlChunked
-        SConsEnvironment.DocbookHtmlhelp = DocbookHtmlhelp
-        SConsEnvironment.DocbookPdf = DocbookPdf
-        SConsEnvironment.DocbookMan = DocbookMan
-        SConsEnvironment.DocbookSlidesPdf = DocbookSlidesPdf
-        SConsEnvironment.DocbookSlidesHtml = DocbookSlidesHtml
-        SConsEnvironment.DocbookXInclude = DocbookXInclude
-        SConsEnvironment.DocbookXslt = DocbookXslt
+    env.AddMethod(DocbookEpub, "DocbookEpub")
+    env.AddMethod(DocbookHtml, "DocbookHtml")
+    env.AddMethod(DocbookHtmlChunked, "DocbookHtmlChunked")
+    env.AddMethod(DocbookHtmlhelp, "DocbookHtmlhelp")
+    env.AddMethod(DocbookPdf, "DocbookPdf")
+    env.AddMethod(DocbookMan, "DocbookMan")
+    env.AddMethod(DocbookSlidesPdf, "DocbookSlidesPdf")
+    env.AddMethod(DocbookSlidesHtml, "DocbookSlidesHtml")
+    env.AddMethod(DocbookXInclude, "DocbookXInclude")
+    env.AddMethod(DocbookXslt, "DocbookXslt")
 
 
 def exists(env):

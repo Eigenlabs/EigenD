@@ -5,7 +5,7 @@ Stuff for processing Java.
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@ Stuff for processing Java.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Tool/JavaCommon.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Tool/JavaCommon.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import os
 import os.path
@@ -65,7 +65,7 @@ if java_parsing:
         def __init__(self, version=default_java_version):
 
             if not version in ('1.1', '1.2', '1.3','1.4', '1.5', '1.6', '1.7',
-                               '5', '6'):
+                               '1.8', '5', '6'):
                 msg = "Java version %s not supported" % version
                 raise NotImplementedError(msg)
 
@@ -171,7 +171,7 @@ if java_parsing:
             if self.version in ('1.1', '1.2', '1.3', '1.4'):
                 clazz = self.listClasses[0]
                 self.listOutputs.append('%s$%d' % (clazz, self.nextAnon))
-            elif self.version in ('1.5', '1.6', '1.7', '5', '6'):
+            elif self.version in ('1.5', '1.6', '1.7', '1.8', '5', '6'):
                 self.stackAnonClassBrackets.append(self.brackets)
                 className = []
                 className.extend(self.listClasses)
@@ -244,7 +244,8 @@ if java_parsing:
                 return self
             # If that's an inner class which is declared in a method, it
             # requires an index prepended to the class-name, e.g.
-            # 'Foo$1Inner' (Tigris Issue 2087)
+            # 'Foo$1Inner'
+            # http://scons.tigris.org/issues/show_bug.cgi?id=2087
             if self.outer_state.localClasses and \
                 self.outer_state.stackBrackets[-1] > \
                 self.outer_state.stackBrackets[-2]+1:

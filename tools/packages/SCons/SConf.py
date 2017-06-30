@@ -1,10 +1,18 @@
 """SCons.SConf
 
 Autoconf-like configuration support.
+
+In other words, SConf allows to run tests on the build machine to detect
+capabilities of system and do some things based on result: generate config
+files, header files for C/C++, update variables in environment.
+
+Tests on the build system can detect if compiler sees header files, if
+libraries are installed, if some command line options are supported etc.
+
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -26,7 +34,7 @@ Autoconf-like configuration support.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/SConf.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/SConf.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import SCons.compat
 
@@ -110,16 +118,22 @@ def _createConfigH(target, source, env):
 def _stringConfigH(target, source, env):
     return "scons: Configure: creating " + str(target[0])
 
-def CreateConfigHBuilder(env):
-    """Called just before the building targets phase begins."""
+
+def NeedConfigHBuilder():
     if len(_ac_config_hs) == 0:
-        return
+       return False
+    else:
+       return True
+
+def CreateConfigHBuilder(env):
+    """Called if necessary just before the building targets phase begins."""
     action = SCons.Action.Action(_createConfigH,
                                  _stringConfigH)
     sconfigHBld = SCons.Builder.Builder(action=action)
     env.Append( BUILDERS={'SConfigHBuilder':sconfigHBld} )
     for k in _ac_config_hs.keys():
         env.SConfigHBuilder(k, env.Value(_ac_config_hs[k]))
+
     
 class SConfWarning(SCons.Warnings.Warning):
     pass
@@ -161,8 +175,11 @@ class SConfBuildInfo(SCons.Node.FS.FileBuildInfo):
     are result (did the builder succeed last time?) and string, which
     contains messages of the original build phase.
     """
-    result = None # -> 0/None -> no error, != 0 error
-    string = None # the stdout / stderr output when building the target
+    __slots__ = ('result', 'string')
+    
+    def __init__(self):
+        self.result = None # -> 0/None -> no error, != 0 error
+        self.string = None # the stdout / stderr output when building the target
 
     def set_build_result(self, result, string):
         self.result = result
@@ -180,7 +197,11 @@ class Streamer(object):
     def write(self, str):
         if self.orig:
             self.orig.write(str)
-        self.s.write(str)
+        try:
+            self.s.write(str)
+        except TypeError as e:
+            # "unicode argument expected" bug in IOStream (python 2.x)
+            self.s.write(str.decode())
 
     def writelines(self, lines):
         for l in lines:
@@ -233,14 +254,7 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
         else:
             self.display('Caught exception while building "%s":\n' %
                          self.targets[0])
-            try:
-                excepthook = sys.excepthook
-            except AttributeError:
-                # Earlier versions of Python don't have sys.excepthook...
-                def excepthook(type, value, tb):
-                    traceback.print_tb(tb)
-                    print type, value
-            excepthook(*self.exc_info())
+            sys.excepthook(*self.exc_info())
         return SCons.Taskmaster.Task.failed(self)
 
     def collect_node_states(self):
@@ -334,8 +348,8 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
                 raise SCons.Errors.ExplicitExit(self.targets[0],exc_value.code)
             except Exception, e:
                 for t in self.targets:
-                    binfo = t.get_binfo()
-                    binfo.__class__ = SConfBuildInfo
+                    binfo = SConfBuildInfo()
+                    binfo.merge(t.get_binfo())
                     binfo.set_build_result(1, s.getvalue())
                     sconsign_entry = SCons.SConsign.SConsignEntry()
                     sconsign_entry.binfo = binfo
@@ -352,8 +366,8 @@ class SConfBuildTask(SCons.Taskmaster.AlwaysTask):
                 raise e
             else:
                 for t in self.targets:
-                    binfo = t.get_binfo()
-                    binfo.__class__ = SConfBuildInfo
+                    binfo = SConfBuildInfo()
+                    binfo.merge(t.get_binfo())
                     binfo.set_build_result(0, s.getvalue())
                     sconsign_entry = SCons.SConsign.SConsignEntry()
                     sconsign_entry.binfo = binfo
@@ -374,16 +388,16 @@ class SConfBase(object):
     tests, be sure to call the Finish() method, which returns the modified
     environment.
     Some words about caching: In most cases, it is not necessary to cache
-    Test results explicitely. Instead, we use the scons dependency checking
+    Test results explicitly. Instead, we use the scons dependency checking
     mechanism. For example, if one wants to compile a test program
     (SConf.TryLink), the compiler is only called, if the program dependencies
     have changed. However, if the program could not be compiled in a former
-    SConf run, we need to explicitely cache this error.
+    SConf run, we need to explicitly cache this error.
     """
 
     def __init__(self, env, custom_tests = {}, conf_dir='$CONFIGUREDIR',
                  log_file='$CONFIGURELOG', config_h = None, _depth = 0): 
-        """Constructor. Pass additional tests in the custom_tests-dictinary,
+        """Constructor. Pass additional tests in the custom_tests-dictionary,
         e.g. custom_tests={'CheckPrivate':MyPrivateTest}, where MyPrivateTest
         defines a custom test.
         Note also the conf_dir and log_file arguments (you may want to
@@ -419,6 +433,7 @@ class SConfBase(object):
                  'CheckCXXHeader'     : CheckCXXHeader,
                  'CheckLib'           : CheckLib,
                  'CheckLibWithHeader' : CheckLibWithHeader,
+                 'CheckProg'          : CheckProg,
                }
         self.AddTests(default_tests)
         self.AddTests(custom_tests)
@@ -482,7 +497,7 @@ class SConfBase(object):
         # we override the store_info() method with a null place-holder
         # so we really control how it gets written.
         for n in nodes:
-            n.store_info = n.do_not_store_info
+            n.store_info = 0
             if not hasattr(n, 'attributes'):
                 n.attributes = SCons.Node.Node.Attrs()
             n.attributes.keep_targetinfo = 1
@@ -622,7 +637,7 @@ class SConfBase(object):
         ok = self.TryLink(text, extension)
         if( ok ):
             prog = self.lastTarget
-            pname = prog.path
+            pname = prog.get_internal_path()
             output = self.confdir.File(os.path.basename(pname)+'.out')
             node = self.env.Command(output, prog, [ [ pname, ">", "${TARGET}"] ])
             ok = self.BuildNodes(node)
@@ -666,7 +681,6 @@ class SConfBase(object):
         else:
             if not os.path.isdir( dirName ):
                 os.makedirs( dirName )
-                node._exists = 1
 
     def _startup(self):
         """Private method. Set up logstream, and set the environment
@@ -741,10 +755,10 @@ class CheckContext(object):
     A typical test is just a callable with an instance of CheckContext as
     first argument:
 
-    def CheckCustom(context, ...)
-    context.Message('Checking my weird test ... ')
-    ret = myWeirdTestFunction(...)
-    context.Result(ret)
+        def CheckCustom(context, ...):
+            context.Message('Checking my weird test ... ')
+            ret = myWeirdTestFunction(...)
+            context.Result(ret)
 
     Often, myWeirdTestFunction will be one of
     context.TryCompile/context.TryLink/context.TryRun. The results of
@@ -1022,6 +1036,14 @@ def CheckLibWithHeader(context, libs, header, language,
             call = call, language = language, autoadd = autoadd)
     context.did_show_result = 1
     return not res
+
+def CheckProg(context, prog_name):
+    """Simple check if a program exists in the path.  Returns the path
+    for the application, or None if not found.
+    """
+    res = SCons.Conftest.CheckProg(context, prog_name)
+    context.did_show_result = 1
+    return res
 
 # Local Variables:
 # tab-width:4

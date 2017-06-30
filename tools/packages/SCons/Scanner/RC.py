@@ -1,12 +1,12 @@
 """SCons.Scanner.RC
 
-This module implements the depenency scanner for RC (Interface
+This module implements the dependency scanner for RC (Interface
 Definition Language) files.
 
 """
 
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -28,7 +28,7 @@ Definition Language) files.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-__revision__ = "src/engine/SCons/Scanner/RC.py  2014/03/02 14:18:15 garyo"
+__revision__ = "src/engine/SCons/Scanner/RC.py rel_2.5.1:3735:9dc6cee5c168 2016/11/03 14:02:02 bdbaddog"
 
 import SCons.Node.FS
 import SCons.Scanner
