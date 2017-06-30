@@ -62,7 +62,7 @@ if env['IS_LINUX']:
             modules/juce_gui_basics/juce_gui_basics.cpp
             modules/juce_gui_extra/juce_gui_extra.cpp
         """)
-    juce_env.Append(CCFLAGS='-Wno-sign-compare -DLINUX=1 -DNDEBUG -DJUCE_DLL_BUILD -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 -include AppConfig.h')
+    juce_env.Append(CCFLAGS='-Wno-unused-variable -Wno-sign-compare -DLINUX=1 -DNDEBUG -DJUCE_DLL_BUILD -DJUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 -include AppConfig.h')
     juce_env.Append(CPPPATH='/usr/include/freetype2')
     juce_env.Append(LIBS=Split('X11 freetype Xext asound'))
 

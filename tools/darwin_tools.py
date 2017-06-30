@@ -112,11 +112,11 @@ class PiDarwinEnvironment(unix_tools.PiUnixEnvironment):
         os_major=uname()[2].split('.')[0]
         self.Append(LIBS=Split('dl m pthread'))
         if platform == 'macosx-x86-64' :
-            self.Append(CXXLAGS=(Split('-std=c++11 -Wno-c++11-narrowing -Wno-inconsistent-missing-override')))
+            self.Append(CXXFLAGS=Split('-std=c++11 -Wno-c++11-narrowing -Wno-inconsistent-missing-override'))
             self.Append(CCFLAGS=Split('-arch x86_64 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\" -mmacosx-version-min=10.6'))
             self.Append(LINKFLAGS=Split('-arch x86_64 -framework Accelerate -Wl,-rpath,@executable_path/ -mmacosx-version-min=10.6'))
         else:
-            self.Append(CXXFLAGS=(Split('-std=c++11 -Wno-c++11-narrowing -Wno-inconsistent-missing-override')))
+            self.Append(CXXFLAGS=Split('-std=c++11 -Wno-c++11-narrowing -Wno-inconsistent-missing-override'))
             self.Append(CCFLAGS=Split('-arch i386 -DDEBUG_DATA_ATOMICITY_DISABLED -DPI_PREFIX=\\"$PI_PREFIX\\" -mmacosx-version-min=10.6'))
             self.Append(LINKFLAGS=Split('-arch i386 -framework Accelerate -Wl,-rpath,@executable_path/ -mmacosx-version-min=10.6'))
 

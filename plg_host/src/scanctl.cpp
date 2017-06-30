@@ -355,12 +355,12 @@ namespace
 
                 std::auto_ptr<juce::XmlElement> el(plugin_list_.createXml());
                 std::cout << "writing " << f.getFullPathName() << std::endl;
-                if(!el->writeToFile(f,juce::String::empty)) std::cout << "oops, failed!" << std::cout;
+                if(!el->writeToFile(f,juce::String::empty)) std::cout << "oops, failed!" << std::endl;
                 std::cout << "done." << std::endl;
 
                 juce::File b(getPluginsDir().getChildFile(BAD_PLUGINS));
                 std::cout << "writing " << b.getFullPathName() << std::endl;
-                if(!b.replaceWithText (bad_plugins_.joinIntoString ("\n"), true, true)) std::cout << "oops, failed!" << std::cout;
+                if(!b.replaceWithText (bad_plugins_.joinIntoString ("\n"), true, true)) std::cout << "oops, failed!" << std::endl;
                 std::cout << "done." << std::endl;
             }
 
