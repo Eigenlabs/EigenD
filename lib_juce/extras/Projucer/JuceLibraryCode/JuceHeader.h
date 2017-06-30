@@ -10,8 +10,7 @@
 
 */
 
-#ifndef __APPHEADERFILE_M70QFTRRK__
-#define __APPHEADERFILE_M70QFTRRK__
+#pragma once
 
 #include "AppConfig.h"
 
@@ -35,9 +34,7 @@
 namespace ProjectInfo
 {
     const char* const  projectName    = "Projucer";
-    const char* const  versionString  = "4.3.0";
-    const int          versionNumber  = 0x40300;
+    const char* const  versionString  = "5.0.2";
+    const int          versionNumber  = 0x50002;
 }
 #endif
-
-#endif   // __APPHEADERFILE_M70QFTRRK__

@@ -40,6 +40,6 @@ pistk_files=Split("""
     """)
 
 if env['IS_MACOSX']:
-    env.Append(CCFLAGS="-Wno-unused-const-variable")
+    env.Append(CCFLAGS="-Wno-unused-const-variable -Wno-deprecated-register")
 
 env.PiPipBinding('stk_native','stk.pip',sources=pistk_files,libraries=Split('pic piw pie pia'),package='eigend',per_agent='plg_stk',locked=True)

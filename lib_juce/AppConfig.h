@@ -15,6 +15,14 @@
 
 #include <picross/pic_config.h>
 
+// End User License Agreement: www.juce.com/juce-5-licence
+// GPL code so no splash screen required
+#define JUCE_DISPLAY_SPLASH_SCREEN 0
+#define JUCE_REPORT_APP_USAGE 0
+#define JUCE_USE_DARK_SPLASH_SCREEN 1
+
+//#define  JUCE_STANDALONE_APPLICATION 1
+
 #define JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED 1
 #define JUCE_MODULE_AVAILABLE_juce_audio_basics          1
 #define JUCE_MODULE_AVAILABLE_juce_audio_devices         1
@@ -45,7 +53,7 @@
 
 #ifndef PI_LINUX
 #define JUCE_PLUGINHOST_VST 1
-#define JUCE_PLUGINHOST_VST3 1
+#define JUCE_PLUGINHOST_VST3 0
 #define JUCE_VST3_CAN_REPLACE_VST2 0
 #define JUCE_PLUGINHOST_AU 1
 #endif
