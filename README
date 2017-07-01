@@ -53,13 +53,15 @@ You will need to have the stock EigenD installed to get the
 runtime support (which is a vanilla Python install) and the
 Windows device drivers.
 
-Steinberg SDK
+Steinberg SDK 
 -------------
 obtains from : http://www.steinberg.net/en/company/developers.html
 you will need to register a developer account buts its free
 
+
 You will need to obtain the VST headers from the Steinberg site.  
-Then, place these in a sub directory under the EigenD directory called 'steinberg' e.g.
+use latest version of VST SDK and copy VST2 headers, also for windows you will need asiosdk
+XThen, place these in a sub directory under the EigenD directory called 'steinberg' e.g.
 
     ...
     steinberg/pluginterfaces/base/*
@@ -72,7 +74,7 @@ Then, place these in a sub directory under the EigenD directory called 'steinber
 
 Windows
 -------
-Visual Studio 2012, including Express - (http://www.microsoft.com/en-us/download/details.aspx?id=34673)
+Visual Studio 2015, including Express - (http://www.microsoft.com/en-us/download/details.aspx?id=34673)
 NSIS v2.94 - (http://sourceforge.net/projects/nsis)
 WiX 3.9- (wixtoolset.org)
 Direct X SDK (June 2010) - (https://www.microsoft.com/en-us/download/details.aspx?id=6812)
@@ -87,7 +89,7 @@ currently the build is using a version of SCons that is not compatible with VS20
 MacOSX
 ------
 
-XCode 5 or Xcode command line tools (https://developer.apple.com/xcode/downloads/) 
+XCode (latest) or Xcode command line tools (https://developer.apple.com/xcode/downloads/) 
 updated ctags, not really required but will remove 'error' you see at end of build 
 
 Linux
