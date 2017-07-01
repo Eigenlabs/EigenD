@@ -24,6 +24,7 @@
 #include <picross/pic_time.h>
 #include <picross/pic_safeq.h>
 #include <cstring>
+#include <algorithm>
 
 struct finder_t: virtual pic::tracked_t
 {

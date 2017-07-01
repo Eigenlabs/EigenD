@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <algorithm>
 
 struct pia_timer_t: pic::element_t<>, virtual pic::lckobject_t
 {

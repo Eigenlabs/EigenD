@@ -23,6 +23,7 @@
 #include <picross/pic_log.h>
 #include <string>
 #include <cstring>
+#include <algorithm>
 
 #define BUFFER_LENGTH 8192
 #define AVG_LENGTH 512

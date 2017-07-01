@@ -28,8 +28,8 @@
 #define PI_IS_MACOSX 0
 #define PI_IS_WINDOWS 1
 #define __PI_ARCH "win32"
-#define lround(tt) floor((tt) + 0.5f)
-#define lroundf(tt) floorf((tt) + 0.5f)
+//#define lround(tt) floor((tt) + 0.5f)
+//#define lroundf(tt) floorf((tt) + 0.5f)
 
 #define NOMINMAX
 #endif

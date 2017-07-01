@@ -28,6 +28,7 @@
 #include "pia_glue.h"
 
 #include <vector>
+#include <algorithm>
 
 namespace
 {
