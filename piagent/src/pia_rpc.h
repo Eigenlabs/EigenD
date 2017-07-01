@@ -24,7 +24,7 @@
 #include "pia_manager.h"
 
 struct pia_ctx_t;
-struct pia_data_t;
+class pia_data_t;
 
 struct pia_rpclist_t
 {

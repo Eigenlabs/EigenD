@@ -20,7 +20,7 @@
 #ifndef __NETWORK_H__
 #define __NETWORK_H__
 
-#include <lib_lo/lo/lo.h>
+#include "lib_lo/lo/lo.h"
 #include "lib_xmlrpc++/XmlRpc.h"
 using namespace XmlRpc;
 

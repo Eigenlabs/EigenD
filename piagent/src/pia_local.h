@@ -23,7 +23,7 @@
 #include <pibelcanto/plugin.h>
 
 struct pia_ctx_t;
-struct pia_data_t;
+class pia_data_t;
 
 class pia_locallist_t
 {

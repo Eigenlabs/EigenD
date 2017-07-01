@@ -64,7 +64,7 @@
 namespace
 {
 
-#ifdef PI_WINDOWS
+#ifdef PI_WINDOWS_OLD
     double rint( double x) 
     // Copyright (C) 2001 Tor M. Aamodt, University of Toronto 
     // Permisssion to use for all purposes commercial and otherwise granted. 

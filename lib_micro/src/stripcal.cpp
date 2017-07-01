@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <algorithm>
 
 #include <picross/pic_config.h>
 #ifdef PI_WINDOWS

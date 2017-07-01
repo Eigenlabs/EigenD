@@ -24,6 +24,7 @@
 #include "Cello.h"
 #include "SKINI.msg"
 #include <math.h>
+#include <algorithm>
 #include <picross/pic_log.h>
 #include <picross/pic_float.h>
 

@@ -33,6 +33,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <algorithm>
 
 #ifndef PI_BIGENDIAN
 #define MY_NTOHS(X) (X)

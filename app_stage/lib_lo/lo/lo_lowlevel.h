@@ -31,7 +31,9 @@ extern "C" {
 #include <stdarg.h>
 #ifdef _MSC_VER
 #define ssize_t SSIZE_T
-#define uint32_t unsigned __int32
+#if (_MSC_VER < 1800)
+	#define uint32_t unsigned __int32
+#endif
 #else
 #include <stdint.h>
 #endif
