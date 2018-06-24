@@ -139,7 +139,7 @@ void piw::xvoice_t::envelope(float v,float f,float *dep,float *ap,float *hp,floa
 {
   //  std::list<piw::zoneref_t>::const_iterator z = zones.begin();
     pic::lcklist_t<zoneref_t>::nbtype::const_iterator z = zones.begin();
-	
+
     *dep=(*z)->de; *ap=(*z)->a; *hp=(*z)->h; *dcp=(*z)->dc; *sp=(*z)->s; *rp=(*z)->r;
 }
 
@@ -172,7 +172,7 @@ piw::voiceref_t piw::xpreset_t::find_zone(float v, float f) const
 
     zonekey_t k(std::make_pair(v,f));
     zi = zones.lower_bound(k);
-    ze = zones.end(); 
+    ze = zones.end();
 
     for(; zi!=ze; ++zi)
     {
@@ -216,9 +216,9 @@ float piw::sample_t::attenuation() const { return impl_->attenuation_; }
 
 piw::samplearray_t::impl_t::impl_t(const char *filename, unsigned p, unsigned l): pic::safe_worker_t(1000,PIC_THREAD_PRIORITY_HIGH), name(filename), size(l/2), offset(p)
 {
-    fd = pic::fopen(filename,"rb");
+    fd = (FILE*) pic::fopen(filename,"rb");
 
-    if(fd<0)
+    if(fd==nullptr)
     {
         pic::msg() << "Can't open " << filename << pic::hurl;
     }
@@ -502,4 +502,3 @@ const short *piw::samplereader_t::rimpl_t::bufptr(unsigned offset)
 
     return start_buffer_->data_;
 }
-
