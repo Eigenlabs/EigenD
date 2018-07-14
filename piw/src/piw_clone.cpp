@@ -414,7 +414,7 @@ void clone_wire_ctl_t::activate(bool b, unsigned long long t)
 #if CLONER_DEBUG>0
     pic::logmsg() << "cloner " << (void *)this << " on " << output_ << " activation " << b << " current: " << current_id();
 #endif
-    
+
     if(!current_id().is_path())
     {
         return;
@@ -613,7 +613,7 @@ void piw::clone_t::impl_t::__gate(unsigned o, bool on, unsigned long long t)
 #if CLONER_DEBUG>0
     pic::logmsg() << "cloner __gate output=" << o << " on=" << on << " current=" << getgate(o);
 #endif
-    if(on == getgate(o)) 
+    if(on == getgate(o))
     {
         return;
     }
@@ -706,7 +706,7 @@ void piw::clone_t::set_filtered_output(unsigned name, const piw::cookie_t &cooki
 
 void piw::clone_t::set_filtered_data_output(unsigned name, const piw::cookie_t &cookie, const piw::d2d_nb_t &filter, unsigned filtered_signal)
 {
-    PIC_ASSERT(signal>0);
+    PIC_ASSERT(filtered_signal>0);
     root_->add_output(name, cookie, filter, filtered_signal);
 }
 
@@ -722,7 +722,7 @@ piw::change_nb_t piw::clone_t::gate(unsigned name)
     unsigned o = name-1;
     PIC_ASSERT(o<MAX_GATES);
 
-    return piw::change_nb_t(pic::ref(new gatesink_t(root_,o))); 
+    return piw::change_nb_t(pic::ref(new gatesink_t(root_,o)));
 }
 
 void piw::clone_t::clear_output(unsigned name)
