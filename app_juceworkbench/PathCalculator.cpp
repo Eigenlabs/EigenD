@@ -249,9 +249,10 @@ double Solve_h(double a, double L, double d)
     double lower=0, upper=(L-a)/2;
 
     while ((upper-lower)>MAXERR && (++n)<MAXIT)
-        if(Calc_D(a,L,(upper+lower)/2,s)*s<d*s)upper=(upper+lower)/2;else lower=(upper+lower)/2;
+        if(Calc_D(a,L,(upper+lower)/2,s)*s<d*s)upper=(upper+lower)/2;
+        else lower=(upper+lower)/2;
         //printf("Found h=%3.1f after %d iterations.\n\r",(upper+lower)/2,n);
-        return s*((upper+lower)/2);
+    return s*((upper+lower)/2);
 }
 
 

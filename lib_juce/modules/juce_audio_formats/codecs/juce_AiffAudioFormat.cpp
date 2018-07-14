@@ -616,7 +616,8 @@ public:
             case 16:    ReadHelper<AudioData::Int32, AudioData::Int16, Endianness>::read (destSamples, startOffsetInDestBuffer, numDestChannels, sourceData, numChannels, numSamples); break;
             case 24:    ReadHelper<AudioData::Int32, AudioData::Int24, Endianness>::read (destSamples, startOffsetInDestBuffer, numDestChannels, sourceData, numChannels, numSamples); break;
             case 32:    if (usesFloatingPointData) ReadHelper<AudioData::Float32, AudioData::Float32, Endianness>::read (destSamples, startOffsetInDestBuffer, numDestChannels, sourceData, numChannels, numSamples);
-                        else                       ReadHelper<AudioData::Int32,   AudioData::Int32,   Endianness>::read (destSamples, startOffsetInDestBuffer, numDestChannels, sourceData, numChannels, numSamples); break;
+                        else                       ReadHelper<AudioData::Int32,   AudioData::Int32,   Endianness>::read (destSamples, startOffsetInDestBuffer, numDestChannels, sourceData, numChannels, numSamples); 
+                        break;
             default:    jassertfalse; break;
         }
     }
@@ -869,7 +870,8 @@ public:
                 case 16:    ReadHelper<AudioData::Float32, AudioData::Int16, AudioData::LittleEndian>::read (dest, 0, 1, source, 1, num); break;
                 case 24:    ReadHelper<AudioData::Float32, AudioData::Int24, AudioData::LittleEndian>::read (dest, 0, 1, source, 1, num); break;
                 case 32:    if (usesFloatingPointData) ReadHelper<AudioData::Float32, AudioData::Float32, AudioData::LittleEndian>::read (dest, 0, 1, source, 1, num);
-                            else                       ReadHelper<AudioData::Float32, AudioData::Int32,   AudioData::LittleEndian>::read (dest, 0, 1, source, 1, num); break;
+                            else                       ReadHelper<AudioData::Float32, AudioData::Int32,   AudioData::LittleEndian>::read (dest, 0, 1, source, 1, num); 
+                            break;
                 default:    jassertfalse; break;
             }
         }
@@ -881,7 +883,8 @@ public:
                 case 16:    ReadHelper<AudioData::Float32, AudioData::Int16, AudioData::BigEndian>::read (dest, 0, 1, source, 1, num); break;
                 case 24:    ReadHelper<AudioData::Float32, AudioData::Int24, AudioData::BigEndian>::read (dest, 0, 1, source, 1, num); break;
                 case 32:    if (usesFloatingPointData) ReadHelper<AudioData::Float32, AudioData::Float32, AudioData::BigEndian>::read (dest, 0, 1, source, 1, num);
-                            else                       ReadHelper<AudioData::Float32, AudioData::Int32,   AudioData::BigEndian>::read (dest, 0, 1, source, 1, num); break;
+                            else                       ReadHelper<AudioData::Float32, AudioData::Int32,   AudioData::BigEndian>::read (dest, 0, 1, source, 1, num); 
+                            break;
                 default:    jassertfalse; break;
             }
         }
@@ -907,7 +910,8 @@ public:
             case 16:    scanMinAndMax<AudioData::Int16> (startSampleInFile, numSamples, results, numChannelsToRead); break;
             case 24:    scanMinAndMax<AudioData::Int24> (startSampleInFile, numSamples, results, numChannelsToRead); break;
             case 32:    if (usesFloatingPointData) scanMinAndMax<AudioData::Float32> (startSampleInFile, numSamples, results, numChannelsToRead);
-                        else                       scanMinAndMax<AudioData::Int32>   (startSampleInFile, numSamples, results, numChannelsToRead); break;
+                        else                       scanMinAndMax<AudioData::Int32>   (startSampleInFile, numSamples, results, numChannelsToRead); 
+                        break;
             default:    jassertfalse; break;
         }
     }

@@ -124,8 +124,7 @@ void AgentTreeViewItem::itemOpennessChanged (bool isNowOpen)
 
 juce::var AgentTreeViewItem::getDragSourceDescription()
 {
-    if(xml->getNumChildElements()==0)
-        return "";
+    if(xml->getNumChildElements()==0)   return "";
     
 	if(xml->getFirstChildElement()->hasTagName("atom") ||
                 xml->getFirstChildElement()->hasTagName("agent"))

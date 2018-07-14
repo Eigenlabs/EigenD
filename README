@@ -42,6 +42,13 @@ to build full package (including Stage, Workbench and installer)
 bld.cmd target-mpkg
 
 
+Linux:
+to build application and eigend (tmp/app/EigenD.app)
+make 
+to build full package (including stage/workbench and installer)
+make pkg
+
+
 
 Build requirements
 ==================
@@ -109,3 +116,32 @@ mesa-common-dev
 
 please note: linux build is highly experimental, and libs required may be subject to change.
 It would be very much appeciated if you build for linux,and have better instructions on requirements. 
+
+build/testing is done on Ubuntu (x86) and Raspbian (arm), the current GCC compiler for that distro is used.
+
+
+Upgrade JUCE
+------------
+
+juce is copied into the repo under lib_juce
+we do not generally make any changes to the JUCE source code 
+**EXCEPT**
+we sometimes find that the latest version of compilers might break juce,
+so we fix these issues, as a 'one-off' on the assumption that roli/juce will 'catch up'
+
+
+Compiler versions
+------------------
+with windows we use a fixed version of MSVC.
+
+with Linux and MacOS we keep up with current 'stable release' of GCC and XCode.
+sometimes this can mean that the repo will temporarily be broken as compiler changes generate new errors.
+
+the reason we are 'so sensitive' is that we treat all WARNINGS as ERRORS. (good practice for clean code), 
+this means if a compile introduces a new warning (which is pretty common), suddenly the build will fail.
+
+if you spot this, its best to fix the code , and submit a pull request.
+
+alternatively , for a quick fix, you can disable the warning. (do not push a PR with this, it will not be accepted)
+
+
